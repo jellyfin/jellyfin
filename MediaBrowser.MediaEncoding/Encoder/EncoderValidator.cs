@@ -12,8 +12,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public class EncoderValidator
     {
-        private const string DefaultEncoderPath = "ffmpeg";
-
         private static readonly string[] _requiredDecoders = new[]
         {
             "h264",
@@ -104,12 +102,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly ILogger _logger;
 
-        private readonly string _encoderPath;
+        private string _encoderPath;
 
-        public EncoderValidator(ILogger logger, string encoderPath = DefaultEncoderPath)
+        public EncoderValidator(ILogger logger)
         {
             _logger = logger;
-            _encoderPath = encoderPath;
         }
 
         private enum Codec
@@ -123,12 +120,66 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public static Version MaxVersion { get; } = null;
 
-        public bool ValidateVersion()
+        /// <summary>
+        /// Returns a value indicating which version of the encoder more suitable.
+        /// </summary>
+        /// <param name="source">Source encoding version.</param>
+        /// <param name="destination">Destination encoding version.</param>
+        /// <returns>-1 if source is better, 1 if destination is better.</returns>
+        public static int BestVersion(Version source, Version destination)
+        {
+            if (source == null)
+            {
+                // Always select the none null value.
+                if (destination != null)
+                {
+                    return 1;
+                }
+
+                // doesn't really matter, as both are null.
+                return -1;
+            }
+
+            // Always select the none null value.
+            if (source != null && destination == null)
+            {
+                return -1;
+            }
+
+            // If either is recommended, then select that.
+            bool sourceRecommended = source >= MinVersion && (MaxVersion == null || source <= MaxVersion);
+            bool destRecommended = destination >= MinVersion && (MaxVersion == null || destination <= MaxVersion);
+
+            if (sourceRecommended)
+            {
+                if (destRecommended)
+                {
+                    // if both are recommendend, select the latest version.
+                    return source >= destination ? -1 : 1;
+                }
+
+                return -1;
+            }
+            else if (destRecommended)
+            {
+                return 1;
+            }
+
+            // select the latest.
+            return source >= destination ? -1 : 1;
+        }
+
+        public void SetEncoderPath(string path)
+        {
+            _encoderPath = path;
+        }
+
+        public Version ValidateVersion(string path)
         {
             string output = null;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version");
+                output = GetProcessOutput(path, "-version");
             }
             catch (Exception ex)
             {
@@ -138,7 +189,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (string.IsNullOrWhiteSpace(output))
             {
                 _logger.LogError("FFmpeg validation: The process returned no result");
-                return false;
+                return null;
             }
 
             _logger.LogDebug("ffmpeg output: {Output}", output);
@@ -146,12 +197,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return ValidateVersionInternal(output);
         }
 
-        internal bool ValidateVersionInternal(string versionOutput)
+        internal Version ValidateVersionInternal(string versionOutput)
         {
             if (versionOutput.IndexOf("Libav developers", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 _logger.LogError("FFmpeg validation: avconv instead of ffmpeg is not supported");
-                return false;
+                return null;
             }
 
             // Work out what the version under test is
@@ -177,20 +228,20 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     _logger.LogWarning("FFmpeg validation: We recommend minimum version {MinVersion}", MinVersion);
                 }
 
-                return false;
+                return null;
             }
             else if (version < MinVersion) // Version is below what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
-                return false;
+                return version;
             }
             else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
-                return false;
+                return version;
             }
 
-            return true;
+            return version;
         }
 
         public IEnumerable<string> GetDecoders() => GetCodecs(Codec.Decoder);

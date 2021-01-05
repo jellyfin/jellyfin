@@ -18,6 +18,36 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
+        [InlineData("2.0.0.0", "1.0.0.0", -1)]
+        [InlineData("4.5.0.0", "5.2.0.0", 1)]
+        [InlineData(null, "3.5.0.0", 1)]
+        [InlineData("2.0.0.0", null, -1)]
+        [InlineData(null, "2.0.0.0", 1)]
+        public void BestVersion(string? source, string? destination, int best)
+        {
+            Assert.Equal(
+                EncoderValidator.BestVersion(
+                    source != null ? Version.Parse(source) : null,
+                    destination != null ? Version.Parse(destination) : null),
+                best);
+        }
+
+        [Theory]
+        [InlineData("2.0.0.0", "1.0.0.0", 1)]
+        [InlineData("4.5.0.0", "5.2.0.0", -1)]
+        [InlineData(null, "3.5.0.0", -1)]
+        [InlineData("2.0.0.0", null, 1)]
+        [InlineData(null, "2.0.0.0", -1)]
+        public void WorstVersion(string? source, string? destination, int worst)
+        {
+            Assert.NotEqual(
+                EncoderValidator.BestVersion(
+                    source != null ? Version.Parse(source) : null,
+                    destination != null ? Version.Parse(destination) : null),
+                worst);
+        }
+
+        [Theory]
         [InlineData(EncoderValidatorTestsData.FFmpegV431Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV43Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV421Output, true)]
@@ -29,7 +59,7 @@ namespace Jellyfin.MediaEncoding.Tests
         public void ValidateVersionInternalTest(string versionOutput, bool valid)
         {
             var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
-            Assert.Equal(valid, val.ValidateVersionInternal(versionOutput));
+            Assert.Equal(valid, val.ValidateVersionInternal(versionOutput) != null);
         }
 
         private class GetFFmpegVersionTestData : IEnumerable<object?[]>

@@ -68,9 +68,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
 
+        private EncoderValidator _encoderValidator;
+
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
         private int threads;
+
+        private string _bestPath;
+        private Version _bestVersion;
+        private FFmpegLocation _bestLocation;
 
         public MediaEncoder(
             ILogger<MediaEncoder> logger,
@@ -87,6 +93,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.GetOptions();
+            _encoderValidator = new EncoderValidator(_logger);
         }
 
         /// <inheritdoc />
@@ -102,6 +109,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
+            _bestLocation = FFmpegLocation.NotFound;
+            _bestPath = null;
+            _bestVersion = null;
+
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
             if (!ValidatePath(_configurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
             {
@@ -109,13 +120,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (!ValidatePath(_startupOptionFFmpegPath, FFmpegLocation.SetByArgument))
                 {
                     // 3) Search system $PATH environment variable for valid FFmpeg
-                    if (!ValidatePath(ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System))
-                    {
-                        EncoderLocation = FFmpegLocation.NotFound;
-                        _ffmpegPath = null;
-                    }
+                    ValidatePath(ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System);
                 }
             }
+
+            _ffmpegPath = _bestPath;
+            EncoderLocation = _bestLocation;
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
             var config = _configurationManager.GetConfiguration<EncodingOptions>("encoding");
@@ -129,11 +139,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ffprobePath = Regex.Replace(_ffmpegPath, @"[^\/\\]+?(\.[^\/\\\n.]+)?$", @"ffprobe$1");
 
                 // Interrogate to understand what coders are supported
-                var validator = new EncoderValidator(_logger, _ffmpegPath);
+                _encoderValidator.SetEncoderPath(_ffmpegPath);
 
-                SetAvailableDecoders(validator.GetDecoders());
-                SetAvailableEncoders(validator.GetEncoders());
-                SetAvailableHwaccels(validator.GetHwaccels());
+                SetAvailableDecoders(_encoderValidator.GetDecoders());
+                SetAvailableEncoders(_encoderValidator.GetEncoders());
+                SetAvailableHwaccels(_encoderValidator.GetHwaccels());
                 threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
@@ -194,21 +204,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
         private bool ValidatePath(string path, FFmpegLocation location)
         {
-            bool rc = false;
-
             if (!string.IsNullOrEmpty(path))
             {
                 if (File.Exists(path))
                 {
-                    rc = new EncoderValidator(_logger, path).ValidateVersion();
-
-                    if (!rc)
+                    var version = _encoderValidator.ValidateVersion(path);
+                    if (version != null)
                     {
-                        _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
+                        if (EncoderValidator.BestVersion(version, _bestVersion) == -1)
+                        {
+                            _bestVersion = version;
+                            _bestPath = path;
+                            _bestLocation = location;
+                            return true;
+                        }
+
+                        _logger.LogInformation("FFmpeg: {Location}: version { Version } found: {Path}", location, version, path);
+                        return false;
                     }
 
-                    _ffmpegPath = path;
-                    EncoderLocation = location;
+                    _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
                 }
                 else
                 {
@@ -216,7 +231,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return rc;
+            return false;
         }
 
         private string GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
