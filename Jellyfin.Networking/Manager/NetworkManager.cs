@@ -387,7 +387,7 @@ namespace Jellyfin.Networking.Manager
             // Get the first LAN interface address that isn't a loopback.
             var interfaces = CreateCollection(_interfaceAddresses
                 .Exclude(_bindExclusions)
-                .Where(p => IsInLocalNetwork(p))
+                .Where(IsInLocalNetwork(p))
                 .OrderBy(p => p.Tag));
 
             if (interfaces.Count > 0)
@@ -591,7 +591,7 @@ namespace Jellyfin.Networking.Manager
             else // Used in testing only.
             {
                 // Format is <IPAddress>,<Index>,<Name>: <next interface>. Set index to -ve to simulate a gateway.
-                var interfaceList = MockNetworkSettings.Split(':');
+                var interfaceList = MockNetworkSettings.Split('|');
                 foreach (var details in interfaceList)
                 {
                     var parts = details.Split(',');
