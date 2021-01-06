@@ -113,5 +113,9 @@
     "TasksApplicationCategory": "Applikation",
     "TasksLibraryCategory": "Bibliotek",
     "TasksMaintenanceCategory": "Underhåll",
-    "TaskRefreshPeople": "Uppdatera Personer"
+    "TaskRefreshPeople": "Uppdatera Personer",
+    "TaskCleanActivityLogDescription": "Radera aktivitets logg inlägg som är äldre än definerad ålder.",
+    "TaskCleanActivityLog": "Rensa Aktivitets Logg",
+    "Undefined": "odefinierad",
+    "Forced": "Tvinga"
 }

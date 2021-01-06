@@ -960,13 +960,11 @@ namespace MediaBrowser.Providers.Manager
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
         {
             return GetExternalIds(item)
-                .Select(i => new ExternalIdInfo
-                {
-                    Name = i.ProviderName,
-                    Key = i.Key,
-                    Type = i.Type,
-                    UrlFormatString = i.UrlFormatString
-                });
+                .Select(i => new ExternalIdInfo(
+                    name: i.ProviderName,
+                    key: i.Key,
+                    type: i.Type,
+                    urlFormatString: i.UrlFormatString));
         }
 
         /// <inheritdoc/>

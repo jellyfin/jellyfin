@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-            => GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault();
+            => GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault() ?? Path.ChangeExtension(item.Path, ".nfo");
 
         internal static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
         {

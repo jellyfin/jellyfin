@@ -40,9 +40,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        string imdbId = reader.GetAttribute("IMDB");
-                        string tmdbId = reader.GetAttribute("TMDB");
-                        string tvdbId = reader.GetAttribute("TVDB");
+                        string? imdbId = reader.GetAttribute("IMDB");
+                        string? tmdbId = reader.GetAttribute("TMDB");
+                        string? tvdbId = reader.GetAttribute("TVDB");
 
                         if (string.IsNullOrWhiteSpace(tvdbId))
                         {

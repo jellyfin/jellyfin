@@ -210,6 +210,7 @@ namespace Jellyfin.Api.Helpers
                         && !state.VideoRequest.MaxHeight.HasValue;
 
                     if (isVideoResolutionNotRequested
+                        && state.VideoStream != null
                         && state.VideoRequest.VideoBitRate.HasValue
                         && state.VideoStream.BitRate.HasValue
                         && state.VideoRequest.VideoBitRate.Value >= state.VideoStream.BitRate.Value)

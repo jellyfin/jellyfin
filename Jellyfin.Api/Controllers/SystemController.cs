@@ -203,7 +203,7 @@ namespace Jellyfin.Api.Controllers
             // For older files, assume fully static
             var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
             FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare);
-            return File(stream, "text/plain");
+            return File(stream, "text/plain; charset=utf-8");
         }
 
         /// <summary>
