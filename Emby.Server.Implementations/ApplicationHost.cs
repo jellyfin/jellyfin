@@ -407,6 +407,19 @@ namespace Emby.Server.Implementations
             try
             {
                 _creatingInstances.Add(type);
+                
+                // Is this class registered with the DI?
+                var diInterfaceType = type.GetInterfaces().FirstOrDefault(i => string.Equals(i.Name, "I" + type.Name, StringComparison.Ordinal));
+                if (diInterfaceType != null)
+                {
+                    Logger.LogDebug("Requesting instance of {DiType} from DI for {Type}.", diInterfaceType, type);
+                    var instance = ServiceProvider.GetService(diInterfaceType);
+                    if (instance != null)
+                    {
+                        return instance;
+                    }
+                }
+
                 Logger.LogDebug("Creating instance of {Type}", type);
                 return ActivatorUtilities.CreateInstance(ServiceProvider, type);
             }
