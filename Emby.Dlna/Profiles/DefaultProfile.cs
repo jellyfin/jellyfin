@@ -42,7 +42,7 @@ namespace Emby.Dlna.Profiles
             TranscodingProfiles = new[]
             {
                 new TranscodingProfile("mp3", "mp3"),
-                new TranscodingProfile("ts", "aac", "h264"),
+                new TranscodingProfile("ts", "h264", "aac"),
                 new TranscodingProfile("jpeg")
             };
 
