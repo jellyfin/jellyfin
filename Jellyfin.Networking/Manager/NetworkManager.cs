@@ -387,7 +387,7 @@ namespace Jellyfin.Networking.Manager
             // Get the first LAN interface address that isn't a loopback.
             var interfaces = CreateCollection(_interfaceAddresses
                 .Exclude(_bindExclusions)
-                .Where(IsInLocalNetwork(p))
+                .Where(IsInLocalNetwork)
                 .OrderBy(p => p.Tag));
 
             if (interfaces.Count > 0)
