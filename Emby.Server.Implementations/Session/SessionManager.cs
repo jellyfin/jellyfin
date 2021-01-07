@@ -1310,7 +1310,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            return SendMessageToSession(session, SessionMessageType.PlayState, command, cancellationToken);
+            return SendMessageToSession(session, SessionMessageType.Playstate, command, cancellationToken);
         }
 
         private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
