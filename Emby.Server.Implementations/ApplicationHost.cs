@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -17,8 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Emby.Dlna;
-using Emby.Dlna.Main;
-using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -35,7 +32,6 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
-using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
@@ -47,6 +43,7 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Networking.AutoDiscovery;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
@@ -87,7 +84,6 @@ using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
@@ -537,6 +533,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<TmdbClientManager>();
 
             ServiceCollection.AddSingleton(NetManager);
+            ServiceCollection.AddSingleton<ZeroConf>();
 
             ServiceCollection.AddSingleton<IIsoManager, IsoManager>();
 
@@ -547,8 +544,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
             ServiceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
-
-            ServiceCollection.AddSingleton<ISocketFactory, SocketFactory>();
 
             ServiceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
@@ -625,8 +620,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
             ServiceCollection.AddSingleton<INotificationManager, NotificationManager>();
-
-            ServiceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             ServiceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
@@ -1151,9 +1144,6 @@ namespace Emby.Server.Implementations
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
-            // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
-
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
 
@@ -1179,7 +1169,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(HttpRequest source)
         {
             return new SystemInfo
             {
@@ -1215,7 +1205,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(HttpRequest source)
         {
             return new PublicSystemInfo
             {
@@ -1233,64 +1223,43 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
+        public string GetSmartApiUrl(IPAddress ipAddress)
         {
             // Published server ends with a /
             if (_startupOptions.PublishedServerUrl != null)
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+                return _startupOptions.PublishedServerUrl.ToString().TrimEnd('/');
             }
 
-            string smart = NetManager.GetBindInterface(ipAddress, out port);
+            string smart = NetManager.GetBindInterface(new IPNetAddress(ipAddress), out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart.Trim('/');
+                return smart.TrimEnd('/');
             }
 
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(smart.TrimEnd('/'), null, port);
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(HttpRequest request, int? port = null)
+        public string GetSmartApiUrl(HttpRequest request)
         {
             // Published server ends with a /
             if (_startupOptions.PublishedServerUrl != null)
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+                return _startupOptions.PublishedServerUrl.ToString().TrimEnd('/');
             }
 
-            string smart = NetManager.GetBindInterface(request, out port);
+            string smart = NetManager.GetBindInterface(request, out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart.Trim('/');
+                return smart.TrimEnd('/');
             }
 
-            return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
-        }
-
-        /// <inheritdoc/>
-        public string GetSmartApiUrl(string hostname, int? port = null)
-        {
-            // Published server ends with a /
-            if (_startupOptions.PublishedServerUrl != null)
-            {
-                // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
-            }
-
-            string smart = NetManager.GetBindInterface(hostname, out port);
-
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(smart.TrimEnd('/'), request.Scheme, port);
         }
 
         /// <inheritdoc/>

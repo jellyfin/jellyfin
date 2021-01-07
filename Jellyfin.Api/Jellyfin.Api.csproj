@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Emby.Dlna\Emby.Dlna.csproj" />
+    <ProjectReference Include="..\Jellyfin.Networking\Jellyfin.Networking.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
 

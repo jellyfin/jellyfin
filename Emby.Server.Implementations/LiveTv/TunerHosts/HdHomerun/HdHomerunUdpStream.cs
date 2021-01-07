@@ -9,8 +9,10 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -24,7 +26,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunUdpStream : LiveStream, IDirectStreamProvider
     {
         private const int RtpHeaderBytes = 12;
-
+        private readonly NetworkConfiguration _config;
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
@@ -44,32 +46,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
+            _config = configurationManager.GetNetworkConfiguration();
             _appHost = appHost;
             _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
             EnableStreamSharing = true;
-        }
-
-        /// <summary>
-        /// Returns an unused UDP port number in the range specified.
-        /// Temporarily placed here until future network PR merged.
-        /// </summary>
-        /// <param name="range">Upper and Lower boundary of ports to select.</param>
-        /// <returns>System.Int32.</returns>
-        private static int GetUdpPortFromRange((int Min, int Max) range)
-        {
-            var properties = IPGlobalProperties.GetIPGlobalProperties();
-
-            // Get active udp listeners.
-            var udpListenerPorts = properties.GetActiveUdpListeners()
-                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
-                        .Select(n => n.Port);
-
-            return Enumerable
-                .Range(range.Min, range.Max)
-                .FirstOrDefault(i => !udpListenerPorts.Contains(i));
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
@@ -79,20 +62,23 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            // Temporary code to reduce PR size. This will be updated by a future network pr.
-            var localPort = GetUdpPortFromRange((49152, 65535));
+            var localPort = UdpHelper.GetPort(_config.UDPPortRange);
+            Logger.LogDebug("Using udp port {0}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 
-            var remoteAddress = IPAddress.Parse(uri.Host);
+            var remote = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
+
+            Logger.LogDebug("Parsed host from {0} as {1}", uri.Host, remote);
+
             IPAddress localAddress = null;
             using (var tcpClient = new TcpClient())
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(remoteAddress, HdHomerunManager.HdHomeRunPort).ConfigureAwait(false);
+                    await tcpClient.ConnectAsync(remote.Address, HdHomerunManager.HdHomeRunPort).ConfigureAwait(false);
                     localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address;
                     tcpClient.Close();
                 }
@@ -103,18 +89,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (localAddress.IsIPv4MappedToIPv6) {
-                localAddress = localAddress.MapToIPv4();
-            }
-
-            var udpClient = new UdpClient(localPort, AddressFamily.InterNetwork);
+            var udpClient = new UdpClient(localPort, _networkManager.IsIP6Enabled ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork);
             var hdHomerunManager = new HdHomerunManager();
 
             try
             {
+                Logger.LogDebug("Starting streaming to {0}/{1} -> {1}", localAddress, localPort, remote.Address);
                 // send url to start streaming
                 await hdHomerunManager.StartStreaming(
-                    remoteAddress,
+                    remote.Address,
                     localAddress,
                     localPort,
                     _channelCommands,
@@ -140,7 +123,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _ = StartStreaming(
                 udpClient,
                 hdHomerunManager,
-                remoteAddress,
+                remote.Address,
                 taskCompletionSource,
                 LiveStreamCancellationTokenSource.Token);
 

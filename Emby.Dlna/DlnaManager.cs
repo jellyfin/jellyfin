@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Emby.Dlna.Profiles;
-using Emby.Dlna.Server;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -498,15 +497,6 @@ namespace Emby.Dlna
             var json = _jsonSerializer.SerializeToString(profile);
 
             return _jsonSerializer.DeserializeFromString<DeviceProfile>(json);
-        }
-
-        public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
-        {
-            var profile = GetDefaultProfile();
-
-            var serverId = _appHost.SystemId;
-
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
         }
 
         public ImageStream GetIcon(string filename)

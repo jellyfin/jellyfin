@@ -88,17 +88,6 @@ namespace Jellyfin.Networking.Configuration
         public bool EnableHttps { get; set; }
 
         /// <summary>
-        /// Gets or sets the public mapped port.
-        /// </summary>
-        /// <value>The public mapped port.</value>
-        public int PublicPort { get; set; } = DefaultHttpPort;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the http port should be mapped as part of UPnP automatic port forwarding.
-        /// </summary>
-        public bool UPnPCreateHttpPortMap { get; set; }
-
-        /// <summary>
         /// Gets or sets the UDPPortRange.
         /// </summary>
         public string UDPPortRange { get; set; } = string.Empty;
@@ -147,11 +136,6 @@ namespace Jellyfin.Networking.Configuration
         public string VirtualInterfaceNames { get; set; } = "vEthernet*";
 
         /// <summary>
-        /// Gets or sets the time (in seconds) between the pings of SSDP gateway monitor.
-        /// </summary>
-        public int GatewayMonitorPeriod { get; set; } = 60;
-
-        /// <summary>
         /// Gets a value indicating whether multi-socket binding is available.
         /// </summary>
         public bool EnableMultiSocketBinding { get; } = true;
@@ -168,7 +152,11 @@ namespace Jellyfin.Networking.Configuration
         public string HDHomerunPortRange { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the PublishedServerUriBySubnet
+        /// Gets or sets a value indicating whether IPv6 is enabled in HDHomerun communications.
+        /// </summary>
+        public bool HDHomeRunIP6Enabled { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets PublishedServerUri to advertise for specific subnets.
         /// </summary>
         public string[] PublishedServerUriBySubnet { get; set; } = Array.Empty<string>();
@@ -184,7 +172,7 @@ namespace Jellyfin.Networking.Configuration
         public bool AutoDiscovery { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
+        /// Gets or sets the filter for remote IP connectivity. Used in conjunction with <seealso cref="IsRemoteIPFilterBlacklist"/>.
         /// </summary>
         public string[] RemoteIPFilter { get; set; } = Array.Empty<string>();
 
@@ -192,11 +180,6 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets a value indicating whether <seealso cref="RemoteIPFilter"/> contains a blacklist or a whitelist. Default is a whitelist.
         /// </summary>
         public bool IsRemoteIPFilterBlacklist { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to enable automatic port forwarding.
-        /// </summary>
-        public bool EnableUPnP { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted.

@@ -61,15 +61,6 @@ namespace MediaBrowser.Controller.Dlna
         DeviceProfile GetProfile(DeviceIdentification deviceInfo);
 
         /// <summary>
-        /// Gets the server description XML.
-        /// </summary>
-        /// <param name="headers">The headers.</param>
-        /// <param name="serverUuId">The server uu identifier.</param>
-        /// <param name="serverAddress">The server address.</param>
-        /// <returns>System.String.</returns>
-        string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress);
-
-        /// <summary>
         /// Gets the icon.
         /// </summary>
         /// <param name="filename">The filename.</param>
