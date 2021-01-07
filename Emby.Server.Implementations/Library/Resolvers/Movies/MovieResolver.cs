@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Third;
+        public override ResolverPriority Priority => ResolverPriority.Fourth;
 
         /// <inheritdoc />
         public MultiItemResolverResult ResolveMultiple(
