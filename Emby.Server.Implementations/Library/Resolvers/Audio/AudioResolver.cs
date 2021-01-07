@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Fourth;
+        public override ResolverPriority Priority => ResolverPriority.Fifth;
 
         public MultiItemResolverResult ResolveMultiple(
             Folder parent,
