@@ -1,20 +1,40 @@
-#nullable disable
-#pragma warning disable CS1591
+#nullable enable
 
 namespace MediaBrowser.Model.Plugins
 {
+    /// <summary>
+    /// Defines the <see cref="PluginPageInfo" />.
+    /// </summary>
     public class PluginPageInfo
     {
-        public string Name { get; set; }
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        public string Name { get; set; } = string.Empty;
 
-        public string DisplayName { get; set; }
+        /// <summary>
+        /// Gets or sets the display name.
+        /// </summary>
+        public string? DisplayName { get; set; }
 
-        public string EmbeddedResourcePath { get; set; }
+        /// <summary>
+        /// Gets or sets the resource path.
+        /// </summary>
+        public string EmbeddedResourcePath { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this plugin should appear in the main menu.
+        /// </summary>
         public bool EnableInMainMenu { get; set; }
 
-        public string MenuSection { get; set; }
+        /// <summary>
+        /// Gets or sets the menu section.
+        /// </summary>
+        public string? MenuSection { get; set; }
 
-        public string MenuIcon { get; set; }
+        /// <summary>
+        /// Gets or sets the menu icon.
+        /// </summary>
+        public string? MenuIcon { get; set; }
     }
 }

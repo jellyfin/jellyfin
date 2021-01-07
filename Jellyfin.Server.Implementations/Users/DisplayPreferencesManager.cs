@@ -26,16 +26,16 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public DisplayPreferences GetDisplayPreferences(Guid userId, string client)
+        public DisplayPreferences GetDisplayPreferences(Guid userId, Guid itemId, string client)
         {
             var prefs = _dbContext.DisplayPreferences
                 .Include(pref => pref.HomeSections)
                 .FirstOrDefault(pref =>
-                    pref.UserId == userId && string.Equals(pref.Client, client));
+                    pref.UserId == userId && string.Equals(pref.Client, client) && pref.ItemId == itemId);
 
             if (prefs == null)
             {
-                prefs = new DisplayPreferences(userId, client);
+                prefs = new DisplayPreferences(userId,  itemId, client);
                 _dbContext.DisplayPreferences.Add(prefs);
             }
 
@@ -64,6 +64,34 @@ namespace Jellyfin.Server.Implementations.Users
                 .AsQueryable()
                 .Where(prefs => prefs.UserId == userId && prefs.ItemId != Guid.Empty && string.Equals(prefs.Client, client))
                 .ToList();
+        }
+
+        /// <inheritdoc />
+        public IDictionary<string, string> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client)
+        {
+            return _dbContext.CustomItemDisplayPreferences
+                .AsQueryable()
+                .Where(prefs => prefs.UserId == userId
+                                && prefs.ItemId == itemId
+                                && string.Equals(prefs.Client, client))
+                .ToDictionary(prefs => prefs.Key, prefs => prefs.Value);
+        }
+
+        /// <inheritdoc />
+        public void SetCustomItemDisplayPreferences(Guid userId, Guid itemId, string client, Dictionary<string, string> customPreferences)
+        {
+            var existingPrefs = _dbContext.CustomItemDisplayPreferences
+                .AsQueryable()
+                .Where(prefs => prefs.UserId == userId
+                                && prefs.ItemId == itemId
+                                && string.Equals(prefs.Client, client));
+            _dbContext.CustomItemDisplayPreferences.RemoveRange(existingPrefs);
+
+            foreach (var (key, value) in customPreferences)
+            {
+                _dbContext.CustomItemDisplayPreferences
+                    .Add(new CustomItemDisplayPreferences(userId, itemId, client, key, value));
+            }
         }
 
         /// <inheritdoc />

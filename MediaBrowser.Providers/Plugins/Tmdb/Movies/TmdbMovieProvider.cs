@@ -129,6 +129,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 .GetMovieAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
+            if (movieResult == null)
+            {
+                return new MetadataResult<Movie>();
+            }
+
             var movie = new Movie
             {
                 Name = movieResult.Title ?? movieResult.OriginalTitle,
@@ -265,7 +270,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     metadataResult.AddPerson(personInfo);
                 }
             }
-
 
             if (movieResult.Videos?.Results != null)
             {

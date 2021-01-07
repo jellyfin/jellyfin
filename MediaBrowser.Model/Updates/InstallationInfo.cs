@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Model.Updates
 {
@@ -9,10 +10,11 @@ namespace MediaBrowser.Model.Updates
     public class InstallationInfo
     {
         /// <summary>
-        /// Gets or sets the guid.
+        /// Gets or sets the Id.
         /// </summary>
-        /// <value>The guid.</value>
-        public Guid Guid { get; set; }
+        /// <value>The Id.</value>
+        [JsonPropertyName("Guid")]
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the name.

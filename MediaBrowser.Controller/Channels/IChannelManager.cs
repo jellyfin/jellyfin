@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>ChannelFeatures.</returns>
-        ChannelFeatures GetChannelFeatures(string id);
+        ChannelFeatures GetChannelFeatures(Guid? id);
 
         /// <summary>
         /// Gets all channel features.

@@ -1,9 +1,12 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -19,12 +22,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _json;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public AudioDbArtistImageProvider(IServerConfigurationManager config, IJsonSerializer json, IHttpClientFactory httpClientFactory)
+        public AudioDbArtistImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {
             _config = config;
-            _json = json;
             _httpClientFactory = httpClientFactory;
         }
 
@@ -58,7 +60,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
 
-                var obj = _json.DeserializeFromFile<AudioDbArtistProvider.RootObject>(path);
+                await using FileStream jsonStream = File.OpenRead(path);
+                var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (obj != null && obj.artists != null && obj.artists.Count > 0)
                 {
@@ -144,6 +147,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         /// <inheritdoc />
         public bool Supports(BaseItem item)
-            => Plugin.Instance.Configuration.Enable && item is MusicArtist;
+            => item is MusicArtist;
     }
 }

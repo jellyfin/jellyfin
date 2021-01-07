@@ -96,7 +96,7 @@
     "TaskRefreshChannels": "Обновление каналов",
     "TaskCleanTranscode": "Очистка каталога перекодировки",
     "TaskUpdatePlugins": "Обновление плагинов",
-    "TaskRefreshPeople": "Обновление метаданных людей",
+    "TaskRefreshPeople": "Подновить людей",
     "TaskCleanLogs": "Очистка каталога журналов",
     "TaskRefreshLibrary": "Сканирование медиатеки",
     "TaskRefreshChapterImages": "Извлечение изображений сцен",
@@ -109,11 +109,14 @@
     "TaskRefreshChannelsDescription": "Обновляются данные интернет-каналов.",
     "TaskCleanTranscodeDescription": "Удаляются файлы перекодировки старше одного дня.",
     "TaskUpdatePluginsDescription": "Загружаются и устанавливаются обновления для плагинов, у которых включено автоматическое обновление.",
-    "TaskRefreshPeopleDescription": "Обновляются метаданные актеров и режиссёров в медиатеке.",
+    "TaskRefreshPeopleDescription": "Обновляются метаданные для актёров и режиссёров в медиатеке.",
     "TaskCleanLogsDescription": "Удаляются файлы журнала, возраст которых превышает {0} дн(я/ей).",
     "TaskRefreshLibraryDescription": "Сканируется медиатека на новые файлы и обновляются метаданные.",
     "TaskRefreshChapterImagesDescription": "Создаются эскизы для видео, которые содержат сцены.",
     "TaskCleanCacheDescription": "Удаляются файлы кэша, которые больше не нужны системе.",
     "TaskCleanActivityLogDescription": "Удаляет записи журнала активности старше установленного возраста.",
-    "TaskCleanActivityLog": "Очистить журнал активности"
+    "TaskCleanActivityLog": "Очистить журнал активности",
+    "Undefined": "Не определено",
+    "Forced": "Форсир-ые",
+    "Default": "По умолчанию"
 }

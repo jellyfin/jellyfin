@@ -84,7 +84,7 @@ namespace Jellyfin.Networking.Manager
         private Collection<IPObject> _internalInterfaces;
 
         /// <summary>
-        /// Flag set when no custom LAN has been defined in the config.
+        /// Flag set when no custom LAN has been defined in the configuration.
         /// </summary>
         private bool _usingPrivateAddresses;
 
@@ -228,7 +228,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public Collection<IPObject> CreateIPCollection(string[] values, bool bracketed = false)
+        public Collection<IPObject> CreateIPCollection(string[] values, bool negated = false)
         {
             Collection<IPObject> col = new Collection<IPObject>();
             if (values == null)
@@ -242,28 +242,21 @@ namespace Jellyfin.Networking.Manager
 
                 try
                 {
-                    if (v.StartsWith('[') && v.EndsWith(']'))
+                    if (v.StartsWith('!'))
                     {
-                        if (bracketed)
-                        {
-                            AddToCollection(col, v[1..^1]);
-                        }
-                    }
-                    else if (v.StartsWith('!'))
-                    {
-                        if (bracketed)
+                        if (negated)
                         {
                             AddToCollection(col, v[1..]);
                         }
                     }
-                    else if (!bracketed)
+                    else if (!negated)
                     {
                         AddToCollection(col, v);
                     }
                 }
                 catch (ArgumentException e)
                 {
-                    _logger.LogWarning(e, "Ignoring LAN value {value}.", v);
+                    _logger.LogWarning(e, "Ignoring LAN value {Value}.", v);
                 }
             }
 
@@ -675,7 +668,6 @@ namespace Jellyfin.Networking.Manager
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 int i = str.IndexOf("%", StringComparison.OrdinalIgnoreCase);
-
                 if (i != -1)
                 {
                     str = str.Substring(0, i);
@@ -730,7 +722,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
-        /// Parses a string and adds it into the the collection, replacing any interface references.
+        /// Parses a string and adds it into the collection, replacing any interface references.
         /// </summary>
         /// <param name="col"><see cref="Collection{IPObject}"/>Collection.</param>
         /// <param name="token">String value to parse.</param>
@@ -755,7 +747,19 @@ namespace Jellyfin.Networking.Manager
             }
             else if (TryParse(token, out IPObject obj))
             {
-                if (!IsIP6Enabled)
+                // Expand if the ip address is "any".
+                if ((obj.Address.Equals(IPAddress.Any) && IsIP4Enabled)
+                    || (obj.Address.Equals(IPAddress.IPv6Any) && IsIP6Enabled))
+                {
+                    foreach (IPNetAddress iface in _interfaceAddresses)
+                    {
+                        if (obj.AddressFamily == iface.AddressFamily)
+                        {
+                            col.AddItem(iface);
+                        }
+                    }
+                }
+                else if (!IsIP6Enabled)
                 {
                     // Remove IP6 addresses from multi-homed IPHosts.
                     obj.Remove(AddressFamily.InterNetworkV6);
@@ -780,7 +784,7 @@ namespace Jellyfin.Networking.Manager
             }
             else
             {
-                _logger.LogDebug("Invalid or unknown network {Token}.", token);
+                _logger.LogDebug("Invalid or unknown object {Token}.", token);
             }
         }
 
@@ -872,7 +876,7 @@ namespace Jellyfin.Networking.Manager
                     else
                     {
                         var replacement = parts[1].Trim();
-                        if (string.Equals(parts[0], "remaining", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(parts[0], "all", StringComparison.OrdinalIgnoreCase))
                         {
                             _publishedServerUrls[new IPNetAddress(IPAddress.Broadcast)] = replacement;
                         }
@@ -908,15 +912,6 @@ namespace Jellyfin.Networking.Manager
             lock (_intLock)
             {
                 string[] lanAddresses = config.LocalNetworkAddresses;
-
-                // TODO: remove when bug fixed: https://github.com/jellyfin/jellyfin-web/issues/1334
-
-                if (lanAddresses.Length == 1 && lanAddresses[0].IndexOf(',', StringComparison.OrdinalIgnoreCase) != -1)
-                {
-                    lanAddresses = lanAddresses[0].Split(',');
-                }
-
-                // TODO: end fix: https://github.com/jellyfin/jellyfin-web/issues/1334
 
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)
@@ -956,7 +951,7 @@ namespace Jellyfin.Networking.Manager
             {
                 _logger.LogDebug("Refreshing LAN information.");
 
-                // Get config options.
+                // Get configuration options.
                 string[] subnets = config.LocalNetworkSubnets;
 
                 // Create lists from user settings.
@@ -1310,9 +1305,7 @@ namespace Jellyfin.Networking.Manager
                 return true;
             }
 
-            // Have to return something, so return an internal address
-
-            _logger.LogWarning("{Source}: External request received, however, no WAN interface found.", source);
+            _logger.LogDebug("{Source}: External request received, but no WAN interface found. Need to route through internal network.", source);
             return false;
         }
     }

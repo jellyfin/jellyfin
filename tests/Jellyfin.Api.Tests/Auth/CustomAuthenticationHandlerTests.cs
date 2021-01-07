@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Tests.Auth
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsyncShouldFailOnAuthenticationException()
+        public async Task HandleAuthenticateAsyncShouldProvideNoResultOnAuthenticationException()
         {
             var errorMessage = _fixture.Create<string>();
 
@@ -81,7 +81,7 @@ namespace Jellyfin.Api.Tests.Auth
             var authenticateResult = await _sut.AuthenticateAsync();
 
             Assert.False(authenticateResult.Succeeded);
-            Assert.Equal(errorMessage, authenticateResult.Failure?.Message);
+            Assert.True(authenticateResult.None);
         }
 
         [Fact]

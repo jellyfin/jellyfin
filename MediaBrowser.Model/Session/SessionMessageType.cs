@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Session
         Play,
         SyncPlayCommand,
         SyncPlayGroupUpdate,
-        PlayState,
+        Playstate,
         RestartRequired,
         ServerShuttingDown,
         ServerRestarting,

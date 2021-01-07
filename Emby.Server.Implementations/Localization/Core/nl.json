@@ -1,7 +1,7 @@
 {
     "Albums": "Albums",
     "AppDeviceValues": "App: {0}, Apparaat: {1}",
-    "Application": "Programma",
+    "Application": "Applicatie",
     "Artists": "Artiesten",
     "AuthenticationSucceededWithUserName": "{0} is succesvol geverifieerd",
     "Books": "Boeken",
@@ -26,7 +26,7 @@
     "HeaderNextUp": "Volgende",
     "HeaderRecordingGroups": "Opnamegroepen",
     "HomeVideos": "Home video's",
-    "Inherit": "Overerven",
+    "Inherit": "Erven",
     "ItemAddedWithName": "{0} is toegevoegd aan de bibliotheek",
     "ItemRemovedWithName": "{0} is verwijderd uit de bibliotheek",
     "LabelIpAddressValue": "IP-adres: {0}",
@@ -87,7 +87,7 @@
     "UserOnlineFromDevice": "{0} heeft verbinding met {1}",
     "UserPasswordChangedWithName": "Wachtwoord voor {0} is gewijzigd",
     "UserPolicyUpdatedWithName": "Gebruikersbeleid gewijzigd voor {0}",
-    "UserStartedPlayingItemWithValues": "{0} heeft afspelen van {1} gestart op {2}",
+    "UserStartedPlayingItemWithValues": "{0} speelt {1} af op {2}",
     "UserStoppedPlayingItemWithValues": "{0} heeft afspelen van {1} gestopt op {2}",
     "ValueHasBeenAddedToLibrary": "{0} is toegevoegd aan je mediabibliotheek",
     "ValueSpecialEpisodeName": "Speciaal - {0}",
@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Bibliotheek",
     "TasksMaintenanceCategory": "Onderhoud",
     "TaskCleanActivityLogDescription": "Verwijder activiteiten logs ouder dan de ingestelde tijd.",
-    "TaskCleanActivityLog": "Leeg activiteiten logboek"
+    "TaskCleanActivityLog": "Leeg activiteiten logboek",
+    "Undefined": "Niet gedefinieerd",
+    "Forced": "Geforceerd",
+    "Default": "Standaard"
 }

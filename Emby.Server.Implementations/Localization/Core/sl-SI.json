@@ -113,5 +113,10 @@
     "TasksApplicationCategory": "Aplikacija",
     "TasksLibraryCategory": "Knjižnica",
     "TasksMaintenanceCategory": "Vzdrževanje",
-    "TaskDownloadMissingSubtitlesDescription": "Na podlagi nastavitev metapodatkov poišče manjkajoče podnapise na internetu."
+    "TaskDownloadMissingSubtitlesDescription": "Na podlagi nastavitev metapodatkov poišče manjkajoče podnapise na internetu.",
+    "TaskCleanActivityLogDescription": "Počisti zapise v dnevniku aktivnosti starejše od nastavljenega časa.",
+    "TaskCleanActivityLog": "Počisti dnevnik aktivnosti",
+    "Undefined": "Nedoločen",
+    "Forced": "Prisilno",
+    "Default": "Privzeto"
 }

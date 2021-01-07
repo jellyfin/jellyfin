@@ -6,11 +6,13 @@ using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -21,14 +23,17 @@ namespace Jellyfin.Api.Controllers
     public class DisplayPreferencesController : BaseJellyfinApiController
     {
         private readonly IDisplayPreferencesManager _displayPreferencesManager;
+        private readonly ILogger<DisplayPreferencesController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesController"/> class.
         /// </summary>
         /// <param name="displayPreferencesManager">Instance of <see cref="IDisplayPreferencesManager"/> interface.</param>
-        public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager)
+        /// <param name="logger">Instance of <see cref="ILogger{DisplayPreferencesController}"/> interface.</param>
+        public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager, ILogger<DisplayPreferencesController> logger)
         {
             _displayPreferencesManager = displayPreferencesManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -47,14 +52,19 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] Guid userId,
             [FromQuery, Required] string client)
         {
-            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
-            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, Guid.Empty, displayPreferences.Client);
+            if (!Guid.TryParse(displayPreferencesId, out var itemId))
+            {
+                itemId = displayPreferencesId.GetMD5();
+            }
+
+            var displayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
+            var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
+            itemPreferences.ItemId = itemId;
 
             var dto = new DisplayPreferencesDto
             {
                 Client = displayPreferences.Client,
-                Id = displayPreferences.UserId.ToString(),
-                ViewType = itemPreferences.ViewType.ToString(),
+                Id = displayPreferences.ItemId.ToString(),
                 SortBy = itemPreferences.SortBy,
                 SortOrder = itemPreferences.SortOrder,
                 IndexBy = displayPreferences.IndexBy?.ToString(),
@@ -70,16 +80,22 @@ namespace Jellyfin.Api.Controllers
                 dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
             }
 
-            foreach (var itemDisplayPreferences in _displayPreferencesManager.ListItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client))
-            {
-                dto.CustomPrefs["landing-" + itemDisplayPreferences.ItemId] = itemDisplayPreferences.ViewType.ToString().ToLowerInvariant();
-            }
-
             dto.CustomPrefs["chromecastVersion"] = displayPreferences.ChromecastVersion.ToString().ToLowerInvariant();
             dto.CustomPrefs["skipForwardLength"] = displayPreferences.SkipForwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
+            dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
+
+            // Load all custom display preferences
+            var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
+            if (customDisplayPreferences != null)
+            {
+                foreach (var (key, value) in customDisplayPreferences)
+                {
+                    dto.CustomPrefs.TryAdd(key, value);
+                }
+            }
 
             // This will essentially be a noop if no changes have been made, but new prefs must be saved at least.
             _displayPreferencesManager.SaveChanges();
@@ -115,7 +131,12 @@ namespace Jellyfin.Api.Controllers
                 HomeSectionType.LatestMedia, HomeSectionType.None,
             };
 
-            var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, client);
+            if (!Guid.TryParse(displayPreferencesId, out var itemId))
+            {
+                itemId = displayPreferencesId.GetMD5();
+            }
+
+            var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
             existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
             existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
             existingDisplayPreferences.ShowSidebar = displayPreferences.ShowSidebar;
@@ -124,21 +145,33 @@ namespace Jellyfin.Api.Controllers
             existingDisplayPreferences.ChromecastVersion = displayPreferences.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
                 ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
                 : ChromecastVersion.Stable;
+            displayPreferences.CustomPrefs.Remove("chromecastVersion");
+
             existingDisplayPreferences.EnableNextVideoInfoOverlay = displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
                 ? bool.Parse(enableNextVideoInfoOverlay)
                 : true;
+            displayPreferences.CustomPrefs.Remove("enableNextVideoInfoOverlay");
+
             existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
                 ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
                 : 10000;
+            displayPreferences.CustomPrefs.Remove("skipBackLength");
+
             existingDisplayPreferences.SkipForwardLength = displayPreferences.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength)
                 ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
                 : 30000;
+            displayPreferences.CustomPrefs.Remove("skipForwardLength");
+
             existingDisplayPreferences.DashboardTheme = displayPreferences.CustomPrefs.TryGetValue("dashboardTheme", out var theme)
                 ? theme
                 : string.Empty;
+            displayPreferences.CustomPrefs.Remove("dashboardTheme");
+
             existingDisplayPreferences.TvHome = displayPreferences.CustomPrefs.TryGetValue("tvhome", out var home)
                 ? home
                 : string.Empty;
+            displayPreferences.CustomPrefs.Remove("tvhome");
+
             existingDisplayPreferences.HomeSections.Clear();
 
             foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("homesection", StringComparison.OrdinalIgnoreCase)))
@@ -149,26 +182,28 @@ namespace Jellyfin.Api.Controllers
                     type = order < 7 ? defaults[order] : HomeSectionType.None;
                 }
 
+                displayPreferences.CustomPrefs.Remove(key);
                 existingDisplayPreferences.HomeSections.Add(new HomeSection { Order = order, Type = type });
             }
 
             foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
             {
-                var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Parse(key.Substring("landing-".Length)), existingDisplayPreferences.Client);
-                itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);
+                if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out var type))
+                {
+                    _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
+                    displayPreferences.CustomPrefs.Remove(key);
+                }
             }
 
-            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, Guid.Empty, existingDisplayPreferences.Client);
+            var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, itemId, existingDisplayPreferences.Client);
             itemPrefs.SortBy = displayPreferences.SortBy;
             itemPrefs.SortOrder = displayPreferences.SortOrder;
             itemPrefs.RememberIndexing = displayPreferences.RememberIndexing;
             itemPrefs.RememberSorting = displayPreferences.RememberSorting;
+            itemPrefs.ItemId = itemId;
 
-            if (Enum.TryParse<ViewType>(displayPreferences.ViewType, true, out var viewType))
-            {
-                itemPrefs.ViewType = viewType;
-            }
-
+            // Set all remaining custom preferences.
+            _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);
             _displayPreferencesManager.SaveChanges();
 
             return NoContent();

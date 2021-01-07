@@ -106,6 +106,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
+            // Enable cl-va P010 interop for tonemapping on Intel VAAPI
+            Environment.SetEnvironmentVariable("NEOReadDebugKeys", "1");
+            Environment.SetEnvironmentVariable("EnableExtendedVaFormats", "1");
+
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
 
             // Create an instance of the application configuration to use for application startup
@@ -594,7 +598,8 @@ namespace Jellyfin.Server
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}"))
+                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
+                        encoding: Encoding.UTF8))
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
                     .CreateLogger();

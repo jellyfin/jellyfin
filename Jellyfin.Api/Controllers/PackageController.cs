@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
@@ -45,13 +46,13 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
             [FromRoute, Required] string name,
-            [FromQuery] string? assemblyGuid)
+            [FromQuery] Guid? assemblyGuid)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             var result = _installationManager.FilterPackages(
                     packages,
                     name,
-                    string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid))
+                    assemblyGuid ?? default)
                 .FirstOrDefault();
 
             if (result == null)
@@ -92,21 +93,21 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult> InstallPackage(
             [FromRoute, Required] string name,
-            [FromQuery] string? assemblyGuid,
+            [FromQuery] Guid? assemblyGuid,
             [FromQuery] string? version,
             [FromQuery] string? repositoryUrl)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             if (!string.IsNullOrEmpty(repositoryUrl))
             {
-                packages = packages.Where(p => p.versions.Where(q => q.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)).Any())
+                packages = packages.Where(p => p.Versions.Any(q => q.RepositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
             }
 
             var package = _installationManager.GetCompatibleVersions(
                     packages,
                     name,
-                    string.IsNullOrEmpty(assemblyGuid) ? Guid.Empty : Guid.Parse(assemblyGuid),
+                    assemblyGuid ?? Guid.Empty,
                     specificVersion: string.IsNullOrEmpty(version) ? null : Version.Parse(version))
                 .FirstOrDefault();
 

@@ -79,6 +79,7 @@
  - [Nickbert7](https://github.com/Nickbert7)
  - [nvllsvm](https://github.com/nvllsvm)
  - [nyanmisaka](https://github.com/nyanmisaka)
+ - [OancaAndrei](https://github.com/OancaAndrei)
  - [oddstr13](https://github.com/oddstr13)
  - [orryverducci](https://github.com/orryverducci)
  - [petermcneil](https://github.com/petermcneil)
@@ -140,6 +141,7 @@
  - [Pusta](https://github.com/pusta)
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
  - [skyfrk](https://github.com/skyfrk)
+ - [ianjazz246](https://github.com/ianjazz246)
 
 # Emby Contributors
 

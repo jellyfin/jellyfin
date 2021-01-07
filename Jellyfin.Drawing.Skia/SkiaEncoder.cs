@@ -435,7 +435,7 @@ namespace Jellyfin.Drawing.Skia
                 0f,
                 kernelOffset,
                 SKShaderTileMode.Clamp,
-                false);
+                true);
 
             canvas.DrawBitmap(
                 source,

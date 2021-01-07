@@ -81,7 +81,7 @@ namespace Jellyfin.Server
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
-                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
@@ -104,7 +104,8 @@ namespace Jellyfin.Server
             app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
-            app.Map(_serverConfigurationManager.GetNetworkConfiguration().BaseUrl, mainApp =>
+            var config = _serverConfigurationManager.GetNetworkConfiguration();
+            app.Map(config.BaseUrl, mainApp =>
             {
                 if (env.IsDevelopment())
                 {
@@ -122,25 +123,29 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (_serverConfigurationManager.Configuration.RequireHttps
-                    && _serverApplicationHost.ListenWithHttps)
+                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
                 }
 
+                // This must be injected before any path related middleware.
+                mainApp.UsePathTrim();
                 mainApp.UseStaticFiles();
                 if (appConfig.HostWebClient())
                 {
                     var extensionProvider = new FileExtensionContentTypeProvider();
 
-                    // subtitles octopus requires .data files.
+                    // subtitles octopus requires .data, .mem files.
                     extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
+                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
                         RequestPath = "/web",
                         ContentTypeProvider = extensionProvider
                     });
+
+                    mainApp.UseRobotsRedirection();
                 }
 
                 mainApp.UseAuthentication();

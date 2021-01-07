@@ -2,11 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Plugins;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
 {
+    /// <summary>
+    /// Delegate used with GetExports{T}.
+    /// </summary>
+    /// <param name="type">Type to create.</param>
+    /// <returns>New instance of type <param>type</param>.</returns>
+    public delegate object CreationDelegate(Type type);
+
     /// <summary>
     /// An interface to be implemented by the applications hosting a kernel.
     /// </summary>
@@ -54,6 +59,11 @@ namespace MediaBrowser.Common
         Version ApplicationVersion { get; }
 
         /// <summary>
+        /// Gets or sets the service provider.
+        /// </summary>
+        IServiceProvider ServiceProvider { get; set; }
+
+        /// <summary>
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
@@ -70,12 +80,6 @@ namespace MediaBrowser.Common
         /// Presently used to provide contact information to MusicBrainz service.
         /// </summary>
         string ApplicationUserAgentAddress { get; }
-
-        /// <summary>
-        /// Gets the plugins.
-        /// </summary>
-        /// <value>The plugins.</value>
-        IReadOnlyList<IPlugin> Plugins { get; }
 
         /// <summary>
         /// Gets all plugin assemblies which implement a custom rest api.
@@ -102,6 +106,22 @@ namespace MediaBrowser.Common
         IReadOnlyCollection<T> GetExports<T>(bool manageLifetime = true);
 
         /// <summary>
+        /// Gets the exports.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <param name="defaultFunc">Delegate function that gets called to create the object.</param>
+        /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
+        /// <returns><see cref="IReadOnlyCollection{T}" />.</returns>
+        IReadOnlyCollection<T> GetExports<T>(CreationDelegate defaultFunc, bool manageLifetime = true);
+
+        /// <summary>
+        /// Gets the export types.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <returns>IEnumerable{Type}.</returns>
+        IEnumerable<Type> GetExportTypes<T>();
+
+        /// <summary>
         /// Resolves this instance.
         /// </summary>
         /// <typeparam name="T">The <c>Type</c>.</typeparam>
@@ -113,12 +133,6 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <returns>A task.</returns>
         Task Shutdown();
-
-        /// <summary>
-        /// Removes the plugin.
-        /// </summary>
-        /// <param name="plugin">The plugin.</param>
-        void RemovePlugin(IPlugin plugin);
 
         /// <summary>
         /// Initializes this instance.

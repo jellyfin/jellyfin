@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the parent identifier.
         /// </summary>
         /// <value>The parent identifier.</value>
-        public string ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         /// <summary>
         /// Gets or sets the series id.

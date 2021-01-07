@@ -113,5 +113,10 @@
     "TaskUpdatePlugins": "Aktualisiere Erweiterungen",
     "TaskRefreshPeopleDescription": "Aktualisiert Metadaten für Schausteller und Regisseure in deiner Bibliothek.",
     "TaskRefreshPeople": "Aktualisiere Schauspieler",
-    "TaskCleanLogsDescription": "Löscht Log Dateien die älter als {0} Tage sind."
+    "TaskCleanLogsDescription": "Löscht Log Dateien die älter als {0} Tage sind.",
+    "TaskCleanActivityLogDescription": "Löscht Aktivitätsprotokolleinträge, die älter als das konfigurierte Alter sind.",
+    "TaskCleanActivityLog": "Aktivitätsprotokoll aufräumen",
+    "Undefined": "Undefiniert",
+    "Forced": "Erzwungen",
+    "Default": "Standard"
 }

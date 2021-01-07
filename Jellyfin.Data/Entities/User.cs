@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
@@ -71,7 +71,7 @@ namespace Jellyfin.Data.Entities
             EnableAutoLogin = false;
             PlayDefaultAudioTrack = true;
             SubtitleMode = SubtitlePlaybackMode.Default;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
 
             AddDefaultPermissions();
             AddDefaultPreferences();
@@ -326,7 +326,7 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the level of sync play permissions this user has.
         /// </summary>
-        public SyncPlayAccess SyncPlayAccess { get; set; }
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
 
         /// <summary>
         /// Gets or sets the row version.
@@ -414,6 +414,44 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
+        /// Gets the user's preferences for the given preference kind.
+        /// </summary>
+        /// <param name="preference">The preference kind.</param>
+        /// <typeparam name="T">Type of preference.</typeparam>
+        /// <returns>A {T} array containing the user's preference.</returns>
+        public T[] GetPreferenceValues<T>(PreferenceKind preference)
+        {
+            var val = Preferences.First(p => p.Kind == preference).Value;
+            if (string.IsNullOrEmpty(val))
+            {
+                return Array.Empty<T>();
+            }
+
+            // Convert array of {string} to array of {T}
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            var stringValues = val.Split(Delimiter);
+            var convertedCount = 0;
+            var parsedValues = new T[stringValues.Length];
+            for (var i = 0; i < stringValues.Length; i++)
+            {
+                try
+                {
+                    var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
+                    if (parsedValue != null)
+                    {
+                        parsedValues[convertedCount++] = (T)parsedValue;
+                    }
+                }
+                catch (FormatException)
+                {
+                    // Unable to convert value
+                }
+            }
+
+            return parsedValues[..convertedCount];
+        }
+
+        /// <summary>
         /// Sets the specified preference to the given value.
         /// </summary>
         /// <param name="preference">The preference kind.</param>
@@ -421,7 +459,19 @@ namespace Jellyfin.Data.Entities
         public void SetPreference(PreferenceKind preference, string[] values)
         {
             Preferences.First(p => p.Kind == preference).Value
-                = string.Join(Delimiter.ToString(CultureInfo.InvariantCulture), values);
+                = string.Join(Delimiter, values);
+        }
+
+        /// <summary>
+        /// Sets the specified preference to the given value.
+        /// </summary>
+        /// <param name="preference">The preference kind.</param>
+        /// <param name="values">The values.</param>
+        /// <typeparam name="T">The type of value.</typeparam>
+        public void SetPreference<T>(PreferenceKind preference, T[] values)
+        {
+            Preferences.First(p => p.Kind == preference).Value
+                = string.Join(Delimiter, values);
         }
 
         /// <summary>
@@ -441,7 +491,7 @@ namespace Jellyfin.Data.Entities
         /// <returns><c>True</c> if the folder is in the user's grouped folders.</returns>
         public bool IsFolderGrouped(Guid id)
         {
-            return GetPreference(PreferenceKind.GroupedFolders).Any(i => new Guid(i) == id);
+            return Array.IndexOf(GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders), id) != -1;
         }
 
         private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)

@@ -694,16 +694,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
-                // Interlaced video streams in Matroska containers return the field rate instead of the frame rate
-                // as both the average and real frame rate, so we half the returned frame rates to get the correct values
-                //
-                // https://gitlab.com/mbunkus/mkvtoolnix/-/wikis/Wrong-frame-rate-displayed
-                if (stream.IsInterlaced && formatInfo.FormatName.Contains("matroska", StringComparison.OrdinalIgnoreCase))
-                {
-                    stream.AverageFrameRate /= 2;
-                    stream.RealFrameRate /= 2;
-                }
-
                 if (isAudio || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
                 {
@@ -788,7 +778,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            if (bitrate == 0 && formatInfo != null && !string.IsNullOrEmpty(formatInfo.BitRate) && stream.Type == MediaStreamType.Video)
+            // The bitrate info of FLAC musics and some videos is included in formatInfo.
+            if (bitrate == 0
+                && formatInfo != null
+                && !string.IsNullOrEmpty(formatInfo.BitRate)
+                && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
                 if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, _usCulture, out var value))

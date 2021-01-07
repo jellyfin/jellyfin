@@ -1,44 +1,57 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Generic;
-using System.Globalization;
+using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Common.Plugins
 {
     /// <summary>
-    /// Local plugin struct.
+    /// Local plugin class.
     /// </summary>
     public class LocalPlugin : IEquatable<LocalPlugin>
     {
+        private readonly bool _supported;
+        private Version? _version;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalPlugin"/> class.
         /// </summary>
-        /// <param name="id">The plugin id.</param>
-        /// <param name="name">The plugin name.</param>
-        /// <param name="version">The plugin version.</param>
         /// <param name="path">The plugin path.</param>
-        public LocalPlugin(Guid id, string name, Version version, string path)
+        /// <param name="isSupported"><b>True</b> if Jellyfin supports this version of the plugin.</param>
+        /// <param name="manifest">The manifest record for this plugin, or null if one does not exist.</param>
+        public LocalPlugin(string path, bool isSupported, PluginManifest manifest)
         {
-            Id = id;
-            Name = name;
-            Version = version;
             Path = path;
             DllFiles = new List<string>();
+            _supported = isSupported;
+            Manifest = manifest;
         }
 
         /// <summary>
         /// Gets the plugin id.
         /// </summary>
-        public Guid Id { get; }
+        public Guid Id => Manifest.Id;
 
         /// <summary>
         /// Gets the plugin name.
         /// </summary>
-        public string Name { get; }
+        public string Name => Manifest.Name;
 
         /// <summary>
         /// Gets the plugin version.
         /// </summary>
-        public Version Version { get; }
+        public Version Version
+        {
+            get
+            {
+                if (_version == null)
+                {
+                    _version = Version.Parse(Manifest.Version);
+                }
+
+                return _version;
+            }
+        }
 
         /// <summary>
         /// Gets the plugin path.
@@ -51,26 +64,19 @@ namespace MediaBrowser.Common.Plugins
         public List<string> DllFiles { get; }
 
         /// <summary>
-        /// == operator.
+        /// Gets or sets the instance of this plugin.
         /// </summary>
-        /// <param name="left">Left item.</param>
-        /// <param name="right">Right item.</param>
-        /// <returns>Comparison result.</returns>
-        public static bool operator ==(LocalPlugin left, LocalPlugin right)
-        {
-            return left.Equals(right);
-        }
+        public IPlugin? Instance { get; set; }
 
         /// <summary>
-        /// != operator.
+        /// Gets a value indicating whether Jellyfin supports this version of the plugin, and it's enabled.
         /// </summary>
-        /// <param name="left">Left item.</param>
-        /// <param name="right">Right item.</param>
-        /// <returns>Comparison result.</returns>
-        public static bool operator !=(LocalPlugin left, LocalPlugin right)
-        {
-            return !left.Equals(right);
-        }
+        public bool IsEnabledAndSupported => _supported && Manifest.Status >= PluginStatus.Active;
+
+        /// <summary>
+        /// Gets a value indicating whether the plugin has a manifest.
+        /// </summary>
+        public PluginManifest Manifest { get; }
 
         /// <summary>
         /// Compare two <see cref="LocalPlugin"/>.
@@ -80,10 +86,15 @@ namespace MediaBrowser.Common.Plugins
         /// <returns>Comparison result.</returns>
         public static int Compare(LocalPlugin a, LocalPlugin b)
         {
-            var compare = string.Compare(a.Name, b.Name, true, CultureInfo.InvariantCulture);
+            if (a == null || b == null)
+            {
+                throw new ArgumentNullException(a == null ? nameof(a) : nameof(b));
+            }
+
+            var compare = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
 
             // Id is not equal but name is.
-            if (a.Id != b.Id && compare == 0)
+            if (!a.Id.Equals(b.Id) && compare == 0)
             {
                 compare = a.Id.CompareTo(b.Id);
             }
@@ -91,8 +102,20 @@ namespace MediaBrowser.Common.Plugins
             return compare == 0 ? a.Version.CompareTo(b.Version) : compare;
         }
 
+        /// <summary>
+        /// Returns the plugin information.
+        /// </summary>
+        /// <returns>A <see cref="PluginInfo"/> instance containing the information.</returns>
+        public PluginInfo GetPluginInfo()
+        {
+            var inst = Instance?.GetPluginInfo() ?? new PluginInfo(Manifest.Name, Version, Manifest.Description, Manifest.Id, true);
+            inst.Status = Manifest.Status;
+            inst.HasImage = !string.IsNullOrEmpty(Manifest.ImagePath);
+            return inst;
+        }
+
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is LocalPlugin other && this.Equals(other);
         }
@@ -104,10 +127,14 @@ namespace MediaBrowser.Common.Plugins
         }
 
         /// <inheritdoc />
-        public bool Equals(LocalPlugin other)
+        public bool Equals(LocalPlugin? other)
         {
-            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase)
-                   && Id.Equals(other.Id);
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) && Id.Equals(other.Id) && Version.Equals(other.Version);
         }
     }
 }

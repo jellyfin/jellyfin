@@ -4,23 +4,22 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.Listings
@@ -30,27 +29,26 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
         private readonly ILogger<SchedulesDirect> _logger;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
         private readonly IApplicationHost _appHost;
         private readonly ICryptoProvider _cryptoProvider;
 
+        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
+        private DateTime _lastErrorResponse;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
-            IJsonSerializer jsonSerializer,
             IHttpClientFactory httpClientFactory,
             IApplicationHost appHost,
             ICryptoProvider cryptoProvider)
         {
             _logger = logger;
-            _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _appHost = appHost;
             _cryptoProvider = cryptoProvider;
         }
-
-        private string UserAgent => _appHost.ApplicationUserAgent;
 
         /// <inheritdoc />
         public string Name => "Schedules Direct";
@@ -105,7 +103,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     }
                 };
 
-            var requestString = _jsonSerializer.SerializeToString(requestList);
+            var requestString = JsonSerializer.Serialize(requestList, _jsonOptions);
             _logger.LogDebug("Request string for schedules is: {RequestString}", requestString);
 
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/schedules");
@@ -113,7 +111,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             options.Headers.TryAddWithoutValidation("token", token);
             using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var dailySchedules = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Day>>(responseStream).ConfigureAwait(false);
+            var dailySchedules = await JsonSerializer.DeserializeAsync<List<ScheduleDirect.Day>>(responseStream, _jsonOptions).ConfigureAwait(false);
             _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
 
             using var programRequestOptions = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/programs");
@@ -124,7 +122,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var programDetails = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ProgramDetails>>(innerResponseStream).ConfigureAwait(false);
+            var programDetails = await JsonSerializer.DeserializeAsync<List<ScheduleDirect.ProgramDetails>>(innerResponseStream, _jsonOptions).ConfigureAwait(false);
             var programDict = programDetails.ToDictionary(p => p.programID, y => y);
 
             var programIdsWithImages =
@@ -307,7 +305,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (details.contentRating != null && details.contentRating.Count > 0)
             {
-                info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-").Replace("--", "-");
+                info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-", StringComparison.Ordinal)
+                    .Replace("--", "-", StringComparison.Ordinal);
 
                 var invalid = new[] { "N/A", "Approved", "Not Rated", "Passed" };
                 if (invalid.Contains(info.OfficialRating, StringComparer.OrdinalIgnoreCase))
@@ -450,7 +449,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private async Task<List<ScheduleDirect.ShowImages>> GetImageForPrograms(
             ListingsProviderInfo info,
-            List<string> programIds,
+            IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
             if (programIds.Count == 0)
@@ -458,30 +457,28 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return new List<ScheduleDirect.ShowImages>();
             }
 
-            var imageIdString = "[";
-
-            foreach (var i in programIds)
+            StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
+            foreach (ReadOnlySpan<char> i in programIds)
             {
-                var imageId = i.Substring(0, 10);
-
-                if (!imageIdString.Contains(imageId, StringComparison.Ordinal))
-                {
-                    imageIdString += "\"" + imageId + "\",";
-                }
+                str.Append('"')
+                    .Append(i.Slice(0, 10))
+                    .Append("\",");
             }
 
-            imageIdString = imageIdString.TrimEnd(',') + "]";
+            // Remove last ,
+            str.Length--;
+            str.Append(']');
 
             using var message = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/metadata/programs")
             {
-                Content = new StringContent(imageIdString, Encoding.UTF8, MediaTypeNames.Application.Json)
+                Content = new StringContent(str.ToString(), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
 
             try
             {
                 using var innerResponse2 = await Send(message, true, info, cancellationToken).ConfigureAwait(false);
                 await using var response = await innerResponse2.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                return await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.ShowImages>>(response).ConfigureAwait(false);
+                return await JsonSerializer.DeserializeAsync<List<ScheduleDirect.ShowImages>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -510,7 +507,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 using var httpResponse = await Send(options, false, info, cancellationToken).ConfigureAwait(false);
                 await using var response = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-                var root = await _jsonSerializer.DeserializeFromStreamAsync<List<ScheduleDirect.Headends>>(response).ConfigureAwait(false);
+                var root = await JsonSerializer.DeserializeAsync<List<ScheduleDirect.Headends>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (root != null)
                 {
@@ -539,9 +536,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return lineups;
         }
 
-        private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
-        private DateTime _lastErrorResponse;
-
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var username = info.Username;
@@ -564,8 +558,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 return null;
             }
 
-            NameValuePair savedToken;
-            if (!_tokens.TryGetValue(username, out savedToken))
+            if (!_tokens.TryGetValue(username, out NameValuePair savedToken))
             {
                 savedToken = new NameValuePair();
                 _tokens.TryAdd(username, savedToken);
@@ -617,25 +610,25 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken,
             HttpCompletionOption completionOption = HttpCompletionOption.ResponseContentRead)
         {
-            try
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
+            if (response.IsSuccessStatusCode)
             {
-                return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, completionOption, cancellationToken).ConfigureAwait(false);
-            }
-            catch (HttpRequestException ex)
-            {
-                _tokens.Clear();
-
-                if (!ex.StatusCode.HasValue || (int)ex.StatusCode.Value >= 500)
-                {
-                    enableRetry = false;
-                }
-
-                if (!enableRetry)
-                {
-                    throw;
-                }
+                return response;
             }
 
+            // Response is automatically disposed in the calling function,
+            // so dispose manually if not returning.
+            response.Dispose();
+            if (!enableRetry || (int)response.StatusCode >= 500)
+            {
+                throw new HttpRequestException(
+                    string.Format(CultureInfo.InvariantCulture, "Request failed: {0}", response.ReasonPhrase),
+                    null,
+                    response.StatusCode);
+            }
+
+            _tokens.Clear();
             options.Headers.TryAddWithoutValidation("token", await GetToken(providerInfo, cancellationToken).ConfigureAwait(false));
             return await Send(options, false, providerInfo, cancellationToken).ConfigureAwait(false);
         }
@@ -647,13 +640,16 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
             var hashedPasswordBytes = _cryptoProvider.ComputeHash("SHA1", Encoding.ASCII.GetBytes(password), Array.Empty<byte>());
-            string hashedPassword = Hex.Encode(hashedPasswordBytes);
+            // TODO: remove ToLower when Convert.ToHexString supports lowercase
+            // Schedules Direct requires the hex to be lowercase
+            string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
             options.Content = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + hashedPassword + "\"}", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             using var response = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Token>(stream).ConfigureAwait(false);
-            if (root.message == "OK")
+            var root = await JsonSerializer.DeserializeAsync<ScheduleDirect.Token>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (string.Equals(root.message, "OK", StringComparison.Ordinal))
             {
                 _logger.LogInformation("Authenticated with Schedules Direct token: " + root.token);
                 return root.token;
@@ -705,15 +701,16 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             try
             {
                 using var httpResponse = await Send(options, false, null, cancellationToken).ConfigureAwait(false);
+                httpResponse.EnsureSuccessStatusCode();
                 await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                 using var response = httpResponse.Content;
-                var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Lineups>(stream).ConfigureAwait(false);
+                var root = await JsonSerializer.DeserializeAsync<ScheduleDirect.Lineups>(stream, _jsonOptions).ConfigureAwait(false);
 
                 return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
             }
             catch (HttpRequestException ex)
             {
-                // Apparently we're supposed to swallow this
+                // SchedulesDirect returns 400 if no lineups are configured.
                 if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
                 {
                     return false;
@@ -777,24 +774,27 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var options = new HttpRequestMessage(HttpMethod.Get, ApiUrl + "/lineups/" + listingsId);
             options.Headers.TryAddWithoutValidation("token", token);
 
-            var list = new List<ChannelInfo>();
-
             using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var root = await _jsonSerializer.DeserializeFromStreamAsync<ScheduleDirect.Channel>(stream).ConfigureAwait(false);
+            var root = await JsonSerializer.DeserializeAsync<ScheduleDirect.Channel>(stream, _jsonOptions).ConfigureAwait(false);
             _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.map.Count);
             _logger.LogInformation("Mapping Stations to Channel");
 
-            var allStations = root.stations ?? Enumerable.Empty<ScheduleDirect.Station>();
+            var allStations = root.stations ?? new List<ScheduleDirect.Station>();
 
-            foreach (ScheduleDirect.Map map in root.map)
+            var map = root.map;
+            var list = new List<ChannelInfo>(map.Count);
+            foreach (var channel in map)
             {
-                var channelNumber = GetChannelNumber(map);
+                var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.FirstOrDefault(item => string.Equals(item.stationID, map.stationID, StringComparison.OrdinalIgnoreCase));
+                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase));
                 if (station == null)
                 {
-                    station = new ScheduleDirect.Station { stationID = map.stationID };
+                    station = new ScheduleDirect.Station
+                    {
+                        stationID = channel.stationID
+                    };
                 }
 
                 var channelInfo = new ChannelInfo
@@ -814,28 +814,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             return list;
-        }
-
-        private ScheduleDirect.Station GetStation(List<ScheduleDirect.Station> allStations, string channelNumber, string channelName)
-        {
-            if (!string.IsNullOrWhiteSpace(channelName))
-            {
-                channelName = NormalizeName(channelName);
-
-                var result = allStations.FirstOrDefault(i => string.Equals(NormalizeName(i.callsign ?? string.Empty), channelName, StringComparison.OrdinalIgnoreCase));
-
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(channelNumber))
-            {
-                return allStations.FirstOrDefault(i => string.Equals(NormalizeName(i.stationID ?? string.Empty), channelNumber, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return null;
         }
 
         private static string NormalizeName(string value)
@@ -1044,7 +1022,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            //
             public class Title
             {
                 public string title120 { get; set; }

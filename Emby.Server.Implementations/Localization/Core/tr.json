@@ -12,7 +12,7 @@
     "DeviceOfflineWithName": "{0} bağlantısı kesildi",
     "DeviceOnlineWithName": "{0} bağlı",
     "FailedLoginAttemptWithUserName": "{0} adresinden giriş başarısız oldu",
-    "Favorites": "Favoriler",
+    "Favorites": "Favorilerim",
     "Folders": "Klasörler",
     "Genres": "Türler",
     "HeaderAlbumArtists": "Albüm Sanatçıları",
@@ -115,5 +115,7 @@
     "TaskRefreshChapterImages": "Bölüm Resimlerini Çıkar",
     "TaskCleanCacheDescription": "Sistem tarafından artık ihtiyaç duyulmayan önbellek dosyalarını siler.",
     "TaskCleanActivityLog": "İşlem Günlüğünü Temizle",
-    "TaskCleanActivityLogDescription": "Belirtilen sureden daha eski etkinlik log kayıtları silindi."
+    "TaskCleanActivityLogDescription": "Belirtilen sureden daha eski etkinlik log kayıtları silindi.",
+    "Undefined": "Bilinmeyen",
+    "Default": "Varsayılan"
 }

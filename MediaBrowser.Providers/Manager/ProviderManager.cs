@@ -960,13 +960,11 @@ namespace MediaBrowser.Providers.Manager
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
         {
             return GetExternalIds(item)
-                .Select(i => new ExternalIdInfo
-                {
-                    Name = i.ProviderName,
-                    Key = i.Key,
-                    Type = i.Type,
-                    UrlFormatString = i.UrlFormatString
-                });
+                .Select(i => new ExternalIdInfo(
+                    name: i.ProviderName,
+                    key: i.Key,
+                    type: i.Type,
+                    urlFormatString: i.UrlFormatString));
         }
 
         /// <inheritdoc/>
@@ -1165,6 +1163,29 @@ namespace MediaBrowser.Providers.Manager
         public Task RefreshFullItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             return RefreshItem(item, options, cancellationToken);
+        }
+
+        /// <summary>
+        /// Runs multiple metadata refreshes concurrently.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public async Task RunMetadataRefresh(Func<Task> action, CancellationToken cancellationToken)
+        {
+            // create a variable for this since it is possible MetadataRefreshThrottler could change due to a config update during a scan
+            var metadataRefreshThrottler = _baseItemManager.MetadataRefreshThrottler;
+
+            await metadataRefreshThrottler.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await action().ConfigureAwait(false);
+            }
+            finally
+            {
+                metadataRefreshThrottler.Release();
+            }
         }
 
         /// <inheritdoc/>
