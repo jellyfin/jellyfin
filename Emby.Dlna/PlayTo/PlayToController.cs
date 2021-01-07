@@ -826,7 +826,7 @@ namespace Emby.Dlna.PlayTo
                 return SendPlayCommand(data as PlayRequest, cancellationToken);
             }
 
-            if (name == SessionMessageType.PlayState)
+            if (name == SessionMessageType.Playstate)
             {
                 return SendPlaystateCommand(data as PlaystateRequest, cancellationToken);
             }
