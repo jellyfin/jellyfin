@@ -115,5 +115,8 @@
     "TasksChannelsCategory": "인터넷 채널",
     "TasksLibraryCategory": "라이브러리",
     "TaskCleanActivityLogDescription": "구성된 기간보다 오래된 활동내역 삭제.",
-    "TaskCleanActivityLog": "활동내역청소"
+    "TaskCleanActivityLog": "활동내역청소",
+    "Undefined": "일치하지 않음",
+    "Forced": "강제하기",
+    "Default": "기본 설정"
 }
