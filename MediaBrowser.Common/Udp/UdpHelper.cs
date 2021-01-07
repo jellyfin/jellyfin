@@ -9,13 +9,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Common.Udp
 {
     /// <summary>
-    /// Processes a SSDP message.
+    /// Delagate that processes a UDP message.
     /// </summary>
     /// <param name="client">The client from which we received the message.</param>
     /// <param name="data">The data to process.</param>
@@ -24,23 +23,19 @@ namespace MediaBrowser.Common.Udp
     public delegate Task UdpProcessor(UdpProcess client, string data, IPEndPoint receivedFrom);
 
     /// <summary>
-    /// Provides base level tracing facilities.
+    /// Delegate that provides base level tracing functionality.
     /// </summary>
     /// <param name="msg">Message to send.</param>
     /// <param name="parameters">Parameters.</param>
     public delegate void TraceFunction(string msg, params object[] parameters);
 
     /// <summary>
-    /// Provides the platform independent logic for publishing device existence and responding to search requests.
-    ///
-    /// Is designed to work in conjunction with ExternalPortForwarding.
-    ///
-    /// Lazy implementation. Socks will only be created at first use.
+    /// Defines a static instance of <see cref="UdpHelper"/>.
     /// </summary>
     public static class UdpHelper
     {
         /// <summary>
-        /// Gets or sets a value indicating whether multi-socket binding should be enabled.
+        /// Gets or sets a value indicating whether multi-socket binding should be enabled. Default is enabled.
         /// </summary>
         public static bool EnableMultiSocketBinding { get; set; } = true;
 
@@ -48,26 +43,25 @@ namespace MediaBrowser.Common.Udp
         /// Returns an unused UDP port number in the range specified.
         /// </summary>
         /// <param name="range">Upper and Lower boundary of ports to select.</param>
-        /// <returns>System.Int32.</returns>
+        /// <returns>A UDP port number within the range specified, or 0 if non available.</returns>
         public static int GetUdpPortFromRange((int Min, int Max) range)
         {
             var properties = IPGlobalProperties.GetIPGlobalProperties();
 
             // Get active udp listeners.
-            var (min, max) = range;
             var udpListenerPorts = properties.GetActiveUdpListeners()
-                        .Where(n => n.Port >= min && n.Port <= max)
+                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
                         .Select(n => n.Port);
 
-            int? port = Enumerable.Range(min, max)?.FirstOrDefault(i => !udpListenerPorts.Contains(i));
-
-            return port ?? throw new SystemException($"No available UDP port in the range {min}-{max}");
+            return Enumerable.Range(range.Min, range.Max)
+                .Where(i => !udpListenerPorts.Contains(i))
+                .FirstOrDefault();
         }
 
         /// <summary>
         /// Gets a random port number that is currently available.
         /// </summary>
-        /// <returns>System.Int32.</returns>
+        /// <returns>A random available port number between 49152 and 65535, or 0 if all are in use.</returns>
         public static int GetRandomUnusedUdpPort()
         {
             // Get a port from the dynamic range.
@@ -78,27 +72,27 @@ namespace MediaBrowser.Common.Udp
         /// Returns the correct multicast address based upon the value of the address provided.
         /// </summary>
         /// <param name="port">Port to use.</param>
-        /// <param name="localIpAddress">Optional IP address to use for comparison, or null to default.</param>
-        /// <param name="isIp6Enabled">True if IP6 is enabled (default).</param>
-        /// <returns>IPEndpoint set to the port provided.</returns>
-        public static IPEndPoint GetMulticastEndPoint(int port, IPAddress? localIpAddress = null, bool isIp6Enabled = true)
+        /// <param name="localIPAddress">Optional IP address to use for comparison, or null to default.</param>
+        /// <param name="isIP6Enabled">Optional. True if IP6 is enabled (default).</param>
+        /// <returns>An <see cref="IPEndPoint"/> set to the port provided.</returns>
+        public static IPEndPoint GetMulticastEndPoint(int port, IPAddress? localIPAddress = null, bool isIP6Enabled = true)
         {
-            if (localIpAddress == null)
+            if (localIPAddress == null)
             {
-                localIpAddress = isIp6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+                localIPAddress = isIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
             }
 
             return new IPEndPoint(
-                localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIpAddress) ?
+                localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIPAddress) ?
                         IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
         }
 
         /// <summary>
-        /// Returns a udp port based upon the range specified in a string.
+        /// Returns a UDP port based upon the range specified in a string.
         /// </summary>
         /// <param name="portStr">Port Range, or empty/zero for a random port.</param>
-        /// <returns>System.Int32.</returns>
+        /// <returns>A UDP port in the range specified. If the range is invalid, a port number in the range 49152 and 65535 is returned.</returns>
         public static int GetPort(string portStr)
         {
             int port = 0;
@@ -125,14 +119,14 @@ namespace MediaBrowser.Common.Udp
         /// </summary>
         /// <param name="port">UDP port to bind.</param>
         /// <param name="logger">Optional logger.</param>
-        /// <param name="ip4">Create an udp IPv4 socket.</param>
-        /// <param name="ip6">Create an udp IPv6 socket.</param>
-        /// <returns>A Socket.</returns>
+        /// <param name="ip4">Optional. Create an IPv4 compatible UDP socket.</param>
+        /// <param name="ip6">Optional. Create an IPv6 compatible UDP socket.</param>
+        /// <returns>A <see cref="Socket"/> instance.</returns>
         public static Socket CreateUdpBroadcastSocket(int port, ILogger? logger = null, bool ip4 = true, bool ip6 = true)
         {
-            if (port < 0 || port > 65536)
+            if (port < 0 || port > 65535)
             {
-                throw new ArgumentException("Port out of range", nameof(port));
+                throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
 
             IPAddress address = ip6 ? IPAddress.IPv6Any : IPAddress.Any;
@@ -143,7 +137,7 @@ namespace MediaBrowser.Common.Udp
             }
             catch
             {
-                retVal.Dispose();
+                retVal?.Dispose();
                 throw;
             }
 
@@ -151,13 +145,13 @@ namespace MediaBrowser.Common.Udp
         }
 
         /// <summary>
-        /// Creates a new UDP socket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
+        /// Creates a new UDP socket that is a member of the multicast local admin group and binds it to the specified local port.
         /// </summary>
         /// <param name="address">IP Address to bind.</param>
         /// <param name="port">UDP port to bind.</param>
-        /// <param name="logger">Logger instance.</param>
-        /// <param name="dualsocket">Create a udp for both IPv4 and IPv6 regardless of the address family of the IP bind address.</param>
-        /// <returns>A Socket.</returns>
+        /// <param name="logger">Optional. A <see cref="ILogger"/> instance.</param>
+        /// <param name="dualsocket">Optional. When true, an IPv4/IPv6 socket is created regardless of the address family of <paramref name="address"/>.</param>
+        /// <returns>A <see cref="Socket"/> instance.</returns>
         public static Socket CreateUdpMulticastSocket(IPAddress address, int port, ILogger? logger = null, bool dualsocket = true)
         {
             if (address == null)
@@ -165,9 +159,9 @@ namespace MediaBrowser.Common.Udp
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (port < 0 || port > 65536)
+            if (port < 0 || port > 65535)
             {
-                throw new ArgumentException("Port out of range", nameof(port));
+                throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
 
             Socket retVal = PrepareSocket(address, logger, dualsocket);
@@ -177,7 +171,7 @@ namespace MediaBrowser.Common.Udp
             }
             catch (SocketException ex)
             {
-                logger?.LogDebug(ex, "Error setting multicast values on socket. {0}/{1}", address, port);
+                logger?.LogDebug(ex, "Error setting multicast values on socket. {Address}/{Port}", address, port);
             }
 
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
@@ -195,8 +189,8 @@ namespace MediaBrowser.Common.Udp
             }
             catch (Exception ex)
             {
-                logger?.LogError(ex, "Unable to bind to {0}/{1}.", address, port);
-                retVal.Dispose();
+                logger?.LogError(ex, "Unable to bind to {Address}/{Port}.", address, port);
+                retVal?.Dispose();
                 throw;
             }
 
@@ -204,16 +198,16 @@ namespace MediaBrowser.Common.Udp
         }
 
         /// <summary>
-        /// Creates a UdpProcess for use.
+        /// Creates an UdpProcess for use.
         /// </summary>
         /// <param name="address">Address of udp client.</param>
         /// <param name="port">Port to listen upon.</param>
-        /// <param name="processor">Optional processing function for incoming packets.</param>
-        /// <param name="logger">Optional logger.</param>
+        /// <param name="processor">Optional <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
+        /// <param name="logger">Optional <see cref="ILogger"/> instance.</param>
         /// <param name="failure">Optional. Method to call in case of listening failure.</param>
         /// <param name="startListening">Optional. Autostart listening.</param>
-        /// <param name="udpPortRange">Optional port range to use.</param>
-        /// <returns>Returns two UdpProcesss, one for listening and one for transmitting.</returns>
+        /// <param name="udpPortRange">Optional. Port range to use.</param>
+        /// <returns>The <see cref="UdpProcess"/> instance.</returns>
         public static UdpProcess? CreateUnicastClient(
             IPAddress address,
             int port,
@@ -232,7 +226,7 @@ namespace MediaBrowser.Common.Udp
             {
                 port = GetPort(udpPortRange);
 
-                logger?.LogDebug("Selected udp port {0} from the config range : {1}", port, udpPortRange);
+                logger?.LogDebug("Selected udp port {Port} from the config range : {PortRange}", port, udpPortRange);
             }
 
             try
@@ -248,21 +242,21 @@ namespace MediaBrowser.Common.Udp
             }
             catch (SocketException ex)
             {
-                logger?.LogError(ex, "Error creating socket {0}", address);
+                logger?.LogError(ex, "Error creating socket {Address}", address);
                 return null;
             }
         }
 
         /// <summary>
-        /// Creates a set of multicast clients, one for each internal network address.
+        /// Creates a set of multicast clients, one for each addresses in <paramref name="addresses"/>.
         /// </summary>
         /// <param name="port">Port to listen upon.</param>
         /// <param name="addresses">List of addresses to use.</param>
-        /// <param name="processor">Optional processing function for incoming packets.</param>
-        /// <param name="logger">Optional logger.</param>
-        /// <param name="failure">Optional. Method to call in case of listening failure.</param>
-        /// <param name="enableTracing">Enables tracing on the ports.</param>
-        /// <returns>A list of UdpProcesss.</returns>
+        /// <param name="processor">Optional. An <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
+        /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
+        /// <param name="failure">Optional. An <see cref="FailureFunction"/> delegate to use in case of listening failure.</param>
+        /// <param name="enableTracing">Optional. Enables tracing on the ports.</param>
+        /// <returns>A <see cref="List{UdpProcess}"/>.</returns>
         public static List<UdpProcess> CreateMulticastClients(
             int port,
             Collection<IPObject> addresses,
@@ -276,13 +270,11 @@ namespace MediaBrowser.Common.Udp
             foreach (IPObject ip in addresses ?? throw new ArgumentNullException(nameof(addresses)))
             {
                 UdpProcess? client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
-                if (client == null)
+                if (client != null)
                 {
-                    continue;
+                    client.Tracing = enableTracing;
+                    clients.Add(client);
                 }
-
-                client.Tracing = enableTracing;
-                clients.Add(client);
             }
 
             return clients;
@@ -293,13 +285,13 @@ namespace MediaBrowser.Common.Udp
         /// </summary>
         /// <param name="address">Address of udp client.</param>
         /// <param name="port">Port to listen upon.</param>
-        /// <param name="processor">Optional processing function for incoming packets.</param>
-        /// <param name="logger">Optional logger.</param>
-        /// <param name="failure">Optional. Method to call in case of listening failure.</param>
-        /// <param name="startListening">If set, a listener will be automatically created for the port.</param>
-        /// <param name="ip4">True if IP4 addresses should be used (default).</param>
-        /// <param name="ip6">True if IP6 is enabled (default).</param>
-        /// <returns>Returns a UdpProcess instance.</returns>
+        /// <param name="processor">Optional. An <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
+        /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
+        /// <param name="failure">Optional. An <see cref="FailureFunction"/> delegate to use in case of listening failure.</param>
+        /// <param name="startListening">Optional. If true, the port will automatically listen for input.</param>
+        /// <param name="ip4">Optional. True if an IPv4 compatible port should be created. (default).</param>
+        /// <param name="ip6">Optional. True if an IP6 compatible port should be created. (default).</param>
+        /// <returns>The <see cref="UdpProcess"/> instance.</returns>
         public static UdpProcess? CreateMulticastClient(
             IPAddress address,
             int port,
@@ -360,9 +352,14 @@ namespace MediaBrowser.Common.Udp
 
                     listener.Bind();
                     listener.EnableBroadcast = true;
-                    listener.JoinMulticastGroup(
-                        (int)address.ScopeId,
-                        IPObject.IsIPv6LinkLocal(address) ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal);
+                    if (IPObject.IsIPv6LinkLocal(address))
+                    {
+                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6LinkLocal);
+                    }
+                    else
+                    {
+                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6SiteLocal);
+                    }
                 }
 
                 if (startListening)
@@ -381,10 +378,10 @@ namespace MediaBrowser.Common.Udp
         /// <summary>
         /// Sends a packet via unicast.
         /// </summary>
-        /// <param name="client">UdpProcess to use.</param>
+        /// <param name="client">The <see cref="UdpProcess"/> to use.</param>
         /// <param name="packet">Packet to send.</param>
-        /// <param name="remote">Destination endpoint.</param>
-        /// <param name="sendCount">Optional number of times to transmit. Default is 1.</param>
+        /// <param name="remote">The destination <see cref="IPEndPoint"/>.</param>
+        /// <param name="sendCount">Optional number of times to transmit <paramref name="packet"/>. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendUnicast(UdpProcess client, string packet, IPEndPoint remote, int sendCount = 1)
         {
@@ -402,7 +399,7 @@ namespace MediaBrowser.Common.Udp
 
             if (client.Tracing)
             {
-                client.Track("->{0} : {1} count:{3} \r\n{4}", client.LocalEndPoint, remote, sendCount, packet);
+                client.Track("->{Endpoint} : {Remote} count:{Count}\r\n{Packet}", client.LocalEndPoint, remote, sendCount, packet);
             }
 
             for (int a = 0; a <= sendCount - 1; a++)
@@ -413,7 +410,7 @@ namespace MediaBrowser.Common.Udp
                 }
                 catch (SocketException ex)
                 {
-                    client.Logger?.LogDebug(ex, "Error sending on {0}", remote);
+                    client.Logger?.LogDebug(ex, "Error sending on {Remote}", remote);
                 }
             }
         }
@@ -421,10 +418,10 @@ namespace MediaBrowser.Common.Udp
         /// <summary>
         /// Sends a packet via multicast over multiple sockets.
         /// </summary>
-        /// <param name="clients">UdpProcesses to use.</param>
-        /// <param name="port">Port number to use.</param>
+        /// <param name="clients">The <see cref="List{UdpProcess}"/> to use.</param>
+        /// <param name="port">UDP port number to use.</param>
         /// <param name="packet">Packet to send.</param>
-        /// <param name="sendCount">Optional number of times to transmit. Default is 1.</param>
+        /// <param name="sendCount">Optional. The number of times to transmit <paramref name="packet" />. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticasts(List<UdpProcess> clients, int port, string packet, int sendCount = 1)
         {
@@ -442,10 +439,10 @@ namespace MediaBrowser.Common.Udp
         /// <summary>
         /// Sends a packet via multicast.
         /// </summary>
-        /// <param name="client">UdpProcess to use.</param>
-        /// <param name="port">Port number to use.</param>
+        /// <param name="client">The <see cref="UdpProcess"/> to use.</param>
+        /// <param name="port">UDP port number to use.</param>
         /// <param name="packet">Packet to send.</param>
-        /// <param name="sendCount">Optional number of times to transmit. Default is 1.</param>
+        /// <param name="sendCount">Optional. The number of times to transmit <paramref name="packet" />. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticast(UdpProcess client, int port, string packet, int sendCount = 1)
         {
@@ -455,12 +452,13 @@ namespace MediaBrowser.Common.Udp
             }
 
             var intf = client.LocalEndPoint.Address;
-            IPEndPoint mcast = new IPEndPoint(IPNetAddress.SSDPMulticastIPv4, port);
+            IPEndPoint? mcast = null;
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
             if (intf.AddressFamily == AddressFamily.InterNetwork)
             {
                 try
                 {
+                    mcast = new IPEndPoint(IPNetAddress.SSDPMulticastIPv4, port);
                     client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, intf.GetAddressBytes());
                     client.Client.MulticastLoopback = true;
                 }
@@ -473,10 +471,8 @@ namespace MediaBrowser.Common.Udp
             {
                 try
                 {
+                    mcast = new IPEndPoint(IPObject.IsIPv6LinkLocal(intf) ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
                     client.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastInterface, BitConverter.GetBytes((int)intf.ScopeId));
-                    mcast = IPObject.IsIPv6LinkLocal(intf) ?
-                        new IPEndPoint(IPNetAddress.SSDPMulticastIPv6LinkLocal, port) :
-                        new IPEndPoint(IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
                     client.Client.MulticastLoopback = true;
                 }
                 catch (SocketException ex)
@@ -486,13 +482,13 @@ namespace MediaBrowser.Common.Udp
             }
             else
             {
-                // Cannot use this address.
+                // Cannot use this type of address.
                 return;
             }
 
             if (client.Tracing)
             {
-                client.Track("->{0} : {1} count:{3} \r\n{4}", client.LocalEndPoint, mcast, sendCount, packet);
+                client.Track("->{Endpoint} : {Multicast} count:{Count}\r\n{Packet}", client.LocalEndPoint, mcast!, sendCount, packet);
             }
 
             try
@@ -504,21 +500,21 @@ namespace MediaBrowser.Common.Udp
             }
             catch (SocketException ex)
             {
-                client.Logger?.LogDebug(ex, "Error sending to {0}:{1}", intf, mcast);
+                client.Logger?.LogDebug(ex, "Error sending to {Interface}:{Muliticast}", intf, mcast);
             }
         }
 
         /// <summary>
-        /// Disposes an udp client.
+        /// Disposes an UDP client.
         /// </summary>
-        /// <param name="client">A <see cref="List{UdpProcess}"/>.</param>
+        /// <param name="client">A <see cref="UdpProcess"/>.</param>
         public static void DisposeClient(UdpProcess? client)
         {
             client?.Dispose();
         }
 
         /// <summary>
-        /// Disposes of multiple udp clients.
+        /// Disposes multiple of UDP clients.
         /// </summary>
         /// <param name="clients">A <see cref="List{UdpProcess}"/>.</param>
         public static void DisposeClients(List<UdpProcess>? clients)
@@ -537,10 +533,10 @@ namespace MediaBrowser.Common.Udp
         /// <summary>
         /// Creates a socket for use.
         /// </summary>
-        /// <param name="address">Address of socket.</param>
-        /// <param name="logger">Optional logger.</param>
-        /// <param name="dualSocket">Create a dual-socket regardless of what the address family specified is.</param>
-        /// <returns>Socket instance.</returns>
+        /// <param name="address">An <see cref="IPAddress"/> containing the address of socket.</param>
+        /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
+        /// <param name="dualSocket">Optional. True if a dual-socket should be created regardless of the address family of <paramref name="address"/>.</param>
+        /// <returns>A <see cref="Socket"/> instance.</returns>
         private static Socket PrepareSocket(IPAddress address, ILogger? logger, bool dualSocket = true)
         {
             Socket retVal;
@@ -565,7 +561,7 @@ namespace MediaBrowser.Common.Udp
             }
             catch (SocketException ex)
             {
-                logger?.LogWarning(ex, "Error setting socket as reusable. {0}", address);
+                logger?.LogWarning(ex, "Error setting socket as reusable. {Address}", address);
             }
 
             try
@@ -574,14 +570,10 @@ namespace MediaBrowser.Common.Udp
             }
             catch (SocketException ex)
             {
-                logger?.LogWarning(ex, "Error setting socket as non exclusive. {0}", address);
+                logger?.LogWarning(ex, "Error setting socket as non exclusive. {Address}", address);
             }
 
-            if (!dualSocket)
-            {
-                return retVal;
-            }
-
+            if (dualSocket)
             {
                 try
                 {
@@ -590,31 +582,42 @@ namespace MediaBrowser.Common.Udp
                 }
                 catch (SocketException ex)
                 {
-                    logger?.LogWarning(ex, "Error enabling broadcast on socket. {0}", address);
+                    logger?.LogWarning(ex, "Error enabling broadcast on socket. {Address}", address);
                 }
             }
 
             return retVal;
         }
 
+        /// <summary>
+        /// Processing function for incoming packets.
+        /// </summary>
+        /// <param name="result">An <see cref="IAsyncResult"/> containing the <see cref="UdpProcess"/>.</param>
         private static void OnReceive(IAsyncResult result)
         {
-            UdpProcess? client = (UdpProcess?)result?.AsyncState;
-
-            if (client?.Processor == null)
+            if (result.AsyncState == null)
             {
+                return;
+            }
+
+            UdpProcess client = (UdpProcess)result.AsyncState;
+
+            if (client.Processor == null)
+            {
+                // If we are not interesting in inbound data, then ignore it.
+                client.BeginReceive(new AsyncCallback(OnReceive), client);
                 return;
             }
 
             try
             {
                 IPEndPoint? remote = null;
-                string data = Encoding.UTF8.GetString(client.EndReceive(result!, ref remote));
+                string data = Encoding.UTF8.GetString(client.EndReceive(result, ref remote));
                 try
                 {
                     if (client.Tracing)
                     {
-                        client.Track("<- {0} : {1} : {2}", client.LocalEndPoint, remote!, data);
+                        client.Track("<- {EndPoint} : {Remote}\r\n{Data}", client.LocalEndPoint, remote!, data);
                     }
 
                     _ = client.Processor(client, data, remote!);
@@ -626,7 +629,7 @@ namespace MediaBrowser.Common.Udp
 #pragma warning disable CA1031 // Do not catch general exception types
                 catch (Exception ex)
                 {
-                    client.Logger?.LogError(ex, "Error processing message. {0}", data);
+                    client.Logger?.LogError(ex, "Error processing message. {Data}", data);
                 }
 
                 client.BeginReceive(new AsyncCallback(OnReceive), client);

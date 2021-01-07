@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(mediaSource.Path);
             var localPort = UdpHelper.GetPort(_config.UDPPortRange);
-            Logger.LogDebug("Using udp port {0}", localPort);
+            Logger.LogDebug("Using udp port {Port}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var remote = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
 
-            Logger.LogDebug("Parsed host from {0} as {1}", uri.Host, remote);
+            Logger.LogDebug("Parsed host from {Host} as {Remote}", uri.Host, remote);
 
             IPAddress localAddress = null;
             using (var tcpClient = new TcpClient())
