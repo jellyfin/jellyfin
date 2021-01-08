@@ -72,6 +72,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Dlna.Tests", "tests\Jellyfin.Dlna.Tests\Jellyfin.Dlna.Tests.csproj", "{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.KodiMetadata", "Jellyfin.KodiMetadata\Jellyfin.KodiMetadata.csproj", "{CF23F8C3-ADDF-4BB8-B207-39852B726733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -194,6 +196,10 @@ Global
 		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF23F8C3-ADDF-4BB8-B207-39852B726733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF23F8C3-ADDF-4BB8-B207-39852B726733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF23F8C3-ADDF-4BB8-B207-39852B726733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF23F8C3-ADDF-4BB8-B207-39852B726733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
