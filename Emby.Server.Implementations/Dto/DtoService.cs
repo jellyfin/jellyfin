@@ -582,16 +582,22 @@ namespace Emby.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
-                    // Only add BlurHash for the person's image.
-                    baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
-                    foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
+                    if (dto.ImageBlurHashes != null)
                     {
-                        baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
-                        foreach (var (imageId, blurHashValue) in blurHash)
+                        // Only add BlurHash for the person's image.
+                        baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+                        foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
                         {
-                            if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
+                            if (blurHash != null)
                             {
-                                baseItemPerson.ImageBlurHashes[imageType][imageId] = blurHashValue;
+                                baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
+                                foreach (var (imageId, blurHashValue) in blurHash)
+                                {
+                                    if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        baseItemPerson.ImageBlurHashes[imageType][imageId] = blurHashValue;
+                                    }
+                                }
                             }
                         }
                     }
