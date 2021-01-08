@@ -2,6 +2,7 @@
 #pragma warning disable CA1819
 
 using System;
+using System.Xml.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
 {
@@ -13,6 +14,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the streamdetails nfo tag.
         /// </summary>
+        [XmlElement("streamdetails")]
         public StreamDetailsNfo? StreamDetails { get; set; }
     }
 
@@ -34,16 +36,19 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the video nfo tag.
         /// </summary>
+        [XmlElement("video")]
         public VideoNfo[] Video { get; set; }
 
         /// <summary>
         /// Gets or sets the audio nfo tag.
         /// </summary>
+        [XmlElement("audio")]
         public AudioNfo[] Audio { get; set; }
 
         /// <summary>
         /// Gets or sets the subtitle nfo tag.
         /// </summary>
+        [XmlElement("subtitle")]
         public SubtitleNfo[] Subtitle { get; set; }
     }
 
@@ -55,6 +60,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the audio codec.
         /// </summary>
+        [XmlElement("codec")]
         public string? Codec { get; set; }
     }
 
@@ -66,16 +72,19 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the audio codec.
         /// </summary>
+        [XmlElement("codec")]
         public string? Codec { get; set; }
 
         /// <summary>
         /// Gets or sets the audio channels.
         /// </summary>
+        [XmlElement("channels")]
         public int? Channels { get; set; }
 
         /// <summary>
         /// Gets or sets the language code.
         /// </summary>
+        [XmlElement("language")]
         public string? Language { get; set; }
     }
 
@@ -87,6 +96,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the language code.
         /// </summary>
+        [XmlElement("language")]
         public string? Language { get; set; }
     }
 }

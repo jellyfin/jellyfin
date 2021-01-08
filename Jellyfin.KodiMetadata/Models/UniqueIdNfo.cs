@@ -1,4 +1,6 @@
-﻿namespace Jellyfin.KodiMetadata.Models
+﻿using System.Xml.Serialization;
+
+namespace Jellyfin.KodiMetadata.Models
 {
     /// <summary>
     /// The nfo uniqueid tag.
@@ -8,16 +10,19 @@
         /// <summary>
         /// Gets or sets the scraper site identifier.
         /// </summary>
+        [XmlAttribute("type")]
         public string? Type { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this is the default scraper.
         /// </summary>
-        public bool? Default { get; set; }
+        [XmlAttribute("default")]
+        public bool Default { get; set; }
 
         /// <summary>
         /// Gets or sets the scraper site id.
         /// </summary>
+        [XmlText]
         public string? Id { get; set; }
     }
 }
