@@ -210,7 +210,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (File.Exists(path))
                 {
-                    Logger.LogDebug("{Path} already exists.");
+                    Logger.LogError("{Path} already exists.");
                     try
                     {
                         File.Delete(path);
