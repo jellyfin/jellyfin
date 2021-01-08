@@ -315,7 +315,7 @@ namespace Emby.Dlna.Main
                 var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
                 // DLNA will only work over http, so we must reset to http:// : {port}
                 uri.Scheme = "http://";
-                uri.Port = _netConfig.PublicPort;
+                uri.Port = _netConfig.HttpServerPortNumber;
 
                 var device = new SsdpRootDevice
                 {
