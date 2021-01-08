@@ -221,10 +221,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     }
                 }
 
-                using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-                {
-                    stream.CopyTo(filestream);
-                }
+                using var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+                stream.CopyTo(filestream);
+                filestream.Flush();
             }
             catch (Exception ex)
             {
