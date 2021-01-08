@@ -28,14 +28,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataManager">The user data manager.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="libraryMonitor">The <see cref="ILibraryMonitor"/>.</param>
         public EpisodeNfoSaver(
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger<EpisodeNfoSaver> logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+            ILogger<EpisodeNfoSaver> logger,
+            ILibraryMonitor libraryMonitor)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, libraryMonitor)
         {
         }
 

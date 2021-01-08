@@ -105,7 +105,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
-            ILogger<BaseNfoSaver> logger)
+            ILogger<BaseNfoSaver> logger,
+            ILibraryMonitor libraryMonitor)
         {
             Logger = logger;
             UserDataManager = userDataManager;
@@ -113,7 +114,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
             LibraryManager = libraryManager;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
+            LibraryMonitor = libraryMonitor;
         }
+
+        protected ILibraryMonitor LibraryMonitor { get; }
 
         protected IFileSystem FileSystem { get; }
 
@@ -200,39 +204,47 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
-            Directory.CreateDirectory(directory);
-
-            // On Windows, saving the file will fail if the file is hidden or readonly
-            FileSystem.SetAttributes(path, false, false);
-
+            LibraryMonitor.ReportFileSystemChangeBeginning(path);
             try
             {
-                if (File.Exists(path))
+                var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
+                Directory.CreateDirectory(directory);
+
+                // On Windows, saving the file will fail if the file is hidden or readonly
+                FileSystem.SetAttributes(path, false, false);
+
+                try
                 {
-                    Logger.LogError("{Path} already exists.");
-                    try
+                    if (File.Exists(path))
                     {
-                        File.Delete(path);
+                        Logger.LogError("{Path} already exists.");
+                        try
+                        {
+                            File.Delete(path);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError(ex, "Unable to delete file.");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError(ex, "Unable to delete file.");
-                    }
+
+                    using var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    stream.CopyTo(filestream);
+                    filestream.Flush();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Unable to save to {Path}", path);
                 }
 
-                using var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
-                stream.CopyTo(filestream);
-                filestream.Flush();
+                if (ConfigurationManager.Configuration.SaveMetadataHidden)
+                {
+                    SetHidden(path, true);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                Logger.LogError(ex, "Unable to save to {Path}", path);
-            }
-
-            if (ConfigurationManager.Configuration.SaveMetadataHidden)
-            {
-                SetHidden(path, true);
+                LibraryMonitor.ReportFileSystemChangeComplete(path, false);
             }
         }
 

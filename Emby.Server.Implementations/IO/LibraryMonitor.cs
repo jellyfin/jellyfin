@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="lst">The LST.</param>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains parent folder] [the specified LST]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">path.</exception>
         private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
             if (string.IsNullOrEmpty(path))
