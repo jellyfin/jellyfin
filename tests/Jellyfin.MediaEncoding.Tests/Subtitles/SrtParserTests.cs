@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Subtitles.Tests
@@ -14,7 +15,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             using (var stream = File.OpenRead("Test Data/example.srt"))
             {
-                var parsed = new SrtParser().Parse(stream, CancellationToken.None);
+                var parsed = new SrtParser(new NullLogger<SrtParser>()).Parse(stream, CancellationToken.None);
                 Assert.Equal(2, parsed.TrackEvents.Count);
 
                 var trackEvent1 = parsed.TrackEvents[0];

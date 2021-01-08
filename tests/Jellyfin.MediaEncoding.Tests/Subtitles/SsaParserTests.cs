@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Subtitles.Tests
@@ -14,7 +15,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
         {
             using (var stream = File.OpenRead("Test Data/example.ssa"))
             {
-                var parsed = new SsaParser().Parse(stream, CancellationToken.None);
+                var parsed = new SsaParser(new NullLogger<SsaParser>()).Parse(stream, CancellationToken.None);
                 Assert.Single(parsed.TrackEvents);
                 var trackEvent = parsed.TrackEvents[0];
 
