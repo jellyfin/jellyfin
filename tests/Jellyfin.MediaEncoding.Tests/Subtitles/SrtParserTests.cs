@@ -22,7 +22,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                 Assert.Equal("1", trackEvent1.Id);
                 Assert.Equal(TimeSpan.Parse("00:02:17.440", CultureInfo.InvariantCulture).Ticks, trackEvent1.StartPositionTicks);
                 Assert.Equal(TimeSpan.Parse("00:02:20.375", CultureInfo.InvariantCulture).Ticks, trackEvent1.EndPositionTicks);
-                Assert.Equal("Senator, we're making\nour final approach into Coruscant.", trackEvent1.Text);
+                Assert.Equal("Senator, we're making" + Environment.NewLine + "our final approach into Coruscant.", trackEvent1.Text);
 
                 var trackEvent2 = parsed.TrackEvents[1];
                 Assert.Equal("2", trackEvent2.Id);

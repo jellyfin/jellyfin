@@ -22,7 +22,7 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                 Assert.Equal("1", trackEvent.Id);
                 Assert.Equal(TimeSpan.Parse("00:00:01.18", CultureInfo.InvariantCulture).Ticks, trackEvent.StartPositionTicks);
                 Assert.Equal(TimeSpan.Parse("00:00:06.85", CultureInfo.InvariantCulture).Ticks, trackEvent.EndPositionTicks);
-                Assert.Equal("{\\pos(400,570)}Like an Angel with pity on nobody\nThe second line in subtitle", trackEvent.Text);
+                Assert.Equal("{\\pos(400,570)}Like an Angel with pity on nobody" + Environment.NewLine + "The second line in subtitle", trackEvent.Text);
             }
         }
     }
