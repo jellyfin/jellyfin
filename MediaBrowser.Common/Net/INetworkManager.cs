@@ -45,6 +45,16 @@ namespace MediaBrowser.Common.Net
         bool IsIP4Enabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the system has IP4 is enabled.
+        /// </summary>
+        public bool SystemIP4Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the system has IP6 is enabled.
+        /// </summary>
+        public bool SystemIP6Enabled { get; set; }
+
+        /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
         /// <returns>A Collection{IPObject} object containing all the interfaces to bind.
@@ -229,5 +239,11 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
+
+        /// <summary>
+        /// REMOVE after debugging.
+        /// </summary>
+        /// <param name="msg">Message.</param>
+        void Log(string msg);
     }
 }

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
+using System.Text;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
@@ -20,6 +23,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -170,35 +174,123 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
+        /// Sets up the proxy configuration based on the addresses in <paramref name="userList"/>.
+        /// </summary>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
+        /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
+        /// <param name="userList">The string array to parse.</param>
+        /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
+        public static void ParseList(INetworkManager networkManager, NetworkConfiguration config, string[] userList, ForwardedHeadersOptions options)
+        {
+            for (var i = 0; i < userList.Length; i++)
+            {
+                if (IPNetAddress.TryParse(userList[i], out var addr))
+                {
+                    if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork)
+                         || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+                    {
+                        continue;
+                    }
+
+                    if (networkManager.SystemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
+                        // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
+                        addr.Address = addr.Address.MapToIPv6();
+                    }
+
+                    if (addr.PrefixLength == 32)
+                    {
+                        options.KnownProxies.Add(addr.Address);
+                    }
+                    else
+                    {
+                        options.KnownNetworks.Add(new IPNetwork(addr.Address, addr.PrefixLength));
+                    }
+                }
+                else if (IPHost.TryParse(userList[i], out var host))
+                {
+                    foreach (var address in host.GetAddresses())
+                    {
+                        if ((!config.EnableIPV4 && host.AddressFamily == AddressFamily.InterNetwork)
+                            || (!config.EnableIPV6 && host.AddressFamily == AddressFamily.InterNetworkV6))
+                        {
+                            continue;
+                        }
+
+                        var hostAddr = address;
+                        if (networkManager.SystemIP6Enabled && address.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
+                            // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
+                            hostAddr = address.MapToIPv6();
+                        }
+
+                        options.KnownProxies.Add(hostAddr);
+                    }
+                }
+            }
+        }
+
+        private static string EnumToString<T>(IEnumerable<T> x)
+        {
+            var sb = new StringBuilder();
+            foreach (var item in x)
+            {
+                if (item is IPAddress ipItem)
+                {
+                    sb.Append(ipItem.ToString());
+                }
+                else if (item is IPNetwork ipNetwork)
+                {
+                    sb.Append(ipNetwork.Prefix.ToString());
+                    sb.Append('/');
+                    sb.Append(ipNetwork.PrefixLength.ToString(CultureInfo.InvariantCulture));
+                    sb.Append(',');
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// Extension method for adding the jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
-        /// <param name="knownProxies">A list of all known proxies to trust for X-Forwarded-For.</param>
+        /// <param name="config">The <see cref="NetworkConfiguration"/>.</param>
+        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, IReadOnlyList<string> knownProxies)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config, INetworkManager networkManager)
         {
             IMvcBuilder mvcBuilder = serviceCollection
-                .AddCors()
-                .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
-                .Configure<ForwardedHeadersOptions>(options =>
+            .AddCors()
+            .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
+            .Configure<ForwardedHeadersOptions>(options =>
                 {
+                    // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
+                    // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
+
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                    if (knownProxies.Count == 0)
+                    if (config.KnownProxies.Length == 0)
                     {
-                        options.KnownNetworks.Clear();
                         options.KnownProxies.Clear();
+                        options.KnownNetworks.Clear();
                     }
                     else
                     {
-                        for (var i = 0; i < knownProxies.Count; i++)
-                        {
-                            if (IPHost.TryParse(knownProxies[i], out var host))
-                            {
-                                options.KnownProxies.Add(host.Address);
-                            }
-                        }
+                        ParseList(networkManager, config, config.KnownProxies, options);
+                        networkManager.Log("KnownProxies: " + EnumToString<IPAddress>(options.KnownProxies));
+                        networkManager.Log("KnownNetworks: " + EnumToString<IPNetwork>(options.KnownNetworks));
                     }
+
+                    // Only set forward limit if we have some known proxies or some known networks.
+                    if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
+                    {
+                        options.ForwardLimit = null;
+                    }
+
+                    networkManager.Log("Forward Limit : " + options.ForwardLimit?.ToString(CultureInfo.CurrentCulture) ?? "None");
                 })
                 .AddMvc(opts =>
                 {

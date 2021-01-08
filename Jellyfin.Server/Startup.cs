@@ -26,18 +26,22 @@ namespace Jellyfin.Server
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly INetworkManager _networkManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="serverApplicationHost">The server application host.</param>
+        /// <param name="networkManager">The network manager.</param>
         public Startup(
             IServerConfigurationManager serverConfigurationManager,
-            IServerApplicationHost serverApplicationHost)
+            IServerApplicationHost serverApplicationHost,
+            INetworkManager networkManager)
         {
             _serverConfigurationManager = serverConfigurationManager;
             _serverApplicationHost = serverApplicationHost;
+            _networkManager = networkManager;
         }
 
         /// <summary>
@@ -52,7 +56,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration().KnownProxies);
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration(), _networkManager);
 
             services.AddJellyfinApiSwagger();
 
