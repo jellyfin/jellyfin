@@ -24,7 +24,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             using (var reader = new StreamReader(stream))
             {
                 string line;
-                while (reader.ReadLine() != "[Events]")
+                while (!string.Equals(reader.ReadLine(), "[Events]", StringComparison.Ordinal))
                 {
                 }
 
@@ -46,12 +46,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     var subEvent = new SubtitleTrackEvent { Id = eventIndex.ToString(_usCulture) };
                     eventIndex++;
-                    var sections = line.Substring(10).Split(',');
+                    const string Dialogue = "Dialogue: ";
+                    var sections = line.Substring(Dialogue.Length).Split(',');
 
                     subEvent.StartPositionTicks = GetTicks(sections[headers["Start"]]);
                     subEvent.EndPositionTicks = GetTicks(sections[headers["End"]]);
 
-                    subEvent.Text = string.Join(",", sections.Skip(headers["Text"]));
+                    subEvent.Text = string.Join(',', sections[headers["Text"]..]);
                     RemoteNativeFormatting(subEvent);
 
                     subEvent.Text = subEvent.Text.Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
@@ -62,7 +63,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            trackInfo.TrackEvents = trackEvents.ToArray();
+            trackInfo.TrackEvents = trackEvents;
             return trackInfo;
         }
 
@@ -72,9 +73,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 ? span.Ticks : 0;
         }
 
-        private Dictionary<string, int> ParseFieldHeaders(string line)
+        internal static Dictionary<string, int> ParseFieldHeaders(string line)
         {
-            var fields = line.Substring(8).Split(',').Select(x => x.Trim()).ToList();
+            const string Format = "Format: ";
+            var fields = line.Substring(Format.Length).Split(',').Select(x => x.Trim()).ToList();
 
             return new Dictionary<string, int>
             {
