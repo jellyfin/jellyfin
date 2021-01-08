@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     VideoType = item.VideoType,
                     IsoType = item.IsoType,
-                    Protocol = item.PathProtocol.Value,
+                    Protocol = item.PathProtocol ?? MediaProtocol.File,
                 };
 
                 extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 {
                     VideoType = item.VideoType,
                     IsoType = item.IsoType,
-                    Protocol = item.PathProtocol.Value,
+                    Protocol = item.PathProtocol ?? MediaProtocol.File,
                 };
 
                 extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);

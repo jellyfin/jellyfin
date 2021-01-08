@@ -23,12 +23,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var eventIndex = 1;
             using (var reader = new StreamReader(stream))
             {
-                string line;
+                string? line;
                 while (reader.ReadLine() != "[Events]")
                 {
                 }
 
                 var headers = ParseFieldHeaders(reader.ReadLine());
+
+                if (headers == null)
+                {
+                    return trackInfo;
+                }
 
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -72,8 +77,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 ? span.Ticks : 0;
         }
 
-        private Dictionary<string, int> ParseFieldHeaders(string line)
+        private Dictionary<string, int>? ParseFieldHeaders(string? line)
         {
+            if (line == null)
+            {
+                return null;
+            }
+
             var fields = line.Substring(8).Split(',').Select(x => x.Trim()).ToList();
 
             return new Dictionary<string, int>

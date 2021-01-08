@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb movie or null if not found.</returns>
-        public async Task<Movie> GetMovieAsync(int tmdbId, string language, string imageLanguages, CancellationToken cancellationToken)
+        public async Task<Movie?> GetMovieAsync(int tmdbId, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             var key = $"movie-{tmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out Movie movie))
@@ -78,7 +78,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb collection or null if not found.</returns>
-        public async Task<Collection> GetCollectionAsync(int tmdbId, string language, string imageLanguages, CancellationToken cancellationToken)
+        public async Task<Collection?> GetCollectionAsync(int tmdbId, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             var key = $"collection-{tmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out Collection collection))
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show information or null if not found.</returns>
-        public async Task<TvShow> GetSeriesAsync(int tmdbId, string language, string imageLanguages, CancellationToken cancellationToken)
+        public async Task<TvShow?> GetSeriesAsync(int tmdbId, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             var key = $"series-{tmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out TvShow series))
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv season information or null if not found.</returns>
-        public async Task<TvSeason> GetSeasonAsync(int tvShowId, int seasonNumber, string language, string imageLanguages, CancellationToken cancellationToken)
+        public async Task<TvSeason?> GetSeasonAsync(int tvShowId, int seasonNumber, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             var key = $"season-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out TvSeason season))
@@ -181,7 +181,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv episode information or null if not found.</returns>
-        public async Task<TvEpisode> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string language, string imageLanguages, CancellationToken cancellationToken)
+        public async Task<TvEpisode?> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string language, string imageLanguages, CancellationToken cancellationToken)
         {
             var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out TvEpisode episode))
@@ -214,7 +214,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="personTmdbId">The person's TMDb id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb person information or null if not found.</returns>
-        public async Task<Person> GetPersonAsync(int personTmdbId, CancellationToken cancellationToken)
+        public async Task<Person?> GetPersonAsync(int personTmdbId, CancellationToken cancellationToken)
         {
             var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}";
             if (_memoryCache.TryGetValue(key, out Person person))
@@ -245,7 +245,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="language">The item's language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb item or null if not found.</returns>
-        public async Task<FindContainer> FindByExternalIdAsync(
+        public async Task<FindContainer?> FindByExternalIdAsync(
             string externalId,
             FindExternalSource source,
             string language,
@@ -406,7 +406,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="posterPath">The relative URL of the poster.</param>
         /// <returns>The absolute URL.</returns>
-        public string GetPosterUrl(string posterPath)
+        public string? GetPosterUrl(string posterPath)
         {
             if (string.IsNullOrEmpty(posterPath))
             {
@@ -421,7 +421,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="posterPath">The relative URL of the backdrop image.</param>
         /// <returns>The absolute URL.</returns>
-        public string GetBackdropUrl(string posterPath)
+        public string? GetBackdropUrl(string posterPath)
         {
             if (string.IsNullOrEmpty(posterPath))
             {
@@ -436,7 +436,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="actorProfilePath">The relative URL of the profile image.</param>
         /// <returns>The absolute URL.</returns>
-        public string GetProfileUrl(string actorProfilePath)
+        public string? GetProfileUrl(string actorProfilePath)
         {
             if (string.IsNullOrEmpty(actorProfilePath))
             {
@@ -451,7 +451,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="filePath">The relative URL of the still image.</param>
         /// <returns>The absolute URL.</returns>
-        public string GetStillUrl(string filePath)
+        public string? GetStillUrl(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))
             {

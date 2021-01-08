@@ -43,7 +43,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
         /// <returns>System.String.</returns>
-        public static string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
+        public static string? GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
         {
             if (tags == null)
             {

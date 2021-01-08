@@ -13,20 +13,20 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The streams.</value>
         [JsonPropertyName("streams")]
-        public IReadOnlyList<MediaStreamInfo> Streams { get; set; }
+        public IReadOnlyList<MediaStreamInfo>? Streams { get; set; }
 
         /// <summary>
         /// Gets or sets the format.
         /// </summary>
         /// <value>The format.</value>
         [JsonPropertyName("format")]
-        public MediaFormatInfo Format { get; set; }
+        public MediaFormatInfo? Format { get; set; }
 
         /// <summary>
         /// Gets or sets the chapters.
         /// </summary>
         /// <value>The chapters.</value>
         [JsonPropertyName("chapters")]
-        public IReadOnlyList<MediaChapter> Chapters { get; set; }
+        public IReadOnlyList<MediaChapter>? Chapters { get; set; }
     }
 }

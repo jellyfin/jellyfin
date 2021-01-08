@@ -59,48 +59,48 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             // Only take the name and rating if the user's language is set to English, since Omdb has no localization
             if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase) || _configurationManager.Configuration.EnableNewOmdbSupport)
             {
-                item.Name = result.Title;
+                item.Name = result?.Title;
 
                 if (string.Equals(country, "us", StringComparison.OrdinalIgnoreCase))
                 {
-                    item.OfficialRating = result.Rated;
+                    item.OfficialRating = result?.Rated;
                 }
             }
 
-            if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
+            if (!string.IsNullOrEmpty(result?.Year) && result.Year.Length >= 4
                 && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
             }
 
-            var tomatoScore = result.GetRottenTomatoScore();
+            var tomatoScore = result?.GetRottenTomatoScore();
 
             if (tomatoScore.HasValue)
             {
                 item.CriticRating = tomatoScore;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbVotes)
+            if (!string.IsNullOrEmpty(result?.imdbVotes)
                 && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
-            if (!string.IsNullOrEmpty(result.imdbRating)
+            if (!string.IsNullOrEmpty(result?.imdbRating)
                 && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
             }
 
-            if (!string.IsNullOrEmpty(result.Website))
+            if (!string.IsNullOrEmpty(result?.Website))
             {
                 item.HomePageUrl = result.Website;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.imdbID))
+            if (!string.IsNullOrWhiteSpace(result?.imdbID))
             {
                 item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
             }
@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             ParseAdditionalMetadata(itemResult, result);
         }
 
-        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
+        public async Task<bool> FetchEpisodeData<T>(MetadataResult<T> itemResult, int episodeNumber, int seasonNumber, string? episodeImdbId, string seriesImdbId, string language, string country, CancellationToken cancellationToken)
             where T : BaseItem
         {
             if (string.IsNullOrWhiteSpace(seriesImdbId))
@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return false;
             }
 
-            RootObject result = null;
+            RootObject? result = null;
 
             if (!string.IsNullOrWhiteSpace(episodeImdbId))
             {
@@ -211,14 +211,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return true;
         }
 
-        internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
+        internal async Task<RootObject?> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
             await using var stream = File.OpenRead(path);
             return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken);
         }
 
-        internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
+        internal async Task<SeasonRootObject?> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
             await using var stream = File.OpenRead(path);
@@ -227,7 +227,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string? id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))
@@ -280,7 +280,8 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
+            Directory.CreateDirectory(directory);
             await using FileStream jsonFileStream = File.OpenWrite(path);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
@@ -317,14 +318,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
+            Directory.CreateDirectory(directory);
             await using FileStream jsonFileStream = File.OpenWrite(path);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
         }
 
-        public async Task<T> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, CancellationToken cancellationToken)
+        public async Task<T?> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, CancellationToken cancellationToken)
         {
             using var response = await GetOmdbResponse(httpClient, url, cancellationToken).ConfigureAwait(false);
             await using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -365,7 +367,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return Path.Combine(dataPath, filename);
         }
 
-        private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject result)
+        private void ParseAdditionalMetadata<T>(MetadataResult<T> itemResult, RootObject? result)
             where T : BaseItem
         {
             var item = itemResult.Item;
@@ -374,7 +376,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             // Grab series genres because IMDb data is better than TVDB. Leave movies alone
             // But only do it if English is the preferred language because this data will not be localized
-            if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result.Genre))
+            if (isConfiguredForEnglish && !string.IsNullOrWhiteSpace(result?.Genre))
             {
                 item.Genres = Array.Empty<string>();
 
@@ -390,15 +392,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             if (isConfiguredForEnglish)
             {
                 // Omdb is currently English only, so for other languages skip this and let secondary providers fill it in
-                item.Overview = result.Plot;
+                item.Overview = result?.Plot;
             }
 
-            if (!Plugin.Instance.Configuration.CastAndCrew)
+            if (!Plugin.Instance?.Configuration?.CastAndCrew ?? false)
             {
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Director))
+            if (!string.IsNullOrWhiteSpace(result?.Director))
             {
                 var person = new PersonInfo
                 {
@@ -409,18 +411,18 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 itemResult.AddPerson(person);
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Writer))
+            if (!string.IsNullOrWhiteSpace(result?.Writer))
             {
                 var person = new PersonInfo
                 {
-                    Name = result.Writer.Trim(),
+                    Name = result.Writer?.Trim(),
                     Type = PersonType.Writer
                 };
 
                 itemResult.AddPerson(person);
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Actors))
+            if (!string.IsNullOrWhiteSpace(result?.Actors))
             {
                 var actorList = result.Actors.Split(',');
                 foreach (var actor in actorList)
@@ -449,70 +451,70 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal class SeasonRootObject
         {
-            public string Title { get; set; }
+            public string? Title { get; set; }
 
-            public string seriesID { get; set; }
+            public string? seriesID { get; set; }
 
             public int? Season { get; set; }
 
             public int? totalSeasons { get; set; }
 
-            public RootObject[] Episodes { get; set; }
+            public RootObject[]? Episodes { get; set; }
 
-            public string Response { get; set; }
+            public string? Response { get; set; }
         }
 
         internal class RootObject
         {
-            public string Title { get; set; }
+            public string? Title { get; set; }
 
-            public string Year { get; set; }
+            public string? Year { get; set; }
 
-            public string Rated { get; set; }
+            public string? Rated { get; set; }
 
-            public string Released { get; set; }
+            public string? Released { get; set; }
 
-            public string Runtime { get; set; }
+            public string? Runtime { get; set; }
 
-            public string Genre { get; set; }
+            public string? Genre { get; set; }
 
-            public string Director { get; set; }
+            public string? Director { get; set; }
 
-            public string Writer { get; set; }
+            public string? Writer { get; set; }
 
-            public string Actors { get; set; }
+            public string? Actors { get; set; }
 
-            public string Plot { get; set; }
+            public string? Plot { get; set; }
 
-            public string Language { get; set; }
+            public string? Language { get; set; }
 
-            public string Country { get; set; }
+            public string? Country { get; set; }
 
-            public string Awards { get; set; }
+            public string? Awards { get; set; }
 
-            public string Poster { get; set; }
+            public string? Poster { get; set; }
 
-            public List<OmdbRating> Ratings { get; set; }
+            public List<OmdbRating>? Ratings { get; set; }
 
-            public string Metascore { get; set; }
+            public string? Metascore { get; set; }
 
-            public string imdbRating { get; set; }
+            public string? imdbRating { get; set; }
 
-            public string imdbVotes { get; set; }
+            public string? imdbVotes { get; set; }
 
-            public string imdbID { get; set; }
+            public string? imdbID { get; set; }
 
-            public string Type { get; set; }
+            public string? Type { get; set; }
 
-            public string DVD { get; set; }
+            public string? DVD { get; set; }
 
-            public string BoxOffice { get; set; }
+            public string? BoxOffice { get; set; }
 
-            public string Production { get; set; }
+            public string? Production { get; set; }
 
-            public string Website { get; set; }
+            public string? Website { get; set; }
 
-            public string Response { get; set; }
+            public string? Response { get; set; }
 
             public int? Episode { get; set; }
 
@@ -537,9 +539,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public class OmdbRating
         {
-            public string Source { get; set; }
+            public string? Source { get; set; }
 
-            public string Value { get; set; }
+            public string? Value { get; set; }
         }
     }
 }

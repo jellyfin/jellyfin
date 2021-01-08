@@ -35,7 +35,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 var header = new StringBuilder();
 
-                string line;
+                string? line;
 
                 while ((line = reader.ReadLine()) != null)
                 {

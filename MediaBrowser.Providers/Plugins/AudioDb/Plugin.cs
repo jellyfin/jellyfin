@@ -17,7 +17,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Instance = this;
         }
 
-        public static Plugin Instance { get; private set; }
+        public static Plugin? Instance { get; private set; }
 
         public override Guid Id => new Guid("a629c0da-fac5-4c7e-931a-7174223f14c8");
 

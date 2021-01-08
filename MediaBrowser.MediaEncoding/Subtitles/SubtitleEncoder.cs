@@ -76,13 +76,17 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 var reader = GetReader(inputFormat, true);
 
-                var trackInfo = reader.Parse(stream, cancellationToken);
+                var trackInfo = reader?.Parse(stream, cancellationToken);
 
-                FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
+                if (trackInfo != null)
+                {
+                    FilterEvents(trackInfo, startTimeTicks, endTimeTicks, preserveOriginalTimestamps);
 
-                var writer = GetWriter(outputFormat);
+                    var writer = GetWriter(outputFormat);
 
-                writer.Write(trackInfo, ms, cancellationToken);
+                    writer.Write(trackInfo, ms, cancellationToken);
+                }
+
                 ms.Position = 0;
             }
             catch
@@ -265,7 +269,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return new SubtitleInfo(subtitleStream.Path, mediaSource.Protocol, currentFormat, true);
         }
 
-        private ISubtitleParser GetReader(string format, bool throwIfMissing)
+        private ISubtitleParser? GetReader(string format, bool throwIfMissing)
         {
             if (string.IsNullOrEmpty(format))
             {
@@ -295,7 +299,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return null;
         }
 
-        private ISubtitleWriter TryGetWriter(string format)
+        private ISubtitleWriter? TryGetWriter(string format)
         {
             if (string.IsNullOrEmpty(format))
             {
@@ -399,9 +403,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? string.Empty);
 
-            var encodingParam = await GetSubtitleFileCharacterSet(inputPath, language, mediaSource.Protocol, cancellationToken).ConfigureAwait(false);
+            var encodingParam = await GetSubtitleFileCharacterSet(inputPath, language, mediaSource.Protocol, cancellationToken).ConfigureAwait(false) ?? string.Empty;
 
             // FFmpeg automatically convert character encoding when it is UTF-16
             // If we specify character encoding, it rejects with "do not specify a character encoding" and "Unable to recode subtitle event"
@@ -559,7 +563,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 throw new ArgumentNullException(nameof(outputPath));
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? string.Empty);
 
             var processArgs = string.Format(
                 CultureInfo.InvariantCulture,
@@ -720,7 +724,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         }
 
         /// <inheritdoc />
-        public async Task<string> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken)
+        public async Task<string?> GetSubtitleFileCharacterSet(string path, string language, MediaProtocol protocol, CancellationToken cancellationToken)
         {
             using (var stream = await GetStream(path, protocol, cancellationToken).ConfigureAwait(false))
             {

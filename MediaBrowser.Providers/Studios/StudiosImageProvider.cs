@@ -64,7 +64,11 @@ namespace MediaBrowser.Providers.Studios
 
                 posterPath = await EnsurePosterList(posterPath, cancellationToken).ConfigureAwait(false);
 
-                list.Add(GetImage(item, posterPath, ImageType.Primary, "folder"));
+                var img = GetImage(item, posterPath, ImageType.Primary, "folder");
+                if (img != null)
+                {
+                    list.Add(img);
+                }
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -75,13 +79,17 @@ namespace MediaBrowser.Providers.Studios
 
                 thumbsPath = await EnsureThumbsList(thumbsPath, cancellationToken).ConfigureAwait(false);
 
-                list.Add(GetImage(item, thumbsPath, ImageType.Thumb, "thumb"));
+                var img = GetImage(item, thumbsPath, ImageType.Thumb, "thumb");
+                if (img != null)
+                {
+                    list.Add(img);
+                }
             }
 
             return list.Where(i => i != null);
         }
 
-        private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
+        private RemoteImageInfo? GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
         {
             var list = GetAvailableImages(filename);
 
@@ -143,7 +151,8 @@ namespace MediaBrowser.Providers.Studios
             {
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(file));
+                var directory = Path.GetDirectoryName(file) ?? throw new ArgumentException($"Provided path ({file}) is not valid.", nameof(file));
+                Directory.CreateDirectory(directory);
                 await using var response = await httpClient.GetStreamAsync(url).ConfigureAwait(false);
                 await using var fileStream = new FileStream(file, FileMode.Create);
                 await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
@@ -152,7 +161,7 @@ namespace MediaBrowser.Providers.Studios
             return file;
         }
 
-        public string FindMatch(BaseItem item, IEnumerable<string> images)
+        public string? FindMatch(BaseItem item, IEnumerable<string> images)
         {
             var name = GetComparableName(item.Name);
 

@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Manager
 
         public virtual int Order => 0;
 
-        private FileSystemMetadata TryGetFile(string path, IDirectoryService directoryService)
+        private FileSystemMetadata? TryGetFile(string path, IDirectoryService directoryService)
         {
             try
             {
@@ -178,7 +178,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (item.IsFileProtocol)
                 {
-                    var file = TryGetFile(item.Path, refreshOptions.DirectoryService);
+                    var file = item.Path != null ? TryGetFile(item.Path, refreshOptions.DirectoryService) : null;
                     if (file != null)
                     {
                         item.DateModified = file.LastWriteTimeUtc;
@@ -836,20 +836,27 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var result = await provider.GetMetadata(id, cancellationToken).ConfigureAwait(false);
-
-                    if (result.HasMetadata)
+                    if (id != null)
                     {
-                        result.Provider = provider.Name;
+                        var result = await provider.GetMetadata(id, cancellationToken).ConfigureAwait(false);
 
-                        MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
-                        MergeNewData(temp.Item, id);
+                        if (result.HasMetadata)
+                        {
+                            result.Provider = provider.Name;
 
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                            MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
+                            MergeNewData(temp.Item, id);
+
+                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                        }
+                        else
+                        {
+                            Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                        }
                     }
                     else
                     {
-                        Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                        Logger.LogDebug("{0} returned no metadata for {1} because id was null", providerName, logName);
                     }
                 }
                 catch (OperationCanceledException)

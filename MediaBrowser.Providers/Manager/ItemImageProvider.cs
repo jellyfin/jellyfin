@@ -474,7 +474,7 @@ namespace MediaBrowser.Providers.Manager
                     await _providerManager.SaveImage(
                         item,
                         stream,
-                        response.Content.Headers.ContentType.MediaType,
+                        response.Content.Headers.ContentType?.MediaType,
                         type,
                         null,
                         cancellationToken).ConfigureAwait(false);
@@ -590,7 +590,7 @@ namespace MediaBrowser.Providers.Manager
                     await _providerManager.SaveImage(
                         item,
                         stream,
-                        response.Content.Headers.ContentType.MediaType,
+                        response.Content.Headers.ContentType?.MediaType,
                         imageType,
                         null,
                         cancellationToken).ConfigureAwait(false);

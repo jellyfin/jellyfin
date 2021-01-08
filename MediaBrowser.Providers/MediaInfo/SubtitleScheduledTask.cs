@@ -144,7 +144,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 try
                 {
-                    await DownloadSubtitles(video as Video, options, cancellationToken).ConfigureAwait(false);
+                    Video? v = video as Video;
+                    if (v != null)
+                    {
+                        await DownloadSubtitles(v, options, cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (Exception ex)
                 {

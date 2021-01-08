@@ -38,13 +38,13 @@ namespace MediaBrowser.Providers.Music
         /// Be prudent, use a value slightly above the minimun required.
         /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
         /// </summary>
-        private readonly long _musicBrainzQueryIntervalMs;
+        private readonly long? _musicBrainzQueryIntervalMs;
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IApplicationHost _appHost;
         private readonly ILogger<MusicBrainzAlbumProvider> _logger;
 
-        private readonly string _musicBrainzBaseUrl;
+        private readonly string? _musicBrainzBaseUrl;
 
         private SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
         private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
@@ -58,8 +58,8 @@ namespace MediaBrowser.Providers.Music
             _appHost = appHost;
             _logger = logger;
 
-            _musicBrainzBaseUrl = Plugin.Instance.Configuration.Server;
-            _musicBrainzQueryIntervalMs = Plugin.Instance.Configuration.RateLimit;
+            _musicBrainzBaseUrl = Plugin.Instance?.Configuration?.Server;
+            _musicBrainzQueryIntervalMs = Plugin.Instance?.Configuration?.RateLimit;
 
             // Use a stopwatch to ensure we don't exceed the MusicBrainz rate limit
             _stopWatchMusicBrainz.Start();
@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Music
             Current = this;
         }
 
-        internal static MusicBrainzAlbumProvider Current { get; private set; }
+        internal static MusicBrainzAlbumProvider? Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "MusicBrainz";
@@ -248,7 +248,7 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        private Task<ReleaseResult> GetReleaseResult(string artistMusicBrainId, string artistName, string albumName, CancellationToken cancellationToken)
+        private Task<ReleaseResult?> GetReleaseResult(string? artistMusicBrainId, string? artistName, string albumName, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(artistMusicBrainId))
             {
@@ -257,13 +257,13 @@ namespace MediaBrowser.Providers.Music
 
             if (string.IsNullOrWhiteSpace(artistName))
             {
-                return Task.FromResult(new ReleaseResult());
+                return Task.FromResult<ReleaseResult?>(new ReleaseResult());
             }
 
             return GetReleaseResultByArtistName(albumName, artistName, cancellationToken);
         }
 
-        private async Task<ReleaseResult> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
+        private async Task<ReleaseResult?> GetReleaseResult(string albumName, string artistId, CancellationToken cancellationToken)
         {
             var url = string.Format(
                 CultureInfo.InvariantCulture,
@@ -286,7 +286,7 @@ namespace MediaBrowser.Providers.Music
             return ReleaseResult.Parse(reader).FirstOrDefault();
         }
 
-        private async Task<ReleaseResult> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
+        private async Task<ReleaseResult?> GetReleaseResultByArtistName(string albumName, string artistName, CancellationToken cancellationToken)
         {
             var url = string.Format(
                 CultureInfo.InvariantCulture,
@@ -311,13 +311,13 @@ namespace MediaBrowser.Providers.Music
 
         private class ReleaseResult
         {
-            public string ReleaseId;
-            public string ReleaseGroupId;
-            public string Title;
-            public string Overview;
+            public string? ReleaseId;
+            public string? ReleaseGroupId;
+            public string? Title;
+            public string? Overview;
             public int? Year;
 
-            public List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
+            public List<ValueTuple<string?, string?>> Artists = new List<ValueTuple<string?, string?>>();
 
             public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
             {
@@ -409,7 +409,7 @@ namespace MediaBrowser.Providers.Music
                 }
             }
 
-            private static ReleaseResult ParseRelease(XmlReader reader, string releaseId)
+            private static ReleaseResult ParseRelease(XmlReader reader, string? releaseId)
             {
                 var result = new ReleaseResult
                 {
@@ -490,7 +490,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        private static (string, string) ParseArtistCredit(XmlReader reader)
+        private static (string?, string?) ParseArtistCredit(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -528,7 +528,7 @@ namespace MediaBrowser.Providers.Music
             return default;
         }
 
-        private static (string, string) ParseArtistNameCredit(XmlReader reader)
+        private static (string?, string?) ParseArtistNameCredit(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -567,12 +567,12 @@ namespace MediaBrowser.Providers.Music
             return (null, null);
         }
 
-        private static (string name, string id) ParseArtistArtistCredit(XmlReader reader, string artistId)
+        private static (string? name, string? id) ParseArtistArtistCredit(XmlReader reader, string? artistId)
         {
             reader.MoveToContent();
             reader.Read();
 
-            string name = null;
+            string? name = null;
 
             // http://stackoverflow.com/questions/2299632/why-does-xmlreader-skip-every-other-element-if-there-is-no-whitespace-separator
 
@@ -605,7 +605,7 @@ namespace MediaBrowser.Providers.Music
             return (name, artistId);
         }
 
-        private async Task<string> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
+        private async Task<string?> GetReleaseIdFromReleaseGroupId(string releaseGroupId, CancellationToken cancellationToken)
         {
             var url = "/ws/2/release?release-group=" + releaseGroupId.ToString(CultureInfo.InvariantCulture);
 
@@ -632,7 +632,7 @@ namespace MediaBrowser.Providers.Music
         /// <param name="releaseEntryId">The release entry id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<string> GetReleaseGroupFromReleaseId(string releaseEntryId, CancellationToken cancellationToken)
+        private async Task<string?> GetReleaseGroupFromReleaseId(string releaseEntryId, CancellationToken cancellationToken)
         {
             var url = "/ws/2/release-group/?query=reid:" + releaseEntryId.ToString(CultureInfo.InvariantCulture);
 
@@ -690,7 +690,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        private string GetFirstReleaseGroupId(XmlReader reader)
+        private string? GetFirstReleaseGroupId(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -737,7 +737,7 @@ namespace MediaBrowser.Providers.Music
             {
                 HttpResponseMessage response;
                 var attempts = 0u;
-                var requestUrl = _musicBrainzBaseUrl.TrimEnd('/') + url;
+                var requestUrl = (_musicBrainzBaseUrl?.TrimEnd('/') ?? string.Empty) + url;
 
                 do
                 {

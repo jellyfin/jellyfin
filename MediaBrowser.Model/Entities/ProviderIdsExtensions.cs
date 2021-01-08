@@ -58,7 +58,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
-        public static void SetProviderId(this IHasProviderIds instance, string name, string value)
+        public static void SetProviderId(this IHasProviderIds instance, string name, string? value)
         {
             if (instance == null)
             {
@@ -94,7 +94,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="instance">The instance.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="value">The value.</param>
-        public static void SetProviderId(this IHasProviderIds instance, MetadataProvider provider, string value)
+        public static void SetProviderId(this IHasProviderIds instance, MetadataProvider provider, string? value)
         {
             instance.SetProviderId(provider.ToString(), value);
         }

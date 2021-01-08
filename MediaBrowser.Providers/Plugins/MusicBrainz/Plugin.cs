@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
-        public static Plugin Instance { get; private set; }
+        public static Plugin? Instance { get; private set; }
 
         public override Guid Id => new Guid("8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a");
 

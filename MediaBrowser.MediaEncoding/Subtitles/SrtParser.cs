@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var trackEvents = new List<SubtitleTrackEvent>();
             using (var reader = new StreamReader(stream))
             {
-                string line;
+                string? line;
                 while ((line = reader.ReadLine()) != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

@@ -8,7 +8,7 @@ namespace MediaBrowser.Providers.Manager
     {
         public ItemUpdateType UpdateType { get; set; }
 
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
         public int Failures { get; set; }
     }

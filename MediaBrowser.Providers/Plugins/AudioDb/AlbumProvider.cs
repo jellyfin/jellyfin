@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public static AudioDbAlbumProvider Current;
+        public static AudioDbAlbumProvider? Current;
 
         public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         private void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
         {
-            if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.strAlbum))
+            if (Plugin.Instance?.Configuration?.ReplaceAlbumName ?? false && !string.IsNullOrWhiteSpace(result.strAlbum))
             {
                 item.Album = result.strAlbum;
             }
@@ -107,7 +107,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
             item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.strMusicBrainzID);
 
-            string overview = null;
+            string? overview = null;
 
             if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
             {
@@ -167,7 +167,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
+            Directory.CreateDirectory(directory);
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -198,86 +199,86 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
         public class Album
         {
-            public string idAlbum { get; set; }
+            public string? idAlbum { get; set; }
 
-            public string idArtist { get; set; }
+            public string? idArtist { get; set; }
 
-            public string strAlbum { get; set; }
+            public string? strAlbum { get; set; }
 
-            public string strArtist { get; set; }
+            public string? strArtist { get; set; }
 
-            public string intYearReleased { get; set; }
+            public string? intYearReleased { get; set; }
 
-            public string strGenre { get; set; }
+            public string? strGenre { get; set; }
 
-            public string strSubGenre { get; set; }
+            public string? strSubGenre { get; set; }
 
-            public string strReleaseFormat { get; set; }
+            public string? strReleaseFormat { get; set; }
 
-            public string intSales { get; set; }
+            public string? intSales { get; set; }
 
-            public string strAlbumThumb { get; set; }
+            public string? strAlbumThumb { get; set; }
 
-            public string strAlbumCDart { get; set; }
+            public string? strAlbumCDart { get; set; }
 
-            public string strDescriptionEN { get; set; }
+            public string? strDescriptionEN { get; set; }
 
-            public string strDescriptionDE { get; set; }
+            public string? strDescriptionDE { get; set; }
 
-            public string strDescriptionFR { get; set; }
+            public string? strDescriptionFR { get; set; }
 
-            public string strDescriptionCN { get; set; }
+            public string? strDescriptionCN { get; set; }
 
-            public string strDescriptionIT { get; set; }
+            public string? strDescriptionIT { get; set; }
 
-            public string strDescriptionJP { get; set; }
+            public string? strDescriptionJP { get; set; }
 
-            public string strDescriptionRU { get; set; }
+            public string? strDescriptionRU { get; set; }
 
-            public string strDescriptionES { get; set; }
+            public string? strDescriptionES { get; set; }
 
-            public string strDescriptionPT { get; set; }
+            public string? strDescriptionPT { get; set; }
 
-            public string strDescriptionSE { get; set; }
+            public string? strDescriptionSE { get; set; }
 
-            public string strDescriptionNL { get; set; }
+            public string? strDescriptionNL { get; set; }
 
-            public string strDescriptionHU { get; set; }
+            public string? strDescriptionHU { get; set; }
 
-            public string strDescriptionNO { get; set; }
+            public string? strDescriptionNO { get; set; }
 
-            public string strDescriptionIL { get; set; }
+            public string? strDescriptionIL { get; set; }
 
-            public string strDescriptionPL { get; set; }
+            public string? strDescriptionPL { get; set; }
 
-            public object intLoved { get; set; }
+            public object? intLoved { get; set; }
 
-            public object intScore { get; set; }
+            public object? intScore { get; set; }
 
-            public string strReview { get; set; }
+            public string? strReview { get; set; }
 
-            public object strMood { get; set; }
+            public object? strMood { get; set; }
 
-            public object strTheme { get; set; }
+            public object? strTheme { get; set; }
 
-            public object strSpeed { get; set; }
+            public object? strSpeed { get; set; }
 
-            public object strLocation { get; set; }
+            public object? strLocation { get; set; }
 
-            public string strMusicBrainzID { get; set; }
+            public string? strMusicBrainzID { get; set; }
 
-            public string strMusicBrainzArtistID { get; set; }
+            public string? strMusicBrainzArtistID { get; set; }
 
-            public object strItunesID { get; set; }
+            public object? strItunesID { get; set; }
 
-            public object strAmazonID { get; set; }
+            public object? strAmazonID { get; set; }
 
-            public string strLocked { get; set; }
+            public string? strLocked { get; set; }
         }
 
         public class RootObject
         {
-            public List<Album> album { get; set; }
+            public List<Album>? album { get; set; }
         }
 
         /// <inheritdoc />

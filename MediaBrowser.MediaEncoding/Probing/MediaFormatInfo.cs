@@ -13,7 +13,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The filename.</value>
         [JsonPropertyName("filename")]
-        public string FileName { get; set; }
+        public string? FileName { get; set; }
 
         /// <summary>
         /// Gets or sets the nb_streams.
@@ -27,42 +27,42 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The format_name.</value>
         [JsonPropertyName("format_name")]
-        public string FormatName { get; set; }
+        public string? FormatName { get; set; }
 
         /// <summary>
         /// Gets or sets the format_long_name.
         /// </summary>
         /// <value>The format_long_name.</value>
         [JsonPropertyName("format_long_name")]
-        public string FormatLongName { get; set; }
+        public string? FormatLongName { get; set; }
 
         /// <summary>
         /// Gets or sets the start_time.
         /// </summary>
         /// <value>The start_time.</value>
         [JsonPropertyName("start_time")]
-        public string StartTime { get; set; }
+        public string? StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the duration.
         /// </summary>
         /// <value>The duration.</value>
         [JsonPropertyName("duration")]
-        public string Duration { get; set; }
+        public string? Duration { get; set; }
 
         /// <summary>
         /// Gets or sets the size.
         /// </summary>
         /// <value>The size.</value>
         [JsonPropertyName("size")]
-        public string Size { get; set; }
+        public string? Size { get; set; }
 
         /// <summary>
         /// Gets or sets the bit_rate.
         /// </summary>
         /// <value>The bit_rate.</value>
         [JsonPropertyName("bit_rate")]
-        public string BitRate { get; set; }
+        public string? BitRate { get; set; }
 
         /// <summary>
         /// Gets or sets the probe_score.
@@ -76,6 +76,6 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <value>The tags.</value>
         [JsonPropertyName("tags")]
-        public IReadOnlyDictionary<string, string> Tags { get; set; }
+        public IReadOnlyDictionary<string, string>? Tags { get; set; }
     }
 }

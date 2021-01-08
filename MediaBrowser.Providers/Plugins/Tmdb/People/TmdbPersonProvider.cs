@@ -111,22 +111,22 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     // Take name from incoming info, don't rename the person
                     // TODO: This should go in PersonMetadataService, not each person provider
                     Name = id.Name,
-                    HomePageUrl = person.Homepage,
-                    Overview = person.Biography,
-                    PremiereDate = person.Birthday?.ToUniversalTime(),
-                    EndDate = person.Deathday?.ToUniversalTime()
+                    HomePageUrl = person?.Homepage,
+                    Overview = person?.Biography,
+                    PremiereDate = person?.Birthday?.ToUniversalTime(),
+                    EndDate = person?.Deathday?.ToUniversalTime()
                 };
 
-                if (!string.IsNullOrWhiteSpace(person.PlaceOfBirth))
+                if (!string.IsNullOrWhiteSpace(person?.PlaceOfBirth))
                 {
-                    item.ProductionLocations = new[] { person.PlaceOfBirth };
+                    item.ProductionLocations = new[] { person?.PlaceOfBirth };
                 }
 
-                item.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
+                item.SetProviderId(MetadataProvider.Tmdb, person?.Id.ToString(CultureInfo.InvariantCulture));
 
-                if (!string.IsNullOrEmpty(person.ImdbId))
+                if (!string.IsNullOrEmpty(person?.ImdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Imdb, person.ImdbId);
+                    item.SetProviderId(MetadataProvider.Imdb, person?.ImdbId);
                 }
 
                 result.HasMetadata = true;

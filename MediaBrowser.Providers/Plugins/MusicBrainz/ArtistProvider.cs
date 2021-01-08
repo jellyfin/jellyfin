@@ -27,6 +27,11 @@ namespace MediaBrowser.Providers.Music
         {
             var musicBrainzId = searchInfo.GetMusicBrainzArtistId();
 
+            if (MusicBrainzAlbumProvider.Current == null)
+            {
+                return Enumerable.Empty<RemoteSearchResult>();
+            }
+
             if (!string.IsNullOrWhiteSpace(musicBrainzId))
             {
                 var url = "/ws/2/artist/?query=arid:{0}" + musicBrainzId.ToString(CultureInfo.InvariantCulture);
@@ -171,7 +176,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        private RemoteSearchResult ParseArtist(XmlReader reader, string artistId)
+        private RemoteSearchResult? ParseArtist(XmlReader reader, string? artistId)
         {
             var result = new RemoteSearchResult();
 
@@ -243,7 +248,7 @@ namespace MediaBrowser.Providers.Music
                     musicBrainzId = singleResult.GetProviderId(MetadataProvider.MusicBrainzArtist);
                     result.Item.Overview = singleResult.Overview;
 
-                    if (Plugin.Instance.Configuration.ReplaceArtistName)
+                    if (Plugin.Instance?.Configuration?.ReplaceArtistName ?? false)
                     {
                         result.Item.Name = singleResult.Name;
                     }

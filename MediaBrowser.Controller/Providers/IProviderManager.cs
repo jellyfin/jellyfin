@@ -1,4 +1,5 @@
 #pragma warning disable CS1591
+#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -74,7 +75,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
+        Task SaveImage(BaseItem item, Stream source, string? mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.
@@ -82,7 +83,7 @@ namespace MediaBrowser.Controller.Providers
         /// <returns>Task.</returns>
         Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
 
-        Task SaveImage(Stream source, string mimeType, string path);
+        Task SaveImage(Stream source, string? mimeType, string path);
 
         /// <summary>
         /// Adds the metadata providers.
