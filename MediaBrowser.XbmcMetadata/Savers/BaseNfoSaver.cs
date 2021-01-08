@@ -203,12 +203,32 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
 
-            // On Windows, savint the file will fail if the file is hidden or readonly
+            // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            try
             {
-                stream.CopyTo(filestream);
+                if (File.Exists(path))
+                {
+                    Logger.LogDebug("{Path} already exists.");
+                    try
+                    {
+                        File.Delete(path);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Unable to delete file.");
+                    }
+                }
+
+                using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    stream.CopyTo(filestream);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Unable to save to {Path}", path);
             }
 
             if (ConfigurationManager.Configuration.SaveMetadataHidden)
