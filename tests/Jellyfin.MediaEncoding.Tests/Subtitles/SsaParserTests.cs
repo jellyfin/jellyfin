@@ -7,21 +7,21 @@ using Xunit;
 
 namespace Jellyfin.MediaEncoding.Subtitles.Tests
 {
-    public class AssParserTests
+    public class SsaParserTests
     {
         [Fact]
         public void Parse_Valid_Success()
         {
-            using (var stream = File.OpenRead("Test Data/example.ass"))
+            using (var stream = File.OpenRead("Test Data/example.ssa"))
             {
-                var parsed = new AssParser().Parse(stream, CancellationToken.None);
+                var parsed = new SsaParser().Parse(stream, CancellationToken.None);
                 Assert.Single(parsed.TrackEvents);
                 var trackEvent = parsed.TrackEvents[0];
 
                 Assert.Equal("1", trackEvent.Id);
                 Assert.Equal(TimeSpan.Parse("00:00:01.18", CultureInfo.InvariantCulture).Ticks, trackEvent.StartPositionTicks);
                 Assert.Equal(TimeSpan.Parse("00:00:06.85", CultureInfo.InvariantCulture).Ticks, trackEvent.EndPositionTicks);
-                Assert.Equal("{\\pos(400,570)}Like an Angel with pity on nobody\nThe second line in subtitle", trackEvent.Text);
+                Assert.Equal("{\\pos(400,570)}Like an angel with pity on nobody", trackEvent.Text);
             }
         }
     }

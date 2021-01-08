@@ -27,7 +27,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 {
     public class SubtitleEncoder : ISubtitleEncoder
     {
-        private readonly ILibraryManager _libraryManager;
         private readonly ILogger<SubtitleEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IFileSystem _fileSystem;
@@ -42,7 +41,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             new ConcurrentDictionary<string, SemaphoreSlim>();
 
         public SubtitleEncoder(
-            ILibraryManager libraryManager,
             ILogger<SubtitleEncoder> logger,
             IApplicationPaths appPaths,
             IFileSystem fileSystem,
@@ -50,7 +48,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             IHttpClientFactory httpClientFactory,
             IMediaSourceManager mediaSourceManager)
         {
-            _libraryManager = libraryManager;
             _logger = logger;
             _appPaths = appPaths;
             _fileSystem = fileSystem;
@@ -274,7 +271,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (string.Equals(format, SubtitleFormat.SRT, StringComparison.OrdinalIgnoreCase))
             {
-                return new SrtParser(_logger);
+                return new SrtParser();
             }
 
             if (string.Equals(format, SubtitleFormat.SSA, StringComparison.OrdinalIgnoreCase))
