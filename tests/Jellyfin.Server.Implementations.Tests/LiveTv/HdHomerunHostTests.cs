@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
+using Jellyfin.Networking.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.LiveTv;
 using Moq;
 using Moq.Protected;
@@ -46,12 +48,29 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))
                 .Returns(new HttpClient(messageHandler.Object));
+
             _fixture = new Fixture();
             _fixture.Customize(new AutoMoqCustomization
             {
                 ConfigureMembers = true
             }).Inject(http);
+
+            _fixture.Customize(new AutoMoqCustomization
+            {
+                ConfigureMembers = true
+            }).Inject(GetMockConfig(new NetworkConfiguration()));
+
             _hdHomerunHost = _fixture.Create<HdHomerunHost>();
+        }
+
+        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IConfigurationManager>
+            {
+                CallBase = true
+            };
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IConfigurationManager)configManager.Object;
         }
 
         [Fact]

@@ -64,7 +64,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             _jsonOptions = JsonDefaults.GetOptions();
 
-            _config = config.GetNetworkConfiguration();
+            // Use this method to get the config as it allows test units to work.
+            _config = (NetworkConfiguration)config.GetConfiguration("Network");
         }
 
         public string Name => "HD Homerun";
