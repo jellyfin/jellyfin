@@ -39,9 +39,10 @@ namespace Jellyfin.KodiMetadata.Models
         public string? OriginalTitle { get; set; }
 
         /// <summary>
-        /// Gets the ratings.
+        /// Gets or sets the ratings.
         /// </summary>
-        public RatingNfo[] Ratings { get; }
+        [XmlArray("ratings")]
+        public RatingNfo[] Ratings { get; set; }
 
         /// <summary>
         /// Gets or sets the user rating.
@@ -82,6 +83,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the number of plays.
         /// </summary>
+        [XmlElement("playcount")]
         public int? PlayCount { get; set; }
 
         /// <summary>
