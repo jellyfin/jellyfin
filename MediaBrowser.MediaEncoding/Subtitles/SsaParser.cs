@@ -325,7 +325,15 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                             text = text.Insert(start, "<font color=\"" + color + "\"" + extraTags + ">");
                         }
 
-                        text += "</font>";
+                        int indexOfEndTag = text.IndexOf("{\\1c}", start, StringComparison.Ordinal);
+                        if (indexOfEndTag > 0)
+                        {
+                            text = text.Remove(indexOfEndTag, "{\\1c}".Length).Insert(indexOfEndTag, "</font>");
+                        }
+                        else
+                        {
+                            text += "</font>";
+                        }
                     }
                 }
             }
