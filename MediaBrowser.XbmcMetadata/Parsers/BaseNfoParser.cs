@@ -295,9 +295,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "name":
                 case "title":
                 case "localtitle":
                     item.Name = reader.ReadElementContentAsString();
+                    break;
+
+                case "sortname":
+                    item.SortName = reader.ReadElementContentAsString();
                     break;
 
                 case "criticrating":
@@ -712,6 +717,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             item.SetProviderId(provider, id);
                         }
+
+                        break;
+                    }
+
+                case "musicBrainzArtistID":
+                    {
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.Read();
+                            break;
+                        }
+
+                        var id = reader.ReadElementContentAsString();
+                        item.SetProviderId(MetadataProvider.MusicBrainzArtist.ToString(), id);
 
                         break;
                     }
