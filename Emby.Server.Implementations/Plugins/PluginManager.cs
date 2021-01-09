@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Plugins
                         {
                             _logger.LogWarning("Deprecated: Multiple plugins found in one folder: {Plugin}", file);
                             plugin.DllFiles.RemoveAt(j);
-                            plugin.Manifest.Depreciated = true;
+                            plugin.Manifest.Deprecated = true;
                             // Clone LocalPlugin so that it can be managed.
                             var p = new LocalPlugin(
                                 plugin.Path,
@@ -142,7 +142,7 @@ namespace Emby.Server.Implementations.Plugins
                                     Id = file.GetMD5(),
                                     TargetAbi = _appVersion.ToString(),
                                     Version = "0.0.0.1",
-                                    Depreciated = true
+                                    Deprecated = true
                                 });
                             p.DllFiles.Add(file);
                             _plugins.Add(p);
@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.Plugins
 
             if (originalPluginCount != _plugins.Count)
             {
-                _logger.LogWarning("Multiple plugins sharing the same folder is depreciated.");
+                _logger.LogWarning("Multiple plugins sharing the same folder is deprecated.");
                 _logger.LogWarning("Running plugins in this configuration is no longer recommended, and may have unforeseen consequences.");
                 _logger.LogWarning("Please move each plugin listed above, along with any of their supporting assemblies, into their own folder, and restart Jellyfin.");
             }
@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <returns>True if successful.</returns>
         public bool SaveManifest(PluginManifest manifest, string path)
         {
-            if (manifest == null || manifest.Depreciated)
+            if (manifest == null || manifest.Deprecated)
             {
                 return false;
             }
@@ -469,7 +469,7 @@ namespace Emby.Server.Implementations.Plugins
                     bool changed = false;
                     if (!string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal)
                         || manifest.Id != instance.Id
-                        || manifest.Depreciated)
+                        || manifest.Deprecated)
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.

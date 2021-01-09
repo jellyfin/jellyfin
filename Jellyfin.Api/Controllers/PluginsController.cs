@@ -135,7 +135,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult EnablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null || plugin.Manifest.Depreciated)
+            if (plugin == null || plugin.Manifest.Deprecated)
             {
                 return NotFound();
             }
@@ -159,7 +159,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult DisablePlugin([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null || plugin.Manifest.Depreciated)
+            if (plugin == null || plugin.Manifest.Deprecated)
             {
                 return NotFound();
             }
@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult UninstallPluginByVersion([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
-            if (plugin == null || plugin.Manifest.Depreciated)
+            if (plugin == null || plugin.Manifest.Deprecated)
             {
                 return NotFound();
             }
@@ -217,7 +217,7 @@ namespace Jellyfin.Api.Controllers
                 plugin = plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
             }
 
-            if (plugin != null && !plugin.Manifest.Depreciated)
+            if (plugin != null && !plugin.Manifest.Deprecated)
             {
                 _installationManager.UninstallPlugin(plugin);
                 return NoContent();
@@ -325,7 +325,7 @@ namespace Jellyfin.Api.Controllers
         {
             var plugin = _pluginManager.GetPlugin(pluginId);
 
-            if (plugin != null && !plugin.Manifest.Depreciated)
+            if (plugin != null && !plugin.Manifest.Deprecated)
             {
                 return plugin.Manifest;
             }
