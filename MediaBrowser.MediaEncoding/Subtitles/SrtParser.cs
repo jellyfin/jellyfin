@@ -69,7 +69,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     var multiline = new List<string>();
                     while ((line = reader.ReadLine()) != null)
                     {
-                        if (string.IsNullOrEmpty(line))
+                        if (line.Length == 0)
                         {
                             break;
                         }
@@ -87,7 +87,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            trackInfo.TrackEvents = trackEvents.ToArray();
+            trackInfo.TrackEvents = trackEvents;
             return trackInfo;
         }
 
