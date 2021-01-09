@@ -635,7 +635,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date) && date.Year > 1850)
+                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) && date.Year > 1850)
                             {
                                 item.PremiereDate = date.ToUniversalTime();
                                 item.ProductionYear = date.Year;
@@ -653,7 +653,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date) && date.Year > 1850)
+                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) && date.Year > 1850)
                             {
                                 item.EndDate = date.ToUniversalTime();
                             }
@@ -797,6 +797,22 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 break;
                             }
 
+                        case "subtitle":
+                            {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    continue;
+                                }
+
+                                using (var subtree = reader.ReadSubtree())
+                                {
+                                    FetchFromSubtitleNode(subtree, item);
+                                }
+
+                                break;
+                            }
+
                         default:
                             reader.Skip();
                             break;
@@ -854,6 +870,90 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 break;
                             }
 
+                        case "aspect":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (item is Video video)
+                                {
+                                    video.AspectRatio = val;
+                                }
+
+                                break;
+                            }
+
+                        case "width":
+                            {
+                                var val = reader.ReadElementContentAsInt();
+
+                                if (item is Video video)
+                                {
+                                    video.Width = val;
+                                }
+
+                                break;
+                            }
+
+                        case "height":
+                            {
+                                var val = reader.ReadElementContentAsInt();
+
+                                if (item is Video video)
+                                {
+                                    video.Height = val;
+                                }
+
+                                break;
+                            }
+
+                        case "durationinseconds":
+                            {
+                                var val = reader.ReadElementContentAsInt();
+
+                                if (item is Video video)
+                                {
+                                    video.RunTimeTicks = new TimeSpan(0, 0, val).Ticks;
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
+        private void FetchFromSubtitleNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "language":
+                            {
+                                _ = reader.ReadElementContentAsString();
+
+                                if (item is Video video)
+                                {
+                                    video.HasSubtitles = true;
+                                }
+
+                                break;
+                            }
+
                         default:
                             reader.Skip();
                             break;
@@ -877,6 +977,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             var type = PersonType.Actor;  // If type is not specified assume actor
             var role = string.Empty;
             int? sortOrder = null;
+            string? imageUrl = null;
 
             reader.MoveToContent();
             reader.Read();
@@ -904,6 +1005,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 break;
                             }
 
+                        case "order":
                         case "sortorder":
                             {
                                 var val = reader.ReadElementContentAsString();
@@ -914,6 +1016,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     {
                                         sortOrder = intVal;
                                     }
+                                }
+
+                                break;
+                            }
+
+                        case "thumb":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    imageUrl = val;
                                 }
 
                                 break;
@@ -935,7 +1049,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 Name = name.Trim(),
                 Role = role,
                 Type = type,
-                SortOrder = sortOrder
+                SortOrder = sortOrder,
+                ImageUrl = imageUrl
             };
         }
 
