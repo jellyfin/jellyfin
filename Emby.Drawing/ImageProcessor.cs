@@ -181,11 +181,6 @@ namespace Emby.Drawing
             {
                 if (!File.Exists(cacheFilePath))
                 {
-                    if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
-                    {
-                        options.CropWhiteSpace = false;
-                    }
-
                     string resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
 
                     if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))

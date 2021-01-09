@@ -24,8 +24,6 @@ namespace MediaBrowser.Controller.Drawing
 
         public int ImageIndex { get; set; }
 
-        public bool CropWhiteSpace { get; set; }
-
         public int? Width { get; set; }
 
         public int? Height { get; set; }
@@ -106,7 +104,6 @@ namespace MediaBrowser.Controller.Drawing
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
                 !Blur.HasValue &&
-                !CropWhiteSpace &&
                 string.IsNullOrEmpty(BackgroundColor) &&
                 string.IsNullOrEmpty(ForegroundLayer);
         }
