@@ -16,8 +16,9 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
 {
     public class MovieNfoParserTests
     {
-        [Fact]
-        public void Fetch_Valid_Succes()
+        private readonly MovieNfoParser _parser;
+
+        public MovieNfoParserTests()
         {
             var providerManager = new Mock<IProviderManager>();
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
@@ -25,13 +26,18 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            var parser = new MovieNfoParser(new NullLogger<MovieNfoParser>(), config.Object, providerManager.Object);
+            _parser = new MovieNfoParser(new NullLogger<MovieNfoParser>(), config.Object, providerManager.Object);
+        }
 
+        [Fact]
+        public void Fetch_Valid_Succes()
+        {
             var result = new MetadataResult<Video>()
             {
                 Item = new Video()
             };
-            parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
+
+            _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
             var item = result.Item;
 
             Assert.Equal("Justice League", item.OriginalTitle);
@@ -75,6 +81,27 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             Assert.Equal("Jason Momoa", aquaman!.Name);
             Assert.Equal(5, aquaman!.SortOrder);
             Assert.Equal("https://m.media-amazon.com/images/M/MV5BMTI5MTU5NjM1MV5BMl5BanBnXkFtZTcwODc4MDk0Mw@@._V1_SX1024_SY1024_.jpg", aquaman!.ImageUrl);
+
+            Assert.Equal(new DateTime(2019, 8, 6, 9, 1, 18), item.DateCreated);
+        }
+
+        [Fact]
+        public void Fetch_WithNullItem_ThrowsArgumentException()
+        {
+            var result = new MetadataResult<Video>();
+
+            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None));
+        }
+
+        [Fact]
+        public void Fetch_NullResult_ThrowsArgumentException()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Video()
+            };
+
+            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
         }
     }
 }

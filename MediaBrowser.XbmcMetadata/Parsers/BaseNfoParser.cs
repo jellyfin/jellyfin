@@ -63,14 +63,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
         public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
-            if (item == null)
+            if (item.Item == null)
             {
-                throw new ArgumentNullException(nameof(item));
+                throw new ArgumentException("Item can't be null.", nameof(item));
             }
 
             if (string.IsNullOrEmpty(metadataFile))
             {
-                throw new ArgumentException("The metadata file was empty or null.", nameof(metadataFile));
+                throw new ArgumentException("The metadata filepath was empty.", nameof(metadataFile));
             }
 
             _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -270,17 +270,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (DateTime.TryParseExact(val, BaseNfoSaver.DateAddedFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var added))
-                            {
-                                item.DateCreated = added.ToUniversalTime();
-                            }
-                            else if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out added))
+                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
                             {
                                 item.DateCreated = added.ToUniversalTime();
                             }
                             else
                             {
-                                Logger.LogWarning("Invalid Added value found: " + val);
+                                Logger.LogWarning("Invalid Added value found: {Value}", val);
                             }
                         }
 
@@ -384,16 +380,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "tagline":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.Tagline = val;
-                        }
-
-                        break;
-                    }
+                    item.Tagline = reader.ReadElementContentAsString();
+                    break;
 
                 case "country":
                     {
@@ -705,6 +693,24 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         else
                         {
                             reader.Read();
+                        }
+
+                        break;
+                    }
+
+                case "uniqueid":
+                    {
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.Read();
+                            break;
+                        }
+
+                        var provider = reader.GetAttribute("type");
+                        var id = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
+                        {
+                            item.SetProviderId(provider, id);
                         }
 
                         break;
