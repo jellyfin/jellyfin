@@ -143,6 +143,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
+        /// <param name="savers">The metadata savers.</param>
         void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers);
 
         /// <summary>
