@@ -7,10 +7,11 @@ namespace KodiVersuche
 {
     class Program
     {
-        private const string Filepath = @"C:\Users\david\Desktop\sample-movie.nfo";
+        private const string Filepath = @"C:\Users\david\Desktop\Avengers Endgame (2019).nfo";
         static void Main(string[] args)
         {
-            Deserialize();
+            //Deserialize();
+            Serialize();
         }
 
         private static void Deserialize()
@@ -27,21 +28,9 @@ namespace KodiVersuche
             var test = new MovieNfo()
             {
                 Title = "Avengers",
-                Ratings = new RatingNfo[] {
-                    new RatingNfo{
-                        Name = "IMDB",
-                        Value = 5,
-                        Max = 10,
-                        Default = true,
-                        Votes = 500
-                    },
-                    new RatingNfo{
-                        Name = "rottentomatoes",
-                        Value = 100,
-                        Max = 100,
-                        Default = false,
-                        Votes = 1000
-                    }
+                Art = new ArtNfo()
+                {
+                    Fanart = new []{"uzrl1", "url2"}
                 }
             };
 

@@ -11,6 +11,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the movie set name.
         /// </summary>
         [XmlElement("name")]
+        [XmlText]
         public string? Name { get; set; }
 
         /// <summary>
@@ -18,5 +19,11 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("overview")]
         public string? Overview { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tmdb collection id.
+        /// </summary>
+        [XmlAttribute("tmdbcolid")]
+        public string TmdbCollectionId { get; set; }
     }
 }

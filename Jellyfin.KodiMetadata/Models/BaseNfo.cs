@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CA1819
 
 using System;
+using System.Globalization;
 using System.Xml.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
@@ -23,6 +24,9 @@ namespace Jellyfin.KodiMetadata.Models
             Actors = Array.Empty<ActorNfo>();
             Ratings = Array.Empty<RatingNfo>();
             Tags = Array.Empty<string>();
+            Writers = Array.Empty<string>();
+            Styles = Array.Empty<string>();
+            Ids = Array.Empty<string>();
         }
 
         /// <summary>
@@ -87,15 +91,10 @@ namespace Jellyfin.KodiMetadata.Models
         public int? PlayCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the last <see cref="DateTime"/> the file has been played.
-        /// </summary>
-        public DateTime? LastPlayed { get; set; }
-
-        /// <summary>
         /// Gets or sets the imdb id.
         /// </summary>
         [XmlElement("id")]
-        public string? Id { get; set; }
+        public string[] Ids { get; set; }
 
         /// <summary>
         /// Gets or sets scraper ids.
@@ -113,7 +112,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the country of origin.
         /// </summary>
         [XmlElement("country")]
-        public string[] Countries { get; set; }
+        public string[] Countries { get; set; } // TODO wird geteilt bei /
 
         /// <summary>
         /// Gets or sets item tags.
@@ -132,12 +131,6 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("director")]
         public string[] Directors { get; set; }
-
-        /// <summary>
-        /// Gets or sets the release date.
-        /// </summary>
-        [XmlElement("premiered")]
-        public DateTime? Premiered { get; set; }
 
         /// <summary>
         /// Gets or sets the release year. Use <see cref="Premiered"/> instead.
@@ -175,9 +168,203 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("resumeposition")]
         public ResumePositionNfo? ResumePosition { get; set; }
 
+        [XmlElement("dateadded")]
+        public string? DateAddedXml
+        {
+            get
+            {
+                return DateAdded?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    DateAdded = date;
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets the time the item was added.
         /// </summary>
         public DateTime? DateAdded { get; set; }
+
+        [XmlElement("lastplayed")]
+        public string? LastPlayedXml
+        {
+            get
+            {
+                return LastPlayed?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    LastPlayed = date;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the last date the file has been played.
+        /// </summary>
+        public DateTime? LastPlayed { get; set; }
+
+        [XmlElement("premiered")]
+        public string? PremieredXml
+        {
+            get
+            {
+                return Premiered?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    Premiered = date;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the release date.
+        /// </summary>
+        public DateTime? Released { get; set; }
+
+        [XmlElement("releasedate")]
+        public string? ReleasedXml
+        {
+            get
+            {
+                return Released?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    Released = date;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the release date.
+        /// </summary>
+        public DateTime? Premiered { get; set; }
+
+        [XmlElement("aired")]
+        public string? AiredXml
+        {
+            get
+            {
+                return Aired?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    Aired = date;
+                }
+            }
+        }
+
+        public DateTime? Aired { get; set; }
+
+        [XmlElement("formed")]
+        public string? FormedXml
+        {
+            get
+            {
+                return Formed?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    Formed = date;
+                }
+            }
+        }
+
+        public DateTime? Formed { get; set; }
+
+        [XmlElement("enddate")]
+        public string? EndDateXml
+        {
+            get
+            {
+                return EndDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+
+            set
+            {
+                if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var date))
+                {
+                    EndDate = date;
+                }
+            }
+        }
+
+        public DateTime? EndDate { get; set; }
+
+        [XmlElement("localtitle")]
+        public string? LocalTitle { get; set; }
+
+        [XmlElement("criticrating")]
+        public float? CriticRating { get; set; }
+
+        [XmlElement("biography")]
+        public string? Biography { get; set; }
+
+        [XmlElement("review")]
+        public string? Review { get; set; }
+
+        [XmlElement("language")]
+        public string? Language { get; set; }
+
+        [XmlElement("countrycode")]
+        public string? CountryCode { get; set; }
+
+        [XmlElement("lockedfields")]
+        public string? LockedFields { get; set; }
+
+        [XmlElement("customrating")]
+        public string? CustomRating { get; set; }
+
+        [XmlElement("aspectratio")]
+        public string? AspectRatio { get; set; }
+
+        [XmlElement("lockdata")]
+        public bool LockData { get; set; }
+
+        [XmlElement("writer")]
+        public string[] Writers { get; set; }
+
+        [XmlElement("displayorder")]
+        public string? DisplayOrder { get; set; } // todo converter
+
+        [XmlElement("rating")]
+        public float? Rating { get; set; }
+
+        [XmlElement("style")]
+        public string[] Styles { get; set; }
+
+        [XmlElement("imdbid")]
+        public string? ImdbId { get; set; }
+
+        [XmlElement("tmdbid")]
+        public string? TmdbId { get; set; }
+
+        [XmlElement("collectionnumber")]
+        public string? CollectionId { get; set; }
+
+        [XmlElement("art")]
+        public ArtNfo? Art { get; set; }
     }
 }
