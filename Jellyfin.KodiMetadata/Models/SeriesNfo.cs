@@ -1,17 +1,23 @@
-﻿using System.Xml.Serialization;
+﻿#pragma warning disable CA1819
+
+using System;
+using System.Xml.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
 {
     /// <summary>
     /// The tv series specific nfo tags.
     /// </summary>
-    public class SeriesNfo
+    [XmlRoot("tvshow")]
+    public class SeriesNfo : BaseNfo
     {
         /// <summary>
-        /// Gets or sets the sort title.
+        /// Initializes a new instance of the <see cref="SeriesNfo"/> class.
         /// </summary>
-        [XmlElement("sorttitle")]
-        public string? SortTitle { get; set; }
+        public SeriesNfo()
+        {
+            Ids = Array.Empty<IdNfo>();
+        }
 
         /// <summary>
         /// Gets or sets the show title / alternative title.
@@ -37,10 +43,34 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("episode")]
         public int? Episode { get; set; }
 
-        // TODO Displayepisode
+        /// <summary>
+        /// Gets or sets the series status.
+        /// </summary>
+        [XmlElement("status")]
+        public string? Status { get; set; }
 
-        // TODO Displayseason
+        /// <summary>
+        /// Gets or sets the time the series airs.
+        /// </summary>
+        [XmlElement("airs_time")]
+        public string? AirTime { get; set; }
 
-        // TODO namedseason
+        /// <summary>
+        /// Gets or sets the day the series airs.
+        /// </summary>
+        [XmlElement("airs_dayofweek")]
+        public string? AirDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external ids.
+        /// </summary>
+        [XmlElement("id")]
+        public IdNfo[] Ids { get; set; }
+
+        // TODO Displayepisode (kodi wiki)
+
+        // TODO Displayseason (kodi wiki)
+
+        // TODO namedseason (kodi wiki)
     }
 }

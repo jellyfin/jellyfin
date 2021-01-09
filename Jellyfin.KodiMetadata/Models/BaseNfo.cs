@@ -14,7 +14,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfo"/> class.
         /// </summary>
-        protected BaseNfo()
+        public BaseNfo()
         {
             Genres = Array.Empty<string>();
             Countries = Array.Empty<string>();
@@ -26,7 +26,6 @@ namespace Jellyfin.KodiMetadata.Models
             Tags = Array.Empty<string>();
             Writers = Array.Empty<string>();
             Styles = Array.Empty<string>();
-            Ids = Array.Empty<string>();
         }
 
         /// <summary>
@@ -89,12 +88,6 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("playcount")]
         public int? PlayCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the imdb id.
-        /// </summary>
-        [XmlElement("id")]
-        public string[] Ids { get; set; }
 
         /// <summary>
         /// Gets or sets scraper ids.

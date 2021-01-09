@@ -96,7 +96,6 @@ using MediaBrowser.Providers.Chapters;
 using MediaBrowser.Providers.Manager;
 using MediaBrowser.Providers.Plugins.Tmdb;
 using MediaBrowser.Providers.Subtitles;
-using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -1068,9 +1067,6 @@ namespace Emby.Server.Implementations
 
             // Notifications
             yield return typeof(NotificationManager).Assembly;
-
-            // Xbmc
-            yield return typeof(ArtistNfoProvider).Assembly;
 
             // Network
             yield return typeof(NetworkManager).Assembly;

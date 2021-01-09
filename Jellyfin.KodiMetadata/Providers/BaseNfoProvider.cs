@@ -23,7 +23,6 @@ namespace Jellyfin.KodiMetadata.Providers
         where T1 : BaseItem, new()
         where T2 : BaseNfo, new()
     {
-        private readonly ILogger<BaseNfoProvider<T1, T2>> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IXmlSerializer _xmlSerializer;
 
@@ -38,10 +37,15 @@ namespace Jellyfin.KodiMetadata.Providers
             IFileSystem fileSystem,
             IXmlSerializer xmlSerializer)
         {
-            _logger = logger;
+            Logger = logger;
             _fileSystem = fileSystem;
             _xmlSerializer = xmlSerializer;
         }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        public ILogger<BaseNfoProvider<T1, T2>> Logger { get; }
 
         /// <inheritdoc/>
         public string Name => "Nfo";
@@ -67,7 +71,7 @@ namespace Jellyfin.KodiMetadata.Providers
             }
             catch (XmlException e)
             {
-                _logger.LogError(e, "Error deserializing {FullName}", file.FullName);
+                Logger.LogError(e, "Error deserializing {FullName}", file.FullName);
             }
 
             return Task.FromResult(result);
