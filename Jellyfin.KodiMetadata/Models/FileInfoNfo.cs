@@ -28,7 +28,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         public StreamDetailsNfo()
         {
-            Video = Array.Empty<VideoNfo>();
+            Video = Array.Empty<VideoStreamNfo>();
             Audio = Array.Empty<AudioNfo>();
             Subtitle = Array.Empty<SubtitleNfo>();
         }
@@ -37,7 +37,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the video nfo tag.
         /// </summary>
         [XmlElement("video")]
-        public VideoNfo[] Video { get; set; }
+        public VideoStreamNfo[] Video { get; set; }
 
         /// <summary>
         /// Gets or sets the audio nfo tag.
@@ -53,15 +53,21 @@ namespace Jellyfin.KodiMetadata.Models
     }
 
     /// <summary>
-    /// The vidoe nfo tag.
+    /// The video nfo tag.
     /// </summary>
-    public class VideoNfo
+    public class VideoStreamNfo
     {
         /// <summary>
         /// Gets or sets the audio codec.
         /// </summary>
         [XmlElement("codec")]
         public string? Codec { get; set; }
+
+        /// <summary>
+        /// Gets or sets the 3d format.
+        /// </summary>
+        [XmlElement("format3d")]
+        public string? Format3D { get; set; }
     }
 
     /// <summary>

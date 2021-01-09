@@ -18,14 +18,14 @@ namespace KodiVersuche
         {
             var stream = File.OpenRead(Filepath);
 
-            XmlSerializer serializer = new XmlSerializer(typeof(MovieNfo));
+            XmlSerializer serializer = new XmlSerializer(typeof(VideoNfo));
 
             var obj = serializer.Deserialize(stream);
         }
 
         private static void Serialize()
         {
-            var test = new MovieNfo()
+            var test = new VideoNfo()
             {
                 Title = "Avengers",
                 Art = new ArtNfo()
@@ -34,7 +34,7 @@ namespace KodiVersuche
                 }
             };
 
-            var ser = new XmlSerializer(typeof(MovieNfo));
+            var ser = new XmlSerializer(typeof(VideoNfo));
             ser.Serialize(Console.Out, test);
             Console.WriteLine();
         }

@@ -3,17 +3,11 @@
 namespace Jellyfin.KodiMetadata.Models
 {
     /// <summary>
-    /// The movie specific nfo tags.
+    /// The video specific nfo tags.
     /// </summary>
     [XmlRoot("movie")]
-    public class MovieNfo : BaseNfo
+    public class VideoNfo : BaseNfo
     {
-        /// <summary>
-        /// Gets or sets the sort title.
-        /// </summary>
-        [XmlElement("sorttitle")]
-        public string? SortTitle { get; set; }
-
         /// <summary>
         /// Gets or sets the IMDB Top 250 ranking.
         /// </summary>
@@ -31,5 +25,17 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("showlink")]
         public string? ShowLink { get; set; }
+
+        /// <summary>
+        /// Gets or sets the music video album.
+        /// </summary>
+        [XmlElement("album")]
+        public string? Album { get; set; }
+
+        /// <summary>
+        /// Gets or sets the music video artists.
+        /// </summary>
+        [XmlElement("artist")]
+        public string[] Artists { get; set; }
     }
 }

@@ -112,7 +112,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the country of origin.
         /// </summary>
         [XmlElement("country")]
-        public string[] Countries { get; set; } // TODO wird geteilt bei /
+        public string[] Countries { get; set; }
 
         /// <summary>
         /// Gets or sets item tags.
@@ -316,6 +316,12 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("localtitle")]
         public string? LocalTitle { get; set; }
 
+        /// <summary>
+        /// Gets or sets the sort title.
+        /// </summary>
+        [XmlElement("sorttitle")]
+        public string? SortTitle { get; set; }
+
         [XmlElement("criticrating")]
         public float? CriticRating { get; set; }
 
@@ -347,7 +353,7 @@ namespace Jellyfin.KodiMetadata.Models
         public string[] Writers { get; set; }
 
         [XmlElement("displayorder")]
-        public string? DisplayOrder { get; set; } // todo converter
+        public string? DisplayOrder { get; set; }
 
         [XmlElement("rating")]
         public float? Rating { get; set; }
@@ -355,16 +361,55 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("style")]
         public string[] Styles { get; set; }
 
+        [XmlElement("art")]
+        public ArtNfo? Art { get; set; }
+
+        // Provider Ids
+
+        [XmlElement("collectionnumber")]
+        [XmlElement("tmdbcolid")]
+        public string? CollectionId { get; set; }
+
         [XmlElement("imdbid")]
         public string? ImdbId { get; set; }
 
         [XmlElement("tmdbid")]
         public string? TmdbId { get; set; }
 
-        [XmlElement("collectionnumber")]
-        public string? CollectionId { get; set; }
+        [XmlElement("tvdbid")]
+        public string? TvdbId { get; set; }
 
-        [XmlElement("art")]
-        public ArtNfo? Art { get; set; }
+        [XmlElement("tvcomid")]
+        public string? TvcomId { get; set; }
+
+        [XmlElement("musicbrainzalbumid")]
+        public string? MusicBrainzAlbumId { get; set; }
+
+        [XmlElement("musicbrainzalbumartistid")]
+        public string? MusicBrainzAlbumArtistId { get; set; }
+
+        [XmlElement("musicbrainzartistid")]
+        public string? MusicBrainzArtistId { get; set; }
+
+        [XmlElement("musicbrainzreleasegroupid")]
+        public string? MusicBrainzReleaseGroupId { get; set; }
+
+        [XmlElement("zap2itid")]
+        public string? Zap2ItId { get; set; }
+
+        [XmlElement("tvrageid")]
+        public string? TvRageId { get; set; }
+
+        [XmlElement("audiodbartistid")]
+        public string? AudioDbArtistId { get; set; }
+
+        [XmlElement("audiodbalbumid")]
+        public string? AudioDbAlbumId { get; set; }
+
+        [XmlElement("musicbrainztrackid")]
+        public string? MusicBrainzTrackId { get; set; }
+
+        [XmlElement("tvmazeid")]
+        public string? TvMazeId { get; set; }
     }
 }
