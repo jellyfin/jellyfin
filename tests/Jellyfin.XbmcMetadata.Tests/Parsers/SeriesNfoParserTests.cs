@@ -1,6 +1,11 @@
+#pragma warning disable CA5369
+
 using System;
+using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Xml.Serialization;
+using Jellyfin.KodiMetadata.Models;
+using Jellyfin.KodiMetadata.Providers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -15,7 +20,8 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
 {
     public class SeriesNfoParserTests
     {
-        // private readonly SeriesNfoParser _parser;
+        private readonly XmlSerializer _serializer;
+        private readonly SeriesNfoProvider _seriesNfoProvider;
 
         public SeriesNfoParserTests()
         {
@@ -25,7 +31,9 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            // _parser = new SeriesNfoParser(new NullLogger<SeriesNfoParser>(), config.Object, providerManager.Object);
+
+            _serializer = new XmlSerializer(typeof(SeriesNfo));
+            _seriesNfoProvider = new SeriesNfoProvider(new NullLogger<SeriesNfoProvider>(), null!, null!);
         }
 
         [Fact]
@@ -36,7 +44,10 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
                 Item = new Series()
             };
 
-            // _parser.Fetch(result, "Test Data/American Gods.nfo", CancellationToken.None);
+            using var stream = File.OpenRead("Test Data/American Gods.nfo");
+            var nfo = _serializer.Deserialize(stream) as SeriesNfo;
+            _seriesNfoProvider.MapNfoToJellyfinObject(nfo, result);
+
             var item = result.Item;
 
             Assert.Equal("American Gods", item.OriginalTitle);
@@ -73,7 +84,10 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
         {
             var result = new MetadataResult<Series>();
 
-            // Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/American Gods.nfo", CancellationToken.None));
+            using var stream = File.OpenRead("Test Data/American Gods.nfo");
+            var nfo = _serializer.Deserialize(stream) as SeriesNfo;
+
+            Assert.Throws<ArgumentException>(() => _seriesNfoProvider.MapNfoToJellyfinObject(nfo, result));
         }
 
         [Fact]
@@ -84,7 +98,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
                 Item = new Series()
             };
 
-            // Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            Assert.Throws<ArgumentException>(() => _seriesNfoProvider.MapNfoToJellyfinObject(null, result));
         }
     }
 }

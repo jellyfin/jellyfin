@@ -285,7 +285,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var director in nfo.Directors)
+            foreach (var director in nfo.Directors ?? Array.Empty<string>()) // todo ugly fix?
             {
                 if (!string.IsNullOrWhiteSpace(director))
                 {
@@ -297,7 +297,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var credit in nfo.Credits)
+            foreach (var credit in nfo.Credits ?? Array.Empty<string>()) // todo ugly fix?
             {
                 if (!string.IsNullOrWhiteSpace(credit))
                 {
@@ -321,11 +321,24 @@ namespace Jellyfin.KodiMetadata.Providers
             }
 
             // map provider ids
-            // It's okay to pass null because the method removes the providers for which the id is null
-            item.SetProviderId(MetadataProvider.Imdb, nfo.ImdbId!);
-            item.SetProviderId(MetadataProvider.Tmdb, nfo.TmdbId!);
-            item.SetProviderId(MetadataProvider.Tvdb, nfo.TvdbId!);
-            item.SetProviderId(MetadataProvider.Tvcom, nfo.TvcomId!);
+            // It's okay to pass null because the method removes the providers for which the id is null // todo this is ugly
+            string? imdbId = nfo.ImdbId ?? nfo.UniqueIds?
+                .FirstOrDefault(x => x.Id != null && x.Type.Equals("imdb", StringComparison.OrdinalIgnoreCase))
+                ?.Id;
+            string? tmdbId = nfo.ImdbId ?? nfo.UniqueIds?
+                .FirstOrDefault(x => x.Id != null && x.Type.Equals("tmdb", StringComparison.OrdinalIgnoreCase))
+                ?.Id;
+            string? tvdbId = nfo.ImdbId ?? nfo.UniqueIds?
+                .FirstOrDefault(x => x.Id != null && x.Type.Equals("tvdb", StringComparison.OrdinalIgnoreCase))
+                ?.Id;
+            string? tvcomId = nfo.ImdbId ?? nfo.UniqueIds?
+                .FirstOrDefault(x => x.Id != null && x.Type.Equals("tvcom", StringComparison.OrdinalIgnoreCase))
+                ?.Id;
+
+            item.SetProviderId(MetadataProvider.Imdb, imdbId!);
+            item.SetProviderId(MetadataProvider.Tmdb, tmdbId!);
+            item.SetProviderId(MetadataProvider.Tvdb, tvdbId!);
+            item.SetProviderId(MetadataProvider.Tvcom, tvcomId!);
             item.SetProviderId(MetadataProvider.TmdbCollection, nfo.CollectionId!);
             item.SetProviderId(MetadataProvider.MusicBrainzAlbum, nfo.MusicBrainzAlbumId!);
             item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, nfo.MusicBrainzAlbumArtistId!);

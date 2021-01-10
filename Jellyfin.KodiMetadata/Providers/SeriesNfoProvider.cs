@@ -32,7 +32,7 @@ namespace Jellyfin.KodiMetadata.Providers
         {
             if (nfo == null)
             {
-                return;
+                throw new ArgumentException("Nfo can't be null", nameof(nfo));
             }
 
             base.MapNfoToJellyfinObject(nfo, metadataResult);
@@ -48,10 +48,6 @@ namespace Jellyfin.KodiMetadata.Providers
 
             metadataResult.Item.AirDays = TVUtils.GetAirDays(nfo.AirDay);
             metadataResult.Item.AirTime = nfo.AirTime;
-
-            metadataResult.Item.SetProviderId(MetadataProvider.Imdb, nfo.ImdbId!);
-            metadataResult.Item.SetProviderId(MetadataProvider.Tmdb, nfo.TmdbId!);
-            metadataResult.Item.SetProviderId(MetadataProvider.Tvdb, nfo.TvdbId!);
         }
 
         /// <inheritdoc/>

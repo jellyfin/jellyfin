@@ -20,7 +20,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
 {
     public class MovieNfoParserTests
     {
-        private readonly XmlSerializer serializer;
+        private readonly XmlSerializer _serializer;
         private readonly VideoNfoProvider _videoNfoProvider;
 
         public MovieNfoParserTests()
@@ -32,7 +32,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
 
-            serializer = new XmlSerializer(typeof(VideoNfo));
+            _serializer = new XmlSerializer(typeof(VideoNfo));
             _videoNfoProvider = new VideoNfoProvider(new NullLogger<BaseNfoProvider<Video, VideoNfo>>(), null!, null!);
         }
 
@@ -45,7 +45,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             };
 
             using var stream = File.OpenRead("Test Data/Justice League.nfo");
-            var nfo = serializer.Deserialize(stream) as VideoNfo;
+            var nfo = _serializer.Deserialize(stream) as VideoNfo;
             _videoNfoProvider.MapNfoToJellyfinObject(nfo, result);
 
             var item = result.Item;
@@ -101,7 +101,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             var result = new MetadataResult<Video>();
 
             using var stream = File.OpenRead("Test Data/Justice League.nfo");
-            var nfo = serializer.Deserialize(stream) as VideoNfo;
+            var nfo = _serializer.Deserialize(stream) as VideoNfo;
 
             Assert.Throws<ArgumentException>(() => _videoNfoProvider.MapNfoToJellyfinObject(nfo, result));
         }
