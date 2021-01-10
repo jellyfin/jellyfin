@@ -595,11 +595,6 @@ namespace MediaBrowser.Common.Udp
                 string data = Encoding.UTF8.GetString(client.EndReceive(result, ref remote));
                 try
                 {
-                    if (remote?.Address.ToString() == "192.168.1.181")
-                    {
-                        client.Track("<- {EndPoint} : {Remote}\r\n{Data}", client.LocalEndPoint, remote!, data);
-                    }
-
                     if (client.Tracing)
                     {
                         client.Track("<- {EndPoint} : {Remote}\r\n{Data}", client.LocalEndPoint, remote!, data);
