@@ -170,23 +170,20 @@ namespace Jellyfin.Server
                     extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
                     extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
 
+                    var staticFileOptions = new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                        RequestPath = "/web",
+                        ContentTypeProvider = extensionProvider
+                    };
+
                     if (hostWebClient)
                     {
-                        mainApp.UseStaticFiles(new StaticFileOptions
-                        {
-                            FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                            RequestPath = "/web",
-                            ContentTypeProvider = extensionProvider
-                        });
+                        mainApp.UseStaticFiles(staticFileOptions);
                     }
                     else if (hostSpaClient)
                     {
-                        mainApp.UseSpaStaticFiles(new StaticFileOptions
-                        {
-                            FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                            RequestPath = "/web",
-                            ContentTypeProvider = extensionProvider
-                        });
+                        mainApp.UseSpaStaticFiles(staticFileOptions);
                     }
 
                     mainApp.UseRobotsRedirection();
