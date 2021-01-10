@@ -35,7 +35,6 @@ namespace MediaBrowser.Common.Udp
                     localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
                         IPAddress.Any : IPAddress.IPv6Any,
                 portNumber);
-
             Processor = processor;
             Logger = logger;
             OnFailure = failure;
@@ -84,6 +83,11 @@ namespace MediaBrowser.Common.Udp
         /// Gets or sets the trace function.
         /// </summary>
         public IPAddress? TracingFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this client is a multicast client.
+        /// </summary>
+        public bool IsMulticast { get; set; }
 
         /// <summary>
         /// Creates an isolated udpProcess instance designed not to be used for UDP work.

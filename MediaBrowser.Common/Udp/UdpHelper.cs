@@ -72,19 +72,34 @@ namespace MediaBrowser.Common.Udp
         /// Returns the correct multicast address based upon the value of the address provided.
         /// </summary>
         /// <param name="port">Port to use.</param>
-        /// <param name="localIPAddress">Optional IP address to use for comparison, or null to default.</param>
-        /// <param name="isIP6Enabled">Optional. True if IP6 is enabled (default).</param>
+        /// <param name="localIpAddress">IP address to use for comparison.</param>
         /// <returns>An <see cref="IPEndPoint"/> set to the port provided.</returns>
-        public static IPEndPoint GetMulticastEndPoint(int port, IPAddress? localIPAddress = null, bool isIP6Enabled = true)
+        public static IPEndPoint GetMulticastEndPoint(int port, IPAddress localIpAddress)
         {
-            if (localIPAddress == null)
+            if (localIpAddress == null)
             {
-                localIPAddress = isIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any;
+                throw new ArgumentNullException(nameof(localIpAddress));
             }
 
             return new IPEndPoint(
-                localIPAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIPAddress) ?
+                localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIpAddress) ?
+                        IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
+        }
+
+        /// <summary>
+        /// Returns the correct multicast address based upon the value of the address provided.
+        /// </summary>
+        /// <param name="port">Port to use.</param>
+        /// <param name="family">True if IP6 is enabled (default).</param>
+        /// <returns>An <see cref="IPEndPoint"/> set to the port provided.</returns>
+        public static IPEndPoint GetMulticastEndPoint(int port, AddressFamily family)
+        {
+            var localIpAddress = family == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any;
+
+            return new IPEndPoint(
+                localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
+                    IPNetAddress.SSDPMulticastIPv4 : IPObject.IsIPv6LinkLocal(localIpAddress) ?
                         IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
         }
 
@@ -118,19 +133,18 @@ namespace MediaBrowser.Common.Udp
         /// Creates an UDP Socket.
         /// </summary>
         /// <param name="port">UDP port to bind.</param>
+        /// <param name="family">Network family for the broadcast.</param>
         /// <param name="logger">Optional logger.</param>
-        /// <param name="ip4">Optional. Create an IPv4 compatible UDP socket.</param>
-        /// <param name="ip6">Optional. Create an IPv6 compatible UDP socket.</param>
         /// <returns>A <see cref="Socket"/> instance.</returns>
-        public static Socket CreateUdpBroadcastSocket(int port, ILogger? logger = null, bool ip4 = true, bool ip6 = true)
+        public static Socket CreateUdpBroadcastSocket(int port, AddressFamily family, ILogger? logger = null)
         {
             if (port < 0 || port > 65535)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
 
-            IPAddress address = ip6 ? IPAddress.IPv6Any : IPAddress.Any;
-            Socket retVal = PrepareSocket(address, logger, ip4);
+            IPAddress address = family == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any;
+            Socket retVal = PrepareSocket(address, logger);
             try
             {
                 retVal.Bind(new IPEndPoint(address, port));
@@ -150,9 +164,8 @@ namespace MediaBrowser.Common.Udp
         /// <param name="address">IP Address to bind.</param>
         /// <param name="port">UDP port to bind.</param>
         /// <param name="logger">Optional. A <see cref="ILogger"/> instance.</param>
-        /// <param name="dualsocket">Optional. When true, an IPv4/IPv6 socket is created regardless of the address family of <paramref name="address"/>.</param>
         /// <returns>A <see cref="Socket"/> instance.</returns>
-        public static Socket CreateUdpMulticastSocket(IPAddress address, int port, ILogger? logger = null, bool dualsocket = true)
+        public static Socket CreateUdpMulticastSocket(IPAddress address, int port, ILogger? logger = null)
         {
             if (address == null)
             {
@@ -164,7 +177,7 @@ namespace MediaBrowser.Common.Udp
                 throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
 
-            Socket retVal = PrepareSocket(address, logger, dualsocket);
+            Socket retVal = PrepareSocket(address, logger);
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
@@ -205,39 +218,30 @@ namespace MediaBrowser.Common.Udp
         /// <param name="processor">Optional <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
         /// <param name="logger">Optional <see cref="ILogger"/> instance.</param>
         /// <param name="failure">Optional. Method to call in case of listening failure.</param>
-        /// <param name="startListening">Optional. Autostart listening.</param>
-        /// <param name="udpPortRange">Optional. Port range to use.</param>
         /// <returns>The <see cref="UdpProcess"/> instance.</returns>
         public static UdpProcess? CreateUnicastClient(
             IPAddress address,
             int port,
             UdpProcessor? processor = null,
             ILogger? logger = null,
-            FailureFunction? failure = null,
-            bool startListening = true,
-            string udpPortRange = "1024-65535")
+            FailureFunction? failure = null)
         {
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (port == 0)
+            if (address.AddressFamily != AddressFamily.InterNetwork && address.AddressFamily != AddressFamily.InterNetworkV6)
             {
-                port = GetPort(udpPortRange);
-
-                logger?.LogDebug("Selected udp port {Port} from the config range : {PortRange}", port, udpPortRange);
+                logger?.LogError("Invalid interface type of {AddressFamily} on {Address}", address.AddressFamily, address);
+                return null;
             }
 
             try
             {
                 UdpProcess sender = new UdpProcess(address, port, processor, logger, failure);
-                sender.Bind();
-                if (startListening)
-                {
-                    sender.BeginReceive(new AsyncCallback(OnReceive), sender);
-                }
-
+                sender.Client.Bind(sender.LocalEndPoint);
+                sender.BeginReceive(new AsyncCallback(OnReceive), sender);
                 return sender;
             }
             catch (SocketException ex)
@@ -252,6 +256,8 @@ namespace MediaBrowser.Common.Udp
         /// </summary>
         /// <param name="port">Port to listen upon.</param>
         /// <param name="addresses">List of addresses to use.</param>
+        /// <param name="ip4compliant">True if the port should be IPv4 compatible.</param>
+        /// <param name="ip6compliant">True if the port should be IPv6 compatible.</param>
         /// <param name="processor">Optional. An <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
         /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
         /// <param name="failure">Optional. An <see cref="FailureFunction"/> delegate to use in case of listening failure.</param>
@@ -260,6 +266,8 @@ namespace MediaBrowser.Common.Udp
         public static List<UdpProcess> CreateMulticastClients(
             int port,
             Collection<IPObject> addresses,
+            bool ip4compliant,
+            bool ip6compliant,
             UdpProcessor? processor = null,
             ILogger? logger = null,
             FailureFunction? failure = null,
@@ -269,6 +277,12 @@ namespace MediaBrowser.Common.Udp
 
             foreach (IPObject ip in addresses ?? throw new ArgumentNullException(nameof(addresses)))
             {
+                if (((!ip6compliant) && (ip.AddressFamily == AddressFamily.InterNetworkV6))
+                    || ((!ip4compliant) && (ip.AddressFamily == AddressFamily.InterNetwork)))
+                {
+                    continue;
+                }
+
                 UdpProcess? client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
                 if (client != null)
                 {
@@ -288,89 +302,85 @@ namespace MediaBrowser.Common.Udp
         /// <param name="processor">Optional. An <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
         /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
         /// <param name="failure">Optional. An <see cref="FailureFunction"/> delegate to use in case of listening failure.</param>
-        /// <param name="startListening">Optional. If true, the port will automatically listen for input.</param>
-        /// <param name="ip4">Optional. True if an IPv4 compatible port should be created. (default).</param>
-        /// <param name="ip6">Optional. True if an IP6 compatible port should be created. (default).</param>
         /// <returns>The <see cref="UdpProcess"/> instance.</returns>
         public static UdpProcess? CreateMulticastClient(
             IPAddress address,
             int port,
             UdpProcessor? processor,
             ILogger? logger = null,
-            FailureFunction? failure = null,
-            bool startListening = true,
-            bool ip4 = true,
-            bool ip6 = true)
+            FailureFunction? failure = null)
         {
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
 
+            if (address.AddressFamily == AddressFamily.InterNetworkV6 && address.ScopeId == 0)
+            {
+                logger?.LogError("Cannot create multicast client on {Address}. ScopeId: {ScopeId}", address, address.ScopeId);
+                return null;
+            }
+
+            if (address.AddressFamily != AddressFamily.InterNetwork && address.AddressFamily != AddressFamily.InterNetworkV6)
+            {
+                logger?.LogError("Invalid interface type of {AddressFamily} on {Address}", address.AddressFamily, address);
+                return null;
+            }
+
             try
             {
-                UdpProcess listener = new UdpProcess(address, port, processor, logger, failure);
-                if (ip4 && address.AddressFamily == AddressFamily.InterNetwork)
+                UdpProcess udp = new UdpProcess(address, port, processor, logger, failure);
+
+                try
                 {
-                    try
-                    {
-                        listener.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                    }
-                    catch (SocketException)
-                    {
-                    }
-
-                    try
-                    {
-                        listener.ExclusiveAddressUse = false;
-                    }
-                    catch (SocketException)
-                    {
-                    }
-
-                    listener.Bind();
-                    listener.EnableBroadcast = true;
-                    listener.JoinMulticastGroup(IPNetAddress.SSDPMulticastIPv4, address);
+                    udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 }
-                else if (ip6 && address.AddressFamily == AddressFamily.InterNetworkV6)
+                catch (SocketException ex)
                 {
-                    try
-                    {
-                        listener.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                    }
-                    catch (SocketException)
-                    {
-                    }
+                    logger?.LogError(ex, "Error setting re-use on udp port.");
+                }
 
-                    try
-                    {
-                        listener.ExclusiveAddressUse = false;
-                    }
-                    catch (SocketException)
-                    {
-                    }
+                try
+                {
+                    udp.ExclusiveAddressUse = false;
+                }
+                catch (SocketException ex)
+                {
+                    logger?.LogError(ex, "Error disabling exclusivitiy on udp port.");
+                }
 
-                    listener.Bind();
-                    listener.EnableBroadcast = true;
+                udp.EnableBroadcast = true;
+                udp.Client.MulticastLoopback = true;
+
+                if (address.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    udp.JoinMulticastGroup(IPNetAddress.SSDPMulticastIPv4, address);
+                    // udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, address.GetAddressBytes());
+                }
+                else
+                {
                     if (IPObject.IsIPv6LinkLocal(address))
                     {
-                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6LinkLocal);
+                        udp.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6LinkLocal);
                     }
                     else
                     {
-                        listener.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6SiteLocal);
+                        udp.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6SiteLocal);
                     }
+
+                    // udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, address.GetAddressBytes());
                 }
 
-                if (startListening)
-                {
-                    listener.BeginReceive(new AsyncCallback(OnReceive), listener);
-                }
+                udp.IsMulticast = true;
+                udp.Client.Bind(udp.LocalEndPoint);
 
-                return listener;
+                udp.BeginReceive(new AsyncCallback(OnReceive), udp);
+
+                return udp;
             }
-            catch (SocketException)
+            catch (SocketException ex)
             {
+                logger?.LogError(ex, "Unable to create multicast client.");
                 return null;
             }
         }
@@ -393,6 +403,11 @@ namespace MediaBrowser.Common.Udp
             if (remote == null)
             {
                 throw new ArgumentNullException(nameof(remote));
+            }
+
+            if (client.LocalEndPoint.AddressFamily != remote.AddressFamily)
+            {
+                throw new ArgumentException($"Address families don't match. {client.LocalEndPoint} {remote}");
             }
 
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
@@ -440,7 +455,7 @@ namespace MediaBrowser.Common.Udp
         /// Sends a packet via multicast.
         /// </summary>
         /// <param name="client">The <see cref="UdpProcess"/> to use.</param>
-        /// <param name="port">UDP port number to use.</param>
+        /// <param name="port">UDP destination port.</param>
         /// <param name="packet">Packet to send.</param>
         /// <param name="sendCount">Optional. The number of times to transmit <paramref name="packet" />. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
@@ -451,39 +466,21 @@ namespace MediaBrowser.Common.Udp
                 throw new ArgumentNullException(nameof(client));
             }
 
+            if (!client.IsMulticast)
+            {
+                throw new ArgumentException("Client is not a multicast client.");
+            }
+
             var intf = client.LocalEndPoint.Address;
             IPEndPoint? mcast = null;
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
             if (intf.AddressFamily == AddressFamily.InterNetwork)
             {
-                try
-                {
-                    mcast = new IPEndPoint(IPNetAddress.SSDPMulticastIPv4, port);
-                    client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, intf.GetAddressBytes());
-                    client.Client.MulticastLoopback = true;
-                }
-                catch (SocketException ex)
-                {
-                    client.Logger?.LogDebug(ex, "Error setting multicast.");
-                }
-            }
-            else if (intf.AddressFamily == AddressFamily.InterNetworkV6 && intf.ScopeId != 0)
-            {
-                try
-                {
-                    mcast = new IPEndPoint(IPObject.IsIPv6LinkLocal(intf) ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
-                    client.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastInterface, BitConverter.GetBytes((int)intf.ScopeId));
-                    client.Client.MulticastLoopback = true;
-                }
-                catch (SocketException ex)
-                {
-                    client.Logger?.LogDebug(ex, "Error setting multicast.");
-                }
+                mcast = new IPEndPoint(IPNetAddress.SSDPMulticastIPv4, port);
             }
             else
             {
-                // Cannot use this type of address.
-                return;
+                mcast = new IPEndPoint(IPObject.IsIPv6LinkLocal(intf) ? IPNetAddress.SSDPMulticastIPv6LinkLocal : IPNetAddress.SSDPMulticastIPv6SiteLocal, port);
             }
 
             if (client.Tracing)
@@ -535,9 +532,8 @@ namespace MediaBrowser.Common.Udp
         /// </summary>
         /// <param name="address">An <see cref="IPAddress"/> containing the address of socket.</param>
         /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
-        /// <param name="dualSocket">Optional. True if a dual-socket should be created regardless of the address family of <paramref name="address"/>.</param>
         /// <returns>A <see cref="Socket"/> instance.</returns>
-        private static Socket PrepareSocket(IPAddress address, ILogger? logger, bool dualSocket = true)
+        private static Socket PrepareSocket(IPAddress address, ILogger? logger)
         {
             Socket retVal;
 
@@ -547,12 +543,7 @@ namespace MediaBrowser.Common.Udp
             }
             else
             {
-                // IPv6 is enabled so create a dual IP4/IP6 socket
                 retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-                if (dualSocket)
-                {
-                    retVal.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
-                }
             }
 
             try
@@ -573,19 +564,6 @@ namespace MediaBrowser.Common.Udp
                 logger?.LogWarning(ex, "Error setting socket as non exclusive. {Address}", address);
             }
 
-            if (dualSocket)
-            {
-                try
-                {
-                    retVal.EnableBroadcast = true;
-                    retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
-                }
-                catch (SocketException ex)
-                {
-                    logger?.LogWarning(ex, "Error enabling broadcast on socket. {Address}", address);
-                }
-            }
-
             return retVal;
         }
 
@@ -604,6 +582,8 @@ namespace MediaBrowser.Common.Udp
 
             if (client.Processor == null)
             {
+                IPEndPoint? remote = null;
+                client.EndReceive(result, ref remote);
                 // If we are not interesting in inbound data, then ignore it.
                 client.BeginReceive(new AsyncCallback(OnReceive), client);
                 return;
@@ -615,6 +595,11 @@ namespace MediaBrowser.Common.Udp
                 string data = Encoding.UTF8.GetString(client.EndReceive(result, ref remote));
                 try
                 {
+                    if (remote?.Address.ToString() == "192.168.1.181")
+                    {
+                        client.Track("<- {EndPoint} : {Remote}\r\n{Data}", client.LocalEndPoint, remote!, data);
+                    }
+
                     if (client.Tracing)
                     {
                         client.Track("<- {EndPoint} : {Remote}\r\n{Data}", client.LocalEndPoint, remote!, data);

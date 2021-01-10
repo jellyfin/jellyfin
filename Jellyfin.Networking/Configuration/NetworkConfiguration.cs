@@ -162,9 +162,9 @@ namespace Jellyfin.Networking.Configuration
         public string HDHomerunPortRange { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether IPv6 is enabled in HDHomerun communications.
+        /// Gets or sets a value indicating whether HDHomerun communications are performed over IP6.
         /// </summary>
-        public bool HDHomeRunIP6Enabled { get; set; } = false;
+        public bool HDHomeRunIP6 { get; set; } = false;
 
         /// <summary>
         /// Gets or sets PublishedServerUri to advertise for specific subnets.

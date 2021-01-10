@@ -265,9 +265,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             using (var manager = new HdHomerunManager())
             {
                 IPObject ipInfo;
-                if (_config.HDHomeRunIP6Enabled)
+                if (_config.HDHomeRunIP6)
                 {
-                    ipInfo = IPHost.Parse(uri.Host);
+                    ipInfo = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
                 }
                 else
                 {
@@ -693,19 +693,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             try
             {
                 var configuration = Config.GetNetworkConfiguration();
+                var family = _config.HDHomeRunIP6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
                 using var udpSocket = UdpHelper.CreateUdpBroadcastSocket(
                     UdpHelper.GetPort(configuration.HDHomerunPortRange ?? configuration.UDPPortRange),
-                    Logger,
-                    _networkManager.IsIP4Enabled,
-                    _config.HDHomeRunIP6Enabled);
+                    family,
+                    Logger);
 
                 await udpSocket.SendToAsync(
                     discBytes,
                     SocketFlags.None,
                     UdpHelper.GetMulticastEndPoint(
                         HdHomeRunPort,
-                        null,
-                        _config.HDHomeRunIP6Enabled)).ConfigureAwait(false);
+                        family)).ConfigureAwait(false);
 
                 try
                 {
@@ -714,7 +713,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var response = await udpSocket.ReceiveFromAsync(
                             receiveBuffer,
                             SocketFlags.None,
-                            new IPEndPoint(_config.HDHomeRunIP6Enabled ? IPAddress.IPv6Any : IPAddress.Any, 0))
+                            new IPEndPoint(_config.HDHomeRunIP6 ? IPAddress.IPv6Any : IPAddress.Any, 0))
                             .ConfigureAwait(false);
 
                         // Ignore excluded devices/ranges.

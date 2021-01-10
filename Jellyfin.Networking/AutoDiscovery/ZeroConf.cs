@@ -101,9 +101,12 @@ namespace Jellyfin.Networking.AutoDiscovery
             _udpProcess = UdpHelper.CreateMulticastClients(
                 PortNumber,
                 _networkManager.GetAllBindInterfaces(true),
+                _networkManager.IsIP4Enabled,
+                _networkManager.IsIP6Enabled,
                 ProcessMessage,
                 _logger,
-                enableTracing: config.AutoDiscoveryTracing);
+                null,
+                config.AutoDiscoveryTracing);
 
             if (_udpProcess.Count == 0)
             {
