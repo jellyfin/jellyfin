@@ -371,6 +371,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="204">Subtitle uploaded.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Videos/{itemId}/Subtitles")]
+        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> UploadSubtitle(
             [FromRoute, Required] Guid itemId,
