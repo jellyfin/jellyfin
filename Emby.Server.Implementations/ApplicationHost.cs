@@ -45,6 +45,7 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.KodiMetadata.Models;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
@@ -1070,6 +1071,9 @@ namespace Emby.Server.Implementations
 
             // Network
             yield return typeof(NetworkManager).Assembly;
+
+            // KodiMetadata
+            yield return typeof(BaseNfo).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
             {

@@ -46,5 +46,9 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("airsbefore_season")] // todo
         // [XmlElement("displayseason")]
         public int? AirsBeforeSeason { get; set; }
+
+        // TODO Displayepisode (kodi wiki)
+
+        // TODO Displayseason (kodi wiki)
     }
 }

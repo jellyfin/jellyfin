@@ -67,10 +67,6 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("id")]
         public IdNfo[] Ids { get; set; }
 
-        // TODO Displayepisode (kodi wiki)
-
-        // TODO Displayseason (kodi wiki)
-
         // TODO namedseason (kodi wiki)
     }
 }
