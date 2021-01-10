@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../MediaBrowser.XbmcMetadata/MediaBrowser.XbmcMetadata.csproj" />
+    <ProjectReference Include="../../Jellyfin.KodiMetadata/Jellyfin.KodiMetadata.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

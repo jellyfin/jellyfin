@@ -30,8 +30,8 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the episode this episode airs before.
         /// </summary>
-        [XmlElement("airsbefore_episode")]
-        [XmlElement("displayepisode")]
+        [XmlElement("airsbefore_episode")] // todo
+        // [XmlElement("displayepisode")]
         public int? AirsBeforeEpisode { get; set; }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the season this episode airs before.
         /// </summary>
-        [XmlElement("airsbefore_season")]
-        [XmlElement("displayseason")]
+        [XmlElement("airsbefore_season")] // todo
+        // [XmlElement("displayseason")]
         public int? AirsBeforeSeason { get; set; }
     }
 }

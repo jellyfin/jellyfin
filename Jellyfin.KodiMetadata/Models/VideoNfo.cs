@@ -1,4 +1,7 @@
-﻿using System.Xml.Serialization;
+﻿#pragma warning disable CA1819
+
+using System;
+using System.Xml.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
 {
@@ -8,6 +11,14 @@ namespace Jellyfin.KodiMetadata.Models
     [XmlRoot("movie")]
     public class VideoNfo : BaseNfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoNfo"/> class.
+        /// </summary>
+        public VideoNfo()
+        {
+            Artists = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the IMDB Top 250 ranking.
         /// </summary>
@@ -37,5 +48,11 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("artist")]
         public string[] Artists { get; set; }
+
+        /// <summary>
+        /// Gets or sets the imdb id.
+        /// </summary>
+        [XmlElement("id")]
+        public string? Id { get; set; }
     }
 }

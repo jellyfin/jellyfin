@@ -30,7 +30,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the order in which the actors should appear.
         /// </summary>
         [XmlElement("order")]
-        [XmlElement("sortorder")]
+        // [XmlElement("sortorder")] // todo
         public int? Order { get; set; }
 
         /// <summary>

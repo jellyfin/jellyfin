@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Jellyfin.KodiMetadata.Models;
@@ -36,44 +37,22 @@ namespace Jellyfin.KodiMetadata.Providers
         {
             if (nfo == null)
             {
-                return;
+                throw new ArgumentException("Nfo can't be null", nameof(nfo));
             }
 
             base.MapNfoToJellyfinObject(nfo, metadataResult);
 
-            if (nfo.FileInfo?.StreamDetails?.Video != null)
-            {
-                foreach (var videoNfo in nfo.FileInfo.StreamDetails.Video)
-                {
-                    switch (videoNfo.Format3D)
-                    {
-                        case "HSBS":
-                            metadataResult.Item.Video3DFormat = Video3DFormat.HalfSideBySide;
-                            break;
-                        case "HTAG":
-                            metadataResult.Item.Video3DFormat = Video3DFormat.HalfTopAndBottom;
-                            break;
-                        case "FTAB":
-                            metadataResult.Item.Video3DFormat = Video3DFormat.FullTopAndBottom;
-                            break;
-                        case "FSBS":
-                            metadataResult.Item.Video3DFormat = Video3DFormat.FullSideBySide;
-                            break;
-                        case "MVC":
-                            metadataResult.Item.Video3DFormat = Video3DFormat.MVC;
-                            break;
-                    }
-                }
-            }
+            var item = metadataResult.Item;
+            item.SetProviderId(MetadataProvider.Imdb, nfo.Id!);
 
             // handle sets
-            if (metadataResult.Item is Movie movie)
+            if (item is Movie movie)
             {
                 movie.SetProviderId(MetadataProvider.TmdbCollection, nfo.Set?.TmdbCollectionId!);
                 movie.CollectionName = nfo.Set.Name;
             }
 
-            if (metadataResult.Item is MusicVideo musicVideo)
+            if (item is MusicVideo musicVideo)
             {
                 musicVideo.Album = nfo.Album;
                 musicVideo.Artists = nfo.Artists;

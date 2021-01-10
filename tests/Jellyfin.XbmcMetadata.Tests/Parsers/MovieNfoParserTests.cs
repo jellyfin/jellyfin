@@ -1,13 +1,17 @@
+#pragma warning disable CA5369
+
 using System;
+using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Xml.Serialization;
+using Jellyfin.KodiMetadata.Models;
+using Jellyfin.KodiMetadata.Providers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -16,7 +20,8 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
 {
     public class MovieNfoParserTests
     {
-        private readonly MovieNfoParser _parser;
+        private readonly XmlSerializer serializer;
+        private readonly VideoNfoProvider _videoNfoProvider;
 
         public MovieNfoParserTests()
         {
@@ -26,7 +31,9 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            _parser = new MovieNfoParser(new NullLogger<MovieNfoParser>(), config.Object, providerManager.Object);
+
+            serializer = new XmlSerializer(typeof(VideoNfo));
+            _videoNfoProvider = new VideoNfoProvider(new NullLogger<BaseNfoProvider<Video, VideoNfo>>(), null!, null!);
         }
 
         [Fact]
@@ -37,7 +44,10 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
                 Item = new Video()
             };
 
-            _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
+            using var stream = File.OpenRead("Test Data/Justice League.nfo");
+            var nfo = serializer.Deserialize(stream) as VideoNfo;
+            _videoNfoProvider.MapNfoToJellyfinObject(nfo, result);
+
             var item = result.Item;
 
             Assert.Equal("Justice League", item.OriginalTitle);
@@ -90,7 +100,10 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
         {
             var result = new MetadataResult<Video>();
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None));
+            using var stream = File.OpenRead("Test Data/Justice League.nfo");
+            var nfo = serializer.Deserialize(stream) as VideoNfo;
+
+            Assert.Throws<ArgumentException>(() => _videoNfoProvider.MapNfoToJellyfinObject(nfo, result));
         }
 
         [Fact]
@@ -101,7 +114,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
                 Item = new Video()
             };
 
-            Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
+            Assert.Throws<ArgumentException>(() => _videoNfoProvider.MapNfoToJellyfinObject(null, result));
         }
     }
 }

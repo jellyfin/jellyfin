@@ -360,7 +360,7 @@ namespace Jellyfin.KodiMetadata.Models
         // Provider Ids
 
         [XmlElement("collectionnumber")]
-        [XmlElement("tmdbcolid")]
+        // [XmlElement("tmdbcolid")] // todo
         public string? CollectionId { get; set; }
 
         [XmlElement("imdbid")]

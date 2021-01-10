@@ -99,12 +99,17 @@ namespace Jellyfin.KodiMetadata.Providers
         {
             if (nfo == null)
             {
-                return;
+                throw new ArgumentException("Nfo can't be null", nameof(nfo));
+            }
+
+            if (metadataResult.Item == null)
+            {
+                throw new ArgumentException("Item can't be null.", nameof(metadataResult));
             }
 
             var item = new T1()
             {
-                DateCreated = nfo.DateAdded.GetValueOrDefault().ToUniversalTime(),
+                DateCreated = nfo.DateAdded.GetValueOrDefault(),
                 OriginalTitle = nfo.OriginalTitle,
                 Name = nfo.LocalTitle ?? nfo.Title,
                 CriticRating = nfo.CriticRating,
@@ -120,12 +125,55 @@ namespace Jellyfin.KodiMetadata.Providers
                 IsLocked = nfo.LockData,
                 Studios = new[] { nfo.Studio },
                 ProductionYear = nfo.Year,
-                PremiereDate = (nfo.Premiered ?? nfo.Formed ?? nfo.Aired).GetValueOrDefault().ToUniversalTime(),
-                EndDate = nfo.EndDate.GetValueOrDefault().ToUniversalTime()
+                PremiereDate = (nfo.Premiered ?? nfo.Formed ?? nfo.Aired).GetValueOrDefault(),
+                EndDate = nfo.EndDate.GetValueOrDefault()
             };
 
+            if (item is Video video)
+            {
+                if (nfo.FileInfo?.StreamDetails?.Video != null)
+                {
+                    foreach (var videoNfo in nfo.FileInfo.StreamDetails.Video)
+                    {
+                        switch (videoNfo.Format3D)
+                        {
+                            case "HSBS":
+                                video.Video3DFormat = Video3DFormat.HalfSideBySide;
+                                break;
+                            case "HTAG":
+                                video.Video3DFormat = Video3DFormat.HalfTopAndBottom;
+                                break;
+                            case "FTAB":
+                                video.Video3DFormat = Video3DFormat.FullTopAndBottom;
+                                break;
+                            case "FSBS":
+                                video.Video3DFormat = Video3DFormat.FullSideBySide;
+                                break;
+                            case "MVC":
+                                video.Video3DFormat = Video3DFormat.MVC;
+                                break;
+                        }
+                    }
+
+                    video.Height = nfo.FileInfo.StreamDetails.Video[0].Height ?? 0;
+                    video.Width = nfo.FileInfo.StreamDetails.Video[0].Width ?? 0;
+                    video.RunTimeTicks = new TimeSpan(0, 0, nfo.FileInfo.StreamDetails.Video[0].Duration ?? nfo.Runtime ?? 0).Ticks;
+                }
+
+                // Subtitles
+                if (nfo.FileInfo?.StreamDetails?.Subtitle != null && nfo.FileInfo.StreamDetails.Subtitle.Length != 0)
+                {
+                    video.HasSubtitles = true;
+                }
+            }
+
+            if (item is IHasAspectRatio hasAspectRatio && (nfo.AspectRatio != null || nfo.FileInfo?.StreamDetails?.Video?[0].AspectRatio != null))
+            {
+                hasAspectRatio.AspectRatio = nfo.FileInfo?.StreamDetails?.Video?[0].AspectRatio ?? nfo.AspectRatio;
+            }
+
             var trailerUrl = nfo.Trailer?.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
-            if (trailerUrl != null)
+            if (!string.IsNullOrWhiteSpace(trailerUrl))
             {
                 item.AddTrailerUrl(trailerUrl);
             }
@@ -160,25 +208,26 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var style in nfo.Styles)
+            if (nfo.Styles != null)
             {
-                if (!string.IsNullOrWhiteSpace(style))
+                foreach (var style in nfo.Styles)
                 {
-                    item.AddGenre(style.Trim());
+                    if (!string.IsNullOrWhiteSpace(style))
+                    {
+                        item.AddGenre(style.Trim());
+                    }
                 }
             }
 
-            foreach (var tag in nfo.Tags)
+            if (nfo.Tags != null)
             {
-                if (!string.IsNullOrWhiteSpace(tag))
+                foreach (var tag in nfo.Tags)
                 {
-                    item.AddGenre(tag.Trim());
+                    if (!string.IsNullOrWhiteSpace(tag))
+                    {
+                        item.AddGenre(tag.Trim());
+                    }
                 }
-            }
-
-            if (item is IHasAspectRatio hasAspectRatio && nfo.AspectRatio != null)
-            {
-                hasAspectRatio.AspectRatio = nfo.AspectRatio;
             }
 
             item.LockedFields = nfo.LockedFields?.Split('|').Select(i =>
@@ -203,9 +252,6 @@ namespace Jellyfin.KodiMetadata.Providers
 
                 switch (actor.Type)
                 {
-                    case PersonType.Actor:
-                        person.Type = PersonType.Actor;
-                        break;
                     case PersonType.Composer:
                         person.Type = PersonType.Composer;
                         break;
@@ -226,6 +272,10 @@ namespace Jellyfin.KodiMetadata.Providers
                         break;
                     case PersonType.GuestStar:
                         person.Type = PersonType.GuestStar;
+                        break;
+                    // no type --> actor
+                    default:
+                        person.Type = PersonType.Actor;
                         break;
                 }
 
@@ -259,20 +309,18 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var writer in nfo.Writers)
+            if (nfo.Writers != null)
             {
-                if (!string.IsNullOrWhiteSpace(writer))
+                foreach (var writer in nfo.Writers)
                 {
-                    metadataResult.AddPerson(new PersonInfo()
+                    if (!string.IsNullOrWhiteSpace(writer))
                     {
-                        Name = writer.Trim(),
-                        Type = PersonType.Writer
-                    });
+                        metadataResult.AddPerson(new PersonInfo() { Name = writer.Trim(), Type = PersonType.Writer });
+                    }
                 }
             }
 
             // map provider ids
-
             // It's okay to pass null because the method removes the providers for which the id is null
             item.SetProviderId(MetadataProvider.Imdb, nfo.ImdbId!);
             item.SetProviderId(MetadataProvider.Tmdb, nfo.TmdbId!);

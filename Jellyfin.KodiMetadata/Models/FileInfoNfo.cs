@@ -68,6 +68,30 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("format3d")]
         public string? Format3D { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video aspect ratio.
+        /// </summary>
+        [XmlElement("aspect")]
+        public string? AspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video width.
+        /// </summary>
+        [XmlElement("width")]
+        public int? Width { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video height.
+        /// </summary>
+        [XmlElement("height")]
+        public int? Height { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video duration in seconds.
+        /// </summary>
+        [XmlElement("durationinseconds")]
+        public int? Duration { get; set; }
     }
 
     /// <summary>
