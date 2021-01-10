@@ -204,7 +204,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         private void SaveToFile(Stream stream, string path)
         {
-            LibraryMonitor.ReportFileSystemChangeBeginning(path);
+            // LibraryMonitor.ReportFileSystemChangeBeginning(path);
             try
             {
                 var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
@@ -244,7 +244,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
             finally
             {
-                LibraryMonitor.ReportFileSystemChangeComplete(path, false);
+                // LibraryMonitor.ReportFileSystemChangeComplete(path, false);
             }
         }
 
