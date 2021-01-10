@@ -179,7 +179,21 @@ namespace Jellyfin.Server
                             "The server is expected to host the web client, but the provided content directory is either " +
                             $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
                             "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{MediaBrowser.Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                            $"'{ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                    }
+                }
+
+                // If hosting the spa client, validate the client content path.
+                if (startupConfig.HostSpaClient())
+                {
+                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
+                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
+                    {
+                        throw new InvalidOperationException(
+                            "The server is expected to host the spa web client, but the provided content directory is either " +
+                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
+                            "server, you may set the '--nowebclient' command line flag, or set" +
+                            $"'{ConfigurationExtensions.HostSpaClientKey}=false' in your config settings.");
                     }
                 }
 
@@ -563,7 +577,7 @@ namespace Jellyfin.Server
         {
             // Use the swagger API page as the default redirect path if not hosting the web client
             var inMemoryDefaultConfig = ConfigurationOptions.DefaultConfiguration;
-            if (startupConfig != null && !startupConfig.HostWebClient())
+            if (startupConfig != null && !startupConfig.HostWebClient() && !startupConfig.HostSpaClient())
             {
                 inMemoryDefaultConfig[ConfigurationExtensions.DefaultRedirectKey] = "api-docs/swagger";
             }

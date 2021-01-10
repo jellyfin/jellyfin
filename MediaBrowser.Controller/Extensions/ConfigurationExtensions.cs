@@ -20,6 +20,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string HostWebClientKey = "hostwebclient";
 
         /// <summary>
+        /// The key for a setting that indicates whether the application should host spa web client content.
+        /// </summary>
+        public const string HostSpaClientKey = "hostspaclient";
+
+        /// <summary>
         /// The key for the FFmpeg probe size option.
         /// </summary>
         public const string FfmpegProbeSizeKey = "FFmpeg:probesize";
@@ -57,6 +62,15 @@ namespace MediaBrowser.Controller.Extensions
         /// <exception cref="FormatException">The config value is not a valid bool string. See <see cref="bool.Parse(string)"/>.</exception>
         public static bool HostWebClient(this IConfiguration configuration)
             => configuration.GetValue<bool>(HostWebClientKey);
+
+        /// <summary>
+        /// Gets a value indicating whether the application should host a SPA client from the <see cref="IConfiguration"/>.
+        /// </summary>
+        /// <param name="configuration">The configuration to retrieve the value from.</param>
+        /// <returns>The parsed config value.</returns>
+        /// <exception cref="FormatException">The config value is not a valid bool string. See <see cref="bool.Parse(string)"/>.</exception>
+        public static bool HostSpaClient(this IConfiguration configuration)
+            => configuration.GetValue<bool>(HostSpaClientKey);
 
         /// <summary>
         /// Gets the FFmpeg probe size from the <see cref="IConfiguration" />.

@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -128,25 +129,9 @@ namespace Jellyfin.Server
                     mainApp.UseHttpsRedirection();
                 }
 
-                // This must be injected before any path related middleware.
+                // UsePathTrim must be injected before any path related middleware.
                 mainApp.UsePathTrim();
                 mainApp.UseStaticFiles();
-                if (appConfig.HostWebClient())
-                {
-                    var extensionProvider = new FileExtensionContentTypeProvider();
-
-                    // subtitles octopus requires .data, .mem files.
-                    extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
-                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
-                    mainApp.UseStaticFiles(new StaticFileOptions
-                    {
-                        FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
-                        RequestPath = "/web",
-                        ContentTypeProvider = extensionProvider
-                    });
-
-                    mainApp.UseRobotsRedirection();
-                }
 
                 mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
@@ -174,6 +159,38 @@ namespace Jellyfin.Server
 
                     endpoints.MapHealthChecks("/health");
                 });
+
+                var hostWebClient = appConfig.HostWebClient();
+                var hostSpaClient = appConfig.HostSpaClient();
+                if (hostWebClient || hostSpaClient)
+                {
+                    var extensionProvider = new FileExtensionContentTypeProvider();
+
+                    // subtitles octopus requires .data, .mem files.
+                    extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
+                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
+
+                    if (hostWebClient)
+                    {
+                        mainApp.UseStaticFiles(new StaticFileOptions
+                        {
+                            FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                            RequestPath = "/web",
+                            ContentTypeProvider = extensionProvider
+                        });
+                    }
+                    else if (hostSpaClient)
+                    {
+                        mainApp.UseSpaStaticFiles(new StaticFileOptions
+                        {
+                            FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
+                            RequestPath = "/web",
+                            ContentTypeProvider = extensionProvider
+                        });
+                    }
+
+                    mainApp.UseRobotsRedirection();
+                }
             });
         }
     }

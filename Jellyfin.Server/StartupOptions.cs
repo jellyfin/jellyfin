@@ -35,6 +35,12 @@ namespace Jellyfin.Server
         public string? WebDir { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the server should host a SPA.
+        /// </summary>
+        [Option('s', "spa", Required = false, HelpText = "Indicates that the web server should host a SPA.")]
+        public bool HostSpa { get; set; }
+
+        /// <summary>
         /// Gets or sets the path to the cache directory.
         /// </summary>
         /// <value>The path to the cache directory.</value>
@@ -90,6 +96,13 @@ namespace Jellyfin.Server
             if (NoWebClient)
             {
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
+                config.Add(ConfigurationExtensions.HostSpaClientKey, bool.FalseString);
+            }
+
+            if (HostSpa)
+            {
+                config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
+                config.Add(ConfigurationExtensions.HostSpaClientKey, bool.TrueString);
             }
 
             if (PublishedServerUrl != null)
