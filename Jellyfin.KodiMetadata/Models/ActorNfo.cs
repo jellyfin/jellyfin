@@ -1,4 +1,5 @@
 ﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
 {
@@ -30,7 +31,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the order in which the actors should appear.
         /// </summary>
         [XmlElement("order")]
-        // [XmlElement("sortorder")] // todo
+        [XmlSynonyms("sortorder")]
         public int? Order { get; set; }
 
         /// <summary>

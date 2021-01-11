@@ -14,7 +14,7 @@ namespace Jellyfin.KodiMetadata.Models
         public float? Position { get; set; }
 
         /// <summary>
-        /// Gets or sets the total.
+        /// Gets or sets the total length in seconds.
         /// </summary>
         [XmlElement("total")]
         public float? Total { get; set; }

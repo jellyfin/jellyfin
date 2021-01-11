@@ -24,6 +24,6 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the tmdb collection id.
         /// </summary>
         [XmlAttribute("tmdbcolid")]
-        public string TmdbCollectionId { get; set; }
+        public string? TmdbCollectionId { get; set; }
     }
 }

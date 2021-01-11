@@ -91,7 +91,7 @@ namespace Jellyfin.KodiMetadata.Providers
         }
 
         /// <summary>
-        /// Maps the <see cref="BaseNfo"/> object to the jellyfin <see cref="T2"/> object.
+        /// Maps the <see cref="BaseNfo"/> object to the jellyfin object.
         /// </summary>
         /// <param name="nfo">The nfo object.</param>
         /// <param name="metadataResult">The resulting metadata object.</param>
@@ -183,7 +183,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 hasDisplayOrder.DisplayOrder = nfo.DisplayOrder;
             }
 
-            if (nfo.Ratings.Length != 0)
+            if (nfo.Ratings != null && nfo.Ratings.Length != 0)
             {
                 item.CriticRating = nfo.Ratings
                     .First(x => x.Name != null &&
@@ -200,7 +200,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 item.CommunityRating = nfo.Rating;
             }
 
-            foreach (var genre in nfo.Genres)
+            foreach (var genre in nfo.Genres ?? Array.Empty<string>())
             {
                 if (!string.IsNullOrWhiteSpace(genre))
                 {
@@ -208,25 +208,19 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            if (nfo.Styles != null)
+            foreach (var style in nfo.Styles ?? Array.Empty<string>())
             {
-                foreach (var style in nfo.Styles)
+                if (!string.IsNullOrWhiteSpace(style))
                 {
-                    if (!string.IsNullOrWhiteSpace(style))
-                    {
-                        item.AddTag(style.Trim());
-                    }
+                    item.AddTag(style.Trim());
                 }
             }
 
-            if (nfo.Tags != null)
+            foreach (var tag in nfo.Tags ?? Array.Empty<string>())
             {
-                foreach (var tag in nfo.Tags)
+                if (!string.IsNullOrWhiteSpace(tag))
                 {
-                    if (!string.IsNullOrWhiteSpace(tag))
-                    {
-                        item.AddGenre(tag.Trim());
-                    }
+                    item.AddGenre(tag.Trim());
                 }
             }
 
@@ -285,7 +279,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var director in nfo.Directors ?? Array.Empty<string>()) // todo ugly fix?
+            foreach (var director in nfo.Directors ?? Array.Empty<string>())
             {
                 if (!string.IsNullOrWhiteSpace(director))
                 {
@@ -297,7 +291,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var credit in nfo.Credits ?? Array.Empty<string>()) // todo ugly fix?
+            foreach (var credit in nfo.Credits ?? Array.Empty<string>())
             {
                 if (!string.IsNullOrWhiteSpace(credit))
                 {
@@ -309,30 +303,27 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            if (nfo.Writers != null)
+            foreach (var writer in nfo.Writers ?? Array.Empty<string>())
             {
-                foreach (var writer in nfo.Writers)
+                if (!string.IsNullOrWhiteSpace(writer))
                 {
-                    if (!string.IsNullOrWhiteSpace(writer))
-                    {
-                        metadataResult.AddPerson(new PersonInfo() { Name = writer.Trim(), Type = PersonType.Writer });
-                    }
+                    metadataResult.AddPerson(new PersonInfo() { Name = writer.Trim(), Type = PersonType.Writer });
                 }
             }
 
             // map provider ids // todo
             // It's okay to pass null because the method removes the providers for which the id is null // todo this is ugly
             string? imdbId = nfo.ImdbId ?? nfo.UniqueIds?
-                .FirstOrDefault(x => x.Id != null && x.Type.Equals("imdb", StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(x => x.Type != null && x.Type.Equals("imdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
             string? tmdbId = nfo.ImdbId ?? nfo.UniqueIds?
-                .FirstOrDefault(x => x.Id != null && x.Type.Equals("tmdb", StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(x => x.Type != null && x.Type.Equals("tmdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
             string? tvdbId = nfo.ImdbId ?? nfo.UniqueIds?
-                .FirstOrDefault(x => x.Id != null && x.Type.Equals("tvdb", StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(x => x.Type != null && x.Type.Equals("tvdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
             string? tvcomId = nfo.ImdbId ?? nfo.UniqueIds?
-                .FirstOrDefault(x => x.Id != null && x.Type.Equals("tvcom", StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(x => x.Type != null && x.Type.Equals("tvcom", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
 
             item.SetProviderId(MetadataProvider.Imdb, imdbId!);

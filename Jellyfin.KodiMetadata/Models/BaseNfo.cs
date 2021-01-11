@@ -3,6 +3,7 @@
 using System;
 using System.Globalization;
 using System.Xml.Serialization;
+using MediaBrowser.Controller.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
 {
@@ -11,23 +12,6 @@ namespace Jellyfin.KodiMetadata.Models
     /// </summary>
     public class BaseNfo
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseNfo"/> class.
-        /// </summary>
-        public BaseNfo()
-        {
-            Genres = Array.Empty<string>();
-            Countries = Array.Empty<string>();
-            Credits = Array.Empty<string>();
-            Directors = Array.Empty<string>();
-            UniqueIds = Array.Empty<UniqueIdNfo>();
-            Actors = Array.Empty<ActorNfo>();
-            Ratings = Array.Empty<RatingNfo>();
-            Tags = Array.Empty<string>();
-            Writers = Array.Empty<string>();
-            Styles = Array.Empty<string>();
-        }
-
         /// <summary>
         /// Gets or sets the title.
         /// </summary>
@@ -51,7 +35,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the ratings.
         /// </summary>
         [XmlArray("ratings")]
-        public RatingNfo[] Ratings { get; set; }
+        public RatingNfo[]? Ratings { get; set; }
 
         /// <summary>
         /// Gets or sets the user rating.
@@ -99,37 +83,37 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets scraper ids.
         /// </summary>
         [XmlElement("uniqueid")]
-        public UniqueIdNfo[] UniqueIds { get; set; }
+        public UniqueIdNfo[]? UniqueIds { get; set; }
 
         /// <summary>
         /// Gets or sets the genre.
         /// </summary>
         [XmlElement("genre")]
-        public string[] Genres { get; set; }
+        public string[]? Genres { get; set; }
 
         /// <summary>
         /// Gets or sets the country of origin.
         /// </summary>
         [XmlElement("country")]
-        public string[] Countries { get; set; }
+        public string[]? Countries { get; set; }
 
         /// <summary>
         /// Gets or sets item tags.
         /// </summary>
         [XmlElement("tag")]
-        public string[] Tags { get; set; }
+        public string[]? Tags { get; set; }
 
         /// <summary>
         /// Gets or sets writers.
         /// </summary>
         [XmlElement("credits")]
-        public string[] Credits { get; set; }
+        public string[]? Credits { get; set; }
 
         /// <summary>
         /// Gets or sets directors.
         /// </summary>
         [XmlElement("director")]
-        public string[] Directors { get; set; }
+        public string[]? Directors { get; set; }
 
         /// <summary>
         /// Gets or sets the release year. Use <see cref="Premiered"/> instead.
@@ -159,15 +143,14 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the actors.
         /// </summary>
         [XmlElement("actor")]
-        public ActorNfo[] Actors { get; set; }
+        public ActorNfo[]? Actors { get; set; }
 
         /// <summary>
         /// Gets or sets the resume position.
         /// </summary>
-        [XmlElement("resumeposition")]
+        [XmlElement("resume")]
+        [XmlSynonyms("resumeposition")]
         public ResumePositionNfo? ResumePosition { get; set; }
-
-        // todo <resume> tag
 
         [XmlElement("dateadded")]
         public string? DateAddedXml
@@ -357,7 +340,7 @@ namespace Jellyfin.KodiMetadata.Models
         public bool LockData { get; set; }
 
         [XmlElement("writer")]
-        public string[] Writers { get; set; }
+        public string[]? Writers { get; set; }
 
         [XmlElement("displayorder")]
         public string? DisplayOrder { get; set; }
@@ -366,7 +349,7 @@ namespace Jellyfin.KodiMetadata.Models
         public float? Rating { get; set; }
 
         [XmlElement("style")]
-        public string[] Styles { get; set; }
+        public string[]? Styles { get; set; }
 
         [XmlElement("art")]
         public ArtNfo? Art { get; set; }
@@ -374,7 +357,7 @@ namespace Jellyfin.KodiMetadata.Models
         // Provider Ids
 
         [XmlElement("collectionnumber")]
-        // [XmlElement("tmdbcolid")] // todo
+        [XmlSynonyms("tmdbcolid")]
         public string? CollectionId { get; set; }
 
         [XmlElement("imdbid")]

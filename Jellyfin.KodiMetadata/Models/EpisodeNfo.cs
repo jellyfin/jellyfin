@@ -1,5 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
+using MediaBrowser.Controller.Serialization;
 
 namespace Jellyfin.KodiMetadata.Models
 {
@@ -30,8 +30,8 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the episode this episode airs before.
         /// </summary>
-        [XmlElement("airsbefore_episode")] // todo
-        // [XmlElement("displayepisode")]
+        [XmlElement("displayepisode")]
+        [XmlSynonyms("airsbefore_episode")]
         public int? AirsBeforeEpisode { get; set; }
 
         /// <summary>
@@ -43,12 +43,20 @@ namespace Jellyfin.KodiMetadata.Models
         /// <summary>
         /// Gets or sets the season this episode airs before.
         /// </summary>
-        [XmlElement("airsbefore_season")] // todo
-        // [XmlElement("displayseason")]
+        [XmlElement("displayseason")]
+        [XmlSynonyms("airsbefore_season")]
         public int? AirsBeforeSeason { get; set; }
 
-        // TODO Displayepisode (kodi wiki)
+        /// <summary>
+        /// Gets or sets the display episode (used for special episodes).
+        /// </summary>
+        [XmlElement("displayepisode")]
+        public int? DisplayEpisode { get; set; }
 
-        // TODO Displayseason (kodi wiki)
+        /// <summary>
+        /// Gets or sets the display season (used for special episodes).
+        /// </summary>
+        [XmlElement("displayseason")]
+        public int? DisplaySeason { get; set; }
     }
 }

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Serialization;
+using MediaBrowser.Controller.Serialization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 
@@ -19,7 +21,11 @@ namespace Emby.Server.Implementations.Serialization
             new ConcurrentDictionary<string, XmlSerializer>();
 
         private static XmlSerializer GetSerializer(Type type)
-            => _serializers.GetOrAdd(type.FullName, _ => new XmlSerializer(type));
+        {
+            var serializer = _serializers.GetOrAdd(type.FullName, _ => new XmlSerializer(type));
+            serializer.UnknownElement += SerializerOnUnknownElement;
+            return serializer;
+        }
 
         /// <summary>
         /// Serializes to writer.
@@ -100,6 +106,41 @@ namespace Emby.Server.Implementations.Serialization
             using (var stream = new MemoryStream(buffer, 0, buffer.Length, false, true))
             {
                 return DeserializeFromStream(type, stream);
+            }
+        }
+
+        private static void SerializerOnUnknownElement(object? sender, XmlElementEventArgs e)
+        {
+            var member = XmlSynonymsAttribute.GetMember(e.ObjectBeingDeserialized, e.Element.Name);
+            Type memberType;
+
+            if (member != null && member is FieldInfo info)
+            {
+                memberType = info.FieldType;
+            }
+            else if (member != null && member is PropertyInfo propertyInfo)
+            {
+                memberType = propertyInfo.PropertyType;
+            }
+            else
+            {
+                return;
+            }
+
+            object? value;
+            XmlSerializer serializer = new XmlSerializer(memberType, new XmlRootAttribute(e.Element.Name));
+            using (StringReader reader = new StringReader(e.Element.OuterXml))
+            {
+                value = serializer.Deserialize(reader);
+            }
+
+            if (member is FieldInfo)
+            {
+                ((FieldInfo)member).SetValue(e.ObjectBeingDeserialized, value);
+            }
+            else if (member is PropertyInfo)
+            {
+                ((PropertyInfo)member).SetValue(e.ObjectBeingDeserialized, value);
             }
         }
     }

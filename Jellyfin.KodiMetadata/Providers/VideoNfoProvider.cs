@@ -46,9 +46,9 @@ namespace Jellyfin.KodiMetadata.Providers
             item.SetProviderId(MetadataProvider.Imdb, nfo.Id!);
 
             // handle sets
-            if (item is Movie movie)
+            if (item is Movie movie && nfo.Set != null)
             {
-                movie.SetProviderId(MetadataProvider.TmdbCollection, nfo.Set?.TmdbCollectionId!);
+                movie.SetProviderId(MetadataProvider.TmdbCollection, nfo.Set.TmdbCollectionId!);
                 movie.CollectionName = nfo.Set.Name;
             }
 

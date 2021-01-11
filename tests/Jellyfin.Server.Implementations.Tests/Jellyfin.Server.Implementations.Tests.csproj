@@ -40,6 +40,12 @@
     <EmbeddedResource Include="LiveTv\lineup.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Xml\Test Data\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

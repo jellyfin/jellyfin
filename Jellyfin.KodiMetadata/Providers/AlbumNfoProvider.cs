@@ -11,7 +11,7 @@ namespace Jellyfin.KodiMetadata.Providers
     /// <summary>
     /// The music album nfo metadata provider.
     /// </summary>
-    public class AlbumNfoProvider : BaseNfoProvider<MusicAlbum, BaseNfo>
+    public class AlbumNfoProvider : BaseNfoProvider<MusicAlbum, AlbumNfo>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AlbumNfoProvider"/> class.
@@ -19,7 +19,7 @@ namespace Jellyfin.KodiMetadata.Providers
         /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
-        public AlbumNfoProvider(ILogger<BaseNfoProvider<MusicAlbum, BaseNfo>> logger, IFileSystem fileSystem, IXmlSerializer xmlSerializer)
+        public AlbumNfoProvider(ILogger<BaseNfoProvider<MusicAlbum, AlbumNfo>> logger, IFileSystem fileSystem, IXmlSerializer xmlSerializer)
             : base(logger, fileSystem, xmlSerializer)
         {
         }
