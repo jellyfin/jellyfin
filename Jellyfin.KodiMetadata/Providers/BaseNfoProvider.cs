@@ -320,7 +320,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            // map provider ids
+            // map provider ids // todo
             // It's okay to pass null because the method removes the providers for which the id is null // todo this is ugly
             string? imdbId = nfo.ImdbId ?? nfo.UniqueIds?
                 .FirstOrDefault(x => x.Id != null && x.Type.Equals("imdb", StringComparison.OrdinalIgnoreCase))

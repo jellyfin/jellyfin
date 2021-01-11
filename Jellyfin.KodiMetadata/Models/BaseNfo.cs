@@ -161,6 +161,8 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("resumeposition")]
         public ResumePositionNfo? ResumePosition { get; set; }
 
+        // todo <resume> tag
+
         [XmlElement("dateadded")]
         public string? DateAddedXml
         {
