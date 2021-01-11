@@ -111,9 +111,9 @@ namespace Jellyfin.KodiMetadata.Providers
             {
                 DateCreated = nfo.DateAdded.GetValueOrDefault(),
                 OriginalTitle = nfo.OriginalTitle,
-                Name = nfo.LocalTitle ?? nfo.Title,
+                Name = nfo.LocalTitle ?? nfo.Title ?? nfo.Name,
                 CriticRating = nfo.CriticRating,
-                SortName = nfo.SortTitle,
+                SortName = nfo.SortTitle ?? nfo.SortName,
                 Overview = nfo.Review ?? nfo.Plot ?? nfo.Biography,
                 PreferredMetadataLanguage = nfo.Language,
                 PreferredMetadataCountryCode = nfo.CountryCode,
@@ -214,7 +214,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 {
                     if (!string.IsNullOrWhiteSpace(style))
                     {
-                        item.AddGenre(style.Trim());
+                        item.AddTag(style.Trim());
                     }
                 }
             }
@@ -240,7 +240,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 return null;
             }).OfType<MetadataField>().ToArray();
 
-            foreach (var actor in nfo.Actors)
+            foreach (var actor in nfo.Actors ?? Array.Empty<ActorNfo>())
             {
                 var person = new PersonInfo()
                 {

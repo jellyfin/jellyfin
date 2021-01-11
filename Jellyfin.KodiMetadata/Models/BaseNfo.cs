@@ -35,6 +35,12 @@ namespace Jellyfin.KodiMetadata.Models
         public string? Title { get; set; }
 
         /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        [XmlElement("name")]
+        public string? Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the original title.
         /// For example, if the scraper is set to german language and the scraped movie in german is "Der mit dem Wolf tanzt" the original title will be "Dances with Wolves".
         /// </summary>
@@ -316,6 +322,12 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("sorttitle")]
         public string? SortTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort name.
+        /// </summary>
+        [XmlElement("sortname")]
+        public string? SortName { get; set; }
 
         [XmlElement("criticrating")]
         public float? CriticRating { get; set; }
