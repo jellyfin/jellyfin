@@ -344,8 +344,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var val = reader.ReadElementContentAsString();
 
-                    var hasAspectRatio = item as IHasAspectRatio;
-                    if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
+                    if (!string.IsNullOrWhiteSpace(val) && item is IHasAspectRatio hasAspectRatio)
                     {
                         hasAspectRatio.AspectRatio = val;
                     }

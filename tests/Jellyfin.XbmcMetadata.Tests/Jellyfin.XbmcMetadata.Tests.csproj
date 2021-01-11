@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
-  <PropertyGroup>
-    <ProjectGuid>{A2FD0A10-8F62-4F9D-B171-FFDF9F0AFA9D}</ProjectGuid>
-  </PropertyGroup>
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -13,16 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoFixture" Version="4.15.0" />
-    <PackageReference Include="AutoFixture.AutoMoq" Version="4.15.0" />
-    <PackageReference Include="AutoFixture.Xunit2" Version="4.15.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    <None Include="Test Data\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="Moq" Version="4.15.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
     <PackageReference Include="coverlet.collector" Version="3.0.0" />
-    <PackageReference Include="Moq" Version="4.15.2" />
   </ItemGroup>
 
   <!-- Code Analyzers -->
@@ -34,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Jellyfin.Server\Jellyfin.Server.csproj" />
+    <ProjectReference Include="../../MediaBrowser.XbmcMetadata/MediaBrowser.XbmcMetadata.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
