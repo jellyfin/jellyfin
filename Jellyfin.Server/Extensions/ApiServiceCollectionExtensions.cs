@@ -243,9 +243,9 @@ namespace Jellyfin.Server.Extensions
         public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config, INetworkManager networkManager)
         {
             IMvcBuilder mvcBuilder = serviceCollection
-            .AddCors()
-            .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
-            .Configure<ForwardedHeadersOptions>(options =>
+                .AddCors()
+                .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
+                .Configure<ForwardedHeadersOptions>(options =>
                 {
                     // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
                     // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
