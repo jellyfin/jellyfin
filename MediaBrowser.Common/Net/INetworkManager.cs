@@ -47,7 +47,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets a value indicating whether the system has IP4 is enabled.
         /// </summary>
-        public bool SystemIP4Enabled { get; set; }
+        bool SystemIP4Enabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the system has IP6 is enabled.
