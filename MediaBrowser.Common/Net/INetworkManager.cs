@@ -52,7 +52,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets a value indicating whether the system has IP6 is enabled.
         /// </summary>
-        public bool SystemIP6Enabled { get; set; }
+        bool SystemIP6Enabled { get; set; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
