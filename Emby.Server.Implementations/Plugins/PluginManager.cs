@@ -512,30 +512,36 @@ namespace Emby.Server.Implementations.Plugins
             var metafile = Path.Combine(dir, "meta.json");
             if (File.Exists(metafile))
             {
+                // Only path where this stays null is when File.ReadAllBytes throws an IOException
+                byte[] data = null!;
                 try
                 {
-                    var data = File.ReadAllBytes(metafile);
+                    data = File.ReadAllBytes(metafile);
                     manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Error reading file {Path}.", dir);
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Path}.", dir);
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
                 }
-            }
 
-            if (manifest != null)
-            {
-                if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                if (manifest != null)
                 {
-                    targetAbi = _minimumVersion;
-                }
+                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                    {
+                        targetAbi = _minimumVersion;
+                    }
 
-                if (!Version.TryParse(manifest.Version, out version))
-                {
-                    manifest.Version = _minimumVersion.ToString();
-                }
+                    if (!Version.TryParse(manifest.Version, out version))
+                    {
+                        manifest.Version = _minimumVersion.ToString();
+                    }
 
-                return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                    return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                }
             }
 
             // No metafile, so lets see if the folder is versioned.
