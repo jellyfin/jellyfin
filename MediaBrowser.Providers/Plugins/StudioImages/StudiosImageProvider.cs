@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Plugins.StudioImages;
 
 namespace MediaBrowser.Providers.Studios
 {
@@ -23,15 +24,17 @@ namespace MediaBrowser.Providers.Studios
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
+        private readonly String repositoryUrl;
 
         public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
+            repositoryUrl = Plugin.Instance.Configuration.RepositoryUrl;
         }
 
-        public string Name => "Emby Designs";
+        public string Name => "Artwork Repository";
 
         public int Order => 0;
 
@@ -104,19 +107,19 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format(CultureInfo.InvariantCulture, "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
+            return string.Format(CultureInfo.InvariantCulture, "{0}/{1}/{2}.jpg", repositoryUrl, image, filename);
         }
 
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
-            const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studiothumbs.txt";
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/studiothumbs.txt", repositoryUrl);
 
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         private Task<string> EnsurePosterList(string file, CancellationToken cancellationToken)
         {
-            const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studioposters.txt";
+            string url = string.Format(CultureInfo.InvariantCulture, "{0}/studioposters.txt", repositoryUrl);
 
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
