@@ -123,7 +123,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 LibraryOptions[path] = options;
 
-                var clone = JsonSerializer.Deserialize<LibraryOptions>(JsonSerializer.Serialize(options, _jsonOptions), _jsonOptions);
+                var clone = JsonSerializer.Deserialize<LibraryOptions>(JsonSerializer.SerializeToUtf8Bytes(options, _jsonOptions), _jsonOptions);
                 foreach (var mediaPath in clone.PathInfos)
                 {
                     if (!string.IsNullOrEmpty(mediaPath.Path))
