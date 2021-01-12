@@ -471,7 +471,7 @@ namespace Emby.Server.Implementations.Plugins
                         || manifest.Id != instance.Id
                         || manifest.Deprecated)
                     {
-                        // If a plugin without a manifest failed to load due to an external issue (eg config),
+                        // If a plugin without a manifest failed to load due to an external issue (eg config), or it's a built in plugin
                         // this updates the manifest to the actual plugin values.
                         manifest.Version = pluginStr;
                         manifest.Name = instance.Name;
