@@ -62,32 +62,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableInMainMenu,
             [FromQuery] ConfigurationPageType? pageType)
         {
-            const string unavailableMessage = "The server is still loading. Please try again momentarily.";
-
-            var pages = _appHost.GetExports<IPluginConfigurationPage>().ToList();
-
-            if (pages == null)
-            {
-                return NotFound(unavailableMessage);
-            }
-
-            // Don't allow a failing plugin to fail them all
-            var configPages = pages.Select(p =>
-                {
-                    try
-                    {
-                        return new ConfigurationPageInfo(p);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error getting plugin information from {Plugin}", p.GetType().Name);
-                        return null;
-                    }
-                })
-                .Where(i => i != null)
-                .ToList();
-
-            configPages.AddRange(_pluginManager.Plugins.SelectMany(GetConfigPages));
+            var configPages = _pluginManager.Plugins.SelectMany(GetConfigPages).ToList();
 
             if (pageType.HasValue)
             {
@@ -121,24 +96,14 @@ namespace Jellyfin.Api.Controllers
             var isJs = false;
             var isTemplate = false;
 
-            var page = _appHost.GetExports<IPluginConfigurationPage>().FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (page != null)
+            var altPage = GetPluginPages().FirstOrDefault(p => string.Equals(p.Item1.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (altPage != null)
             {
-                plugin = page.Plugin;
-                stream = page.GetHtmlStream();
-            }
+                plugin = altPage.Item2;
+                stream = plugin.GetType().Assembly.GetManifestResourceStream(altPage.Item1.EmbeddedResourcePath);
 
-            if (plugin == null)
-            {
-                var altPage = GetPluginPages().FirstOrDefault(p => string.Equals(p.Item1.Name, name, StringComparison.OrdinalIgnoreCase));
-                if (altPage != null)
-                {
-                    plugin = altPage.Item2;
-                    stream = plugin.GetType().Assembly.GetManifestResourceStream(altPage.Item1.EmbeddedResourcePath);
-
-                    isJs = string.Equals(Path.GetExtension(altPage.Item1.EmbeddedResourcePath), ".js", StringComparison.OrdinalIgnoreCase);
-                    isTemplate = altPage.Item1.EmbeddedResourcePath.EndsWith(".template.html", StringComparison.Ordinal);
-                }
+                isJs = string.Equals(Path.GetExtension(altPage.Item1.EmbeddedResourcePath), ".js", StringComparison.OrdinalIgnoreCase);
+                isTemplate = altPage.Item1.EmbeddedResourcePath.EndsWith(".template.html", StringComparison.Ordinal);
             }
 
             if (plugin != null && stream != null)

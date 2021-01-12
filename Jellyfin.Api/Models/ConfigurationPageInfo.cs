@@ -13,23 +13,6 @@ namespace Jellyfin.Api.Models
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
         /// </summary>
-        /// <param name="page">Instance of <see cref="IPluginConfigurationPage"/> interface.</param>
-        public ConfigurationPageInfo(IPluginConfigurationPage page)
-        {
-            Name = page.Name;
-
-            ConfigurationPageType = page.ConfigurationPageType;
-
-            if (page.Plugin != null)
-            {
-                DisplayName = page.Plugin.Name;
-                PluginId = page.Plugin.Id;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
-        /// </summary>
         /// <param name="plugin">Instance of <see cref="IPlugin"/> interface.</param>
         /// <param name="page">Instance of <see cref="PluginPageInfo"/> interface.</param>
         public ConfigurationPageInfo(IPlugin? plugin, PluginPageInfo page)
