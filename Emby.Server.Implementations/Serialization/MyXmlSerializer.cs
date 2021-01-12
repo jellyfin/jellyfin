@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Serialization
             }
         }
 
-        private static void SerializerOnUnknownElement(object? sender, XmlElementEventArgs e)
+        private static void SerializerOnUnknownElement(object sender, XmlElementEventArgs e)
         {
             var member = XmlSynonymsAttribute.GetMember(e.ObjectBeingDeserialized, e.Element.Name);
             Type memberType;
@@ -127,12 +127,11 @@ namespace Emby.Server.Implementations.Serialization
                 return;
             }
 
-            object? value;
+            object value;
             XmlSerializer serializer = new XmlSerializer(memberType, new XmlRootAttribute(e.Element.Name));
-            using (StringReader reader = new StringReader(e.Element.OuterXml))
-            {
-                value = serializer.Deserialize(reader);
-            }
+            using StringReader stringReader = new StringReader(e.Element.OuterXml);
+            using XmlReader reader = XmlReader.Create(stringReader);
+            value = serializer.Deserialize(reader);
 
             if (member is FieldInfo)
             {
