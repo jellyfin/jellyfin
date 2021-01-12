@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Jellyfin.KodiMetadata.Models;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -14,18 +13,18 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.KodiMetadata.Providers
 {
     /// <summary>
-    /// Video nfo metadata provider (Movie and music video).
+    /// Music video nfo metadata provider.
     /// </summary>
-    public class VideoNfoProvider : BaseNfoProvider<Video, VideoNfo>
+    public class MusicVideoNfoProvider : BaseNfoProvider<MusicVideo, MusicVideoNfo>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNfoProvider"/> class.
+        /// Initializes a new instance of the <see cref="MusicVideoNfoProvider"/> class.
         /// </summary>
-        /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
-        public VideoNfoProvider(
-            ILogger<BaseNfoProvider<Video, VideoNfo>> logger,
+        public MusicVideoNfoProvider(
+            ILogger<BaseNfoProvider<MusicVideo, MusicVideoNfo>> logger,
             IFileSystem fileSystem,
             IXmlSerializer xmlSerializer)
             : base(logger, fileSystem, xmlSerializer)
@@ -33,7 +32,7 @@ namespace Jellyfin.KodiMetadata.Providers
         }
 
         /// <inheritdoc/>
-        public override void MapNfoToJellyfinObject(VideoNfo? nfo, MetadataResult<Video> metadataResult)
+        public override void MapNfoToJellyfinObject(MusicVideoNfo? nfo, MetadataResult<MusicVideo> metadataResult)
         {
             if (nfo == null)
             {
@@ -43,31 +42,20 @@ namespace Jellyfin.KodiMetadata.Providers
             base.MapNfoToJellyfinObject(nfo, metadataResult);
 
             var item = metadataResult.Item;
-            item.SetProviderId(MetadataProvider.Imdb, nfo.Id!);
 
-            // handle sets
-            if (item is Movie movie && nfo.Set != null)
-            {
-                movie.SetProviderId(MetadataProvider.TmdbCollection, nfo.Set.TmdbCollectionId!);
-                movie.CollectionName = nfo.Set.Name;
-            }
-
-            if (item is MusicVideo musicVideo)
-            {
-                musicVideo.Album = nfo.Album;
-                musicVideo.Artists = nfo.Artists;
-            }
+            item.Album = nfo.Album;
+            item.Artists = nfo.Artists;
         }
 
         /// <inheritdoc />
         protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            return GetMovieSavePaths(info)
+            return GetMusicVideoSavePaths(info)
                 .Select(directoryService.GetFile)
                 .FirstOrDefault(i => i != null);
         }
 
-        internal static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
+        internal static IEnumerable<string> GetMusicVideoSavePaths(ItemInfo item)
         {
             if (item.VideoType == VideoType.Dvd && !item.IsPlaceHolder)
             {

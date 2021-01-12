@@ -1,15 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Jellyfin.KodiMetadata.Models;
 using Jellyfin.KodiMetadata.Providers;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -17,19 +16,19 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.KodiMetadata.Savers
 {
     /// <summary>
-    /// the video nfo metadata saver.
+    /// The music video nfo metadata saver.
     /// </summary>
-    public class VideoNfoSaver : BaseNfoSaver<Movie, MovieNfo>
+    public class MusicVideoNfoSaver : BaseNfoSaver<MusicVideo, MusicVideoNfo>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNfoSaver"/> class.
+        /// Initializes a new instance of the <see cref="MusicVideoNfoSaver"/> class.
         /// </summary>
-        /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
-        public VideoNfoSaver(
-            ILogger<BaseNfoSaver<Movie, MovieNfo>> logger,
+        public MusicVideoNfoSaver(
+            ILogger<BaseNfoSaver<MusicVideo, MusicVideoNfo>> logger,
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager)
@@ -45,7 +44,9 @@ namespace Jellyfin.KodiMetadata.Savers
                 throw new ArgumentException("Item can't be null", nameof(item));
             }
 
-            return MovieNfoProvider.GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault() ?? Path.ChangeExtension(item.Path, ".nfo");
+            return MusicVideoNfoProvider.GetMusicVideoSavePaths(new ItemInfo(item))
+                .FirstOrDefault()
+                   ?? Path.ChangeExtension(item.Path, ".nfo");
         }
 
         /// <inheritdoc />
@@ -66,7 +67,7 @@ namespace Jellyfin.KodiMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override void MapJellyfinToNfoObject(Movie? item, MovieNfo nfo)
+        protected override void MapJellyfinToNfoObject(MusicVideo? item, MusicVideoNfo nfo)
         {
             if (item == null)
             {
@@ -78,11 +79,15 @@ namespace Jellyfin.KodiMetadata.Savers
                 throw new ArgumentException("Nfo object can't be null", nameof(nfo));
             }
 
-            var imdbId = item.GetProviderId(MetadataProvider.Imdb);
-            nfo.Id = imdbId;
-            nfo.ImdbId = imdbId;
-            nfo.Set = new SetNfo() { Name = item.CollectionName, TmdbCollectionId = item.GetProviderId(MetadataProvider.TmdbCollection) };
+            nfo.Album = item.Album;
 
+            var artistList = new List<string>();
+            foreach (var artist in item.Artists)
+            {
+                artistList.Add(artist);
+            }
+
+            nfo.Artists = artistList.ToArray();
             base.MapJellyfinToNfoObject(item, nfo);
         }
     }

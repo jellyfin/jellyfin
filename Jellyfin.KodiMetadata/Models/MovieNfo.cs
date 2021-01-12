@@ -9,16 +9,8 @@ namespace Jellyfin.KodiMetadata.Models
     /// The video specific nfo tags.
     /// </summary>
     [XmlRoot("movie")]
-    public class VideoNfo : BaseNfo
+    public class MovieNfo : BaseNfo
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNfo"/> class.
-        /// </summary>
-        public VideoNfo()
-        {
-            Artists = Array.Empty<string>();
-        }
-
         /// <summary>
         /// Gets or sets the IMDB Top 250 ranking.
         /// </summary>
@@ -36,18 +28,6 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("showlink")]
         public string? ShowLink { get; set; }
-
-        /// <summary>
-        /// Gets or sets the music video album.
-        /// </summary>
-        [XmlElement("album")]
-        public string? Album { get; set; }
-
-        /// <summary>
-        /// Gets or sets the music video artists.
-        /// </summary>
-        [XmlElement("artist")]
-        public string[] Artists { get; set; }
 
         /// <summary>
         /// Gets or sets the imdb id.

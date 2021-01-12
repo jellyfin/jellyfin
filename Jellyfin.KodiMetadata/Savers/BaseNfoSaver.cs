@@ -68,7 +68,7 @@ namespace Jellyfin.KodiMetadata.Savers
         public void Save(BaseItem item, CancellationToken cancellationToken)
         {
             var nfo = new T2();
-            MapJellyfinToNfoObject(item, nfo);
+            MapJellyfinToNfoObject(item as T1, nfo);
             using var memoryStream = new MemoryStream();
             _xmlSerializer.SerializeToStream(nfo, memoryStream);
 
@@ -88,7 +88,7 @@ namespace Jellyfin.KodiMetadata.Savers
         /// </summary>
         /// <param name="item">The base item to map to the nfo.</param>
         /// <param name="nfo">The nfo to map to.</param>
-        protected virtual void MapJellyfinToNfoObject(BaseItem item, T2 nfo)
+        protected virtual void MapJellyfinToNfoObject(T1? item, T2 nfo)
         {
             throw new System.NotImplementedException();
         }

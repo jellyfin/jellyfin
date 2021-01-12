@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 using Jellyfin.KodiMetadata.Models;
 using Jellyfin.KodiMetadata.Providers;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -21,7 +21,7 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
     public class MovieNfoParserTests
     {
         private readonly XmlSerializer _serializer;
-        private readonly VideoNfoProvider _videoNfoProvider;
+        private readonly MovieNfoProvider _movieNfoProvider;
 
         public MovieNfoParserTests()
         {
@@ -32,21 +32,21 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
 
-            _serializer = new XmlSerializer(typeof(VideoNfo));
-            _videoNfoProvider = new VideoNfoProvider(new NullLogger<BaseNfoProvider<Video, VideoNfo>>(), null!, null!);
+            _serializer = new XmlSerializer(typeof(MovieNfo));
+            _movieNfoProvider = new MovieNfoProvider(new NullLogger<BaseNfoProvider<Movie, MovieNfo>>(), null!, null!);
         }
 
         [Fact]
         public void Fetch_Valid_Succes()
         {
-            var result = new MetadataResult<Video>()
+            var result = new MetadataResult<Movie>()
             {
-                Item = new Video()
+                Item = new Movie()
             };
 
             using var stream = File.OpenRead("Test Data/Justice League.nfo");
-            var nfo = _serializer.Deserialize(stream) as VideoNfo;
-            _videoNfoProvider.MapNfoToJellyfinObject(nfo, result);
+            var nfo = _serializer.Deserialize(stream) as MovieNfo;
+            _movieNfoProvider.MapNfoToJellyfinObject(nfo, result);
 
             var item = result.Item;
 
@@ -98,23 +98,23 @@ namespace Jellyfin.XbmcMetadata.Parsers.Tests
         [Fact]
         public void Fetch_WithNullItem_ThrowsArgumentException()
         {
-            var result = new MetadataResult<Video>();
+            var result = new MetadataResult<Movie>();
 
             using var stream = File.OpenRead("Test Data/Justice League.nfo");
-            var nfo = _serializer.Deserialize(stream) as VideoNfo;
+            var nfo = _serializer.Deserialize(stream) as MovieNfo;
 
-            Assert.Throws<ArgumentException>(() => _videoNfoProvider.MapNfoToJellyfinObject(nfo, result));
+            Assert.Throws<ArgumentException>(() => _movieNfoProvider.MapNfoToJellyfinObject(nfo, result));
         }
 
         [Fact]
         public void Fetch_NullResult_ThrowsArgumentException()
         {
-            var result = new MetadataResult<Video>()
+            var result = new MetadataResult<Movie>()
             {
-                Item = new Video()
+                Item = new Movie()
             };
 
-            Assert.Throws<ArgumentException>(() => _videoNfoProvider.MapNfoToJellyfinObject(null, result));
+            Assert.Throws<ArgumentException>(() => _movieNfoProvider.MapNfoToJellyfinObject(null, result));
         }
     }
 }
