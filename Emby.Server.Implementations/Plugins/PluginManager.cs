@@ -514,12 +514,10 @@ namespace Emby.Server.Implementations.Plugins
             {
                 try
                 {
-                    var data = File.ReadAllText(metafile, Encoding.UTF8);
+                    var data = File.ReadAllBytes(metafile);
                     manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (JsonException ex)
                 {
                     _logger.LogError(ex, "Error deserializing {Path}.", dir);
                 }
