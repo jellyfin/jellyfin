@@ -36,8 +36,11 @@ namespace Jellyfin.KodiMetadata.Providers
             metadataResult.Item.IndexNumber = nfo.SeasonNumber;
         }
 
+        internal static string GetSeasonSavePath(ItemInfo item)
+            => Path.Combine(item.Path, "season.nfo");
+
         /// <inheritdoc/>
         protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
-            => directoryService.GetFile(Path.Combine(info.Path, "season.nfo"));
+            => directoryService.GetFile(GetSeasonSavePath(info));
     }
 }

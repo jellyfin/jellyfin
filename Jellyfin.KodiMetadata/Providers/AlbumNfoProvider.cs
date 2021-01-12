@@ -24,8 +24,11 @@ namespace Jellyfin.KodiMetadata.Providers
         {
         }
 
+        internal static string GetAlbumSavePath(ItemInfo info)
+            => Path.Combine(info.Path, "album.nfo");
+
         /// <inheritdoc />
         protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
-            => directoryService.GetFile(Path.Combine(info.Path, "album.nfo"));
+            => directoryService.GetFile(GetAlbumSavePath(info));
     }
 }

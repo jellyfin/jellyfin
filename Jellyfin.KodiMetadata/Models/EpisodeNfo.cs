@@ -22,7 +22,7 @@ namespace Jellyfin.KodiMetadata.Models
         public int? Episode { get; set; }
 
         /// <summary>
-        /// Gets or sets the episode number end.
+        /// Gets or sets the end episode number for multiple episodes in one file.
         /// </summary>
         [XmlElement("episodenumberend")]
         public int? EpisodeNumberEnd { get; set; }

@@ -50,6 +50,9 @@ namespace Jellyfin.KodiMetadata.Providers
             metadataResult.Item.AirTime = nfo.AirTime;
         }
 
+        internal static string GetSeriesSavePath(ItemInfo item)
+            => Path.Combine(item.Path, "tvshow.nfo");
+
         /// <inheritdoc/>
         protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
             => directoryService.GetFile(Path.Combine(info.Path, "tvshow.nfo"));

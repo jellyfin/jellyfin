@@ -43,10 +43,13 @@ namespace Jellyfin.KodiMetadata.Providers
             item.AirsBeforeSeasonNumber = nfo.AirsBeforeSeason;
         }
 
+        internal static string GetEpisodeSavePath(ItemInfo info)
+            => Path.ChangeExtension(info.Path, ".nfo");
+
         /// <inheritdoc/>
         protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
         {
-            var path = Path.ChangeExtension(info.Path, ".nfo");
+            var path = GetEpisodeSavePath(info);
 
             return directoryService.GetFile(path);
         }
