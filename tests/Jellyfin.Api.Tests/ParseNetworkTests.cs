@@ -48,8 +48,8 @@ namespace Jellyfin.Api.Tests
         /// <param name="hostList">List to parse.</param>
         /// <param name="match">What it should match.</param>
         [Theory]
-        [InlineData(true, true, "192.168.0.0/16,www.yahoo.co.uk", "::ffff:212.82.100.150,::ffff:192.168.0.0/16")]
-        [InlineData(true, false, "192.168.0.0/16,www.yahoo.co.uk", "212.82.100.150,192.168.0.0/16")]
+        // [InlineData(true, true, "192.168.0.0/16,www.yahoo.co.uk", "::ffff:212.82.100.150,::ffff:192.168.0.0/16")]  <- fails on Max. www.yahoo.co.uk resolves to a different ip address.
+        // [InlineData(true, false, "192.168.0.0/16,www.yahoo.co.uk", "212.82.100.150,192.168.0.0/16")]
         [InlineData(true, true, "192.168.t,127.0.0.1,1234.1232.12.1234", "::ffff:127.0.0.1")]
         [InlineData(true, false, "192.168.x,127.0.0.1,1234.1232.12.1234", "127.0.0.1")]
         [InlineData(true, true, "::1", "::1/128")]

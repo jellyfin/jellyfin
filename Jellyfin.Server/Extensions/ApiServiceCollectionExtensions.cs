@@ -274,8 +274,8 @@ namespace Jellyfin.Server.Extensions
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
                     if (config.KnownProxies.Length == 0)
                     {
-                        options.KnownProxies.Clear();
                         options.KnownNetworks.Clear();
+                        options.KnownProxies.Clear();
                     }
                     else
                     {
