@@ -113,5 +113,10 @@
     "TasksChannelsCategory": "Canals d'internet",
     "TasksApplicationCategory": "Aplicació",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Manteniment"
+    "TasksMaintenanceCategory": "Manteniment",
+    "TaskCleanActivityLogDescription": "Eliminat entrades del registre d'activitats mes antigues que l'antiguitat configurada.",
+    "TaskCleanActivityLog": "Buidar Registre d'Activitat",
+    "Undefined": "Indefinit",
+    "Forced": "Forçat",
+    "Default": "Defecto"
 }
