@@ -195,15 +195,6 @@ namespace Jellyfin.Networking.Manager
             return _macAddresses;
         }
 
-        /// <summary>
-        /// REMOVE after debugging.
-        /// </summary>
-        /// <param name="msg">Message.</param>
-        public void Log(string msg)
-        {
-            _logger.LogInformation(msg);
-        }
-
         /// <inheritdoc/>
         public bool IsGatewayInterface(IPObject? addressObj)
         {

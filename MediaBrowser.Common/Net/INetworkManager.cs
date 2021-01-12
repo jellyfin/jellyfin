@@ -239,11 +239,5 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
-
-        /// <summary>
-        /// REMOVE after debugging.
-        /// </summary>
-        /// <param name="msg">Message.</param>
-        void Log(string msg);
     }
 }

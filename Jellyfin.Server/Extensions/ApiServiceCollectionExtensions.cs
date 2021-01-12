@@ -232,27 +232,6 @@ namespace Jellyfin.Server.Extensions
             }
         }
 
-        private static string EnumToString<T>(IEnumerable<T> x)
-        {
-            var sb = new StringBuilder();
-            foreach (var item in x)
-            {
-                if (item is IPAddress ipItem)
-                {
-                    sb.Append(ipItem.ToString());
-                }
-                else if (item is IPNetwork ipNetwork)
-                {
-                    sb.Append(ipNetwork.Prefix.ToString());
-                    sb.Append('/');
-                    sb.Append(ipNetwork.PrefixLength.ToString(CultureInfo.InvariantCulture));
-                    sb.Append(',');
-                }
-            }
-
-            return sb.ToString();
-        }
-
         /// <summary>
         /// Extension method for adding the jellyfin API to the service collection.
         /// </summary>
@@ -280,8 +259,6 @@ namespace Jellyfin.Server.Extensions
                     else
                     {
                         ParseList(networkManager, config, config.KnownProxies, options);
-                        networkManager.Log("KnownProxies: " + EnumToString<IPAddress>(options.KnownProxies));
-                        networkManager.Log("KnownNetworks: " + EnumToString<IPNetwork>(options.KnownNetworks));
                     }
 
                     // Only set forward limit if we have some known proxies or some known networks.
@@ -289,8 +266,6 @@ namespace Jellyfin.Server.Extensions
                     {
                         options.ForwardLimit = null;
                     }
-
-                    networkManager.Log("Forward Limit : " + options.ForwardLimit?.ToString(CultureInfo.CurrentCulture) ?? "None");
                 })
                 .AddMvc(opts =>
                 {
