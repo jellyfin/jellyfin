@@ -152,6 +152,9 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlSynonyms("resumeposition")]
         public ResumePositionNfo? ResumePosition { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DateAdded"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("dateadded")]
         public string? DateAddedXml
         {
@@ -174,6 +177,9 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         public DateTime? DateAdded { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="LastPlayed"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("lastplayed")]
         public string? LastPlayedXml
         {
@@ -196,6 +202,9 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         public DateTime? LastPlayed { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Premiered"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("premiered")]
         public string? PremieredXml
         {
@@ -218,6 +227,9 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         public DateTime? Released { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Released"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("releasedate")]
         public string? ReleasedXml
         {
@@ -240,6 +252,9 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         public DateTime? Premiered { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Aired"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("aired")]
         public string? AiredXml
         {
@@ -257,8 +272,14 @@ namespace Jellyfin.KodiMetadata.Models
             }
         }
 
+        /// <summary>
+        /// Gets or sets the aired date.
+        /// </summary>
         public DateTime? Aired { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Formed"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("formed")]
         public string? FormedXml
         {
@@ -276,8 +297,14 @@ namespace Jellyfin.KodiMetadata.Models
             }
         }
 
+        /// <summary>
+        /// Gets or sets the formed date.
+        /// </summary>
         public DateTime? Formed { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="EndDate"/> property. THIS IS ONLY USED FOR THE XML SERIALIZER.
+        /// </summary>
         [XmlElement("enddate")]
         public string? EndDateXml
         {
@@ -295,8 +322,14 @@ namespace Jellyfin.KodiMetadata.Models
             }
         }
 
+        /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
         public DateTime? EndDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the local title of the item.
+        /// </summary>
         [XmlElement("localtitle")]
         public string? LocalTitle { get; set; }
 
@@ -312,45 +345,87 @@ namespace Jellyfin.KodiMetadata.Models
         [XmlElement("sortname")]
         public string? SortName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the critic rating.
+        /// </summary>
         [XmlElement("criticrating")]
         public float? CriticRating { get; set; }
 
+        /// <summary>
+        /// Gets or sets the biography.
+        /// </summary>
         [XmlElement("biography")]
         public string? Biography { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item review.
+        /// </summary>
         [XmlElement("review")]
         public string? Review { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item language.
+        /// </summary>
         [XmlElement("language")]
         public string? Language { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item language item code.
+        /// </summary>
         [XmlElement("countrycode")]
         public string? CountryCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the locked item fields. Pipe seperated.
+        /// </summary>
         [XmlElement("lockedfields")]
         public string? LockedFields { get; set; }
 
+        /// <summary>
+        /// Gets or sets the custom user rating.
+        /// </summary>
         [XmlElement("customrating")]
         public string? CustomRating { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item aspect ratio.
+        /// </summary>
         [XmlElement("aspectratio")]
         public string? AspectRatio { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to lock all the item data.
+        /// </summary>
         [XmlElement("lockdata")]
         public bool LockData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the writers.
+        /// </summary>
         [XmlElement("writer")]
         public string[]? Writers { get; set; }
 
+        /// <summary>
+        /// Gets or sets the display order.
+        /// </summary>
         [XmlElement("displayorder")]
         public string? DisplayOrder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item rating.
+        /// </summary>
         [XmlElement("rating")]
         public float? Rating { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item styles.
+        /// </summary>
         [XmlElement("style")]
         public string[]? Styles { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item art.
+        /// </summary>
         [XmlElement("art")]
         public ArtNfo? Art { get; set; }
 

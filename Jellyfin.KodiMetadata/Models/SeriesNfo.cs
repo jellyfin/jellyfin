@@ -66,7 +66,5 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("id")]
         public IdNfo[] Ids { get; set; }
-
-        // TODO namedseason (kodi wiki)
     }
 }
