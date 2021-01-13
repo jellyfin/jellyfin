@@ -1478,7 +1478,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetVideoBitrateParamValue(BaseEncodingJobOptions request, MediaStream videoStream, string outputVideoCodec)
         {
-            var bitrate = request.VideoBitRate;
+            int? bitrate = null;
 
             if (videoStream != null)
             {
@@ -1489,16 +1489,17 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && videoStream.Width.HasValue
                     && request.Width.Value > videoStream.Width.Value;
 
-                // Don't allow bitrate increases unless upscaling
-                if (!isUpscaling && bitrate.HasValue && videoStream.BitRate.HasValue)
+                if ((isUpscaling && request.VideoBitRate.HasValue)
+                    || !videoStream.BitRate.HasValue)
                 {
-                    bitrate = GetMinBitrate(videoStream.BitRate.Value, bitrate.Value);
+                    // If upscaling, then let the client decide the bitrate.
+                    // If input rate is unknown, do the same.
+                    bitrate = request.VideoBitRate.Value;
                 }
-
-                if (bitrate.HasValue)
+                else
                 {
-                    var inputVideoCodec = videoStream.Codec;
-                    bitrate = ScaleBitrate(bitrate.Value, inputVideoCodec, outputVideoCodec);
+                    // Set output to input rate, scaled by codec and bitrate factors
+                    bitrate = ScaleBitrate(videoStream.BitRate.Value, videoStream.Codec, outputVideoCodec);
 
                     // If a max bitrate was requested, don't let the scaled bitrate exceed it
                     if (request.VideoBitRate.HasValue)
@@ -1507,23 +1508,6 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                 }
             }
-
-            return bitrate;
-        }
-
-        private int GetMinBitrate(int sourceBitrate, int requestedBitrate)
-        {
-            // these values were chosen from testing to improve low bitrate streams
-            if (sourceBitrate <= 2000000)
-            {
-                sourceBitrate = Convert.ToInt32(sourceBitrate * 2.5);
-            }
-            else if (sourceBitrate <= 3000000)
-            {
-                sourceBitrate *= 2;
-            }
-
-            var bitrate = Math.Min(sourceBitrate, requestedBitrate);
 
             return bitrate;
         }
@@ -1561,6 +1545,10 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (bitrate <= 3000000)
             {
                 scaleFactor = Math.Max(scaleFactor, 2);
+            }
+            else
+            {
+                scaleFactor = Math.Max(scaleFactor, 1.5);
             }
 
             return Convert.ToInt32(scaleFactor * bitrate);
