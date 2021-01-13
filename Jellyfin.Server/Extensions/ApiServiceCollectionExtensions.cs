@@ -212,8 +212,8 @@ namespace Jellyfin.Server.Extensions
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        if ((!config.EnableIPV4 && host.AddressFamily == AddressFamily.InterNetwork)
-                            || (!config.EnableIPV6 && host.AddressFamily == AddressFamily.InterNetworkV6))
+                        if ((!config.EnableIPV4 && address.AddressFamily == AddressFamily.InterNetwork)
+                            || (!config.EnableIPV6 && address.AddressFamily == AddressFamily.InterNetworkV6))
                         {
                             continue;
                         }
