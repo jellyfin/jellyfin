@@ -117,5 +117,6 @@
     "TaskCleanActivityLog": "İşlem Günlüğünü Temizle",
     "TaskCleanActivityLogDescription": "Belirtilen sureden daha eski etkinlik log kayıtları silindi.",
     "Undefined": "Bilinmeyen",
-    "Default": "Varsayılan"
+    "Default": "Varsayılan",
+    "Forced": "Zorla"
 }
