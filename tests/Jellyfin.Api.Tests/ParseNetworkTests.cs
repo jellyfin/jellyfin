@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -86,10 +81,7 @@ namespace Jellyfin.Api.Tests
                 sb.Append(',');
             }
 
-            if (!string.Equals(sb.ToString(), result, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new Exception("Not matched: " + sb.ToString() + " does not match " + result);
-            }
+            Assert.True(string.Equals(sb.ToString(), result, StringComparison.OrdinalIgnoreCase), "Not matched: " + sb.ToString() + " does not match " + result);
         }
     }
 }
