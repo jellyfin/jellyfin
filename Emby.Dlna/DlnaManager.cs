@@ -98,127 +98,6 @@ namespace Emby.Dlna
             return new DefaultProfile();
         }
 
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
-        {
-            if (deviceInfo == null)
-            {
-                throw new ArgumentNullException(nameof(deviceInfo));
-            }
-
-            var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
-
-            if (profile != null)
-            {
-                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
-            }
-            else
-            {
-                LogUnmatchedProfile(deviceInfo);
-            }
-
-            return profile;
-        }
-
-        private void LogUnmatchedProfile(DeviceIdentification profile)
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.Append("FriendlyName:").AppendLine(profile.FriendlyName);
-            builder.Append("Manufacturer:").AppendLine(profile.Manufacturer);
-            builder.Append("ManufacturerUrl:").AppendLine(profile.ManufacturerUrl);
-            builder.Append("ModelDescription:").AppendLine(profile.ModelDescription);
-            builder.Append("ModelName:").AppendLine(profile.ModelName);
-            builder.Append("ModelNumber:").AppendLine(profile.ModelNumber);
-            builder.Append("ModelUrl:").AppendLine(profile.ModelUrl);
-            builder.Append("SerialNumber:").AppendLine(profile.SerialNumber);
-
-            _logger.LogInformation(builder.ToString());
-        }
-
-        private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
-        {
-            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
-            {
-                if (deviceInfo.FriendlyName == null || !IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
-            {
-                if (deviceInfo.Manufacturer == null || !IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
-            {
-                if (deviceInfo.ManufacturerUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
-            {
-                if (deviceInfo.ModelDescription == null || !IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelName))
-            {
-                if (deviceInfo.ModelName == null || !IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
-            {
-                if (deviceInfo.ModelNumber == null || !IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
-            {
-                if (deviceInfo.ModelUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
-                {
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
-            {
-                if (deviceInfo.SerialNumber == null || !IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private bool IsRegexOrSubstringMatch(string input, string pattern)
-        {
-            try
-            {
-                return input.Contains(pattern, StringComparison.OrdinalIgnoreCase) || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogError(ex, "Error evaluating regex pattern {Pattern}", pattern);
-                return false;
-            }
-        }
-
         public DeviceProfile GetProfile(IHeaderDictionary headers)
         {
             if (headers == null)
@@ -473,11 +352,6 @@ namespace Emby.Dlna
                 _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
             }
 
-            SerializeToXml(profile, path);
-        }
-
-        internal void SerializeToXml(DeviceProfile profile, string path)
-        {
             _xmlSerializer.SerializeToFile(profile, path);
         }
 
@@ -497,21 +371,6 @@ namespace Emby.Dlna
             var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
             return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions);
-        }
-
-        public ImageStream GetIcon(string filename)
-        {
-            var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-                ? ImageFormat.Png
-                : ImageFormat.Jpg;
-
-            var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
-
-            return new ImageStream
-            {
-                Format = format,
-                Stream = _assembly.GetManifestResourceStream(resource)
-            };
         }
 
         private class InternalProfileInfo

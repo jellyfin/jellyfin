@@ -23,6 +23,12 @@ namespace MediaBrowser.Controller.Dlna
         DeviceProfile GetProfile(IHeaderDictionary headers);
 
         /// <summary>
+        /// Gets all the profile.
+        /// </summary>
+        /// <returns><see cref="IEnumerable{DeviceProfile}"/>.</returns>
+        IEnumerable<DeviceProfile> GetProfiles();
+
+        /// <summary>
         /// Gets the default profile.
         /// </summary>
         /// <returns>DeviceProfile.</returns>
@@ -52,19 +58,5 @@ namespace MediaBrowser.Controller.Dlna
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceProfile.</returns>
         DeviceProfile GetProfile(string id);
-
-        /// <summary>
-        /// Gets the profile.
-        /// </summary>
-        /// <param name="deviceInfo">The device information.</param>
-        /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetProfile(DeviceIdentification deviceInfo);
-
-        /// <summary>
-        /// Gets the icon.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>DlnaIconResponse.</returns>
-        ImageStream GetIcon(string filename);
     }
 }
