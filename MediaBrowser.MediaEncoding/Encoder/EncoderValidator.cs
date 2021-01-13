@@ -125,7 +125,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="source">Source encoding version.</param>
         /// <param name="destination">Destination encoding version.</param>
-        /// <returns>-1 if source is better, 1 if destination is better.</returns>
+        /// <returns><c>false</c> if source is better, <c>true</c> if destination is better.</returns>
         public static bool BestVersion(Version source, Version destination)
         {
             if (source == null || destination == null)
