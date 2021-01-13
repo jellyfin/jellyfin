@@ -118,7 +118,6 @@ namespace Jellyfin.KodiMetadata.Providers
                 PreferredMetadataLanguage = nfo.Language,
                 PreferredMetadataCountryCode = nfo.CountryCode,
                 Tagline = nfo.Tagline,
-                ProductionLocations = nfo.Countries,
                 OfficialRating = nfo.Mpaa,
                 CustomRating = nfo.CustomRating,
                 RunTimeTicks = TimeSpan.FromMinutes(nfo.Runtime ?? 0).Ticks,
@@ -198,14 +197,6 @@ namespace Jellyfin.KodiMetadata.Providers
             else if (nfo.Rating != null)
             {
                 item.CommunityRating = nfo.Rating;
-            }
-
-            foreach (var genre in nfo.Genres ?? Array.Empty<string>())
-            {
-                if (!string.IsNullOrWhiteSpace(genre))
-                {
-                    item.AddGenre(genre.Trim());
-                }
             }
 
             foreach (var style in nfo.Styles ?? Array.Empty<string>())
@@ -291,7 +282,62 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            foreach (var credit in nfo.Credits ?? Array.Empty<string>())
+            foreach (var writer in nfo.Writers ?? Array.Empty<string>())
+            {
+                if (!string.IsNullOrWhiteSpace(writer))
+                {
+                    metadataResult.AddPerson(new PersonInfo() { Name = writer.Trim(), Type = PersonType.Writer });
+                }
+            }
+
+            // split genres, credits and countries at '/' if only one element is present and contains '/'
+            if (nfo.Countries != null
+                && nfo.Countries.Length == 1
+                && nfo.Countries[0].IndexOf('/', StringComparison.Ordinal) != 1)
+            {
+                item.ProductionLocations = nfo.Countries[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(i => i.Trim())
+                    .ToArray();
+            }
+            else
+            {
+                item.ProductionLocations = nfo.Countries;
+            }
+
+            if (nfo.Genres != null
+                && nfo.Genres.Length == 1
+                && nfo.Genres[0].IndexOf('/', StringComparison.Ordinal) != 1)
+            {
+                item.Genres = nfo.Genres[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(i => i.Trim())
+                    .ToArray();
+            }
+            else
+            {
+                foreach (var genre in nfo.Genres ?? Array.Empty<string>())
+                {
+                    if (!string.IsNullOrWhiteSpace(genre))
+                    {
+                        item.AddGenre(genre.Trim());
+                    }
+                }
+            }
+
+            string[] creditArray;
+            if (nfo.Credits != null
+                && nfo.Credits.Length == 1
+                && nfo.Credits[0].IndexOf('/', StringComparison.Ordinal) != 1)
+            {
+                creditArray = nfo.Credits[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(i => i.Trim())
+                    .ToArray();
+            }
+            else
+            {
+                creditArray = nfo.Credits ?? Array.Empty<string>();
+            }
+
+            foreach (var credit in creditArray)
             {
                 if (!string.IsNullOrWhiteSpace(credit))
                 {
@@ -300,14 +346,6 @@ namespace Jellyfin.KodiMetadata.Providers
                         Name = credit.Trim(),
                         Type = PersonType.Writer
                     });
-                }
-            }
-
-            foreach (var writer in nfo.Writers ?? Array.Empty<string>())
-            {
-                if (!string.IsNullOrWhiteSpace(writer))
-                {
-                    metadataResult.AddPerson(new PersonInfo() { Name = writer.Trim(), Type = PersonType.Writer });
                 }
             }
 
