@@ -105,7 +105,8 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(headers));
             }
 
-            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
+            var profile = GetProfiles().FirstOrDefault(i => i.Identification != null
+                    && i.Identification.Headers.Any(i => IsMatch(headers, i)));
 
             if (profile != null)
             {
@@ -118,11 +119,6 @@ namespace Emby.Dlna
             }
 
             return profile;
-        }
-
-        private bool IsMatch(IHeaderDictionary headers, DeviceIdentification profileInfo)
-        {
-            return profileInfo.Headers.Any(i => IsMatch(headers, i));
         }
 
         private bool IsMatch(IHeaderDictionary headers, HttpHeaderInfo header)
