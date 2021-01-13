@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
@@ -41,6 +42,8 @@ using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
+
+[assembly: InternalsVisibleTo("Jellyfin.Api.Tests")]
 
 namespace Jellyfin.Server.Extensions
 {
@@ -180,7 +183,7 @@ namespace Jellyfin.Server.Extensions
         /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
         /// <param name="userList">The string array to parse.</param>
         /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
-        public static void ParseList(INetworkManager networkManager, NetworkConfiguration config, string[] userList, ForwardedHeadersOptions options)
+        internal static void ParseList(INetworkManager networkManager, NetworkConfiguration config, string[] userList, ForwardedHeadersOptions options)
         {
             for (var i = 0; i < userList.Length; i++)
             {
