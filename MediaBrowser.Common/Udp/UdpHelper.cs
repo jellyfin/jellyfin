@@ -614,6 +614,10 @@ namespace MediaBrowser.Common.Udp
 
                 client.BeginReceive(new AsyncCallback(OnReceive), client);
             }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
