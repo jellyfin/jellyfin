@@ -117,5 +117,6 @@
     "TaskCleanActivityLog": "Tøm aktivitetslogg",
     "Undefined": "Udefinert",
     "Forced": "Tvungen",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskCleanActivityLogDescription": "Sletter oppføringer i aktivitetsloggen som er eldre enn den konfigurerte alderen."
 }
