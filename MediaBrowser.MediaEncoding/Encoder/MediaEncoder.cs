@@ -211,7 +211,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var version = _encoderValidator.ValidateVersion(path);
                     if (version != null)
                     {
-                        if (EncoderValidator.BestVersion(version, _bestVersion) == -1)
+                        if (EncoderValidator.BestVersion(version, _bestVersion))
                         {
                             _bestVersion = version;
                             _bestPath = path;

@@ -126,24 +126,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="source">Source encoding version.</param>
         /// <param name="destination">Destination encoding version.</param>
         /// <returns>-1 if source is better, 1 if destination is better.</returns>
-        public static int BestVersion(Version source, Version destination)
+        public static bool BestVersion(Version source, Version destination)
         {
-            if (source == null)
+            if (source == null || destination == null)
             {
-                // Always select the none null value.
-                if (destination != null)
-                {
-                    return 1;
-                }
-
-                // doesn't really matter, as both are null.
-                return -1;
-            }
-
-            // Always select the none null value.
-            if (source != null && destination == null)
-            {
-                return -1;
+                return source != null ? false : true;
             }
 
             // If either is recommended, then select that.
@@ -155,18 +142,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (destRecommended)
                 {
                     // if both are recommendend, select the latest version.
-                    return source >= destination ? -1 : 1;
+                    return !(source >= destination);
                 }
-
-                return -1;
-            }
-            else if (destRecommended)
-            {
-                return 1;
+                else
+                {
+                    return false;
+                }
             }
 
             // select the latest.
-            return source >= destination ? -1 : 1;
+            return !(source >= destination);
         }
 
         public void SetEncoderPath(string path)
