@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 IPObject ipInfo;
                 if (_config.HDHomeRunIP6)
                 {
-                    ipInfo = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
+                    ipInfo = IPHost.Parse(uri.Host, AddressFamily.InterNetworkV6);
                 }
                 else
                 {
