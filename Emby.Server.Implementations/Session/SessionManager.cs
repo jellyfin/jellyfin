@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -33,6 +34,8 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
+using Rebus.Handlers;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -42,6 +45,7 @@ namespace Emby.Server.Implementations.Session
     /// </summary>
     public class SessionManager : ISessionManager, IDisposable
     {
+        private readonly IBus _eventBus;
         private readonly IUserDataManager _userDataManager;
         private readonly ILogger<SessionManager> _logger;
         private readonly IEventManager _eventManager;
@@ -77,7 +81,8 @@ namespace Emby.Server.Implementations.Session
             IServerApplicationHost appHost,
             IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            IBus eventBus)
         {
             _logger = logger;
             _eventManager = eventManager;
@@ -91,15 +96,13 @@ namespace Emby.Server.Implementations.Session
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
+            _eventBus = eventBus;
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
         }
 
         /// <inheritdoc />
         public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
 
         /// <summary>
         /// Occurs when playback has started.
@@ -1523,7 +1526,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            AuthenticationSucceeded?.Invoke(this, new GenericEventArgs<AuthenticationResult>(returnResult));
+            await _eventBus.Send(new AuthenticationSucceededEventArgs(returnResult)).ConfigureAwait(false);
 
             return returnResult;
         }

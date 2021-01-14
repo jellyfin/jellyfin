@@ -1,18 +1,17 @@
 ﻿using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Security
 {
     /// <summary>
     /// Creates an entry in the activity log when there is a successful login attempt.
     /// </summary>
-    public class AuthenticationSucceededLogger : IEventConsumer<GenericEventArgs<AuthenticationResult>>
+    public class AuthenticationSucceededLogger : IHandleMessages<AuthenticationSucceededEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -29,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(GenericEventArgs<AuthenticationResult> e)
+        public async Task Handle(AuthenticationSucceededEventArgs e)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(

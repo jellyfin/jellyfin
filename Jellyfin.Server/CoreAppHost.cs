@@ -73,7 +73,7 @@ namespace Jellyfin.Server
             ServiceCollection.AddDbContextPool<JellyfinDb>(
                  options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
 
-            ServiceCollection.AddEventServices();
+            ServiceCollection.AddEventServices(LoggerFactory);
             ServiceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
             ServiceCollection.AddSingleton<IEventManager, EventManager>();
             ServiceCollection.AddSingleton<JellyfinDbProvider>();

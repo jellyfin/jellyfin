@@ -102,6 +102,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
+using Rebus.Bus;
+using Rebus.ServiceProvider;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
@@ -704,6 +706,8 @@ namespace Emby.Server.Implementations
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
 
             FindParts();
+
+            ServiceProvider.UseRebus();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)

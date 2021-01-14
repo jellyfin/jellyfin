@@ -8,8 +8,8 @@ using Jellyfin.Server.Implementations.Events.Consumers.System;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
 using Jellyfin.Server.Implementations.Events.Consumers.Users;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Controller.Library;
@@ -17,6 +17,12 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Rebus.Config;
+using Rebus.Persistence.InMem;
+using Rebus.Routing.TypeBased;
+using Rebus.ServiceProvider;
+using Rebus.Transport.InMem;
 
 namespace Jellyfin.Server.Implementations.Events
 {
@@ -29,14 +35,23 @@ namespace Jellyfin.Server.Implementations.Events
         /// Adds the event services to the service collection.
         /// </summary>
         /// <param name="collection">The service collection.</param>
-        public static void AddEventServices(this IServiceCollection collection)
+        /// <param name="loggerFactory">The logger factory.</param>
+        public static void AddEventServices(this IServiceCollection collection, ILoggerFactory loggerFactory)
         {
+            collection.AutoRegisterHandlersFromAssembly(typeof(AuthenticationSucceededLogger).Assembly);
+
+            collection.AddRebus(configure => configure
+                .Logging(l => l.MicrosoftExtensionsLogging(loggerFactory))
+                .Transport(t => t.UseInMemoryTransport(new InMemNetwork(), "Events"))
+                .Routing(r => r.TypeBased()
+                    .MapAssemblyOf<AuthenticationSucceededEventArgs>("Events")
+                    .MapFallback("Events")));
+
             // Library consumers
             collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Security consumers
             collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationRequest>>, AuthenticationFailedLogger>();
-            collection.AddScoped<IEventConsumer<GenericEventArgs<AuthenticationResult>>, AuthenticationSucceededLogger>();
 
             // Session consumers
             collection.AddScoped<IEventConsumer<PlaybackStartEventArgs>, PlaybackStartLogger>();
