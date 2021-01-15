@@ -153,6 +153,11 @@ namespace Emby.Server.Implementations.TV
             return allNextUp
                 .Where(i =>
                 {
+                    if (request.DisableFirstEpisode)
+                    {
+                        return i.Item1 != DateTime.MinValue;
+                    }
+
                     if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
                     {
                         anyFound = true;
