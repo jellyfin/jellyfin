@@ -472,7 +472,7 @@ namespace MediaBrowser.Common.Udp
             }
 
             var intf = client.LocalEndPoint.Address;
-            IPEndPoint? mcast = null;
+            IPEndPoint? mcast;
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
             if (intf.AddressFamily == AddressFamily.InterNetwork)
             {
