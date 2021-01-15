@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
@@ -55,11 +54,6 @@ namespace MediaBrowser.Controller.Session
         /// Occurs when [capabilities changed].
         /// </summary>
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
-
-        /// <summary>
-        /// Occurs when [authentication failed].
-        /// </summary>
-        event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
 
         /// <summary>
         /// Gets the sessions.

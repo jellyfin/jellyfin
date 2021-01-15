@@ -35,7 +35,6 @@ using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Rebus.Bus;
-using Rebus.Handlers;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -100,9 +99,6 @@ namespace Emby.Server.Implementations.Session
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
         }
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
 
         /// <summary>
         /// Occurs when playback has started.
@@ -1490,7 +1486,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user == null)
             {
-                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
+                await _eventBus.Send(new AuthenticationFailedEventArgs(request)).ConfigureAwait(false);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
