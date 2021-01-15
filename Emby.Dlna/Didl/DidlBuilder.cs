@@ -113,6 +113,8 @@ namespace Emby.Dlna.Didl
 
                     writer.WriteFullEndElement();
                     // writer.WriteEndDocument();
+
+                    writer.Flush();
                 }
 
                 return builder.ToString();
