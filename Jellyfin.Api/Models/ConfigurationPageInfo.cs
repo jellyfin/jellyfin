@@ -52,12 +52,6 @@ namespace Jellyfin.Api.Models
         public string? DisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the configuration page.
-        /// </summary>
-        /// <value>The type of the configuration page.</value>
-        public ConfigurationPageType ConfigurationPageType { get; set; }
-
-        /// <summary>
         /// Gets or sets the plugin id.
         /// </summary>
         /// <value>The plugin id.</value>

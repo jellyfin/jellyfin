@@ -51,7 +51,6 @@ namespace Jellyfin.Api.Controllers
         /// Gets the configuration pages.
         /// </summary>
         /// <param name="enableInMainMenu">Whether to enable in the main menu.</param>
-        /// <param name="pageType">The <see cref="ConfigurationPageInfo"/>.</param>
         /// <response code="200">ConfigurationPages returned.</response>
         /// <response code="404">Server still loading.</response>
         /// <returns>An <see cref="IEnumerable{ConfigurationPageInfo}"/> with infos about the plugins.</returns>
@@ -59,15 +58,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<ConfigurationPageInfo?>> GetConfigurationPages(
-            [FromQuery] bool? enableInMainMenu,
-            [FromQuery] ConfigurationPageType? pageType)
+            [FromQuery] bool? enableInMainMenu)
         {
             var configPages = _pluginManager.Plugins.SelectMany(GetConfigPages).ToList();
-
-            if (pageType.HasValue)
-            {
-                configPages = configPages.Where(p => p!.ConfigurationPageType == pageType).ToList();
-            }
 
             if (enableInMainMenu.HasValue)
             {
