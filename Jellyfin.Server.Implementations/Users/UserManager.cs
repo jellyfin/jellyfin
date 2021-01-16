@@ -158,6 +158,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
+            await _eventBus.Send(new UserUpdatedEventArgs(user)).ConfigureAwait(false);
             OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 

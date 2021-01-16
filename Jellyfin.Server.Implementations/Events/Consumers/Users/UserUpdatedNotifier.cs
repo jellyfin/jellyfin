@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events.Users;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
     /// <summary>
     /// Notifies a user when their account has been updated.
     /// </summary>
-    public class UserUpdatedNotifier : IEventConsumer<UserUpdatedEventArgs>
+    public class UserUpdatedNotifier : IHandleMessages<UserUpdatedEventArgs>
     {
         private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionManager;
@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(UserUpdatedEventArgs e)
+        public async Task Handle(UserUpdatedEventArgs e)
         {
             await _sessionManager.SendMessageToUserSessions(
                 new List<Guid> { e.Argument.Id },

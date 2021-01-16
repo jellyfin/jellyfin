@@ -1,10 +1,8 @@
 ﻿using Jellyfin.Data.Events.System;
-using Jellyfin.Data.Events.Users;
 using Jellyfin.Server.Implementations.Events.Consumers.Security;
 using Jellyfin.Server.Implementations.Events.Consumers.Session;
 using Jellyfin.Server.Implementations.Events.Consumers.System;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
-using Jellyfin.Server.Implementations.Events.Consumers.Users;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Security;
@@ -63,9 +61,6 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledLogger>();
             collection.AddScoped<IEventConsumer<PluginUninstalledEventArgs>, PluginUninstalledNotifier>();
             collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
-
-            // User consumers
-            collection.AddScoped<IEventConsumer<UserUpdatedEventArgs>, UserUpdatedNotifier>();
         }
     }
 }
