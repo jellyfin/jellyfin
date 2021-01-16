@@ -1,7 +1,5 @@
-﻿using Jellyfin.Data.Events;
-using Jellyfin.Data.Events.System;
+﻿using Jellyfin.Data.Events.System;
 using Jellyfin.Data.Events.Users;
-using Jellyfin.Server.Implementations.Events.Consumers.Library;
 using Jellyfin.Server.Implementations.Events.Consumers.Security;
 using Jellyfin.Server.Implementations.Events.Consumers.Session;
 using Jellyfin.Server.Implementations.Events.Consumers.System;
@@ -13,13 +11,10 @@ using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Session;
-using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Rebus.Config;
-using Rebus.Persistence.InMem;
 using Rebus.Routing.TypeBased;
 using Rebus.ServiceProvider;
 using Rebus.Transport.InMem;
@@ -46,9 +41,6 @@ namespace Jellyfin.Server.Implementations.Events
                 .Routing(r => r.TypeBased()
                     .MapAssemblyOf<AuthenticationSucceededEventArgs>("Events")
                     .MapFallback("Events")));
-
-            // Library consumers
-            collection.AddScoped<IEventConsumer<SubtitleDownloadFailureEventArgs>, SubtitleDownloadFailureLogger>();
 
             // Session consumers
             collection.AddScoped<IEventConsumer<PlaybackStartEventArgs>, PlaybackStartLogger>();

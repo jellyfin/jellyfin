@@ -21,6 +21,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 using static MediaBrowser.Model.IO.IODefaults;
 
 namespace MediaBrowser.Providers.Subtitles
@@ -32,6 +33,7 @@ namespace MediaBrowser.Providers.Subtitles
         private readonly ILibraryMonitor _monitor;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILocalizationManager _localization;
+        private readonly IBus _eventBus;
 
         private ISubtitleProvider[] _subtitleProviders;
 
@@ -40,17 +42,16 @@ namespace MediaBrowser.Providers.Subtitles
             IFileSystem fileSystem,
             ILibraryMonitor monitor,
             IMediaSourceManager mediaSourceManager,
-            ILocalizationManager localizationManager)
+            ILocalizationManager localizationManager,
+            IBus eventBus)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _monitor = monitor;
             _mediaSourceManager = mediaSourceManager;
             _localization = localizationManager;
+            _eventBus = eventBus;
         }
-
-        /// <inheritdoc />
-        public event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
 
         /// <inheritdoc />
         public void AddParts(IEnumerable<ISubtitleProvider> subtitleProviders)
@@ -162,12 +163,12 @@ namespace MediaBrowser.Providers.Subtitles
             }
             catch (Exception ex)
             {
-                SubtitleDownloadFailure?.Invoke(this, new SubtitleDownloadFailureEventArgs
+                await _eventBus.Send(new SubtitleDownloadFailureEventArgs
                 {
                     Item = video,
                     Exception = ex,
                     Provider = provider.Name
-                });
+                }).ConfigureAwait(false);
 
                 throw;
             }

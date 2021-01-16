@@ -22,6 +22,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.0.0" />
     <PackageReference Include="PlaylistsNET" Version="1.1.3" />
+    <PackageReference Include="Rebus" Version="6.4.1" />
     <PackageReference Include="TMDbLib" Version="1.7.3-alpha" />
   </ItemGroup>
 

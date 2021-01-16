@@ -4,18 +4,18 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Library
 {
     /// <summary>
     /// Creates an entry in the activity log whenever a subtitle download fails.
     /// </summary>
-    public class SubtitleDownloadFailureLogger : IEventConsumer<SubtitleDownloadFailureEventArgs>
+    public class SubtitleDownloadFailureLogger : IHandleMessages<SubtitleDownloadFailureEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Library
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(SubtitleDownloadFailureEventArgs eventArgs)
+        public async Task Handle(SubtitleDownloadFailureEventArgs eventArgs)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
