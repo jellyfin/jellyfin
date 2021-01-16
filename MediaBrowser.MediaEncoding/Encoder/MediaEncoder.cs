@@ -219,8 +219,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             return true;
                         }
 
-                        _logger.LogInformation("FFmpeg: {Location}: version { Version } found: {Path}", location, version, path);
-                        return false;
+                        _logger.LogInformation("FFmpeg: {Location}: version {Version} found: {Path}", location, version, path);
                     }
 
                     _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
