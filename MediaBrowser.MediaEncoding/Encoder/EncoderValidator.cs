@@ -130,7 +130,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             if (source == null || destination == null)
             {
-                return source != null ? false : true;
+                return source == null;
             }
 
             // If either is recommended, then select that.
