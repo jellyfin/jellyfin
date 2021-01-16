@@ -42,6 +42,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="5.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="5.0.1" />
+    <PackageReference Include="Polly" Version="7.2.1" />
+    <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <PackageReference Include="prometheus-net" Version="4.1.1" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="4.1.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />

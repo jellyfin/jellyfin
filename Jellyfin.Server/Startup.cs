@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
@@ -75,7 +76,8 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler())
+                .AddPolicyHandler(HttpClientPolicyConfiguration.GetHttpClientRetryPolicy());
 
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
@@ -84,7 +86,8 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler())
+                .AddPolicyHandler(HttpClientPolicyConfiguration.GetHttpClientRetryPolicy());
 
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();
