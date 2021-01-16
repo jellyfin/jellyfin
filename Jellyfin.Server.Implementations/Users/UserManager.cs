@@ -27,6 +27,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -36,6 +37,7 @@ namespace Jellyfin.Server.Implementations.Users
     public class UserManager : IUserManager
     {
         private readonly JellyfinDbProvider _dbProvider;
+        private readonly IBus _eventBus;
         private readonly IEventManager _eventManager;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
@@ -54,6 +56,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
+        /// <param name="eventBus">The event bus.</param>
         /// <param name="eventManager">The event manager.</param>
         /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
@@ -62,6 +65,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="logger">The logger.</param>
         public UserManager(
             JellyfinDbProvider dbProvider,
+            IBus eventBus,
             IEventManager eventManager,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
@@ -70,6 +74,7 @@ namespace Jellyfin.Server.Implementations.Users
             ILogger<UserManager> logger)
         {
             _dbProvider = dbProvider;
+            _eventBus = eventBus;
             _eventManager = eventManager;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
@@ -213,7 +218,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
+            await _eventBus.Send(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
 
             return newUser;
         }

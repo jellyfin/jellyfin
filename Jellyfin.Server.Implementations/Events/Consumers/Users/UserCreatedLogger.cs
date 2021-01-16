@@ -2,16 +2,16 @@
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events.Users;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
     /// <summary>
     /// Creates an entry in the activity log when a user is created.
     /// </summary>
-    public class UserCreatedLogger : IEventConsumer<UserCreatedEventArgs>
+    public class UserCreatedLogger : IHandleMessages<UserCreatedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(UserCreatedEventArgs eventArgs)
+        public async Task Handle(UserCreatedEventArgs eventArgs)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
