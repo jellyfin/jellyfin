@@ -874,7 +874,7 @@ namespace Jellyfin.Server.Implementations.Users
             if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
-                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
+                await _eventBus.Send(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
                 _logger.LogWarning(
                     "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,
