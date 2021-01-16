@@ -265,7 +265,7 @@ namespace Jellyfin.Server.Implementations.Users
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
 
-            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
+            await _eventBus.Send(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
