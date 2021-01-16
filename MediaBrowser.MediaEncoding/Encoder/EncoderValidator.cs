@@ -141,7 +141,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 if (destRecommended)
                 {
-                    // if both are recommendend, select the latest version.
+                    // if both are recommended, select the latest version.
                     return !(source >= destination);
                 }
                 else
