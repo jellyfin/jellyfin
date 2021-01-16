@@ -38,7 +38,6 @@ namespace Jellyfin.Server.Implementations.Users
     {
         private readonly JellyfinDbProvider _dbProvider;
         private readonly IBus _eventBus;
-        private readonly IEventManager _eventManager;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
@@ -57,7 +56,6 @@ namespace Jellyfin.Server.Implementations.Users
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
         /// <param name="eventBus">The event bus.</param>
-        /// <param name="eventManager">The event manager.</param>
         /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
@@ -66,7 +64,6 @@ namespace Jellyfin.Server.Implementations.Users
         public UserManager(
             JellyfinDbProvider dbProvider,
             IBus eventBus,
-            IEventManager eventManager,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
@@ -75,7 +72,6 @@ namespace Jellyfin.Server.Implementations.Users
         {
             _dbProvider = dbProvider;
             _eventBus = eventBus;
-            _eventManager = eventManager;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
@@ -291,7 +287,7 @@ namespace Jellyfin.Server.Implementations.Users
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
 
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
+            await _eventBus.Send(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -310,7 +306,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.EasyPassword = newPasswordSha1;
             UpdateUser(user);
 
-            _eventManager.Publish(new UserPasswordChangedEventArgs(user));
+            _eventBus.Send(new UserPasswordChangedEventArgs(user));
         }
 
         /// <inheritdoc/>

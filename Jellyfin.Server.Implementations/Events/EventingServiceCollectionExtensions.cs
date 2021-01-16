@@ -65,7 +65,6 @@ namespace Jellyfin.Server.Implementations.Events
             collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
 
             // User consumers
-            collection.AddScoped<IEventConsumer<UserPasswordChangedEventArgs>, UserPasswordChangedLogger>();
             collection.AddScoped<IEventConsumer<UserUpdatedEventArgs>, UserUpdatedNotifier>();
         }
     }
