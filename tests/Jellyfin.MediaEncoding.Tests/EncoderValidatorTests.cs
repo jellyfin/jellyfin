@@ -33,21 +33,6 @@ namespace Jellyfin.MediaEncoding.Tests
         }
 
         [Theory]
-        [InlineData("2.0.0.0", "1.0.0.0", false)]
-        [InlineData("4.5.0.0", "5.2.0.0", true)]
-        [InlineData(null, "3.5.0.0", true)]
-        [InlineData("2.0.0.0", null, false)]
-        [InlineData(null, "2.0.0.0", true)]
-        public void WorstVersion(string? source, string? destination, bool worst)
-        {
-            Assert.Equal(
-                EncoderValidator.BestVersion(
-                    source != null ? Version.Parse(source) : null,
-                    destination != null ? Version.Parse(destination) : null),
-                worst);
-        }
-
-        [Theory]
         [InlineData(EncoderValidatorTestsData.FFmpegV431Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV43Output, true)]
         [InlineData(EncoderValidatorTestsData.FFmpegV421Output, true)]
