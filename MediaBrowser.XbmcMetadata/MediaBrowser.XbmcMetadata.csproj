@@ -10,10 +10,6 @@
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\SharedVersion.cs" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

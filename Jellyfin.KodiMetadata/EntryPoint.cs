@@ -1,19 +1,21 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Threading.Tasks;
+using Jellyfin.KodiMetadata.Configuration;
+using Jellyfin.KodiMetadata.Models;
+using Jellyfin.KodiMetadata.Savers;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.XbmcMetadata.Configuration;
-using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.XbmcMetadata
+namespace Jellyfin.KodiMetadata
 {
+    /// <summary>
+    /// Kodi metadata <see cref="IServerEntryPoint"/> for registering UserDataSaved event.
+    /// </summary>
     public sealed class EntryPoint : IServerEntryPoint
     {
         private readonly IUserDataManager _userDataManager;
@@ -21,6 +23,13 @@ namespace MediaBrowser.XbmcMetadata
         private readonly IProviderManager _providerManager;
         private readonly IConfigurationManager _config;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntryPoint"/> class.
+        /// </summary>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         public EntryPoint(
             IUserDataManager userDataManager,
             ILogger<EntryPoint> logger,
@@ -77,7 +86,7 @@ namespace MediaBrowser.XbmcMetadata
 
             try
             {
-                _providerManager.SaveMetadata(item, updateReason, new[] { BaseNfoSaver.SaverName });
+                _providerManager.SaveMetadata(item, updateReason, new[] { BaseNfoSaver<BaseItem, BaseNfo>.SaverName });
             }
             catch (Exception ex)
             {

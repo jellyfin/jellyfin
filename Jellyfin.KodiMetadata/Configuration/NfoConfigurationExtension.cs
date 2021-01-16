@@ -3,7 +3,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.XbmcMetadata.Configuration
+namespace Jellyfin.KodiMetadata.Configuration
 {
     public static class NfoConfigurationExtension
     {

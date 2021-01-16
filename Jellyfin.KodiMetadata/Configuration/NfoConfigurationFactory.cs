@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Configuration;
 
-namespace MediaBrowser.XbmcMetadata.Configuration
+namespace Jellyfin.KodiMetadata.Configuration
 {
     public class NfoConfigurationFactory : IConfigurationFactory
     {

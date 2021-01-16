@@ -12,14 +12,6 @@ namespace Jellyfin.KodiMetadata.Models
     public class SeriesNfo : BaseNfo
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SeriesNfo"/> class.
-        /// </summary>
-        public SeriesNfo()
-        {
-            Ids = Array.Empty<IdNfo>();
-        }
-
-        /// <summary>
         /// Gets or sets the show title / alternative title.
         /// </summary>
         [XmlElement("showtitle")]
@@ -65,6 +57,6 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the external ids.
         /// </summary>
         [XmlElement("id")]
-        public IdNfo[] Ids { get; set; }
+        public string? Id { get; set; }
     }
 }

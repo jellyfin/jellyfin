@@ -122,7 +122,7 @@ namespace Jellyfin.KodiMetadata.Providers
                 CustomRating = nfo.CustomRating,
                 RunTimeTicks = TimeSpan.FromMinutes(nfo.Runtime ?? 0).Ticks,
                 IsLocked = nfo.LockData,
-                Studios = new[] { nfo.Studio },
+                Studios = nfo.Studios,
                 ProductionYear = nfo.Year,
                 PremiereDate = (nfo.Premiered ?? nfo.Formed ?? nfo.Aired).GetValueOrDefault(),
                 EndDate = nfo.EndDate.GetValueOrDefault()
@@ -152,11 +152,12 @@ namespace Jellyfin.KodiMetadata.Providers
                                 video.Video3DFormat = Video3DFormat.MVC;
                                 break;
                         }
-                    }
 
-                    video.Height = nfo.FileInfo.StreamDetails.Video[0].Height ?? 0;
-                    video.Width = nfo.FileInfo.StreamDetails.Video[0].Width ?? 0;
-                    video.RunTimeTicks = new TimeSpan(0, 0, nfo.FileInfo.StreamDetails.Video[0].Duration ?? nfo.Runtime ?? 0).Ticks;
+                        video.Height = nfo.FileInfo.StreamDetails.Video[0].Height ?? 0;
+                        video.Width = nfo.FileInfo.StreamDetails.Video[0].Width ?? 0;
+                        int seconds = Convert.ToInt32(videoNfo.DurationInSeconds ?? nfo.Runtime ?? 0);
+                        video.RunTimeTicks = new TimeSpan(0, 0, seconds).Ticks;
+                    }
                 }
 
                 // Subtitles
@@ -171,10 +172,13 @@ namespace Jellyfin.KodiMetadata.Providers
                 hasAspectRatio.AspectRatio = nfo.FileInfo?.StreamDetails?.Video?[0].AspectRatio ?? nfo.AspectRatio;
             }
 
-            var trailerUrl = nfo.Trailer?.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
-            if (!string.IsNullOrWhiteSpace(trailerUrl))
+            foreach (var trailer in nfo.Trailers ?? Array.Empty<string>())
             {
-                item.AddTrailerUrl(trailerUrl);
+                var trailerUrl = trailer.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", "https://www.youtube.com/watch?v=", StringComparison.OrdinalIgnoreCase);
+                if (!string.IsNullOrWhiteSpace(trailerUrl))
+                {
+                    item.AddTrailerUrl(trailerUrl);
+                }
             }
 
             if (item is IHasDisplayOrder hasDisplayOrder && nfo.DisplayOrder != null)
@@ -293,7 +297,7 @@ namespace Jellyfin.KodiMetadata.Providers
             // split genres, credits and countries at '/' if only one element is present and contains '/'
             if (nfo.Countries != null
                 && nfo.Countries.Length == 1
-                && nfo.Countries[0].IndexOf('/', StringComparison.Ordinal) != 1)
+                && nfo.Countries[0].IndexOf('/', StringComparison.Ordinal) != -1)
             {
                 item.ProductionLocations = nfo.Countries[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
                     .Select(i => i.Trim())
@@ -304,29 +308,32 @@ namespace Jellyfin.KodiMetadata.Providers
                 item.ProductionLocations = nfo.Countries;
             }
 
+            string[] genreArray;
             if (nfo.Genres != null
                 && nfo.Genres.Length == 1
-                && nfo.Genres[0].IndexOf('/', StringComparison.Ordinal) != 1)
+                && nfo.Genres[0].IndexOf('/', StringComparison.Ordinal) != -1)
             {
-                item.Genres = nfo.Genres[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
+                genreArray = nfo.Genres[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
                     .Select(i => i.Trim())
                     .ToArray();
             }
             else
             {
-                foreach (var genre in nfo.Genres ?? Array.Empty<string>())
+                genreArray = nfo.Genres ?? Array.Empty<string>();
+            }
+
+            foreach (var genre in genreArray)
+            {
+                if (!string.IsNullOrWhiteSpace(genre))
                 {
-                    if (!string.IsNullOrWhiteSpace(genre))
-                    {
-                        item.AddGenre(genre.Trim());
-                    }
+                    item.AddGenre(genre.Trim());
                 }
             }
 
             string[] creditArray;
             if (nfo.Credits != null
                 && nfo.Credits.Length == 1
-                && nfo.Credits[0].IndexOf('/', StringComparison.Ordinal) != 1)
+                && nfo.Credits[0].IndexOf('/', StringComparison.Ordinal) != -1)
             {
                 creditArray = nfo.Credits[1].Split('/', StringSplitOptions.RemoveEmptyEntries)
                     .Select(i => i.Trim())
@@ -349,8 +356,8 @@ namespace Jellyfin.KodiMetadata.Providers
                 }
             }
 
-            // map provider ids // todo
-            // It's okay to pass null because the method removes the providers for which the id is null // todo this is ugly
+            // map provider ids
+            // It's okay to pass null because the method removes the providers for which the id is null
             string? imdbId = nfo.ImdbId ?? nfo.UniqueIds?
                 .FirstOrDefault(x => x.Type != null && x.Type.Equals("imdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;

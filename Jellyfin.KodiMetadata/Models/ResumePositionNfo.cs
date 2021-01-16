@@ -11,12 +11,12 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the resume point in seconds.
         /// </summary>
         [XmlElement("position")]
-        public float? Position { get; set; }
+        public double Position { get; set; }
 
         /// <summary>
         /// Gets or sets the total length in seconds.
         /// </summary>
         [XmlElement("total")]
-        public float? Total { get; set; }
+        public double Total { get; set; }
     }
 }

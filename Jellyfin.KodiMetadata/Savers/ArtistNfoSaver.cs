@@ -1,15 +1,12 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
+using System.Collections.Generic;
 using Jellyfin.KodiMetadata.Models;
 using Jellyfin.KodiMetadata.Providers;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -17,12 +14,12 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.KodiMetadata.Savers
 {
     /// <summary>
-    /// The movie nfo metadata saver.
+    /// The nfo local metadata saver for music artists.
     /// </summary>
-    public class MovieNfoSaver : BaseNfoSaver<Movie, MovieNfo>
+    public class ArtistNfoSaver : BaseNfoSaver<MusicArtist, ArtistNfo>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MovieNfoSaver"/> class.
+        /// Initializes a new instance of the <see cref="ArtistNfoSaver"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
@@ -31,8 +28,8 @@ namespace Jellyfin.KodiMetadata.Savers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
-        public MovieNfoSaver(
-            ILogger<BaseNfoSaver<Movie, MovieNfo>> logger,
+        public ArtistNfoSaver(
+            ILogger<BaseNfoSaver<MusicArtist, ArtistNfo>> logger,
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
@@ -44,35 +41,7 @@ namespace Jellyfin.KodiMetadata.Savers
         }
 
         /// <inheritdoc />
-        public override string GetSavePath(BaseItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentException("Item can't be null", nameof(item));
-            }
-
-            return MovieNfoProvider.GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault() ?? Path.ChangeExtension(item.Path, ".nfo");
-        }
-
-        /// <inheritdoc />
-        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
-
-            // Check parent for null to avoid running this against things like video backdrops
-            if (item is Video video && !(item is Episode) && !video.ExtraType.HasValue)
-            {
-                return updateType >= MinimumUpdateType;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        protected override void MapJellyfinToNfoObject(Movie? item, MovieNfo nfo)
+        protected override void MapJellyfinToNfoObject(MusicArtist item, ArtistNfo nfo)
         {
             if (item == null)
             {
@@ -84,11 +53,31 @@ namespace Jellyfin.KodiMetadata.Savers
                 throw new ArgumentException("Nfo object can't be null", nameof(nfo));
             }
 
-            nfo.Id = item.GetProviderId(MetadataProvider.Imdb);
-            nfo.CollectionId = item.GetProviderId(MetadataProvider.TmdbCollection);
-            nfo.Set = new SetNfo() { Name = item.CollectionName, TmdbCollectionId = item.GetProviderId(MetadataProvider.TmdbCollection) };
+            nfo.Disbanded = item.EndDate;
+            var albums = item
+                .GetRecursiveChildren(i => i is MusicAlbum);
+
+            List<ArtistAlbumNfo> albumNfos = new List<ArtistAlbumNfo>();
+            foreach (var album in albums)
+            {
+                albumNfos.Add(new ArtistAlbumNfo()
+                {
+                    Name = album.Name,
+                    Year = album.ProductionYear
+                });
+            }
+
+            nfo.Albums = albumNfos.ToArray();
 
             base.MapJellyfinToNfoObject(item, nfo);
         }
+
+        /// <inheritdoc />
+        public override string GetSavePath(BaseItem item)
+            => ArtistNfoProvider.GetArtistSavePath(new ItemInfo(item));
+
+        /// <inheritdoc />
+        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
+            => item.SupportsLocalMetadata && item is MusicArtist && updateType >= MinimumUpdateType;
     }
 }

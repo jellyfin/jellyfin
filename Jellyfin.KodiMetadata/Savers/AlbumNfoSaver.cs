@@ -1,15 +1,14 @@
 ﻿using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Jellyfin.KodiMetadata.Models;
 using Jellyfin.KodiMetadata.Providers;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -17,12 +16,12 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.KodiMetadata.Savers
 {
     /// <summary>
-    /// The movie nfo metadata saver.
+    /// The music album nfo metadata saver.
     /// </summary>
-    public class MovieNfoSaver : BaseNfoSaver<Movie, MovieNfo>
+    public class AlbumNfoSaver : BaseNfoSaver<MusicAlbum, AlbumNfo>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MovieNfoSaver"/> class.
+        /// Initializes a new instance of the <see cref="AlbumNfoSaver"/> class.
         /// </summary>
         /// <param name="logger">Instance of the <see cref="ILogger{TCategoryName}"/> interface.</param>
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
@@ -31,8 +30,8 @@ namespace Jellyfin.KodiMetadata.Savers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
-        public MovieNfoSaver(
-            ILogger<BaseNfoSaver<Movie, MovieNfo>> logger,
+        public AlbumNfoSaver(
+            ILogger<BaseNfoSaver<MusicAlbum, AlbumNfo>> logger,
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager,
@@ -44,35 +43,7 @@ namespace Jellyfin.KodiMetadata.Savers
         }
 
         /// <inheritdoc />
-        public override string GetSavePath(BaseItem item)
-        {
-            if (item == null)
-            {
-                throw new ArgumentException("Item can't be null", nameof(item));
-            }
-
-            return MovieNfoProvider.GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault() ?? Path.ChangeExtension(item.Path, ".nfo");
-        }
-
-        /// <inheritdoc />
-        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
-
-            // Check parent for null to avoid running this against things like video backdrops
-            if (item is Video video && !(item is Episode) && !video.ExtraType.HasValue)
-            {
-                return updateType >= MinimumUpdateType;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        protected override void MapJellyfinToNfoObject(Movie? item, MovieNfo nfo)
+        protected override void MapJellyfinToNfoObject(MusicAlbum item, AlbumNfo nfo)
         {
             if (item == null)
             {
@@ -84,11 +55,37 @@ namespace Jellyfin.KodiMetadata.Savers
                 throw new ArgumentException("Nfo object can't be null", nameof(nfo));
             }
 
-            nfo.Id = item.GetProviderId(MetadataProvider.Imdb);
-            nfo.CollectionId = item.GetProviderId(MetadataProvider.TmdbCollection);
-            nfo.Set = new SetNfo() { Name = item.CollectionName, TmdbCollectionId = item.GetProviderId(MetadataProvider.TmdbCollection) };
+            nfo.Artists = item.Artists.ToArray();
+            nfo.AlbumArtists = item.AlbumArtists.ToArray();
+
+            List<TrackNfo> trackNfos = new List<TrackNfo>();
+            foreach (var track in item.Tracks.OrderBy(i => i.ParentIndexNumber ?? 0).ThenBy(i => i.IndexNumber ?? 0))
+            {
+                var trackNfo = new TrackNfo()
+                {
+                    Title = track.Name,
+                    Positoin = track.IndexNumber
+                };
+
+                if (track.RunTimeTicks.HasValue)
+                {
+                    trackNfo.Duration = TimeSpan.FromTicks(track.RunTimeTicks.Value).ToString(@"mm\:ss", CultureInfo.InvariantCulture);
+                }
+
+                trackNfos.Add(trackNfo);
+            }
+
+            nfo.Tracks = trackNfos.ToArray();
 
             base.MapJellyfinToNfoObject(item, nfo);
         }
+
+        /// <inheritdoc />
+        public override string GetSavePath(BaseItem item)
+            => AlbumNfoProvider.GetAlbumSavePath(new ItemInfo(item));
+
+        /// <inheritdoc />
+        public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
+            => item.SupportsLocalMetadata && item is MusicAlbum && updateType >= MinimumUpdateType;
     }
 }

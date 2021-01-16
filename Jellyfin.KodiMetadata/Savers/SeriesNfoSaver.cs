@@ -25,12 +25,18 @@ namespace Jellyfin.KodiMetadata.Savers
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         public SeriesNfoSaver(
             ILogger<BaseNfoSaver<Series, SeriesNfo>> logger,
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager)
-            : base(logger, xmlSerializer, fileSystem, configurationManager)
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
+            : base(logger, xmlSerializer, fileSystem, configurationManager, libraryManager, userManager, userDataManager)
         {
         }
 
@@ -62,22 +68,16 @@ namespace Jellyfin.KodiMetadata.Savers
                 throw new ArgumentException("Nfo object can't be null", nameof(nfo));
             }
 
-            // todo change ids to not use the method from the kodi wiki
-            nfo.Ids = new[]
-            {
-                new IdNfo()
-                {
-                    TvdbId = item.GetProviderId(MetadataProvider.Tvdb)
-                }
-            };
+            nfo.Id = item.GetProviderId(MetadataProvider.Tvdb);
+            nfo.TvdbId = item.GetProviderId(MetadataProvider.Tvdb);
+            nfo.TvRageId = item.GetProviderId(MetadataProvider.TvRage);
+            nfo.Zap2ItId = item.GetProviderId(MetadataProvider.Zap2It);
             nfo.Season = -1;
             nfo.Episode = -1;
             if (item.Status.HasValue)
             {
                 nfo.Status = item.Status.Value.ToString();
             }
-
-            // todo episodeguide
 
             base.MapJellyfinToNfoObject(item, nfo);
         }

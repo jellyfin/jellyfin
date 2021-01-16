@@ -65,7 +65,7 @@ namespace Jellyfin.KodiMetadata.Models
         /// Gets or sets the runtime in minutes.
         /// </summary>
         [XmlElement("runtime")]
-        public int? Runtime { get; set; }
+        public long? Runtime { get; set; }
 
         /// <summary>
         /// Gets or sets the contry specific mpaa rating system.
@@ -122,16 +122,16 @@ namespace Jellyfin.KodiMetadata.Models
         public int? Year { get; set; }
 
         /// <summary>
-        /// Gets or sets the production studio.
+        /// Gets or sets the production studios.
         /// </summary>
         [XmlElement("studio")]
-        public string? Studio { get; set; }
+        public string[]? Studios { get; set; }
 
         /// <summary>
         /// Gets or sets the local or online path to the trailer.
         /// </summary>
         [XmlElement("trailer")]
-        public string? Trailer { get; set; }
+        public string[]? Trailers { get; set; }
 
         /// <summary>
         /// Gets or sets the file info.
@@ -428,6 +428,24 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("art")]
         public ArtNfo? Art { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the item is a user favorite.
+        /// </summary>
+        [XmlElement("isuserfavorite")]
+        public bool IsUserFavorite { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user has watched the item.
+        /// </summary>
+        [XmlElement("watched")]
+        public bool Watched { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection items.
+        /// </summary>
+        [XmlArray("collectionitem")]
+        public CollectionItemNfo[]? CollectionItems { get; set; }
 
         // Provider Ids
 

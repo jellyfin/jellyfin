@@ -27,12 +27,18 @@ namespace Jellyfin.KodiMetadata.Savers
         /// <param name="xmlSerializer">Instance of the <see cref="IXmlSerializer"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         public MusicVideoNfoSaver(
             ILogger<BaseNfoSaver<MusicVideo, MusicVideoNfo>> logger,
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager)
-            : base(logger, xmlSerializer, fileSystem, configurationManager)
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
+            : base(logger, xmlSerializer, fileSystem, configurationManager, libraryManager, userManager, userDataManager)
         {
         }
 

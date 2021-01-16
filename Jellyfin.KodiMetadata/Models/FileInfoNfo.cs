@@ -88,10 +88,34 @@ namespace Jellyfin.KodiMetadata.Models
         public int? Height { get; set; }
 
         /// <summary>
+        /// Gets or sets the video duration in minutes.
+        /// </summary>
+        [XmlElement("duration")]
+        public double? Duration { get; set; }
+
+        /// <summary>
         /// Gets or sets the video duration in seconds.
         /// </summary>
         [XmlElement("durationinseconds")]
-        public int? Duration { get; set; }
+        public double? DurationInSeconds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video framerate.
+        /// </summary>
+        [XmlElement("framerate")]
+        public float? Framerate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the video bitrate.
+        /// </summary>
+        [XmlElement("bitrate")]
+        public int? Bitrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scan type (interlaced or progressive).
+        /// </summary>
+        [XmlElement("scantype")]
+        public string? Scantype { get; set; }
     }
 
     /// <summary>
@@ -116,6 +140,30 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("language")]
         public string? Language { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio sampling rate.
+        /// </summary>
+        [XmlElement("samplingrate")]
+        public int? SamplingRate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio bitrate.
+        /// </summary>
+        [XmlElement("bitrate")]
+        public int? Bitrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this stream is the default.
+        /// </summary>
+        [XmlElement("default")]
+        public bool Default { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this stream is forced.
+        /// </summary>
+        [XmlElement("forced")]
+        public bool Forced { get; set; }
     }
 
     /// <summary>
@@ -128,5 +176,17 @@ namespace Jellyfin.KodiMetadata.Models
         /// </summary>
         [XmlElement("language")]
         public string? Language { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this stream is the default.
+        /// </summary>
+        [XmlElement("default")]
+        public bool Default { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this stream is forced.
+        /// </summary>
+        [XmlElement("forced")]
+        public bool Forced { get; set; }
     }
 }
