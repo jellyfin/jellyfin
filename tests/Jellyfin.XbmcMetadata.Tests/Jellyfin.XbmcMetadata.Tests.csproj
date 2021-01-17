@@ -28,9 +28,8 @@
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="../../Jellyfin.KodiMetadata/Jellyfin.KodiMetadata.csproj" />
+    <ProjectReference Include="..\..\Jellyfin.NfoMetadata\Jellyfin.NfoMetadata.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

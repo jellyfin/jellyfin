@@ -45,7 +45,7 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
-using Jellyfin.KodiMetadata.Models;
+using Jellyfin.NfoMetadata.Models;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
