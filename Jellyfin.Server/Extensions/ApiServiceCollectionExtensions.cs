@@ -43,6 +43,8 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using AuthenticationSchemes = Jellyfin.Api.Constants.AuthenticationSchemes;
 
+[assembly: InternalsVisibleTo("Jellyfin.Api.Tests")]
+
 namespace Jellyfin.Server.Extensions
 {
     /// <summary>

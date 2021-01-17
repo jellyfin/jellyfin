@@ -14,27 +14,6 @@ namespace Jellyfin.Api.Tests
 {
     public class ParseNetworkTests
     {
-        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
-        {
-            var configManager = new Mock<IConfigurationManager>
-            {
-                CallBase = true
-            };
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
-        }
-
-        private static NetworkManager CreateNetworkManager()
-        {
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
-            };
-
-            return new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-        }
-
         /// <summary>
         /// Order of the result has always got to be hosts, then networks.
         /// </summary>
@@ -53,9 +32,11 @@ namespace Jellyfin.Api.Tests
             using var nm = CreateNetworkManager();
             nm.SystemIP6Enabled = ip6;
 
-            var settings = new NetworkConfiguration();
-            settings.EnableIPV4 = ip4;
-            settings.EnableIPV6 = ip6;
+            var settings = new NetworkConfiguration
+            {
+                EnableIPV4 = ip4,
+                EnableIPV6 = ip6
+            };
 
             var result = match + ',';
             ForwardedHeadersOptions options = new ForwardedHeadersOptions();
@@ -82,6 +63,27 @@ namespace Jellyfin.Api.Tests
             }
 
             Assert.True(string.Equals(sb.ToString(), result, StringComparison.OrdinalIgnoreCase), "Not matched: " + sb.ToString() + " does not match " + result);
+        }
+
+        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IConfigurationManager>
+            {
+                CallBase = true
+            };
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IConfigurationManager)configManager.Object;
+        }
+
+        private static NetworkManager CreateNetworkManager()
+        {
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+            };
+
+            return new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
         }
     }
 }
