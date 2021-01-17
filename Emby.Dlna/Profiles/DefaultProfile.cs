@@ -1,13 +1,17 @@
-#pragma warning disable CS1591
-
 using System.Linq;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
 {
+    /// <summary>
+    /// Defines the <see cref="DefaultProfile" />.
+    /// </summary>
     [System.Xml.Serialization.XmlRoot("Profile")]
     public class DefaultProfile : DeviceProfile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultProfile"/> class.
+        /// </summary>
         public DefaultProfile()
         {
             Name = "Generic Device";
@@ -37,141 +41,58 @@ namespace Emby.Dlna.Profiles
 
             TranscodingProfiles = new[]
             {
-                new TranscodingProfile
-                {
-                    Container = "mp3",
-                    AudioCodec = "mp3",
-                    Type = DlnaProfileType.Audio
-                },
-
-                new TranscodingProfile
-                {
-                    Container = "ts",
-                    Type = DlnaProfileType.Video,
-                    AudioCodec = "aac",
-                    VideoCodec = "h264"
-                },
-
-                new TranscodingProfile
-                {
-                    Container = "jpeg",
-                    Type = DlnaProfileType.Photo
-                }
+                new TranscodingProfile("mp3", "mp3"),
+                new TranscodingProfile("ts", "aac", "h264"),
+                new TranscodingProfile("jpeg")
             };
 
             DirectPlayProfiles = new[]
             {
-                new DirectPlayProfile
+                new DirectPlayProfile(string.Empty)
                 {
                     // play all
-                    Container = string.Empty,
                     Type = DlnaProfileType.Video
                 },
-
-                new DirectPlayProfile
+                new DirectPlayProfile(string.Empty)
                 {
                     // play all
-                    Container = string.Empty,
                     Type = DlnaProfileType.Audio
                 }
             };
 
             SubtitleProfiles = new[]
             {
-                new SubtitleProfile
-                {
-                    Format = "srt",
-                    Method = SubtitleDeliveryMethod.External,
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "sub",
-                    Method = SubtitleDeliveryMethod.External,
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "srt",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "ass",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "ssa",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "smi",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "dvdsub",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "pgs",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "pgssub",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "sub",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "subrip",
-                    Method = SubtitleDeliveryMethod.Embed
-                },
-
-                new SubtitleProfile
-                {
-                    Format = "vtt",
-                    Method = SubtitleDeliveryMethod.Embed
-                }
+                new SubtitleProfile("srt", SubtitleDeliveryMethod.External),
+                new SubtitleProfile("sub", SubtitleDeliveryMethod.External),
+                new SubtitleProfile("srt", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("ass", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("ssa", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("smi", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("dvdsub", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("pgs", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("pgssub", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("sub", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("subrip", SubtitleDeliveryMethod.Embed),
+                new SubtitleProfile("vtt", SubtitleDeliveryMethod.Embed)
             };
 
             ResponseProfiles = new[]
             {
-                new ResponseProfile
-                {
-                    Container = "m4v",
-                    Type = DlnaProfileType.Video,
-                    MimeType = "video/mp4"
-                }
+                new ResponseProfile("m4v", DlnaProfileType.Video, "video/mp4")
             };
         }
 
+        /// <summary>
+        /// The AddXmlRootAttribute.
+        /// </summary>
+        /// <param name="name">The name<see cref="string"/>.</param>
+        /// <param name="value">The value<see cref="string"/>.</param>
         public void AddXmlRootAttribute(string name, string value)
         {
             var atts = XmlRootAttributes ?? System.Array.Empty<XmlAttribute>();
             var list = atts.ToList();
 
-            list.Add(new XmlAttribute
-            {
-                Name = name,
-                Value = value
-            });
+            list.Add(new XmlAttribute(name, value));
 
             XmlRootAttributes = list.ToArray();
         }

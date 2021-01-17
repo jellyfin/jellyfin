@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -183,13 +183,14 @@ namespace Jellyfin.Api.Helpers
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
-            var options = new VideoOptions
+            var options = new VideoOptions(
+                item.Id,
+                new[] { mediaSource },
+                profile,
+                auth.DeviceId,
+                null)
             {
-                MediaSources = new[] { mediaSource },
                 Context = EncodingContext.Streaming,
-                DeviceId = auth.DeviceId,
-                ItemId = item.Id,
-                Profile = profile,
                 MaxAudioChannels = maxAudioChannels
             };
 
@@ -523,7 +524,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="type">Dlna profile type.</param>
         public void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile profile, DlnaProfileType type)
         {
-            mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, mediaSource.Path, profile, type);
+            mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, profile, type);
         }
 
         private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string accessToken)

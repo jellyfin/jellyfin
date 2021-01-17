@@ -12,15 +12,12 @@ namespace Emby.Dlna.PlayTo
     {
         public static PlaylistItem Create(Photo item, DeviceProfile profile)
         {
-            var playlistItem = new PlaylistItem
+            var playlistItem = new PlaylistItem()
             {
-                StreamInfo = new StreamInfo
-                {
-                    ItemId = item.Id,
-                    MediaType = DlnaProfileType.Photo,
-                    DeviceProfile = profile
-                },
-
+                StreamInfo = new StreamInfo(
+                    item.Id,
+                    DlnaProfileType.Photo,
+                    profile),
                 Profile = profile
             };
 

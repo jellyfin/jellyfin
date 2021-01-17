@@ -1,6 +1,3 @@
-#nullable disable
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,16 +6,112 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public class MediaFormatProfileResolver
+    /// <summary>
+    /// Defines the <see cref="MediaFormatProfileResolver" />.
+    /// </summary>
+    public static class MediaFormatProfileResolver
     {
-        public string[] ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        /// <summary>
+        /// Attempts to resolve possible video formats from the criteria provided.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="videoCodec">The videoCodec.</param>
+        /// <param name="audioCodec">The audioCodec.</param>
+        /// <param name="width">The optional width.</param>
+        /// <param name="height">The optional height.</param>
+        /// <param name="timestampType">The <see cref="TransportStreamTimestamp"/>.</param>
+        /// <returns>An array of video formats that meet the criteria.</returns>
+        public static string[] ResolveVideoFormat(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             return ResolveVideoFormatInternal(container, videoCodec, audioCodec, width, height, timestampType)
                 .Select(i => i.ToString())
                 .ToArray();
         }
 
-        private MediaFormatProfile[] ResolveVideoFormatInternal(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        /// <summary>
+        /// Attempts to resolve an image format based on the criteria provided.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="width">An optional width.</param>
+        /// <param name="height">An optional height.</param>
+        /// <returns>The <see cref="MediaFormatProfile"/> or null if not found.</returns>
+        public static MediaFormatProfile? ResolveImageFormat(string container, int? width, int? height)
+        {
+            if (string.Equals(container, "jpeg", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(container, "jpg", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveImageJPGFormat(width, height);
+            }
+
+            if (string.Equals(container, "png", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveImagePNGFormat(width, height);
+            }
+
+            if (string.Equals(container, "gif", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaFormatProfile.GIF_LRG;
+            }
+
+            if (string.Equals(container, "raw", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaFormatProfile.RAW;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Attempts to resolve an audio format based on the criteria provided.
+        /// </summary>
+        /// <param name="container">The container.</param>
+        /// <param name="bitrate">An optional bitrate.</param>
+        /// <param name="frequency">An optional frequency.</param>
+        /// <param name="channels">An optional channels.</param>
+        /// <returns>The <see cref="MediaFormatProfile"/> or null if no suitable audio format is found.</returns>
+        public static MediaFormatProfile? ResolveAudioFormat(string container, int? bitrate, int? frequency, int? channels)
+        {
+            if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveAudioASFFormat(bitrate);
+            }
+
+            if (string.Equals(container, "mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaFormatProfile.MP3;
+            }
+
+            if (string.Equals(container, "lpcm", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveAudioLPCMFormat(frequency, channels);
+            }
+
+            if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(container, "aac", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveAudioMP4Format(bitrate);
+            }
+
+            if (string.Equals(container, "adts", StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveAudioADTSFormat(bitrate);
+            }
+
+            if (string.Equals(container, "flac", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaFormatProfile.FLAC;
+            }
+
+            if (string.Equals(container, "oga", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase))
+            {
+                return MediaFormatProfile.OGG;
+            }
+
+            return null;
+        }
+
+        private static MediaFormatProfile[] ResolveVideoFormatInternal(string container, string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
             {
@@ -57,7 +150,6 @@ namespace MediaBrowser.Model.Dlna
                 string.Equals(container, "mpegts", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
             {
-
                 return ResolveVideoMPEG2TSFormat(videoCodec, audioCodec, width, height, timestampType);
             }
 
@@ -85,7 +177,7 @@ namespace MediaBrowser.Model.Dlna
             return Array.Empty<MediaFormatProfile>();
         }
 
-        private MediaFormatProfile[] ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
+        private static MediaFormatProfile[] ResolveVideoMPEG2TSFormat(string videoCodec, string audioCodec, int? width, int? height, TransportStreamTimestamp timestampType)
         {
             string suffix = string.Empty;
 
@@ -210,12 +302,12 @@ namespace MediaBrowser.Model.Dlna
             return Array.Empty<MediaFormatProfile>();
         }
 
-        private MediaFormatProfile ValueOf(string value)
+        private static MediaFormatProfile ValueOf(string value)
         {
             return (MediaFormatProfile)Enum.Parse(typeof(MediaFormatProfile), value, true);
         }
 
-        private MediaFormatProfile? ResolveVideoMP4Format(string videoCodec, string audioCodec, int? width, int? height)
+        private static MediaFormatProfile? ResolveVideoMP4Format(string videoCodec, string audioCodec, int? width, int? height)
         {
             if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
             {
@@ -288,7 +380,7 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        private MediaFormatProfile? ResolveVideo3GPFormat(string videoCodec, string audioCodec)
+        private static MediaFormatProfile? ResolveVideo3GPFormat(string videoCodec, string audioCodec)
         {
             if (string.Equals(videoCodec, "h264", StringComparison.OrdinalIgnoreCase))
             {
@@ -318,12 +410,11 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        private MediaFormatProfile? ResolveVideoASFFormat(string videoCodec, string audioCodec, int? width, int? height)
+        private static MediaFormatProfile? ResolveVideoASFFormat(string videoCodec, string audioCodec, int? width, int? height)
         {
             if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase) &&
                 (string.IsNullOrEmpty(audioCodec) || string.Equals(audioCodec, "wma", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "wmapro", StringComparison.OrdinalIgnoreCase)))
             {
-
                 if (width.HasValue && height.HasValue)
                 {
                     if ((width.Value <= 720) && (height.Value <= 576))
@@ -373,49 +464,7 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public MediaFormatProfile? ResolveAudioFormat(string container, int? bitrate, int? frequency, int? channels)
-        {
-            if (string.Equals(container, "asf", StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveAudioASFFormat(bitrate);
-            }
-
-            if (string.Equals(container, "mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaFormatProfile.MP3;
-            }
-
-            if (string.Equals(container, "lpcm", StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveAudioLPCMFormat(frequency, channels);
-            }
-
-            if (string.Equals(container, "mp4", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(container, "aac", StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveAudioMP4Format(bitrate);
-            }
-
-            if (string.Equals(container, "adts", StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveAudioADTSFormat(bitrate);
-            }
-
-            if (string.Equals(container, "flac", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaFormatProfile.FLAC;
-            }
-
-            if (string.Equals(container, "oga", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(container, "ogg", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaFormatProfile.OGG;
-            }
-
-            return null;
-        }
-
-        private MediaFormatProfile ResolveAudioASFFormat(int? bitrate)
+        private static MediaFormatProfile ResolveAudioASFFormat(int? bitrate)
         {
             if (bitrate.HasValue && bitrate.Value <= 193)
             {
@@ -425,7 +474,7 @@ namespace MediaBrowser.Model.Dlna
             return MediaFormatProfile.WMA_FULL;
         }
 
-        private MediaFormatProfile? ResolveAudioLPCMFormat(int? frequency, int? channels)
+        private static MediaFormatProfile? ResolveAudioLPCMFormat(int? frequency, int? channels)
         {
             if (frequency.HasValue && channels.HasValue)
             {
@@ -455,7 +504,7 @@ namespace MediaBrowser.Model.Dlna
             return MediaFormatProfile.LPCM16_48_STEREO;
         }
 
-        private MediaFormatProfile ResolveAudioMP4Format(int? bitrate)
+        private static MediaFormatProfile ResolveAudioMP4Format(int? bitrate)
         {
             if (bitrate.HasValue && bitrate.Value <= 320)
             {
@@ -465,7 +514,7 @@ namespace MediaBrowser.Model.Dlna
             return MediaFormatProfile.AAC_ISO;
         }
 
-        private MediaFormatProfile ResolveAudioADTSFormat(int? bitrate)
+        private static MediaFormatProfile ResolveAudioADTSFormat(int? bitrate)
         {
             if (bitrate.HasValue && bitrate.Value <= 320)
             {
@@ -475,31 +524,7 @@ namespace MediaBrowser.Model.Dlna
             return MediaFormatProfile.AAC_ADTS;
         }
 
-        public MediaFormatProfile? ResolveImageFormat(string container, int? width, int? height)
-        {
-            if (string.Equals(container, "jpeg", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(container, "jpg", StringComparison.OrdinalIgnoreCase))
-                return ResolveImageJPGFormat(width, height);
-
-            if (string.Equals(container, "png", StringComparison.OrdinalIgnoreCase))
-            {
-                return ResolveImagePNGFormat(width, height);
-            }
-
-            if (string.Equals(container, "gif", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaFormatProfile.GIF_LRG;
-            }
-
-            if (string.Equals(container, "raw", StringComparison.OrdinalIgnoreCase))
-            {
-                return MediaFormatProfile.RAW;
-            }
-
-            return null;
-        }
-
-        private MediaFormatProfile ResolveImageJPGFormat(int? width, int? height)
+        private static MediaFormatProfile ResolveImageJPGFormat(int? width, int? height)
         {
             if (width.HasValue && height.HasValue)
             {
@@ -524,7 +549,7 @@ namespace MediaBrowser.Model.Dlna
             return MediaFormatProfile.JPEG_SM;
         }
 
-        private MediaFormatProfile ResolveImagePNGFormat(int? width, int? height)
+        private static MediaFormatProfile ResolveImagePNGFormat(int? width, int? height)
         {
             if (width.HasValue && height.HasValue)
             {

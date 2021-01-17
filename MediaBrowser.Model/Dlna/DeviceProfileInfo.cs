@@ -1,26 +1,36 @@
-#nullable disable
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="DeviceProfileInfo" />.
+    /// </summary>
     public class DeviceProfileInfo
     {
         /// <summary>
-        /// Gets or sets the identifier.
+        /// Initializes a new instance of the <see cref="DeviceProfileInfo"/> class.
         /// </summary>
-        /// <value>The identifier.</value>
-        public string Id { get; set; }
+        /// <param name="id">The id.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The <see cref="DeviceProfileType"/>.</param>
+        public DeviceProfileInfo(string id, string name, DeviceProfileType type)
+        {
+            Id = id;
+            Name = name;
+            Type = type;
+        }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets the Id.
         /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Id { get; }
 
         /// <summary>
-        /// Gets or sets the type.
+        /// Gets the Name.
         /// </summary>
-        /// <value>The type.</value>
-        public DeviceProfileType Type { get; set; }
+        public string Name { get; }
+
+        /// <summary>
+        /// Gets the Type.
+        /// </summary>
+        public DeviceProfileType Type { get; }
     }
 }

@@ -282,24 +282,16 @@ namespace Jellyfin.Api.Controllers
 
                 var audioCodecs = parts.Length == 1 ? null : string.Join(',', parts.Skip(1));
 
-                directPlayProfiles[i] = new DirectPlayProfile
-                {
-                    Type = DlnaProfileType.Audio,
-                    Container = parts[0],
-                    AudioCodec = audioCodecs
-                };
+                directPlayProfiles[i] = new DirectPlayProfile(parts[0], audioCodecs);
             }
 
             deviceProfile.DirectPlayProfiles = directPlayProfiles;
 
             deviceProfile.TranscodingProfiles = new[]
             {
-                new TranscodingProfile
+                new TranscodingProfile(transcodingContainer, audioCodec)
                 {
-                    Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = transcodingContainer,
-                    AudioCodec = audioCodec,
                     Protocol = transcodingProtocol,
                     BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                     MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
@@ -312,25 +304,44 @@ namespace Jellyfin.Api.Controllers
             if (maxAudioSampleRate.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioSampleRate, Value = maxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition(
+                        ProfileConditionType.LessThanEqual,
+                        ProfileConditionValue.AudioSampleRate,
+                        maxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture),
+                        false));
             }
 
             if (maxAudioBitDepth.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioBitDepth, Value = maxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition(
+                        ProfileConditionType.LessThanEqual,
+                        ProfileConditionValue.AudioBitDepth,
+                        maxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture),
+                        false));
             }
 
             if (maxAudioChannels.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioChannels, Value = maxAudioChannels.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition(
+                    ProfileConditionType.LessThanEqual,
+                    ProfileConditionValue.AudioChannels,
+                    maxAudioChannels.Value.ToString(CultureInfo.InvariantCulture),
+                    false));
             }
 
             if (conditions.Count > 0)
             {
                 // codec profile
-                codecProfiles.Add(new CodecProfile { Type = CodecType.Audio, Container = string.Join(',', containers), Conditions = conditions.ToArray() });
+                codecProfiles.Add(
+                    new CodecProfile(string.Empty, CodecType.Audio, conditions.ToArray())
+                    {
+                        Container = string.Join(',', containers)
+                    });
             }
 
             deviceProfile.CodecProfiles = codecProfiles.ToArray();

@@ -1,26 +1,27 @@
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the SubtitleDeliveryMethod.
+    /// </summary>
     public enum SubtitleDeliveryMethod
     {
         /// <summary>
-        /// The encode.
+        /// Delivery method is encoded.
         /// </summary>
         Encode = 0,
 
         /// <summary>
-        /// The embed.
+        /// Delivery method is embedded.
         /// </summary>
         Embed = 1,
 
         /// <summary>
-        /// The external.
+        /// Delivery method is external.
         /// </summary>
         External = 2,
 
         /// <summary>
-        /// The HLS.
+        /// Delivery method is via HLS streaming.
         /// </summary>
         Hls = 3
     }

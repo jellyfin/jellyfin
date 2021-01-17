@@ -48,12 +48,11 @@ namespace Emby.Dlna.PlayTo
 
         public DeviceIdentification ToDeviceIdentification()
         {
-            return new DeviceIdentification
+            return new DeviceIdentification(Name)
             {
                 Manufacturer = Manufacturer,
                 ModelName = ModelName,
                 ModelNumber = ModelNumber,
-                FriendlyName = Name,
                 ManufacturerUrl = ManufacturerUrl,
                 ModelUrl = ModelUrl,
                 ModelDescription = ModelDescription,

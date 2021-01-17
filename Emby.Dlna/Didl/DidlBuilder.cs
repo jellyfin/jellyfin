@@ -194,14 +194,8 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(new VideoOptions
-                {
-                    ItemId = video.Id,
-                    MediaSources = sources.ToArray(),
-                    Profile = _profile,
-                    DeviceId = deviceId,
-                    MaxBitrate = _profile.MaxStreamingBitrate
-                });
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildVideoItem(
+                    new VideoOptions(video.Id, sources.ToArray(), _profile, deviceId, _profile.MaxStreamingBitrate));
             }
 
             var targetWidth = streamInfo.TargetWidth;
@@ -533,13 +527,8 @@ namespace Emby.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user);
 
-                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(new AudioOptions
-                {
-                    ItemId = audio.Id,
-                    MediaSources = sources.ToArray(),
-                    Profile = _profile,
-                    DeviceId = deviceId
-                });
+                streamInfo = new StreamBuilder(_mediaEncoder, _logger).BuildAudioItem(
+                    new AudioOptions(audio.Id, sources.ToArray(), _profile, deviceId, null));
             }
 
             var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
