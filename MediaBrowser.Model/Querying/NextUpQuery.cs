@@ -64,10 +64,16 @@ namespace MediaBrowser.Model.Querying
 
         public bool EnableTotalRecordCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether do disable sending first episode as next up.
+        /// </summary>
+        public bool DisableFirstEpisode { get; set; }
+
         public NextUpQuery()
         {
             EnableImageTypes = Array.Empty<ImageType>();
             EnableTotalRecordCount = true;
+            DisableFirstEpisode = false;
         }
     }
 }
