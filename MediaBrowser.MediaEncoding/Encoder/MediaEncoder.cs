@@ -120,6 +120,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
+            if (_preferredVersion.version != null && !EncoderValidator.IsRecommendedVersion(_preferredVersion.version))
+            {
+                _logger.LogWarning("Using the best unrecommended version of FFMPeg located.");
+            }
+
             _ffmpegPath = _preferredVersion.path;
             EncoderLocation = _preferredVersion.location;
 
