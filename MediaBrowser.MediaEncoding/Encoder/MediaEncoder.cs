@@ -74,9 +74,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private string _ffprobePath;
         private int threads;
 
-        private string _bestPath;
-        private Version _bestVersion;
-        private FFmpegLocation _bestLocation;
+        private (string path, Version version, FFmpegLocation location) _preferredVersion;
 
         public MediaEncoder(
             ILogger<MediaEncoder> logger,
@@ -109,9 +107,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         public void SetFFmpegPath()
         {
-            _bestLocation = FFmpegLocation.NotFound;
-            _bestPath = null;
-            _bestVersion = null;
+            _preferredVersion = (null, null, FFmpegLocation.NotFound);
 
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
             if (!ValidatePath(_configurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
@@ -124,8 +120,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            _ffmpegPath = _bestPath;
-            EncoderLocation = _bestLocation;
+            _ffmpegPath = _preferredVersion.path;
+            EncoderLocation = _preferredVersion.location;
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
             var config = _configurationManager.GetConfiguration<EncodingOptions>("encoding");
@@ -201,7 +197,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="path">FQPN to test.</param>
         /// <param name="location">Location (External, Custom, System) of tool.</param>
-        /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
+        /// <returns><c>false</c> if source is better, <c>true</c> if destination is better.</returns>
         private bool ValidatePath(string path, FFmpegLocation location)
         {
             if (!string.IsNullOrEmpty(path))
@@ -211,11 +207,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     var version = _encoderValidator.ValidateVersion(path);
                     if (version != null)
                     {
-                        if (EncoderValidator.BestVersion(version, _bestVersion))
+                        if (EncoderValidator.IsPreferredVersion(version, _preferredVersion.version))
                         {
-                            _bestVersion = version;
-                            _bestPath = path;
-                            _bestLocation = location;
+                            _preferredVersion = (path, version, location);
                             return true;
                         }
 

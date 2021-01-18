@@ -121,19 +121,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public static Version MaxVersion { get; } = null;
 
         /// <summary>
-        /// Returns a value indicating which version of the encoder more suitable.
+        /// Returns a value indicating which version of the encoder preferred.
         /// </summary>
-        /// <param name="source">Source encoding version.</param>
-        /// <param name="destination">Destination encoding version.</param>
-        /// <returns><c>false</c> if source is better, <c>true</c> if destination is better.</returns>
-        public static bool BestVersion(Version source, Version destination)
+        /// <param name="source">Source version.</param>
+        /// <param name="destination">Destination version.</param>
+        /// <returns><c>false</c> if the source version is preferred, <c>true</c> if destination version is preferred.</returns>
+        public static bool IsPreferredVersion(Version source, Version destination)
         {
             if (source == null || destination == null)
             {
                 return source == null;
             }
 
-            // If either is recommended, then select that.
+            // If either is recommended, then select that. If both are recommened, select the latest.
             bool sourceRecommended = source >= MinVersion && (MaxVersion == null || source <= MaxVersion);
             bool destRecommended = destination >= MinVersion && (MaxVersion == null || destination <= MaxVersion);
 
@@ -142,7 +142,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 if (destRecommended)
                 {
                     // if both are recommended, select the latest version.
-                    return !(source >= destination);
+                    return source < destination;
                 }
                 else
                 {
