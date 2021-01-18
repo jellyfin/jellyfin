@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Jellyfin.NfoMetadata.Models;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -29,7 +30,7 @@ namespace Jellyfin.NfoMetadata.Providers
         {
             if (nfo == null)
             {
-                return;
+                throw new ArgumentException("Nfo can't be null", nameof(nfo));
             }
 
             base.MapNfoToJellyfinObject(nfo, metadataResult);
@@ -41,6 +42,7 @@ namespace Jellyfin.NfoMetadata.Providers
             item.AirsAfterSeasonNumber = nfo.AirsAfterSeason;
             item.AirsBeforeEpisodeNumber = nfo.AirsBeforeEpisode;
             item.AirsBeforeSeasonNumber = nfo.AirsBeforeSeason;
+            item.SeriesName = nfo.ShowTitle;
         }
 
         internal static string GetEpisodeSavePath(ItemInfo info)

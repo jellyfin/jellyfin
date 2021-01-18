@@ -73,6 +73,10 @@ namespace Jellyfin.NfoMetadata.Providers
             {
                 Logger.LogError(e, "Error deserializing {FullName}", file.FullName);
             }
+            catch (InvalidOperationException e)
+            {
+                Logger.LogError(e, "Nfo file {FullName} doesn't have the right XML root tag.", file.FullName);
+            }
 
             return Task.FromResult(result);
         }
@@ -189,13 +193,13 @@ namespace Jellyfin.NfoMetadata.Providers
             if (nfo.Ratings != null && nfo.Ratings.Length != 0)
             {
                 item.CriticRating = nfo.Ratings
-                    .First(x => x.Name != null &&
+                    .FirstOrDefault(x => x.Name != null &&
                                 x.Name.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
-                                !x.Name.Contains("audience", StringComparison.OrdinalIgnoreCase))
+                                !x.Name.Contains("audience", StringComparison.OrdinalIgnoreCase))?
                     .Value;
 
                 item.CommunityRating = nfo.Ratings
-                    .First(x => x.Default)
+                    .FirstOrDefault(x => x.Default)?
                     .Value;
             }
             else if (nfo.Rating != null)

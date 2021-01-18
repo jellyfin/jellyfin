@@ -82,7 +82,7 @@ namespace Jellyfin.NfoMetadata.Savers
                 nfo.AirsBeforeSeason = episode.AirsBeforeSeasonNumber;
                 if (episode.AiredSeasonNumber != 1)
                 {
-                    nfo.DisplaySeason = episode.AiredSeasonNumber;
+                    nfo.AirsBeforeSeason = episode.AiredSeasonNumber;
                 }
             }
 

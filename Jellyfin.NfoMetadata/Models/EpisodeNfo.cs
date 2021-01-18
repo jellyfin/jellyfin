@@ -10,6 +10,12 @@ namespace Jellyfin.NfoMetadata.Models
     public class EpisodeNfo : BaseNfo
     {
         /// <summary>
+        /// Gets or sets the series name.
+        /// </summary>
+        [XmlElement("showtitle")]
+        public string? ShowTitle { get; set; }
+
+        /// <summary>
         /// Gets or sets the season.
         /// </summary>
         [XmlElement("season")]
@@ -28,7 +34,7 @@ namespace Jellyfin.NfoMetadata.Models
         public int? EpisodeNumberEnd { get; set; }
 
         /// <summary>
-        /// Gets or sets the episode this episode airs before.
+        /// Gets or sets the episode this episode airs before (used for special episodes).
         /// </summary>
         [XmlElement("displayepisode")]
         [XmlSynonyms("airsbefore_episode")]
@@ -41,22 +47,10 @@ namespace Jellyfin.NfoMetadata.Models
         public int? AirsAfterSeason { get; set; }
 
         /// <summary>
-        /// Gets or sets the season this episode airs before.
+        /// Gets or sets the season this episode airs before (used for special episodes).
         /// </summary>
         [XmlElement("displayseason")]
         [XmlSynonyms("airsbefore_season")]
         public int? AirsBeforeSeason { get; set; }
-
-        /// <summary>
-        /// Gets or sets the display episode (used for special episodes).
-        /// </summary>
-        [XmlElement("displayepisode")]
-        public int? DisplayEpisode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the display season (used for special episodes).
-        /// </summary>
-        [XmlElement("displayseason")]
-        public int? DisplaySeason { get; set; }
     }
 }
