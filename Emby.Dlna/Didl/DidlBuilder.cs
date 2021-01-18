@@ -96,6 +96,7 @@ namespace Emby.Dlna.Didl
 
             using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
             {
+                // If this using are changed to single lines, then write.Flush needs to be appended before the return.
                 using (var writer = XmlWriter.Create(builder, settings))
                 {
                     // writer.WriteStartDocument();
@@ -113,8 +114,6 @@ namespace Emby.Dlna.Didl
 
                     writer.WriteFullEndElement();
                     // writer.WriteEndDocument();
-
-                    writer.Flush();
                 }
 
                 return builder.ToString();
