@@ -143,6 +143,7 @@
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
  - [skyfrk](https://github.com/skyfrk)
  - [ianjazz246](https://github.com/ianjazz246)
+ - [skyhawk3190](https://github.com/skyhawk3190)
 
 # Emby Contributors
 

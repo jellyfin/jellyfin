@@ -40,7 +40,7 @@ namespace Jellyfin.Api.Auth.UserSessionsPolicy
             var userId = ClaimHelpers.GetUserId(context.User);
             var user = _userManager.GetUserById(userId!.Value);
             var userSessionsCount = _sessionManager.GetSessionCountByUserId(user.Id);
-            if (userSessionsCount > user.MaxActiveSessions)
+            if (user.MaxActiveSessions < 1 || userSessionsCount < user.MaxActiveSessions)
             {
                 context.Succeed(requirement);
             }
