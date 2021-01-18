@@ -896,16 +896,16 @@ namespace Emby.Dlna.PlayTo
 
                 var parts = url.Split('/');
 
-                for (var i = 0; i < parts.Length; i++)
+                for (var i = 0; i < parts.Length - 1; i++)
                 {
                     var part = parts[i];
 
                     if (string.Equals(part, "audio", StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(part, "videos", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (parts.Length > i + 1)
+                        if (Guid.TryParse(parts[i + 1], out var result))
                         {
-                            return Guid.Parse(parts[i + 1]);
+                            return result;
                         }
                     }
                 }
