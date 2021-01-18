@@ -72,7 +72,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Dlna.Tests", "tests\Jellyfin.Dlna.Tests\Jellyfin.Dlna.Tests.csproj", "{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.XbmcMetadata.Tests", "tests\Jellyfin.XbmcMetadata.Tests\Jellyfin.XbmcMetadata.Tests.csproj", "{30922383-D513-4F4D-B890-A940B57FA353}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.NfoMetadata.Tests", "tests\Jellyfin.NfoMetadata.Tests\Jellyfin.NfoMetadata.Tests.csproj", "{30922383-D513-4F4D-B890-A940B57FA353}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.NfoMetadata", "Jellyfin.NfoMetadata\Jellyfin.NfoMetadata.csproj", "{CF23F8C3-ADDF-4BB8-B207-39852B726733}"
 EndProject

@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 using Jellyfin.NfoMetadata.Models;
 using Jellyfin.NfoMetadata.Providers;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -12,11 +13,10 @@ using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 #pragma warning disable CA5369
 
-namespace Jellyfin.XbmcMetadata.Parsers.Tests
+namespace Jellyfin.NfoMetadata.Tests.Parsers
 {
     public class EpisodeNfoParserTests
     {

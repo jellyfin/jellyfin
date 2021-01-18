@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <RootNamespace>Jellyfin.XbmcMetadata.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
