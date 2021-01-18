@@ -75,9 +75,10 @@ namespace Jellyfin.NfoMetadata.Models
 
         /// <summary>
         /// Gets or sets the number of plays.
+        /// has to be a string because tinyMediaManager saves it as an empty tag and XmlSerializer can't deserialize <playcount /> into an int?.
         /// </summary>
         [XmlElement("playcount")]
-        public int? PlayCount { get; set; }
+        public string? PlayCount { get; set; }
 
         /// <summary>
         /// Gets or sets scraper ids.

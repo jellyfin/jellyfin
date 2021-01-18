@@ -477,7 +477,7 @@ namespace Jellyfin.NfoMetadata.Savers
             var userdata = _userDataManager.GetUserData(user, item);
 
             nfo.UserRating = (float)(userdata.Rating ?? 0);
-            nfo.PlayCount = userdata.PlayCount;
+            nfo.PlayCount = userdata.PlayCount.ToString();
             nfo.LastPlayed = userdata.LastPlayedDate?.ToLocalTime();
             nfo.ResumePosition = new ResumePositionNfo()
             {

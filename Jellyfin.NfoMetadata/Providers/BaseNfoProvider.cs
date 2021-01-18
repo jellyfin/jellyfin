@@ -68,14 +68,17 @@ namespace Jellyfin.NfoMetadata.Providers
             {
                 var nfo = _xmlSerializer.DeserializeFromStream(typeof(T2), fileStream) as T2;
                 MapNfoToJellyfinObject(nfo, result);
+                result.HasMetadata = true;
             }
             catch (XmlException e)
             {
                 Logger.LogError(e, "Error deserializing {FullName}", file.FullName);
+                result.HasMetadata = false;
             }
             catch (InvalidOperationException e)
             {
                 Logger.LogError(e, "Nfo file {FullName} doesn't have the right XML root tag.", file.FullName);
+                result.HasMetadata = false;
             }
 
             return Task.FromResult(result);
@@ -219,7 +222,7 @@ namespace Jellyfin.NfoMetadata.Providers
             {
                 if (!string.IsNullOrWhiteSpace(tag))
                 {
-                    item.AddGenre(tag.Trim());
+                    item.AddTag(tag.Trim());
                 }
             }
 
@@ -231,7 +234,7 @@ namespace Jellyfin.NfoMetadata.Providers
                 }
 
                 return null;
-            }).OfType<MetadataField>().ToArray();
+            }).OfType<MetadataField>().ToArray() ?? Array.Empty<MetadataField>();
 
             foreach (var actor in nfo.Actors ?? Array.Empty<ActorNfo>())
             {
