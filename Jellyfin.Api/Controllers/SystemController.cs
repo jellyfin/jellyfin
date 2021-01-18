@@ -64,6 +64,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="SystemInfo"/> with info about the system.</returns>
         [HttpGet("Info")]
         [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
+        [Authorize(Policy = Policies.UserSessions)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<SystemInfo> GetSystemInfo()
         {

@@ -37,11 +37,8 @@ namespace Jellyfin.Api.Auth.UserSessionsPolicy
         /// <inheritdoc />
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserSessionsRequirement requirement)
         {
-            // Get the user Id from the client request
             var userId = ClaimHelpers.GetUserId(context.User);
-            // Get the requesting user from the userManager
             var user = _userManager.GetUserById(userId!.Value);
-            // Use the users Id to find the current number of user sessions on the server
             var userSessionsCount = _sessionManager.GetSessionCountByUserId(user.Id);
             if (userSessionsCount > user.MaxActiveSessions)
             {
