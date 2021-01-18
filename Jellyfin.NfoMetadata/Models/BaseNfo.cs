@@ -450,49 +450,94 @@ namespace Jellyfin.NfoMetadata.Models
 
         // Provider Ids
 
+        /// <summary>
+        /// Gets or sets the TMDb collection id.
+        /// </summary>
         [XmlElement("collectionnumber")]
         [XmlSynonyms("tmdbcolid")]
         public string? CollectionId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Imdb id.
+        /// </summary>
         [XmlElement("imdbid")]
         public string? ImdbId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the TMDb id.
+        /// </summary>
         [XmlElement("tmdbid")]
         public string? TmdbId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the TVDB id.
+        /// </summary>
         [XmlElement("tvdbid")]
         public string? TvdbId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tvcom id.
+        /// </summary>
         [XmlElement("tvcomid")]
         public string? TvcomId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the musicbraninz album id.
+        /// </summary>
         [XmlElement("musicbrainzalbumid")]
         public string? MusicBrainzAlbumId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the musicbrainz album artist id.
+        /// </summary>
         [XmlElement("musicbrainzalbumartistid")]
         public string? MusicBrainzAlbumArtistId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the musicbraniz artist id.
+        /// </summary>
         [XmlElement("musicbrainzartistid")]
         public string? MusicBrainzArtistId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the musicbrainz release group id.
+        /// </summary>
         [XmlElement("musicbrainzreleasegroupid")]
         public string? MusicBrainzReleaseGroupId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the zap2it id.
+        /// </summary>
         [XmlElement("zap2itid")]
         public string? Zap2ItId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tvrage id.
+        /// </summary>
         [XmlElement("tvrageid")]
         public string? TvRageId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the audidb artist id.
+        /// </summary>
         [XmlElement("audiodbartistid")]
         public string? AudioDbArtistId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the audiodb album id.
+        /// </summary>
         [XmlElement("audiodbalbumid")]
         public string? AudioDbAlbumId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the musicbrainz track id.
+        /// </summary>
         [XmlElement("musicbrainztrackid")]
         public string? MusicBrainzTrackId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tvmaze id.
+        /// </summary>
         [XmlElement("tvmazeid")]
         public string? TvMazeId { get; set; }
     }

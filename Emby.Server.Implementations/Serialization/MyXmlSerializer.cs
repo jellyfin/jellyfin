@@ -38,12 +38,7 @@ namespace Emby.Server.Implementations.Serialization
             netSerializer.Serialize(writer, obj);
         }
 
-        /// <summary>
-        /// Deserializes from stream.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="stream">The stream.</param>
-        /// <returns>System.Object.</returns>
+        /// <inheritdoc />
         public object DeserializeFromStream(Type type, Stream stream)
         {
             using (var reader = XmlReader.Create(stream))
@@ -53,11 +48,7 @@ namespace Emby.Server.Implementations.Serialization
             }
         }
 
-        /// <summary>
-        /// Serializes to stream.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <param name="stream">The stream.</param>
+        /// <inheritdoc />
         public void SerializeToStream(object obj, Stream stream)
         {
             using (var writer = new StreamWriter(stream, null, IODefaults.StreamWriterBufferSize, true))
@@ -68,11 +59,7 @@ namespace Emby.Server.Implementations.Serialization
             }
         }
 
-        /// <summary>
-        /// Serializes to file.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <param name="file">The file.</param>
+        /// <inheritdoc />
         public void SerializeToFile(object obj, string file)
         {
             using (var stream = new FileStream(file, FileMode.Create))
@@ -81,12 +68,7 @@ namespace Emby.Server.Implementations.Serialization
             }
         }
 
-        /// <summary>
-        /// Deserializes from file.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="file">The file.</param>
-        /// <returns>System.Object.</returns>
+        /// <inheritdoc />
         public object DeserializeFromFile(Type type, string file)
         {
             using (var stream = File.OpenRead(file))
@@ -95,12 +77,7 @@ namespace Emby.Server.Implementations.Serialization
             }
         }
 
-        /// <summary>
-        /// Deserializes from bytes.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="buffer">The buffer.</param>
-        /// <returns>System.Object.</returns>
+        /// <inheritdoc />
         public object DeserializeFromBytes(Type type, byte[] buffer)
         {
             using (var stream = new MemoryStream(buffer, 0, buffer.Length, false, true))

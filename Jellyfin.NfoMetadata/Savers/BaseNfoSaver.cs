@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -33,7 +34,7 @@ namespace Jellyfin.NfoMetadata.Savers
         where T2 : BaseNfo, new()
     {
         // filters control characters but allows only properly-formed surrogate sequences
-        private const string _invalidXMLCharsRegex = @"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]";
+        private const string InvalidXmlCharsRegex = @"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]";
 
         private readonly ILogger<BaseNfoSaver<T1, T2>> _logger;
         private readonly IXmlSerializer _xmlSerializer;
@@ -114,8 +115,6 @@ namespace Jellyfin.NfoMetadata.Savers
             _xmlSerializer.SerializeToStream(nfo, memoryStream);
 
             cancellationToken.ThrowIfCancellationRequested();
-
-            // todo get currently used tags and write them again
 
             SaveToFile(memoryStream, GetSavePath(item));
         }
@@ -336,7 +335,7 @@ namespace Jellyfin.NfoMetadata.Savers
                     Channels = audioStream.Channels,
                     // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
                     // Web Archive version of link since it's not really explained in the thread.
-                    Language = Regex.Replace(audioStream.Language, _invalidXMLCharsRegex, string.Empty),
+                    Language = Regex.Replace(audioStream.Language, InvalidXmlCharsRegex, string.Empty),
                     Codec = audioStream.Codec,
                     SamplingRate = audioStream.SampleRate,
                     Bitrate = audioStream.BitRate,
@@ -356,7 +355,7 @@ namespace Jellyfin.NfoMetadata.Savers
                 {
                     // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
                     // Web Archive version of link since it's not really explained in the thread.
-                    Language = Regex.Replace(subtitleStream.Language, _invalidXMLCharsRegex, string.Empty),
+                    Language = Regex.Replace(subtitleStream.Language, InvalidXmlCharsRegex, string.Empty),
                     Default = subtitleStream.IsDefault,
                     Forced = subtitleStream.IsForced
                 };
@@ -477,7 +476,7 @@ namespace Jellyfin.NfoMetadata.Savers
             var userdata = _userDataManager.GetUserData(user, item);
 
             nfo.UserRating = (float)(userdata.Rating ?? 0);
-            nfo.PlayCount = userdata.PlayCount.ToString();
+            nfo.PlayCount = userdata.PlayCount.ToString(CultureInfo.InvariantCulture);
             nfo.LastPlayed = userdata.LastPlayedDate?.ToLocalTime();
             nfo.ResumePosition = new ResumePositionNfo()
             {
