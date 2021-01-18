@@ -12,8 +12,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Model", "Media
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.Providers", "MediaBrowser.Providers\MediaBrowser.Providers.csproj", "{442B5058-DCAF-4263-BB6A-F21E31120A1B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.XbmcMetadata", "MediaBrowser.XbmcMetadata\MediaBrowser.XbmcMetadata.csproj", "{23499896-B135-4527-8574-C26E926EA99E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.LocalMetadata", "MediaBrowser.LocalMetadata\MediaBrowser.LocalMetadata.csproj", "{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Drawing", "Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
@@ -102,10 +100,6 @@ Global
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{442B5058-DCAF-4263-BB6A-F21E31120A1B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{23499896-B135-4527-8574-C26E926EA99E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{23499896-B135-4527-8574-C26E926EA99E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EF9F3E0-697D-42F3-A08F-19DEB5F84392}.Release|Any CPU.ActiveCfg = Release|Any CPU
