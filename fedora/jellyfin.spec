@@ -28,7 +28,7 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
 BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
-Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 10.6, %{name}-web < 10.7
+Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
 
