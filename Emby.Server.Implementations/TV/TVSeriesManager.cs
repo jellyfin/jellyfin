@@ -143,8 +143,6 @@ namespace Emby.Server.Implementations.TV
             var allNextUp = seriesKeys
                 .Select(i => GetNextUp(i, currentUser, dtoOptions));
 
-            // allNextUp = allNextUp.OrderByDescending(i => i.Item1);
-
             // If viewing all next up for all series, remove first episodes
             // But if that returns empty, keep those first episodes (avoid completely empty view)
             var alwaysEnableFirstEpisode = !string.IsNullOrEmpty(request.SeriesId);
