@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,12 +25,14 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         public SyncPlayAccessHandler(
             ISyncPlayManager syncPlayManager,
             IUserManager userManager,
             INetworkManager networkManager,
-            IHttpContextAccessor httpContextAccessor)
-            : base(userManager, networkManager, httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ISessionManager sessionManager)
+            : base(userManager, networkManager, httpContextAccessor, sessionManager)
         {
             _syncPlayManager = syncPlayManager;
             _userManager = userManager;

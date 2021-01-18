@@ -1819,6 +1819,11 @@ namespace Emby.Server.Implementations.Session
                     && string.Equals(i.Client, client, StringComparison.OrdinalIgnoreCase));
         }
 
+        public int GetSessionCountByUserId(Guid userId)
+        {
+            return Sessions.Count(i => i.UserId.Equals(userId));
+        }
+
         /// <inheritdoc />
         public SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
         {

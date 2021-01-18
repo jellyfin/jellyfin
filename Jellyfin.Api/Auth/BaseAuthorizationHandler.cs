@@ -1,9 +1,10 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -19,6 +20,7 @@ namespace Jellyfin.Api.Auth
         private readonly IUserManager _userManager;
         private readonly INetworkManager _networkManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseAuthorizationHandler{T}"/> class.
@@ -26,14 +28,17 @@ namespace Jellyfin.Api.Auth
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         protected BaseAuthorizationHandler(
             IUserManager userManager,
             INetworkManager networkManager,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ISessionManager sessionManager)
         {
             _userManager = userManager;
             _networkManager = networkManager;
             _httpContextAccessor = httpContextAccessor;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>

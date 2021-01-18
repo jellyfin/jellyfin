@@ -1,39 +1,49 @@
 using System.Threading.Tasks;
-using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy
+namespace Jellyfin.Api.Auth.UserSessionsPolicy
 {
     /// <summary>
-    /// Local access or require elevated privileges handler.
+    /// Logout any new user sessions if the user is already at the max session limit.
     /// </summary>
-    public class LocalAccessOrRequiresElevationHandler : BaseAuthorizationHandler<LocalAccessOrRequiresElevationRequirement>
+    public class UserSessionsHandler : BaseAuthorizationHandler<UserSessionsRequirement>
     {
+        private readonly IUserManager _userManager;
+        private readonly ISessionManager _sessionManager;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocalAccessOrRequiresElevationHandler"/> class.
+        /// Initializes a new instance of the <see cref="UserSessionsHandler"/> class.
         /// </summary>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
-        public LocalAccessOrRequiresElevationHandler(
+        public UserSessionsHandler(
             IUserManager userManager,
             INetworkManager networkManager,
             IHttpContextAccessor httpContextAccessor,
             ISessionManager sessionManager)
             : base(userManager, networkManager, httpContextAccessor, sessionManager)
         {
+            _userManager = userManager;
+            _sessionManager = sessionManager;
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, LocalAccessOrRequiresElevationRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UserSessionsRequirement requirement)
         {
-            var validated = ValidateClaims(context.User, localAccessOnly: true);
-            if (validated || context.User.IsInRole(UserRoles.Administrator))
+            // Get the user Id from the client request
+            var userId = ClaimHelpers.GetUserId(context.User);
+            // Get the requesting user from the userManager
+            var user = _userManager.GetUserById(userId!.Value);
+            // Use the users Id to find the current number of user sessions on the server
+            var userSessionsCount = _sessionManager.GetSessionCountByUserId(user.Id);
+            if (userSessionsCount > user.MaxActiveSessions)
             {
                 context.Succeed(requirement);
             }

@@ -322,6 +322,13 @@ namespace MediaBrowser.Controller.Session
         SessionInfo GetSession(string deviceId, string client, string version);
 
         /// <summary>
+        /// Gets the session count by user id.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <returns>SessionInfo.</returns>
+        int GetSessionCountByUserId(Guid userId);
+
+        /// <summary>
         /// Gets the session by authentication token.
         /// </summary>
         /// <param name="token">The token.</param>

@@ -16,6 +16,7 @@ using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
+using Jellyfin.Api.Auth.UserSessionsPolicy;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
@@ -62,6 +63,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, UserSessionsHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
             {
                 options.AddPolicy(
@@ -154,6 +156,13 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
+                    });
+                options.AddPolicy(
+                    Policies.UserSessions,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new UserSessionsRequirement());
                     });
             });
         }

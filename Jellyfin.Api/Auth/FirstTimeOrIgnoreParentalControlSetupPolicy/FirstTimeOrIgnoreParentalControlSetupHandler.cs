@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -21,12 +22,14 @@ namespace Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         public FirstTimeOrIgnoreParentalControlSetupHandler(
             IUserManager userManager,
             INetworkManager networkManager,
             IHttpContextAccessor httpContextAccessor,
-            IConfigurationManager configurationManager)
-            : base(userManager, networkManager, httpContextAccessor)
+            IConfigurationManager configurationManager,
+            ISessionManager sessionManager)
+            : base(userManager, networkManager, httpContextAccessor, sessionManager)
         {
             _configurationManager = configurationManager;
         }

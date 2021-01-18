@@ -69,5 +69,10 @@ namespace Jellyfin.Api.Constants
         /// Policy name for accessing a SyncPlay group.
         /// </summary>
         public const string SyncPlayIsInGroup = "SyncPlayIsInGroup";
+
+        /// <summary>
+        /// Policy name for limiting user sessions.
+        /// </summary>
+        public const string UserSessions = "UserSessions";
     }
 }
