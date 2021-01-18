@@ -23,10 +23,10 @@ namespace Jellyfin.MediaEncoding.Tests
         [InlineData(null, "3.5.0.0", true)]
         [InlineData("2.0.0.0", null, false)]
         [InlineData(null, "2.0.0.0", true)]
-        public void BestVersion(string? source, string? destination, bool best)
+        public void PrefferedVersion(string? source, string? destination, bool best)
         {
             Assert.Equal(
-                EncoderValidator.BestVersion(
+                EncoderValidator.IsPreferredVersion(
                     source != null ? Version.Parse(source) : null,
                     destination != null ? Version.Parse(destination) : null),
                 best);
