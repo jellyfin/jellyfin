@@ -148,13 +148,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return source == null;
             }
 
-            // If either is recommended, then select that. If both are recommened, select the latest.
-            bool sourceRecommended = IsRecommendedVersion(source);
-            bool destRecommended = IsRecommendedVersion(destination);
-
-            if (sourceRecommended)
+            // If either source or destination is recommended, then select that.
+            if (IsRecommendedVersion(source))
             {
-                if (destRecommended)
+                if (IsRecommendedVersion(destination))
                 {
                     // if both are recommended, select the latest version.
                     return source < destination;
