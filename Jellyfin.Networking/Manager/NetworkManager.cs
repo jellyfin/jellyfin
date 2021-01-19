@@ -1047,53 +1047,47 @@ namespace Jellyfin.Networking.Manager
                             // populate interface address list
                             foreach (UnicastIPAddressInformation info in ipProperties.UnicastAddresses)
                             {
-                                if (info.Address.AddressFamily == AddressFamily.InterNetwork)
+                                if (IsIP4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
-                                    if (IsIP4Enabled)
+                                    IPNetAddress nw = new IPNetAddress(info.Address, IPObject.MaskToCidr(info.IPv4Mask))
                                     {
-                                        IPNetAddress nw = new IPNetAddress(info.Address, IPObject.MaskToCidr(info.IPv4Mask))
-                                        {
-                                            // Keep the number of gateways on this interface, along with its index.
-                                            Tag = ipProperties.GetIPv4Properties().Index
-                                        };
+                                        // Keep the number of gateways on this interface, along with its index.
+                                        Tag = ipProperties.GetIPv4Properties().Index
+                                    };
 
-                                        int tag = nw.Tag;
-                                        if (ipProperties.GatewayAddresses.Count > 0 && !nw.IsLoopback())
-                                        {
-                                            // -ve Tags signify the interface has a gateway.
-                                            nw.Tag *= -1;
-                                        }
-
-                                        _interfaceAddresses.AddItem(nw);
-
-                                        // Store interface name so we can use the name in Collections.
-                                        _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
-                                        _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
+                                    int tag = nw.Tag;
+                                    if (ipProperties.GatewayAddresses.Count > 0 && !nw.IsLoopback())
+                                    {
+                                        // -ve Tags signify the interface has a gateway.
+                                        nw.Tag *= -1;
                                     }
+
+                                    _interfaceAddresses.AddItem(nw);
+
+                                    // Store interface name so we can use the name in Collections.
+                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
+                                    _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
                                 }
-                                else if (info.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                                else if (IsIP6Enabled && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
-                                    if (IsIP6Enabled)
+                                    IPNetAddress nw = new IPNetAddress(info.Address, (byte)info.PrefixLength)
                                     {
-                                        IPNetAddress nw = new IPNetAddress(info.Address, (byte)info.PrefixLength)
-                                        {
-                                            // Keep the number of gateways on this interface, along with its index.
-                                            Tag = ipProperties.GetIPv6Properties().Index
-                                        };
+                                        // Keep the number of gateways on this interface, along with its index.
+                                        Tag = ipProperties.GetIPv6Properties().Index
+                                    };
 
-                                        int tag = nw.Tag;
-                                        if (ipProperties.GatewayAddresses.Count > 0 && !nw.IsLoopback())
-                                        {
-                                            // -ve Tags signify the interface has a gateway.
-                                            nw.Tag *= -1;
-                                        }
-
-                                        _interfaceAddresses.AddItem(nw);
-
-                                        // Store interface name so we can use the name in Collections.
-                                        _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
-                                        _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
+                                    int tag = nw.Tag;
+                                    if (ipProperties.GatewayAddresses.Count > 0 && !nw.IsLoopback())
+                                    {
+                                        // -ve Tags signify the interface has a gateway.
+                                        nw.Tag *= -1;
                                     }
+
+                                    _interfaceAddresses.AddItem(nw);
+
+                                    // Store interface name so we can use the name in Collections.
+                                    _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
+                                    _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
                                 }
                             }
                         }
