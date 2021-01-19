@@ -174,6 +174,30 @@ namespace Jellyfin.Server.Extensions
                 .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
         }
 
+        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength, bool systemIP6Enabled)
+        {
+            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            {
+                return;
+            }
+
+            if (systemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork)
+            {
+                // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
+                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
+                addr = addr.MapToIPv6();
+            }
+
+            if (prefixLength == 32)
+            {
+                options.KnownProxies.Add(addr);
+            }
+            else
+            {
+                options.KnownNetworks.Add(new IPNetwork(addr, prefixLength));
+            }
+        }
+
         /// <summary>
         /// Sets up the proxy configuration based on the addresses in <paramref name="userList"/>.
         /// </summary>
@@ -187,47 +211,13 @@ namespace Jellyfin.Server.Extensions
             {
                 if (IPNetAddress.TryParse(userList[i], out var addr))
                 {
-                    if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork)
-                         || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
-                    {
-                        continue;
-                    }
-
-                    if (networkManager.SystemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
-                        // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
-                        addr.Address = addr.Address.MapToIPv6();
-                    }
-
-                    if (addr.PrefixLength == 32)
-                    {
-                        options.KnownProxies.Add(addr.Address);
-                    }
-                    else
-                    {
-                        options.KnownNetworks.Add(new IPNetwork(addr.Address, addr.PrefixLength));
-                    }
+                    AddIpAddress(config, options, addr.Address, addr.PrefixLength, networkManager.SystemIP6Enabled);
                 }
                 else if (IPHost.TryParse(userList[i], out var host))
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        if ((!config.EnableIPV4 && address.AddressFamily == AddressFamily.InterNetwork)
-                            || (!config.EnableIPV6 && address.AddressFamily == AddressFamily.InterNetworkV6))
-                        {
-                            continue;
-                        }
-
-                        var hostAddr = address;
-                        if (networkManager.SystemIP6Enabled && address.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
-                            // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
-                            hostAddr = address.MapToIPv6();
-                        }
-
-                        options.KnownProxies.Add(hostAddr);
+                        AddIpAddress(config, options, addr.Address, addr.PrefixLength, networkManager.SystemIP6Enabled);
                     }
                 }
             }
