@@ -50,19 +50,19 @@ namespace Jellyfin.Api.Tests
             var sb = new StringBuilder();
             foreach (var item in options.KnownProxies)
             {
-                sb.Append(item.ToString());
+                sb.Append(item);
                 sb.Append(',');
             }
 
             foreach (var item in options.KnownNetworks)
             {
-                sb.Append(item.Prefix.ToString());
+                sb.Append(item.Prefix);
                 sb.Append('/');
                 sb.Append(item.PrefixLength.ToString(CultureInfo.InvariantCulture));
                 sb.Append(',');
             }
 
-            Assert.True(string.Equals(sb.ToString(), result, StringComparison.OrdinalIgnoreCase), "Not matched: " + sb.ToString() + " does not match " + result);
+            Assert.Equal(sb.ToString(), result);
         }
 
         private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Tests
                 CallBase = true
             };
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
+            return configManager.Object;
         }
 
         private static NetworkManager CreateNetworkManager()
