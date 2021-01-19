@@ -44,7 +44,7 @@ namespace Jellyfin.Api.Tests
             options.KnownProxies.Clear();
             options.KnownNetworks.Clear();
 
-            ApiServiceCollectionExtensions.ParseList(settings, hostList.Split(","), options);
+            ApiServiceCollectionExtensions.AddProxyAddresses(settings, hostList.Split(","), options);
 
             var sb = new StringBuilder();
             foreach (var item in options.KnownProxies)
