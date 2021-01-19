@@ -352,7 +352,8 @@ namespace Jellyfin.Server.Extensions
                 return;
             }
 
-            if (NetworkManager.SystemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork)
+            // In order for dual-mode sockets to be used, IP6 has to be enabled in JF and an interface has to have an IP6 address.
+            if (NetworkManager.SystemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork && config.EnableIPV6)
             {
                 // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
                 // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
