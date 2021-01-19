@@ -30,7 +30,6 @@ namespace Jellyfin.Api.Tests
         public void TestNetworks(bool ip4, bool ip6, string hostList, string match)
         {
             using var nm = CreateNetworkManager();
-            NetworkManager.SystemIP6Enabled = ip6;
 
             var settings = new NetworkConfiguration
             {

@@ -130,16 +130,6 @@ namespace Jellyfin.Networking.Manager
         public static string MockNetworkSettings { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the system has IP4 is enabled.
-        /// </summary>
-        public static bool SystemIP4Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the system has IP6 is enabled.
-        /// </summary>
-        public static bool SystemIP6Enabled { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether IP6 is enabled.
         /// </summary>
         public bool IsIP6Enabled { get; set; }
@@ -1059,7 +1049,6 @@ namespace Jellyfin.Networking.Manager
                             {
                                 if (info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
-                                    SystemIP4Enabled = true;
                                     if (IsIP4Enabled)
                                     {
                                         IPNetAddress nw = new IPNetAddress(info.Address, IPObject.MaskToCidr(info.IPv4Mask))
@@ -1084,7 +1073,6 @@ namespace Jellyfin.Networking.Manager
                                 }
                                 else if (info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
-                                    SystemIP6Enabled = true;
                                     if (IsIP6Enabled)
                                     {
                                         IPNetAddress nw = new IPNetAddress(info.Address, (byte)info.PrefixLength)
