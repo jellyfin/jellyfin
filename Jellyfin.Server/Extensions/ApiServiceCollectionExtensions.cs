@@ -200,7 +200,7 @@ namespace Jellyfin.Server.Extensions
                     }
                     else
                     {
-                        ParseList(config, config.KnownProxies, options);
+                        AddProxyAddresses(config, config.KnownProxies, options);
                     }
 
                     // Only set forward limit if we have some known proxies or some known networks.
@@ -322,20 +322,20 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
-        /// Sets up the proxy configuration based on the addresses in <paramref name="userList"/>.
+        /// Sets up the proxy configuration based on the addresses in <paramref name="allowedProxies"/>.
         /// </summary>
         /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
-        /// <param name="userList">The string array to parse.</param>
+        /// <param name="allowedProxies">The string array to parse.</param>
         /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
-        internal static void ParseList(NetworkConfiguration config, string[] userList, ForwardedHeadersOptions options)
+        internal static void AddProxyAddresses(NetworkConfiguration config, string[] allowedProxies, ForwardedHeadersOptions options)
         {
-            for (var i = 0; i < userList.Length; i++)
+            for (var i = 0; i < allowedProxies.Length; i++)
             {
-                if (IPNetAddress.TryParse(userList[i], out var addr))
+                if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
                 {
                     AddIpAddress(config, options, addr.Address, addr.PrefixLength);
                 }
-                else if (IPHost.TryParse(userList[i], out var host))
+                else if (IPHost.TryParse(allowedProxies[i], out var host))
                 {
                     foreach (var address in host.GetAddresses())
                     {
