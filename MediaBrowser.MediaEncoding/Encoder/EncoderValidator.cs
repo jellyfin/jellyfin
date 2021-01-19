@@ -163,7 +163,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // select the latest.
-            return !(source >= destination);
+            return source < destination;
         }
 
         public void SetEncoderPath(string path)
