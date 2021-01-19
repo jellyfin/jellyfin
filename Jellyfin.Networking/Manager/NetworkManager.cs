@@ -130,6 +130,16 @@ namespace Jellyfin.Networking.Manager
         public static string MockNetworkSettings { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets a value indicating whether the system has IP4 is enabled.
+        /// </summary>
+        public static bool SystemIP4Enabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the system has IP6 is enabled.
+        /// </summary>
+        public static bool SystemIP6Enabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether IP6 is enabled.
         /// </summary>
         public bool IsIP6Enabled { get; set; }
@@ -138,16 +148,6 @@ namespace Jellyfin.Networking.Manager
         /// Gets or sets a value indicating whether IP4 is enabled.
         /// </summary>
         public bool IsIP4Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the system has IP4 is enabled.
-        /// </summary>
-        public bool SystemIP4Enabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the system has IP6 is enabled.
-        /// </summary>
-        public bool SystemIP6Enabled { get; set; }
 
         /// <inheritdoc/>
         public Collection<IPObject> RemoteAddressFilter { get; private set; }

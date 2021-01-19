@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Tests
         public void TestNetworks(bool ip4, bool ip6, string hostList, string match)
         {
             using var nm = CreateNetworkManager();
-            nm.SystemIP6Enabled = ip6;
+            NetworkManager.SystemIP6Enabled = ip6;
 
             var settings = new NetworkConfiguration
             {
@@ -45,7 +45,7 @@ namespace Jellyfin.Api.Tests
             options.KnownProxies.Clear();
             options.KnownNetworks.Clear();
 
-            ApiServiceCollectionExtensions.ParseList(nm, settings, hostList.Split(","), options);
+            ApiServiceCollectionExtensions.ParseList(settings, hostList.Split(","), options);
 
             var sb = new StringBuilder();
             foreach (var item in options.KnownProxies)

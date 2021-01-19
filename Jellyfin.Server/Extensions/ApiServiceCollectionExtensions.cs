@@ -25,6 +25,7 @@ using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -174,64 +175,14 @@ namespace Jellyfin.Server.Extensions
                 .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>(AuthenticationSchemes.CustomAuthentication, null);
         }
 
-        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength, bool systemIP6Enabled)
-        {
-            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
-            {
-                return;
-            }
-
-            if (systemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork)
-            {
-                // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
-                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
-                addr = addr.MapToIPv6();
-            }
-
-            if (prefixLength == 32)
-            {
-                options.KnownProxies.Add(addr);
-            }
-            else
-            {
-                options.KnownNetworks.Add(new IPNetwork(addr, prefixLength));
-            }
-        }
-
-        /// <summary>
-        /// Sets up the proxy configuration based on the addresses in <paramref name="userList"/>.
-        /// </summary>
-        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
-        /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
-        /// <param name="userList">The string array to parse.</param>
-        /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
-        internal static void ParseList(INetworkManager networkManager, NetworkConfiguration config, string[] userList, ForwardedHeadersOptions options)
-        {
-            for (var i = 0; i < userList.Length; i++)
-            {
-                if (IPNetAddress.TryParse(userList[i], out var addr))
-                {
-                    AddIpAddress(config, options, addr.Address, addr.PrefixLength, networkManager.SystemIP6Enabled);
-                }
-                else if (IPHost.TryParse(userList[i], out var host))
-                {
-                    foreach (var address in host.GetAddresses())
-                    {
-                        AddIpAddress(config, options, addr.Address, addr.PrefixLength, networkManager.SystemIP6Enabled);
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Extension method for adding the jellyfin API to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
         /// <param name="config">The <see cref="NetworkConfiguration"/>.</param>
-        /// <param name="networkManager">The <see cref="INetworkManager"/> instance.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config, INetworkManager networkManager)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config)
         {
             IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors()
@@ -249,7 +200,7 @@ namespace Jellyfin.Server.Extensions
                     }
                     else
                     {
-                        ParseList(networkManager, config, config.KnownProxies, options);
+                        ParseList(config, config.KnownProxies, options);
                     }
 
                     // Only set forward limit if we have some known proxies or some known networks.
@@ -368,6 +319,54 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
+        }
+
+        /// <summary>
+        /// Sets up the proxy configuration based on the addresses in <paramref name="userList"/>.
+        /// </summary>
+        /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
+        /// <param name="userList">The string array to parse.</param>
+        /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
+        internal static void ParseList(NetworkConfiguration config, string[] userList, ForwardedHeadersOptions options)
+        {
+            for (var i = 0; i < userList.Length; i++)
+            {
+                if (IPNetAddress.TryParse(userList[i], out var addr))
+                {
+                    AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                }
+                else if (IPHost.TryParse(userList[i], out var host))
+                {
+                    foreach (var address in host.GetAddresses())
+                    {
+                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                    }
+                }
+            }
+        }
+
+        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
+        {
+            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            {
+                return;
+            }
+
+            if (NetworkManager.SystemIP6Enabled && addr.AddressFamily == AddressFamily.InterNetwork)
+            {
+                // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
+                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
+                addr = addr.MapToIPv6();
+            }
+
+            if (prefixLength == 32)
+            {
+                options.KnownProxies.Add(addr);
+            }
+            else
+            {
+                options.KnownNetworks.Add(new IPNetwork(addr, prefixLength));
+            }
         }
 
         private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)
