@@ -941,7 +941,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
                                 {
                                     // if ratingName contains tomato --> assume critic rating
-                                    if (ratingName != null && ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase))
+                                    if (ratingName != null &&
+                                        ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
+                                        !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
                                     {
                                         item.CriticRating = ratingValue;
                                     }
