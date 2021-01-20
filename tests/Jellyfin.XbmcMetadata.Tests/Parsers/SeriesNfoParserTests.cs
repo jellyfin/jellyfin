@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.XbmcMetadata.Parsers.Tests
+namespace Jellyfin.XbmcMetadata.Tests.Parsers
 {
     public class SeriesNfoParserTests
     {
