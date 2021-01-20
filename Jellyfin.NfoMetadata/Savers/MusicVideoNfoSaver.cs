@@ -64,7 +64,7 @@ namespace Jellyfin.NfoMetadata.Savers
             }
 
             // Check parent for null to avoid running this against things like video backdrops
-            if (item is Video video && !(item is Episode) && !video.ExtraType.HasValue)
+            if (item is Video video && !(item is Episode) && !video.ExtraType.HasValue && item is MusicVideo)
             {
                 return updateType >= MinimumUpdateType;
             }

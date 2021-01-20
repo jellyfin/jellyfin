@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Threading;
 using Jellyfin.NfoMetadata.Configuration;
 using Jellyfin.NfoMetadata.Models;
@@ -428,10 +429,9 @@ namespace Jellyfin.NfoMetadata.Savers
             // On Windows, savint the file will fail if the file is hidden or readonly
             _fileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
-            {
-                stream.CopyTo(filestream);
-            }
+            using var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read);
+            stream.Position = 0;
+            stream.CopyTo(filestream);
 
             if (_configurationManager.Configuration.SaveMetadataHidden)
             {
@@ -492,11 +492,14 @@ namespace Jellyfin.NfoMetadata.Savers
         {
             var artNfo = new ArtNfo();
 
+            List<string> poster = new List<string>();
             var primaryImage = item.GetImageInfo(ImageType.Primary, 0);
             if (primaryImage != null)
             {
-                artNfo.Poster[0] = GetImagePathToSave(primaryImage);
+                poster.Add(GetImagePathToSave(primaryImage));
             }
+
+            artNfo.Poster = poster.ToArray();
 
             List<string> backdrops = new List<string>();
             foreach (var backdrop in item.GetImages(ImageType.Backdrop))

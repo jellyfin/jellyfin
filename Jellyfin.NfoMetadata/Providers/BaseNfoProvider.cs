@@ -129,7 +129,7 @@ namespace Jellyfin.NfoMetadata.Providers
                 CustomRating = nfo.CustomRating,
                 RunTimeTicks = TimeSpan.FromMinutes(nfo.Runtime ?? 0).Ticks,
                 IsLocked = nfo.LockData,
-                Studios = nfo.Studios,
+                Studios = nfo.Studios ?? Array.Empty<string>(),
                 ProductionYear = nfo.Year,
                 PremiereDate = (nfo.Premiered ?? nfo.Formed ?? nfo.Aired).GetValueOrDefault(),
                 EndDate = nfo.EndDate.GetValueOrDefault()
@@ -368,13 +368,13 @@ namespace Jellyfin.NfoMetadata.Providers
             string? imdbId = nfo.ImdbId ?? nfo.UniqueIds?
                 .FirstOrDefault(x => x.Type != null && x.Type.Equals("imdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
-            string? tmdbId = nfo.ImdbId ?? nfo.UniqueIds?
+            string? tmdbId = nfo.TmdbId ?? nfo.UniqueIds?
                 .FirstOrDefault(x => x.Type != null && x.Type.Equals("tmdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
-            string? tvdbId = nfo.ImdbId ?? nfo.UniqueIds?
+            string? tvdbId = nfo.TvdbId ?? nfo.UniqueIds?
                 .FirstOrDefault(x => x.Type != null && x.Type.Equals("tvdb", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
-            string? tvcomId = nfo.ImdbId ?? nfo.UniqueIds?
+            string? tvcomId = nfo.TvcomId ?? nfo.UniqueIds?
                 .FirstOrDefault(x => x.Type != null && x.Type.Equals("tvcom", StringComparison.OrdinalIgnoreCase))
                 ?.Id;
 
