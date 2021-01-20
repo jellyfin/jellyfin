@@ -242,7 +242,7 @@ namespace Jellyfin.NfoMetadata.Providers
                 {
                     Name = actor.Name?.Trim(),
                     Role = actor.Role,
-                    SortOrder = actor.Order,
+                    SortOrder = actor.Order == null ? 0 : actor.Order.Value,
                     ImageUrl = actor.Thumb
                 };
 
@@ -312,7 +312,7 @@ namespace Jellyfin.NfoMetadata.Providers
             }
             else
             {
-                item.ProductionLocations = nfo.Countries;
+                item.ProductionLocations = nfo.Countries ?? Array.Empty<string>();
             }
 
             string[] genreArray;

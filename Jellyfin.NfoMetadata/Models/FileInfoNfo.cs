@@ -155,15 +155,17 @@ namespace Jellyfin.NfoMetadata.Models
 
         /// <summary>
         /// Gets or sets a value indicating whether this stream is the default.
+        /// Can't be a bool because old Jellyfin version wrote this value as "True" and the XmlSerializer doesn't recognize that.
         /// </summary>
         [XmlElement("default")]
-        public bool Default { get; set; }
+        public string? Default { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this stream is forced.
+        /// Can't be a bool because old Jellyfin version wrote this value as "True" and the XmlSerializer doesn't recognize that.
         /// </summary>
         [XmlElement("forced")]
-        public bool Forced { get; set; }
+        public string? Forced { get; set; }
     }
 
     /// <summary>
@@ -179,14 +181,16 @@ namespace Jellyfin.NfoMetadata.Models
 
         /// <summary>
         /// Gets or sets a value indicating whether this stream is the default.
+        /// Can't be a bool because old Jellyfin version wrote this value as "True" and the XmlSerializer doesn't recognize that.
         /// </summary>
         [XmlElement("default")]
-        public bool Default { get; set; }
+        public string? Default { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this stream is forced.
+        /// Can't be a bool because old Jellyfin version wrote this value as "True" and the XmlSerializer doesn't recognize that.
         /// </summary>
         [XmlElement("forced")]
-        public bool Forced { get; set; }
+        public string? Forced { get; set; }
     }
 }

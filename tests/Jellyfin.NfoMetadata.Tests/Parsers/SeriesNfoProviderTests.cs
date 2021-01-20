@@ -6,32 +6,21 @@ using System.Linq;
 using System.Xml.Serialization;
 using Jellyfin.NfoMetadata.Models;
 using Jellyfin.NfoMetadata.Providers;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.NfoMetadata.Tests.Parsers
 {
-    public class SeriesNfoParserTests
+    public class SeriesNfoProviderTests
     {
         private readonly XmlSerializer _serializer;
         private readonly SeriesNfoProvider _seriesNfoProvider;
 
-        public SeriesNfoParserTests()
+        public SeriesNfoProviderTests()
         {
-            var providerManager = new Mock<IProviderManager>();
-            providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
-                .Returns(Enumerable.Empty<ExternalIdInfo>());
-            var config = new Mock<IConfigurationManager>();
-            config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new XbmcMetadataOptions());
-
             _serializer = new XmlSerializer(typeof(SeriesNfo));
             _seriesNfoProvider = new SeriesNfoProvider(new NullLogger<SeriesNfoProvider>(), null!, null!);
         }

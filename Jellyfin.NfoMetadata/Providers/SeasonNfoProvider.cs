@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Jellyfin.NfoMetadata.Models;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
@@ -29,11 +31,12 @@ namespace Jellyfin.NfoMetadata.Providers
         {
             if (nfo == null)
             {
-                return;
+                throw new ArgumentException("Nfo can't be null", nameof(nfo));
             }
 
             base.MapNfoToJellyfinObject(nfo, metadataResult);
             metadataResult.Item.IndexNumber = nfo.SeasonNumber;
+            metadataResult.Item.SetProviderId(MetadataProvider.Tvdb, nfo.TvdbId!);
         }
 
         internal static string GetSeasonSavePath(ItemInfo item)

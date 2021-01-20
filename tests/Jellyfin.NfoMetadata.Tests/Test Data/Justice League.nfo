@@ -120,6 +120,8 @@
                 <codec>truehd</codec>
                 <language>eng</language>
                 <channels>8</channels>
+                <default>True</default>
+                <forced>false</forced>
             </audio>
             <audio>
                 <codec>ac3</codec>
@@ -128,6 +130,8 @@
             </audio>
             <subtitle>
                 <language>eng</language>
+                <default>true</default>
+                <forced>False</forced>
             </subtitle>
         </streamdetails>
     </fileinfo>

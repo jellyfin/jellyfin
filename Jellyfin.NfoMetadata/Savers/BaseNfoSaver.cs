@@ -339,8 +339,8 @@ namespace Jellyfin.NfoMetadata.Savers
                     Codec = audioStream.Codec,
                     SamplingRate = audioStream.SampleRate,
                     Bitrate = audioStream.BitRate,
-                    Default = audioStream.IsDefault,
-                    Forced = audioStream.IsForced
+                    Default = audioStream.IsDefault.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                    Forced = audioStream.IsForced.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()
                 };
                 audioStreamNfos.Add(audioStreamNfo);
             }
@@ -356,8 +356,8 @@ namespace Jellyfin.NfoMetadata.Savers
                     // http://web.archive.org/web/20181230211547/https://emby.media/community/index.php?/topic/49071-nfo-not-generated-on-actualize-or-rescan-or-identify
                     // Web Archive version of link since it's not really explained in the thread.
                     Language = Regex.Replace(subtitleStream.Language, InvalidXmlCharsRegex, string.Empty),
-                    Default = subtitleStream.IsDefault,
-                    Forced = subtitleStream.IsForced
+                    Default = subtitleStream.IsDefault.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                    Forced = subtitleStream.IsForced.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()
                 };
                 subtitleStreamNfos.Add(subtitleStreamNfo);
             }

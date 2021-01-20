@@ -2,37 +2,23 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Xml.Serialization;
 using Jellyfin.NfoMetadata.Models;
 using Jellyfin.NfoMetadata.Providers;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.NfoMetadata.Tests.Parsers
 {
-    public class MusicArtistNfoParserTests
+    public class MusicArtistNfoProviderTests
     {
         private readonly XmlSerializer _serializer;
         private readonly ArtistNfoProvider _artistNfoProvider;
 
-        public MusicArtistNfoParserTests()
+        public MusicArtistNfoProviderTests()
         {
-            var providerManager = new Mock<IProviderManager>();
-            providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
-                .Returns(Enumerable.Empty<ExternalIdInfo>());
-            var config = new Mock<IConfigurationManager>();
-            config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new XbmcMetadataOptions());
-
             _serializer = new XmlSerializer(typeof(ArtistNfo));
             _artistNfoProvider = new ArtistNfoProvider(new NullLogger<BaseNfoProvider<MusicArtist, ArtistNfo>>(), null!, null!);
         }

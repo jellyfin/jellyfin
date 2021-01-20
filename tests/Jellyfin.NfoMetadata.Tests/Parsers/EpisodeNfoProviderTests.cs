@@ -18,12 +18,12 @@ using Xunit;
 
 namespace Jellyfin.NfoMetadata.Tests.Parsers
 {
-    public class EpisodeNfoParserTests
+    public class EpisodeNfoProviderTests
     {
         private readonly XmlSerializer _serializer;
         private readonly EpisodeNfoProvider _episodeNfoProvider;
 
-        public EpisodeNfoParserTests()
+        public EpisodeNfoProviderTests()
         {
             var providerManager = new Mock<IProviderManager>();
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))

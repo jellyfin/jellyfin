@@ -5,6 +5,7 @@ namespace Jellyfin.NfoMetadata.Models
     /// <summary>
     /// The season specific nfo tags.
     /// </summary>
+    [XmlRoot("season")]
     public class SeasonNfo : BaseNfo
     {
         /// <summary>
