@@ -113,5 +113,8 @@
     "TasksChannelsCategory": "Интернет Канали",
     "TasksApplicationCategory": "Приложение",
     "TasksLibraryCategory": "Библиотека",
-    "TasksMaintenanceCategory": "Поддръжка"
+    "TasksMaintenanceCategory": "Поддръжка",
+    "Undefined": "Неопределено",
+    "Forced": "Принудително",
+    "Default": "По подразбиране"
 }
