@@ -76,10 +76,6 @@ namespace Emby.Notifications
                 },
                 new NotificationTypeInfo
                 {
-                     Type = NotificationType.CameraImageUploaded.ToString()
-                },
-                new NotificationTypeInfo
-                {
                      Type = NotificationType.UserLockedOut.ToString()
                 },
                 new NotificationTypeInfo
@@ -113,10 +109,6 @@ namespace Emby.Notifications
             else if (note.Type.IndexOf("Plugin", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 note.Category = _localization.GetLocalizedString("Plugin");
-            }
-            else if (note.Type.IndexOf("CameraImageUploaded", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                note.Category = _localization.GetLocalizedString("Sync");
             }
             else if (note.Type.IndexOf("UserLockedOut", StringComparison.OrdinalIgnoreCase) != -1)
             {

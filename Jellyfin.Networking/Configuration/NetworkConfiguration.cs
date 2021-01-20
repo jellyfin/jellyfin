@@ -224,7 +224,7 @@ namespace Jellyfin.Networking.Configuration
         public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets the known proxies.
+        /// Gets or sets the known proxies. If the proxy is a network, it's added to the KnownNetworks.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
