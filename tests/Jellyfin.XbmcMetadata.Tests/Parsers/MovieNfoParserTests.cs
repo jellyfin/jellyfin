@@ -60,7 +60,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(new TimeSpan(0, 0, 6268).Ticks, item.RunTimeTicks);
             Assert.True(item.HasSubtitles);
 
-            Assert.Equal(18, result.People.Count);
+            Assert.Equal(19, result.People.Count);
 
             var writers = result.People.Where(x => x.Type == PersonType.Writer).ToArray();
             Assert.Equal(2, writers.Length);
@@ -81,6 +81,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("Jason Momoa", aquaman!.Name);
             Assert.Equal(5, aquaman!.SortOrder);
             Assert.Equal("https://m.media-amazon.com/images/M/MV5BMTI5MTU5NjM1MV5BMl5BanBnXkFtZTcwODc4MDk0Mw@@._V1_SX1024_SY1024_.jpg", aquaman!.ImageUrl);
+
+            var lyricist = result.People.FirstOrDefault(x => x.Type == PersonType.Lyricist);
+            Assert.NotNull(lyricist);
+            Assert.Equal("Test Lyricist", lyricist!.Name);
 
             Assert.Equal(new DateTime(2019, 8, 6, 9, 1, 18), item.DateCreated);
         }
