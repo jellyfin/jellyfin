@@ -210,14 +210,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "showtitle":
                     {
-                    var showtitle = reader.ReadElementContentAsString();
+                        var showtitle = reader.ReadElementContentAsString();
 
-                    if (!string.IsNullOrWhiteSpace(showtitle))
-                    {
-                        item.SeriesName = showtitle;
-                    }
+                        if (!string.IsNullOrWhiteSpace(showtitle))
+                        {
+                            item.SeriesName = showtitle;
+                        }
 
-                    break;
+                        break;
                     }
 
                 default:
