@@ -374,7 +374,7 @@ namespace Emby.Server.Implementations.Plugins
         private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(assembly.Location), StringComparison.Ordinal));
+            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location, StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -421,15 +421,17 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     plugin.Instance = instance;
                     var manifest = plugin.Manifest;
-                    var pluginStr = plugin.Instance.Version.ToString();
+                    var pluginStr = instance.Version.ToString();
                     bool changed = false;
-                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
+                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal)
+                        || manifest.Id != instance.Id)
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.
                         manifest.Version = pluginStr;
                         manifest.Name = plugin.Instance.Name;
                         manifest.Description = plugin.Instance.Description;
+                        manifest.Id = plugin.Instance.Id;
                         changed = true;
                     }
 
@@ -559,7 +561,7 @@ namespace Emby.Server.Implementations.Plugins
             // Auto-create a plugin manifest, so we can disable it, if it fails to load.
             manifest = new PluginManifest
             {
-                Status = PluginStatus.Restart,
+                Status = PluginStatus.Active,
                 Name = metafile,
                 AutoUpdate = false,
                 Id = metafile.GetMD5(),
