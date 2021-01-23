@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
@@ -25,7 +22,6 @@ using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -317,6 +313,7 @@ namespace Jellyfin.Server.Extensions
 
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
+                c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
         }
