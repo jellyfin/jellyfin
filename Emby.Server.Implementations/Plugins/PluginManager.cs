@@ -122,6 +122,12 @@ namespace Emby.Server.Implementations.Plugins
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
+                    catch (TypeLoadException ex)
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin. This is probably caused by an incompatible plugin version.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        continue;
+                    }
 
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
                     yield return assembly;
