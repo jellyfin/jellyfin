@@ -450,15 +450,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("plot", overview);
             }
 
-            if (item is Video)
-            {
-                var outline = (item.Tagline ?? string.Empty)
-                    .StripHtml()
-                    .Replace("&quot;", "'", StringComparison.Ordinal);
-
-                writer.WriteElementString("outline", outline);
-            }
-            else
+            if (!(item is Video))
             {
                 writer.WriteElementString("outline", overview);
             }
