@@ -1036,34 +1036,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    switch (val)
+                                    type = val switch
                                     {
-                                        case PersonType.Composer:
-                                            type = PersonType.Composer;
-                                            break;
-                                        case PersonType.Conductor:
-                                            type = PersonType.Conductor;
-                                            break;
-                                        case PersonType.Director:
-                                            type = PersonType.Director;
-                                            break;
-                                        case PersonType.Lyricist:
-                                            type = PersonType.Lyricist;
-                                            break;
-                                        case PersonType.Producer:
-                                            type = PersonType.Producer;
-                                            break;
-                                        case PersonType.Writer:
-                                            type = PersonType.Writer;
-                                            break;
-                                        case PersonType.GuestStar:
-                                            type = PersonType.GuestStar;
-                                            break;
+                                        PersonType.Composer => PersonType.Composer,
+                                        PersonType.Conductor => PersonType.Conductor,
+                                        PersonType.Director => PersonType.Director,
+                                        PersonType.Lyricist => PersonType.Lyricist,
+                                        PersonType.Producer => PersonType.Producer,
+                                        PersonType.Writer => PersonType.Writer,
+                                        PersonType.GuestStar => PersonType.GuestStar,
                                         // unknown type --> actor
-                                        default:
-                                            type = PersonType.Actor;
-                                            break;
-                                    }
+                                        _ => PersonType.Actor
+                                    };
                                 }
 
                                 break;
