@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -106,12 +107,14 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// Gets or sets specify one or more sort orders, comma delimited. Options: Name, StartDate.
         /// Optional.
         /// </summary>
-        public string? SortBy { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<string> SortBy { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets sort Order - Ascending,Descending.
         /// </summary>
-        public string? SortOrder { get; set; }
+        [JsonConverter(typeof(JsonCommaDelimitedArrayConverterFactory))]
+        public IReadOnlyList<SortOrder> SortOrder { get; set; } = Array.Empty<SortOrder>();
 
         /// <summary>
         /// Gets or sets the genres to return guide information for.
