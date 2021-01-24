@@ -25,22 +25,25 @@ namespace Jellyfin.Api.Helpers
         /// <param name="sortBy">Sort By. Comma delimited string.</param>
         /// <param name="requestedSortOrder">Sort Order. Comma delimited string.</param>
         /// <returns>Order By.</returns>
-        public static ValueTuple<string, SortOrder>[] GetOrderBy(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
+        public static (string, SortOrder)[] GetOrderBy(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
         {
             if (sortBy.Count == 0)
             {
                 return Array.Empty<ValueTuple<string, SortOrder>>();
             }
 
-            var result = new ValueTuple<string, SortOrder>[sortBy.Count];
-            for (var i = 0; i < sortBy.Count; i++)
+            var result = new (string, SortOrder)[sortBy.Count];
+            var i = 0;
+            // Add elements which have a SortOrder specified
+            for (; i < requestedSortOrder.Count; i++)
             {
-                var sortOrderIndex = requestedSortOrder.Count > i ? i : 0;
+                result[i] = (sortBy[i], requestedSortOrder[i]);
+            }
 
-                var sortOrder = requestedSortOrder.Count > sortOrderIndex
-                    ? requestedSortOrder[sortOrderIndex]
-                    : SortOrder.Ascending;
-                result[i] = new ValueTuple<string, SortOrder>(sortBy[i], sortOrder);
+            // Add remaining elements with the default SortOrder
+            for (; i < sortBy.Count; i++)
+            {
+                result[i] = (sortBy[i], SortOrder.Ascending);
             }
 
             return result;
