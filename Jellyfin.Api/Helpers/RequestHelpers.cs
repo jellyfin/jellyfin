@@ -47,25 +47,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Splits a string at a separating character into an array of substrings.
-        /// </summary>
-        /// <param name="value">The string to split.</param>
-        /// <param name="separator">The char that separates the substrings.</param>
-        /// <param name="removeEmpty">Option to remove empty substrings from the array.</param>
-        /// <returns>An array of the substrings.</returns>
-        internal static string[] Split(string? value, char separator, bool removeEmpty)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return Array.Empty<string>();
-            }
-
-            return removeEmpty
-                ? value.Split(separator, StringSplitOptions.RemoveEmptyEntries)
-                : value.Split(separator);
-        }
-
-        /// <summary>
         /// Checks if the user can update an entry.
         /// </summary>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
