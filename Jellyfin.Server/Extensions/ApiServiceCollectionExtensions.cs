@@ -308,6 +308,9 @@ namespace Jellyfin.Server.Extensions
                                ?? null;
                     });
 
+                // Allow parameters to properly be nullable.
+                c.UseAllOfToExtendReferenceSchemas();
+
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
