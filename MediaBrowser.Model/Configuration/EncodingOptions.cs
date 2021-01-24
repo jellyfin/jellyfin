@@ -65,6 +65,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableDecodingColorDepth10Vp9 { get; set; }
 
+        public bool EnableEnhancedNvdecDecoder { get; set; }
+
         public bool EnableHardwareEncoding { get; set; }
 
         public bool AllowHevcEncoding { get; set; }
@@ -100,6 +102,7 @@ namespace MediaBrowser.Model.Configuration
             DeinterlaceMethod = "yadif";
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;
+            EnableEnhancedNvdecDecoder = true;
             EnableHardwareEncoding = true;
             AllowHevcEncoding = true;
             EnableSubtitleExtraction = true;
