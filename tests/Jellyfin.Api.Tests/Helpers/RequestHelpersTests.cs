@@ -51,7 +51,7 @@ namespace Jellyfin.Api.Tests.Helpers
                 new (string, SortOrder)[]
                 {
                     ("SortName", SortOrder.Descending),
-                    ("ProductionYear", SortOrder.Ascending),
+                    ("ProductionYear", SortOrder.Descending),
                 }
             };
         }

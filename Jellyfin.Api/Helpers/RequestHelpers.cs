@@ -40,10 +40,12 @@ namespace Jellyfin.Api.Helpers
                 result[i] = (sortBy[i], requestedSortOrder[i]);
             }
 
-            // Add remaining elements with the default SortOrder
+            // Add remaining elements with the first specified SortOrder
+            // or the default one if no SortOrders are specified
+            var order = requestedSortOrder.Count > 0 ? requestedSortOrder[0] : SortOrder.Ascending;
             for (; i < sortBy.Count; i++)
             {
-                result[i] = (sortBy[i], SortOrder.Ascending);
+                result[i] = (sortBy[i], order);
             }
 
             return result;
