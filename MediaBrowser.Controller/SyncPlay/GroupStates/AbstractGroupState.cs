@@ -66,7 +66,16 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
         /// <inheritdoc />
         public virtual void HandleRequest(RemoveFromPlaylistGroupRequest request, IGroupStateContext context, GroupStateType prevState, SessionInfo session, CancellationToken cancellationToken)
         {
-            var playingItemRemoved = context.RemoveFromPlayQueue(request.PlaylistItemIds);
+            bool playingItemRemoved;
+            if (request.ClearPlaylist)
+            {
+                context.ClearPlayQueue(request.ClearPlayingItem);
+                playingItemRemoved = request.ClearPlayingItem;
+            }
+            else
+            {
+                playingItemRemoved = context.RemoveFromPlayQueue(request.PlaylistItemIds);
+            }
 
             var playQueueUpdate = context.GetPlayQueueUpdate(PlayQueueUpdateReason.RemoveItems);
             var update = context.NewSyncPlayGroupUpdate(GroupUpdateType.PlayQueue, playQueueUpdate);

@@ -162,7 +162,7 @@ namespace Jellyfin.Api.Controllers
             [FromBody, Required] RemoveFromPlaylistRequestDto requestData)
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
-            var syncPlayRequest = new RemoveFromPlaylistGroupRequest(requestData.PlaylistItemIds);
+            var syncPlayRequest = new RemoveFromPlaylistGroupRequest(requestData.PlaylistItemIds, requestData.ClearPlaylist, requestData.ClearPlayingItem);
             _syncPlayManager.HandleRequest(currentSession, syncPlayRequest, CancellationToken.None);
             return NoContent();
         }

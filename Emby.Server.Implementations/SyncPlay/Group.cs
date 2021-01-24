@@ -535,6 +535,16 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public void ClearPlayQueue(bool clearPlayingItem)
+        {
+            PlayQueue.ClearPlaylist(clearPlayingItem);
+            if (clearPlayingItem)
+            {
+                RestartCurrentItem();
+            }
+        }
+
+        /// <inheritdoc />
         public bool RemoveFromPlayQueue(IReadOnlyList<Guid> playlistItemIds)
         {
             var playingItemRemoved = PlayQueue.RemoveFromPlaylist(playlistItemIds);

@@ -161,6 +161,12 @@ namespace MediaBrowser.Controller.SyncPlay
         bool SetPlayingItem(Guid playlistItemId);
 
         /// <summary>
+        /// Clears the play queue.
+        /// </summary>
+        /// <param name="clearPlayingItem">Whether to remove the playing item as well.</param>
+        void ClearPlayQueue(bool clearPlayingItem);
+
+        /// <summary>
         /// Removes items from the play queue.
         /// </summary>
         /// <param name="playlistItemIds">The items to remove.</param>

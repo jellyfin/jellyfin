@@ -15,9 +15,14 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// Initializes a new instance of the <see cref="RemoveFromPlaylistGroupRequest"/> class.
         /// </summary>
         /// <param name="items">The playlist ids of the items to remove.</param>
-        public RemoveFromPlaylistGroupRequest(IReadOnlyList<Guid> items)
+        /// <param name="clearPlaylist">Whether to clear the entire playlist. The items list will be ignored.</param>
+        /// <param name="clearPlayingItem">Whether to remove the playing item as well. Used only when clearing the playlist.</param>
+
+        public RemoveFromPlaylistGroupRequest(IReadOnlyList<Guid> items, bool clearPlaylist = false, bool clearPlayingItem = false)
         {
             PlaylistItemIds = items ?? Array.Empty<Guid>();
+            ClearPlaylist = clearPlaylist;
+            ClearPlayingItem = clearPlayingItem;
         }
 
         /// <summary>
@@ -25,6 +30,18 @@ namespace MediaBrowser.Controller.SyncPlay.PlaybackRequests
         /// </summary>
         /// <value>The playlist identifiers ot the items.</value>
         public IReadOnlyList<Guid> PlaylistItemIds { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the entire playlist should be cleared.
+        /// </summary>
+        /// <value>Whether the entire playlist should be cleared.</value>
+        public bool ClearPlaylist { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the playing item should be removed as well.
+        /// </summary>
+        /// <value>Whether the playing item should be removed as well.</value>
+        public bool ClearPlayingItem { get; }
 
         /// <inheritdoc />
         public override PlaybackRequestType Action { get; } = PlaybackRequestType.RemoveFromPlaylist;
