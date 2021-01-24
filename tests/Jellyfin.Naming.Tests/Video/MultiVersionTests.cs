@@ -9,9 +9,8 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class MultiVersionTests
     {
-        private readonly NamingOptions _namingOptions = new NamingOptions();
+        private readonly VideoListResolver _videoListResolver = new VideoListResolver(new NamingOptions());
 
-        // FIXME
         [Fact]
         public void TestMultiEdition1()
         {
@@ -23,9 +22,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/X-Men Days of Future Past/X-Men Days of Future Past [hsbs].mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -35,7 +32,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Single(result[0].Extras);
         }
 
-        // FIXME
         [Fact]
         public void TestMultiEdition2()
         {
@@ -47,9 +43,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/X-Men Days of Future Past/X-Men Days of Future Past [banana].mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -69,9 +63,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/The Phantom of the Opera (1925)/The Phantom of the Opera (1925) - 1929 version.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -81,7 +73,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Single(result[0].AlternateVersions);
         }
 
-        // FIXME
         [Fact]
         public void TestLetterFolders()
         {
@@ -96,9 +87,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/M/Movie 7.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -109,7 +98,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Empty(result[0].AlternateVersions);
         }
 
-        // FIXME
         [Fact]
         public void TestMultiVersionLimit()
         {
@@ -125,9 +113,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Movie/Movie-8.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -138,7 +124,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Equal(7, result[0].AlternateVersions.Count);
         }
 
-        // FIXME
         [Fact]
         public void TestMultiVersionLimit2()
         {
@@ -155,9 +140,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Mo/Movie 9.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -168,7 +151,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Empty(result[0].AlternateVersions);
         }
 
-        // FIXME
         [Fact]
         public void TestMultiVersion3()
         {
@@ -181,9 +163,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Movie/Movie 5.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -194,7 +174,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Empty(result[0].AlternateVersions);
         }
 
-        // FIXME
         [Fact]
         public void TestMultiVersion4()
         {
@@ -209,9 +188,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man (2011).mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -237,9 +214,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man[test].mkv",
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -253,7 +228,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.True(result[0].AlternateVersions[4].Is3D);
         }
 
-        // FIXME
         [Fact]
         public void TestMultiVersion6()
         {
@@ -269,9 +243,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man [test].mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -294,9 +266,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man - C (2007).mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -319,9 +289,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man_3d.hsbs.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -349,9 +317,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Iron Man/Iron Man (2011).mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -371,9 +337,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/Blade Runner (1982)/Blade Runner (1982) [EE by ADM] [480p HEVC AAC,AAC,AAC].mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -393,9 +357,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/X-Men Apocalypse (2016)/X-Men Apocalypse (2016) [2160p] Blu-ray.x265.AAC.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -409,16 +371,9 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestEmptyList()
         {
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(new List<FileSystemMetadata>()).ToList();
+            var result = _videoListResolver.Resolve(new List<FileSystemMetadata>()).ToList();
 
             Assert.Empty(result);
-        }
-
-        private VideoListResolver GetResolver()
-        {
-            return new VideoListResolver(_namingOptions);
         }
     }
 }

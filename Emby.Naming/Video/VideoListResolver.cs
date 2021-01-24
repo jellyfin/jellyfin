@@ -185,8 +185,8 @@ namespace Emby.Naming.Video
             if (!string.IsNullOrEmpty(folderName)
                 && folderName.Length > 1
                 && videos.All(i => i.Files.Count == 1
-                && IsEligibleForMultiVersion(folderName, i.Files[0].Path))
-                && HaveSameYear(videos))
+                    && IsEligibleForMultiVersion(folderName, i.Files[0].Path))
+                    && HaveSameYear(videos))
             {
                 var ordered = videos.OrderBy(i => i.Name).ToList();
 
@@ -216,10 +216,9 @@ namespace Emby.Naming.Video
             return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
         }
 
-        private bool IsEligibleForMultiVersion(string folderName, string? testFilename)
+        private bool IsEligibleForMultiVersion(string folderName, string testFilePath)
         {
-            testFilename = Path.GetFileNameWithoutExtension(testFilename) ?? string.Empty;
-
+            string testFilename = Path.GetFileNameWithoutExtension(testFilePath);
             if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
                 if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
@@ -233,8 +232,8 @@ namespace Emby.Naming.Video
                 }
 
                 return string.IsNullOrEmpty(testFilename)
-                   || testFilename[0].Equals('-')
-                   || testFilename[0].Equals('_')
+                   || testFilename[0] == '-'
+                   || testFilename[0] == '_'
                    || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 

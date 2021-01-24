@@ -9,7 +9,7 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class VideoResolverTests
     {
-        private readonly NamingOptions _namingOptions = new NamingOptions();
+        private readonly VideoResolver _videoResolver = new VideoResolver(new NamingOptions());
 
         public static IEnumerable<object[]> GetResolveFileTestData()
         {
@@ -159,7 +159,7 @@ namespace Jellyfin.Naming.Tests.Video
         [MemberData(nameof(GetResolveFileTestData))]
         public void ResolveFile_ValidFileName_Success(VideoFileInfo expectedResult)
         {
-            var result = new VideoResolver(_namingOptions).ResolveFile(expectedResult.Path);
+            var result = _videoResolver.ResolveFile(expectedResult.Path);
 
             Assert.NotNull(result);
             Assert.Equal(result?.Path, expectedResult.Path);
@@ -179,7 +179,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void ResolveFile_EmptyPath()
         {
-            var result = new VideoResolver(_namingOptions).ResolveFile(string.Empty);
+            var result = _videoResolver.ResolveFile(string.Empty);
 
             Assert.Null(result);
         }
@@ -194,8 +194,7 @@ namespace Jellyfin.Naming.Tests.Video
                 string.Empty
             };
 
-            var resolver = new VideoResolver(_namingOptions);
-            var results = paths.Select(path => resolver.ResolveDirectory(path)).ToList();
+            var results = paths.Select(path => _videoResolver.ResolveDirectory(path)).ToList();
 
             Assert.Equal(3, results.Count);
             Assert.NotNull(results[0]);
