@@ -126,6 +126,14 @@ namespace Emby.Server.Implementations.Plugins
                         ChangePluginState(plugin, PluginStatus.NotSupported);
                         continue;
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        continue;
+                    }
 
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
                     yield return assembly;
