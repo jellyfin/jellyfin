@@ -39,6 +39,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableTonemapping { get; set; }
 
+        public bool EnableVppTonemapping { get; set; }
+
         public string TonemappingAlgorithm { get; set; }
 
         public string TonemappingRange { get; set; }
@@ -90,6 +92,7 @@ namespace MediaBrowser.Model.Configuration
             // The left side of the dot is the platform number, and the right side is the device number on the platform.
             OpenclDevice = "0.0";
             EnableTonemapping = false;
+            EnableVppTonemapping = false;
             TonemappingAlgorithm = "hable";
             TonemappingRange = "auto";
             TonemappingDesat = 0;
