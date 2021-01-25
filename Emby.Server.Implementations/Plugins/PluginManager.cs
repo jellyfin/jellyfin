@@ -112,13 +112,25 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         assembly = Assembly.LoadFrom(file);
 
-                        // This force loads all reference dll's that the plugin uses in the try..catch block.
-                        // Removing this will cause JF to bomb out if referenced dll's cause issues.
                         assembly.GetExportedTypes();
                     }
                     catch (FileLoadException ex)
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        continue;
+                    }
+                    catch (TypeLoadException ex) // Undocumented exception
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.NotSupported);
+                        continue;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
