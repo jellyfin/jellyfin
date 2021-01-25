@@ -514,7 +514,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
         [HttpPost("ForgotPassword/Pin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string? pin)
+        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody, Required] string pin)
         {
             var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
             return result;
