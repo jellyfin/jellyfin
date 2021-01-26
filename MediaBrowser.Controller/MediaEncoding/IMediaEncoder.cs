@@ -51,6 +51,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool SupportsHwaccel(string hwaccel);
 
         /// <summary>
+        /// Whether given filter is supported.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <param name="option">The option.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool SupportsFilter(string filter, string option);
+
+        /// <summary>
         /// Extracts the audio image.
         /// </summary>
         /// <param name="path">The path.</param>
