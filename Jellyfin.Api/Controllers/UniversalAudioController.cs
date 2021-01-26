@@ -278,7 +278,7 @@ namespace Jellyfin.Api.Controllers
             var directPlayProfiles = new DirectPlayProfile[len];
             for (int i = 0; i < len; i++)
             {
-                var parts = RequestHelpers.Split(containers[i], '|', true);
+                var parts = containers[i].Split('|', StringSplitOptions.RemoveEmptyEntries);
 
                 var audioCodecs = parts.Length == 1 ? null : string.Join(',', parts.Skip(1));
 
@@ -312,25 +312,52 @@ namespace Jellyfin.Api.Controllers
             if (maxAudioSampleRate.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioSampleRate, Value = maxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition
+                    {
+                        Condition = ProfileConditionType.LessThanEqual,
+                        IsRequired = false,
+                        Property = ProfileConditionValue.AudioSampleRate,
+                        Value = maxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture)
+                    });
             }
 
             if (maxAudioBitDepth.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioBitDepth, Value = maxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition
+                    {
+                        Condition = ProfileConditionType.LessThanEqual,
+                        IsRequired = false,
+                        Property = ProfileConditionValue.AudioBitDepth,
+                        Value = maxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture)
+                    });
             }
 
             if (maxAudioChannels.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioChannels, Value = maxAudioChannels.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition
+                    {
+                        Condition = ProfileConditionType.LessThanEqual,
+                        IsRequired = false,
+                        Property = ProfileConditionValue.AudioChannels,
+                        Value = maxAudioChannels.Value.ToString(CultureInfo.InvariantCulture)
+                    });
             }
 
             if (conditions.Count > 0)
             {
                 // codec profile
-                codecProfiles.Add(new CodecProfile { Type = CodecType.Audio, Container = string.Join(',', containers), Conditions = conditions.ToArray() });
+                codecProfiles.Add(
+                    new CodecProfile
+                    {
+                        Type = CodecType.Audio,
+                        Container = string.Join(',', containers),
+                        Conditions = conditions.ToArray()
+                    });
             }
 
             deviceProfile.CodecProfiles = codecProfiles.ToArray();
