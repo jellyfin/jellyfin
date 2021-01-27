@@ -159,6 +159,20 @@ namespace Emby.Server.Implementations.Plugins
                         j++;
                         continue;
                     }
+                    catch (TypeLoadException ex) // Undocumented exception
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.NotSupported);
+                        continue;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        continue;
+                    }
 
                     _logger.LogInformation("Loaded assembly {Assembly} from {Path}", assembly.FullName, file);
                     yield return assembly;
@@ -474,9 +488,9 @@ namespace Emby.Server.Implementations.Plugins
                         // If a plugin without a manifest failed to load due to an external issue (eg config), or it's a built in plugin
                         // this updates the manifest to the actual plugin values.
                         manifest.Version = pluginStr;
-                        manifest.Name = instance.Name;
-                        manifest.Description = instance.Description;
-                        manifest.Id = instance.Id;
+                        manifest.Name = plugin.Instance.Name;
+                        manifest.Description = plugin.Instance.Description;
+                        manifest.Id = plugin.Instance.Id;
                         changed = true;
                     }
 

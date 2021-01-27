@@ -208,6 +208,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "showtitle":
+                    {
+                        var showtitle = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(showtitle))
+                        {
+                            item.SeriesName = showtitle;
+                        }
+
+                        break;
+                    }
+
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;

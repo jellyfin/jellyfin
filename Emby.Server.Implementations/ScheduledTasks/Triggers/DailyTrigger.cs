@@ -50,7 +50,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             var dueTime = triggerDate - now;
 
-            logger.LogInformation("Daily trigger for {Task} set to fire at {TriggerDate:g}, which is {DueTime:g} from now.", taskName, triggerDate, dueTime);
+            logger.LogInformation("Daily trigger for {Task} set to fire at {TriggerDate:yyyy-MM-dd HH:mm:ss.fff zzz}, which is {DueTime:c} from now.", taskName, triggerDate, dueTime);
 
             Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }

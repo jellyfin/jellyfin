@@ -143,10 +143,31 @@ namespace Emby.Server.Implementations.TV
             var allNextUp = seriesKeys
                 .Select(i => GetNextUp(i, currentUser, dtoOptions));
 
+            // If viewing all next up for all series, remove first episodes
+            // But if that returns empty, keep those first episodes (avoid completely empty view)
+            var alwaysEnableFirstEpisode = !string.IsNullOrEmpty(request.SeriesId);
+            var anyFound = false;
+
             return allNextUp
                 .Where(i =>
                 {
-                    return i.Item1 != DateTime.MinValue;
+                    if (request.DisableFirstEpisode)
+                    {
+                        return i.Item1 != DateTime.MinValue;
+                    }
+
+                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    {
+                        anyFound = true;
+                        return true;
+                    }
+
+                    if (!anyFound && i.Item1 == DateTime.MinValue)
+                    {
+                        return true;
+                    }
+
+                    return false;
                 })
                 .Select(i => i.Item2())
                 .Where(i => i != null);

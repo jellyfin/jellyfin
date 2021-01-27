@@ -83,6 +83,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <remarks>
         /// For backwards compatibility parameters can be sent via Query or Body, with Query having higher precedence.
+        /// Query parameters are obsolete.
         /// </remarks>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
@@ -106,20 +107,20 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
             [FromRoute, Required] Guid itemId,
-            [FromQuery] Guid? userId,
-            [FromQuery] int? maxStreamingBitrate,
-            [FromQuery] long? startTimeTicks,
-            [FromQuery] int? audioStreamIndex,
-            [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] int? maxAudioChannels,
-            [FromQuery] string? mediaSourceId,
-            [FromQuery] string? liveStreamId,
-            [FromQuery] bool? autoOpenLiveStream,
-            [FromQuery] bool? enableDirectPlay,
-            [FromQuery] bool? enableDirectStream,
-            [FromQuery] bool? enableTranscoding,
-            [FromQuery] bool? allowVideoStreamCopy,
-            [FromQuery] bool? allowAudioStreamCopy,
+            [FromQuery, ParameterObsolete] Guid? userId,
+            [FromQuery, ParameterObsolete] int? maxStreamingBitrate,
+            [FromQuery, ParameterObsolete] long? startTimeTicks,
+            [FromQuery, ParameterObsolete] int? audioStreamIndex,
+            [FromQuery, ParameterObsolete] int? subtitleStreamIndex,
+            [FromQuery, ParameterObsolete] int? maxAudioChannels,
+            [FromQuery, ParameterObsolete] string? mediaSourceId,
+            [FromQuery, ParameterObsolete] string? liveStreamId,
+            [FromQuery, ParameterObsolete] bool? autoOpenLiveStream,
+            [FromQuery, ParameterObsolete] bool? enableDirectPlay,
+            [FromQuery, ParameterObsolete] bool? enableDirectStream,
+            [FromQuery, ParameterObsolete] bool? enableTranscoding,
+            [FromQuery, ParameterObsolete] bool? allowVideoStreamCopy,
+            [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);

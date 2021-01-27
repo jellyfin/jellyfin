@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions());
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
-            _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStructConverter<int>());
+            _jsonOptions.Converters.Add(new JsonOmdbNotAvailableInt32Converter());
         }
 
         public string Name => "The Open Movie Database";

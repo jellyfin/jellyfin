@@ -39,15 +39,27 @@ namespace Jellyfin.Common.Tests.Json
         }
 
         [Fact]
-        public void Deserialize_Null_EmptyGuid()
+        public void Deserialize_Null_Null()
         {
             Assert.Null(JsonSerializer.Deserialize<Guid?>("null", _options));
         }
 
         [Fact]
-        public void Serialize_EmptyGuid_EmptyGuid()
+        public void Deserialize_EmptyGuid_EmptyGuid()
+        {
+            Assert.Equal(Guid.Empty, JsonSerializer.Deserialize<Guid?>(@"""00000000-0000-0000-0000-000000000000""", _options));
+        }
+
+        [Fact]
+        public void Serialize_EmptyGuid_Null()
         {
             Assert.Equal("null", JsonSerializer.Serialize((Guid?)Guid.Empty, _options));
+        }
+
+        [Fact]
+        public void Serialize_Null_Null()
+        {
+            Assert.Equal("null", JsonSerializer.Serialize((Guid?)null, _options));
         }
 
         [Fact]

@@ -158,7 +158,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)
+        public ActionResult SetRepositories([FromBody, Required] List<RepositoryInfo> repositoryInfos)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
             _serverConfigurationManager.SaveConfiguration();

@@ -177,7 +177,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    using FileStream createStream = File.OpenWrite(path);
+                    using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
                     JsonSerializer.SerializeAsync(createStream, value, _jsonOptions);
                 }
             }
@@ -577,9 +577,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var path = GetConfigurationFilePath();
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var json = JsonSerializer.Serialize(triggers, _jsonOptions);
-            File.WriteAllText(path, json, Encoding.UTF8);
+            using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            JsonSerializer.SerializeAsync(createStream, triggers, _jsonOptions);
         }
 
         /// <summary>

@@ -582,7 +582,26 @@ namespace Emby.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
-                    baseItemPerson.ImageBlurHashes = dto.ImageBlurHashes;
+                    if (dto.ImageBlurHashes != null)
+                    {
+                        // Only add BlurHash for the person's image.
+                        baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+                        foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
+                        {
+                            if (blurHash != null)
+                            {
+                                baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
+                                foreach (var (imageId, blurHashValue) in blurHash)
+                                {
+                                    if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        baseItemPerson.ImageBlurHashes[imageType][imageId] = blurHashValue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     list.Add(baseItemPerson);
                 }
             }
@@ -1138,7 +1157,7 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
-                        if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, episodeSeries);
                         }
@@ -1188,7 +1207,7 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
-                        if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, series);
                         }
