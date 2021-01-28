@@ -3,6 +3,7 @@ using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 
 namespace Jellyfin.Server.Extensions
@@ -17,10 +18,12 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="applicationBuilder">The application builder.</param>
         /// <param name="serverConfigurationManager">The server configuration.</param>
+        /// <param name="apiVersionDescriptionProvider">The API version description provider.</param>
         /// <returns>The updated application builder.</returns>
         public static IApplicationBuilder UseJellyfinApiSwagger(
             this IApplicationBuilder applicationBuilder,
-            IServerConfigurationManager serverConfigurationManager)
+            IServerConfigurationManager serverConfigurationManager,
+            IApiVersionDescriptionProvider apiVersionDescriptionProvider)
         {
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
             // specifying the Swagger JSON endpoint.
@@ -32,30 +35,38 @@ namespace Jellyfin.Server.Extensions
                 baseUrl += '/';
             }
 
-            return applicationBuilder
-                .UseSwagger(c =>
+            applicationBuilder.UseSwagger(c =>
+            {
+                // Custom path requires {documentName}, SwaggerDoc documentName is api version like 'v1' or 'v2'
+                c.RouteTemplate = "api-docs/{documentName}/openapi.json";
+                c.PreSerializeFilters.Add((swagger, httpReq) =>
                 {
-                    // Custom path requires {documentName}, SwaggerDoc documentName is 'api-docs'
-                    c.RouteTemplate = "{documentName}/openapi.json";
-                    c.PreSerializeFilters.Add((swagger, httpReq) =>
-                    {
-                        swagger.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{apiDocBaseUrl}" } };
-                    });
-                })
+                    swagger.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{apiDocBaseUrl}" } };
+                });
+            });
+
+            applicationBuilder
                 .UseSwaggerUI(c =>
                 {
                     c.DocumentTitle = "Jellyfin API";
-                    c.SwaggerEndpoint($"/{baseUrl}api-docs/openapi.json", "Jellyfin API");
+                    foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+                    {
+                        c.SwaggerEndpoint($"/{baseUrl}api-docs/{description.GroupName}/openapi.json", $"Jellyfin API {description.GroupName}");
+                    }
+
                     c.InjectStylesheet($"/{baseUrl}api-docs/swagger/custom.css");
                     c.RoutePrefix = "api-docs/swagger";
                 })
                 .UseReDoc(c =>
                 {
                     c.DocumentTitle = "Jellyfin API";
-                    c.SpecUrl($"/{baseUrl}api-docs/openapi.json");
+                    // ReDoc only supports one version
+                    c.SpecUrl($"/{baseUrl}api-docs/v1/openapi.json");
                     c.InjectStylesheet($"/{baseUrl}api-docs/redoc/custom.css");
                     c.RoutePrefix = "api-docs/redoc";
                 });
+
+            return applicationBuilder;
         }
 
         /// <summary>

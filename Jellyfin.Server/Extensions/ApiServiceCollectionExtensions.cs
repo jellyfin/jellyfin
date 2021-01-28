@@ -33,6 +33,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -205,6 +207,20 @@ namespace Jellyfin.Server.Extensions
                         options.ForwardLimit = null;
                     }
                 })
+                .AddApiVersioning(
+                o =>
+                {
+                    o.AssumeDefaultVersionWhenUnspecified = true;
+                    // Set all existing controllers to version 1
+                    o.DefaultApiVersion = new ApiVersion(1, 0);
+                })
+                .AddVersionedApiExplorer(options =>
+                {
+                    // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
+                    // the specified format code will format the version as "'v'major[.minor][-status]"
+                    options.GroupNameFormat = "'v'VVV";
+                    options.SubstituteApiVersionInUrl = true;
+                })
                 .AddMvc(opts =>
                 {
                     // Allow requester to change between camelCase and PascalCase
@@ -261,18 +277,24 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("api-docs", new OpenApiInfo
+                var provider = serviceCollection.BuildServiceProvider().GetRequiredService<IApiVersionDescriptionProvider>();
+
+                // Add a swagger document for each discovered API version
+                foreach (var description in provider.ApiVersionDescriptions)
                 {
-                    Title = "Jellyfin API",
-                    Version = "v1",
-                    Extensions = new Dictionary<string, IOpenApiExtension>
+                    c.SwaggerDoc($"{description.GroupName}", new OpenApiInfo()
                     {
+                        Title = $"Jellyfin API",
+                        Version = description.ApiVersion.ToString(),
+                        Extensions = new Dictionary<string, IOpenApiExtension>
                         {
-                            "x-jellyfin-version",
-                            new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                            {
+                                "x-jellyfin-version",
+                                new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
                 c.AddSecurityDefinition(AuthenticationSchemes.CustomAuthentication, new OpenApiSecurityScheme
                 {

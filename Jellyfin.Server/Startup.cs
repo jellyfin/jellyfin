@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,10 +97,12 @@ namespace Jellyfin.Server
         /// <param name="app">The application builder.</param>
         /// <param name="env">The webhost environment.</param>
         /// <param name="appConfig">The application config.</param>
+        /// <param name="apiVersionDescriptionProvider">The API version description provider.</param>
         public void Configure(
             IApplicationBuilder app,
             IWebHostEnvironment env,
-            IConfiguration appConfig)
+            IConfiguration appConfig,
+            IApiVersionDescriptionProvider apiVersionDescriptionProvider)
         {
             app.UseBaseUrlRedirection();
 
@@ -149,7 +152,7 @@ namespace Jellyfin.Server
                 }
 
                 mainApp.UseAuthentication();
-                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseJellyfinApiSwagger(_serverConfigurationManager, apiVersionDescriptionProvider);
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
 
