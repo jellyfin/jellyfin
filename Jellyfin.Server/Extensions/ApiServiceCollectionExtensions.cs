@@ -282,7 +282,7 @@ namespace Jellyfin.Server.Extensions
                 // Add a swagger document for each discovered API version
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
-                    c.SwaggerDoc($"{description.GroupName}", new OpenApiInfo()
+                    c.SwaggerDoc(description.GroupName, new OpenApiInfo()
                     {
                         Title = $"Jellyfin API",
                         Version = description.ApiVersion.ToString(),
