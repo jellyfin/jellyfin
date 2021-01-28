@@ -284,7 +284,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     c.SwaggerDoc(description.GroupName, new OpenApiInfo()
                     {
-                        Title = $"Jellyfin API",
+                        Title = "Jellyfin API",
                         Version = description.ApiVersion.ToString(),
                         Extensions = new Dictionary<string, IOpenApiExtension>
                         {
