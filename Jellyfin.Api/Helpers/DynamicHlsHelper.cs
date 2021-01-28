@@ -427,7 +427,7 @@ namespace Jellyfin.Api.Helpers
             if (framerate.HasValue)
             {
                 builder.Append(",FRAME-RATE=")
-                    .Append(framerate.Value);
+                    .Append(framerate.Value.ToString(CultureInfo.InvariantCulture));
             }
         }
 
