@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Session
             var session = GetSession(connection.QueryString, connection.RemoteEndPoint.ToString());
             if (session != null)
             {
-                EnsureController(session, connection);
+                await EnsureController(session, connection);
                 await KeepAliveWebSocket(connection).ConfigureAwait(false);
             }
             else
@@ -126,7 +126,7 @@ namespace Emby.Server.Implementations.Session
             return _sessionManager.GetSessionByAuthenticationToken(token, deviceId, remoteEndpoint);
         }
 
-        private void EnsureController(SessionInfo session, IWebSocketConnection connection)
+        private async Task EnsureController(SessionInfo session, IWebSocketConnection connection)
         {
             var controllerInfo = session.EnsureController<WebSocketController>(
                 s => new WebSocketController(_loggerFactory.CreateLogger<WebSocketController>(), s, _sessionManager));
@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.Session
             var controller = (WebSocketController)controllerInfo.Item1;
             controller.AddWebSocket(connection);
 
-            _sessionManager.OnSessionControllerConnected(session);
+            await _sessionManager.OnSessionControllerConnected(session);
         }
 
         /// <summary>

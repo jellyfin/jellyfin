@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Authentication;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
@@ -18,43 +17,6 @@ namespace MediaBrowser.Controller.Session
     /// </summary>
     public interface ISessionManager
     {
-        /// <summary>
-        /// Occurs when [playback start].
-        /// </summary>
-        event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
-
-        /// <summary>
-        /// Occurs when [playback progress].
-        /// </summary>
-        event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
-
-        /// <summary>
-        /// Occurs when [playback stopped].
-        /// </summary>
-        event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
-
-        /// <summary>
-        /// Occurs when [session started].
-        /// </summary>
-        event EventHandler<SessionEventArgs> SessionStarted;
-
-        /// <summary>
-        /// Occurs when [session ended].
-        /// </summary>
-        event EventHandler<SessionEventArgs> SessionEnded;
-
-        event EventHandler<SessionEventArgs> SessionActivity;
-
-        /// <summary>
-        /// Occurs when [session controller connected].
-        /// </summary>
-        event EventHandler<SessionEventArgs> SessionControllerConnected;
-
-        /// <summary>
-        /// Occurs when [capabilities changed].
-        /// </summary>
-        event EventHandler<SessionEventArgs> CapabilitiesChanged;
-
         /// <summary>
         /// Gets the sessions.
         /// </summary>
@@ -76,7 +38,8 @@ namespace MediaBrowser.Controller.Session
         /// Used to report that a session controller has connected.
         /// </summary>
         /// <param name="session">The session.</param>
-        void OnSessionControllerConnected(SessionInfo session);
+        /// <returns>A <see cref="Task"/> representing the handling of the connected controller.</returns>
+        Task OnSessionControllerConnected(SessionInfo session);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 

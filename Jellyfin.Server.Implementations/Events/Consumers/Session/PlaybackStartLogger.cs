@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dto;
@@ -10,13 +9,14 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 {
     /// <summary>
     /// Creates an entry in the activity log whenever a user starts playback.
     /// </summary>
-    public class PlaybackStartLogger : IEventConsumer<PlaybackStartEventArgs>
+    public class PlaybackStartLogger : IHandleMessages<PlaybackStartEventArgs>
     {
         private readonly ILogger<PlaybackStartLogger> _logger;
         private readonly ILocalizationManager _localizationManager;
@@ -36,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PlaybackStartEventArgs eventArgs)
+        public async Task Handle(PlaybackStartEventArgs eventArgs)
         {
             if (eventArgs.MediaInfo == null)
             {

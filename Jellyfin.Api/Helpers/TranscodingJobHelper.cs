@@ -24,13 +24,14 @@ using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Api.Helpers
 {
     /// <summary>
     /// Transcoding job helpers.
     /// </summary>
-    public class TranscodingJobHelper : IDisposable
+    public class TranscodingJobHelper : IDisposable, IHandleMessages<PlaybackStartEventArgs>, IHandleMessages<PlaybackProgressEventArgs>
     {
         /// <summary>
         /// The active transcoding jobs.
@@ -88,9 +89,6 @@ namespace Jellyfin.Api.Helpers
             _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
 
             DeleteEncodedMediaCache();
-
-            sessionManager!.PlaybackProgress += OnPlaybackProgress;
-            sessionManager!.PlaybackStart += OnPlaybackProgress;
         }
 
         /// <summary>
@@ -154,6 +152,28 @@ namespace Jellyfin.Api.Helpers
 
                 PingTimer(job, true);
             }
+        }
+
+        /// <inheritdoc />
+        public Task Handle(PlaybackStartEventArgs eventArgs)
+        {
+            if (!string.IsNullOrWhiteSpace(eventArgs.PlaySessionId))
+            {
+                PingTranscodingJob(eventArgs.PlaySessionId, eventArgs.IsPaused);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public Task Handle(PlaybackProgressEventArgs eventArgs)
+        {
+            if (!string.IsNullOrWhiteSpace(eventArgs.PlaySessionId))
+            {
+                PingTranscodingJob(eventArgs.PlaySessionId, eventArgs.IsPaused);
+            }
+
+            return Task.CompletedTask;
         }
 
         private void PingTimer(TranscodingJobDto job, bool isProgressCheckIn)
@@ -831,14 +851,6 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private void OnPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(e.PlaySessionId))
-            {
-                PingTranscodingJob(e.PlaySessionId, e.IsPaused);
-            }
-        }
-
         /// <summary>
         /// Deletes the encoded media cache.
         /// </summary>
@@ -874,8 +886,6 @@ namespace Jellyfin.Api.Helpers
             if (disposing)
             {
                 _loggerFactory.Dispose();
-                _sessionManager!.PlaybackProgress -= OnPlaybackProgress;
-                _sessionManager!.PlaybackStart -= OnPlaybackProgress;
             }
         }
     }

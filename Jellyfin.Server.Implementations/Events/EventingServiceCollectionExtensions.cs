@@ -1,14 +1,12 @@
-﻿using Jellyfin.Data.Events.System;
-using Jellyfin.Server.Implementations.Events.Consumers.Security;
-using Jellyfin.Server.Implementations.Events.Consumers.Session;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using Jellyfin.Data.Events.System;
 using Jellyfin.Server.Implementations.Events.Consumers.System;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Security;
-using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Events.Updates;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,9 +27,13 @@ namespace Jellyfin.Server.Implementations.Events
         /// </summary>
         /// <param name="collection">The service collection.</param>
         /// <param name="loggerFactory">The logger factory.</param>
-        public static void AddEventServices(this IServiceCollection collection, ILoggerFactory loggerFactory)
+        /// <param name="assemblies">An enumerable containing the assemblies to register handlers from.</param>
+        public static void AddEventServices(this IServiceCollection collection, ILoggerFactory loggerFactory, IEnumerable<Assembly> assemblies)
         {
-            collection.AutoRegisterHandlersFromAssembly(typeof(AuthenticationSucceededLogger).Assembly);
+            foreach (var assembly in assemblies)
+            {
+                collection.AutoRegisterHandlersFromAssembly(assembly);
+            }
 
             collection.AddRebus(configure => configure
                 .Logging(l => l.MicrosoftExtensionsLogging(loggerFactory))
@@ -39,12 +41,6 @@ namespace Jellyfin.Server.Implementations.Events
                 .Routing(r => r.TypeBased()
                     .MapAssemblyOf<AuthenticationSucceededEventArgs>("Events")
                     .MapFallback("Events")));
-
-            // Session consumers
-            collection.AddScoped<IEventConsumer<PlaybackStartEventArgs>, PlaybackStartLogger>();
-            collection.AddScoped<IEventConsumer<PlaybackStopEventArgs>, PlaybackStopLogger>();
-            collection.AddScoped<IEventConsumer<SessionEndedEventArgs>, SessionEndedLogger>();
-            collection.AddScoped<IEventConsumer<SessionStartedEventArgs>, SessionStartedLogger>();
 
             // System consumers
             collection.AddScoped<IEventConsumer<PendingRestartEventArgs>, PendingRestartNotifier>();

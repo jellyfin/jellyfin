@@ -1,17 +1,17 @@
 ﻿using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 {
     /// <summary>
     /// Creates an entry in the activity log whenever a session ends.
     /// </summary>
-    public class SessionEndedLogger : IEventConsumer<SessionEndedEventArgs>
+    public class SessionEndedLogger : IHandleMessages<SessionEndedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(SessionEndedEventArgs eventArgs)
+        public async Task Handle(SessionEndedEventArgs eventArgs)
         {
             if (string.IsNullOrEmpty(eventArgs.Argument.UserName))
             {
