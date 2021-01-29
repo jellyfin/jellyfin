@@ -207,8 +207,7 @@ namespace Jellyfin.Server.Extensions
                         options.ForwardLimit = null;
                     }
                 })
-                .AddApiVersioning(
-                o =>
+                .AddApiVersioning(o =>
                 {
                     o.AssumeDefaultVersionWhenUnspecified = true;
                     // Set all existing controllers to version 1
