@@ -125,7 +125,7 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file.</returns>
         public bool IsVideoFile(string path)
         {
-            var extension = Path.GetExtension(path) ?? string.Empty;
+            var extension = Path.GetExtension(path);
             return _options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -136,7 +136,7 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file stub.</returns>
         public bool IsStubFile(string path)
         {
-            var extension = Path.GetExtension(path) ?? string.Empty;
+            var extension = Path.GetExtension(path);
             return _options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 

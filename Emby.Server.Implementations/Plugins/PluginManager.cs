@@ -112,13 +112,25 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         assembly = Assembly.LoadFrom(file);
 
-                        // This force loads all reference dll's that the plugin uses in the try..catch block.
-                        // Removing this will cause JF to bomb out if referenced dll's cause issues.
                         assembly.GetExportedTypes();
                     }
                     catch (FileLoadException ex)
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        continue;
+                    }
+                    catch (TypeLoadException ex) // Undocumented exception
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.NotSupported);
+                        continue;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
@@ -374,7 +386,7 @@ namespace Emby.Server.Implementations.Plugins
         private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(assembly.Location), StringComparison.Ordinal));
+            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location, StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -421,15 +433,17 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     plugin.Instance = instance;
                     var manifest = plugin.Manifest;
-                    var pluginStr = plugin.Instance.Version.ToString();
+                    var pluginStr = instance.Version.ToString();
                     bool changed = false;
-                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal))
+                    if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal)
+                        || manifest.Id != instance.Id)
                     {
                         // If a plugin without a manifest failed to load due to an external issue (eg config),
                         // this updates the manifest to the actual plugin values.
                         manifest.Version = pluginStr;
                         manifest.Name = plugin.Instance.Name;
                         manifest.Description = plugin.Instance.Description;
+                        manifest.Id = plugin.Instance.Id;
                         changed = true;
                     }
 
@@ -559,7 +573,7 @@ namespace Emby.Server.Implementations.Plugins
             // Auto-create a plugin manifest, so we can disable it, if it fails to load.
             manifest = new PluginManifest
             {
-                Status = PluginStatus.Restart,
+                Status = PluginStatus.Active,
                 Name = metafile,
                 AutoUpdate = false,
                 Id = metafile.GetMD5(),

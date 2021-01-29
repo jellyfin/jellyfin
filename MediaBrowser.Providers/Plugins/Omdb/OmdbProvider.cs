@@ -272,6 +272,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     return path;
                 }
             }
+            else
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
 
             var url = GetOmdbUrl(
                 string.Format(
@@ -280,8 +284,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            await using FileStream jsonFileStream = File.OpenWrite(path);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
@@ -308,6 +311,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     return path;
                 }
             }
+            else
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
 
             var url = GetOmdbUrl(
                 string.Format(
@@ -317,8 +324,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            await using FileStream jsonFileStream = File.OpenWrite(path);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
