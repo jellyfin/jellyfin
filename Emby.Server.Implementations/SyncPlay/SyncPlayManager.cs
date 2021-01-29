@@ -70,8 +70,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// </remarks>
         private readonly object _groupsLock = new object();
 
-        private bool _disposed = false;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncPlayManager" /> class.
         /// </summary>
