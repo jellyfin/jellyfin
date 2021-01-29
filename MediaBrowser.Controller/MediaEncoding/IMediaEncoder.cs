@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <param name="filter">The filter.</param>
         /// <param name="option">The option.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if the filter is supported, <c>false</c> otherwise.</returns>
         bool SupportsFilter(string filter, string option);
 
         /// <summary>
