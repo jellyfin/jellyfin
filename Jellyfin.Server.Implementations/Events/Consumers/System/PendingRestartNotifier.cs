@@ -1,15 +1,15 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events.System;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.System
 {
     /// <summary>
     /// Notifies users when there is a pending restart.
     /// </summary>
-    public class PendingRestartNotifier : IEventConsumer<PendingRestartEventArgs>
+    public class PendingRestartNotifier : IHandleMessages<PendingRestartEventArgs>
     {
         private readonly ISessionManager _sessionManager;
 
@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PendingRestartEventArgs eventArgs)
+        public async Task Handle(PendingRestartEventArgs eventArgs)
         {
             await _sessionManager.SendRestartRequiredNotification(CancellationToken.None).ConfigureAwait(false);
         }

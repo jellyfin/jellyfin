@@ -28,8 +28,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSDP", "RSSDP\RSSDP.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Dlna", "Emby.Dlna\Emby.Dlna.csproj", "{805844AB-E92F-45E6-9D99-4F6D48D129A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Notifications", "Emby.Notifications\Emby.Notifications.csproj", "{2E030C33-6923-4530-9E54-FA29FA6AD1A9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Naming", "Emby.Naming\Emby.Naming.csproj", "{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaBrowser.MediaEncoding", "MediaBrowser.MediaEncoding\MediaBrowser.MediaEncoding.csproj", "{960295EE-4AF4-4440-A525-B4C295B01A61}"
@@ -132,10 +130,6 @@ Global
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2E030C33-6923-4530-9E54-FA29FA6AD1A9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5AF7B26-2239-4CE0-B477-0AA2018EDAA2}.Release|Any CPU.ActiveCfg = Release|Any CPU

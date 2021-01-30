@@ -43,7 +43,6 @@ namespace Jellyfin.Server.Implementations.Events
                     .MapFallback("Events")));
 
             // System consumers
-            collection.AddScoped<IEventConsumer<PendingRestartEventArgs>, PendingRestartNotifier>();
             collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedLogger>();
             collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedNotifier>();
 

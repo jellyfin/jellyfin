@@ -18,11 +18,6 @@ namespace MediaBrowser.Common
     public interface IApplicationHost
     {
         /// <summary>
-        /// Occurs when [has pending restart changed].
-        /// </summary>
-        event EventHandler HasPendingRestartChanged;
-
-        /// <summary>
         /// Gets the name.
         /// </summary>
         /// <value>The name.</value>

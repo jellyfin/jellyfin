@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.NotificationDtos;
-using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Notifications;
 using Microsoft.AspNetCore.Authorization;
@@ -19,22 +14,9 @@ namespace Jellyfin.Api.Controllers
     /// The notification controller.
     /// </summary>
     [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Obsolete("Notifications are deprecated. Plugins should use the event system instead.")]
     public class NotificationsController : BaseJellyfinApiController
     {
-        private readonly INotificationManager _notificationManager;
-        private readonly IUserManager _userManager;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NotificationsController" /> class.
-        /// </summary>
-        /// <param name="notificationManager">The notification manager.</param>
-        /// <param name="userManager">The user manager.</param>
-        public NotificationsController(INotificationManager notificationManager, IUserManager userManager)
-        {
-            _notificationManager = notificationManager;
-            _userManager = userManager;
-        }
-
         /// <summary>
         /// Gets a user's notifications.
         /// </summary>
@@ -68,7 +50,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<NotificationTypeInfo> GetNotificationTypes()
         {
-            return _notificationManager.GetNotificationTypes();
+            return Array.Empty<NotificationTypeInfo>();
         }
 
         /// <summary>
@@ -80,41 +62,18 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<NameIdPair> GetNotificationServices()
         {
-            return _notificationManager.GetNotificationServices();
+            return Array.Empty<NameIdPair>();
         }
 
         /// <summary>
         /// Sends a notification to all admins.
         /// </summary>
-        /// <param name="url">The URL of the notification.</param>
-        /// <param name="level">The level of the notification.</param>
-        /// <param name="name">The name of the notification.</param>
-        /// <param name="description">The description of the notification.</param>
         /// <response code="204">Notification sent.</response>
         /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CreateAdminNotification(
-            [FromQuery] string? url,
-            [FromQuery] NotificationLevel? level,
-            [FromQuery] string name = "",
-            [FromQuery] string description = "")
+        public ActionResult CreateAdminNotification()
         {
-            var notification = new NotificationRequest
-            {
-                Name = name,
-                Description = description,
-                Url = url,
-                Level = level ?? NotificationLevel.Normal,
-                UserIds = _userManager.Users
-                    .Where(user => user.HasPermission(PermissionKind.IsAdministrator))
-                    .Select(user => user.Id)
-                    .ToArray(),
-                Date = DateTime.UtcNow,
-            };
-
-            _notificationManager.SendNotification(notification, CancellationToken.None);
-
             return NoContent();
         }
 
