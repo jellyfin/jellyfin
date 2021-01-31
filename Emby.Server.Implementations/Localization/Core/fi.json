@@ -39,7 +39,7 @@
     "Channels": "Kanavat",
     "CameraImageUploadedFrom": "Uusi kamerakuva on ladattu {0}",
     "Books": "Kirjat",
-    "AuthenticationSucceededWithUserName": "{0} todennus onnistui",
+    "AuthenticationSucceededWithUserName": "Käyttäjän {0} todennus onnistui",
     "Artists": "Artistit",
     "Application": "Sovellus",
     "AppDeviceValues": "Sovellus: {0}, Laite: {1}",
