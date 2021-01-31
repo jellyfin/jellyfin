@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} - воспроизведение «{1}» на {2}",
     "UserStoppedPlayingItemWithValues": "{0} - воспроизведение остановлено «{1}» на {2}",
     "ValueHasBeenAddedToLibrary": "{0} (добавлено в медиатеку)",
-    "ValueSpecialEpisodeName": "Специальный эпизод - {0}",
+    "ValueSpecialEpisodeName": "Спецэпизод - {0}",
     "VersionNumber": "Версия {0}",
     "TaskDownloadMissingSubtitles": "Загрузка отсутствующих субтитров",
     "TaskRefreshChannels": "Обновление каналов",
