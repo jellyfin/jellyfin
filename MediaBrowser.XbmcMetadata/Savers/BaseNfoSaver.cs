@@ -202,10 +202,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            // On Windows, savint the file will fail if the file is hidden or readonly
+            // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 stream.CopyTo(filestream);
             }
