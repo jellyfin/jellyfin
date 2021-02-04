@@ -57,7 +57,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     subEvent.Text = subEvent.Text.Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
 
-                    subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w[0-9]]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
+                    subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w0-9]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
 
                     trackEvents.Add(subEvent);
                 }
