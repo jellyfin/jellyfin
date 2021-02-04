@@ -1030,6 +1030,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 break;
                             }
 
+                        case "type":
+                            {
+                                var val = reader.ReadElementContentAsString();
+
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    type = val switch
+                                    {
+                                        PersonType.Composer => PersonType.Composer,
+                                        PersonType.Conductor => PersonType.Conductor,
+                                        PersonType.Director => PersonType.Director,
+                                        PersonType.Lyricist => PersonType.Lyricist,
+                                        PersonType.Producer => PersonType.Producer,
+                                        PersonType.Writer => PersonType.Writer,
+                                        PersonType.GuestStar => PersonType.GuestStar,
+                                        // unknown type --> actor
+                                        _ => PersonType.Actor
+                                    };
+                                }
+
+                                break;
+                            }
+
                         case "order":
                         case "sortorder":
                             {

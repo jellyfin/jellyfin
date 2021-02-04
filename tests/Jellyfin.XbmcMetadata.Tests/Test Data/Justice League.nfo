@@ -221,6 +221,11 @@
         <order>14</order>
         <thumb>https://m.media-amazon.com/images/M/MV5BOTFjOTFhNTgtZjk3Ny00MTNjLWE3MWUtMWI3ZWM5NDljZjQwXkEyXkFqcGdeQXVyMjQwMDg0Ng@@._V1_SX1024_SY1024_.jpg</thumb>
     </actor>
+    <actor>
+        <name>Test Lyricist</name>
+        <type>Lyricist</type>
+        <order>15</order>
+    </actor>
     <resume>
         <position>0.000000</position>
         <total>0.000000</total>
