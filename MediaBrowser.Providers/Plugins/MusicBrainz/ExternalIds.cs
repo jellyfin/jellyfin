@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzReleaseGroup.ToString();
+        public string Key => nameof(MetadataProvider.MusicBrainzReleaseGroup);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.ReleaseGroup;
@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzAlbumArtist.ToString();
+        public string Key => nameof(MetadataProvider.MusicBrainzAlbumArtist);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.AlbumArtist;
@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzAlbum.ToString();
+        public string Key => nameof(MetadataProvider.MusicBrainzAlbum);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzArtist.ToString();
+        public string Key => nameof(MetadataProvider.MusicBrainzArtist);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Artist;
@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Music
 
         /// <inheritdoc />
 
-        public string Key => MetadataProvider.MusicBrainzArtist.ToString();
+        public string Key => nameof(MetadataProvider.MusicBrainzArtist);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Music
         public string ProviderName => "MusicBrainz";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.MusicBrainzTrack.ToString();
+        public string Key => nameof(MetadataProvider.MusicBrainzTrack);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Track;

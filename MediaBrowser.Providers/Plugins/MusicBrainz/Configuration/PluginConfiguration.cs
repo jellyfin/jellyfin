@@ -12,15 +12,8 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
         public string Server
         {
-            get
-            {
-                return _server;
-            }
-
-            set
-            {
-                _server = value.TrimEnd('/');
-            }
+            get { return _server; }
+            set { _server = value?.TrimEnd('/'); }
         }
 
         public long RateLimit
