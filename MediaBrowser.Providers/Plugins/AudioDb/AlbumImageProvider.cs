@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -14,17 +15,16 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
-    public class AudioDbAlbumImageProvider : IRemoteImageProvider, IHasOrder
+    public class AlbumImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
+        public AlbumImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
@@ -54,58 +54,59 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrWhiteSpace(id))
             {
-                await AudioDbAlbumProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
+                await AlbumProvider.Current.EnsureInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = AudioDbAlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
+                var path = AlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
 
                 await using FileStream jsonStream = File.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                var obj = await JsonSerializer.DeserializeAsync<AlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken)
+                                              .ConfigureAwait(false);
 
-                if (obj != null && obj.album != null && obj.album.Count > 0)
+                if (obj?.Album?.Count > 0)
                 {
-                    return GetImages(obj.album[0]);
+                    return GetImages(obj.Album[0]);
                 }
             }
 
             return new List<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(AudioDbAlbumProvider.Album item)
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+            return httpClient.GetAsync(new Uri(url), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public bool Supports(BaseItem item)
+            => item is MusicAlbum;
+
+        private IEnumerable<RemoteImageInfo> GetImages(AlbumProvider.Album item)
         {
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(item.strAlbumThumb))
+            if (!string.IsNullOrWhiteSpace(item.StrAlbumThumb))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strAlbumThumb,
+                    Url = item.StrAlbumThumb,
                     Type = ImageType.Primary
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strAlbumCDart))
+            if (!string.IsNullOrWhiteSpace(item.StrAlbumCDart))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strAlbumCDart,
+                    Url = item.StrAlbumCDart,
                     Type = ImageType.Disc
                 });
             }
 
             return list;
         }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return httpClient.GetAsync(url, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public bool Supports(BaseItem item)
-            => item is MusicAlbum;
     }
 }

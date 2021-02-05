@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -14,17 +15,16 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
-    public class AudioDbArtistImageProvider : IRemoteImageProvider, IHasOrder
+    public class ArtistImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public AudioDbArtistImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
+        public ArtistImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _httpClientFactory = httpClientFactory;
@@ -56,97 +56,98 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             if (!string.IsNullOrWhiteSpace(id))
             {
-                await AudioDbArtistProvider.Current.EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
+                await ArtistProvider.Current.EnsureArtistInfo(id, cancellationToken).ConfigureAwait(false);
 
-                var path = AudioDbArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
+                var path = ArtistProvider.GetArtistInfoPath(_config.ApplicationPaths, id);
 
                 await using FileStream jsonStream = File.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<AudioDbArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                var obj = await JsonSerializer.DeserializeAsync<ArtistProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken)
+                                              .ConfigureAwait(false);
 
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                if (obj?.Artists?.Count > 0)
                 {
-                    return GetImages(obj.artists[0]);
+                    return GetImages(obj.Artists[0]);
                 }
             }
 
             return new List<RemoteImageInfo>();
         }
 
-        private IEnumerable<RemoteImageInfo> GetImages(AudioDbArtistProvider.Artist item)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+            return httpClient.GetAsync(new Uri(url), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public bool Supports(BaseItem item)
+            => item is MusicArtist;
+
+        private IEnumerable<RemoteImageInfo> GetImages(ArtistProvider.Artist item)
         {
             var list = new List<RemoteImageInfo>();
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistThumb))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistThumb))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistThumb,
+                    Url = item.StrArtistThumb,
                     Type = ImageType.Primary
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistLogo))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistLogo))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistLogo,
+                    Url = item.StrArtistLogo,
                     Type = ImageType.Logo
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistBanner))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistBanner))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistBanner,
+                    Url = item.StrArtistBanner,
                     Type = ImageType.Banner
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistFanart))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart,
+                    Url = item.StrArtistFanart,
                     Type = ImageType.Backdrop
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart2))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistFanart2))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart2,
+                    Url = item.StrArtistFanart2,
                     Type = ImageType.Backdrop
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(item.strArtistFanart3))
+            if (!string.IsNullOrWhiteSpace(item.StrArtistFanart3))
             {
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
-                    Url = item.strArtistFanart3,
+                    Url = item.StrArtistFanart3,
                     Type = ImageType.Backdrop
                 });
             }
 
             return list;
         }
-
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            return httpClient.GetAsync(url, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public bool Supports(BaseItem item)
-            => item is MusicArtist;
     }
 }

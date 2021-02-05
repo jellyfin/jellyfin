@@ -19,21 +19,18 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
-    public class AudioDbAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
+    public class AlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public static AudioDbAlbumProvider Current;
-
-        public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
+        public AlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -41,6 +38,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             Current = this;
         }
+
+        public static AlbumProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "TheAudioDB";
@@ -68,78 +67,28 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 await using FileStream jsonStream = File.OpenRead(path);
                 var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                if (obj != null && obj.album != null && obj.album.Count > 0)
+                if (obj?.Album?.Count > 0)
                 {
                     result.Item = new MusicAlbum();
                     result.HasMetadata = true;
-                    ProcessResult(result.Item, obj.album[0], info.MetadataLanguage);
+                    ProcessResult(result.Item, obj.Album[0], info?.MetadataLanguage);
                 }
             }
 
             return result;
         }
 
-        private void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.strAlbum))
-            {
-                item.Album = result.strAlbum;
-            }
+            throw new NotImplementedException();
+        }
 
-            if (!string.IsNullOrWhiteSpace(result.strArtist))
-            {
-                item.AlbumArtists = new string[] { result.strArtist };
-            }
+        internal static string GetAlbumInfoPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
+        {
+            var dataPath = GetAlbumDataPath(appPaths, musicBrainzReleaseGroupId);
 
-            if (!string.IsNullOrEmpty(result.intYearReleased))
-            {
-                item.ProductionYear = int.Parse(result.intYearReleased, CultureInfo.InvariantCulture);
-            }
-
-            if (!string.IsNullOrEmpty(result.strGenre))
-            {
-                item.Genres = new[] { result.strGenre };
-            }
-
-            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProvider.AudioDbAlbum, result.idAlbum);
-
-            item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.strMusicBrainzArtistID);
-            item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.strMusicBrainzID);
-
-            string overview = null;
-
-            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionDE;
-            }
-            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionFR;
-            }
-            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionNL;
-            }
-            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionRU;
-            }
-            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionIT;
-            }
-            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strDescriptionPT;
-            }
-
-            if (string.IsNullOrWhiteSpace(overview))
-            {
-                overview = result.strDescriptionEN;
-            }
-
-            item.Overview = (overview ?? string.Empty).StripHtml();
+            return Path.Combine(dataPath, "album.json");
         }
 
         internal Task EnsureInfo(string musicBrainzReleaseGroupId, CancellationToken cancellationToken)
@@ -163,16 +112,82 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var url = AudioDbArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
+            var url = ArtistProvider.BaseUrl + "/album-mb.php?i=" + musicBrainzReleaseGroupId;
 
             var path = GetAlbumInfoPath(_config.ApplicationPaths, musicBrainzReleaseGroupId);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                                                         .GetAsync(new Uri(url), cancellationToken)
+                                                         .ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            await using var xmlFileStream = new FileStream(
+                path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+        }
+
+        private static void ProcessResult(MusicAlbum item, Album result, string preferredLanguage)
+        {
+            if (Plugin.Instance.Configuration.ReplaceAlbumName && !string.IsNullOrWhiteSpace(result.StrAlbum))
+            {
+                item.Album = result.StrAlbum;
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.StrArtist))
+            {
+                item.AlbumArtists = new string[] { result.StrArtist };
+            }
+
+            if (!string.IsNullOrEmpty(result.IntYearReleased))
+            {
+                item.ProductionYear = int.Parse(result.IntYearReleased, CultureInfo.InvariantCulture);
+            }
+
+            if (!string.IsNullOrEmpty(result.StrGenre))
+            {
+                item.Genres = new[] { result.StrGenre };
+            }
+
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.IdArtist);
+            item.SetProviderId(MetadataProvider.AudioDbAlbum, result.IdAlbum);
+
+            item.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, result.StrMusicBrainzArtistID);
+            item.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, result.StrMusicBrainzID);
+
+            string overview = null;
+
+            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrDescriptionDE;
+            }
+            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrDescriptionFR;
+            }
+            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrDescriptionNL;
+            }
+            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrDescriptionRU;
+            }
+            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrDescriptionIT;
+            }
+            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrDescriptionPT;
+            }
+
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = result.StrDescriptionEN;
+            }
+
+            item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
         private static string GetAlbumDataPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
@@ -189,101 +204,88 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return dataPath;
         }
 
-        internal static string GetAlbumInfoPath(IApplicationPaths appPaths, string musicBrainzReleaseGroupId)
+        protected internal class Album
         {
-            var dataPath = GetAlbumDataPath(appPaths, musicBrainzReleaseGroupId);
+            public string IdAlbum { get; set; }
 
-            return Path.Combine(dataPath, "album.json");
+            public string IdArtist { get; set; }
+
+            public string StrAlbum { get; set; }
+
+            public string StrArtist { get; set; }
+
+            public string IntYearReleased { get; set; }
+
+            public string StrGenre { get; set; }
+
+            public string StrSubGenre { get; set; }
+
+            public string StrReleaseFormat { get; set; }
+
+            public string IntSales { get; set; }
+
+            public string StrAlbumThumb { get; set; }
+
+            public string StrAlbumCDart { get; set; }
+
+            public string StrDescriptionEN { get; set; }
+
+            public string StrDescriptionDE { get; set; }
+
+            public string StrDescriptionFR { get; set; }
+
+            public string StrDescriptionCN { get; set; }
+
+            public string StrDescriptionIT { get; set; }
+
+            public string StrDescriptionJP { get; set; }
+
+            public string StrDescriptionRU { get; set; }
+
+            public string StrDescriptionES { get; set; }
+
+            public string StrDescriptionPT { get; set; }
+
+            public string StrDescriptionSE { get; set; }
+
+            public string StrDescriptionNL { get; set; }
+
+            public string StrDescriptionHU { get; set; }
+
+            public string StrDescriptionNO { get; set; }
+
+            public string StrDescriptionIL { get; set; }
+
+            public string StrDescriptionPL { get; set; }
+
+            public object IntLoved { get; set; }
+
+            public object IntScore { get; set; }
+
+            public string StrReview { get; set; }
+
+            public object StrMood { get; set; }
+
+            public object StrTheme { get; set; }
+
+            public object StrSpeed { get; set; }
+
+            public object StrLocation { get; set; }
+
+            public string StrMusicBrainzID { get; set; }
+
+            public string StrMusicBrainzArtistID { get; set; }
+
+            public object StrItunesID { get; set; }
+
+            public object StrAmazonID { get; set; }
+
+            public string StrLocked { get; set; }
         }
 
-        public class Album
+        protected internal class RootObject
         {
-            public string idAlbum { get; set; }
-
-            public string idArtist { get; set; }
-
-            public string strAlbum { get; set; }
-
-            public string strArtist { get; set; }
-
-            public string intYearReleased { get; set; }
-
-            public string strGenre { get; set; }
-
-            public string strSubGenre { get; set; }
-
-            public string strReleaseFormat { get; set; }
-
-            public string intSales { get; set; }
-
-            public string strAlbumThumb { get; set; }
-
-            public string strAlbumCDart { get; set; }
-
-            public string strDescriptionEN { get; set; }
-
-            public string strDescriptionDE { get; set; }
-
-            public string strDescriptionFR { get; set; }
-
-            public string strDescriptionCN { get; set; }
-
-            public string strDescriptionIT { get; set; }
-
-            public string strDescriptionJP { get; set; }
-
-            public string strDescriptionRU { get; set; }
-
-            public string strDescriptionES { get; set; }
-
-            public string strDescriptionPT { get; set; }
-
-            public string strDescriptionSE { get; set; }
-
-            public string strDescriptionNL { get; set; }
-
-            public string strDescriptionHU { get; set; }
-
-            public string strDescriptionNO { get; set; }
-
-            public string strDescriptionIL { get; set; }
-
-            public string strDescriptionPL { get; set; }
-
-            public object intLoved { get; set; }
-
-            public object intScore { get; set; }
-
-            public string strReview { get; set; }
-
-            public object strMood { get; set; }
-
-            public object strTheme { get; set; }
-
-            public object strSpeed { get; set; }
-
-            public object strLocation { get; set; }
-
-            public string strMusicBrainzID { get; set; }
-
-            public string strMusicBrainzArtistID { get; set; }
-
-            public object strItunesID { get; set; }
-
-            public object strAmazonID { get; set; }
-
-            public string strLocked { get; set; }
-        }
-
-        public class RootObject
-        {
-            public List<Album> album { get; set; }
-        }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+            public List<Album> Album { get; set; }
         }
     }
 }

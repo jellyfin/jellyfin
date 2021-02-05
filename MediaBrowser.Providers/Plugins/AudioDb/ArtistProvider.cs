@@ -18,22 +18,21 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
-    public class AudioDbArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
+    public class ArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>, IHasOrder
     {
-        private const string ApiKey = "195003";
         public const string BaseUrl = "https://www.theaudiodb.com/api/v1/json/" + ApiKey;
+        private const string ApiKey = "195003";
 
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
-        public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
+        public ArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _fileSystem = fileSystem;
@@ -41,7 +40,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Current = this;
         }
 
-        public static AudioDbArtistProvider Current { get; private set; }
+        public static ArtistProvider Current { get; private set; }
 
         /// <inheritdoc />
         public string Name => "TheAudioDB";
@@ -67,64 +66,31 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
                 var path = GetArtistInfoPath(_config.ApplicationPaths, id);
 
                 await using FileStream jsonStream = File.OpenRead(path);
-                var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken)
+                                              .ConfigureAwait(false);
 
-                if (obj != null && obj.artists != null && obj.artists.Count > 0)
+                if (obj?.Artists?.Count > 0)
                 {
                     result.Item = new MusicArtist();
                     result.HasMetadata = true;
-                    ProcessResult(result.Item, obj.artists[0], info.MetadataLanguage);
+                    ProcessResult(result.Item, obj.Artists[0], info?.MetadataLanguage);
                 }
             }
 
             return result;
         }
 
-        private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            // item.HomePageUrl = result.strWebsite;
+            throw new NotImplementedException();
+        }
 
-            if (!string.IsNullOrEmpty(result.strGenre))
-            {
-                item.Genres = new[] { result.strGenre };
-            }
+        internal static string GetArtistInfoPath(IApplicationPaths appPaths, string musicBrainzArtistId)
+        {
+            var dataPath = GetArtistDataPath(appPaths, musicBrainzArtistId);
 
-            item.SetProviderId(MetadataProvider.AudioDbArtist, result.idArtist);
-            item.SetProviderId(MetadataProvider.MusicBrainzArtist, result.strMusicBrainzID);
-
-            string overview = null;
-
-            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyDE;
-            }
-            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyFR;
-            }
-            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyNL;
-            }
-            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyRU;
-            }
-            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyIT;
-            }
-            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
-            {
-                overview = result.strBiographyPT;
-            }
-
-            if (string.IsNullOrWhiteSpace(overview))
-            {
-                overview = result.strBiographyEN;
-            }
-
-            item.Overview = (overview ?? string.Empty).StripHtml();
+            return Path.Combine(dataPath, "artist.json");
         }
 
         internal Task EnsureArtistInfo(string musicBrainzId, CancellationToken cancellationToken)
@@ -150,13 +116,63 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                                                         .GetAsync(new Uri(url), cancellationToken)
+                                                         .ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            await using var xmlFileStream = new FileStream(
+                path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
+        }
+
+        private void ProcessResult(MusicArtist item, Artist result, string preferredLanguage)
+        {
+            // item.HomePageUrl = result.strWebsite;
+
+            if (!string.IsNullOrEmpty(result.StrGenre))
+            {
+                item.Genres = new[] { result.StrGenre };
+            }
+
+            item.SetProviderId(MetadataProvider.AudioDbArtist, result.IdArtist);
+            item.SetProviderId(MetadataProvider.MusicBrainzArtist, result.StrMusicBrainzID);
+
+            string overview = null;
+
+            if (string.Equals(preferredLanguage, "de", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrBiographyDE;
+            }
+            else if (string.Equals(preferredLanguage, "fr", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrBiographyFR;
+            }
+            else if (string.Equals(preferredLanguage, "nl", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrBiographyNL;
+            }
+            else if (string.Equals(preferredLanguage, "ru", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrBiographyRU;
+            }
+            else if (string.Equals(preferredLanguage, "it", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrBiographyIT;
+            }
+            else if ((preferredLanguage ?? string.Empty).StartsWith("pt", StringComparison.OrdinalIgnoreCase))
+            {
+                overview = result.StrBiographyPT;
+            }
+
+            if (string.IsNullOrWhiteSpace(overview))
+            {
+                overview = result.StrBiographyEN;
+            }
+
+            item.Overview = (overview ?? string.Empty).StripHtml();
         }
 
         /// <summary>
@@ -176,107 +192,94 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private static string GetArtistDataPath(IApplicationPaths appPaths)
             => Path.Combine(appPaths.CachePath, "audiodb-artist");
 
-        internal static string GetArtistInfoPath(IApplicationPaths appPaths, string musicBrainzArtistId)
+        protected internal class Artist
         {
-            var dataPath = GetArtistDataPath(appPaths, musicBrainzArtistId);
+            public string IdArtist { get; set; }
 
-            return Path.Combine(dataPath, "artist.json");
+            public string StrArtist { get; set; }
+
+            public string StrArtistAlternate { get; set; }
+
+            public object IdLabel { get; set; }
+
+            public string IntFormedYear { get; set; }
+
+            public string IntBornYear { get; set; }
+
+            public object IntDiedYear { get; set; }
+
+            public object StrDisbanded { get; set; }
+
+            public string StrGenre { get; set; }
+
+            public string StrSubGenre { get; set; }
+
+            public string StrWebsite { get; set; }
+
+            public string StrFacebook { get; set; }
+
+            public string StrTwitter { get; set; }
+
+            public string StrBiographyEN { get; set; }
+
+            public string StrBiographyDE { get; set; }
+
+            public string StrBiographyFR { get; set; }
+
+            public string StrBiographyCN { get; set; }
+
+            public string StrBiographyIT { get; set; }
+
+            public string StrBiographyJP { get; set; }
+
+            public string StrBiographyRU { get; set; }
+
+            public string StrBiographyES { get; set; }
+
+            public string StrBiographyPT { get; set; }
+
+            public string StrBiographySE { get; set; }
+
+            public string StrBiographyNL { get; set; }
+
+            public string StrBiographyHU { get; set; }
+
+            public string StrBiographyNO { get; set; }
+
+            public string StrBiographyIL { get; set; }
+
+            public string StrBiographyPL { get; set; }
+
+            public string StrGender { get; set; }
+
+            public string IntMembers { get; set; }
+
+            public string StrCountry { get; set; }
+
+            public string StrCountryCode { get; set; }
+
+            public string StrArtistThumb { get; set; }
+
+            public string StrArtistLogo { get; set; }
+
+            public string StrArtistFanart { get; set; }
+
+            public string StrArtistFanart2 { get; set; }
+
+            public string StrArtistFanart3 { get; set; }
+
+            public string StrArtistBanner { get; set; }
+
+            public string StrMusicBrainzID { get; set; }
+
+            public object StrLastFMChart { get; set; }
+
+            public string StrLocked { get; set; }
         }
 
-        public class Artist
+        protected internal class RootObject
         {
-            public string idArtist { get; set; }
-
-            public string strArtist { get; set; }
-
-            public string strArtistAlternate { get; set; }
-
-            public object idLabel { get; set; }
-
-            public string intFormedYear { get; set; }
-
-            public string intBornYear { get; set; }
-
-            public object intDiedYear { get; set; }
-
-            public object strDisbanded { get; set; }
-
-            public string strGenre { get; set; }
-
-            public string strSubGenre { get; set; }
-
-            public string strWebsite { get; set; }
-
-            public string strFacebook { get; set; }
-
-            public string strTwitter { get; set; }
-
-            public string strBiographyEN { get; set; }
-
-            public string strBiographyDE { get; set; }
-
-            public string strBiographyFR { get; set; }
-
-            public string strBiographyCN { get; set; }
-
-            public string strBiographyIT { get; set; }
-
-            public string strBiographyJP { get; set; }
-
-            public string strBiographyRU { get; set; }
-
-            public string strBiographyES { get; set; }
-
-            public string strBiographyPT { get; set; }
-
-            public string strBiographySE { get; set; }
-
-            public string strBiographyNL { get; set; }
-
-            public string strBiographyHU { get; set; }
-
-            public string strBiographyNO { get; set; }
-
-            public string strBiographyIL { get; set; }
-
-            public string strBiographyPL { get; set; }
-
-            public string strGender { get; set; }
-
-            public string intMembers { get; set; }
-
-            public string strCountry { get; set; }
-
-            public string strCountryCode { get; set; }
-
-            public string strArtistThumb { get; set; }
-
-            public string strArtistLogo { get; set; }
-
-            public string strArtistFanart { get; set; }
-
-            public string strArtistFanart2 { get; set; }
-
-            public string strArtistFanart3 { get; set; }
-
-            public string strArtistBanner { get; set; }
-
-            public string strMusicBrainzID { get; set; }
-
-            public object strLastFMChart { get; set; }
-
-            public string strLocked { get; set; }
-        }
-
-        public class RootObject
-        {
-            public List<Artist> artists { get; set; }
-        }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+            public List<Artist> Artists { get; set; }
         }
     }
 }

@@ -13,7 +13,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public string ProviderName => "TheAudioDb";
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.AudioDbAlbum.ToString();
+        public string Key => nameof(MetadataProvider.AudioDbAlbum);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Album;
