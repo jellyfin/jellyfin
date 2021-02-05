@@ -526,32 +526,36 @@ namespace Emby.Server.Implementations.Plugins
             var metafile = Path.Combine(dir, "meta.json");
             if (File.Exists(metafile))
             {
+                // Only path where this stays null is when File.ReadAllBytes throws an IOException
+                byte[] data = null!;
                 try
                 {
-                    var data = File.ReadAllText(metafile, Encoding.UTF8);
+                    data = File.ReadAllBytes(metafile);
                     manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (IOException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Path}.", dir);
+                    _logger.LogError(ex, "Error reading file {Path}.", dir);
                 }
-            }
-
-            if (manifest != null)
-            {
-                if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                catch (JsonException ex)
                 {
-                    targetAbi = _minimumVersion;
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
                 }
 
-                if (!Version.TryParse(manifest.Version, out version))
+                if (manifest != null)
                 {
-                    manifest.Version = _minimumVersion.ToString();
-                }
+                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                    {
+                        targetAbi = _minimumVersion;
+                    }
 
-                return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                    if (!Version.TryParse(manifest.Version, out version))
+                    {
+                        manifest.Version = _minimumVersion.ToString();
+                    }
+
+                    return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                }
             }
 
             // No metafile, so lets see if the folder is versioned.
