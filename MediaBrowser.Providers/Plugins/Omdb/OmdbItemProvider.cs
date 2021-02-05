@@ -172,7 +172,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     item.IndexNumberEnd = episodeSearchInfo.IndexNumberEnd.Value;
                 }
 
-                item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
+                item.SetProviderId(MetadataProvider.Imdb, result.ImdbID);
 
                 if (result.Year.Length > 0
                     && int.TryParse(result.Year.AsSpan().Slice(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
@@ -236,6 +236,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return GetMovieResult<Movie>(info, cancellationToken);
         }
 
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
+        }
+
         private async Task<MetadataResult<T>> GetMovieResult<T>(ItemLookupInfo info, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
@@ -277,11 +282,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             return first?.GetProviderId(MetadataProvider.Imdb);
         }
 
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
-        }
-
         private class SearchResult
         {
             public string Title { get; set; }
@@ -318,13 +318,13 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             public string Metascore { get; set; }
 
-            public string imdbRating { get; set; }
+            public string ImdbRating { get; set; }
 
-            public string imdbVotes { get; set; }
+            public string ImdbVotes { get; set; }
 
-            public string imdbID { get; set; }
+            public string ImdbID { get; set; }
 
-            public string seriesID { get; set; }
+            public string SeriesID { get; set; }
 
             public string Type { get; set; }
 

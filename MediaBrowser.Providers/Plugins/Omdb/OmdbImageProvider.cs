@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -86,7 +87,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
 
         public bool Supports(BaseItem item)

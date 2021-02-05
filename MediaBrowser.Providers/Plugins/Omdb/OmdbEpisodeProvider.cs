@@ -61,7 +61,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return result;
             }
 
-            if (info.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
+            if (info.SeriesProviderIds.TryGetValue(nameof(MetadataProvider.Imdb), out string seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
             {
                 if (info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
                 {
