@@ -89,7 +89,7 @@
     "UserPolicyUpdatedWithName": "Политики пользователя {0} были обновлены",
     "UserStartedPlayingItemWithValues": "{0} - воспроизведение «{1}» на {2}",
     "UserStoppedPlayingItemWithValues": "{0} - воспроизведение остановлено «{1}» на {2}",
-    "ValueHasBeenAddedToLibrary": "{0} (добавлено в медиатеку)",
+    "ValueHasBeenAddedToLibrary": "{0} добавлено в медиатеку",
     "ValueSpecialEpisodeName": "Спецэпизод - {0}",
     "VersionNumber": "Версия {0}",
     "TaskDownloadMissingSubtitles": "Загрузка отсутствующих субтитров",
