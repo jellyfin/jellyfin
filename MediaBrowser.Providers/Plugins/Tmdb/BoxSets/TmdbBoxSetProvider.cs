@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(BoxSetInfo searchInfo, CancellationToken cancellationToken)
         {
             var tmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
-            var language = searchInfo.MetadataLanguage;
+            var language = searchInfo?.MetadataLanguage;
 
             if (tmdbId > 0)
             {
@@ -79,13 +79,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
         public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
         {
             var tmdbId = Convert.ToInt32(id.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
-            var language = id.MetadataLanguage;
+            var language = id?.MetadataLanguage;
             // We don't already have an Id, need to fetch it
             if (tmdbId <= 0)
             {
                 var searchResults = await _tmdbClientManager.SearchCollectionAsync(id.Name, language, cancellationToken).ConfigureAwait(false);
 
-                if (searchResults != null && searchResults.Count > 0)
+                if (searchResults?.Count > 0)
                 {
                     tmdbId = searchResults[0].Id;
                 }
@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }

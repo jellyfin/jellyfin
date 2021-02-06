@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var language = item.GetPreferredMetadataLanguage();
+            var language = item?.GetPreferredMetadataLanguage();
 
             var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
 
@@ -105,7 +105,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }

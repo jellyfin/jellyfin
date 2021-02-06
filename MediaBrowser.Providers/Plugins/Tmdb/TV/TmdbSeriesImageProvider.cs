@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return null;
             }
 
-            var language = item.GetPreferredMetadataLanguage();
+            var language = item?.GetPreferredMetadataLanguage();
 
             var series = await _tmdbClientManager
                 .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             {
                 if (info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
                 {
-                    result.HasMetadata = await new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager)
+                    result.HasMetadata = await new OmdbProvider(_httpClientFactory, _fileSystem, _configurationManager)
                         .FetchEpisodeData(result, info.IndexNumber.Value, info.ParentIndexNumber.Value, info.GetProviderId(MetadataProvider.Imdb), seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
                 }
             }

@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var list = new List<RemoteImageInfo>();
 
-            var provider = new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager);
+            var provider = new OmdbProvider(_httpClientFactory, _fileSystem, _configurationManager);
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {

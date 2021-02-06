@@ -75,7 +75,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return metadataResult;
             }
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string tmdbId);
+            info.SeriesProviderIds.TryGetValue(nameof(MetadataProvider.Tmdb), out string tmdbId);
 
             var seriesTmdbId = Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture);
             if (seriesTmdbId <= 0)
@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public string ProviderName => TmdbUtils.ProviderName;
 
         /// <inheritdoc />
-        public string Key => MetadataProvider.Tmdb.ToString();
+        public string Key => nameof(MetadataProvider.Tmdb);
 
         /// <inheritdoc />
         public ExternalIdMediaType? Type => ExternalIdMediaType.Person;

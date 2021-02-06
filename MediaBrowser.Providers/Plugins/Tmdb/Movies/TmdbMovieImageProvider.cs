@@ -50,7 +50,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var language = item.GetPreferredMetadataLanguage();
+            var language = item?.GetPreferredMetadataLanguage();
 
             var movieTmdbId = Convert.ToInt32(item.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
             if (movieTmdbId <= 0)
@@ -84,9 +84,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             var remoteImages = new List<RemoteImageInfo>();
 
-            for (var i = 0; i < movie.Images.Posters.Count; i++)
+            foreach (var poster in movie.Images.Posters)
             {
-                var poster = movie.Images.Posters[i];
                 remoteImages.Add(new RemoteImageInfo
                 {
                     Url = _tmdbClientManager.GetPosterUrl(poster.FilePath),
@@ -101,9 +100,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 });
             }
 
-            for (var i = 0; i < movie.Images.Backdrops.Count; i++)
+            foreach (var backdrop in movie.Images.Backdrops)
             {
-                var backdrop = movie.Images.Backdrops[i];
                 remoteImages.Add(new RemoteImageInfo
                 {
                     Url = _tmdbClientManager.GetPosterUrl(backdrop.FilePath),
@@ -122,7 +120,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }

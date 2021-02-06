@@ -116,7 +116,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 throw new ArgumentNullException(nameof(seriesImdbId));
             }
 
-            var item = itemResult.Item;
+            var item = itemResult?.Item;
 
             var seasonResult = await GetSeasonRootObject(seriesImdbId, seasonNumber, cancellationToken).ConfigureAwait(false);
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
         {
-            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id) && !string.IsNullOrEmpty(id))
+            if (seriesProviderIds.TryGetValue(nameof(MetadataProvider.Imdb), out string id) && !string.IsNullOrEmpty(id))
             {
                 // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
                 if (!string.IsNullOrWhiteSpace(id))

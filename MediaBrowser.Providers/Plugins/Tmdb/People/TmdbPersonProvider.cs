@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                         Overview = personResult.Biography
                     };
 
-                    if (personResult.Images?.Profiles != null && personResult.Images.Profiles.Count > 0)
+                    if (personResult.Images?.Profiles?.Count > 0)
                     {
                         result.ImageUrl = _tmdbClientManager.GetProfileUrl(personResult.Images.Profiles[0].FilePath);
                     }
@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             // We don't already have an Id, need to fetch it
             if (personTmdbId <= 0)
             {
-                var personSearchResults = await _tmdbClientManager.SearchPersonAsync(id.Name, cancellationToken).ConfigureAwait(false);
+                var personSearchResults = await _tmdbClientManager.SearchPersonAsync(id?.Name, cancellationToken).ConfigureAwait(false);
                 if (personSearchResults.Count > 0)
                 {
                     personTmdbId = personSearchResults[0].Id;
@@ -110,7 +110,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 {
                     // Take name from incoming info, don't rename the person
                     // TODO: This should go in PersonMetadataService, not each person provider
-                    Name = id.Name,
+                    Name = id?.Name,
                     HomePageUrl = person.Homepage,
                     Overview = person.Biography,
                     PremiereDate = person.Birthday?.ToUniversalTime(),
@@ -138,7 +138,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }

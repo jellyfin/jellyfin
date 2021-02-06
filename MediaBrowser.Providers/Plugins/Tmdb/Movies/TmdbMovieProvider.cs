@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             if (tmdbId == 0)
             {
                 var movieResults = await _tmdbClientManager
-                    .SearchMovieAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken)
+                    .SearchMovieAsync(searchInfo?.Name, searchInfo.MetadataLanguage, cancellationToken)
                     .ConfigureAwait(false);
                 var remoteSearchResults = new List<RemoteSearchResult>();
                 for (var i = 0; i < movieResults.Count; i++)
@@ -111,7 +111,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 // ParseName is required here.
                 // Caller provides the filename with extension stripped and NOT the parsed filename
-                var parsedName = _libraryManager.ParseName(info.Name);
+                var parsedName = _libraryManager.ParseName(info?.Name);
                 var searchResults = await _tmdbClientManager.SearchMovieAsync(parsedName.Name, parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
@@ -162,8 +162,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             {
                 var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification)).ToList();
 
-                var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
-                var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
+                var ourRelease = releases.Find(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
+                var usRelease = releases.Find(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
 
                 if (ourRelease != null)
                 {
@@ -274,9 +274,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             if (movieResult.Videos?.Results != null)
             {
                 var trailers = new List<MediaUrl>();
-                for (var i = 0; i < movieResult.Videos.Results.Count; i++)
+
+                foreach (var video in movieResult.Videos.Results)
                 {
-                    var video = movieResult.Videos.Results[0];
                     if (!TmdbUtils.IsTrailerType(video))
                     {
                         continue;
@@ -298,7 +298,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
         /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(new Uri(url), cancellationToken);
         }
     }
 }
