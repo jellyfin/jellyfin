@@ -661,6 +661,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
                                 break;
 
                             case "date":
+                            {
                                 var val = reader.ReadElementContentAsString();
                                 if (DateTime.TryParse(val, out var date))
                                 {
@@ -668,6 +669,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
                                 }
 
                                 break;
+                            }
 
                             case "annotation":
                                 result.Overview = reader.ReadElementContentAsString();
