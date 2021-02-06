@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("artist-list".Equals(reader.Name))
+                    if ("artist-list".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         if (reader.IsEmptyElement)
                         {
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("artist".Equals(reader.Name))
+                    if ("artist".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         if (reader.IsEmptyElement)
                         {

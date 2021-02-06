@@ -121,47 +121,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            await Fetch(item, cancellationToken, mediaInfoResult, blurayDiscInfo, options).ConfigureAwait(false);
+            await Fetch(item, mediaInfoResult, blurayDiscInfo, options, cancellationToken).ConfigureAwait(false);
 
             return ItemUpdateType.MetadataImport;
         }
 
-        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
-            Video item,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var path = item.Path;
-            var protocol = item.PathProtocol ?? MediaProtocol.File;
-
-            if (item.IsShortcut)
-            {
-                path = item.ShortcutPath;
-                protocol = _mediaSourceManager.GetPathProtocol(path);
-            }
-
-            return _mediaEncoder.GetMediaInfo(
-                new MediaInfoRequest
-                {
-                    ExtractChapters = true,
-                    MediaType = DlnaProfileType.Video,
-                    MediaSource = new MediaSourceInfo
-                    {
-                        Path = path,
-                        Protocol = protocol,
-                        VideoType = item.VideoType
-                    }
-                },
-                cancellationToken);
-        }
-
         protected async Task Fetch(
             Video video,
-            CancellationToken cancellationToken,
             Model.MediaInfo.MediaInfo mediaInfo,
             BlurayDiscInfo blurayInfo,
-            MetadataRefreshOptions options)
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
         {
             List<MediaStream> mediaStreams;
             IReadOnlyList<MediaAttachment> mediaAttachments;
@@ -256,6 +226,36 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 _chapterManager.SaveChapters(video.Id, chapters);
             }
+        }
+
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
+            Video item,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var path = item.Path;
+            var protocol = item.PathProtocol ?? MediaProtocol.File;
+
+            if (item.IsShortcut)
+            {
+                path = item.ShortcutPath;
+                protocol = _mediaSourceManager.GetPathProtocol(path);
+            }
+
+            return _mediaEncoder.GetMediaInfo(
+                new MediaInfoRequest
+                {
+                    ExtractChapters = true,
+                    MediaType = DlnaProfileType.Video,
+                    MediaSource = new MediaSourceInfo
+                    {
+                        Path = path,
+                        Protocol = protocol,
+                        VideoType = item.VideoType
+                    }
+                },
+                cancellationToken);
         }
 
         private void NormalizeChapterNames(ChapterInfo[] chapters)

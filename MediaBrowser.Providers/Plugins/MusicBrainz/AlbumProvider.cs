@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
         /// The Jellyfin user-agent is unrestricted but source IP must not exceed
         /// one request per second, therefore we rate limit to avoid throttling.
         /// Be prudent, use a value slightly above the minimun required.
-        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting
+        /// https://musicbrainz.org/doc/XML_Web_Service/Rate_Limiting.
         /// </summary>
         private readonly long _musicBrainzQueryIntervalMs;
 
@@ -266,7 +266,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("name-credit".Equals(reader.Name))
+                    if ("name-credit".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         using var subReader = reader.ReadSubtree();
                         return ParseArtistNameCredit(subReader);
@@ -295,7 +295,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("artist".Equals(reader.Name))
+                    if ("artist".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         using var subReader = reader.ReadSubtree();
                         return ParseArtistArtistCredit(subReader, reader.GetAttribute("id"));
@@ -326,7 +326,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("name".Equals(reader.Name))
+                    if ("name".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         name = reader.ReadElementContentAsString();
                     }
@@ -354,7 +354,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("release-group".Equals(reader.Name))
+                    if ("release-group".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         return reader.GetAttribute("id");
                     }
@@ -529,7 +529,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             {
                 if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if ("release-group-list".Equals(reader.Name))
+                    if ("release-group-list".Equals(reader.Name, StringComparison.Ordinal))
                     {
                         if (reader.IsEmptyElement)
                         {
@@ -576,7 +576,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if ("release-list".Equals(reader.Name))
+                        if ("release-list".Equals(reader.Name, StringComparison.Ordinal))
                         {
                             if (reader.IsEmptyElement)
                             {
@@ -609,7 +609,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
-                        if ("release".Equals(reader.Name))
+                        if ("release".Equals(reader.Name, StringComparison.Ordinal))
                         {
                             if (reader.IsEmptyElement)
                             {
