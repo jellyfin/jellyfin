@@ -509,7 +509,7 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Redeems a forgot password pin.
         /// </summary>
-        /// <param name="forgotPasswordPinRequest">The forgot password pin request containing the endered pin.</param>
+        /// <param name="forgotPasswordPinRequest">The forgot password pin request containing the entered pin.</param>
         /// <response code="200">Pin reset process started.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
         [HttpPost("ForgotPassword/Pin")]
