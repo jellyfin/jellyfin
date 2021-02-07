@@ -48,7 +48,7 @@ namespace Jellyfin.Networking.Tests
                 CallBase = true
             };
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
+            return configManager.Object;
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Jellyfin.Networking.Tests
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
-                LocalNetworkSubnets = lan?.Split(';') ?? throw new ArgumentNullException(nameof(lan))
+                LocalNetworkSubnets = lan.Split(';') ?? throw new ArgumentNullException(nameof(lan))
             };
 
             NetworkManager.MockNetworkSettings = interfaces;
@@ -78,19 +78,37 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Check that the value given is in the network provided.
+        /// Checks that the given IP address is in the specified network(s).
+        /// </summary>
+        /// <param name="network">Network address(es).</param>
+        /// <param name="ip">The IP to check.</param>
+        [Theory]
+        [InlineData("192.168.2.1/24, !192.168.2.122/32", "192.168.2.123")]
+        [InlineData("fd23:184f:2029:0::/56", "fd23:184f:2029:0:3139:7386:67d7:d517")]
+        public void InNetwork_True_Success(string network, string ip)
+        {
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+                LocalNetworkSubnets = network.Split(',')
+            };
+
+            using var networkManager = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            Assert.True(networkManager.IsInLocalNetwork(ip));
+        }
+
+        /// <summary>
+        /// Checks that thge iven IP address is not in the network provided.
         /// </summary>
         /// <param name="network">Network address.</param>
         /// <param name="value">Value to check.</param>
         [Theory]
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
-        public void IsInNetwork(string network, string value)
+        [InlineData("192.168.10.0/24, !fd23:184f:2029:0::/56", "fd23:184f:2029:0:3139:7386:67d7:d517")]
+        public void InNetwork_False_Success(string network, string value)
         {
-            if (network == null)
-            {
-                throw new ArgumentNullException(nameof(network));
-            }
-
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
@@ -194,12 +212,12 @@ namespace Jellyfin.Networking.Tests
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
-            };           
+            };
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included.
-            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false); 
+            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.Equal(nc.AsString(), result1);
 
             // Test excluded.
@@ -208,7 +226,7 @@ namespace Jellyfin.Networking.Tests
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
-            
+
             // Test IP4 included.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.Equal(nc.AsString(), result2);
@@ -455,7 +473,7 @@ namespace Jellyfin.Networking.Tests
         // On my system eth16 is internal, eth11 external (Windows defines the indexes).
         //
         // This test is to replicate how subnet bound ServerPublisherUri work throughout the system.
-        
+
         // User on internal network, we're bound internal and external - so result is internal override.
         [InlineData("192.168.1.1", "192.168.1.0/24", "eth16,eth11", false, "192.168.1.0/24=internal.jellyfin", "internal.jellyfin")]
 

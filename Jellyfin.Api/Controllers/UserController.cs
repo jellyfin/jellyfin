@@ -21,6 +21,7 @@ using MediaBrowser.Model.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -36,6 +37,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IDeviceManager _deviceManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IServerConfigurationManager _config;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -46,13 +48,15 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{UserController}"/> interface.</param>
         public UserController(
             IUserManager userManager,
             ISessionManager sessionManager,
             INetworkManager networkManager,
             IDeviceManager deviceManager,
             IAuthorizationContext authContext,
-            IServerConfigurationManager config)
+            IServerConfigurationManager config,
+            ILogger<UserController> logger)
         {
             _userManager = userManager;
             _sessionManager = sessionManager;
@@ -60,6 +64,7 @@ namespace Jellyfin.Api.Controllers
             _deviceManager = deviceManager;
             _authContext = authContext;
             _config = config;
+            _logger = logger;
         }
 
         /// <summary>
@@ -498,8 +503,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<ForgotPasswordResult>> ForgotPassword([FromBody, Required] ForgotPasswordDto forgotPasswordRequest)
         {
+            var ip = HttpContext.GetNormalizedRemoteIp();
             var isLocal = HttpContext.IsLocal()
-                          || _networkManager.IsInLocalNetwork(HttpContext.GetNormalizedRemoteIp());
+                          || _networkManager.IsInLocalNetwork(ip);
+
+            if (!isLocal)
+            {
+                _logger.LogWarning("Password reset proccess initiated from outside the local network IP:{ip}", ip);
+            }
 
             var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername, isLocal).ConfigureAwait(false);
 
