@@ -81,12 +81,14 @@ namespace Jellyfin.Networking.Tests
         /// Checks that the given IP address is in the specified network(s).
         /// </summary>
         /// <param name="network">Network address(es).</param>
-        /// <param name="ip">The IP to check.</param>
+        /// <param name="value">The IP to check.</param>
         [Theory]
         [InlineData("192.168.2.1/24, !192.168.2.122/32", "192.168.2.123")]
         [InlineData("fd23:184f:2029:0::/56", "fd23:184f:2029:0:3139:7386:67d7:d517")]
-        public void InNetwork_True_Success(string network, string ip)
+        [InlineData("[fd23:184f:2029:0::/56]", "fd23:184f:2029:0:3139:7386:67d7:d517")]
+        public void InNetwork_True_Success(string network, string value)
         {
+            var ip = IPAddress.Parse(value);
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
@@ -102,13 +104,15 @@ namespace Jellyfin.Networking.Tests
         /// <summary>
         /// Checks that thge iven IP address is not in the network provided.
         /// </summary>
-        /// <param name="network">Network address.</param>
-        /// <param name="value">Value to check.</param>
+        /// <param name="network">Network address(es).</param>
+        /// <param name="value">The IP to check.</param>
         [Theory]
         [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
-        [InlineData("192.168.10.0/24, !fd23:184f:2029:0::/56", "fd23:184f:2029:0:3139:7386:67d7:d517")]
+        [InlineData("192.168.10.0/24", "fd23:184f:2029:0:3139:7386:67d7:d517")]
+        [InlineData("fd23:184f:2029:0::/56, !fd23:184f:2029:0:3139:7386:67d7:d500/120", "fd23:184f:2029:0:3139:7386:67d7:d517")]
         public void InNetwork_False_Success(string network, string value)
         {
+            var ip = IPAddress.Parse(value);
             var conf = new NetworkConfiguration()
             {
                 EnableIPV6 = true,
@@ -118,7 +122,7 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Assert.False(nm.IsInLocalNetwork(value));
+            Assert.False(nm.IsInLocalNetwork(ip));
         }
 
         /// <summary>

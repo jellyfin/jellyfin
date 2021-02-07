@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound("User not found");
             }
 
-            var result = _userManager.GetUserDto(user, HttpContext.GetNormalizedRemoteIp());
+            var result = _userManager.GetUserDto(user, HttpContext.GetNormalizedRemoteIp().ToString());
             return result;
         }
 
@@ -209,7 +209,7 @@ namespace Jellyfin.Api.Controllers
                     DeviceName = auth.Device,
                     Password = request.Pw,
                     PasswordSha1 = request.Password,
-                    RemoteEndPoint = HttpContext.GetNormalizedRemoteIp(),
+                    RemoteEndPoint = HttpContext.GetNormalizedRemoteIp().ToString(),
                     Username = request.Username
                 }).ConfigureAwait(false);
 
@@ -296,7 +296,7 @@ namespace Jellyfin.Api.Controllers
                     user.Username,
                     request.CurrentPw,
                     request.CurrentPw,
-                    HttpContext.GetNormalizedRemoteIp(),
+                    HttpContext.GetNormalizedRemoteIp().ToString(),
                     false).ConfigureAwait(false);
 
                 if (success == null)
@@ -488,7 +488,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ChangePassword(newUser, request.Password).ConfigureAwait(false);
             }
 
-            var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIp());
+            var result = _userManager.GetUserDto(newUser, HttpContext.GetNormalizedRemoteIp().ToString());
 
             return result;
         }
@@ -592,7 +592,7 @@ namespace Jellyfin.Api.Controllers
 
             var result = users
                 .OrderBy(u => u.Username)
-                .Select(i => _userManager.GetUserDto(i, HttpContext.GetNormalizedRemoteIp()));
+                .Select(i => _userManager.GetUserDto(i, HttpContext.GetNormalizedRemoteIp().ToString()));
 
             return result;
         }

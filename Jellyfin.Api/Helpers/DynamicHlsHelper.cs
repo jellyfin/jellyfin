@@ -431,7 +431,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, string ipAddress)
+        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, IPAddress ipAddress)
         {
             // Within the local network this will likely do more harm than good.
             if (_networkManager.IsInLocalNetwork(ipAddress))
