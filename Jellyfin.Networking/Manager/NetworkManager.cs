@@ -464,7 +464,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(string address)
         {
-            if (IPNetAddress.TryParse(address, out IPNetAddress ep))
+            if (IPHost.TryParse(address, out IPHost ep))
             {
                 var inNetwork = _lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep);
                 _logger.LogDebug("{address} inside local network: {inNetwork}", address, inNetwork);
@@ -491,7 +491,9 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            var inNetwork = _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            _logger.LogDebug("{address} inside local network: {inNetwork}", address, inNetwork);
+            return inNetwork;
         }
 
         /// <inheritdoc/>
