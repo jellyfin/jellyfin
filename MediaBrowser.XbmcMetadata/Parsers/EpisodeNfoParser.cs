@@ -51,6 +51,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
                 try
                 {
+                    // Extract episode details from the firs episodedetails block
                     using (var stringReader = new StringReader(xml))
                     using (var reader = XmlReader.Create(stringReader, settings))
                     {
@@ -72,19 +73,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             }
                         }
                     }
-                }
-                catch (XmlException)
-                {
-                }
 
-                while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
-                {
-                    xml = xmlFile.Substring(0, index + srch.Length);
-                    xmlFile = xmlFile.Substring(index + srch.Length);
-
-                    // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                    try
+                    // Extract the last episode number from nfo
+                    // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
+                    while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
                     {
+                        xml = xmlFile.Substring(0, index + srch.Length);
+                        xmlFile = xmlFile.Substring(index + srch.Length);
+
                         using (var stringReader = new StringReader(xml))
                         using (var reader = XmlReader.Create(stringReader, settings))
                         {
@@ -104,9 +100,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             }
                         }
                     }
-                    catch (XmlException)
-                    {
-                    }
+                }
+                catch (XmlException)
+                {
                 }
             }
         }
