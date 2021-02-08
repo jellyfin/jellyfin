@@ -51,7 +51,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
                 try
                 {
-                    // Extract episode details from the firs episodedetails block
+                    // Extract episode details from the first episodedetails block
                     using (var stringReader = new StringReader(xml))
                     using (var reader = XmlReader.Create(stringReader, settings))
                     {
