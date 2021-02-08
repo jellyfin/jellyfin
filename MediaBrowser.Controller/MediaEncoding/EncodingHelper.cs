@@ -2234,8 +2234,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
             else if ((videoDecoder ?? string.Empty).Contains("cuda", StringComparison.OrdinalIgnoreCase)
-                && width.HasValue
-                && height.HasValue)
+                     && width.HasValue
+                     && height.HasValue)
             {
                 var outputWidth = width.Value;
                 var outputHeight = height.Value;
@@ -2667,14 +2667,14 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             // When burning in graphical subtitles using overlay_qsv, upload videostream to the same qsv context.
             else if (isLinux && hasGraphicalSubs && (isQsvH264Encoder || isQsvHevcEncoder)
-                    && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported))
+                     && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported))
             {
                 filters.Add("hwupload=extra_hw_frames=64");
             }
 
             // If we're hardware VAAPI decoding and software encoding, download frames from the decoder first.
             else if ((IsVaapiSupported(state) && isVaapiDecoder) && (isLibX264Encoder || isLibX265Encoder)
-                    && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported))
+                     && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported))
             {
                 var codec = videoStream.Codec;
 
