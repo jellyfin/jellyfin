@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="5.6.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
