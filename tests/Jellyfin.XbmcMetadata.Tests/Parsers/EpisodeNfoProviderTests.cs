@@ -82,6 +82,26 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
+        public void Fetch_Valid_MultiEpisode_Succes()
+        {
+            var result = new MetadataResult<Episode>()
+            {
+                Item = new Episode()
+            };
+
+            _parser.Fetch(result, "Test Data/Rising.nfo", CancellationToken.None);
+
+            var item = result.Item;
+            Assert.Equal("Rising (1)", item.Name);
+            Assert.Equal(1, item.IndexNumber);
+            Assert.Equal(2, item.IndexNumberEnd);
+            Assert.Equal(1, item.ParentIndexNumber);
+            Assert.Equal("A new Stargate team embarks on a dangerous mission to a distant galaxy, where they discover a mythical lost city -- and a deadly new enemy.", item.Overview);
+            Assert.Equal(new DateTime(2004, 7, 16), item.PremiereDate);
+            Assert.Equal(2004, item.ProductionYear);
+        }
+
+        [Fact]
         public void Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Episode>();
