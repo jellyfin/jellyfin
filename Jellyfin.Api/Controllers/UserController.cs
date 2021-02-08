@@ -509,7 +509,7 @@ namespace Jellyfin.Api.Controllers
 
             if (!isLocal)
             {
-                _logger.LogWarning("Password reset proccess initiated from outside the local network IP:{ip}", ip);
+                _logger.LogWarning("Password reset proccess initiated from outside the local network IP: {IP}", ip);
             }
 
             var result = await _userManager.StartForgotPasswordProcess(forgotPasswordRequest.EnteredUsername, isLocal).ConfigureAwait(false);
