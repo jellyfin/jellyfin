@@ -588,7 +588,7 @@ namespace Emby.Naming.Common
             AudioBookNamesExpressions = new[]
             {
                 // Detect year usually in brackets after name Batman (2020)
-                @"^(?<name>.+?)\s*\(\s*(?<year>\d{4})\s*\)\s*$",
+                @"^(?<name>.+?)\s*\(\s*(?<year>[0-9]{4})\s*\)\s*$",
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };
 
