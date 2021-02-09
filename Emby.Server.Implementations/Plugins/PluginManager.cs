@@ -519,7 +519,7 @@ namespace Emby.Server.Implementations.Plugins
             return _plugins.Remove(plugin);
         }
 
-        private LocalPlugin LoadManifest(string dir)
+        internal LocalPlugin LoadManifest(string dir)
         {
             Version? version;
             PluginManifest? manifest = null;
