@@ -32,7 +32,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Fetch_Valid_Succes()
+        public void Fetch_Valid_Success()
         {
             var result = new MetadataResult<Episode>()
             {
@@ -82,7 +82,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
-        public void Fetch_Valid_MultiEpisode_Succes()
+        public void Fetch_Valid_MultiEpisode_Success()
         {
             var result = new MetadataResult<Episode>()
             {
