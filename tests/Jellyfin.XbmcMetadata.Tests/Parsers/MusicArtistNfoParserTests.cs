@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Music;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -21,8 +22,13 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         public MusicArtistNfoParserTests()
         {
             var providerManager = new Mock<IProviderManager>();
+
+            var musicBrainzArtist = new MusicBrainzArtistExternalId();
+            var externalIdInfo = new ExternalIdInfo(musicBrainzArtist.ProviderName, musicBrainzArtist.Key, musicBrainzArtist.Type, "MusicBrainzServer");
+
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
-                .Returns(Enumerable.Empty<ExternalIdInfo>());
+                .Returns(new[] { externalIdInfo });
+
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
