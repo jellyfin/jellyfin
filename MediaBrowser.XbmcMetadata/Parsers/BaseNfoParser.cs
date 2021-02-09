@@ -12,6 +12,7 @@ using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Configuration;
@@ -24,20 +25,31 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         where T : BaseItem
     {
         private readonly IConfigurationManager _config;
+        private readonly IUserManager _userManager;
+        private readonly IUserDataManager _userDataManager;
         private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfoParser{T}" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">the configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        public BaseNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
         {
             Logger = logger;
             _config = config;
             ProviderManager = providerManager;
             _validProviderIds = new Dictionary<string, string>();
+            _userManager = userManager;
+            _userDataManager = userDataManager;
         }
 
         protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
@@ -261,6 +273,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var nfoConfiguration = _config.GetNfoConfiguration();
+            UserItemData? userData = null;
+            if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
+            {
+                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                userData = _userDataManager.GetUserData(user, item);
+            }
+
             switch (reader.Name)
             {
                 // DateCreated
@@ -351,6 +371,48 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
 
                         item.PreferredMetadataLanguage = val;
+
+                        break;
+                    }
+
+                case "watched":
+                    {
+                        if (userData != null)
+                        {
+                            userData.Played = reader.ReadElementContentAsBoolean();
+                        }
+
+                        break;
+                    }
+
+                case "playcount":
+                    {
+                        if (userData != null)
+                        {
+                            userData.PlayCount = reader.ReadElementContentAsInt();
+                        }
+
+                        break;
+                    }
+
+                case "lasplayed":
+                    {
+                        if (userData != null)
+                        {
+                            var val = reader.ReadElementContentAsString();
+
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
+                                {
+                                    userData.LastPlayedDate = added.ToUniversalTime();
+                                }
+                                else
+                                {
+                                    Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
+                                }
+                            }
+                        }
 
                         break;
                     }
@@ -622,7 +684,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "premiered":
                 case "releasedate":
                     {
-                        var formatString = _config.GetNfoConfiguration().ReleaseDateFormat;
+                        var formatString = nfoConfiguration.ReleaseDateFormat;
 
                         var val = reader.ReadElementContentAsString();
 
@@ -640,7 +702,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "enddate":
                     {
-                        var formatString = _config.GetNfoConfiguration().ReleaseDateFormat;
+                        var formatString = nfoConfiguration.ReleaseDateFormat;
 
                         var val = reader.ReadElementContentAsString();
 
