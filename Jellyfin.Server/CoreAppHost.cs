@@ -101,6 +101,9 @@ namespace Jellyfin.Server
 
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDb).Assembly;
+
+            // Jellyfin.Api
+            yield return typeof(SessionInfoWebSocketListener).Assembly;
         }
 
         /// <inheritdoc />
