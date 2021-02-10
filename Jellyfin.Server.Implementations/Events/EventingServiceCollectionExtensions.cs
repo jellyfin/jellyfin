@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using Jellyfin.Server.Implementations.Events.Consumers.System;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Controller.Events.Updates;
-using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Rebus.Config;
@@ -40,10 +38,6 @@ namespace Jellyfin.Server.Implementations.Events
                 .Routing(r => r.TypeBased()
                     .MapAssemblyOf<AuthenticationSucceededEventArgs>("Events")
                     .MapFallback("Events")));
-
-            // System consumers
-            collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedLogger>();
-            collection.AddScoped<IEventConsumer<TaskCompletionEventArgs>, TaskCompletedNotifier>();
 
             // Update consumers
             collection.AddScoped<IEventConsumer<PluginInstallationCancelledEventArgs>, PluginInstallationCancelledNotifier>();

@@ -4,19 +4,19 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.System
 {
     /// <summary>
     /// Creates an activity log entry whenever a task is completed.
     /// </summary>
-    public class TaskCompletedLogger : IEventConsumer<TaskCompletionEventArgs>
+    public class TaskCompletedLogger : IHandleMessages<TaskCompletionEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -33,7 +33,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(TaskCompletionEventArgs e)
+        public async Task Handle(TaskCompletionEventArgs e)
         {
             var result = e.Result;
             var task = e.Task;

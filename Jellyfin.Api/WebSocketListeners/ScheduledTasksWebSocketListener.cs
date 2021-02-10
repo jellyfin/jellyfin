@@ -6,13 +6,15 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Api.WebSocketListeners
 {
     /// <summary>
     /// Class ScheduledTasksWebSocketListener.
     /// </summary>
-    public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, WebSocketListenerState>
+    public class ScheduledTasksWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<TaskInfo>, WebSocketListenerState>,
+        IHandleMessages<TaskCompletionEventArgs>
     {
         /// <summary>
         /// Gets or sets the task manager.
@@ -31,7 +33,6 @@ namespace Jellyfin.Api.WebSocketListeners
             _taskManager = taskManager;
 
             _taskManager.TaskExecuting += OnTaskExecuting;
-            _taskManager.TaskCompleted += OnTaskCompleted;
         }
 
         /// <inheritdoc />
@@ -42,6 +43,13 @@ namespace Jellyfin.Api.WebSocketListeners
 
         /// <inheritdoc />
         protected override SessionMessageType StopType => SessionMessageType.ScheduledTasksInfoStop;
+
+        /// <inheritdoc />
+        public async Task Handle(TaskCompletionEventArgs e)
+        {
+            await SendData(true).ConfigureAwait(false);
+            e.Task.TaskProgress -= OnTaskProgress;
+        }
 
         /// <summary>
         /// Gets the data to send.
@@ -59,15 +67,8 @@ namespace Jellyfin.Api.WebSocketListeners
         protected override void Dispose(bool dispose)
         {
             _taskManager.TaskExecuting -= OnTaskExecuting;
-            _taskManager.TaskCompleted -= OnTaskCompleted;
 
             base.Dispose(dispose);
-        }
-
-        private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
-        {
-            SendData(true);
-            e.Task.TaskProgress -= OnTaskProgress;
         }
 
         private void OnTaskExecuting(object? sender, GenericEventArgs<IScheduledTaskWorker> e)

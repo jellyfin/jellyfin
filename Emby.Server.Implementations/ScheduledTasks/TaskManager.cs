@@ -9,6 +9,7 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -19,8 +20,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     {
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
 
-        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
-
         /// <summary>
         /// Gets the list of Scheduled Tasks.
         /// </summary>
@@ -30,22 +29,25 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// The _task queue.
         /// </summary>
-        private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue =
-            new ConcurrentQueue<Tuple<Type, TaskOptions>>();
+        private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue = new ();
 
         private readonly IApplicationPaths _applicationPaths;
+        private readonly IBus _eventBus;
         private readonly ILogger<TaskManager> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
+        /// <param name="eventBus">The event bus.</param>
         /// <param name="logger">The logger.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
+            IBus eventBus,
             ILogger<TaskManager> logger)
         {
             _applicationPaths = applicationPaths;
+            _eventBus = eventBus;
             _logger = logger;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
@@ -244,7 +246,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="result">The result.</param>
         internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            TaskCompleted?.Invoke(task, new TaskCompletionEventArgs(task, result));
+            _eventBus.Send(new TaskCompletionEventArgs(task, result));
 
             ExecuteQueuedTasks();
         }

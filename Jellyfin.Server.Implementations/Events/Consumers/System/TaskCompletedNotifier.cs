@@ -1,16 +1,16 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Tasks;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.System
 {
     /// <summary>
     /// Notifies admin users when a task is completed.
     /// </summary>
-    public class TaskCompletedNotifier : IEventConsumer<TaskCompletionEventArgs>
+    public class TaskCompletedNotifier : IHandleMessages<TaskCompletionEventArgs>
     {
         private readonly ISessionManager _sessionManager;
 
@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(TaskCompletionEventArgs eventArgs)
+        public async Task Handle(TaskCompletionEventArgs eventArgs)
         {
             await _sessionManager.SendMessageToAdminSessions(SessionMessageType.ScheduledTaskEnded, eventArgs.Result, CancellationToken.None).ConfigureAwait(false);
         }
