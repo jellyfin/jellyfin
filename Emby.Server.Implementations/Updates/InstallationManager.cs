@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -37,6 +38,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly IBus _eventBus;
         private readonly IEventManager _eventManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
@@ -68,6 +70,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
         /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
+        /// <param name="eventBus">The <see cref="IBus"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
         /// <param name="zipClient">The <see cref="IZipClient"/>.</param>
@@ -76,6 +79,7 @@ namespace Emby.Server.Implementations.Updates
             ILogger<InstallationManager> logger,
             IServerApplicationHost appHost,
             IApplicationPaths appPaths,
+            IBus eventBus,
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
@@ -88,6 +92,7 @@ namespace Emby.Server.Implementations.Updates
             _logger = logger;
             _applicationHost = appHost;
             _appPaths = appPaths;
+            _eventBus = eventBus;
             _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
             _config = config;
@@ -354,7 +359,7 @@ namespace Emby.Server.Implementations.Updates
 
                 _logger.LogInformation("Package installation cancelled: {0} {1}", package.Name, package.Version);
 
-                await _eventManager.PublishAsync(new PluginInstallationCancelledEventArgs(package)).ConfigureAwait(false);
+                await _eventBus.Send(new PluginInstallationCancelledEventArgs(package)).ConfigureAwait(false);
 
                 throw;
             }

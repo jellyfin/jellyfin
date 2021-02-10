@@ -1,16 +1,16 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
 {
     /// <summary>
     /// Notifies admin users when a plugin installation is cancelled.
     /// </summary>
-    public class PluginInstallationCancelledNotifier : IEventConsumer<PluginInstallationCancelledEventArgs>
+    public class PluginInstallationCancelledNotifier : IHandleMessages<PluginInstallationCancelledEventArgs>
     {
         private readonly ISessionManager _sessionManager;
 
@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PluginInstallationCancelledEventArgs eventArgs)
+        public async Task Handle(PluginInstallationCancelledEventArgs eventArgs)
         {
             await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstallationCancelled, eventArgs.Argument, CancellationToken.None).ConfigureAwait(false);
         }

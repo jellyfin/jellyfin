@@ -40,7 +40,6 @@ namespace Jellyfin.Server.Implementations.Events
                     .MapFallback("Events")));
 
             // Update consumers
-            collection.AddScoped<IEventConsumer<PluginInstallationCancelledEventArgs>, PluginInstallationCancelledNotifier>();
             collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedLogger>();
             collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedNotifier>();
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledLogger>();
