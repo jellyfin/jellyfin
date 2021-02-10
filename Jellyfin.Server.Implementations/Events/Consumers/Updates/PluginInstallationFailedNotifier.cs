@@ -1,16 +1,16 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
 {
     /// <summary>
     /// Notifies admin users when a plugin installation fails.
     /// </summary>
-    public class PluginInstallationFailedNotifier : IEventConsumer<InstallationFailedEventArgs>
+    public class PluginInstallationFailedNotifier : IHandleMessages<InstallationFailedEventArgs>
     {
         private readonly ISessionManager _sessionManager;
 
@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(InstallationFailedEventArgs eventArgs)
+        public async Task Handle(InstallationFailedEventArgs eventArgs)
         {
             await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstallationFailed, eventArgs.InstallationInfo, CancellationToken.None).ConfigureAwait(false);
         }

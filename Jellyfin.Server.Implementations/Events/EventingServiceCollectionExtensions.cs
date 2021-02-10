@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using Jellyfin.Server.Implementations.Events.Consumers.Updates;
-using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Controller.Events.Updates;
@@ -40,8 +39,6 @@ namespace Jellyfin.Server.Implementations.Events
                     .MapFallback("Events")));
 
             // Update consumers
-            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedLogger>();
-            collection.AddScoped<IEventConsumer<InstallationFailedEventArgs>, PluginInstallationFailedNotifier>();
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledLogger>();
             collection.AddScoped<IEventConsumer<PluginInstalledEventArgs>, PluginInstalledNotifier>();
             collection.AddScoped<IEventConsumer<PluginInstallingEventArgs>, PluginInstallingNotifier>();

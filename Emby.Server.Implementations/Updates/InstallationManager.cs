@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Updates
                     _currentInstallations.Remove(tuple);
                 }
 
-                await _eventManager.PublishAsync(new InstallationFailedEventArgs
+                await _eventBus.Send(new InstallationFailedEventArgs
                 {
                     InstallationInfo = package,
                     Exception = ex
