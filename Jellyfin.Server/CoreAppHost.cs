@@ -74,7 +74,6 @@ namespace Jellyfin.Server
 
             ServiceCollection.AddEventServices(LoggerFactory, GetComposablePartAssemblies());
             ServiceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
-            ServiceCollection.AddSingleton<IEventManager, EventManager>();
             ServiceCollection.AddSingleton<JellyfinDbProvider>();
 
             ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
