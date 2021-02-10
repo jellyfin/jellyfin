@@ -1,7 +1,7 @@
 parameters:
   LinuxImage: 'ubuntu-latest'
   RestoreBuildProjects: 'Jellyfin.Server/Jellyfin.Server.csproj'
-  DotNetSdkVersion: 5.0.100
+  DotNetSdkVersion: 5.0.103
 
 jobs:
   - job: Build
