@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
@@ -344,8 +343,8 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
-                await _eventManager.PublishAsync(isUpdate
-                    ? (GenericEventArgs<InstallationInfo>)new PluginUpdatedEventArgs(package)
+                await _eventBus.Send(isUpdate
+                    ? new PluginUpdatedEventArgs(package)
                     : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
 
                 _applicationHost.NotifyPendingRestart();
