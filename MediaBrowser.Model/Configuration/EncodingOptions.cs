@@ -39,6 +39,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableTonemapping { get; set; }
 
+        public bool EnableVppTonemapping { get; set; }
+
         public string TonemappingAlgorithm { get; set; }
 
         public string TonemappingRange { get; set; }
@@ -65,6 +67,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableDecodingColorDepth10Vp9 { get; set; }
 
+        public bool EnableEnhancedNvdecDecoder { get; set; }
+
         public bool EnableHardwareEncoding { get; set; }
 
         public bool AllowHevcEncoding { get; set; }
@@ -88,6 +92,7 @@ namespace MediaBrowser.Model.Configuration
             // The left side of the dot is the platform number, and the right side is the device number on the platform.
             OpenclDevice = "0.0";
             EnableTonemapping = false;
+            EnableVppTonemapping = false;
             TonemappingAlgorithm = "hable";
             TonemappingRange = "auto";
             TonemappingDesat = 0;
@@ -100,6 +105,7 @@ namespace MediaBrowser.Model.Configuration
             DeinterlaceMethod = "yadif";
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;
+            EnableEnhancedNvdecDecoder = true;
             EnableHardwareEncoding = true;
             AllowHevcEncoding = true;
             EnableSubtitleExtraction = true;
