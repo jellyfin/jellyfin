@@ -331,7 +331,7 @@ namespace Emby.Server.Implementations.Updates
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token);
             var linkedToken = linkedTokenSource.Token;
 
-            await _eventManager.PublishAsync(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
+            await _eventBus.Send(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
 
             try
             {
