@@ -4,7 +4,7 @@
     default: "ubuntu-latest"
   - name: GeneratorVersion
     type: string
-    default: "5.0.0-beta2"
+    default: "5.0.1"
 
 jobs:
 - job: GenerateApiClients
