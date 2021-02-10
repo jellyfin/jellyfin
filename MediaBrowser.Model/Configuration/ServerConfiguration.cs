@@ -254,7 +254,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
-        public string PreferredMetadataLanguage { get; set; } = string.Empty;
+        public string PreferredMetadataLanguage { get; set; } = "en";
 
         /// <summary>
         /// Gets or sets the metadata country code.
