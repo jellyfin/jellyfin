@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using Jellyfin.Server.Implementations.Events.Consumers.Updates;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Security;
-using MediaBrowser.Controller.Events.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Rebus.Config;
@@ -37,9 +34,6 @@ namespace Jellyfin.Server.Implementations.Events
                 .Routing(r => r.TypeBased()
                     .MapAssemblyOf<AuthenticationSucceededEventArgs>("Events")
                     .MapFallback("Events")));
-
-            // Update consumers
-            collection.AddScoped<IEventConsumer<PluginUpdatedEventArgs>, PluginUpdatedLogger>();
         }
     }
 }

@@ -18,7 +18,6 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Updates;
@@ -38,7 +37,6 @@ namespace Emby.Server.Implementations.Updates
         private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
         private readonly IBus _eventBus;
-        private readonly IEventManager _eventManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -68,7 +66,6 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="logger">The <see cref="ILogger{InstallationManager}"/>.</param>
         /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
-        /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
         /// <param name="eventBus">The <see cref="IBus"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
@@ -79,7 +76,6 @@ namespace Emby.Server.Implementations.Updates
             IServerApplicationHost appHost,
             IApplicationPaths appPaths,
             IBus eventBus,
-            IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             IZipClient zipClient,
@@ -92,7 +88,6 @@ namespace Emby.Server.Implementations.Updates
             _applicationHost = appHost;
             _appPaths = appPaths;
             _eventBus = eventBus;
-            _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
             _config = config;
             _zipClient = zipClient;
