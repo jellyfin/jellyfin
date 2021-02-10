@@ -408,7 +408,7 @@ namespace Emby.Server.Implementations.Updates
             // Remove it the quick way for now
             _pluginManager.RemovePlugin(plugin);
 
-            _eventManager.Publish(new PluginUninstalledEventArgs(plugin.GetPluginInfo()));
+            _eventBus.Send(new PluginUninstalledEventArgs(plugin.GetPluginInfo()));
 
             _applicationHost.NotifyPendingRestart();
         }
