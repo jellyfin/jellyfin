@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -27,8 +28,12 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             _testUser = new User("Test User", "Auth provider", "Reset provider");
 
             var providerManager = new Mock<IProviderManager>();
+
+            var tmdbExternalId = new TmdbMovieExternalId();
+            var externalIdInfo = new ExternalIdInfo(tmdbExternalId.ProviderName, tmdbExternalId.Key, tmdbExternalId.Type, tmdbExternalId.UrlFormatString);
+
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
-                .Returns(Enumerable.Empty<ExternalIdInfo>());
+                .Returns(new[] { externalIdInfo });
 
             var nfoConfig = new XbmcMetadataOptions()
             {
@@ -63,7 +68,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             Assert.Equal("Justice League", item.OriginalTitle);
             Assert.Equal("Justice for all.", item.Tagline);
-            Assert.Equal("tt0974015", item.ProviderIds["imdb"]);
+            Assert.Equal("tt0974015", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
+            Assert.Equal("141052", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
 
             Assert.Equal(4, item.Genres.Length);
             Assert.Contains("Action", item.Genres);

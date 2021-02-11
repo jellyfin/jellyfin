@@ -3,10 +3,10 @@
   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Sony Bravia (2012)</Name>
   <Identification>
-    <FriendlyName>KDL-\d{2}[A-Z]X\d5(\d|G).*</FriendlyName>
+    <FriendlyName>KDL-[0-9]{2}[A-Z]X[0-9]5([0-9]|G).*</FriendlyName>
     <Manufacturer>Sony</Manufacturer>
     <Headers>
-      <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-\d{2}[A-Z]X\d5(\d|G).*" match="Regex" />
+      <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-[0-9]{2}[A-Z]X[0-9]5([0-9]|G).*" match="Regex" />
     </Headers>
   </Identification>
   <Manufacturer>Microsoft Corporation</Manufacturer>
