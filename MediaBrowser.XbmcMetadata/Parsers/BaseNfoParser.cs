@@ -377,9 +377,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "watched":
                     {
+                        var val = reader.ReadElementContentAsBoolean();
+
                         if (userData != null)
                         {
-                            userData.Played = reader.ReadElementContentAsBoolean();
+                            userData.Played = val;
                         }
 
                         break;
@@ -387,9 +389,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "playcount":
                     {
-                        if (userData != null)
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            userData.PlayCount = reader.ReadElementContentAsInt();
+                            if (int.TryParse(val.Split(' ')[0], NumberStyles.Integer, UsCulture, out var count))
+                            {
+                                userData.PlayCount = count;
+                            }
                         }
 
                         break;
@@ -397,20 +403,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "lasplayed":
                     {
-                        if (userData != null)
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            var val = reader.ReadElementContentAsString();
-
-                            if (!string.IsNullOrWhiteSpace(val))
+                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
                             {
-                                if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
-                                {
-                                    userData.LastPlayedDate = added.ToUniversalTime();
-                                }
-                                else
-                                {
-                                    Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
-                                }
+                                userData.LastPlayedDate = added.ToUniversalTime();
+                            }
+                            else
+                            {
+                                Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
                             }
                         }
 
