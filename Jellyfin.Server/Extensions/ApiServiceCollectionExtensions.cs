@@ -316,6 +316,7 @@ namespace Jellyfin.Server.Extensions
 
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
+                c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
