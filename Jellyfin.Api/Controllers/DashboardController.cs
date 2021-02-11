@@ -7,17 +7,11 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Models;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
-using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers
 {
