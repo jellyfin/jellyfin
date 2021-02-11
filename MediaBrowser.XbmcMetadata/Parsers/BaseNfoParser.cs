@@ -401,7 +401,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "lasplayed":
+                case "lastplayed":
                     {
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && userData != null)

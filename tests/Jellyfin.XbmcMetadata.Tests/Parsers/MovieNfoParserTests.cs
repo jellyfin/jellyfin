@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -18,19 +19,35 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
     public class MovieNfoParserTests
     {
         private readonly MovieNfoParser _parser;
+        private readonly IUserDataManager _userDataManager;
+        private readonly User _testUser;
 
         public MovieNfoParserTests()
         {
+            _testUser = new User("Test User", "Auth provider", "Reset provider");
+
             var providerManager = new Mock<IProviderManager>();
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(Enumerable.Empty<ExternalIdInfo>());
-            var config = new Mock<IConfigurationManager>();
-            config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new XbmcMetadataOptions());
-            var user = new Mock<IUserManager>();
-            var userData = new Mock<IUserDataManager>();
 
-            _parser = new MovieNfoParser(new NullLogger<MovieNfoParser>(), config.Object, providerManager.Object, user.Object, userData.Object);
+            var nfoConfig = new XbmcMetadataOptions()
+            {
+                UserId = "F38E6443-090B-4F7A-BD12-9CFF5020F7BC"
+            };
+            var configManager = new Mock<IConfigurationManager>();
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>()))
+                .Returns(nfoConfig);
+
+            var user = new Mock<IUserManager>();
+            user.Setup(x => x.GetUserById(It.IsAny<Guid>()))
+                .Returns(_testUser);
+
+            var userData = new Mock<IUserDataManager>();
+            userData.Setup(x => x.GetUserData(_testUser, It.IsAny<BaseItem>()))
+                .Returns(new UserItemData());
+
+            _userDataManager = userData.Object;
+            _parser = new MovieNfoParser(new NullLogger<MovieNfoParser>(), configManager.Object, providerManager.Object, user.Object, userData.Object);
         }
 
         [Fact]
@@ -91,6 +108,12 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("Test Lyricist", lyricist!.Name);
 
             Assert.Equal(new DateTime(2019, 8, 6, 9, 1, 18), item.DateCreated);
+
+            // userData
+            var userData = _userDataManager.GetUserData(_testUser, item);
+            Assert.Equal(2, userData.PlayCount);
+            Assert.True(userData.Played);
+            Assert.Equal(new DateTime(2021, 02, 11, 07, 47, 23), userData.LastPlayedDate);
         }
 
         [Fact]
