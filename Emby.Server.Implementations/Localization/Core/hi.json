@@ -1,5 +1,5 @@
 {
-    "Albums": "संग्रह",
+    "Albums": "एल्बम",
     "HeaderRecordingGroups": "रिकॉर्डिंग समूह",
     "HeaderNextUp": "इसके बाद",
     "HeaderLiveTV": "लाइव टीवी",
@@ -26,7 +26,7 @@
     "AuthenticationSucceededWithUserName": "सफलता से प्रमाणीकृत",
     "Artists": "कलाकारों",
     "Application": "एप्लिकेशन",
-    "AppDeviceValues": "एप: {0}, मशीन: {1}",
+    "AppDeviceValues": "एप: {0}, उपकरण: {1}",
     "NotificationOptionPluginUninstalled": "प्लगइन अनइंस्टाल हो गया",
     "NotificationOptionPluginInstalled": "प्लगइन इनस्टॉल हो गया",
     "NotificationOptionPluginError": "प्लगइन फ़ैल हो गया",
