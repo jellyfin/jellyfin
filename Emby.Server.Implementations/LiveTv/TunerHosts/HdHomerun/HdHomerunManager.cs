@@ -288,19 +288,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         internal static int WriteGetMessage(Span<byte> buffer, int tuner, string name)
         {
             var byteName = string.Format(CultureInfo.InvariantCulture, "/tuner{0}/{1}", tuner, name);
-            int offset = WriteHeaderAndName(buffer, byteName);
-
-            // calculate crc and insert at the end of the message
-            var crc = Crc32.Compute(buffer.Slice(0, offset));
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), crc);
-
-            return offset + 4;
+            int offset = WriteHeaderAndPayload(buffer, byteName);
+            return FinishPacket(buffer, offset);
         }
 
         private static int WriteSetMessage(Span<byte> buffer, int tuner, string name, string value, uint? lockkey)
         {
             var byteName = string.Format(CultureInfo.InvariantCulture, "/tuner{0}/{1}", tuner, name);
-            int offset = WriteHeaderAndName(buffer, byteName);
+            int offset = WriteHeaderAndPayload(buffer, byteName);
 
             buffer[offset++] = GetSetValue;
             offset += WriteNullTerminatedString(buffer.Slice(offset), value);
@@ -313,17 +308,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 offset += 4;
             }
 
-            // calculate crc and insert at the end of the message
-            var crc = Crc32.Compute(buffer.Slice(0, offset));
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), crc);
-
-            return offset + 4;
+            return FinishPacket(buffer, offset);
         }
 
-        internal static int WriteNullTerminatedString(Span<byte> buffer, ReadOnlySpan<char> value)
+        internal static int WriteNullTerminatedString(Span<byte> buffer, ReadOnlySpan<char> payload)
         {
-            int len = Encoding.UTF8.GetBytes(value, buffer.Slice(1)) + 1;
+            int len = Encoding.UTF8.GetBytes(payload, buffer.Slice(1)) + 1;
 
+            // TODO: variable length: this can be 2 bytes if len > 127
             // Write length in front of value
             buffer[0] = Convert.ToByte(len);
 
@@ -333,19 +325,34 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return len;
         }
 
-        private static int WriteHeaderAndName(Span<byte> buffer, ReadOnlySpan<char> payload)
+        private static int WriteHeaderAndPayload(Span<byte> buffer, ReadOnlySpan<char> payload)
         {
-            // insert header bytes into message
+            // Packet type
             BinaryPrimitives.WriteUInt16BigEndian(buffer, GetSetRequest);
-            int offset = 2;
-            // Subtract 4 bytes for header and 4 bytes for crc
-            BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(offset), (ushort)(payload.Length + 2));
 
-            // insert tag name and length
+            // We write the payload length at the end
+            int offset = 4;
+
+            // Tag
             buffer[offset++] = GetSetName;
-            offset += WriteNullTerminatedString(buffer.Slice(offset), payload);
+
+            // Payload length + data
+            int strLen = WriteNullTerminatedString(buffer.Slice(offset), payload);
+            offset += strLen;
 
             return offset;
+        }
+
+        private static int FinishPacket(Span<byte> buffer, int offset)
+        {
+            // Payload length
+            BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(2), (ushort)(offset - 4));
+
+            // calculate crc and insert at the end of the message
+            var crc = Crc32.Compute(buffer.Slice(0, offset));
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(offset), crc);
+
+            return offset + 4;
         }
 
         private static bool ParseReturnMessage(byte[] buf, int numBytes, out string returnVal)

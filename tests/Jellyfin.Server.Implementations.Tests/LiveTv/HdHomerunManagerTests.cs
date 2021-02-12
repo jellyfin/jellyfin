@@ -35,5 +35,24 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
             Assert.Equal(expected.Length, len);
             Assert.True(expected.SequenceEqual(buffer.Slice(0, len)));
         }
+
+        [Fact]
+        public void WriteGetMessage_Valid_Success()
+        {
+            ReadOnlySpan<byte> expected = stackalloc byte[]
+            {
+                0, 4,
+                0, 12,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                0xc0, 0xc9, 0x87, 0x33
+            };
+
+            Span<byte> buffer = stackalloc byte[128];
+            int len = HdHomerunManager.WriteGetMessage(buffer, 0, "N");
+
+            Assert.Equal(expected.Length, len);
+            Assert.True(expected.SequenceEqual(buffer.Slice(0, len)));
+        }
     }
 }
