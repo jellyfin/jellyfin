@@ -592,7 +592,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.IsVideoRequest
                     && ((string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
                          && (isNvdecDecoder || isCuvidHevcDecoder || isSwDecoder))
-                        || (string.Equals(encodingOptions.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) 
+                        || (string.Equals(encodingOptions.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase)
                             && (isD3d11vaDecoder || isSwDecoder))))
                 {
                     if (isTonemappingSupported)
@@ -1381,7 +1381,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var requestedProfile = requestedProfiles[0];
                 // strip spaces because they may be stripped out on the query string as well
-                if (!string.IsNullOrEmpty(videoStream.Profile) && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", ""), StringComparer.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(videoStream.Profile)
+                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", "", StringComparison.Ordinal), StringComparer.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(requestedProfile);
@@ -1710,7 +1711,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (filters.Count > 0)
             {
-                return " -af \"" + string.Join(",", filters) + "\"";
+                return " -af \"" + string.Join(',', filters) + "\"";
             }
 
             return string.Empty;
@@ -2888,7 +2889,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 output += string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}",
-                    string.Join(",", filters));
+                    string.Join(',', filters));
             }
 
             return output;
@@ -2914,7 +2915,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (threads <= 0)
             {
                 return 0;
-            } 
+            }
             else if (threads >= Environment.ProcessorCount)
             {
                 return Environment.ProcessorCount;
@@ -3864,7 +3865,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 GetInputArgument(state, encodingOptions),
                 threads,
                 " -vn",
-                string.Join(" ", audioTranscodeParams),
+                string.Join(' ', audioTranscodeParams),
                 outputPath,
                 string.Empty,
                 string.Empty,

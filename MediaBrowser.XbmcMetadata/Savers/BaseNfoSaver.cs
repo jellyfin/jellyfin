@@ -465,7 +465,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields));
+                writer.WriteElementString("lockedfields", string.Join('|', item.LockedFields));
             }
 
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat, CultureInfo.InvariantCulture));

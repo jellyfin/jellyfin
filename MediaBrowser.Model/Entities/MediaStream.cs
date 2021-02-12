@@ -211,7 +211,7 @@ namespace MediaBrowser.Model.Entities
                             return result.ToString();
                         }
 
-                        return string.Join(" ", attributes);
+                        return string.Join(' ', attributes);
                     }
 
                     case MediaStreamType.Subtitle:

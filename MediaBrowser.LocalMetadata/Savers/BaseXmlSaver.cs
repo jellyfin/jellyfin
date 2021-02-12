@@ -214,7 +214,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("LockedFields", string.Join("|", item.LockedFields));
+                writer.WriteElementString("LockedFields", string.Join('|', item.LockedFields));
             }
 
             if (item.CriticRating.HasValue)

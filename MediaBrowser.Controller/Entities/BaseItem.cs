@@ -1243,7 +1243,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return string.Join("/", terms.ToArray());
+            return string.Join('/', terms.ToArray());
         }
 
         /// <summary>
@@ -2795,7 +2795,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = GetEtagValues(user);
 
-            return string.Join("|", list).GetMD5().ToString("N", CultureInfo.InvariantCulture);
+            return string.Join('|', list).GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
         protected virtual List<string> GetEtagValues(User user)

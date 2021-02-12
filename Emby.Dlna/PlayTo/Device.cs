@@ -990,7 +990,7 @@ namespace Emby.Dlna.PlayTo
 
             var deviceProperties = new DeviceInfo()
             {
-                Name = string.Join(" ", friendlyNames),
+                Name = string.Join(' ', friendlyNames),
                 BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 

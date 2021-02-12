@@ -166,7 +166,7 @@ namespace Emby.Server.Implementations.MediaEncoder
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error extracting chapter images for {0}", string.Join(",", video.Path));
+                            _logger.LogError(ex, "Error extracting chapter images for {0}", string.Join(',', video.Path));
                             success = false;
                             break;
                         }
