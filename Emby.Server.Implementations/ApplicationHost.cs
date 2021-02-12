@@ -903,7 +903,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void OnConfigurationUpdated(object sender, EventArgs e)
+        protected async void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
             var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
@@ -939,7 +939,7 @@ namespace Emby.Server.Implementations
             {
                 Logger.LogInformation("App needs to be restarted due to configuration change.");
 
-                NotifyPendingRestart();
+                await NotifyPendingRestart().ConfigureAwait(false);
             }
         }
 
@@ -970,10 +970,8 @@ namespace Emby.Server.Implementations
             return false;
         }
 
-        /// <summary>
-        /// Notifies that the kernel that a change has been made that requires a restart.
-        /// </summary>
-        public void NotifyPendingRestart()
+        /// <inheritdoc />
+        public async Task NotifyPendingRestart()
         {
             Logger.LogInformation("App needs to be restarted.");
 
@@ -983,7 +981,7 @@ namespace Emby.Server.Implementations
 
             if (changed)
             {
-                _eventBus.Send(new PendingRestartEventArgs());
+                await _eventBus.Send(new PendingRestartEventArgs()).ConfigureAwait(false);
             }
         }
 

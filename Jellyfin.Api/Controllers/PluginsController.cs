@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -180,7 +178,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UninstallPluginByVersion([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
+        public async Task<ActionResult> UninstallPluginByVersion([FromRoute, Required] Guid pluginId, [FromRoute, Required] Version version)
         {
             var plugin = _pluginManager.GetPlugin(pluginId, version);
             if (plugin == null)
@@ -188,7 +186,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            _installationManager.UninstallPlugin(plugin);
+            await _installationManager.UninstallPlugin(plugin).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -204,7 +202,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Obsolete("Please use the UninstallPluginByVersion API.")]
-        public ActionResult UninstallPlugin([FromRoute, Required] Guid pluginId)
+        public async Task<ActionResult> UninstallPlugin([FromRoute, Required] Guid pluginId)
         {
             // If no version is given, return the current instance.
             var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
@@ -219,7 +217,7 @@ namespace Jellyfin.Api.Controllers
 
             if (plugin != null)
             {
-                _installationManager.UninstallPlugin(plugin);
+                await _installationManager.UninstallPlugin(plugin).ConfigureAwait(false);
                 return NoContent();
             }
 

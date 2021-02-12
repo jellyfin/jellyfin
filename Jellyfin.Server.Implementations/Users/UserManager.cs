@@ -266,9 +266,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ResetEasyPassword(User user)
+        public async Task ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, string.Empty, null);
+            await ChangeEasyPassword(user, string.Empty, null).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -286,7 +286,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -299,9 +299,9 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
-            _eventBus.Send(new UserPasswordChangedEventArgs(user));
+            await _eventBus.Send(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

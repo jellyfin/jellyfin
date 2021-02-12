@@ -202,22 +202,15 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
+        /// <returns>A task representing the disposal of the task manager.</returns>
+        public async ValueTask DisposeAsync()
         {
             foreach (var task in ScheduledTasks)
             {
-                task.Dispose();
+                await task.DisposeAsync().ConfigureAwait(false);
             }
+
+            GC.SuppressFinalize(this);
         }
 
         public void Cancel(IScheduledTaskWorker task)
@@ -244,9 +237,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="task">The task.</param>
         /// <param name="result">The result.</param>
-        internal void OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
+        /// <returns>A task.</returns>
+        internal async Task OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            _eventBus.Send(new TaskCompletionEventArgs(task, result));
+            await _eventBus.Send(new TaskCompletionEventArgs(task, result)).ConfigureAwait(false);
 
             ExecuteQueuedTasks();
         }

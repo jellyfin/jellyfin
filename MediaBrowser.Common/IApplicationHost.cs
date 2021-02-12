@@ -85,7 +85,8 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Notifies the pending restart.
         /// </summary>
-        void NotifyPendingRestart();
+        /// <returns>A task representing the notification.</returns>
+        Task NotifyPendingRestart();
 
         /// <summary>
         /// Restarts this instance.

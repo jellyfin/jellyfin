@@ -170,12 +170,14 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            _eventBus.Send(new SessionStartedEventArgs(info)).ConfigureAwait(false);
+            // TODO: fix
+            _eventBus.Send(new SessionStartedEventArgs(info)).GetAwaiter().GetResult();
         }
 
         private void OnSessionEnded(SessionInfo info)
         {
-            _eventBus.Send(new SessionEndedEventArgs(info));
+            // TODO: fix
+            _eventBus.Send(new SessionEndedEventArgs(info)).GetAwaiter().GetResult();
 
             info.Dispose();
         }
@@ -250,7 +252,8 @@ namespace Emby.Server.Implementations.Session
 
             if ((activityDate - lastActivityDate).TotalSeconds > 10)
             {
-                _eventBus.Send(new SessionActivityEventArgs(session));
+                // TODO: fix
+                _eventBus.Send(new SessionActivityEventArgs(session)).GetAwaiter().GetResult();
             }
 
             return session;
@@ -1599,7 +1602,8 @@ namespace Emby.Server.Implementations.Session
 
             if (saveCapabilities)
             {
-                _eventBus.Send(new SessionCapabilitiesChangedEventArgs(session));
+                // TODO: fix
+                _eventBus.Send(new SessionCapabilitiesChangedEventArgs(session)).GetAwaiter().GetResult();
 
                 _deviceManager.SaveCapabilities(session.DeviceId, capabilities);
             }

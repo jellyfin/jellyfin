@@ -342,7 +342,7 @@ namespace Emby.Server.Implementations.Updates
                     ? new PluginUpdatedEventArgs(package)
                     : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
 
-                _applicationHost.NotifyPendingRestart();
+                await _applicationHost.NotifyPendingRestart().ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -385,7 +385,7 @@ namespace Emby.Server.Implementations.Updates
         /// Uninstalls a plugin.
         /// </summary>
         /// <param name="plugin">The <see cref="LocalPlugin"/> to uninstall.</param>
-        public void UninstallPlugin(LocalPlugin plugin)
+        public async Task UninstallPlugin(LocalPlugin plugin)
         {
             if (plugin == null)
             {
@@ -403,9 +403,9 @@ namespace Emby.Server.Implementations.Updates
             // Remove it the quick way for now
             _pluginManager.RemovePlugin(plugin);
 
-            _eventBus.Send(new PluginUninstalledEventArgs(plugin.GetPluginInfo()));
+            await _eventBus.Send(new PluginUninstalledEventArgs(plugin.GetPluginInfo())).ConfigureAwait(false);
 
-            _applicationHost.NotifyPendingRestart();
+            await _applicationHost.NotifyPendingRestart().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

@@ -7,7 +7,7 @@ using Jellyfin.Data.Events;
 
 namespace MediaBrowser.Model.Tasks
 {
-    public interface ITaskManager : IDisposable
+    public interface ITaskManager : IAsyncDisposable
     {
         /// <summary>
         /// Gets the list of Scheduled Tasks.

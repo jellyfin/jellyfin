@@ -323,7 +323,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateUserEasyPassword(
+        public async Task<ActionResult> UpdateUserEasyPassword(
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UpdateUserEasyPassword request)
         {
@@ -341,11 +341,11 @@ namespace Jellyfin.Api.Controllers
 
             if (request.ResetPassword)
             {
-                _userManager.ResetEasyPassword(user);
+                await _userManager.ResetEasyPassword(user).ConfigureAwait(false);
             }
             else
             {
-                _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword);
+                await _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword).ConfigureAwait(false);
             }
 
             return NoContent();

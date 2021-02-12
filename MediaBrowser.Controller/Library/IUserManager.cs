@@ -102,7 +102,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        void ResetEasyPassword(User user);
+        Task ResetEasyPassword(User user);
 
         /// <summary>
         /// Changes the password.
@@ -112,7 +112,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Changes the easy password.
         /// </summary>
-        void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
+        /// <returns>A task representing the change of the user's easy password.</returns>
+        Task ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
 
         /// <summary>
         /// Gets the user dto.
