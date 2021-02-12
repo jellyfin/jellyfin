@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common.Plugins
@@ -43,6 +44,15 @@ namespace MediaBrowser.Common.Plugins
         /// <param name="path">The path where to save the manifest.</param>
         /// <returns>True if successful.</returns>
         bool SaveManifest(PluginManifest manifest, string path);
+
+        /// <summary>
+        /// Generates a manifest from repository data.
+        /// </summary>
+        /// <param name="packageInfo">The <see cref="PackageInfo"/> used to generate a manifest.</param>
+        /// <param name="version">Version to be installed.</param>
+        /// <param name="path">The path where to save the manifest.</param>
+        /// <returns>True if successful.</returns>
+        bool GenerateManifest(PackageInfo packageInfo, Version version, string path);
 
         /// <summary>
         /// Imports plugin details from a folder.
