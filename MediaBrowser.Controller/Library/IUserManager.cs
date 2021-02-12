@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
@@ -16,11 +15,6 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public interface IUserManager
     {
-        /// <summary>
-        /// Occurs when a user is updated.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserUpdated;
-
         /// <summary>
         /// Gets the users.
         /// </summary>

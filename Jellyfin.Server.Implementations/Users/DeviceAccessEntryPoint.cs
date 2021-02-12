@@ -3,48 +3,37 @@
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using Jellyfin.Data.Events;
+using Jellyfin.Data.Events.Users;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Users
 {
-    public sealed class DeviceAccessEntryPoint : IServerEntryPoint
+    public sealed class DeviceAccessEntryPoint : IHandleMessages<UserUpdatedEventArgs>
     {
-        private readonly IUserManager _userManager;
         private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
         private readonly ISessionManager _sessionManager;
 
-        public DeviceAccessEntryPoint(IUserManager userManager, IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionManager sessionManager)
+        public DeviceAccessEntryPoint(IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionManager sessionManager)
         {
-            _userManager = userManager;
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _sessionManager = sessionManager;
         }
 
-        public Task RunAsync()
-        {
-            _userManager.OnUserUpdated += OnUserUpdated;
-
-            return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-        }
-
-        private void OnUserUpdated(object? sender, GenericEventArgs<User> e)
+        /// <inheritdoc />
+        public Task Handle(UserUpdatedEventArgs e)
         {
             var user = e.Argument;
             if (!user.HasPermission(PermissionKind.EnableAllDevices))
             {
                 UpdateDeviceAccess(user);
             }
+
+            return Task.CompletedTask;
         }
 
         private void UpdateDeviceAccess(User user)

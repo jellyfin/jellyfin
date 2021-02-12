@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
@@ -18,7 +17,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
@@ -99,9 +97,6 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
-
-        /// <inheritdoc/>
         public IEnumerable<User> Users => _users.Values;
 
         /// <inheritdoc/>
@@ -159,7 +154,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
             await _eventBus.Send(new UserUpdatedEventArgs(user)).ConfigureAwait(false);
-            OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
         }
 
         /// <inheritdoc/>
