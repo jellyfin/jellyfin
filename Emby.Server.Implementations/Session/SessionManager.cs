@@ -170,13 +170,13 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            // TODO: fix
+            // TODO: make the entire call async
             _eventBus.Send(new SessionStartedEventArgs(info)).GetAwaiter().GetResult();
         }
 
         private void OnSessionEnded(SessionInfo info)
         {
-            // TODO: fix
+            // TODO: make the entire call async
             _eventBus.Send(new SessionEndedEventArgs(info)).GetAwaiter().GetResult();
 
             info.Dispose();
@@ -252,7 +252,7 @@ namespace Emby.Server.Implementations.Session
 
             if ((activityDate - lastActivityDate).TotalSeconds > 10)
             {
-                // TODO: fix
+                // TODO: make the entire call async
                 _eventBus.Send(new SessionActivityEventArgs(session)).GetAwaiter().GetResult();
             }
 
@@ -260,9 +260,9 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task OnSessionControllerConnected(SessionInfo info)
+        public Task OnSessionControllerConnected(SessionInfo info)
         {
-            await _eventBus.Send(new SessionControllerConnectedEventArgs(info)).ConfigureAwait(false);
+            return _eventBus.Send(new SessionControllerConnectedEventArgs(info));
         }
 
         /// <inheritdoc />
@@ -1602,7 +1602,7 @@ namespace Emby.Server.Implementations.Session
 
             if (saveCapabilities)
             {
-                // TODO: fix
+                // TODO: make the entire call async
                 _eventBus.Send(new SessionCapabilitiesChangedEventArgs(session)).GetAwaiter().GetResult();
 
                 _deviceManager.SaveCapabilities(session.DeviceId, capabilities);

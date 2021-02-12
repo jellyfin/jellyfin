@@ -266,9 +266,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public async Task ResetEasyPassword(User user)
+        public Task ResetEasyPassword(User user)
         {
-            await ChangeEasyPassword(user, string.Empty, null).ConfigureAwait(false);
+            return ChangeEasyPassword(user, string.Empty, null);
         }
 
         /// <inheritdoc/>

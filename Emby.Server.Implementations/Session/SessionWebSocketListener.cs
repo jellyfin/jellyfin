@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Session
             var session = GetSession(connection.QueryString, connection.RemoteEndPoint.ToString());
             if (session != null)
             {
-                await EnsureController(session, connection);
+                await EnsureController(session, connection).ConfigureAwait(false);
                 await KeepAliveWebSocket(connection).ConfigureAwait(false);
             }
             else
@@ -134,7 +134,7 @@ namespace Emby.Server.Implementations.Session
             var controller = (WebSocketController)controllerInfo.Item1;
             controller.AddWebSocket(connection);
 
-            await _sessionManager.OnSessionControllerConnected(session);
+            await _sessionManager.OnSessionControllerConnected(session).ConfigureAwait(false);
         }
 
         /// <summary>
