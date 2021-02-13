@@ -300,9 +300,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath ?? string.Empty);
-            if (((ServerConfiguration)_config.CommonConfiguration).DisablePluginImages
-                || plugin.Manifest.ImagePath == null
-                || !System.IO.File.Exists(imagePath))
+            if (plugin.Manifest.ImagePath == null || !System.IO.File.Exists(imagePath))
             {
                 return NotFound();
             }
