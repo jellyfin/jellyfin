@@ -5,7 +5,7 @@ using System.Linq;
 using MediaBrowser.Controller.Entities;
 using Xunit;
 
-namespace Jellyfin.Server.Tests
+namespace Jellyfin.Server.Implementations.Tests.BaseItem
 {
     public class BaseItemKindTests
     {
@@ -18,7 +18,7 @@ namespace Jellyfin.Server.Tests
             Assert.NotNull(defaultConstructor);
             if (defaultConstructor != null)
             {
-                var instance = (BaseItem)defaultConstructor.Invoke(null);
+                var instance = (MediaBrowser.Controller.Entities.BaseItem)defaultConstructor.Invoke(null);
                 var exception = Record.Exception(() => instance.GetBaseItemKind());
                 Assert.Null(exception);
             }
@@ -47,7 +47,7 @@ namespace Jellyfin.Server.Tests
                 foreach (var projectAssembly in projectAssemblies)
                 {
                     var baseItemDescendantTypes = projectAssembly.GetTypes()
-                         .Where(targetType => targetType.IsClass && !targetType.IsAbstract && targetType.IsSubclassOf(typeof(BaseItem)));
+                         .Where(targetType => targetType.IsClass && !targetType.IsAbstract && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
 
                     foreach (var descendantType in baseItemDescendantTypes)
                     {
