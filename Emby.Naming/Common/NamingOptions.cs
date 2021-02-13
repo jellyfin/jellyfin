@@ -284,7 +284,7 @@ namespace Emby.Naming.Common
 
                 // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
                 // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[\s_]*-[\s_]*(?<epnumber>\d+).*$")
+                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
                 {
                     IsNamed = true
                 },
@@ -588,7 +588,7 @@ namespace Emby.Naming.Common
             AudioBookNamesExpressions = new[]
             {
                 // Detect year usually in brackets after name Batman (2020)
-                @"^(?<name>.+?)\s*\(\s*(?<year>\d{4})\s*\)\s*$",
+                @"^(?<name>.+?)\s*\(\s*(?<year>[0-9]{4})\s*\)\s*$",
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };
 

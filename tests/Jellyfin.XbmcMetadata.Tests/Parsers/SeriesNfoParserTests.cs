@@ -43,8 +43,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("American Gods", item.OriginalTitle);
             Assert.Equal(string.Empty, item.Tagline);
             Assert.Equal(0, item.RunTimeTicks);
-            Assert.Equal("46639", item.ProviderIds["tmdb"]);
-            Assert.Equal("253573", item.ProviderIds["tvdb"]);
+            Assert.Equal("46639", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
+            Assert.Equal("253573", item.ProviderIds[MetadataProvider.Tvdb.ToString()]);
             Assert.Equal("tt11111", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
 
             Assert.Equal(3, item.Genres.Length);

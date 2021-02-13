@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;

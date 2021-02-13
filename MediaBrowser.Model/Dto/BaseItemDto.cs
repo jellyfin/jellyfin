@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
@@ -276,7 +277,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
-        public string Type { get; set; }
+        public BaseItemKind Type { get; set; }
 
         /// <summary>
         /// Gets or sets the people.

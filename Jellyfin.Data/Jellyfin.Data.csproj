@@ -19,7 +19,7 @@
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
     <PackageId>Jellyfin.Data</PackageId>
-    <VersionPrefix>10.7.0</VersionPrefix>
+    <VersionPrefix>10.8.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
@@ -41,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.3" />
   </ItemGroup>
 
   <ItemGroup>

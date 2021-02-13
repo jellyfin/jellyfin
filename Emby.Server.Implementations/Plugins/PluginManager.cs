@@ -348,7 +348,7 @@ namespace Emby.Server.Implementations.Plugins
             try
             {
                 var data = JsonSerializer.Serialize(manifest, _jsonOptions);
-                File.WriteAllText(Path.Combine(path, "meta.json"), data, Encoding.UTF8);
+                File.WriteAllText(Path.Combine(path, "meta.json"), data);
                 return true;
             }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -519,7 +519,7 @@ namespace Emby.Server.Implementations.Plugins
             return _plugins.Remove(plugin);
         }
 
-        private LocalPlugin LoadManifest(string dir)
+        internal LocalPlugin LoadManifest(string dir)
         {
             Version? version;
             PluginManifest? manifest = null;

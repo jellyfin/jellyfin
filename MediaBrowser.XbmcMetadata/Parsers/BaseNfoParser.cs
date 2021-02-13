@@ -721,20 +721,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                case "musicBrainzArtistID":
-                    {
-                        if (reader.IsEmptyElement)
-                        {
-                            reader.Read();
-                            break;
-                        }
-
-                        var id = reader.ReadElementContentAsString();
-                        item.SetProviderId(MetadataProvider.MusicBrainzArtist.ToString(), id);
-
-                        break;
-                    }
-
                 default:
                     string readerName = reader.Name;
                     if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
