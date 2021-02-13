@@ -24,6 +24,11 @@
 			<votes>119873</votes>
 		</rating>
     </ratings>
+    <criticrating>7.6</criticrating>
+    <language>en</language>
+    <countrycode>us</countrycode>
+    <customrating>8.7</customrating>
+    <aspectratio>1.777778</aspectratio>
     <userrating>0</userrating>
     <top250>0</top250>
     <outline>Fueled by his restored faith in humanity and inspired by Superman&apos;s selfless act, Bruce Wayne enlists the help of his new-found ally, Diana Prince, to face an even greater enemy.</outline>
@@ -92,20 +97,22 @@
     <country>USA</country>
     <country>Canada</country>
     <country>UK</country>
-    <set>
+    <set tmdbcolid="702342">
         <name>Justice League Collection</name>
         <overview>Based on the DC Comics superhero team</overview>
     </set>
     <credits>Jerry Siegel</credits>
     <credits>Joe Shuster</credits>
-    <director>Zack Snyder</director>
+    <director>Zack Snyder,</director>
+    <writer>Test</writer>
     <premiered>2017-11-15</premiered>
+    <enddate>2017-11-16</enddate>
     <year>2017</year>
     <status></status>
     <code></code>
     <aired></aired>
     <studio>DC Comics</studio>
-    <trailer></trailer>
+    <trailer>plugin://plugin.video.youtube/?action=play_video&amp;videoid=dQw4w9WgXcQ</trailer>
     <fileinfo>
         <streamdetails>
             <video>
@@ -115,6 +122,7 @@
                 <height>1080</height>
                 <durationinseconds>6268</durationinseconds>
                 <stereomode></stereomode>
+                <format3d>HSBS</format3d>
             </video>
             <audio>
                 <codec>truehd</codec>

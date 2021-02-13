@@ -14,6 +14,10 @@
     <episode>1</episode>
     <displayseason>-1</displayseason>
     <displayepisode>-1</displayepisode>
+    <episodenumberend>1</episodenumberend>
+    <airsbefore_episode>1</airsbefore_episode>
+    <airsafter_season>2</airsafter_season>
+    <airsbefore_season>3</airsbefore_season>
     <outline></outline>
     <plot>When Shadow Moon is released from prison early after the death of his wife, he meets Mr. Wednesday and is recruited as his bodyguard. Shadow discovers that this may be more than he bargained for.</plot>
     <tagline></tagline>

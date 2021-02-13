@@ -45,6 +45,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(0, item.RunTimeTicks);
             Assert.Equal("46639", item.ProviderIds["tmdb"]);
             Assert.Equal("253573", item.ProviderIds["tvdb"]);
+            Assert.Equal("tt11111", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
 
             Assert.Equal(3, item.Genres.Length);
             Assert.Contains("Drama", item.Genres);
@@ -54,6 +55,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(new DateTime(2017, 4, 30), item.PremiereDate);
             Assert.Single(item.Studios);
             Assert.Contains("Starz", item.Studios);
+            Assert.Equal("9 PM", item.AirTime);
+            Assert.Single(item.AirDays);
+            Assert.Contains(DayOfWeek.Friday, item.AirDays);
+            Assert.Equal(SeriesStatus.Ended, item.Status);
 
             Assert.Equal(6, result.People.Count);
 
@@ -67,6 +72,21 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("http://image.tmdb.org/t/p/original/uo8YljeePz3pbj7gvWXdB4gOOW4.jpg", sweeney!.ImageUrl);
 
             Assert.Equal(new DateTime(2017, 10, 7, 14, 25, 47), item.DateCreated);
+        }
+
+        [Theory]
+        [InlineData("Test Data\\Tvdb.nfo", "Tvdb", "121361")]
+        public void Parse_UrlFile_Success(string path, string provider, string id)
+        {
+            var result = new MetadataResult<Series>()
+            {
+                Item = new Series()
+            };
+
+            _parser.Fetch(result, path, CancellationToken.None);
+            var item = (Series)result.Item;
+
+            Assert.Equal(id, item.ProviderIds[provider]);
         }
 
         [Fact]

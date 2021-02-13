@@ -56,6 +56,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(2017, item.ProductionYear);
             Assert.Single(item.Studios);
             Assert.Contains("Starz", item.Studios);
+            Assert.Equal(1, item.IndexNumberEnd);
+            Assert.Equal(2, item.AirsAfterSeasonNumber);
+            Assert.Equal(3, item.AirsBeforeSeasonNumber);
+            Assert.Equal(1, item.AirsBeforeEpisodeNumber);
 
             // Credits
             var writers = result.People.Where(x => x.Type == PersonType.Writer).ToArray();
