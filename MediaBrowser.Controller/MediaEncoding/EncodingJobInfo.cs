@@ -541,7 +541,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return MimeType;
             }
 
-            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
+            if (enableStreamDefault)
+            {
+                return MimeTypes.GetMimeType(outputPath);
+            }
+
+            return MimeTypes.GetMimeType(outputPath, null);
         }
 
         public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)

@@ -27,7 +27,11 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
-            httpContext.Features.Set<IQueryFeature>(new UrlDecodeQueryFeature(httpContext.Features.Get<IQueryFeature>()));
+            var feature = httpContext.Features.Get<IQueryFeature>();
+            if (feature != null)
+            {
+                httpContext.Features.Set<IQueryFeature>(new UrlDecodeQueryFeature(feature));
+            }
 
             await _next(httpContext).ConfigureAwait(false);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Rssdp.Infrastructure;
 
 namespace Rssdp
@@ -134,11 +135,13 @@ namespace Rssdp
         {
             get
             {
-                return String.Format("urn:{0}:{3}:{1}:{2}",
-                this.DeviceTypeNamespace ?? String.Empty,
-                this.DeviceType ?? String.Empty,
-                this.DeviceVersion,
-                this.DeviceClass ?? "device");
+                return String.Format(
+                    CultureInfo.InvariantCulture,
+                    "urn:{0}:{3}:{1}:{2}",
+                    this.DeviceTypeNamespace ?? String.Empty,
+                    this.DeviceType ?? String.Empty,
+                    this.DeviceVersion,
+                    this.DeviceClass ?? "device");
             }
         }
 

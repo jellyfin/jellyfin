@@ -68,7 +68,7 @@ namespace Jellyfin.Server.Infrastructure
         }
 
         /// <inheritdoc />
-        protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue range, long rangeLength)
+        protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {
