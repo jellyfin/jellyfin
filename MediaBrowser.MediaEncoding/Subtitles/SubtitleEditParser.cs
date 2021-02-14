@@ -38,7 +38,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             subRip.LoadSubtitle(subtitle, lines, "untitled");
             if (subRip.ErrorCount > 0)
             {
-                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle.");
+                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle.", subRip.ErrorCount);
             }
 
             var trackInfo = new SubtitleTrackInfo();

@@ -74,6 +74,6 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>DlnaIconResponse.</returns>
-        ImageStream GetIcon(string filename);
+        ImageStream? GetIcon(string filename);
     }
 }

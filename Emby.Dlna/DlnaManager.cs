@@ -486,7 +486,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public ImageStream GetIcon(string filename)
+        public ImageStream? GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                 ? ImageFormat.Png
