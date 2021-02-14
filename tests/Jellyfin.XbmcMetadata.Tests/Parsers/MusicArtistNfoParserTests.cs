@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -32,7 +33,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            _parser = new BaseNfoParser<MusicArtist>(new NullLogger<BaseNfoParser<MusicArtist>>(), config.Object, providerManager.Object);
+            var user = new Mock<IUserManager>();
+            var userData = new Mock<IUserDataManager>();
+
+            _parser = new BaseNfoParser<MusicArtist>(new NullLogger<BaseNfoParser<MusicArtist>>(), config.Object, providerManager.Object, user.Object, userData.Object);
         }
 
         [Fact]
