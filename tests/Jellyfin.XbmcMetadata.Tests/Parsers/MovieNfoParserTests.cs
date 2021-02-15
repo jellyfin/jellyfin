@@ -4,6 +4,7 @@ using System.Threading;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -60,11 +61,11 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         {
             var result = new MetadataResult<Video>()
             {
-                Item = new Video()
+                Item = new Movie()
             };
 
             _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
-            var item = result.Item;
+            var item = (Movie)result.Item;
 
             Assert.Equal("Justice League", item.OriginalTitle);
             Assert.Equal("Justice for all.", item.Tagline);
@@ -78,22 +79,31 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Contains("Sci-Fi", item.Genres);
 
             Assert.Equal(new DateTime(2017, 11, 15), item.PremiereDate);
+            Assert.Equal(new DateTime(2017, 11, 16), item.EndDate);
             Assert.Single(item.Studios);
             Assert.Contains("DC Comics", item.Studios);
 
             Assert.Equal("1.777778", item.AspectRatio);
+            Assert.Equal(Video3DFormat.HalfSideBySide, item.Video3DFormat);
             Assert.Equal(1920, item.Width);
             Assert.Equal(1080, item.Height);
             Assert.Equal(new TimeSpan(0, 0, 6268).Ticks, item.RunTimeTicks);
             Assert.True(item.HasSubtitles);
+            Assert.Equal(7.6f, item.CriticRating);
+            Assert.Equal("8.7", item.CustomRating);
+            Assert.Equal("en", item.PreferredMetadataLanguage);
+            Assert.Equal("us", item.PreferredMetadataCountryCode);
+            Assert.Single(item.RemoteTrailers);
+            Assert.Equal("https://www.youtube.com/watch?v=dQw4w9WgXcQ", item.RemoteTrailers[0].Url);
 
-            Assert.Equal(19, result.People.Count);
+            Assert.Equal(20, result.People.Count);
 
             var writers = result.People.Where(x => x.Type == PersonType.Writer).ToArray();
-            Assert.Equal(2, writers.Length);
+            Assert.Equal(3, writers.Length);
             var writerNames = writers.Select(x => x.Name);
             Assert.Contains("Jerry Siegel", writerNames);
             Assert.Contains("Joe Shuster", writerNames);
+            Assert.Contains("Test", writerNames);
 
             var directors = result.People.Where(x => x.Type == PersonType.Director).ToArray();
             Assert.Single(directors);
@@ -120,6 +130,26 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(2, userData.PlayCount);
             Assert.True(userData.Played);
             Assert.Equal(new DateTime(2021, 02, 11, 07, 47, 23), userData.LastPlayedDate);
+
+            // Movie set
+            Assert.Equal("702342", item.ProviderIds[MetadataProvider.TmdbCollection.ToString()]);
+            Assert.Equal("Justice League Collection", item.CollectionName);
+        }
+
+        [Theory]
+        [InlineData("Test Data/Tmdb.nfo", "Tmdb", "30287")]
+        [InlineData("Test Data/Imdb.nfo", "Imdb", "tt0944947")]
+        public void Parse_UrlFile_Success(string path, string provider, string id)
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, path, CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal(id, item.ProviderIds[provider]);
         }
 
         [Fact]
@@ -135,7 +165,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         {
             var result = new MetadataResult<Video>()
             {
-                Item = new Video()
+                Item = new Movie()
             };
 
             Assert.Throws<ArgumentException>(() => _parser.Fetch(result, string.Empty, CancellationToken.None));
