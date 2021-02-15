@@ -111,8 +111,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Theory]
-        [InlineData("Test Data\\Tmdb.nfo", "Tmdb", "30287")]
-        [InlineData("Test Data\\Imdb.nfo", "Imdb", "tt0944947")]
+        [InlineData("Test Data/Tmdb.nfo", "Tmdb", "30287")]
+        [InlineData("Test Data/Imdb.nfo", "Imdb", "tt0944947")]
         public void Parse_UrlFile_Success(string path, string provider, string id)
         {
             var result = new MetadataResult<Video>()
