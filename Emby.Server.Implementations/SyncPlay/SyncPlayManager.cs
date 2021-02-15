@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.SyncPlay
     /// <summary>
     /// Class SyncPlayManager.
     /// </summary>
-    public class SyncPlayManager : ISyncPlayManager, IHandleMessages<SessionControllerConnectedEventArgs>
+    public class SyncPlayManager : ISyncPlayManager
     {
         /// <summary>
         /// The logger.
@@ -88,6 +88,12 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
+        }
+
+        /// <inheritdoc />
+        public IGroupStateContext GetGroupForSession(string sessionId)
+        {
+            return _sessionToGroupMap.TryGetValue(sessionId, out var group) ? group : null;
         }
 
         /// <inheritdoc />
@@ -332,20 +338,6 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 return false;
             }
-        }
-
-        /// <inheritdoc />
-        public Task Handle(SessionControllerConnectedEventArgs e)
-        {
-            var session = e.Argument;
-
-            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
-            {
-                var request = new JoinGroupRequest(group.GroupId);
-                JoinGroup(session, request, CancellationToken.None);
-            }
-
-            return Task.CompletedTask;
         }
 
         private void UpdateSessionsCounter(Guid userId, int toAdd)
