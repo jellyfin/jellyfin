@@ -2530,7 +2530,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
             // If double rate deinterlacing is enabled and the input framerate is 30fps or below, otherwise the output framerate will be too high for many devices
-            var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30;
+            var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.AverageFrameRate ?? 60) <= 30;
 
             var isScalingInAdvance = false;
             var isCudaDeintInAdvance = false;
@@ -3080,7 +3080,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         {
                             inputModifier += " -deint 1";
 
-                            if (!encodingOptions.DeinterlaceDoubleRate || (videoStream?.RealFrameRate ?? 60) > 30)
+                            if (!encodingOptions.DeinterlaceDoubleRate || (videoStream?.AverageFrameRate ?? 60) > 30)
                             {
                                 inputModifier += " -drop_second_field 1";
                             }
