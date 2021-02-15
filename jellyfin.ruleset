@@ -37,6 +37,10 @@
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
+        or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
+    <Rule Id="CA2016" Action="Error" />
+
     <!-- disable warning CA1031: Do not catch general exception types -->
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1032: Implement standard exception constructors -->
