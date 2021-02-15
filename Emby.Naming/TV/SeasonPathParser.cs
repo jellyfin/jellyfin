@@ -60,7 +60,7 @@ namespace Emby.Naming.TV
             bool supportSpecialAliases,
             bool supportNumericSeasonFolders)
         {
-            var filename = Path.GetFileName(path) ?? string.Empty;
+            string filename = Path.GetFileName(path);
 
             if (supportSpecialAliases)
             {
