@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.Dto
             var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording != null)
             {
-                dto.Type = "Recording";
+                dto.Type = BaseItemKind.Recording;
                 dto.CanDownload = false;
                 dto.RunTimeTicks = null;
 
@@ -904,7 +904,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            dto.Type = item.GetClientTypeName();
+            dto.Type = item.GetBaseItemKind();
             if ((item.CommunityRating ?? 0) > 0)
             {
                 dto.CommunityRating = item.CommunityRating;

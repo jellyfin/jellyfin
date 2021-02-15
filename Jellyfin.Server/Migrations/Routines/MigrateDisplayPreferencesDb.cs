@@ -90,7 +90,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
                 {
-                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToString(), _jsonOptions);
+                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToBlob(), _jsonOptions);
                     if (dto == null)
                     {
                         continue;

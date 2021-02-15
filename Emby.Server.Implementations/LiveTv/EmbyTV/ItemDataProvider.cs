@@ -47,11 +47,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    var jsonString = File.ReadAllText(_dataPath, Encoding.UTF8);
-                    _items = JsonSerializer.Deserialize<T[]>(jsonString, _jsonOptions);
+                    var bytes = File.ReadAllBytes(_dataPath);
+                    _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
                     return;
                 }
-                catch (Exception ex)
+                catch (JsonException ex)
                 {
                     Logger.LogError(ex, "Error deserializing {Path}", _dataPath);
                 }

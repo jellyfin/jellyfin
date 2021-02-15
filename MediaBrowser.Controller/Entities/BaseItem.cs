@@ -1998,6 +1998,11 @@ namespace MediaBrowser.Controller.Entities
             return GetType().Name;
         }
 
+        public BaseItemKind GetBaseItemKind()
+        {
+            return Enum.Parse<BaseItemKind>(GetClientTypeName());
+        }
+
         /// <summary>
         /// Gets the linked child.
         /// </summary>

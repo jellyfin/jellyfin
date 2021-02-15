@@ -684,7 +684,9 @@ namespace Emby.Server.Implementations.IO
             return new EnumerationOptions
             {
                 RecurseSubdirectories = recursive,
-                IgnoreInaccessible = true
+                IgnoreInaccessible = true,
+                // Don't skip any files.
+                AttributesToSkip = 0
             };
         }
 

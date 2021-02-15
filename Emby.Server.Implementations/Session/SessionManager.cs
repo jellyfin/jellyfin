@@ -1375,7 +1375,12 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("Unknown quick connect token");
             }
 
-            request.UserId = result.Items[0].UserId;
+            var info = result.Items[0];
+            request.UserId = info.UserId;
+
+            // There's no need to keep the quick connect token in the database, as AuthenticateNewSessionInternal() issues a long lived token.
+            _authRepo.Delete(info);
+
             return AuthenticateNewSessionInternal(request, false);
         }
 
