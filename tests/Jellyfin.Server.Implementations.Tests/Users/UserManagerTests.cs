@@ -7,22 +7,22 @@ namespace Jellyfin.Server.Implementations.Tests.Users
     public class UserManagerTests
     {
         [Theory]
-        [InlineData("this_is_valid", true)]
-        [InlineData("this is also valid", true)]
-        [InlineData(" ", false)]
-        [InlineData("", false)]
-        [InlineData("0@_-' .", true)]
-        public void ThrowIfInvalidUsername_WhenInvalidUsername_ThrowsArgumentException(string username, bool isValid)
+        [InlineData("this_is_valid")]
+        [InlineData("this is also valid")]
+        [InlineData("0@_-' .")]
+        public void ThrowIfInvalidUsername_WhenValidUsername_DoesNotThrowArgumentException(string username)
         {
             var ex = Record.Exception(() => UserManager.ThrowIfInvalidUsername(username));
+            Assert.Null(ex);
+        }
 
-            var argumentExceptionNotThrown = ex is not ArgumentException;
-            if (ex != null)
-            {
-                Assert.Equal(typeof(ArgumentException), ex.GetType());
-            }
-
-            Assert.Equal(isValid, argumentExceptionNotThrown);
+        [Theory]
+        [InlineData(" ")]
+        [InlineData("")]
+        [InlineData("special characters like & $ ? are not allowed")]
+        public void ThrowIfInvalidUsername_WhenInvalidUsername_ThrowsArgumentException(string username)
+        {
+            Assert.Throws<ArgumentException>(() => UserManager.ThrowIfInvalidUsername(username));
         }
     }
 }
