@@ -148,7 +148,7 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.Ordinal)))
+            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -205,6 +205,14 @@ namespace Jellyfin.Server.Implementations.Users
             if (!IsValidUsername(name))
             {
                 throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
+            }
+
+            if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "A user with the name '{0}' already exists.",
+                    name));
             }
 
             await using var dbContext = _dbProvider.CreateContext();
