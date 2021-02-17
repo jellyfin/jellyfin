@@ -104,6 +104,7 @@
  - [shemanaev](https://github.com/shemanaev)
  - [skaro13](https://github.com/skaro13)
  - [sl1288](https://github.com/sl1288)
+ - [Smith00101010](https://github.com/Smith00101010)
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [sparky8251](https://github.com/sparky8251)
  - [spookbits](https://github.com/spookbits)
