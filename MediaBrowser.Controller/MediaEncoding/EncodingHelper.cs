@@ -131,6 +131,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         private bool IsVppTonemappingSupported(EncodingJobInfo state, EncodingOptions options)
         {
             var videoStream = state.VideoStream;
+            if (videoStream == null)
+            {
+                // Remote stream doesn't have media info, disable vpp tonemapping.
+                return false;
+            }
+
             var codec = videoStream.Codec;
             if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
             {
