@@ -206,6 +206,14 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
             }
 
+            if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "A user with the name '{0}' already exists.",
+                    name));
+            }
+
             await using var dbContext = _dbProvider.CreateContext();
 
             var newUser = await CreateUserInternalAsync(name, dbContext).ConfigureAwait(false);
