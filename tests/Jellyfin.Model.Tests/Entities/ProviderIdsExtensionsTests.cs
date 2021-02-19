@@ -117,6 +117,18 @@ namespace Jellyfin.Model.Tests.Entities
             Assert.Single(nullProvider.ProviderIds);
         }
 
+        [Fact]
+        public void SetProviderId_NullProviderAndEmptyName_Success()
+        {
+            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            {
+                ProviderIds = null!
+            };
+
+            nullProvider.SetProviderId(MetadataProvider.Imdb, string.Empty);
+            Assert.Null(nullProvider.ProviderIds);
+        }
+
         private class ProviderIdsExtensionsTestsObject : IHasProviderIds
         {
             public static readonly ProviderIdsExtensionsTestsObject Empty = new ProviderIdsExtensionsTestsObject();
