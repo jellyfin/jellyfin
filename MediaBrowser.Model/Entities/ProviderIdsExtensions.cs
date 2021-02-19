@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MediaBrowser.Model.Entities
 {
@@ -35,8 +36,9 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
-        /// <returns>System.String.</returns>
-        public static string? GetProviderId(this IHasProviderIds instance, string name)
+        /// <param name="id">The provider id.</param>
+        /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
+        public static bool TryGetProviderId(this IHasProviderIds instance, string name, [MaybeNullWhen(false)] out string id)
         {
             if (instance == null)
             {
@@ -45,11 +47,35 @@ namespace MediaBrowser.Model.Entities
 
             if (instance.ProviderIds == null)
             {
-                return null;
+                id = string.Empty;
+                return false;
             }
 
-            instance.ProviderIds.TryGetValue(name, out string? id);
-            return string.IsNullOrEmpty(id) ? null : id;
+            return instance.ProviderIds.TryGetValue(name, out id);
+        }
+
+        /// <summary>
+        /// Gets a provider id.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        /// <param name="id">The provider id.</param>
+        /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
+        public static bool TryGetProviderId(this IHasProviderIds instance, MetadataProvider provider, [MaybeNullWhen(false)] out string id)
+        {
+            return instance.TryGetProviderId(provider.ToString(), out id);
+        }
+
+        /// <summary>
+        /// Gets a provider id.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>System.String.</returns>
+        public static string? GetProviderId(this IHasProviderIds instance, string name)
+        {
+            instance.TryGetProviderId(name, out string? id);
+            return id;
         }
 
         /// <summary>
