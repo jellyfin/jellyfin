@@ -31,7 +31,6 @@ namespace MediaBrowser.Common.Json
             WriteIndented = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
-            PropertyNameCaseInsensitive = true,
             Converters =
             {
                 new JsonGuidConverter(),

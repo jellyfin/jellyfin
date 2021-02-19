@@ -74,8 +74,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? enableUserData,
@@ -101,8 +101,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = excludeItemTypes,
-                IncludeItemTypes = includeItemTypes,
+                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
                 MediaTypes = mediaTypes,
                 DtoOptions = dtoOptions
             };
@@ -193,16 +193,17 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private bool FilterItem(BaseItem f, IReadOnlyCollection<string> excludeItemTypes, IReadOnlyCollection<string> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
+        private bool FilterItem(BaseItem f, IReadOnlyCollection<BaseItemKind> excludeItemTypes, IReadOnlyCollection<BaseItemKind> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
         {
+            var baseItemKind = f.GetBaseItemKind();
             // Exclude item types
-            if (excludeItemTypes.Count > 0 && excludeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+            if (excludeItemTypes.Count > 0 && excludeItemTypes.Contains(baseItemKind))
             {
                 return false;
             }
 
             // Include item types
-            if (includeItemTypes.Count > 0 && !includeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+            if (includeItemTypes.Count > 0 && !includeItemTypes.Contains(baseItemKind))
             {
                 return false;
             }

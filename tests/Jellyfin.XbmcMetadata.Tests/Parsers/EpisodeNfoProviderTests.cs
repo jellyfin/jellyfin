@@ -3,10 +3,12 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -23,12 +25,20 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         public EpisodeNfoProviderTests()
         {
             var providerManager = new Mock<IProviderManager>();
+
+            var imdbExternalId = new ImdbExternalId();
+            var externalIdInfo = new ExternalIdInfo(imdbExternalId.ProviderName, imdbExternalId.Key, imdbExternalId.Type, imdbExternalId.UrlFormatString);
+
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
-                .Returns(Enumerable.Empty<ExternalIdInfo>());
+                .Returns(new[] { externalIdInfo });
+
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            _parser = new EpisodeNfoParser(new NullLogger<EpisodeNfoParser>(), config.Object, providerManager.Object);
+            var user = new Mock<IUserManager>();
+            var userData = new Mock<IUserDataManager>();
+
+            _parser = new EpisodeNfoParser(new NullLogger<EpisodeNfoParser>(), config.Object, providerManager.Object, user.Object, userData.Object);
         }
 
         [Fact]
@@ -56,6 +66,12 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(2017, item.ProductionYear);
             Assert.Single(item.Studios);
             Assert.Contains("Starz", item.Studios);
+            Assert.Equal(1, item.IndexNumberEnd);
+            Assert.Equal(2, item.AirsAfterSeasonNumber);
+            Assert.Equal(3, item.AirsBeforeSeasonNumber);
+            Assert.Equal(1, item.AirsBeforeEpisodeNumber);
+            Assert.Equal("tt5017734", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
+            Assert.Equal("1276153", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
 
             // Credits
             var writers = result.People.Where(x => x.Type == PersonType.Writer).ToArray();
