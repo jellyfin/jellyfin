@@ -116,34 +116,12 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the audio stream that will be used.
         /// </summary>
-        public MediaStream TargetAudioStream
-        {
-            get
-            {
-                if (MediaSource != null)
-                {
-                    return MediaSource.GetDefaultAudioStream(AudioStreamIndex);
-                }
-
-                return null;
-            }
-        }
+        public MediaStream TargetAudioStream => MediaSource?.GetDefaultAudioStream(AudioStreamIndex);
 
         /// <summary>
         /// Gets the video stream that will be used.
         /// </summary>
-        public MediaStream TargetVideoStream
-        {
-            get
-            {
-                if (MediaSource != null)
-                {
-                    return MediaSource.VideoStream;
-                }
-
-                return null;
-            }
-        }
+        public MediaStream TargetVideoStream => MediaSource?.VideoStream;
 
         /// <summary>
         /// Gets the audio sample rate that will be in the output stream.
