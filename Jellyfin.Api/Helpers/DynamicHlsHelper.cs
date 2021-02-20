@@ -222,7 +222,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         // Force HEVC Main Profile and disable video stream copy.
                         state.OutputVideoCodec = "hevc";
-                        var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(",", requestedVideoProfiles), "main");
+                        var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                         sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
                         EncodingHelper encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);

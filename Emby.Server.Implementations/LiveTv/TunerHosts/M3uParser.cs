@@ -155,7 +155,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (channelIdValues.Count > 0)
             {
-                channel.Id = string.Join("_", channelIdValues);
+                channel.Id = string.Join('_', channelIdValues);
             }
 
             return channel;

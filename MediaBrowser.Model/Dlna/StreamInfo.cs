@@ -193,12 +193,12 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var encodedValue = pair.Value.Replace(" ", "%20");
+                var encodedValue = pair.Value.Replace(" ", "%20", StringComparison.Ordinal);
 
                 list.Add(string.Format(CultureInfo.InvariantCulture, "{0}={1}", pair.Name, encodedValue));
             }
 
-            string queryString = string.Join("&", list.ToArray());
+            string queryString = string.Join('&', list);
 
             return GetUrl(baseUrl, queryString);
         }
@@ -238,11 +238,11 @@ namespace MediaBrowser.Model.Dlna
 
             string audioCodecs = item.AudioCodecs.Length == 0 ?
                 string.Empty :
-                string.Join(",", item.AudioCodecs);
+                string.Join(',', item.AudioCodecs);
 
             string videoCodecs = item.VideoCodecs.Length == 0 ?
                 string.Empty :
-                string.Join(",", item.VideoCodecs);
+                string.Join(',', item.VideoCodecs);
 
             list.Add(new NameValuePair("DeviceProfileId", item.DeviceProfileId ?? string.Empty));
             list.Add(new NameValuePair("DeviceId", item.DeviceId ?? string.Empty));
@@ -322,7 +322,7 @@ namespace MediaBrowser.Model.Dlna
 
             string subtitleCodecs = item.SubtitleCodecs.Length == 0 ?
                string.Empty :
-               string.Join(",", item.SubtitleCodecs);
+               string.Join(',', item.SubtitleCodecs);
 
             list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
 
@@ -351,12 +351,12 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // strip spaces to avoid having to encode h264 profile names
-                list.Add(new NameValuePair(pair.Key, pair.Value.Replace(" ", "")));
+                list.Add(new NameValuePair(pair.Key, pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal)));
             }
 
             if (!item.IsDirectStream)
             {
-                list.Add(new NameValuePair("TranscodeReasons", string.Join(",", item.TranscodeReasons.Distinct().Select(i => i.ToString()))));
+                list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.Distinct().Select(i => i.ToString()))));
             }
 
             return list;

@@ -1733,7 +1733,7 @@ namespace MediaBrowser.Model.Dlna
 
                                 if (condition.Condition == ProfileConditionType.Equals || condition.Condition == ProfileConditionType.EqualsAny)
                                 {
-                                    item.SetOption(qualifier, "profile", string.Join(",", values));
+                                    item.SetOption(qualifier, "profile", string.Join(',', values));
                                 }
                             }
 
