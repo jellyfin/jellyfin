@@ -113,7 +113,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -160,7 +160,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
