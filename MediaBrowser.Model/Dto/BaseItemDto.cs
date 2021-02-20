@@ -294,13 +294,13 @@ namespace MediaBrowser.Model.Dto
         public NameGuidPair[] GenreItems { get; set; }
 
         /// <summary>
-        /// If the item does not have a logo, this will hold the Id of the Parent that has one.
+        /// Gets or sets wether the item has a logo, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent logo item id.</value>
         public string ParentLogoItemId { get; set; }
 
         /// <summary>
-        /// If the item does not have any backdrops, this will hold the Id of the Parent that has one.
+        /// Gets or sets wether the item has any backdrops, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent backdrop item id.</value>
         public string ParentBackdropItemId { get; set; }
@@ -318,7 +318,7 @@ namespace MediaBrowser.Model.Dto
         public int? LocalTrailerCount { get; set; }
 
         /// <summary>
-        /// User data for this item based on the user it's being requested for.
+        /// Gets or sets the user data for this item based on the user it's being requested for.
         /// </summary>
         /// <value>The user data.</value>
         public UserItemDataDto UserData { get; set; }
@@ -506,7 +506,7 @@ namespace MediaBrowser.Model.Dto
         public string ParentLogoImageTag { get; set; }
 
         /// <summary>
-        /// If the item does not have a art, this will hold the Id of the Parent that has one.
+        /// Gets or sets wether the item has fan art, this will hold the Id of the Parent that has one.
         /// </summary>
         /// <value>The parent art item id.</value>
         public string ParentArtItemId { get; set; }
@@ -695,7 +695,7 @@ namespace MediaBrowser.Model.Dto
         public string ChannelPrimaryImageTag { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime? StartDate { get; set; }
 
