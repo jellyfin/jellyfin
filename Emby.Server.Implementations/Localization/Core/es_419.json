@@ -116,5 +116,6 @@
     "TaskCleanActivityLogDescription": "Elimina las entradas del registro de actividad anteriores al periodo configurado.",
     "TaskCleanActivityLog": "Limpiar Registro de Actividades",
     "Undefined": "Sin definir",
-    "Forced": "Forzado"
+    "Forced": "Forzado",
+    "Default": "Por Defecto"
 }

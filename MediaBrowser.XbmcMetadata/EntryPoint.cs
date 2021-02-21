@@ -60,17 +60,7 @@ namespace MediaBrowser.XbmcMetadata
 
         private void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)
         {
-            if (!item.IsFileProtocol)
-            {
-                return;
-            }
-
-            if (!item.SupportsLocalMetadata)
-            {
-                return;
-            }
-
-            if (!item.IsSaveLocalMetadataEnabled())
+            if (!item.IsFileProtocol || !item.SupportsLocalMetadata)
             {
                 return;
             }

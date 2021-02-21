@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.Dto
             var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording != null)
             {
-                dto.Type = "Recording";
+                dto.Type = BaseItemKind.Recording;
                 dto.CanDownload = false;
                 dto.RunTimeTicks = null;
 
@@ -582,16 +582,22 @@ namespace Emby.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
-                    // Only add BlurHash for the person's image.
-                    baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
-                    foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
+                    if (dto.ImageBlurHashes != null)
                     {
-                        baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
-                        foreach (var (imageId, blurHashValue) in blurHash)
+                        // Only add BlurHash for the person's image.
+                        baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+                        foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
                         {
-                            if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
+                            if (blurHash != null)
                             {
-                                baseItemPerson.ImageBlurHashes[imageType][imageId] = blurHashValue;
+                                baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
+                                foreach (var (imageId, blurHashValue) in blurHash)
+                                {
+                                    if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        baseItemPerson.ImageBlurHashes[imageType][imageId] = blurHashValue;
+                                    }
+                                }
                             }
                         }
                     }
@@ -898,7 +904,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            dto.Type = item.GetClientTypeName();
+            dto.Type = item.GetBaseItemKind();
             if ((item.CommunityRating ?? 0) > 0)
             {
                 dto.CommunityRating = item.CommunityRating;
@@ -1151,7 +1157,7 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
-                        if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, episodeSeries);
                         }
@@ -1201,7 +1207,7 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
-                        if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, series);
                         }

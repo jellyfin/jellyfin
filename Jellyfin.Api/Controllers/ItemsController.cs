@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -175,16 +174,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? sortOrder,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -233,8 +232,8 @@ namespace Jellyfin.Api.Controllers
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (includeItemTypes.Length == 1
-                && (includeItemTypes[0].Equals("Playlist", StringComparison.OrdinalIgnoreCase)
-                    || includeItemTypes[0].Equals("BoxSet", StringComparison.OrdinalIgnoreCase)))
+                && (includeItemTypes[0] == BaseItemKind.Playlist
+                    || includeItemTypes[0] == BaseItemKind.BoxSet))
             {
                 parentId = null;
             }
@@ -251,7 +250,7 @@ namespace Jellyfin.Api.Controllers
                 && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 recursive = true;
-                includeItemTypes = new[] { "Playlist" };
+                includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
             var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
@@ -286,8 +285,8 @@ namespace Jellyfin.Api.Controllers
                 {
                     IsPlayed = isPlayed,
                     MediaTypes = mediaTypes,
-                    IncludeItemTypes = includeItemTypes,
-                    ExcludeItemTypes = excludeItemTypes,
+                    IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                    ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
                     Recursive = recursive ?? false,
                     OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                     IsFavorite = isFavorite,
@@ -608,16 +607,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? sortOrder,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -773,8 +772,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
@@ -810,8 +809,8 @@ namespace Jellyfin.Api.Controllers
                 CollapseBoxSetItems = false,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 AncestorIds = ancestorIds,
-                IncludeItemTypes = includeItemTypes,
-                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
                 SearchTerm = searchTerm
             });
 

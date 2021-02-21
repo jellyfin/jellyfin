@@ -102,10 +102,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 saveLocally = false;
 
-                var season = item as Season;
-
                 // If season is virtual under a physical series, save locally if using compatible convention
-                if (season != null && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
+                if (item is Season season && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
                 {
                     var series = season.Series;
 
@@ -138,7 +136,7 @@ namespace MediaBrowser.Providers.Manager
                 var memoryStream = new MemoryStream();
                 await using (source.ConfigureAwait(false))
                 {
-                    await source.CopyToAsync(memoryStream).ConfigureAwait(false);
+                    await source.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 }
 
                 source = memoryStream;

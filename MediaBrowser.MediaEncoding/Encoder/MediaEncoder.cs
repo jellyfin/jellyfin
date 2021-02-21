@@ -295,6 +295,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
+        public bool SupportsFilter(string filter, string option)
+        {
+            if (_ffmpegPath != null)
+            {
+                var validator = new EncoderValidator(_logger, _ffmpegPath);
+                return validator.CheckFilter(filter, option);
+            }
+
+            return false;
+        }
+
         public bool CanEncodeToAudioCodec(string codec)
         {
             if (string.Equals(codec, "opus", StringComparison.OrdinalIgnoreCase))

@@ -203,10 +203,11 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
 
-            // On Windows, savint the file will fail if the file is hidden or readonly
+            // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 stream.CopyTo(filestream);
             }
@@ -450,15 +451,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("plot", overview);
             }
 
-            if (item is Video)
-            {
-                var outline = (item.Tagline ?? string.Empty)
-                    .StripHtml()
-                    .Replace("&quot;", "'", StringComparison.Ordinal);
-
-                writer.WriteElementString("outline", outline);
-            }
-            else
+            if (item is not Video)
             {
                 writer.WriteElementString("outline", overview);
             }
@@ -472,7 +465,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields));
+                writer.WriteElementString("lockedfields", string.Join('|', item.LockedFields));
             }
 
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat, CultureInfo.InvariantCulture));

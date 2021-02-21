@@ -54,7 +54,7 @@ namespace Jellyfin.Networking.Tests
         /// <summary>
         /// Checks the ability to ignore interfaces
         /// </summary>
-        /// <param name="interfaces">Mock network setup, in the format (IP address, interface index, interface name) : .... </param>
+        /// <param name="interfaces">Mock network setup, in the format (IP address, interface index, interface name) | .... </param>
         /// <param name="lan">LAN addresses.</param>
         /// <param name="value">Bind addresses that are excluded.</param>
         [Theory]
@@ -435,7 +435,7 @@ namespace Jellyfin.Networking.Tests
                 EnableIPV4 = true
             };
 
-            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
@@ -502,7 +502,7 @@ namespace Jellyfin.Networking.Tests
                 PublishedServerUriBySubnet = new string[] { publishedServers }
             };
 
-            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11";
+            NetworkManager.MockNetworkSettings = "192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11";
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 

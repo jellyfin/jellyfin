@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 }
 
                 // It's a directory-based playlist if the directory contains a playlist file
-                var filePaths = Directory.EnumerateFiles(args.Path);
+                var filePaths = Directory.EnumerateFiles(args.Path, "*", new EnumerationOptions { IgnoreInaccessible = true });
                 if (filePaths.Any(f => f.EndsWith(PlaylistXmlSaver.DefaultPlaylistFilename, StringComparison.OrdinalIgnoreCase)))
                 {
                     return new Playlist

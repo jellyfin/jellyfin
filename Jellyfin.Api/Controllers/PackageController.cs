@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Updates;
@@ -158,7 +157,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)
+        public ActionResult SetRepositories([FromBody, Required] List<RepositoryInfo> repositoryInfos)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
             _serverConfigurationManager.SaveConfiguration();

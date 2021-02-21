@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using SQLitePCL.pretty;
 
@@ -59,7 +60,7 @@ namespace Emby.Server.Implementations.Data
 
             connection.RunInTransaction(conn =>
             {
-                conn.ExecuteAll(string.Join(";", queries));
+                conn.ExecuteAll(string.Join(';', queries));
             });
         }
 
@@ -142,11 +143,10 @@ namespace Emby.Server.Implementations.Data
             return result[index].ReadGuidFromBlob();
         }
 
+        [Conditional("DEBUG")]
         private static void CheckName(string name)
         {
-#if DEBUG
             throw new ArgumentException("Invalid param name: " + name, nameof(name));
-#endif
         }
 
         public static void TryBind(this IStatement statement, string name, double value)

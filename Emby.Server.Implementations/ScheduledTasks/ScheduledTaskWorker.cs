@@ -143,21 +143,21 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     {
                         if (File.Exists(path))
                         {
-                            try
+                            var bytes = File.ReadAllBytes(path);
+                            if (bytes.Length > 0)
                             {
-                                var jsonString = File.ReadAllText(path, Encoding.UTF8);
-                                if (!string.IsNullOrWhiteSpace(jsonString))
+                                try
                                 {
-                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(jsonString, _jsonOptions);
+                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(bytes, _jsonOptions);
                                 }
-                                else
+                                catch (JsonException ex)
                                 {
-                                    _logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
+                                    _logger.LogError(ex, "Error deserializing {File}", path);
                                 }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                _logger.LogError(ex, "Error deserializing {File}", path);
+                                _logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
                             }
                         }
 
@@ -177,7 +177,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    using FileStream createStream = File.OpenWrite(path);
+                    using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
                     JsonSerializer.SerializeAsync(createStream, value, _jsonOptions);
                 }
             }
@@ -541,8 +541,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             TaskTriggerInfo[] list = null;
             if (File.Exists(path))
             {
-                var jsonString = File.ReadAllText(path, Encoding.UTF8);
-                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(jsonString, _jsonOptions);
+                var bytes = File.ReadAllBytes(path);
+                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(bytes, _jsonOptions);
             }
 
             // Return defaults if file doesn't exist.
@@ -577,9 +577,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var path = GetConfigurationFilePath();
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            var json = JsonSerializer.Serialize(triggers, _jsonOptions);
-            File.WriteAllText(path, json, Encoding.UTF8);
+            using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            JsonSerializer.SerializeAsync(createStream, triggers, _jsonOptions);
         }
 
         /// <summary>

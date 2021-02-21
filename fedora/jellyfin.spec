@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.7.0
+Version:        10.8.0
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -28,7 +28,7 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
 BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
-Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 10.6, %{name}-web < 10.7
+Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
 
@@ -137,6 +137,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Fri Dec 04 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
+- Forthcoming stable release
 * Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
 - Forthcoming stable release
 * Mon Mar 23 2020 Jellyfin Packaging Team <packaging@jellyfin.org>

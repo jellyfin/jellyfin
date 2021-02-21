@@ -1496,7 +1496,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                             video.IndexNumber = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[0], CultureInfo.InvariantCulture);
                             int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[1], CultureInfo.InvariantCulture);
 
-                            description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
+                            description = string.Join(' ', numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
                         else
                         {
@@ -1508,7 +1508,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                         if (subtitle.Contains('.', StringComparison.Ordinal))
                         {
                             // skip the comment, keep the subtitle
-                            description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            description = string.Join('.', subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
                         }
                         else
                         {

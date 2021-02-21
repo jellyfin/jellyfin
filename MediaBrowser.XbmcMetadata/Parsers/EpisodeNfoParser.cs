@@ -6,6 +6,7 @@ using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
 
@@ -19,11 +20,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodeNfoParser"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">the configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
+        /// <param name="logger">Instance of the <see cref="ILogger{BaseNfoParser}"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        public EpisodeNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
+            : base(logger, config, providerManager, userManager, userDataManager)
         {
         }
 
@@ -203,6 +211,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 item.AirsBeforeEpisodeNumber = rval;
                             }
+                        }
+
+                        break;
+                    }
+
+                case "showtitle":
+                    {
+                        var showtitle = reader.ReadElementContentAsString();
+
+                        if (!string.IsNullOrWhiteSpace(showtitle))
+                        {
+                            item.SeriesName = showtitle;
                         }
 
                         break;

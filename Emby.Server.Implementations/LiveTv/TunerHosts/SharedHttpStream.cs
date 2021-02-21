@@ -159,7 +159,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 EnableStreamSharing = false;
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
-            });
+            }, CancellationToken.None);
         }
 
         private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)
