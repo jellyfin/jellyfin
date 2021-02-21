@@ -921,7 +921,7 @@ namespace Jellyfin.Networking.Manager
                 if (config.IgnoreVirtualInterfaces)
                 {
                     // each virtual interface name must be pre-pended with the exclusion symbol !
-                    var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',').Select(p => '!' + p).ToArray();
+                    var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',').Select(p => "!" + p).ToArray();
                     if (lanAddresses.Length > 0)
                     {
                         var newList = new string[lanAddresses.Length + virtualInterfaceNames.Length];
