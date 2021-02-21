@@ -245,7 +245,7 @@ namespace Jellyfin.Api.Helpers
 
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
                 ? GetOutputFileExtension(state)
-                : ('.' + state.OutputContainer);
+                : ("." + state.OutputContainer);
 
             state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
