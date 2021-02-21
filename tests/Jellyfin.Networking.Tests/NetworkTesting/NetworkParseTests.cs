@@ -60,7 +60,8 @@ namespace Jellyfin.Networking.Tests
         [Theory]
         [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
         [InlineData("192.168.1.208/24,-16,eth16:200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
-        [InlineData("192.168.1.208/24,-16,vEthernet1:192.168.1.208/24,-16,vEthernet212;200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
+        [InlineData("192.168.1.208/24,-16,vEthernet1:192.168.1.208/24,-16,vEthernet212:200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
+        [InlineData("192.168.1.200/24,-20,vEthernet1:192.168.1.208/24,-16,vEthernet212:200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
         {
             var conf = new NetworkConfiguration()
