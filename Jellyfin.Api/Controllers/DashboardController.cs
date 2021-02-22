@@ -6,7 +6,6 @@ using System.Net.Mime;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Models;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Http;

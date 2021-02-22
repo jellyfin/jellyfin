@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models;
+using MediaBrowser.Common.Json;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
@@ -10,6 +11,7 @@ namespace Jellyfin.Api.Tests.Controllers
     public sealed class DashboardControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private readonly JellyfinApplicationFactory _factory;
+        private readonly JsonSerializerOptions _jsonOpions = JsonDefaults.GetOptions();
 
         public DashboardControllerTests(JellyfinApplicationFactory factory)
         {
@@ -57,7 +59,6 @@ namespace Jellyfin.Api.Tests.Controllers
             var response = await client.GetAsync("/web/ConfigurationPages").ConfigureAwait(false);
 
             Assert.True(response.IsSuccessStatusCode);
-            var res = await JsonSerializer.DeserializeAsync<ConfigurationPageInfo[]>(await response.Content.ReadAsStreamAsync());
             // TODO: check content
         }
 
@@ -69,8 +70,10 @@ namespace Jellyfin.Api.Tests.Controllers
             var response = await client.GetAsync("/web/ConfigurationPages?enableInMainMenu=true").ConfigureAwait(false);
 
             Assert.True(response.IsSuccessStatusCode);
-            var res = await JsonSerializer.DeserializeAsync<ConfigurationPageInfo[]>(await response.Content.ReadAsStreamAsync());
-            Assert.Empty(res);
+            var res = await response.Content.ReadAsStreamAsync();
+            System.Console.WriteLine(res);
+            var data = await JsonSerializer.DeserializeAsync<ConfigurationPageInfo[]>(res, _jsonOpions);
+            Assert.Empty(data);
         }
     }
 }

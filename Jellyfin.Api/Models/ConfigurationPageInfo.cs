@@ -25,6 +25,14 @@ namespace Jellyfin.Api.Models
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        public ConfigurationPageInfo()
+        {
+            Name = string.Empty;
+        }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
