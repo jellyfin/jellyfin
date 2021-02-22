@@ -1,3 +1,5 @@
+using System.Net.Mime;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Branding;
@@ -25,8 +27,8 @@ namespace Jellyfin.Api.Tests
 
             // Assert
             Assert.True(response.IsSuccessStatusCode);
-            Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
-            Assert.Equal("utf-8", response.Content.Headers.ContentType?.CharSet);
+            Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
+            Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
             var responseBody = await response.Content.ReadAsStreamAsync();
             _ = await JsonSerializer.DeserializeAsync<BrandingOptions>(responseBody);
         }
@@ -44,7 +46,8 @@ namespace Jellyfin.Api.Tests
 
             // Assert
             Assert.True(response.IsSuccessStatusCode);
-            Assert.Equal("text/css; charset=utf-8", response.Content.Headers.ContentType?.ToString());
+            Assert.Equal("text/css", response.Content.Headers.ContentType?.MediaType);
+            Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
         }
     }
 }
