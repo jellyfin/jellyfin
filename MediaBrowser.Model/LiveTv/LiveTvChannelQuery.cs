@@ -54,7 +54,7 @@ namespace MediaBrowser.Model.LiveTv
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// gets or sets the start index. Used for paging.
+        /// Gets or sets the start index. Used for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
