@@ -41,4 +41,8 @@
     <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="TestPage.html" />
+  </ItemGroup>
+
 </Project>

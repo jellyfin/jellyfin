@@ -5,11 +5,11 @@ using Xunit;
 
 namespace Jellyfin.Api.Tests
 {
-    public sealed class BrandingServiceTests : IClassFixture<JellyfinApplicationFactory>
+    public sealed class BrandingControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private readonly JellyfinApplicationFactory _factory;
 
-        public BrandingServiceTests(JellyfinApplicationFactory factory)
+        public BrandingControllerTests(JellyfinApplicationFactory factory)
         {
             _factory = factory;
         }
@@ -24,8 +24,9 @@ namespace Jellyfin.Api.Tests
             var response = await client.GetAsync("/Branding/Configuration");
 
             // Assert
-            response.EnsureSuccessStatusCode();
-            Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType?.ToString());
+            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
+            Assert.Equal("utf-8", response.Content.Headers.ContentType?.CharSet);
             var responseBody = await response.Content.ReadAsStreamAsync();
             _ = await JsonSerializer.DeserializeAsync<BrandingOptions>(responseBody);
         }
@@ -42,7 +43,7 @@ namespace Jellyfin.Api.Tests
             var response = await client.GetAsync(url);
 
             // Assert
-            response.EnsureSuccessStatusCode();
+            Assert.True(response.IsSuccessStatusCode);
             Assert.Equal("text/css; charset=utf-8", response.Content.Headers.ContentType?.ToString());
         }
     }

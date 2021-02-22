@@ -1,6 +1,5 @@
 using System;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 
 namespace Jellyfin.Api.Models
