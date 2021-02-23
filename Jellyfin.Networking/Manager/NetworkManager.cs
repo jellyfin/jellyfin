@@ -713,11 +713,7 @@ namespace Jellyfin.Networking.Manager
                     if ((!partial && string.Equals(interfc, token, StringComparison.OrdinalIgnoreCase))
                         || (partial && interfc.StartsWith(token, true, CultureInfo.InvariantCulture)))
                     {
-                        if (index == null)
-                        {
-                            index = new List<int>();
-                        }
-
+                        index ??= new List<int>();
                         index.Add(interfcIndex);
                     }
                 }
