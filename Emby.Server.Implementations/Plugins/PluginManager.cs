@@ -381,7 +381,7 @@ namespace Emby.Server.Implementations.Plugins
             if (!string.IsNullOrEmpty(packageInfo.ImageUrl))
             {
                 var url = new Uri(packageInfo.ImageUrl);
-                imagePath = Path.Join(path, url.Segments.Last());
+                imagePath = Path.Join(path, url.Segments[^1]);
 
                 await using var fileStream = File.OpenWrite(imagePath);
                 var downloadStream = await HttpClientFactory
