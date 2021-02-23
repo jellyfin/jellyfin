@@ -86,17 +86,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             reader.MoveToContent();
 
-                            if (reader.ReadToDescendant("episode"))
+                            if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
                             {
-                                var number = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(number))
-                                {
-                                    if (int.TryParse(number, out var num))
-                                    {
-                                        item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
-                                    }
-                                }
+                                item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
                             }
                         }
                     }
