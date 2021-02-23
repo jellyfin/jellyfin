@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Helpers
             if (string.IsNullOrEmpty(containerInternal))
             {
                 containerInternal = streamingRequest.Static ?
-                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio)
+                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio)
                     : GetOutputFileExtension(state);
             }
 

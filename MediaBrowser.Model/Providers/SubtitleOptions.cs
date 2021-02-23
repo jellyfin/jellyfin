@@ -7,6 +7,14 @@ namespace MediaBrowser.Model.Providers
 {
     public class SubtitleOptions
     {
+        public SubtitleOptions()
+        {
+            DownloadLanguages = Array.Empty<string>();
+
+            SkipIfAudioTrackMatches = true;
+            RequirePerfectMatch = true;
+        }
+
         public bool SkipIfEmbeddedSubtitlesPresent { get; set; }
 
         public bool SkipIfAudioTrackMatches { get; set; }
@@ -24,13 +32,5 @@ namespace MediaBrowser.Model.Providers
         public bool IsOpenSubtitleVipAccount { get; set; }
 
         public bool RequirePerfectMatch { get; set; }
-
-        public SubtitleOptions()
-        {
-            DownloadLanguages = Array.Empty<string>();
-
-            SkipIfAudioTrackMatches = true;
-            RequirePerfectMatch = true;
-        }
     }
 }

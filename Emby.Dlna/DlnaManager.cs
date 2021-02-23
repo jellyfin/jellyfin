@@ -553,7 +553,7 @@ namespace Emby.Dlna
 
         private void DumpProfiles()
         {
-            DeviceProfile[] list = new []
+            DeviceProfile[] list = new[]
             {
                 new SamsungSmartTvProfile(),
                 new XboxOneProfile(),

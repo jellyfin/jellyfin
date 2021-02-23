@@ -6207,9 +6207,9 @@ AND Type = @InternalPersonType)");
 
             if (item.Type == MediaStreamType.Subtitle)
             {
-                item.localizedUndefined = _localization.GetLocalizedString("Undefined");
-                item.localizedDefault = _localization.GetLocalizedString("Default");
-                item.localizedForced = _localization.GetLocalizedString("Forced");
+                item.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
+                item.LocalizedDefault = _localization.GetLocalizedString("Default");
+                item.LocalizedForced = _localization.GetLocalizedString("Forced");
             }
 
             return item;
