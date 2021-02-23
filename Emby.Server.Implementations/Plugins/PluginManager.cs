@@ -390,7 +390,6 @@ namespace Emby.Server.Implementations.Plugins
                     .ConfigureAwait(false);
 
                 await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
-                await fileStream.DisposeAsync();
             }
 
             var manifest = new PluginManifest
