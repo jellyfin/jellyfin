@@ -384,7 +384,7 @@ namespace Emby.Server.Implementations.Plugins
                 imagePath = Path.Join(path, url.Segments[^1]);
 
                 await using var fileStream = File.OpenWrite(imagePath);
-                var downloadStream = await HttpClientFactory
+                await using var downloadStream = await HttpClientFactory
                     .CreateClient(NamedClient.Default)
                     .GetStreamAsync(url)
                     .ConfigureAwait(false);
