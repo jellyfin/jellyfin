@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Plugins
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,
                 TargetAbi = versionInfo.TargetAbi ?? string.Empty,
-                Timestamp = DateTime.Parse(versionInfo.Timestamp ?? string.Empty),
+                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp),
                 Version = versionInfo.Version,
                 Status = PluginStatus.Active,
                 AutoUpdate = true,
