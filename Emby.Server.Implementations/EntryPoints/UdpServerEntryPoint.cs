@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +52,8 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
+            CheckDisposed();
+
             try
             {
                 _udpServer = new UdpServer(_logger, _appHost, _config);
@@ -62,6 +65,14 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             return Task.CompletedTask;
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().Name);
+            }
         }
 
         /// <inheritdoc />

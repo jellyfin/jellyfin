@@ -79,7 +79,7 @@ namespace Emby.Server.Implementations.Udp
         /// Starts the specified port.
         /// </summary>
         /// <param name="port">The port.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
         public void Start(int port, CancellationToken cancellationToken)
         {
             _endpoint = new IPEndPoint(IPAddress.Any, port);
