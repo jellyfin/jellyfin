@@ -131,6 +131,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         private bool IsVppTonemappingSupported(EncodingJobInfo state, EncodingOptions options)
         {
             var videoStream = state.VideoStream;
+            if (videoStream == null)
+            {
+                // Remote stream doesn't have media info, disable vpp tonemapping.
+                return false;
+            }
+
             var codec = videoStream.Codec;
             if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
             {
@@ -592,7 +598,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (state.IsVideoRequest
                     && ((string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
                          && (isNvdecDecoder || isCuvidHevcDecoder || isSwDecoder))
-                        || (string.Equals(encodingOptions.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase) 
+                        || (string.Equals(encodingOptions.HardwareAccelerationType, "amf", StringComparison.OrdinalIgnoreCase)
                             && (isD3d11vaDecoder || isSwDecoder))))
                 {
                     if (isTonemappingSupported)
@@ -1381,7 +1387,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 var requestedProfile = requestedProfiles[0];
                 // strip spaces because they may be stripped out on the query string as well
-                if (!string.IsNullOrEmpty(videoStream.Profile) && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", ""), StringComparer.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(videoStream.Profile)
+                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", "", StringComparison.Ordinal), StringComparer.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(requestedProfile);
@@ -1710,7 +1717,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (filters.Count > 0)
             {
-                return " -af \"" + string.Join(",", filters) + "\"";
+                return " -af \"" + string.Join(',', filters) + "\"";
             }
 
             return string.Empty;
@@ -2530,7 +2537,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
             // If double rate deinterlacing is enabled and the input framerate is 30fps or below, otherwise the output framerate will be too high for many devices
-            var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.RealFrameRate ?? 60) <= 30;
+            var doubleRateDeinterlace = options.DeinterlaceDoubleRate && (videoStream?.AverageFrameRate ?? 60) <= 30;
 
             var isScalingInAdvance = false;
             var isCudaDeintInAdvance = false;
@@ -2888,7 +2895,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 output += string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}",
-                    string.Join(",", filters));
+                    string.Join(',', filters));
             }
 
             return output;
@@ -2914,7 +2921,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (threads <= 0)
             {
                 return 0;
-            } 
+            }
             else if (threads >= Environment.ProcessorCount)
             {
                 return Environment.ProcessorCount;
@@ -3080,7 +3087,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                         {
                             inputModifier += " -deint 1";
 
-                            if (!encodingOptions.DeinterlaceDoubleRate || (videoStream?.RealFrameRate ?? 60) > 30)
+                            if (!encodingOptions.DeinterlaceDoubleRate || (videoStream?.AverageFrameRate ?? 60) > 30)
                             {
                                 inputModifier += " -drop_second_field 1";
                             }
@@ -3864,7 +3871,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 GetInputArgument(state, encodingOptions),
                 threads,
                 " -vn",
-                string.Join(" ", audioTranscodeParams),
+                string.Join(' ', audioTranscodeParams),
                 outputPath,
                 string.Empty,
                 string.Empty,

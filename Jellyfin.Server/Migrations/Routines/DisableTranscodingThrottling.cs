@@ -32,7 +32,7 @@ namespace Jellyfin.Server.Migrations.Routines
         public void Perform()
         {
             // Set EnableThrottling to false since it wasn't used before and may introduce issues
-            var encoding = _configManager.GetConfiguration<EncodingOptions>("encoding");
+            var encoding = _configManager.GetEncodingOptions();
             if (encoding.EnableThrottling)
             {
                 _logger.LogInformation("Disabling transcoding throttling during migration");

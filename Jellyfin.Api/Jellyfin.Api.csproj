@@ -17,8 +17,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.0.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,5 +37,11 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Jellyfin.Api.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
 </Project>

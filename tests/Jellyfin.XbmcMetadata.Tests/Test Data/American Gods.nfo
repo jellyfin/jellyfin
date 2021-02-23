@@ -126,7 +126,7 @@
     <episodeguide>
         <url cache="tmdb-46639-en.json">http://api.themoviedb.org/3/tv/46639?api_key=6a5be4999abf74eba1f9a8311294c267&amp;language=en</url>
     </episodeguide>
-    <id>46639</id>
+    <id IMDB="tt11111" TMDB="46639">253573</id>
     <uniqueid type="tmdb" default="true">46639</uniqueid>
     <uniqueid type="tvdb">253573</uniqueid>
     <genre>Drama</genre>
@@ -134,7 +134,9 @@
     <genre>Sci-Fi &amp; Fantasy</genre>
     <premiered>2017-04-30</premiered>
     <year>2017</year>
-    <status></status>
+    <status>ended</status>
+    <airs_time>9 PM</airs_time>
+    <airs_dayofweek>Friday</airs_dayofweek>
     <code></code>
     <aired></aired>
     <studio>Starz</studio>

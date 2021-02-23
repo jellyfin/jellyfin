@@ -777,7 +777,7 @@ namespace Emby.Dlna.PlayTo
             var currentWait = 0;
             while (_device.TransportState != TransportState.Playing && currentWait < MaxWait)
             {
-                await Task.Delay(Interval).ConfigureAwait(false);
+                await Task.Delay(Interval, cancellationToken).ConfigureAwait(false);
                 currentWait += Interval;
             }
 
