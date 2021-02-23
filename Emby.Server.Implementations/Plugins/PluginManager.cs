@@ -384,12 +384,21 @@ namespace Emby.Server.Implementations.Plugins
                 imagePath = Path.Join(path, url.Segments[^1]);
 
                 await using var fileStream = File.OpenWrite(imagePath);
-                await using var downloadStream = await HttpClientFactory
-                    .CreateClient(NamedClient.Default)
-                    .GetStreamAsync(url)
-                    .ConfigureAwait(false);
 
-                await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                try
+                {
+                    await using var downloadStream = await HttpClientFactory
+                        .CreateClient(NamedClient.Default)
+                        .GetStreamAsync(url)
+                        .ConfigureAwait(false);
+
+                    await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
+                    imagePath = string.Empty;
+                }
             }
 
             var manifest = new PluginManifest
