@@ -194,7 +194,7 @@ namespace Emby.Server.Implementations.Updates
                             var plugin = _pluginManager.GetPlugin(packageGuid, version.VersionNumber);
                             if (plugin != null)
                             {
-                                _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path);
+                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path);
                             }
 
                             // Remove versions with a target ABI greater then the current application version.
@@ -567,7 +567,7 @@ namespace Emby.Server.Implementations.Updates
 
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
-            _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir);
+            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir);
             _pluginManager.ImportPluginFrom(targetDir);
         }
 

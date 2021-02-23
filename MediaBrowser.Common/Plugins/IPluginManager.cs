@@ -52,7 +52,7 @@ namespace MediaBrowser.Common.Plugins
         /// <param name="version">Version to be installed.</param>
         /// <param name="path">The path where to save the manifest.</param>
         /// <returns>True if successful.</returns>
-        bool GenerateManifest(PackageInfo packageInfo, Version version, string path);
+        Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path);
 
         /// <summary>
         /// Imports plugin details from a folder.

@@ -4,14 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Json.Converters;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Plugins;
@@ -34,6 +36,21 @@ namespace Emby.Server.Implementations.Plugins
         private readonly ServerConfiguration _config;
         private readonly IList<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
+
+        private IHttpClientFactory? _httpClientFactory;
+
+        private IHttpClientFactory HttpClientFactory
+        {
+            get
+            {
+                if (_httpClientFactory == null)
+                {
+                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
+                }
+
+                return _httpClientFactory;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
@@ -351,15 +368,29 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <inheritdoc/>
-        public bool GenerateManifest(PackageInfo packageInfo, Version version, string path)
+        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path)
         {
-            var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
-            var url = packageInfo.ImageUrl ?? string.Empty;
-            var imageFilename = url.Substring(url.LastIndexOf('/') + 1, url.Length);
-
-            using (var client = new WebClient())
+            if (packageInfo == null)
             {
-                client.DownloadFile(url, Path.Join(path, imageFilename));
+                return false;
+            }
+
+            var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
+            var imagePath = string.Empty;
+
+            if (!string.IsNullOrEmpty(packageInfo.ImageUrl))
+            {
+                var url = new Uri(packageInfo.ImageUrl);
+                imagePath = Path.Join(path, url.Segments.Last());
+
+                await using var fileStream = File.OpenWrite(imagePath);
+                var downloadStream = await HttpClientFactory
+                    .CreateClient(NamedClient.Default)
+                    .GetStreamAsync(url)
+                    .ConfigureAwait(false);
+
+                await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                await fileStream.DisposeAsync();
             }
 
             var manifest = new PluginManifest
@@ -376,7 +407,7 @@ namespace Emby.Server.Implementations.Plugins
                 Version = versionInfo.Version,
                 Status = PluginStatus.Active,
                 AutoUpdate = true,
-                ImagePath = Path.Join(path, imageFilename)
+                ImagePath = imagePath
             };
 
             return SaveManifest(manifest, path);
