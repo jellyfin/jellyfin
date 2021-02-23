@@ -113,14 +113,5 @@ namespace Jellyfin.Api.Extensions
 
             return dtoOptions;
         }
-
-        /// <summary>
-        /// Check if DtoOptions contains field.
-        /// </summary>
-        /// <param name="dtoOptions">DtoOptions object.</param>
-        /// <param name="field">Field to check.</param>
-        /// <returns>Field existence.</returns>
-        internal static bool ContainsField(this DtoOptions dtoOptions, ItemFields field)
-            => dtoOptions.Fields != null && dtoOptions.Fields.Contains(field);
     }
 }

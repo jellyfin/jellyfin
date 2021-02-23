@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
@@ -171,13 +172,15 @@ namespace Jellyfin.Api.Helpers
             var queryString = _httpContextAccessor.HttpContext.Request.QueryString.ToString();
 
             // from universal audio service
-            if (queryString.IndexOf("SegmentContainer", StringComparison.OrdinalIgnoreCase) == -1 && !string.IsNullOrWhiteSpace(state.Request.SegmentContainer))
+            if (!string.IsNullOrWhiteSpace(state.Request.SegmentContainer)
+                && !queryString.Contains("SegmentContainer", StringComparison.OrdinalIgnoreCase))
             {
                 queryString += "&SegmentContainer=" + state.Request.SegmentContainer;
             }
 
             // from universal audio service
-            if (!string.IsNullOrWhiteSpace(state.Request.TranscodeReasons) && queryString.IndexOf("TranscodeReasons=", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrWhiteSpace(state.Request.TranscodeReasons)
+                && !queryString.Contains("TranscodeReasons=", StringComparison.OrdinalIgnoreCase))
             {
                 queryString += "&TranscodeReasons=" + state.Request.TranscodeReasons;
             }
@@ -560,13 +563,13 @@ namespace Jellyfin.Api.Helpers
                 profileString = state.GetRequestedProfiles(codec).FirstOrDefault() ?? string.Empty;
                 if (string.Equals(state.ActualOutputVideoCodec, "h264", StringComparison.OrdinalIgnoreCase))
                 {
-                    profileString = profileString ?? "high";
+                    profileString ??= "high";
                 }
 
                 if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase))
                 {
-                    profileString = profileString ?? "main";
+                    profileString ??= "main";
                 }
             }
 
