@@ -73,7 +73,7 @@ namespace Jellyfin.Api.Tests
             _disposableComponents.Add(loggerFactory);
 
             // Create the app host and initialize it
-            var appHost = new CoreAppHost(
+            var appHost = new TestAppHost(
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
@@ -93,7 +93,7 @@ namespace Jellyfin.Api.Tests
             var testServer = base.CreateServer(builder);
 
             // Finish initializing the app host
-            var appHost = (CoreAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
+            var appHost = (TestAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = testServer.Services;
             appHost.InitializeServices().GetAwaiter().GetResult();
             appHost.RunStartupTasksAsync().GetAwaiter().GetResult();
