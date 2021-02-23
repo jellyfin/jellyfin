@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -693,7 +694,7 @@ namespace Jellyfin.Networking.Manager
         /// <param name="token">String to check.</param>
         /// <param name="index">Interface index numbers that match.</param>
         /// <returns><c>true</c> if an interface name matches the token, <c>False</c> otherwise.</returns>
-        private bool IsInterface(string token, out List<int>? index)
+        private bool TryIsInterface(string token, [NotNullWhen(true)] out List<int>? index)
         {
             index = null;
 
@@ -734,14 +735,14 @@ namespace Jellyfin.Networking.Manager
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
-            if (IsInterface(token, out var index))
+            if (TryIsInterface(token, out var index))
             {
                 _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", token);
 
                 // Replace all the interface tags with the interface IP's.
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    if (index!.Contains(Math.Abs(iface.Tag))
+                    if (index.Contains(Math.Abs(iface.Tag))
                         && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
