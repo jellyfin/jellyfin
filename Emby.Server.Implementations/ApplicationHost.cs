@@ -126,7 +126,6 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private string[] _urlPrefixes;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -484,8 +483,9 @@ namespace Emby.Server.Implementations
         /// Runs the startup tasks.
         /// </summary>
         /// <returns><see cref="Task" />.</returns>
-        public async Task RunStartupTasksAsync()
+        public async Task RunStartupTasksAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Logger.LogInformation("Running startup tasks");
 
             Resolve<ITaskManager>().AddTasks(GetExports<IScheduledTask>(false));
@@ -501,13 +501,15 @@ namespace Emby.Server.Implementations
 
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            await Task.WhenAll(StartEntryPoints(entryPoints, true)).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.WhenAny(Task.WhenAll(StartEntryPoints(entryPoints, true)), Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
             stopWatch.Restart();
-            await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.WhenAny(Task.WhenAll(StartEntryPoints(entryPoints, false)), Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
             stopWatch.Stop();
         }
