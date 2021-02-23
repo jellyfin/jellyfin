@@ -6,7 +6,6 @@ using System.Net.Mime;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Models;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Http;
@@ -22,22 +21,18 @@ namespace Jellyfin.Api.Controllers
     public class DashboardController : BaseJellyfinApiController
     {
         private readonly ILogger<DashboardController> _logger;
-        private readonly IServerApplicationHost _appHost;
         private readonly IPluginManager _pluginManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DashboardController"/> class.
         /// </summary>
         /// <param name="logger">Instance of <see cref="ILogger{DashboardController}"/> interface.</param>
-        /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
         /// <param name="pluginManager">Instance of <see cref="IPluginManager"/> interface.</param>
         public DashboardController(
             ILogger<DashboardController> logger,
-            IServerApplicationHost appHost,
             IPluginManager pluginManager)
         {
             _logger = logger;
-            _appHost = appHost;
             _pluginManager = pluginManager;
         }
 
@@ -51,7 +46,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("web/ConfigurationPages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ConfigurationPageInfo?>> GetConfigurationPages(
+        public ActionResult<IEnumerable<ConfigurationPageInfo>> GetConfigurationPages(
             [FromQuery] bool? enableInMainMenu)
         {
             var configPages = _pluginManager.Plugins.SelectMany(GetConfigPages).ToList();
@@ -77,38 +72,22 @@ namespace Jellyfin.Api.Controllers
         [ProducesFile(MediaTypeNames.Text.Html, "application/x-javascript")]
         public ActionResult GetDashboardConfigurationPage([FromQuery] string? name)
         {
-            IPlugin? plugin = null;
-            Stream? stream = null;
-
-            var isJs = false;
-            var isTemplate = false;
-
             var altPage = GetPluginPages().FirstOrDefault(p => string.Equals(p.Item1.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (altPage != null)
+            if (altPage == null)
             {
-                plugin = altPage.Item2;
-                stream = plugin.GetType().Assembly.GetManifestResourceStream(altPage.Item1.EmbeddedResourcePath);
-
-                isJs = string.Equals(Path.GetExtension(altPage.Item1.EmbeddedResourcePath), ".js", StringComparison.OrdinalIgnoreCase);
-                isTemplate = altPage.Item1.EmbeddedResourcePath.EndsWith(".template.html", StringComparison.Ordinal);
+                return NotFound();
             }
 
-            if (plugin != null && stream != null)
+            IPlugin plugin = altPage.Item2;
+            string resourcePath = altPage.Item1.EmbeddedResourcePath;
+            Stream? stream = plugin.GetType().Assembly.GetManifestResourceStream(resourcePath);
+            if (stream == null)
             {
-                if (isJs)
-                {
-                    return File(stream, MimeTypes.GetMimeType("page.js"));
-                }
-
-                if (isTemplate)
-                {
-                    return File(stream, MimeTypes.GetMimeType("page.html"));
-                }
-
-                return File(stream, MimeTypes.GetMimeType("page.html"));
+                _logger.LogError("Failed to get resource {Resource} from plugin {Plugin}", resourcePath, plugin.Name);
+                return NotFound();
             }
 
-            return NotFound();
+            return File(stream, MimeTypes.GetMimeType(resourcePath));
         }
 
         private IEnumerable<ConfigurationPageInfo> GetConfigPages(LocalPlugin plugin)
@@ -120,7 +99,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (plugin?.Instance is not IHasWebPages hasWebPages)
             {
-                return new List<Tuple<PluginPageInfo, IPlugin>>();
+                return Enumerable.Empty<Tuple<PluginPageInfo, IPlugin>>();
             }
 
             return hasWebPages.GetPages().Select(i => new Tuple<PluginPageInfo, IPlugin>(i, plugin.Instance));

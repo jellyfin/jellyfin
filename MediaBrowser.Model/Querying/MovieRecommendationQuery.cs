@@ -7,6 +7,13 @@ namespace MediaBrowser.Model.Querying
 {
     public class MovieRecommendationQuery
     {
+        public MovieRecommendationQuery()
+        {
+            ItemLimit = 10;
+            CategoryLimit = 6;
+            Fields = Array.Empty<ItemFields>();
+        }
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>
@@ -36,12 +43,5 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
-
-        public MovieRecommendationQuery()
-        {
-            ItemLimit = 10;
-            CategoryLimit = 6;
-            Fields = Array.Empty<ItemFields>();
-        }
     }
 }

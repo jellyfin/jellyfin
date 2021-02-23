@@ -11,7 +11,6 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Users;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Drawing;

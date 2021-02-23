@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Net
     /// <summary>
     /// Class WebSocketMessage.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the data.</typeparam>
     public class WebSocketMessage<T>
     {
         /// <summary>
