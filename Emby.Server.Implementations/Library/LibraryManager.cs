@@ -1240,11 +1240,20 @@ namespace Emby.Server.Implementations.Library
             return info;
         }
 
-        private string GetCollectionType(string path)
+        private CollectionTypeOptions GetCollectionType(string path)
         {
-            return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
-                .Select(Path.GetFileNameWithoutExtension)
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
+            foreach (var file in files)
+            {
+                // TODO: @bond use a ReadOnlySpan<char> here when Enum.TryParse supports it
+                // https://github.com/dotnet/runtime/issues/20008
+                if (Enum.TryParse<CollectionTypeOptions>(Path.GetExtension(file), true, out var res))
+                {
+                    return res;
+                }
+            }
+
+            throw new FileNotFoundException("Coudn't find an appropriate collection type file.");
         }
 
         /// <summary>
