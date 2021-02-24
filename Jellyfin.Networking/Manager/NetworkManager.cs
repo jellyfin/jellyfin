@@ -694,7 +694,7 @@ namespace Jellyfin.Networking.Manager
         /// <param name="token">String to check.</param>
         /// <param name="index">Interface index numbers that match.</param>
         /// <returns><c>true</c> if an interface name matches the token, <c>False</c> otherwise.</returns>
-        private bool TryIsInterface(string token, [MaybeNullWhen(false)] out List<int> index)
+        private bool TryGetInterfaces(string token, [NotNullWhen(true)] out List<int>? index)
         {
             index = null;
 
@@ -731,7 +731,7 @@ namespace Jellyfin.Networking.Manager
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
-            if (TryIsInterface(token, out var index))
+            if (TryGetInterfaces(token, out var index))
             {
                 _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", token);
 
