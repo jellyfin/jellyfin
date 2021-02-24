@@ -2956,7 +2956,7 @@ namespace Emby.Server.Implementations.Library
             throw new InvalidOperationException();
         }
 
-        public async Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary)
+        public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -2990,9 +2990,9 @@ namespace Emby.Server.Implementations.Library
             {
                 Directory.CreateDirectory(virtualFolderPath);
 
-                if (!string.IsNullOrEmpty(collectionType))
+                if (collectionType != null)
                 {
-                    var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
+                    var path = Path.Combine(virtualFolderPath, collectionType.ToString() + ".collection");
 
                     File.WriteAllBytes(path, Array.Empty<byte>());
                 }
