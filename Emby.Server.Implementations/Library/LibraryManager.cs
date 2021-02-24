@@ -1240,7 +1240,7 @@ namespace Emby.Server.Implementations.Library
             return info;
         }
 
-        private CollectionTypeOptions GetCollectionType(string path)
+        private CollectionTypeOptions? GetCollectionType(string path)
         {
             var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
             foreach (var file in files)
@@ -1253,7 +1253,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            throw new FileNotFoundException("Coudn't find an appropriate collection type file.");
+            return null;
         }
 
         /// <summary>
