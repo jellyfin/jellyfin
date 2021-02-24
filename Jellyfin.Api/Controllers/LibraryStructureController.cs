@@ -75,7 +75,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> AddVirtualFolder(
             [FromQuery] string? name,
-            [FromQuery] string? collectionType,
+            [FromQuery] CollectionTypeOptions? collectionType,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
             [FromBody] AddVirtualFolderDto? libraryOptionsDto,
             [FromQuery] bool refreshLibrary = false)
