@@ -499,17 +499,22 @@ namespace Emby.Server.Implementations
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.WhenAny(Task.WhenAll(StartEntryPoints(entryPoints, true)), Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
+
+            await Task.WhenAll(StartEntryPoints(entryPoints, true)).ConfigureAwait(false);
             Logger.LogInformation("Executed all pre-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
 
             Logger.LogInformation("Core startup complete");
             CoreStartupHasCompleted = true;
-            stopWatch.Restart();
+
             cancellationToken.ThrowIfCancellationRequested();
-            await Task.WhenAny(Task.WhenAll(StartEntryPoints(entryPoints, false)), Task.Delay(-1, cancellationToken)).ConfigureAwait(false);
+
+            stopWatch.Restart();
+
+            await Task.WhenAll(StartEntryPoints(entryPoints, false)).ConfigureAwait(false);
             Logger.LogInformation("Executed all post-startup entry points in {Elapsed:g}", stopWatch.Elapsed);
             stopWatch.Stop();
         }
