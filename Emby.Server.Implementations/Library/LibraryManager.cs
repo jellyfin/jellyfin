@@ -1240,11 +1240,20 @@ namespace Emby.Server.Implementations.Library
             return info;
         }
 
-        private string GetCollectionType(string path)
+        private CollectionTypeOptions? GetCollectionType(string path)
         {
-            return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
-                .Select(Path.GetFileNameWithoutExtension)
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
+            foreach (var file in files)
+            {
+                // TODO: @bond use a ReadOnlySpan<char> here when Enum.TryParse supports it
+                // https://github.com/dotnet/runtime/issues/20008
+                if (Enum.TryParse<CollectionTypeOptions>(Path.GetExtension(file), true, out var res))
+                {
+                    return res;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -2956,7 +2965,7 @@ namespace Emby.Server.Implementations.Library
             throw new InvalidOperationException();
         }
 
-        public async Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary)
+        public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -2990,9 +2999,9 @@ namespace Emby.Server.Implementations.Library
             {
                 Directory.CreateDirectory(virtualFolderPath);
 
-                if (!string.IsNullOrEmpty(collectionType))
+                if (collectionType != null)
                 {
-                    var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
+                    var path = Path.Combine(virtualFolderPath, collectionType.ToString() + ".collection");
 
                     File.WriteAllBytes(path, Array.Empty<byte>());
                 }

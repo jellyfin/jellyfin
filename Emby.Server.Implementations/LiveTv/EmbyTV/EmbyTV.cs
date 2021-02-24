@@ -2608,7 +2608,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     Locations = new string[] { customPath },
                     Name = "Recorded Movies",
-                    CollectionType = CollectionType.Movies
+                    CollectionType = CollectionTypeOptions.Movies
                 };
             }
 
@@ -2619,7 +2619,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     Locations = new string[] { customPath },
                     Name = "Recorded Shows",
-                    CollectionType = CollectionType.TvShows
+                    CollectionType = CollectionTypeOptions.TvShows
                 };
             }
         }
