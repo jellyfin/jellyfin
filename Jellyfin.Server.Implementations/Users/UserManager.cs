@@ -407,12 +407,12 @@ namespace Jellyfin.Server.Implementations.Users
             var authenticationProvider = authResult.authenticationProvider;
             var success = authResult.success;
 
-            if (user is null)
+            if (user == null)
             {
                 string updatedUsername = authResult.username;
 
                 if (success
-                    && authenticationProvider is not null
+                    && authenticationProvider != null
                     && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
