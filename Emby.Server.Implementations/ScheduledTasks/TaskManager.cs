@@ -20,6 +20,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
     {
         public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
 
+        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+
         /// <summary>
         /// Gets the list of Scheduled Tasks.
         /// </summary>
@@ -32,22 +34,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private readonly ConcurrentQueue<Tuple<Type, TaskOptions>> _taskQueue = new ();
 
         private readonly IApplicationPaths _applicationPaths;
-        private readonly IBus _eventBus;
         private readonly ILogger<TaskManager> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskManager" /> class.
         /// </summary>
         /// <param name="applicationPaths">The application paths.</param>
-        /// <param name="eventBus">The event bus.</param>
         /// <param name="logger">The logger.</param>
         public TaskManager(
             IApplicationPaths applicationPaths,
-            IBus eventBus,
             ILogger<TaskManager> logger)
         {
             _applicationPaths = applicationPaths;
-            _eventBus = eventBus;
             _logger = logger;
 
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
@@ -238,11 +236,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="task">The task.</param>
         /// <param name="result">The result.</param>
         /// <returns>A task.</returns>
-        internal async Task OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
+        internal Task OnTaskCompleted(IScheduledTaskWorker task, TaskResult result)
         {
-            await _eventBus.Send(new TaskCompletionEventArgs(task, result)).ConfigureAwait(false);
-
+            TaskCompleted?.Invoke(this, new TaskCompletionEventArgs(task, result));
             ExecuteQueuedTasks();
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

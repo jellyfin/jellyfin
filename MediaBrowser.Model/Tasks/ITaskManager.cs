@@ -73,5 +73,7 @@ namespace MediaBrowser.Model.Tasks
             where T : IScheduledTask;
 
         event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+
+        event EventHandler<TaskCompletionEventArgs> TaskCompleted;
     }
 }

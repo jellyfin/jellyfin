@@ -4,36 +4,51 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
-using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.System
 {
     /// <summary>
     /// Creates an activity log entry whenever a task is completed.
     /// </summary>
-    public class TaskCompletedLogger : IHandleMessages<TaskCompletionEventArgs>
+    public sealed class TaskCompletedLogger : IServerEntryPoint
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
+        private readonly ITaskManager _taskManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskCompletedLogger"/> class.
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="activityManager">The activity manager.</param>
-        public TaskCompletedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
+        /// <param name="taskManager">The task manager.</param>
+        public TaskCompletedLogger(ILocalizationManager localizationManager, IActivityManager activityManager, ITaskManager taskManager)
         {
             _localizationManager = localizationManager;
             _activityManager = activityManager;
+            _taskManager = taskManager;
         }
 
         /// <inheritdoc />
-        public async Task Handle(TaskCompletionEventArgs e)
+        public Task RunAsync()
+        {
+            _taskManager.TaskCompleted += Handle;
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            _taskManager.TaskCompleted -= Handle;
+        }
+
+        private async void Handle(object? sender, TaskCompletionEventArgs e)
         {
             var result = e.Result;
             var task = e.Task;
