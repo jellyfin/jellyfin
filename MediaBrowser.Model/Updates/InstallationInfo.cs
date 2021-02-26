@@ -1,4 +1,5 @@
 #nullable disable
+
 using System;
 using System.Text.Json.Serialization;
 
@@ -45,5 +46,11 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The checksum.</value>
         public string Checksum { get; set; }
+
+        /// <summary>
+        /// Gets or sets package information for the installation.
+        /// </summary>
+        /// <value>The package information.</value>
+        public PackageInfo PackageInfo { get; set; }
     }
 }

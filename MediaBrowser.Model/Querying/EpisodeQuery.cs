@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Querying
 {
     public class EpisodeQuery
     {
+        public EpisodeQuery()
+        {
+            Fields = Array.Empty<ItemFields>();
+        }
+
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>
@@ -66,10 +71,5 @@ namespace MediaBrowser.Model.Querying
         /// </summary>
         /// <value>The start item identifier.</value>
         public string StartItemId { get; set; }
-
-        public EpisodeQuery()
-        {
-            Fields = Array.Empty<ItemFields>();
-        }
     }
 }

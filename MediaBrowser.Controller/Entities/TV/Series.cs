@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 return key;
             }
 
-            return key + "-" + string.Join("-", folders);
+            return key + "-" + string.Join('-', folders);
         }
 
         private static string GetUniqueSeriesKey(BaseItem series)

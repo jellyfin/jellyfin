@@ -18,8 +18,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="Rebus" Version="6.4.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.5" />
-    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="6.0.7" />
   </ItemGroup>
 
   <ItemGroup>

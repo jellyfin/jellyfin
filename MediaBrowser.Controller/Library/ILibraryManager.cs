@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.Library
 
         Guid GetMusicGenreId(string name);
 
-        Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
+        Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary);
 
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
 

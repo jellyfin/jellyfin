@@ -37,28 +37,28 @@ namespace Jellyfin.Api.Tests
                 EnableIPV6 = ip6
             };
 
-            var result = match + ',';
+            var result = match + ",";
             ForwardedHeadersOptions options = new ForwardedHeadersOptions();
 
             // Need this here as ::1 and 127.0.0.1 are in them by default.
             options.KnownProxies.Clear();
             options.KnownNetworks.Clear();
 
-            ApiServiceCollectionExtensions.AddProxyAddresses(settings, hostList.Split(","), options);
+            ApiServiceCollectionExtensions.AddProxyAddresses(settings, hostList.Split(','), options);
 
             var sb = new StringBuilder();
             foreach (var item in options.KnownProxies)
             {
-                sb.Append(item);
-                sb.Append(',');
+                sb.Append(item)
+                    .Append(',');
             }
 
             foreach (var item in options.KnownNetworks)
             {
-                sb.Append(item.Prefix);
-                sb.Append('/');
-                sb.Append(item.PrefixLength.ToString(CultureInfo.InvariantCulture));
-                sb.Append(',');
+                sb.Append(item.Prefix)
+                    .Append('/')
+                    .Append(item.PrefixLength.ToString(CultureInfo.InvariantCulture))
+                    .Append(',');
             }
 
             Assert.Equal(sb.ToString(), result);

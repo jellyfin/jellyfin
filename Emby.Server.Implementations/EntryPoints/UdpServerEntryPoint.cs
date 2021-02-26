@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +31,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// The UDP server.
         /// </summary>
-        private UdpServer _udpServer;
+        private UdpServer? _udpServer;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private bool _disposed = false;
 
@@ -71,9 +73,8 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _cancellationTokenSource.Cancel();
-            _udpServer.Dispose();
             _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
+            _udpServer?.Dispose();
             _udpServer = null;
 
             _disposed = true;

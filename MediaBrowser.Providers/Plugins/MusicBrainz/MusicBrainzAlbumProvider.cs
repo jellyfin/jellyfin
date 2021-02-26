@@ -756,7 +756,10 @@ namespace MediaBrowser.Providers.Music
                     _stopWatchMusicBrainz.Restart();
 
                     using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-                    response = await _httpClientFactory.CreateClient(NamedClient.MusicBrainz).SendAsync(request).ConfigureAwait(false);
+                    response = await _httpClientFactory
+                        .CreateClient(NamedClient.MusicBrainz)
+                        .SendAsync(request, cancellationToken)
+                        .ConfigureAwait(false);
 
                     // We retry a finite number of times, and only whilst MB is indicating 503 (throttling).
                 }

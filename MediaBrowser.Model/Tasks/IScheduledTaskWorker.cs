@@ -15,7 +15,7 @@ namespace MediaBrowser.Model.Tasks
         event EventHandler<GenericEventArgs<double>> TaskProgress;
 
         /// <summary>
-        /// Gets or sets the scheduled task.
+        /// Gets the scheduled task.
         /// </summary>
         /// <value>The scheduled task.</value>
         IScheduledTask ScheduledTask { get; }
@@ -57,10 +57,9 @@ namespace MediaBrowser.Model.Tasks
         double? CurrentProgress { get; }
 
         /// <summary>
-        /// Gets the triggers that define when the task will run.
+        /// Gets or sets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
-        /// <exception cref="ArgumentNullException">value</exception>
         TaskTriggerInfo[] Triggers { get; set; }
 
         /// <summary>
