@@ -171,25 +171,21 @@ namespace MediaBrowser.Providers.Studios
 
         public IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new StreamReader(fileStream);
+            var lines = new List<string>();
+
+            while (!reader.EndOfStream)
             {
-                using (var reader = new StreamReader(fileStream))
+                var text = reader.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    var lines = new List<string>();
-
-                    while (!reader.EndOfStream)
-                    {
-                        var text = reader.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            lines.Add(text);
-                        }
-                    }
-
-                    return lines;
+                    lines.Add(text);
                 }
             }
+
+            return lines;
         }
     }
 }

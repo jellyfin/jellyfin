@@ -187,31 +187,29 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            using (var stream = response.Stream)
-            using (var memoryStream = new MemoryStream())
+            using var stream = response.Stream;
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+            memoryStream.Position = 0;
+
+            var savePaths = new List<string>();
+            var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+
+            if (response.IsForced)
             {
-                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                memoryStream.Position = 0;
-
-                var savePaths = new List<string>();
-                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
-
-                if (response.IsForced)
-                {
-                    saveFileName += ".forced";
-                }
-
-                saveFileName += "." + response.Format.ToLowerInvariant();
-
-                if (saveInMediaFolder)
-                {
-                    savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
-                }
-
-                savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
-
-                await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                saveFileName += ".forced";
             }
+
+            saveFileName += "." + response.Format.ToLowerInvariant();
+
+            if (saveInMediaFolder)
+            {
+                savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
+            }
+
+            savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+
+            await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
         }
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
@@ -228,10 +226,8 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
-                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, FileStreamBufferSize, true))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
+                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, FileStreamBufferSize, true);
+                    await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;
                 }
