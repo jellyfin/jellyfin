@@ -263,26 +263,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 return null;
             }
 
-            // Remove uptil the first space
+            // Remove up until the first space
             authorizationHeader = parts[1];
-            parts = GetParts(authorizationHeader);
-
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var item in parts)
-            {
-                var param = item.Trim().Split('=', 2);
-
-                var value = param[1].Trim('"');
-                result[param[0]] = NormalizeValue(value);
-            }
-
-            return result;
-        }
-
-        private static string NormalizeValue(string value)
-        {
-            return string.IsNullOrEmpty(value) ? value : WebUtility.UrlDecode(value);
+            return GetParts(authorizationHeader);
         }
 
         /// <summary>
@@ -290,13 +273,15 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="authtorizationHeader">The authorization header.</param>
         /// <returns>string</returns>
-        public static string[] GetParts(string authtorizationHeader)
+        public static Dictionary<string, string> GetParts(string authtorizationHeader)
         {
-            var result = new List<string>();
+            var result = new Dictionary<string, string>();
             var escapeChars = new[] { '"', ',' };
             var escaped = false;
             int start = 0;
             int i = 0;
+            string key = string.Empty;
+
             while (i < authtorizationHeader.Length)
             {
                 var token = authtorizationHeader[i];
@@ -309,11 +294,17 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         // Meeting a comma after a closing escape char means the value is complete
                         if (start < i)
                         {
-                            result.Add(WebUtility.UrlDecode(authtorizationHeader[start..(i)]));
+                            result[key] = WebUtility.UrlDecode(authtorizationHeader[start..i].Trim('"'));
+                            key = string.Empty;
                         }
 
                         start = i + 1;
                     }
+                }
+                else if (!escaped && token == '=')
+                {
+                    key = authtorizationHeader[start.. i];
+                    start = i + 1;
                 }
 
                 i++;
@@ -322,10 +313,10 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // Add last value
             if (start < i)
             {
-                result.Add(WebUtility.UrlDecode(authtorizationHeader[start..(i)]));
+                result[key] = WebUtility.UrlDecode(authtorizationHeader[start..i].Trim('"'));
             }
 
-            return result.ToArray();
+            return result;
         }
     }
 }

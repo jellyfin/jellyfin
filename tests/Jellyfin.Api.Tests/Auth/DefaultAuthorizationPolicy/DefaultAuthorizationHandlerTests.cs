@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using Emby.Server.Implementations.HttpServer.Security;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Configuration;
@@ -48,6 +49,17 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
 
             await _sut.HandleAsync(context);
             Assert.True(context.HasSucceeded);
+        }
+
+        [Theory]
+        [InlineData("x=\"123,123\",y=\"123\"", "x", "123,123")]
+        [InlineData("x=\"ab\"", "x", "ab")]
+        [InlineData("param=Hörbücher", "param", "Hörbücher")]
+        [InlineData("param=%22%Hörbücher", "param", "\"%Hörbücher")]
+        public void TestAuthHeaders(string input, string key, string value)
+        {
+            var dict = AuthorizationContext.GetParts(input);
+            Assert.True(string.Equals(dict[key], value, System.StringComparison.Ordinal));
         }
     }
 }
