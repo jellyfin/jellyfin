@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance has a custom published url.
+        /// Gets the configured published server url.
         /// </summary>
         Uri PublishedServerUrl { get; }
 
