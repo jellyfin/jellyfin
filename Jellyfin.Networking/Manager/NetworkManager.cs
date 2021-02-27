@@ -731,7 +731,7 @@ namespace Jellyfin.Networking.Manager
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
-            if (TryGetInterfaces(token, out var index))
+            if (TryGetInterfaces(token, out var indices))
             {
                 _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", token);
 
