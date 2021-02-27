@@ -1146,11 +1146,6 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
-        public string GetStartupOption(string propName)
-        {
-            return _startupOptions.GetType().GetProperty(propName).GetValue(src, null);
-        }
-
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
         {
