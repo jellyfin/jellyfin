@@ -135,9 +135,7 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance has a custom published url.
-        /// </summary>
+        /// <inheritdoc />
         public Uri PublishedServerUrl => _startupOptions.PublishedServerUrl;
 
         public virtual bool CanLaunchWebBrowser
