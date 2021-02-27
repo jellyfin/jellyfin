@@ -694,7 +694,7 @@ namespace Jellyfin.Networking.Manager
         /// <param name="token">String to check.</param>
         /// <param name="index">Interface index numbers that match.</param>
         /// <returns><c>true</c> if an interface name matches the token, <c>False</c> otherwise.</returns>
-        private bool TryGetInterfaces(string token, [MaybeNullWhen(false)] out List<int>? index)
+        private bool TryGetInterfaces(string token, [MaybeNullWhen(false)] out List<int> index)
         {
             index = null;
 
