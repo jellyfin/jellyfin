@@ -52,15 +52,20 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Checks the ability to ignore interfaces
+        /// Checks the ability to ignore virtual interfaces.
         /// </summary>
         /// <param name="interfaces">Mock network setup, in the format (IP address, interface index, interface name) | .... </param>
         /// <param name="lan">LAN addresses.</param>
         /// <param name="value">Bind addresses that are excluded.</param>
         [Theory]
+        // All valid
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
+        // eth16 only
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.1.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
+        // All interfaces excluded.
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
+        // vEthernet1 and vEthernet212 should be excluded.
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
         {
             var conf = new NetworkConfiguration()
