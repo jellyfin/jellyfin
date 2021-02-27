@@ -738,7 +738,7 @@ namespace Jellyfin.Networking.Manager
                 // Replace all the interface tags with the interface IP's.
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    if (index.Contains(Math.Abs(iface.Tag))
+                    if (indices.Contains(Math.Abs(iface.Tag))
                         && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
