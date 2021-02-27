@@ -164,6 +164,7 @@ namespace Jellyfin.Server
                 appPaths,
                 _loggerFactory,
                 options,
+                startupConfig,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 serviceCollection);
 
