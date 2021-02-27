@@ -16,7 +16,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="name">The name.</param>
         /// <param name="id">The provider id.</param>
         /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
-        public static bool TryGetProviderId(this IHasProviderIds instance, string name, [MaybeNullWhen(false)] out string id)
+        public static bool TryGetProviderId(this IHasProviderIds instance, string name, [NotNullWhen(true)] out string? id)
         {
             if (instance == null)
             {
@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="provider">The provider.</param>
         /// <param name="id">The provider id.</param>
         /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
-        public static bool TryGetProviderId(this IHasProviderIds instance, MetadataProvider provider, [MaybeNullWhen(false)] out string id)
+        public static bool TryGetProviderId(this IHasProviderIds instance, MetadataProvider provider, [NotNullWhen(true)] out string? id)
         {
             return instance.TryGetProviderId(provider.ToString(), out id);
         }
