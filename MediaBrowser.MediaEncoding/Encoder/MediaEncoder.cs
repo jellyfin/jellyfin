@@ -209,6 +209,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     _ffmpegPath = path;
                     EncoderLocation = location;
+                    return true;
                 }
                 else
                 {
