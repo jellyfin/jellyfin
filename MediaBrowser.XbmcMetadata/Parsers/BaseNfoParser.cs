@@ -27,6 +27,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         private readonly IConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IDirectoryService _directoryService;
         private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
@@ -37,12 +38,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public BaseNfoParser(
             ILogger logger,
             IConfigurationManager config,
             IProviderManager providerManager,
             IUserManager userManager,
-            IUserDataManager userDataManager)
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
         {
             Logger = logger;
             _config = config;
@@ -50,6 +53,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _validProviderIds = new Dictionary<string, string>();
             _userManager = userManager;
             _userDataManager = userDataManager;
+            _directoryService = directoryService;
         }
 
         protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
@@ -780,6 +784,78 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
                         {
                             item.SetProviderId(provider, id);
+                        }
+
+                        break;
+                    }
+
+                case "thumb":
+                    {
+                        var artType = reader.GetAttribute("aspect");
+                        var val = reader.ReadElementContentAsString();
+
+                        // skip:
+                        // - empty aspect tag
+                        // - empty uri
+                        // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
+                        if (string.IsNullOrEmpty(artType) || string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
+                        {
+                            break;
+                        }
+
+                        ImageType imageType = artType switch
+                        {
+                            "banner" => ImageType.Banner,
+                            "clearlogo" => ImageType.Logo,
+                            "discart" => ImageType.Disc,
+                            "landscape" => ImageType.Thumb,
+                            "clearart" => ImageType.Art,
+                            // unknown type (including "poster") --> primary
+                            _ => ImageType.Primary,
+                        };
+
+                        Uri uri;
+                        try
+                        {
+                            uri = new Uri(val);
+                        }
+                        catch (UriFormatException ex)
+                        {
+                            Logger.LogError(ex, "Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
+                            break;
+                        }
+
+                        if (uri.IsFile)
+                        {
+                            // only allow one item of each type
+                            if (itemResult.Images.Any(x => x.Type == imageType))
+                            {
+                                break;
+                            }
+
+                            var fileSystemMetadata = _directoryService.GetFile(val);
+                            // non existing file returns null
+                            if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                            {
+                                Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, item.Name);
+                                break;
+                            }
+
+                            itemResult.Images.Add(new LocalImageInfo()
+                            {
+                                FileInfo = fileSystemMetadata,
+                                Type = imageType
+                            });
+                        }
+                        else
+                        {
+                            // only allow one item of each type
+                            if (itemResult.RemoteImages.Any(x => x.type == imageType))
+                            {
+                                break;
+                            }
+
+                            itemResult.RemoteImages.Add((uri.ToString(), imageType));
                         }
 
                         break;

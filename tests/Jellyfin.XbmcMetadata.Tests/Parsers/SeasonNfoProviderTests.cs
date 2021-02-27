@@ -31,8 +31,15 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var directoryService = new Mock<IDirectoryService>();
 
-            _parser = new SeasonNfoParser(new NullLogger<SeasonNfoParser>(), config.Object, providerManager.Object, user.Object, userData.Object);
+            _parser = new SeasonNfoParser(
+                new NullLogger<SeasonNfoParser>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]

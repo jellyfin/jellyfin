@@ -20,6 +20,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IProviderManager _providerManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IDirectoryService _directoryService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonNfoProvider"/> class.
@@ -30,13 +31,15 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public SeasonNfoProvider(
             ILogger<SeasonNfoProvider> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
             IProviderManager providerManager,
             IUserManager userManager,
-            IUserDataManager userDataManager)
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
             : base(fileSystem)
         {
             _logger = logger;
@@ -44,12 +47,13 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
+            _directoryService = directoryService;
         }
 
         /// <inheritdoc />
         protected override void Fetch(MetadataResult<Season> result, string path, CancellationToken cancellationToken)
         {
-            new SeasonNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager).Fetch(result, path, cancellationToken);
+            new SeasonNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(result, path, cancellationToken);
         }
 
         /// <inheritdoc />

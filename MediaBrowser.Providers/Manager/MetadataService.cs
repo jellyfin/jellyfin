@@ -706,6 +706,12 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
+                        foreach (var remoteImage in localItem.RemoteImages)
+                        {
+                            await ProviderManager.SaveImage(item, remoteImage.url, remoteImage.type, null, cancellationToken).ConfigureAwait(false);
+                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
+                        }
+
                         if (imageService.MergeImages(item, localItem.Images))
                         {
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;

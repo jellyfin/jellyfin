@@ -9,7 +9,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.System;
 using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,6 +25,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         private readonly MovieNfoParser _parser;
         private readonly IUserDataManager _userDataManager;
         private readonly User _testUser;
+        private readonly FileSystemMetadata _localImageFileMetadata;
 
         public MovieNfoParserTests()
         {
@@ -52,8 +55,36 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             userData.Setup(x => x.GetUserData(_testUser, It.IsAny<BaseItem>()))
                 .Returns(new UserItemData());
 
+            var directoryService = new Mock<IDirectoryService>();
+            if (MediaBrowser.Common.System.OperatingSystem.Id != OperatingSystemId.Windows)
+            {
+                _localImageFileMetadata = new FileSystemMetadata()
+                {
+                    Exists = true,
+                    FullName = "/media/movies/Justice League (2017).jpg"
+                };
+                directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))
+                    .Returns(_localImageFileMetadata);
+            }
+            else
+            {
+                _localImageFileMetadata = new FileSystemMetadata()
+                {
+                    Exists = true,
+                    FullName = "C:\\media\\movies\\Justice League (2017).jpg"
+                };
+                directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))
+                    .Returns(_localImageFileMetadata);
+            }
+
             _userDataManager = userData.Object;
-            _parser = new MovieNfoParser(new NullLogger<MovieNfoParser>(), configManager.Object, providerManager.Object, user.Object, userData.Object);
+            _parser = new MovieNfoParser(
+                new NullLogger<MovieNfoParser>(),
+                configManager.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]
@@ -134,6 +165,37 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             // Movie set
             Assert.Equal("702342", item.ProviderIds[MetadataProvider.TmdbCollection.ToString()]);
             Assert.Equal("Justice League Collection", item.CollectionName);
+
+            // Images
+            Assert.Equal(6, result.RemoteImages.Count);
+
+            var posters = result.RemoteImages.Where(x => x.type == ImageType.Primary).ToList();
+            Assert.Single(posters);
+            Assert.Equal("http://image.tmdb.org/t/p/original/9rtrRGeRnL0JKtu9IMBWsmlmmZz.jpg", posters[0].url);
+
+            var logos = result.RemoteImages.Where(x => x.type == ImageType.Logo).ToList();
+            Assert.Single(logos);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-5865bf95cbadb.png", logos[0].url);
+
+            var banners = result.RemoteImages.Where(x => x.type == ImageType.Banner).ToList();
+            Assert.Single(banners);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebanner/justice-league-586017e95adbd.jpg", banners[0].url);
+
+            var thumbs = result.RemoteImages.Where(x => x.type == ImageType.Thumb).ToList();
+            Assert.Single(thumbs);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviethumb/justice-league-585fb155c3743.jpg", thumbs[0].url);
+
+            var art = result.RemoteImages.Where(x => x.type == ImageType.Art).ToList();
+            Assert.Single(art);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/hdmovieclearart/justice-league-5865c23193041.png", art[0].url);
+
+            var discArt = result.RemoteImages.Where(x => x.type == ImageType.Disc).ToList();
+            Assert.Single(discArt);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a3af26360617.png", discArt[0].url);
+
+            // Local Image - contains only one item depending on operating system
+            Assert.Single(result.Images);
+            Assert.Equal(_localImageFileMetadata.Name, result.Images[0].FileInfo.Name);
         }
 
         [Theory]
