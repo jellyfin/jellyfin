@@ -135,6 +135,11 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has a custom published url.
+        /// </summary>
+        public Uri PublishedServerUrl => _startupOptions.PublishedServerUrl;
+
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -1140,6 +1145,11 @@ namespace Emby.Server.Implementations
 
         /// <inheritdoc/>
         public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.GetNetworkConfiguration().EnableHttps;
+
+        public string GetStartupOption(string propName)
+        {
+            return _startupOptions.GetType().GetProperty(propName).GetValue(src, null);
+        }
 
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
