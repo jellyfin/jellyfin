@@ -137,9 +137,6 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
-        /// <inheritdoc />
-        public Uri PublishedServerUrl => _startupOptions.PublishedServerUrl;
-
         public virtual bool CanLaunchWebBrowser
         {
             get
