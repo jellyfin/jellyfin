@@ -137,17 +137,14 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (string.IsNullOrWhiteSpace(newName))
-            {
-                throw new ArgumentException("Invalid username", nameof(newName));
-            }
+            ThrowIfInvalidUsername(newName);
 
             if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.Ordinal)))
+            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -201,9 +198,14 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task<User> CreateUserAsync(string name)
         {
-            if (!IsValidUsername(name))
+            ThrowIfInvalidUsername(name);
+
+            if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
+                throw new ArgumentException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "A user with the name '{0}' already exists.",
+                    name));
             }
 
             await using var dbContext = _dbProvider.CreateContext();
@@ -725,12 +727,22 @@ namespace Jellyfin.Server.Implementations.Users
             _users[user.Id] = user;
         }
 
+        internal static void ThrowIfInvalidUsername(string name)
+        {
+            if (!string.IsNullOrWhiteSpace(name) && IsValidUsername(name))
+            {
+                return;
+            }
+
+            throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
+        }
+
         private static bool IsValidUsername(string name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
             // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-            return Regex.IsMatch(name, @"^[\w\ \-'._@]*$");
+            return Regex.IsMatch(name, @"^[\w\ \-'._@]+$");
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)

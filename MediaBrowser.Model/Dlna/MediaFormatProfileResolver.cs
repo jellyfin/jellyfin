@@ -57,7 +57,6 @@ namespace MediaBrowser.Model.Dlna
                 string.Equals(container, "mpegts", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(container, "m2ts", StringComparison.OrdinalIgnoreCase))
             {
-
                 return ResolveVideoMPEG2TSFormat(videoCodec, audioCodec, width, height, timestampType);
             }
 
@@ -323,7 +322,6 @@ namespace MediaBrowser.Model.Dlna
             if (string.Equals(videoCodec, "wmv", StringComparison.OrdinalIgnoreCase) &&
                 (string.IsNullOrEmpty(audioCodec) || string.Equals(audioCodec, "wma", StringComparison.OrdinalIgnoreCase) || string.Equals(videoCodec, "wmapro", StringComparison.OrdinalIgnoreCase)))
             {
-
                 if (width.HasValue && height.HasValue)
                 {
                     if ((width.Value <= 720) && (height.Value <= 576))
@@ -479,7 +477,9 @@ namespace MediaBrowser.Model.Dlna
         {
             if (string.Equals(container, "jpeg", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(container, "jpg", StringComparison.OrdinalIgnoreCase))
+            {
                 return ResolveImageJPGFormat(width, height);
+            }
 
             if (string.Equals(container, "png", StringComparison.OrdinalIgnoreCase))
             {

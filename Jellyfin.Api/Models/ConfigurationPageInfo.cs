@@ -1,5 +1,5 @@
-﻿using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Plugins;
+using System;
+using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 
 namespace Jellyfin.Api.Models
@@ -12,36 +12,24 @@ namespace Jellyfin.Api.Models
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
         /// </summary>
-        /// <param name="page">Instance of <see cref="IPluginConfigurationPage"/> interface.</param>
-        public ConfigurationPageInfo(IPluginConfigurationPage page)
-        {
-            Name = page.Name;
-
-            ConfigurationPageType = page.ConfigurationPageType;
-
-            if (page.Plugin != null)
-            {
-                DisplayName = page.Plugin.Name;
-                // Don't use "N" because it needs to match Plugin.Id
-                PluginId = page.Plugin.Id.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
-        /// </summary>
         /// <param name="plugin">Instance of <see cref="IPlugin"/> interface.</param>
         /// <param name="page">Instance of <see cref="PluginPageInfo"/> interface.</param>
-        public ConfigurationPageInfo(IPlugin plugin, PluginPageInfo page)
+        public ConfigurationPageInfo(IPlugin? plugin, PluginPageInfo page)
         {
             Name = page.Name;
             EnableInMainMenu = page.EnableInMainMenu;
             MenuSection = page.MenuSection;
             MenuIcon = page.MenuIcon;
-            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin.Name : page.DisplayName;
+            DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin?.Name : page.DisplayName;
+            PluginId = plugin?.Id;
+        }
 
-            // Don't use "N" because it needs to match Plugin.Id
-            PluginId = plugin.Id.ToString();
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        public ConfigurationPageInfo()
+        {
+            Name = string.Empty;
         }
 
         /// <summary>
@@ -71,15 +59,9 @@ namespace Jellyfin.Api.Models
         public string? DisplayName { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the configuration page.
-        /// </summary>
-        /// <value>The type of the configuration page.</value>
-        public ConfigurationPageType ConfigurationPageType { get; set; }
-
-        /// <summary>
         /// Gets or sets the plugin id.
         /// </summary>
         /// <value>The plugin id.</value>
-        public string? PluginId { get; set; }
+        public Guid? PluginId { get; set; }
     }
 }

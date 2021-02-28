@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Second;
+        public override ResolverPriority Priority => ResolverPriority.Third;
 
         /// <summary>
         /// Resolves the specified args.

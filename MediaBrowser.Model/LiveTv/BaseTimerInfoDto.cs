@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.LiveTv
     public class BaseTimerInfoDto : IHasServerId
     {
         /// <summary>
-        /// Id of the recording.
+        /// Gets or sets the Id of the recording.
         /// </summary>
         public string Id { get; set; }
 
@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.LiveTv
         public string ExternalId { get; set; }
 
         /// <summary>
-        /// ChannelId of the recording.
+        /// Gets or sets the channel id of the recording.
         /// </summary>
         public Guid ChannelId { get; set; }
 
@@ -39,7 +39,7 @@ namespace MediaBrowser.Model.LiveTv
         public string ExternalChannelId { get; set; }
 
         /// <summary>
-        /// ChannelName of the recording.
+        /// Gets or sets the channel name of the recording.
         /// </summary>
         public string ChannelName { get; set; }
 
@@ -58,22 +58,22 @@ namespace MediaBrowser.Model.LiveTv
         public string ExternalProgramId { get; set; }
 
         /// <summary>
-        /// Name of the recording.
+        /// Gets or sets the name of the recording.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Description of the recording.
+        /// Gets or sets the description of the recording.
         /// </summary>
         public string Overview { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The end date of the recording, in UTC.
+        /// Gets or sets the end date of the recording, in UTC.
         /// </summary>
         public DateTime EndDate { get; set; }
 
@@ -108,7 +108,7 @@ namespace MediaBrowser.Model.LiveTv
         public bool IsPrePaddingRequired { get; set; }
 
         /// <summary>
-        /// If the item does not have any backdrops, this will hold the Id of the Parent that has one.
+        /// Gets or sets the Id of the Parent that has a backdrop if the item does not have one.
         /// </summary>
         /// <value>The parent backdrop item id.</value>
         public string ParentBackdropItemId { get; set; }

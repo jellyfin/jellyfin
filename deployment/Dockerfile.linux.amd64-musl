@@ -1,0 +1,31 @@
+FROM debian:10
+# Docker build arguments
+ARG SOURCE_DIR=/jellyfin
+ARG ARTIFACT_DIR=/dist
+ARG SDK_VERSION=5.0
+# Docker run environment
+ENV SOURCE_DIR=/jellyfin
+ENV ARTIFACT_DIR=/dist
+ENV DEB_BUILD_OPTIONS=noddebs
+ENV ARCH=amd64
+ENV IS_DOCKER=YES
+
+# Prepare Debian build environment
+RUN apt-get update \
+ && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv libc6-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
+
+# Install dotnet repository
+# https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
+RUN wget https://download.visualstudio.microsoft.com/download/pr/a2052604-de46-4cd4-8256-9bc222537d32/a798771950904eaf91c0c37c58f516e1/dotnet-sdk-5.0.103-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+ && mkdir -p dotnet-sdk \
+ && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
+ && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+
+# Link to docker-build script
+RUN ln -sf ${SOURCE_DIR}/deployment/build.linux.amd64-musl /build.sh
+
+VOLUME ${SOURCE_DIR}/
+
+VOLUME ${ARTIFACT_DIR}/
+
+ENTRYPOINT ["/build.sh"]

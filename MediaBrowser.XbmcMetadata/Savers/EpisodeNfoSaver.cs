@@ -56,6 +56,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             var episode = (Episode)item;
 
+            writer.WriteElementString("showtitle", episode.SeriesName);
+
             if (episode.IndexNumber.HasValue)
             {
                 writer.WriteElementString("episode", episode.IndexNumber.Value.ToString(_usCulture));
@@ -122,7 +124,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 "airsbefore_episode",
                 "airsbefore_season",
                 "displayseason",
-                "displayepisode"
+                "displayepisode",
+                "showtitle"
             });
 
             return list;

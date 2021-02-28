@@ -10,6 +10,8 @@
 
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
+    <!-- disable warning SA1011: Closing square bracket should be followed by a space. -->
+    <Rule Id="SA1011" Action="None" />
     <!-- disable warning SA1101: Prefix local calls with 'this.' -->
     <Rule Id="SA1101" Action="None" />
     <!-- disable warning SA1108: Block statements should not contain embedded comments -->
@@ -30,11 +32,17 @@
     <Rule Id="SA1515" Action="None" />
     <!-- disable warning SA1600: Elements should be documented -->
     <Rule Id="SA1600" Action="None" />
+    <!-- disable warning SA1602: Enumeration items should be documented -->
+    <Rule Id="SA1602" Action="None" />
     <!-- disable warning SA1633: The file header is missing or not located at the top of the file -->
     <Rule Id="SA1633" Action="None" />
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
+        or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
+    <Rule Id="CA2016" Action="Error" />
+
     <!-- disable warning CA1031: Do not catch general exception types -->
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1032: Implement standard exception constructors -->

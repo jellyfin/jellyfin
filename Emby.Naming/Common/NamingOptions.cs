@@ -282,7 +282,13 @@ namespace Emby.Naming.Common
                     SupportsAbsoluteEpisodeNumbers = true
                 },
 
-                // Case Closed (1996-2007)/Case Closed - 317.mkv
+                // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
+                // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
+                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                {
+                    IsNamed = true
+                },
+
                 // /server/anything_102.mp4
                 // /server/james.corden.2017.04.20.anne.hathaway.720p.hdtv.x264-crooks.mkv
                 // /server/anything_1996.11.14.mp4
@@ -299,11 +305,6 @@ namespace Emby.Naming.Common
 
                 // *** End Kodi Standard Naming
 
-                // [bar] Foo - 1 [baz]
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[-\s_]+(?<epnumber>[0-9]+).*$")
-                {
-                    IsNamed = true
-                },
                 new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
                     IsNamed = true
@@ -587,7 +588,7 @@ namespace Emby.Naming.Common
             AudioBookNamesExpressions = new[]
             {
                 // Detect year usually in brackets after name Batman (2020)
-                @"^(?<name>.+?)\s*\(\s*(?<year>\d{4})\s*\)\s*$",
+                @"^(?<name>.+?)\s*\(\s*(?<year>[0-9]{4})\s*\)\s*$",
                 @"^\s*(?<name>[^ ].*?)\s*$"
             };
 

@@ -1,4 +1,3 @@
-#pragma warning disable CA1062 // Validate arguments of public methods
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;

@@ -10,6 +10,16 @@ namespace MediaBrowser.Model.Configuration
     /// </summary>
     public class MetadataOptions
     {
+        public MetadataOptions()
+        {
+            DisabledMetadataSavers = Array.Empty<string>();
+            LocalMetadataReaderOrder = Array.Empty<string>();
+            DisabledMetadataFetchers = Array.Empty<string>();
+            MetadataFetcherOrder = Array.Empty<string>();
+            DisabledImageFetchers = Array.Empty<string>();
+            ImageFetcherOrder = Array.Empty<string>();
+        }
+
         public string ItemType { get; set; }
 
         public string[] DisabledMetadataSavers { get; set; }
@@ -23,15 +33,5 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisabledImageFetchers { get; set; }
 
         public string[] ImageFetcherOrder { get; set; }
-
-        public MetadataOptions()
-        {
-            DisabledMetadataSavers = Array.Empty<string>();
-            LocalMetadataReaderOrder = Array.Empty<string>();
-            DisabledMetadataFetchers = Array.Empty<string>();
-            MetadataFetcherOrder = Array.Empty<string>();
-            DisabledImageFetchers = Array.Empty<string>();
-            ImageFetcherOrder = Array.Empty<string>();
-        }
     }
 }

@@ -335,11 +335,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return new Uri(url).AbsoluteUri.TrimEnd('/');
         }
 
-        protected EncodingOptions GetEncodingOptions()
-        {
-            return Config.GetConfiguration<EncodingOptions>("encoding");
-        }
-
         private static string GetHdHrIdFromChannelId(string channelId)
         {
             return channelId.Split('_')[1];

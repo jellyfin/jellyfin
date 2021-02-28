@@ -12,6 +12,14 @@ namespace MediaBrowser.Model.Entities
     public class VirtualFolderInfo
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="VirtualFolderInfo"/> class.
+        /// </summary>
+        public VirtualFolderInfo()
+        {
+            Locations = Array.Empty<string>();
+        }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
@@ -27,17 +35,9 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the type of the collection.
         /// </summary>
         /// <value>The type of the collection.</value>
-        public string CollectionType { get; set; }
+        public CollectionTypeOptions? CollectionType { get; set; }
 
         public LibraryOptions LibraryOptions { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VirtualFolderInfo"/> class.
-        /// </summary>
-        public VirtualFolderInfo()
-        {
-            Locations = Array.Empty<string>();
-        }
 
         /// <summary>
         /// Gets or sets the item identifier.

@@ -98,7 +98,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
 
         private EncodingOptions GetOptions()
         {
-            return _config.GetConfiguration<EncodingOptions>("encoding");
+            return _config.GetEncodingOptions();
         }
 
         private async void TimerCallback(object? state)

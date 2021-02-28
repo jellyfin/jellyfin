@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Helpers
             if (string.IsNullOrEmpty(containerInternal))
             {
                 containerInternal = streamingRequest.Static ?
-                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio)
+                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio)
                     : GetOutputFileExtension(state);
             }
 
@@ -210,6 +210,7 @@ namespace Jellyfin.Api.Helpers
                         && !state.VideoRequest.MaxHeight.HasValue;
 
                     if (isVideoResolutionNotRequested
+                        && state.VideoStream != null
                         && state.VideoRequest.VideoBitRate.HasValue
                         && state.VideoStream.BitRate.HasValue
                         && state.VideoRequest.VideoBitRate.Value >= state.VideoStream.BitRate.Value)
@@ -244,7 +245,7 @@ namespace Jellyfin.Api.Helpers
 
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
                 ? GetOutputFileExtension(state)
-                : ('.' + state.OutputContainer);
+                : ("." + state.OutputContainer);
 
             state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 

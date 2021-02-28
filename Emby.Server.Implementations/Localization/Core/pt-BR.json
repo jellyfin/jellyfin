@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "Biblioteca",
     "TasksMaintenanceCategory": "Manutenção",
     "TaskCleanActivityLogDescription": "Apaga o registro de atividades mais antigo que a idade configurada.",
-    "TaskCleanActivityLog": "Limpar Registro de Atividades"
+    "TaskCleanActivityLog": "Limpar Registro de Atividades",
+    "Undefined": "Indefinido",
+    "Forced": "Forçado",
+    "Default": "Padrão"
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
@@ -20,6 +21,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
@@ -174,30 +176,33 @@ namespace Jellyfin.Server.Extensions
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
         /// <param name="pluginAssemblies">An IEnumerable containing all plugin assemblies with API controllers.</param>
-        /// <param name="knownProxies">A list of all known proxies to trust for X-Forwarded-For.</param>
+        /// <param name="config">The <see cref="NetworkConfiguration"/>.</param>
         /// <returns>The MVC builder.</returns>
-        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, IReadOnlyList<string> knownProxies)
+        public static IMvcBuilder AddJellyfinApi(this IServiceCollection serviceCollection, IEnumerable<Assembly> pluginAssemblies, NetworkConfiguration config)
         {
             IMvcBuilder mvcBuilder = serviceCollection
                 .AddCors()
                 .AddTransient<ICorsPolicyProvider, CorsPolicyProvider>()
                 .Configure<ForwardedHeadersOptions>(options =>
                 {
+                    // https://github.com/dotnet/aspnetcore/blob/master/src/Middleware/HttpOverrides/src/ForwardedHeadersMiddleware.cs
+                    // Enable debug logging on Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware to help investigate issues.
+
                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                    if (knownProxies.Count == 0)
+                    if (config.KnownProxies.Length == 0)
                     {
                         options.KnownNetworks.Clear();
                         options.KnownProxies.Clear();
                     }
                     else
                     {
-                        for (var i = 0; i < knownProxies.Count; i++)
-                        {
-                            if (IPHost.TryParse(knownProxies[i], out var host))
-                            {
-                                options.KnownProxies.Add(host.Address);
-                            }
-                        }
+                        AddProxyAddresses(config, config.KnownProxies, options);
+                    }
+
+                    // Only set forward limit if we have some known proxies or some known networks.
+                    if (options.KnownProxies.Count != 0 || options.KnownNetworks.Count != 0)
+                    {
+                        options.ForwardLimit = null;
                     }
                 })
                 .AddMvc(opts =>
@@ -227,6 +232,7 @@ namespace Jellyfin.Server.Extensions
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
                     options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
                     options.JsonSerializerOptions.NumberHandling = jsonOptions.NumberHandling;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = jsonOptions.PropertyNameCaseInsensitive;
 
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)
@@ -302,13 +308,68 @@ namespace Jellyfin.Server.Extensions
                                ?? null;
                     });
 
+                // Allow parameters to properly be nullable.
+                c.UseAllOfToExtendReferenceSchemas();
+                c.SupportNonNullableReferenceTypes();
+
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
+                c.OperationFilter<FileRequestFilter>();
+                c.OperationFilter<ParameterObsoleteFilter>();
                 c.DocumentFilter<WebsocketModelFilter>();
             });
+        }
+
+        /// <summary>
+        /// Sets up the proxy configuration based on the addresses in <paramref name="allowedProxies"/>.
+        /// </summary>
+        /// <param name="config">The <see cref="NetworkConfiguration"/> containing the config settings.</param>
+        /// <param name="allowedProxies">The string array to parse.</param>
+        /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
+        internal static void AddProxyAddresses(NetworkConfiguration config, string[] allowedProxies, ForwardedHeadersOptions options)
+        {
+            for (var i = 0; i < allowedProxies.Length; i++)
+            {
+                if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
+                {
+                    AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                }
+                else if (IPHost.TryParse(allowedProxies[i], out var host))
+                {
+                    foreach (var address in host.GetAddresses())
+                    {
+                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                    }
+                }
+            }
+        }
+
+        private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
+        {
+            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
+            {
+                return;
+            }
+
+            // In order for dual-mode sockets to be used, IP6 has to be enabled in JF and an interface has to have an IP6 address.
+            if (addr.AddressFamily == AddressFamily.InterNetwork && config.EnableIPV6)
+            {
+                // If the server is using dual-mode sockets, IPv4 addresses are supplied in an IPv6 format.
+                // https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-5.0 .
+                addr = addr.MapToIPv6();
+            }
+
+            if (prefixLength == 32)
+            {
+                options.KnownProxies.Add(addr);
+            }
+            else
+            {
+                options.KnownNetworks.Add(new IPNetwork(addr, prefixLength));
+            }
         }
 
         private static void AddSwaggerTypeMappings(this SwaggerGenOptions options)

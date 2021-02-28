@@ -15,13 +15,13 @@ namespace Emby.Naming.AudioBook
         /// <param name="files">List of files composing the actual audiobook.</param>
         /// <param name="extras">List of extra files.</param>
         /// <param name="alternateVersions">Alternative version of files.</param>
-        public AudioBookInfo(string name, int? year, List<AudioBookFileInfo>? files, List<AudioBookFileInfo>? extras, List<AudioBookFileInfo>? alternateVersions)
+        public AudioBookInfo(string name, int? year, List<AudioBookFileInfo> files, List<AudioBookFileInfo> extras, List<AudioBookFileInfo> alternateVersions)
         {
             Name = name;
             Year = year;
-            Files = files ?? new List<AudioBookFileInfo>();
-            Extras = extras ?? new List<AudioBookFileInfo>();
-            AlternateVersions = alternateVersions ?? new List<AudioBookFileInfo>();
+            Files = files;
+            Extras = extras;
+            AlternateVersions = alternateVersions;
         }
 
         /// <summary>
