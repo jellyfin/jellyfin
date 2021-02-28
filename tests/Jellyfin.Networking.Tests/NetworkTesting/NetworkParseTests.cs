@@ -13,34 +13,6 @@ namespace Jellyfin.Networking.Tests
 {
     public class NetworkParseTests
     {
-        /// <summary>
-        /// Tries to identify the string and return an object of that class.
-        /// </summary>
-        /// <param name="addr">String to parse.</param>
-        /// <param name="result">IPObject to return.</param>
-        /// <returns>True if the value parsed successfully.</returns>
-        private static bool TryParse(string addr, out IPObject result)
-        {
-            if (!string.IsNullOrEmpty(addr))
-            {
-                // Is it an IP address
-                if (IPNetAddress.TryParse(addr, out IPNetAddress nw))
-                {
-                    result = nw;
-                    return true;
-                }
-
-                if (IPHost.TryParse(addr, out IPHost h))
-                {
-                    result = h;
-                    return true;
-                }
-            }
-
-            result = IPNetAddress.None;
-            return false;
-        }
-
         private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
@@ -52,15 +24,20 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Checks the ability to ignore interfaces
+        /// Checks the ability to ignore virtual interfaces.
         /// </summary>
         /// <param name="interfaces">Mock network setup, in the format (IP address, interface index, interface name) | .... </param>
         /// <param name="lan">LAN addresses.</param>
         /// <param name="value">Bind addresses that are excluded.</param>
         [Theory]
+        // All valid
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
+        // eth16 only
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.1.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
+        // All interfaces excluded.
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
+        // vEthernet1 and vEthernet212 should be excluded.
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
         {
             var conf = new NetworkConfiguration()
@@ -118,11 +95,33 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124")]
         [InlineData("fe80::7add:12ff:febb:c67b%16")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
+        [InlineData("192.168.1.2/255.255.255.0")]
+        [InlineData("192.168.1.2/24")]
+        public void ValidHostStrings(string address)
+        {
+            Assert.True(IPHost.TryParse(address, out _));
+        }
+
+        /// <summary>
+        /// Checks IP address formats.
+        /// </summary>
+        /// <param name="address"></param>
+        [Theory]
+        [InlineData("127.0.0.1")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
+        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
         public void ValidIPStrings(string address)
         {
-            Assert.True(TryParse(address, out _));
+            Assert.True(IPNetAddress.TryParse(address, out _));
         }
 
 
@@ -138,7 +137,8 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
         public void InvalidAddressString(string address)
         {
-            Assert.False(TryParse(address, out _));
+            Assert.False(IPNetAddress.TryParse(address, out _));
+            Assert.False(IPHost.TryParse(address, out _));
         }
 
 
@@ -172,11 +172,11 @@ namespace Jellyfin.Networking.Tests
             "[]")]
         [InlineData(
             "192.158.1.2/16, localhost, fd23:184f:2029:0:3139:7386:67d7:d517,    !10.10.10.10",
-            "[192.158.1.2/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517/128]",
+            "[192.158.1.2/16,[127.0.0.1/32,::1/128],fd23:184f:2029:0:3139:7386:67d7:d517/128]",
             "[192.158.1.2/16,127.0.0.1/32]",
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
-            "[192.158.0.0/16,127.0.0.1/32,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
+            "[192.158.0.0/16,127.0.0.1/32,::1/128,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
         [InlineData("192.158.1.2/255.255.0.0,192.169.1.2/8",
             "[192.158.1.2/16,192.169.1.2/8]",
             "[192.158.1.2/16,192.169.1.2/8]",
@@ -333,8 +333,8 @@ namespace Jellyfin.Networking.Tests
 
         public void TestSubnetContains(string network, string ip)
         {
-            Assert.True(TryParse(network, out IPObject? networkObj));
-            Assert.True(TryParse(ip, out IPObject? ipObj));
+            Assert.True(IPNetAddress.TryParse(network, out var networkObj));
+            Assert.True(IPNetAddress.TryParse(ip, out var ipObj));
             Assert.True(networkObj.Contains(ipObj));
         }
 
@@ -468,7 +468,7 @@ namespace Jellyfin.Networking.Tests
         // User on internal network, no binding specified - so result is the 1st internal.
         [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "0.0.0.0=http://helloworld.com", "eth16")]
 
-        // User on external network, internal binding only - so asumption is a proxy forward, return external override.
+        // User on external network, internal binding only - so assumption is a proxy forward, return external override.
         [InlineData("jellyfin.org", "192.168.1.0/24", "eth16", false, "0.0.0.0=http://helloworld.com", "http://helloworld.com")]
 
         // User on external network, no binding - so result is the 1st external which is overriden.

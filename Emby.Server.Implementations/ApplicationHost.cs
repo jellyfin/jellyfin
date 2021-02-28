@@ -137,6 +137,9 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
+        /// <inheritdoc />
+        public Uri PublishedServerUrl => _startupOptions.PublishedServerUrl;
+
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -384,7 +387,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependencies.
         /// </summary>
-        /// /// <typeparam name="T">The type.</typeparam>
+        /// <typeparam name="T">The type.</typeparam>
         /// <returns>T.</returns>
         public T CreateInstance<T>()
             => ActivatorUtilities.CreateInstance<T>(ServiceProvider);

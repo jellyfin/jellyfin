@@ -228,7 +228,10 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                if (communicationsServer != null)
+                {
+                    ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                }
             }
             catch (Exception ex)
             {
@@ -313,9 +316,12 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
-                // DLNA will only work over http, so we must reset to http:// : {port}
-                uri.Scheme = "http://";
-                uri.Port = _netConfig.HttpServerPortNumber;
+                if (_appHost.PublishedServerUrl == null)
+                {
+                    // DLNA will only work over http, so we must reset to http:// : {port}.
+                    uri.Scheme = "http";
+                    uri.Port = _netConfig.HttpServerPortNumber;
+                }
 
                 var device = new SsdpRootDevice
                 {

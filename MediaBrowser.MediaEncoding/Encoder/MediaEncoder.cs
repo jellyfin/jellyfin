@@ -103,7 +103,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetFFmpegPath()
         {
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
-            if (!ValidatePath(_configurationManager.GetConfiguration<EncodingOptions>("encoding").EncoderAppPath, FFmpegLocation.Custom))
+            if (!ValidatePath(_configurationManager.GetEncodingOptions().EncoderAppPath, FFmpegLocation.Custom))
             {
                 // 2) Check if the --ffmpeg CLI switch has been given
                 if (!ValidatePath(_startupOptionFFmpegPath, FFmpegLocation.SetByArgument))
@@ -118,7 +118,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
-            var config = _configurationManager.GetConfiguration<EncodingOptions>("encoding");
+            var config = _configurationManager.GetEncodingOptions();
             config.EncoderAppPathDisplay = _ffmpegPath ?? string.Empty;
             _configurationManager.SaveConfiguration("encoding", config);
 
@@ -177,7 +177,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
             // This ensures its not lost on next startup
-            var config = _configurationManager.GetConfiguration<EncodingOptions>("encoding");
+            var config = _configurationManager.GetEncodingOptions();
             config.EncoderAppPath = newPath;
             _configurationManager.SaveConfiguration("encoding", config);
 
@@ -209,6 +209,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     _ffmpegPath = path;
                     EncoderLocation = location;
+                    return true;
                 }
                 else
                 {

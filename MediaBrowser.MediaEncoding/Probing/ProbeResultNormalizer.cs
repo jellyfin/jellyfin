@@ -681,9 +681,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Type = MediaStreamType.Subtitle;
                 stream.Codec = NormalizeSubtitleCodec(stream.Codec);
-                stream.localizedUndefined = _localization.GetLocalizedString("Undefined");
-                stream.localizedDefault = _localization.GetLocalizedString("Default");
-                stream.localizedForced = _localization.GetLocalizedString("Forced");
+                stream.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedForced = _localization.GetLocalizedString("Forced");
             }
             else if (string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase))
             {

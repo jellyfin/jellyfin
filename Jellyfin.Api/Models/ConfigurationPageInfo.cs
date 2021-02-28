@@ -1,6 +1,5 @@
 using System;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Plugins;
 
 namespace Jellyfin.Api.Models
@@ -23,6 +22,14 @@ namespace Jellyfin.Api.Models
             MenuIcon = page.MenuIcon;
             DisplayName = string.IsNullOrWhiteSpace(page.DisplayName) ? plugin?.Name : page.DisplayName;
             PluginId = plugin?.Id;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigurationPageInfo"/> class.
+        /// </summary>
+        public ConfigurationPageInfo()
+        {
+            Name = string.Empty;
         }
 
         /// <summary>

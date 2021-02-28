@@ -192,17 +192,12 @@ namespace Emby.Server.Implementations.Updates
                             var version = package.Versions[i];
 
                             var plugin = _pluginManager.GetPlugin(packageGuid, version.VersionNumber);
-                            // Update the manifests, if anything changes.
                             if (plugin != null)
                             {
-                                if (!string.Equals(plugin.Manifest.TargetAbi, version.TargetAbi, StringComparison.Ordinal))
-                                {
-                                    plugin.Manifest.TargetAbi = version.TargetAbi ?? string.Empty;
-                                    _pluginManager.SaveManifest(plugin.Manifest, plugin.Path);
-                                }
+                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path);
                             }
 
-                            // Remove versions with a target abi that is greater then the current application version.
+                            // Remove versions with a target ABI greater then the current application version.
                             if (Version.TryParse(version.TargetAbi, out var targetAbi) && _applicationHost.ApplicationVersion < targetAbi)
                             {
                                 package.Versions.RemoveAt(i);
@@ -294,7 +289,8 @@ namespace Emby.Server.Implementations.Updates
                     Name = package.Name,
                     Version = v.VersionNumber,
                     SourceUrl = v.SourceUrl,
-                    Checksum = v.Checksum
+                    Checksum = v.Checksum,
+                    PackageInfo = package
                 };
             }
         }
@@ -571,24 +567,16 @@ namespace Emby.Server.Implementations.Updates
 
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
+            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir);
             _pluginManager.ImportPluginFrom(targetDir);
         }
 
         private async Task<bool> InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
         {
-            // Set last update time if we were installed before
             LocalPlugin? plugin = _pluginManager.Plugins.FirstOrDefault(p => p.Id.Equals(package.Id) && p.Version.Equals(package.Version))
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
-            if (plugin != null)
-            {
-                plugin.Manifest.Timestamp = DateTime.UtcNow;
-                _pluginManager.SaveManifest(plugin.Manifest, plugin.Path);
-            }
 
-            // Do the install
             await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
-
-            // Do plugin-specific processing
             _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
 
             return plugin != null;

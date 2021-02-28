@@ -36,7 +36,7 @@ namespace MediaBrowser.Model.System
         /// Gets the MAC address of the device.
         /// </summary>
         /// <value>The MAC address.</value>
-        public string? MacAddress { get; set; }
+        public string? MacAddress { get; }
 
         /// <summary>
         /// Gets or sets the wake-on-LAN port.
