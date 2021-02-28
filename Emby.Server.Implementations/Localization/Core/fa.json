@@ -49,7 +49,7 @@
     "NotificationOptionAudioPlayback": "پخش صدا آغاز شد",
     "NotificationOptionAudioPlaybackStopped": "پخش صدا متوقف شد",
     "NotificationOptionCameraImageUploaded": "تصاویر دوربین آپلود شد",
-    "NotificationOptionInstallationFailed": "نصب شکست خورد",
+    "NotificationOptionInstallationFailed": "نصب ناموفق",
     "NotificationOptionNewLibraryContent": "محتوای جدید افزوده شد",
     "NotificationOptionPluginError": "خرابی افزونه",
     "NotificationOptionPluginInstalled": "افزونه نصب شد",
@@ -115,5 +115,8 @@
     "TasksLibraryCategory": "کتابخانه",
     "TasksMaintenanceCategory": "تعمیر",
     "Forced": "اجباری",
-    "Default": "پیشفرض"
+    "Default": "پیشفرض",
+    "TaskCleanActivityLogDescription": "ورودی‌های قدیمی‌تر از سن تنظیم شده در سیاهه فعالیت را حذف می‌کند.",
+    "TaskCleanActivityLog": "پاکسازی سیاهه فعالیت",
+    "Undefined": "تعریف نشده"
 }

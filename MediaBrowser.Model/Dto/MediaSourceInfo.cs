@@ -12,6 +12,18 @@ namespace MediaBrowser.Model.Dto
 {
     public class MediaSourceInfo
     {
+        public MediaSourceInfo()
+        {
+            Formats = Array.Empty<string>();
+            MediaStreams = new List<MediaStream>();
+            MediaAttachments = Array.Empty<MediaAttachment>();
+            RequiredHttpHeaders = new Dictionary<string, string>();
+            SupportsTranscoding = true;
+            SupportsDirectStream = true;
+            SupportsDirectPlay = true;
+            SupportsProbing = true;
+        }
+
         public MediaProtocol Protocol { get; set; }
 
         public string Id { get; set; }
@@ -31,6 +43,7 @@ namespace MediaBrowser.Model.Dto
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the media is remote.
         /// Differentiate internet url vs local network.
         /// </summary>
         public bool IsRemote { get; set; }
@@ -95,16 +108,28 @@ namespace MediaBrowser.Model.Dto
 
         public int? AnalyzeDurationMs { get; set; }
 
-        public MediaSourceInfo()
+        [JsonIgnore]
+        public TranscodeReason[] TranscodeReasons { get; set; }
+
+        public int? DefaultAudioStreamIndex { get; set; }
+
+        public int? DefaultSubtitleStreamIndex { get; set; }
+
+        [JsonIgnore]
+        public MediaStream VideoStream
         {
-            Formats = Array.Empty<string>();
-            MediaStreams = new List<MediaStream>();
-            MediaAttachments = Array.Empty<MediaAttachment>();
-            RequiredHttpHeaders = new Dictionary<string, string>();
-            SupportsTranscoding = true;
-            SupportsDirectStream = true;
-            SupportsDirectPlay = true;
-            SupportsProbing = true;
+            get
+            {
+                foreach (var i in MediaStreams)
+                {
+                    if (i.Type == MediaStreamType.Video)
+                    {
+                        return i;
+                    }
+                }
+
+                return null;
+            }
         }
 
         public void InferTotalBitrate(bool force = false)
@@ -133,13 +158,6 @@ namespace MediaBrowser.Model.Dto
                 Bitrate = bitrate;
             }
         }
-
-        [JsonIgnore]
-        public TranscodeReason[] TranscodeReasons { get; set; }
-
-        public int? DefaultAudioStreamIndex { get; set; }
-
-        public int? DefaultSubtitleStreamIndex { get; set; }
 
         public MediaStream GetDefaultAudioStream(int? defaultIndex)
         {
@@ -173,23 +191,6 @@ namespace MediaBrowser.Model.Dto
             }
 
             return null;
-        }
-
-        [JsonIgnore]
-        public MediaStream VideoStream
-        {
-            get
-            {
-                foreach (var i in MediaStreams)
-                {
-                    if (i.Type == MediaStreamType.Video)
-                    {
-                        return i;
-                    }
-                }
-
-                return null;
-            }
         }
 
         public MediaStream GetMediaStream(MediaStreamType type, int index)

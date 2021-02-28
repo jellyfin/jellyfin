@@ -155,13 +155,16 @@ namespace MediaBrowser.Model.IO
         /// Gets the directories.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <returns>IEnumerable&lt;DirectoryInfo&gt;.</returns>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <returns>All found directories.</returns>
         IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false);
 
         /// <summary>
         /// Gets the files.
         /// </summary>
+        /// <param name="path">The path in which to search.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <returns>All found files.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
         IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive);

@@ -509,14 +509,14 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Redeems a forgot password pin.
         /// </summary>
-        /// <param name="pin">The pin.</param>
+        /// <param name="forgotPasswordPinRequest">The forgot password pin request containing the entered pin.</param>
         /// <response code="200">Pin reset process started.</response>
         /// <returns>A <see cref="Task"/> containing a <see cref="PinRedeemResult"/>.</returns>
         [HttpPost("ForgotPassword/Pin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody] string? pin)
+        public async Task<ActionResult<PinRedeemResult>> ForgotPasswordPin([FromBody, Required] ForgotPasswordPinDto forgotPasswordPinRequest)
         {
-            var result = await _userManager.RedeemPasswordResetPin(pin).ConfigureAwait(false);
+            var result = await _userManager.RedeemPasswordResetPin(forgotPasswordPinRequest.Pin).ConfigureAwait(false);
             return result;
         }
 

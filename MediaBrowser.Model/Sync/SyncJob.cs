@@ -7,6 +7,11 @@ namespace MediaBrowser.Model.Sync
 {
     public class SyncJob
     {
+        public SyncJob()
+        {
+            RequestedItemIds = Array.Empty<Guid>();
+        }
+
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
@@ -126,10 +131,5 @@ namespace MediaBrowser.Model.Sync
         public string PrimaryImageItemId { get; set; }
 
         public string PrimaryImageTag { get; set; }
-
-        public SyncJob()
-        {
-            RequestedItemIds = Array.Empty<Guid>();
-        }
     }
 }

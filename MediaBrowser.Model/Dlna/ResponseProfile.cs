@@ -8,6 +8,11 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ResponseProfile
     {
+        public ResponseProfile()
+        {
+            Conditions = Array.Empty<ProfileCondition>();
+        }
+
         [XmlAttribute("container")]
         public string Container { get; set; }
 
@@ -27,11 +32,6 @@ namespace MediaBrowser.Model.Dlna
         public string MimeType { get; set; }
 
         public ProfileCondition[] Conditions { get; set; }
-
-        public ResponseProfile()
-        {
-            Conditions = Array.Empty<ProfileCondition>();
-        }
 
         public string[] GetContainers()
         {

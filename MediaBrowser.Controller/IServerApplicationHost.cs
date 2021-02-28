@@ -53,6 +53,11 @@ namespace MediaBrowser.Controller
         string FriendlyName { get; }
 
         /// <summary>
+        /// Gets the configured published server url.
+        /// </summary>
+        Uri PublishedServerUrl { get; }
+
+        /// <summary>
         /// Gets the system info.
         /// </summary>
         /// <param name="source">The originator of the request.</param>

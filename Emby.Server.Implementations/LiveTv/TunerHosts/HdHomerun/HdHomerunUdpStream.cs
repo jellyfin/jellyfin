@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(remote.Address, HdHomerunManager.HdHomeRunPort).ConfigureAwait(false);
+                    await tcpClient.ConnectAsync(remote.Address, HdHomerunManager.HdHomeRunPort, openCancellationToken).ConfigureAwait(false);
                     localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address;
                     tcpClient.Close();
                 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,24 +25,15 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
 
         public HdHomerunHostTests()
         {
-            const string BaseResourcePath = "Jellyfin.Server.Implementations.Tests.LiveTv.";
-
             var messageHandler = new Mock<HttpMessageHandler>();
             messageHandler.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .Returns<HttpRequestMessage, CancellationToken>(
                     (m, _) =>
                     {
-                        var resource = BaseResourcePath + m.RequestUri?.Segments[^1];
-                        var stream = typeof(HdHomerunHostTests).Assembly.GetManifestResourceStream(resource);
-                        if (stream == null)
-                        {
-                            throw new NullReferenceException("Resource doesn't exist: " + resource);
-                        }
-
                         return Task.FromResult(new HttpResponseMessage()
                         {
-                            Content = new StreamContent(stream)
+                            Content = new StreamContent(File.OpenRead("Test Data/LiveTv/" + m.RequestUri?.Segments[^1]))
                         });
                     });
 

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.PlaylistDtos;
 using MediaBrowser.Controller.Dto;
@@ -57,6 +57,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <remarks>
         /// For backwards compatibility parameters can be sent via Query or Body, with Query having higher precedence.
+        /// Query parameters are obsolete.
         /// </remarks>
         /// <param name="name">The playlist name.</param>
         /// <param name="ids">The item ids.</param>
@@ -70,10 +71,10 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaylistCreationResult>> CreatePlaylist(
-            [FromQuery] string? name,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] IReadOnlyList<Guid> ids,
-            [FromQuery] Guid? userId,
-            [FromQuery] string? mediaType,
+            [FromQuery, ParameterObsolete] string? name,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder)), ParameterObsolete] IReadOnlyList<Guid> ids,
+            [FromQuery, ParameterObsolete] Guid? userId,
+            [FromQuery, ParameterObsolete] string? mediaType,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] CreatePlaylistDto? createPlaylistRequest)
         {
             if (ids.Count == 0)

@@ -1,8 +1,10 @@
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -11,9 +13,11 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Json.Converters;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -32,6 +36,21 @@ namespace Emby.Server.Implementations.Plugins
         private readonly ServerConfiguration _config;
         private readonly IList<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
+
+        private IHttpClientFactory? _httpClientFactory;
+
+        private IHttpClientFactory HttpClientFactory
+        {
+            get
+            {
+                if (_httpClientFactory == null)
+                {
+                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
+                }
+
+                return _httpClientFactory;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
@@ -112,13 +131,25 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         assembly = Assembly.LoadFrom(file);
 
-                        // This force loads all reference dll's that the plugin uses in the try..catch block.
-                        // Removing this will cause JF to bomb out if referenced dll's cause issues.
                         assembly.GetExportedTypes();
                     }
                     catch (FileLoadException ex)
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.Malfunctioned);
+                        continue;
+                    }
+                    catch (TypeLoadException ex) // Undocumented exception
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
+                        ChangePluginState(plugin, PluginStatus.NotSupported);
+                        continue;
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(ex, "Failed to load assembly {Path}. Unknown exception was thrown. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
@@ -320,32 +351,74 @@ namespace Emby.Server.Implementations.Plugins
             ChangePluginState(plugin, PluginStatus.Malfunctioned);
         }
 
-        /// <summary>
-        /// Saves the manifest back to disk.
-        /// </summary>
-        /// <param name="manifest">The <see cref="PluginManifest"/> to save.</param>
-        /// <param name="path">The path where to save the manifest.</param>
-        /// <returns>True if successful.</returns>
+        /// <inheritdoc/>
         public bool SaveManifest(PluginManifest manifest, string path)
         {
-            if (manifest == null)
+            try
+            {
+                var data = JsonSerializer.Serialize(manifest, _jsonOptions);
+                File.WriteAllText(Path.Combine(path, "meta.json"), data);
+                return true;
+            }
+            catch (ArgumentException e)
+            {
+                _logger.LogWarning(e, "Unable to save plugin manifest due to invalid value. {Path}", path);
+                return false;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path)
+        {
+            if (packageInfo == null)
             {
                 return false;
             }
 
-            try
+            var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
+            var imagePath = string.Empty;
+
+            if (!string.IsNullOrEmpty(packageInfo.ImageUrl))
             {
-                var data = JsonSerializer.Serialize(manifest, _jsonOptions);
-                File.WriteAllText(Path.Combine(path, "meta.json"), data, Encoding.UTF8);
-                return true;
+                var url = new Uri(packageInfo.ImageUrl);
+                imagePath = Path.Join(path, url.Segments[^1]);
+
+                await using var fileStream = File.OpenWrite(imagePath);
+
+                try
+                {
+                    await using var downloadStream = await HttpClientFactory
+                        .CreateClient(NamedClient.Default)
+                        .GetStreamAsync(url)
+                        .ConfigureAwait(false);
+
+                    await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
+                    imagePath = string.Empty;
+                }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
+
+            var manifest = new PluginManifest
             {
-                _logger.LogWarning(e, "Unable to save plugin manifest. {Path}", path);
-                return false;
-            }
+                Category = packageInfo.Category,
+                Changelog = versionInfo.Changelog ?? string.Empty,
+                Description = packageInfo.Description,
+                Id = new Guid(packageInfo.Id),
+                Name = packageInfo.Name,
+                Overview = packageInfo.Overview,
+                Owner = packageInfo.Owner,
+                TargetAbi = versionInfo.TargetAbi ?? string.Empty,
+                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp),
+                Version = versionInfo.Version,
+                Status = PluginStatus.Active,
+                AutoUpdate = true,
+                ImagePath = imagePath
+            };
+
+            return SaveManifest(manifest, path);
         }
 
         /// <summary>
@@ -374,7 +447,7 @@ namespace Emby.Server.Implementations.Plugins
         private LocalPlugin? GetPluginByAssembly(Assembly assembly)
         {
             // Find which plugin it is by the path.
-            return _plugins.FirstOrDefault(p => string.Equals(p.Path, Path.GetDirectoryName(assembly.Location), StringComparison.Ordinal));
+            return _plugins.FirstOrDefault(p => p.DllFiles.Contains(assembly.Location, StringComparer.Ordinal));
         }
 
         /// <summary>
@@ -398,7 +471,7 @@ namespace Emby.Server.Implementations.Plugins
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.
-                    // TODO: remove this code, if all provided have been released as separate plugins.
+                    // TODO: remove this code once all provided have been released as separate plugins.
                     plugin = new LocalPlugin(
                         instance.AssemblyFilePath,
                         true,
@@ -421,7 +494,7 @@ namespace Emby.Server.Implementations.Plugins
                 {
                     plugin.Instance = instance;
                     var manifest = plugin.Manifest;
-                    var pluginStr = plugin.Instance.Version.ToString();
+                    var pluginStr = instance.Version.ToString();
                     bool changed = false;
                     if (string.Equals(manifest.Version, pluginStr, StringComparison.Ordinal)
                         || manifest.Id != instance.Id)
@@ -507,39 +580,43 @@ namespace Emby.Server.Implementations.Plugins
             return _plugins.Remove(plugin);
         }
 
-        private LocalPlugin LoadManifest(string dir)
+        internal LocalPlugin LoadManifest(string dir)
         {
             Version? version;
             PluginManifest? manifest = null;
             var metafile = Path.Combine(dir, "meta.json");
             if (File.Exists(metafile))
             {
+                // Only path where this stays null is when File.ReadAllBytes throws an IOException
+                byte[] data = null!;
                 try
                 {
-                    var data = File.ReadAllText(metafile, Encoding.UTF8);
+                    data = File.ReadAllBytes(metafile);
                     manifest = JsonSerializer.Deserialize<PluginManifest>(data, _jsonOptions);
                 }
-#pragma warning disable CA1031 // Do not catch general exception types
-                catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+                catch (IOException ex)
                 {
-                    _logger.LogError(ex, "Error deserializing {Path}.", dir);
+                    _logger.LogError(ex, "Error reading file {Path}.", dir);
                 }
-            }
-
-            if (manifest != null)
-            {
-                if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                catch (JsonException ex)
                 {
-                    targetAbi = _minimumVersion;
+                    _logger.LogError(ex, "Error deserializing {Json}.", Encoding.UTF8.GetString(data!));
                 }
 
-                if (!Version.TryParse(manifest.Version, out version))
+                if (manifest != null)
                 {
-                    manifest.Version = _minimumVersion.ToString();
-                }
+                    if (!Version.TryParse(manifest.TargetAbi, out var targetAbi))
+                    {
+                        targetAbi = _minimumVersion;
+                    }
 
-                return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                    if (!Version.TryParse(manifest.Version, out version))
+                    {
+                        manifest.Version = _minimumVersion.ToString();
+                    }
+
+                    return new LocalPlugin(dir, _appVersion >= targetAbi, manifest);
+                }
             }
 
             // No metafile, so lets see if the folder is versioned.
@@ -561,7 +638,7 @@ namespace Emby.Server.Implementations.Plugins
             // Auto-create a plugin manifest, so we can disable it, if it fails to load.
             manifest = new PluginManifest
             {
-                Status = PluginStatus.Restart,
+                Status = PluginStatus.Active,
                 Name = metafile,
                 AutoUpdate = false,
                 Id = metafile.GetMD5(),

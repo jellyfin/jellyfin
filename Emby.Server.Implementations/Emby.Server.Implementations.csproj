@@ -29,7 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
     <PackageReference Include="Mono.Nat" Version="3.0.1" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.4.1" />
-    <PackageReference Include="sharpcompress" Version="0.26.0" />
+    <PackageReference Include="sharpcompress" Version="0.28.1" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="2.1.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.2" />
   </ItemGroup>

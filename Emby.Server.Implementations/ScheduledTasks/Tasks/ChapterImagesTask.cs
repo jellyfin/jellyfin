@@ -143,7 +143,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                         Directory.CreateDirectory(parentPath);
 
-                        string text = string.Join("|", previouslyFailedImages);
+                        string text = string.Join('|', previouslyFailedImages);
                         File.WriteAllText(failHistoryPath, text);
                     }
 

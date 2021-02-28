@@ -9,6 +9,11 @@ namespace MediaBrowser.Model.Dlna
 {
     public class ContainerProfile
     {
+        public ContainerProfile()
+        {
+            Conditions = Array.Empty<ProfileCondition>();
+        }
+
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
@@ -16,11 +21,6 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("container")]
         public string Container { get; set; }
-
-        public ContainerProfile()
-        {
-            Conditions = Array.Empty<ProfileCondition>();
-        }
 
         public string[] GetContainers()
         {

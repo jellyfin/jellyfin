@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.Dto
             var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording != null)
             {
-                dto.Type = "Recording";
+                dto.Type = BaseItemKind.Recording;
                 dto.CanDownload = false;
                 dto.RunTimeTicks = null;
 
@@ -904,7 +904,7 @@ namespace Emby.Server.Implementations.Dto
                 }
             }
 
-            dto.Type = item.GetClientTypeName();
+            dto.Type = item.GetBaseItemKind();
             if ((item.CommunityRating ?? 0) > 0)
             {
                 dto.CommunityRating = item.CommunityRating;
@@ -1157,7 +1157,7 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
-                        if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, episodeSeries);
                         }
@@ -1207,7 +1207,7 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
-                        if (!dto.ImageTags.ContainsKey(ImageType.Primary))
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
                         {
                             AttachPrimaryImageAspectRatio(dto, series);
                         }
