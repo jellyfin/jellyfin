@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the configured published server url.
         /// </summary>
-        Uri PublishedServerUrl { get; }
+        string PublishedServerUrl { get; }
 
         /// <summary>
         /// Gets the system info.
