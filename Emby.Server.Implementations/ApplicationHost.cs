@@ -231,7 +231,7 @@ namespace Emby.Server.Implementations
         public int HttpsPort { get; private set; }
 
         /// <summary>
-        /// Gets the PublishedServerUrl setting.
+        /// Gets the value of the PublishedServerUrl setting.
         /// </summary>
         public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig["PublishedServerUrl"];
 
