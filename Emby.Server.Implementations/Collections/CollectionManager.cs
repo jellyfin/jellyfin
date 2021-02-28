@@ -344,7 +344,20 @@ namespace Emby.Server.Implementations.Collections
                     }
                     else
                     {
-                        results[item.Id] = item;
+                        var alreadyInResults = false;
+                        foreach (var child in item.GetMediaSources(true))
+                        {
+
+                            if (results.ContainsKey(Guid.Parse(child.Id)))
+                            {
+                                alreadyInResults = true;
+                            }
+                        }
+                        if (!alreadyInResults)
+                        {
+
+                            results[item.Id] = item;
+                        }
                     }
                 }
             }
