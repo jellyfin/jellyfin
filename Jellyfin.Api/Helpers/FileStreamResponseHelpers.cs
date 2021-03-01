@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -79,24 +78,6 @@ namespace Jellyfin.Api.Helpers
         }
 
         /// <summary>
-        /// Gets the length of the estimated content.
-        /// </summary>
-        /// <param name="state">The state.</param>
-        /// <returns>System.Nullable{System.Int64}.</returns>
-        private static string GetEstimatedContentLength(StreamState state)
-        {
-            long v = 0;
-            var totalBitrate = state.TotalOutputBitrate ?? 0;
-
-            if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
-            {
-                v = Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
-            }
-
-            return v.ToString(CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>
         /// Returns a transcoded file from the server.
         /// </summary>
         /// <param name="state">The current <see cref="StreamState"/>.</param>
@@ -126,7 +107,6 @@ namespace Jellyfin.Api.Helpers
             // Headers only
             if (isHeadRequest)
             {
-                // httpContext.Response.Headers[HeaderNames.ContentLength] = GetEstimatedContentLength(state);
                 httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
                 return new OkResult();
             }
