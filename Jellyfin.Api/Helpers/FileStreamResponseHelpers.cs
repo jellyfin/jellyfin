@@ -127,7 +127,8 @@ namespace Jellyfin.Api.Helpers
             if (isHeadRequest)
             {
                 httpContext.Response.Headers[HeaderNames.ContentLength] = state.EstimateContentLength || isHeadRequest ? GetEstimatedContentLength(state) : string.Empty;
-                return new FileContentResult(Array.Empty<byte>(), contentType);
+                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
+                return new OkResult();
             }
 
             var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);
