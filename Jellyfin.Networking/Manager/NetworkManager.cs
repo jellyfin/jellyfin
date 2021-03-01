@@ -285,14 +285,25 @@ namespace Jellyfin.Networking.Manager
                 // No bind address and no exclusions, so listen on all interfaces.
                 Collection<IPObject> result = new Collection<IPObject>();
 
-                if (IsIP4Enabled)
+                if (IsIP6Enabled && IsIP4Enabled)
+                {
+                    // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any
+                    result.AddItem(IPAddress.IPv6Any);
+                }
+                else if (IsIP4Enabled)
                 {
                     result.AddItem(IPAddress.Any);
                 }
-
-                if (IsIP6Enabled)
+                else if (IsIP6Enabled)
                 {
-                    result.AddItem(IPAddress.IPv6Any);
+                    // Cannot use IPv6Any as Kestrel will bind to IPv4 addresses.
+                    foreach (var iface in _interfaceAddresses)
+                    {
+                        if (iface.AddressFamily == AddressFamily.InterNetworkV6)
+                        {
+                            result.AddItem(iface.Address);
+                        }
+                    }
                 }
 
                 return result;
