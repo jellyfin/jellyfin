@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Helpers
             // Headers only
             if (isHeadRequest)
             {
-                httpContext.Response.Headers[HeaderNames.ContentLength] = GetEstimatedContentLength(state);
+                // httpContext.Response.Headers[HeaderNames.ContentLength] = GetEstimatedContentLength(state);
                 httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
                 return new OkResult();
             }
