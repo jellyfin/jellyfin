@@ -8,7 +8,7 @@ using Jellyfin.Api.Models;
 using MediaBrowser.Common.Json;
 using Xunit;
 
-namespace Jellyfin.Api.Tests.Controllers
+namespace Jellyfin.Server.Integration.Tests.Controllers
 {
     public sealed class DashboardControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Tests.Controllers
 
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(MediaTypeNames.Text.Html, response.Content.Headers.ContentType?.MediaType);
-            StreamReader reader = new StreamReader(typeof(TestPlugin).Assembly.GetManifestResourceStream("Jellyfin.Api.Tests.TestPage.html")!);
+            StreamReader reader = new StreamReader(typeof(TestPlugin).Assembly.GetManifestResourceStream("Jellyfin.Server.Integration.Tests.TestPage.html")!);
             Assert.Equal(await response.Content.ReadAsStringAsync(), reader.ReadToEnd());
         }
 

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
 
-namespace Jellyfin.Api.Tests
+namespace Jellyfin.Server.Integration.Tests
 {
     /// <summary>
     /// Factory for bootstrapping the Jellyfin application in memory for functional end to end tests.
