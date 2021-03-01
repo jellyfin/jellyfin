@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Threading;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Jellyfin.Server;
@@ -21,7 +22,7 @@ namespace Jellyfin.Api.Tests
     public class JellyfinApplicationFactory : WebApplicationFactory<Startup>
     {
         private static readonly string _testPathRoot = Path.Combine(Path.GetTempPath(), "jellyfin-test-data");
-        private static readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
+        private readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JellyfinApplicationFactory"/> class.
@@ -96,7 +97,7 @@ namespace Jellyfin.Api.Tests
             var appHost = (TestAppHost)testServer.Services.GetRequiredService<IApplicationHost>();
             appHost.ServiceProvider = testServer.Services;
             appHost.InitializeServices().GetAwaiter().GetResult();
-            appHost.RunStartupTasksAsync().GetAwaiter().GetResult();
+            appHost.RunStartupTasksAsync(CancellationToken.None).GetAwaiter().GetResult();
 
             return testServer;
         }

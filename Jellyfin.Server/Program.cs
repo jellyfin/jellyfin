@@ -202,7 +202,7 @@ namespace Jellyfin.Server
                     throw;
                 }
 
-                await appHost.RunStartupTasksAsync().ConfigureAwait(false);
+                await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
 
                 stopWatch.Stop();
 
