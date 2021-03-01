@@ -53,5 +53,12 @@ namespace MediaBrowser.Common.Plugins
         /// Called when just before the plugin is uninstalled from the server.
         /// </summary>
         void OnUninstalling();
+
+        /// <summary>
+        /// Plugin self-test functionality.
+        /// </summary>
+        /// <param name="message">Message to return.</param>
+        /// <returns><c>True</c> if all tests are successful.</returns>
+        bool SelfTest(out string message);
     }
 }

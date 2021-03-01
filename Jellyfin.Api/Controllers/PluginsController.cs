@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.PluginDtos;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Plugins;
@@ -324,6 +325,42 @@ namespace Jellyfin.Api.Controllers
             if (plugin != null)
             {
                 return plugin.Manifest;
+            }
+
+            return NotFound();
+        }
+
+        /// <summary>
+        /// Gets a plugin's self test result.
+        /// </summary>
+        /// <param name="pluginId">Plugin id.</param>
+        /// <response code="200">Plugin self-test passed.</response>
+        /// <response code="404">Plugin not found.</response>
+        /// <response code="409">Plugin self-test failed.</response>
+        /// <returns>A string response on success, or a <see cref="NotFoundResult"/> if the plugin could not be found.</returns>
+        [HttpGet("{pluginId}/SelfTest")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public ActionResult<string> GetPluginTestResult([FromRoute, Required] Guid pluginId)
+        {
+            var plugin = _pluginManager.GetPlugin(pluginId);
+
+            if (plugin != null && plugin.Instance != null)
+            {
+                try
+                {
+                    if (plugin.Instance.SelfTest(out string msg))
+                    {
+                        return Ok(msg);
+                    }
+
+                    return new ConflictObjectResult(msg);
+                }
+                catch (Exception ex)
+                {
+                    return new ConflictObjectResult(ex.Message);
+                }
             }
 
             return NotFound();

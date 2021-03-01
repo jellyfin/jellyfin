@@ -88,5 +88,16 @@ namespace MediaBrowser.Common.Plugins
         {
             Id = assemblyId;
         }
+
+        /// <summary>
+        /// Plugin self-test functionality.
+        /// </summary>
+        /// <param name="message">Message to return.</param>
+        /// <returns><c>True</c> if all tests are successful.</returns>
+        public virtual bool SelfTest(out string message)
+        {
+            message = string.Empty;
+            return true;
+        }
     }
 }
