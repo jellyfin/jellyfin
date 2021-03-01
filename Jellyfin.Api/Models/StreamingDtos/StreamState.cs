@@ -131,7 +131,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
         public string? UserAgent { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to estimate the content length.
+        /// Gets or sets a value indicating whether to estimate the content length in the dlna header, or to return zero.
         /// </summary>
         public bool EstimateContentLength { get; set; }
 

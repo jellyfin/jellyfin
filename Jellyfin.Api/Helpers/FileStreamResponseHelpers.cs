@@ -85,15 +85,15 @@ namespace Jellyfin.Api.Helpers
         /// <returns>System.Nullable{System.Int64}.</returns>
         private static string GetEstimatedContentLength(StreamState state)
         {
+            long v = 0;
             var totalBitrate = state.TotalOutputBitrate ?? 0;
 
             if (totalBitrate > 0 && state.RunTimeTicks.HasValue)
             {
-                var v = Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
-                return v.ToString(CultureInfo.InvariantCulture);
+                v = Convert.ToInt64(totalBitrate * TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds / 8);
             }
 
-            return string.Empty;
+            return v.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Jellyfin.Api.Helpers
             // Headers only
             if (isHeadRequest)
             {
-                httpContext.Response.Headers[HeaderNames.ContentLength] = state.EstimateContentLength || isHeadRequest ? GetEstimatedContentLength(state) : string.Empty;
+                httpContext.Response.Headers[HeaderNames.ContentLength] = state.EstimateContentLength ? GetEstimatedContentLength(state) : "0";
                 httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
                 return new OkResult();
             }
