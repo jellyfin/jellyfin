@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="BDInfo" Version="0.7.6.1" />
-    <PackageReference Include="libse" Version="3.5.8" />
+    <PackageReference Include="libse" Version="3.6.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
     <PackageReference Include="UTF.Unknown" Version="2.3.0" />
