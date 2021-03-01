@@ -414,7 +414,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // There isn't any others, so we'll use the loopback.
-            result = IsIP6Enabled ? "::" : "127.0.0.1";
+            result = IsIP6Enabled ? "::1" : "127.0.0.1";
             _logger.LogWarning("{Source}: GetBindInterface: Loopback {Result} returned.", source, result);
             return result;
         }
