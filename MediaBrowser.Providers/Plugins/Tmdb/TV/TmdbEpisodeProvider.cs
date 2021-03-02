@@ -111,24 +111,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var item = new Episode
             {
-                Name = info.Name,
                 IndexNumber = info.IndexNumber,
                 ParentIndexNumber = info.ParentIndexNumber,
-                IndexNumberEnd = info.IndexNumberEnd
+                IndexNumberEnd = info.IndexNumberEnd,
+                Name = episodeResult.Name,
+                PremiereDate = episodeResult.AirDate,
+                ProductionYear = episodeResult.AirDate?.Year,
+                Overview = episodeResult.Overview,
+                CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
             };
 
             if (!string.IsNullOrEmpty(episodeResult.ExternalIds?.TvdbId))
             {
                 item.SetProviderId(MetadataProvider.Tvdb, episodeResult.ExternalIds.TvdbId);
             }
-
-            item.PremiereDate = episodeResult.AirDate;
-            item.ProductionYear = episodeResult.AirDate?.Year;
-
-            item.Name = episodeResult.Name;
-            item.Overview = episodeResult.Overview;
-
-            item.CommunityRating = Convert.ToSingle(episodeResult.VoteAverage);
 
             if (episodeResult.Videos?.Results != null)
             {

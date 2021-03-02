@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -22,23 +23,23 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     public class TmdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILibraryManager _libraryManager;
         private readonly TmdbClientManager _tmdbClientManager;
 
         public TmdbSeriesProvider(
+            ILibraryManager libraryManager,
             IHttpClientFactory httpClientFactory,
             TmdbClientManager tmdbClientManager)
         {
+            _libraryManager = libraryManager;
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
-            Current = this;
         }
 
         public string Name => TmdbUtils.ProviderName;
 
         // After TheTVDB
         public int Order => 1;
-
-        internal static TmdbSeriesProvider Current { get; private set; }
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -104,7 +105,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken)
+            var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             var remoteResults = new RemoteSearchResult[tvSearchResults.Count];
@@ -203,7 +204,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (string.IsNullOrEmpty(tmdbId))
             {
                 result.QueriedById = false;
-                var searchResults = await _tmdbClientManager.SearchSeriesAsync(info.Name, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                // ParseName is required here.
+                // Caller provides the filename with extension stripped and NOT the parsed filename
+                var parsedName = _libraryManager.ParseName(info.Name);
+                var searchResults = await _tmdbClientManager.SearchSeriesAsync(parsedName.Name, info.MetadataLanguage, info.Year ?? 0, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
