@@ -198,7 +198,7 @@ namespace Jellyfin.Server
                 }
                 catch
                 {
-                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
                 }
 
