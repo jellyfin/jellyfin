@@ -27,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Rebus" Version="6.4.1" />
     <PackageReference Include="Rebus.Microsoft.Extensions.Logging" Version="2.0.0" />
-    <PackageReference Include="Rebus.ServiceProvider" Version="6.0.0" />
+    <PackageReference Include="Rebus.ServiceProvider" Version="6.4.1" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.3">
       <PrivateAssets>all</PrivateAssets>
