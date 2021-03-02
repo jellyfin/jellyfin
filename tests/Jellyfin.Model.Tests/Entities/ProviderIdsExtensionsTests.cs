@@ -10,6 +10,44 @@ namespace Jellyfin.Model.Tests.Entities
         private const string ExampleImdbId = "tt0113375";
 
         [Fact]
+        public void HasProviderId_NullInstance_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => ProviderIdsExtensions.HasProviderId(null!, MetadataProvider.Imdb));
+        }
+
+        [Fact]
+        public void HasProviderId_NullProvider_False()
+        {
+            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            {
+                ProviderIds = null!
+            };
+
+            Assert.False(nullProvider.HasProviderId(MetadataProvider.Imdb));
+        }
+
+        [Fact]
+        public void HasProviderId_NullName_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => ProviderIdsExtensionsTestsObject.Empty.HasProviderId(null!));
+        }
+
+        [Fact]
+        public void HasProviderId_NotFoundName_False()
+        {
+            Assert.False(ProviderIdsExtensionsTestsObject.Empty.HasProviderId(MetadataProvider.Imdb));
+        }
+
+        [Fact]
+        public void HasProviderId_FoundName_True()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = ExampleImdbId;
+
+            Assert.True(provider.HasProviderId(MetadataProvider.Imdb));
+        }
+
+        [Fact]
         public void GetProviderId_NullInstance_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => ProviderIdsExtensions.GetProviderId(null!, MetadataProvider.Imdb));

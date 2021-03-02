@@ -10,6 +10,33 @@ namespace MediaBrowser.Model.Entities
     public static class ProviderIdsExtensions
     {
         /// <summary>
+        /// Checks if this instance has an id for the given provider.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The of the provider name.</param>
+        /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
+        public static bool HasProviderId(this IHasProviderIds instance, string name)
+        {
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
+            return instance.ProviderIds?.ContainsKey(name) ?? false;
+        }
+
+        /// <summary>
+        /// Checks if this instance has an id for the given provider.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
+        public static bool HasProviderId(this IHasProviderIds instance, MetadataProvider provider)
+        {
+            return instance.HasProviderId(provider.ToString());
+        }
+
+        /// <summary>
         /// Gets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
