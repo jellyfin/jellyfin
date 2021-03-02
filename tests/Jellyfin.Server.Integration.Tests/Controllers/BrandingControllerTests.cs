@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -26,7 +27,7 @@ namespace Jellyfin.Server.Integration.Tests
             var response = await client.GetAsync("/Branding/Configuration");
 
             // Assert
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
             var responseBody = await response.Content.ReadAsStreamAsync();

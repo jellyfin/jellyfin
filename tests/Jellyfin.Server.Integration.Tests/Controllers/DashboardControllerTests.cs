@@ -37,7 +37,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var response = await client.GetAsync("/web/ConfigurationPage?name=TestPlugin").ConfigureAwait(false);
 
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Text.Html, response.Content.Headers.ContentType?.MediaType);
             StreamReader reader = new StreamReader(typeof(TestPlugin).Assembly.GetManifestResourceStream("Jellyfin.Server.Integration.Tests.TestPage.html")!);
             Assert.Equal(await response.Content.ReadAsStringAsync(), reader.ReadToEnd());
@@ -60,7 +60,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var response = await client.GetAsync("/web/ConfigurationPages").ConfigureAwait(false);
 
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var res = await response.Content.ReadAsStreamAsync();
             _ = await JsonSerializer.DeserializeAsync<ConfigurationPageInfo[]>(res, _jsonOpions);
@@ -74,7 +74,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             var response = await client.GetAsync("/web/ConfigurationPages?enableInMainMenu=true").ConfigureAwait(false);
 
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Json, response.Content.Headers.ContentType?.MediaType);
             Assert.Equal(Encoding.UTF8.BodyName, response.Content.Headers.ContentType?.CharSet);
 
