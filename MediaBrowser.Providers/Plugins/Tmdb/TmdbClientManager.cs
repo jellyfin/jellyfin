@@ -278,9 +278,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="name">The name of the tv show.</param>
         /// <param name="language">The tv show's language.</param>
+        /// <param name="year">The year the tv show first aired.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show information.</returns>
-        public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, int year = 0, CancellationToken cancellationToken = default)
         {
             var key = $"searchseries-{name}-{language}";
             if (_memoryCache.TryGetValue(key, out SearchContainer<SearchTv> series))
@@ -291,7 +292,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language), cancellationToken: cancellationToken)
+                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language), firstAirDateYear: year, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
