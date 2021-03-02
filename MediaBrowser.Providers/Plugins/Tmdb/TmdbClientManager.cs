@@ -278,10 +278,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="name">The name of the tv show.</param>
         /// <param name="language">The tv show's language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="year">The year the tv show first aired.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show information.</returns>
-        public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, CancellationToken cancellationToken, int year = 0)
+        public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, int year = 0, CancellationToken cancellationToken = default)
         {
             var key = $"searchseries-{name}-{language}";
             if (_memoryCache.TryGetValue(key, out SearchContainer<SearchTv> series))
