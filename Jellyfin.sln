@@ -76,7 +76,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Model.Tests", "tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{A2FD0A10-8F62-4F9D-B171-FFDF9F0AFA9D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
 EndProject
