@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 
-namespace Emby.Drawing
+namespace Jellyfin.Drawing
 {
     /// <summary>
     /// A fallback implementation of <see cref="IImageEncoder" />.
