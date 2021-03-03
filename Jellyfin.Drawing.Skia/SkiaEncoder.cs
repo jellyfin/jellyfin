@@ -91,9 +91,6 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
-        private static bool IsTransparent(SKColor color)
-            => (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
-
         /// <summary>
         /// Convert a <see cref="ImageFormat"/> to a <see cref="SKEncodedImageFormat"/>.
         /// </summary>
@@ -109,65 +106,6 @@ namespace Jellyfin.Drawing.Skia
                 ImageFormat.Webp => SKEncodedImageFormat.Webp,
                 _ => SKEncodedImageFormat.Png
             };
-        }
-
-        private static bool IsTransparentRow(SKBitmap bmp, int row)
-        {
-            for (var i = 0; i < bmp.Width; ++i)
-            {
-                if (!IsTransparent(bmp.GetPixel(i, row)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool IsTransparentColumn(SKBitmap bmp, int col)
-        {
-            for (var i = 0; i < bmp.Height; ++i)
-            {
-                if (!IsTransparent(bmp.GetPixel(col, i)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private SKBitmap CropWhiteSpace(SKBitmap bitmap)
-        {
-            var topmost = 0;
-            while (topmost < bitmap.Height && IsTransparentRow(bitmap, topmost))
-            {
-                topmost++;
-            }
-
-            int bottommost = bitmap.Height;
-            while (bottommost >= 0 && IsTransparentRow(bitmap, bottommost - 1))
-            {
-                bottommost--;
-            }
-
-            var leftmost = 0;
-            while (leftmost < bitmap.Width && IsTransparentColumn(bitmap, leftmost))
-            {
-                leftmost++;
-            }
-
-            var rightmost = bitmap.Width;
-            while (rightmost >= 0 && IsTransparentColumn(bitmap, rightmost - 1))
-            {
-                rightmost--;
-            }
-
-            var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
-
-            using var image = SKImage.FromBitmap(bitmap);
-            using var subset = image.Subset(newRect);
-            return SKBitmap.FromImage(subset);
         }
 
         /// <inheritdoc />
@@ -204,244 +142,7 @@ namespace Jellyfin.Drawing.Skia
             return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
         }
 
-        private static bool HasDiacritics(string text)
-            => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
-
-        private bool RequiresSpecialCharacterHack(string path)
-        {
-            for (int i = 0; i < path.Length; i++)
-            {
-                if (char.GetUnicodeCategory(path[i]) == UnicodeCategory.OtherLetter)
-                {
-                    return true;
-                }
-            }
-
-            return HasDiacritics(path);
-        }
-
-        private string NormalizePath(string path)
-        {
-            if (!RequiresSpecialCharacterHack(path))
-            {
-                return path;
-            }
-
-            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
-            var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
-            Directory.CreateDirectory(directory);
-            File.Copy(path, tempPath, true);
-
-            return tempPath;
-        }
-
-        private static SKEncodedOrigin GetSKEncodedOrigin(ImageOrientation? orientation)
-        {
-            if (!orientation.HasValue)
-            {
-                return SKEncodedOrigin.TopLeft;
-            }
-
-            return orientation.Value switch
-            {
-                ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
-                ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
-                ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
-                ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
-                ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
-                ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
-                ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
-                _ => SKEncodedOrigin.TopLeft
-            };
-        }
-
-        /// <summary>
-        /// Decode an image.
-        /// </summary>
-        /// <param name="path">The filepath of the image to decode.</param>
-        /// <param name="forceCleanBitmap">Whether to force clean the bitmap.</param>
-        /// <param name="orientation">The orientation of the image.</param>
-        /// <param name="origin">The detected origin of the image.</param>
-        /// <returns>The resulting bitmap of the image.</returns>
-        internal SKBitmap? Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
-        {
-            if (!File.Exists(path))
-            {
-                throw new FileNotFoundException("File not found", path);
-            }
-
-            var requiresTransparencyHack = _transparentImageTypes.Contains(Path.GetExtension(path));
-
-            if (requiresTransparencyHack || forceCleanBitmap)
-            {
-                using SKCodec codec = SKCodec.Create(NormalizePath(path), out SKCodecResult res);
-                if (res != SKCodecResult.Success)
-                {
-                    origin = GetSKEncodedOrigin(orientation);
-                    return null;
-                }
-
-                // create the bitmap
-                var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
-
-                // decode
-                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
-
-                origin = codec.EncodedOrigin;
-
-                return bitmap;
-            }
-
-            var resultBitmap = SKBitmap.Decode(NormalizePath(path));
-
-            if (resultBitmap == null)
-            {
-                return Decode(path, true, orientation, out origin);
-            }
-
-            // If we have to resize these they often end up distorted
-            if (resultBitmap.ColorType == SKColorType.Gray8)
-            {
-                using (resultBitmap)
-                {
-                    return Decode(path, true, orientation, out origin);
-                }
-            }
-
-            origin = SKEncodedOrigin.TopLeft;
-            return resultBitmap;
-        }
-
-        private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool forceAnalyzeBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
-        {
-            if (cropWhitespace)
-            {
-                using var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin);
-                return bitmap == null ? null : CropWhiteSpace(bitmap);
-            }
-
-            return Decode(path, forceAnalyzeBitmap, orientation, out origin);
-        }
-
-        private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool autoOrient, ImageOrientation? orientation)
-        {
-            if (autoOrient)
-            {
-                var bitmap = GetBitmap(path, cropWhitespace, true, orientation, out var origin);
-
-                if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
-                {
-                    using (bitmap)
-                    {
-                        return OrientImage(bitmap, origin);
-                    }
-                }
-
-                return bitmap;
-            }
-
-            return GetBitmap(path, cropWhitespace, false, orientation, out _);
-        }
-
-        private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
-        {
-            var needsFlip = origin == SKEncodedOrigin.LeftBottom
-                            || origin == SKEncodedOrigin.LeftTop
-                            || origin == SKEncodedOrigin.RightBottom
-                            || origin == SKEncodedOrigin.RightTop;
-            var rotated = needsFlip
-                ? new SKBitmap(bitmap.Height, bitmap.Width)
-                : new SKBitmap(bitmap.Width, bitmap.Height);
-            using var surface = new SKCanvas(rotated);
-            var midX = (float)rotated.Width / 2;
-            var midY = (float)rotated.Height / 2;
-
-            switch (origin)
-            {
-                case SKEncodedOrigin.TopRight:
-                    surface.Scale(-1, 1, midX, midY);
-                    break;
-                case SKEncodedOrigin.BottomRight:
-                    surface.RotateDegrees(180, midX, midY);
-                    break;
-                case SKEncodedOrigin.BottomLeft:
-                    surface.Scale(1, -1, midX, midY);
-                    break;
-                case SKEncodedOrigin.LeftTop:
-                    surface.Translate(0, -rotated.Height);
-                    surface.Scale(1, -1, midX, midY);
-                    surface.RotateDegrees(-90);
-                    break;
-                case SKEncodedOrigin.RightTop:
-                    surface.Translate(rotated.Width, 0);
-                    surface.RotateDegrees(90);
-                    break;
-                case SKEncodedOrigin.RightBottom:
-                    surface.Translate(rotated.Width, 0);
-                    surface.Scale(1, -1, midX, midY);
-                    surface.RotateDegrees(90);
-                    break;
-                case SKEncodedOrigin.LeftBottom:
-                    surface.Translate(0, rotated.Height);
-                    surface.RotateDegrees(-90);
-                    break;
-            }
-
-            surface.DrawBitmap(bitmap, 0, 0);
-            return rotated;
-        }
-
-        /// <summary>
-        /// Resizes an image on the CPU, by utilizing a surface and canvas.
-        ///
-        /// The convolutional matrix kernel used in this resize function gives a (light) sharpening effect.
-        /// This technique is similar to effect that can be created using for example the [Convolution matrix filter in GIMP](https://docs.gimp.org/2.10/en/gimp-filter-convolution-matrix.html).
-        /// </summary>
-        /// <param name="source">The source bitmap.</param>
-        /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
-        /// <param name="isAntialias">This enables anti-aliasing on the SKPaint instance.</param>
-        /// <param name="isDither">This enables dithering on the SKPaint instance.</param>
-        /// <returns>The resized image.</returns>
-        internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
-        {
-            using var surface = SKSurface.Create(targetInfo);
-            using var canvas = surface.Canvas;
-            using var paint = new SKPaint
-            {
-                FilterQuality = SKFilterQuality.High,
-                IsAntialias = isAntialias,
-                IsDither = isDither
-            };
-
-            var kernel = new float[9]
-            {
-                0,    -.1f,    0,
-                -.1f, 1.4f, -.1f,
-                0,    -.1f,    0,
-            };
-
-            var kernelSize = new SKSizeI(3, 3);
-            var kernelOffset = new SKPointI(1, 1);
-
-            paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
-                kernelSize,
-                kernel,
-                1f,
-                0f,
-                kernelOffset,
-                SKShaderTileMode.Clamp,
-                true);
-
-            canvas.DrawBitmap(
-                source,
-                SKRect.Create(0, 0, source.Width, source.Height),
-                SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
-                paint);
-
-            return surface.Snapshot();
-        }
-
-        /// <inheritdoc/>
+                /// <inheritdoc/>
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat)
         {
             if (inputPath.Length == 0)
@@ -568,6 +269,305 @@ namespace Jellyfin.Drawing.Skia
                 // TODO: Create Poster collage capability
                 new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
             }
+        }
+
+        /// <summary>
+        /// Resizes an image on the CPU, by utilizing a surface and canvas.
+        ///
+        /// The convolutional matrix kernel used in this resize function gives a (light) sharpening effect.
+        /// This technique is similar to effect that can be created using for example the [Convolution matrix filter in GIMP](https://docs.gimp.org/2.10/en/gimp-filter-convolution-matrix.html).
+        /// </summary>
+        /// <param name="source">The source bitmap.</param>
+        /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
+        /// <param name="isAntialias">This enables anti-aliasing on the SKPaint instance.</param>
+        /// <param name="isDither">This enables dithering on the SKPaint instance.</param>
+        /// <returns>The resized image.</returns>
+        internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
+        {
+            using var surface = SKSurface.Create(targetInfo);
+            using var canvas = surface.Canvas;
+            using var paint = new SKPaint
+            {
+                FilterQuality = SKFilterQuality.High,
+                IsAntialias = isAntialias,
+                IsDither = isDither
+            };
+
+            var kernel = new float[9]
+            {
+                0,    -.1f,    0,
+                -.1f, 1.4f, -.1f,
+                0,    -.1f,    0,
+            };
+
+            var kernelSize = new SKSizeI(3, 3);
+            var kernelOffset = new SKPointI(1, 1);
+
+            paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
+                kernelSize,
+                kernel,
+                1f,
+                0f,
+                kernelOffset,
+                SKShaderTileMode.Clamp,
+                true);
+
+            canvas.DrawBitmap(
+                source,
+                SKRect.Create(0, 0, source.Width, source.Height),
+                SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
+                paint);
+
+            return surface.Snapshot();
+        }
+
+        /// <summary>
+        /// Decode an image.
+        /// </summary>
+        /// <param name="path">The filepath of the image to decode.</param>
+        /// <param name="forceCleanBitmap">Whether to force clean the bitmap.</param>
+        /// <param name="orientation">The orientation of the image.</param>
+        /// <param name="origin">The detected origin of the image.</param>
+        /// <returns>The resulting bitmap of the image.</returns>
+        internal SKBitmap? Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
+        {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("File not found", path);
+            }
+
+            var requiresTransparencyHack = _transparentImageTypes.Contains(Path.GetExtension(path));
+
+            if (requiresTransparencyHack || forceCleanBitmap)
+            {
+                using SKCodec codec = SKCodec.Create(NormalizePath(path), out SKCodecResult res);
+                if (res != SKCodecResult.Success)
+                {
+                    origin = GetSKEncodedOrigin(orientation);
+                    return null;
+                }
+
+                // create the bitmap
+                var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
+
+                // decode
+                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+
+                origin = codec.EncodedOrigin;
+
+                return bitmap;
+            }
+
+            var resultBitmap = SKBitmap.Decode(NormalizePath(path));
+
+            if (resultBitmap == null)
+            {
+                return Decode(path, true, orientation, out origin);
+            }
+
+            // If we have to resize these they often end up distorted
+            if (resultBitmap.ColorType == SKColorType.Gray8)
+            {
+                using (resultBitmap)
+                {
+                    return Decode(path, true, orientation, out origin);
+                }
+            }
+
+            origin = SKEncodedOrigin.TopLeft;
+            return resultBitmap;
+        }
+
+        private static bool IsTransparent(SKColor color)
+            => (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
+
+        private static bool IsTransparentRow(SKBitmap bmp, int row)
+        {
+            for (var i = 0; i < bmp.Width; ++i)
+            {
+                if (!IsTransparent(bmp.GetPixel(i, row)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsTransparentColumn(SKBitmap bmp, int col)
+        {
+            for (var i = 0; i < bmp.Height; ++i)
+            {
+                if (!IsTransparent(bmp.GetPixel(col, i)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private SKBitmap CropWhiteSpace(SKBitmap bitmap)
+        {
+            var topmost = 0;
+            while (topmost < bitmap.Height && IsTransparentRow(bitmap, topmost))
+            {
+                topmost++;
+            }
+
+            int bottommost = bitmap.Height;
+            while (bottommost >= 0 && IsTransparentRow(bitmap, bottommost - 1))
+            {
+                bottommost--;
+            }
+
+            var leftmost = 0;
+            while (leftmost < bitmap.Width && IsTransparentColumn(bitmap, leftmost))
+            {
+                leftmost++;
+            }
+
+            var rightmost = bitmap.Width;
+            while (rightmost >= 0 && IsTransparentColumn(bitmap, rightmost - 1))
+            {
+                rightmost--;
+            }
+
+            var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
+
+            using var image = SKImage.FromBitmap(bitmap);
+            using var subset = image.Subset(newRect);
+            return SKBitmap.FromImage(subset);
+        }
+
+        private static bool HasDiacritics(string text)
+            => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
+
+        private bool RequiresSpecialCharacterHack(string path)
+        {
+            for (int i = 0; i < path.Length; i++)
+            {
+                if (char.GetUnicodeCategory(path[i]) == UnicodeCategory.OtherLetter)
+                {
+                    return true;
+                }
+            }
+
+            return HasDiacritics(path);
+        }
+
+        private string NormalizePath(string path)
+        {
+            if (!RequiresSpecialCharacterHack(path))
+            {
+                return path;
+            }
+
+            var tempPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + Path.GetExtension(path));
+            var directory = Path.GetDirectoryName(tempPath) ?? throw new ResourceNotFoundException($"Provided path ({tempPath}) is not valid.");
+            Directory.CreateDirectory(directory);
+            File.Copy(path, tempPath, true);
+
+            return tempPath;
+        }
+
+        private static SKEncodedOrigin GetSKEncodedOrigin(ImageOrientation? orientation)
+        {
+            if (!orientation.HasValue)
+            {
+                return SKEncodedOrigin.TopLeft;
+            }
+
+            return orientation.Value switch
+            {
+                ImageOrientation.TopRight => SKEncodedOrigin.TopRight,
+                ImageOrientation.RightTop => SKEncodedOrigin.RightTop,
+                ImageOrientation.RightBottom => SKEncodedOrigin.RightBottom,
+                ImageOrientation.LeftTop => SKEncodedOrigin.LeftTop,
+                ImageOrientation.LeftBottom => SKEncodedOrigin.LeftBottom,
+                ImageOrientation.BottomRight => SKEncodedOrigin.BottomRight,
+                ImageOrientation.BottomLeft => SKEncodedOrigin.BottomLeft,
+                _ => SKEncodedOrigin.TopLeft
+            };
+        }
+
+        private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool forceAnalyzeBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
+        {
+            if (cropWhitespace)
+            {
+                using var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin);
+                return bitmap == null ? null : CropWhiteSpace(bitmap);
+            }
+
+            return Decode(path, forceAnalyzeBitmap, orientation, out origin);
+        }
+
+        private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool autoOrient, ImageOrientation? orientation)
+        {
+            if (autoOrient)
+            {
+                var bitmap = GetBitmap(path, cropWhitespace, true, orientation, out var origin);
+
+                if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
+                {
+                    using (bitmap)
+                    {
+                        return OrientImage(bitmap, origin);
+                    }
+                }
+
+                return bitmap;
+            }
+
+            return GetBitmap(path, cropWhitespace, false, orientation, out _);
+        }
+
+        private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
+        {
+            var needsFlip = origin == SKEncodedOrigin.LeftBottom
+                            || origin == SKEncodedOrigin.LeftTop
+                            || origin == SKEncodedOrigin.RightBottom
+                            || origin == SKEncodedOrigin.RightTop;
+            var rotated = needsFlip
+                ? new SKBitmap(bitmap.Height, bitmap.Width)
+                : new SKBitmap(bitmap.Width, bitmap.Height);
+            using var surface = new SKCanvas(rotated);
+            var midX = (float)rotated.Width / 2;
+            var midY = (float)rotated.Height / 2;
+
+            switch (origin)
+            {
+                case SKEncodedOrigin.TopRight:
+                    surface.Scale(-1, 1, midX, midY);
+                    break;
+                case SKEncodedOrigin.BottomRight:
+                    surface.RotateDegrees(180, midX, midY);
+                    break;
+                case SKEncodedOrigin.BottomLeft:
+                    surface.Scale(1, -1, midX, midY);
+                    break;
+                case SKEncodedOrigin.LeftTop:
+                    surface.Translate(0, -rotated.Height);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(-90);
+                    break;
+                case SKEncodedOrigin.RightTop:
+                    surface.Translate(rotated.Width, 0);
+                    surface.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.RightBottom:
+                    surface.Translate(rotated.Width, 0);
+                    surface.Scale(1, -1, midX, midY);
+                    surface.RotateDegrees(90);
+                    break;
+                case SKEncodedOrigin.LeftBottom:
+                    surface.Translate(0, rotated.Height);
+                    surface.RotateDegrees(-90);
+                    break;
+            }
+
+            surface.DrawBitmap(bitmap, 0, 0);
+            return rotated;
         }
 
         private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)
