@@ -18,7 +18,7 @@ namespace Jellyfin.Model.Tests.Entities
         [Fact]
         public void HasProviderId_NullProvider_False()
         {
-            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            var nullProvider = new ProviderIdsExtensionsTestsObject
             {
                 ProviderIds = null!
             };
@@ -68,7 +68,7 @@ namespace Jellyfin.Model.Tests.Entities
         [Fact]
         public void GetProviderId_NullProvider_Null()
         {
-            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            var nullProvider = new ProviderIdsExtensionsTestsObject
             {
                 ProviderIds = null!
             };
@@ -85,7 +85,7 @@ namespace Jellyfin.Model.Tests.Entities
         [Fact]
         public void TryGetProviderId_NullProvider_False()
         {
-            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            var nullProvider = new ProviderIdsExtensionsTestsObject
             {
                 ProviderIds = null!
             };
@@ -146,7 +146,7 @@ namespace Jellyfin.Model.Tests.Entities
         [Fact]
         public void SetProviderId_NullProvider_Success()
         {
-            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            var nullProvider = new ProviderIdsExtensionsTestsObject
             {
                 ProviderIds = null!
             };
@@ -158,7 +158,7 @@ namespace Jellyfin.Model.Tests.Entities
         [Fact]
         public void SetProviderId_NullProviderAndEmptyName_Success()
         {
-            var nullProvider = new ProviderIdsExtensionsTestsObject()
+            var nullProvider = new ProviderIdsExtensionsTestsObject
             {
                 ProviderIds = null!
             };

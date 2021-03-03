@@ -50,6 +50,12 @@ namespace MediaBrowser.Model.Entities
                 throw new ArgumentNullException(nameof(instance));
             }
 
+            if (instance.ProviderIds == null)
+            {
+                id = null;
+                return false;
+            }
+
             var foundProviderId = instance.ProviderIds.TryGetValue(name, out id);
             // This occurs when searching with Identify (and possibly in other places)
             if (string.IsNullOrEmpty(id))
