@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Entities
                 throw new ArgumentNullException(nameof(instance));
             }
 
-            return instance.ProviderIds?.ContainsKey(name) ?? false;
+            return instance.TryGetProviderId(name, out _);
         }
 
         /// <summary>
@@ -56,7 +56,15 @@ namespace MediaBrowser.Model.Entities
                 return false;
             }
 
-            return instance.ProviderIds.TryGetValue(name, out id);
+            var foundProviderId = instance.ProviderIds.TryGetValue(name, out id);
+            // This occurs when searching with Identify (and possibly in other places)
+            if (string.IsNullOrEmpty(id))
+            {
+                id = null;
+                foundProviderId = false;
+            }
+
+            return foundProviderId;
         }
 
         /// <summary>
