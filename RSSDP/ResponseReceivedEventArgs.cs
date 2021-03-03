@@ -18,10 +18,11 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Full constructor.
         /// </summary>
-        public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom)
+        public ResponseReceivedEventArgs(HttpResponseMessage message, IPEndPoint receivedFrom, IPAddress localIpAddress)
         {
             _Message = message;
             _ReceivedFrom = receivedFrom;
+            LocalIpAddress = localIpAddress;
         }
 
         /// <summary>

@@ -10,22 +10,32 @@ namespace Rssdp
     /// <seealso cref="Infrastructure.ISsdpDeviceLocator"/>
     public sealed class DiscoveredSsdpDevice
     {
+        public DiscoveredSsdpDevice(DateTimeOffset asAt, string? notificationType, string? usn, Uri? descriptionLocation, TimeSpan cacheLifetime, HttpHeaders responseHeaders)
+        {
+            _AsAt = asAt;
+            NotificationType = notificationType;
+            Usn = usn;
+            DescriptionLocation = descriptionLocation;
+            CacheLifetime = cacheLifetime;
+            ResponseHeaders = responseHeaders;
+        }
+
         private DateTimeOffset _AsAt;
 
         /// <summary>
         /// Sets or returns the type of notification, being either a uuid, device type, service type or upnp:rootdevice.
         /// </summary>
-        public string NotificationType { get; set; }
+        public string? NotificationType { get; set; }
 
         /// <summary>
         /// Sets or returns the universal service name (USN) of the device.
         /// </summary>
-        public string Usn { get; set; }
+        public string? Usn { get; set; }
 
         /// <summary>
         /// Sets or returns a URL pointing to the device description document for this device.
         /// </summary>
-        public Uri DescriptionLocation { get; set; }
+        public Uri? DescriptionLocation { get; set; }
 
         /// <summary>
         /// Sets or returns the length of time this information is valid for (from the <see cref="AsAt"/> time).
@@ -68,7 +78,7 @@ namespace Rssdp
         /// <returns>A string containing the device's universal service name.</returns>
         public override string ToString()
         {
-            return this.Usn;
+            return this.Usn ?? string.Empty;
         }
     }
 }

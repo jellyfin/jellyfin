@@ -20,7 +20,7 @@ namespace Rssdp
         /// <param name="discoveredDevice">A <see cref="DiscoveredSsdpDevice"/> instance representing the available device.</param>
         /// <param name="isNewlyDiscovered">A boolean value indicating whether or not this device came from the cache. See <see cref="IsNewlyDiscovered"/> for more detail.</param>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="discoveredDevice"/> parameter is null.</exception>
-        public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered)
+        public DeviceAvailableEventArgs(DiscoveredSsdpDevice discoveredDevice, bool isNewlyDiscovered, IPAddress localIpAddress)
         {
             if (discoveredDevice == null)
             {
@@ -29,6 +29,7 @@ namespace Rssdp
 
             _DiscoveredDevice = discoveredDevice;
             _IsNewlyDiscovered = isNewlyDiscovered;
+            LocalIpAddress = localIpAddress;
         }
 
         /// <summary>

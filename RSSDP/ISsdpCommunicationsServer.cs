@@ -38,8 +38,8 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Sends a message to the SSDP multicast address and port.
         /// </summary>
-        Task SendMulticastMessage(string message, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
-        Task SendMulticastMessage(string message, int sendCount, IPAddress fromLocalIpAddress, CancellationToken cancellationToken);
+        Task SendMulticastMessage(string message, IPAddress? fromLocalIpAddress, CancellationToken cancellationToken);
+        Task SendMulticastMessage(string message, int sendCount, IPAddress? fromLocalIpAddress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets or sets a boolean value indicating whether or not this instance is shared amongst multiple <see cref="SsdpDeviceLocatorBase"/> and/or <see cref="ISsdpDevicePublisher"/> instances.
