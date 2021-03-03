@@ -107,7 +107,8 @@ namespace Jellyfin.Api.Helpers
             // Headers only
             if (isHeadRequest)
             {
-                return new FileContentResult(Array.Empty<byte>(), contentType);
+                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
+                return new OkResult();
             }
 
             var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);
