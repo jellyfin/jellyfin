@@ -48,6 +48,15 @@ namespace Jellyfin.Model.Tests.Entities
         }
 
         [Fact]
+        public void HasProviderId_FoundNameEmptyValue_False()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = string.Empty;
+
+            Assert.False(provider.HasProviderId(MetadataProvider.Imdb));
+        }
+
+        [Fact]
         public void GetProviderId_NullInstance_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => ProviderIdsExtensions.GetProviderId(null!, MetadataProvider.Imdb));
@@ -110,6 +119,16 @@ namespace Jellyfin.Model.Tests.Entities
 
             Assert.True(provider.TryGetProviderId(MetadataProvider.Imdb, out var id));
             Assert.Equal(ExampleImdbId, id);
+        }
+
+        [Fact]
+        public void TryGetProviderId_FoundNameEmptyValue_False()
+        {
+            var provider = new ProviderIdsExtensionsTestsObject();
+            provider.ProviderIds[MetadataProvider.Imdb.ToString()] = string.Empty;
+
+            Assert.False(provider.TryGetProviderId(MetadataProvider.Imdb, out var id));
+            Assert.Null(id);
         }
 
         [Fact]

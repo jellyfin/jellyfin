@@ -22,7 +22,7 @@ namespace MediaBrowser.Model.Entities
                 throw new ArgumentNullException(nameof(instance));
             }
 
-            return instance.ProviderIds?.ContainsKey(name) ?? false;
+            return instance.TryGetProviderId(name, out _);
         }
 
         /// <summary>
