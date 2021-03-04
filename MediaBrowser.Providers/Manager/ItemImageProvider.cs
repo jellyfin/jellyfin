@@ -58,9 +58,8 @@ namespace MediaBrowser.Providers.Manager
 
             if (!(item is Photo))
             {
-                var images = providers
-                                .OfType<ILocalImageProvider>()
-                                .SelectMany(i => i.GetImages(item, directoryService));
+                var images = providers.OfType<ILocalImageProvider>()
+                    .SelectMany(i => i.GetImages(item, directoryService));
 
                 if (MergeImages(item, images))
                 {

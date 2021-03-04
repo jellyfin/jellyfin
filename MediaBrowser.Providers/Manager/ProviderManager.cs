@@ -569,22 +569,22 @@ namespace MediaBrowser.Providers.Manager
             var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
 
             summary.Plugins = summary
-                                .Plugins
-                                .Concat(GetMetadataPlugins(dummy, libraryOptions, options))
-                                .Concat(GetImagePlugins(imageProviders))
-                                .Concat(subtitleProviders.Select(i => new MetadataPlugin
-                                {
-                                    Name = i.Name,
-                                    Type = MetadataPluginType.SubtitleFetcher
-                                }))
-                                .ToArray();
+                .Plugins
+                .Concat(GetMetadataPlugins(dummy, libraryOptions, options))
+                .Concat(GetImagePlugins(imageProviders))
+                .Concat(subtitleProviders.Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = MetadataPluginType.SubtitleFetcher
+                }))
+                .ToArray();
 
             summary.SupportedImageTypes = imageProviders
-                                            .OfType<IRemoteImageProvider>()
-                                            .SelectMany(i => i.GetSupportedImages(dummy))
-                                            .Concat(imageProviders.OfType<IDynamicImageProvider>().SelectMany(i => i.GetSupportedImages(dummy)))
-                                            .Distinct()
-                                            .ToArray();
+                .OfType<IRemoteImageProvider>()
+                .SelectMany(i => i.GetSupportedImages(dummy))
+                .Concat(imageProviders.OfType<IDynamicImageProvider>().SelectMany(i => i.GetSupportedImages(dummy)))
+                .Distinct()
+                .ToArray();
 
             return summary;
         }
@@ -595,21 +595,21 @@ namespace MediaBrowser.Providers.Manager
             var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true);
 
             var providerPlugins = providers
-                                    .Where(i => i is ILocalMetadataProvider || i is IRemoteMetadataProvider)
-                                    .Select(i => new MetadataPlugin
-                                    {
-                                        Name = i.Name,
-                                        Type = i is ILocalMetadataProvider ? MetadataPluginType.LocalMetadataProvider : MetadataPluginType.MetadataFetcher
-                                    });
+                .Where(i => i is ILocalMetadataProvider || i is IRemoteMetadataProvider)
+                .Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = i is ILocalMetadataProvider ? MetadataPluginType.LocalMetadataProvider : MetadataPluginType.MetadataFetcher
+                });
 
             var saverPlugins = _savers
-                                    .Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, true))
-                                    .OrderBy(i => i.Name)
-                                    .Select(i => new MetadataPlugin
-                                    {
-                                        Name = i.Name,
-                                        Type = MetadataPluginType.MetadataSaver
-                                    });
+                .Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, true))
+                .OrderBy(i => i.Name)
+                .Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = MetadataPluginType.MetadataSaver
+                });
 
             return providerPlugins.Concat(saverPlugins);
         }
