@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Music
 
                                         using (var subReader = reader.ReadSubtree())
                                         {
-                                            return ParseArtistList(subReader);
+                                            return ParseArtistList(subReader).ToList();
                                         }
                                     }
 
