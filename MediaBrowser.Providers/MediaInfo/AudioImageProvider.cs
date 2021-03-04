@@ -47,13 +47,12 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var audio = (Audio)item;
 
-            var imageStreams =
-                audio.GetMediaStreams(MediaStreamType.EmbeddedImage)
-                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
-                    .ToList();
+            var imageStreams = audio
+                                .GetMediaStreams(MediaStreamType.EmbeddedImage)
+                                .Where(i => i.Type == MediaStreamType.EmbeddedImage);
 
             // Can't extract if we didn't find a video stream in the file
-            if (imageStreams.Count == 0)
+            if (!imageStreams.Any())
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
@@ -61,7 +60,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return GetImage((Audio)item, imageStreams, cancellationToken);
         }
 
-        public async Task<DynamicImageResponse> GetImage(Audio item, List<MediaStream> imageStreams, CancellationToken cancellationToken)
+        public async Task<DynamicImageResponse> GetImage(Audio item, IEnumerable<MediaStream> imageStreams, CancellationToken cancellationToken)
         {
             var path = GetAudioImagePath(item);
 

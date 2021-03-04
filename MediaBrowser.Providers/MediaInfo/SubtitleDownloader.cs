@@ -29,7 +29,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public async Task<List<string>> DownloadSubtitles(
             Video video,
-            List<MediaStream> mediaStreams,
+            IEnumerable<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
@@ -64,7 +64,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public Task<bool> DownloadSubtitles(
             Video video,
-            List<MediaStream> mediaStreams,
+            IEnumerable<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private async Task<bool> DownloadSubtitles(
             Video video,
-            List<MediaStream> mediaStreams,
+            IEnumerable<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
@@ -130,13 +130,13 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            var audioStreams = mediaStreams.Where(i => i.Type == MediaStreamType.Audio).ToList();
-            var defaultAudioStreams = audioStreams.Where(i => i.IsDefault).ToList();
+            var audioStreams = mediaStreams.Where(i => i.Type == MediaStreamType.Audio);
+            var defaultAudioStreams = audioStreams.Where(i => i.IsDefault);
 
             // If none are marked as default, just take a guess
-            if (defaultAudioStreams.Count == 0)
+            if (!defaultAudioStreams.Any())
             {
-                defaultAudioStreams = audioStreams.Take(1).ToList();
+                defaultAudioStreams = audioStreams.Take(1);
             }
 
             // There's already a default audio stream for this language

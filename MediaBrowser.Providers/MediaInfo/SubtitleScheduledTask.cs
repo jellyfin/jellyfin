@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var dict = new Dictionary<Guid, BaseItem>();
 
-            foreach (var library in _libraryManager.RootFolder.Children.ToList())
+            foreach (var library in _libraryManager.RootFolder.Children)
             {
                 var libraryOptions = _libraryManager.GetLibraryOptions(library);
 
@@ -130,8 +130,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            var videos = dict.Values.ToList();
-            if (videos.Count == 0)
+            var videos = dict.Values;
+            if (!videos.Any())
             {
                 return;
             }

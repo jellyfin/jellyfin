@@ -541,7 +541,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     _logger,
                     _subtitleManager).DownloadSubtitles(
                         video,
-                        currentStreams.Concat(externalSubtitleStreams).ToList(),
+                        currentStreams.Concat(externalSubtitleStreams),
                         skipIfEmbeddedSubtitlesPresent,
                         skipIfAudioTrackMatches,
                         requirePerfectMatch,

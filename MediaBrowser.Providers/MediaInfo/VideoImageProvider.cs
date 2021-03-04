@@ -72,13 +72,10 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var inputPath = item.Path;
 
-            var mediaStreams =
-                item.GetMediaStreams();
+            var mediaStreams = item.GetMediaStreams();
 
-            var imageStreams =
-                mediaStreams
-                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
-                    .ToList();
+            var imageStreams = mediaStreams
+                                .Where(i => i.Type == MediaStreamType.EmbeddedImage);
 
             var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
                 imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
