@@ -489,7 +489,7 @@ namespace MediaBrowser.Providers.Manager
                 return zeroIndexFilename;
             }
 
-            var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
+            var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path));
 
             var current = 1;
             while (filenames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))

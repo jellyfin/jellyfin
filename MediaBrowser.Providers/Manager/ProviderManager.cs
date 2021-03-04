@@ -246,7 +246,7 @@ namespace MediaBrowser.Providers.Manager
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return results.SelectMany(i => i.ToList());
+            return results.SelectMany(i => i);
         }
 
         /// <summary>
@@ -564,79 +564,64 @@ namespace MediaBrowser.Providers.Manager
                 libraryOptions,
                 options,
                 new ImageRefreshOptions(new DirectoryService(_fileSystem)),
-                true).ToList();
-
-            var pluginList = summary.Plugins.ToList();
-
-            AddMetadataPlugins(pluginList, dummy, libraryOptions, options);
-            AddImagePlugins(pluginList, imageProviders);
+                true);
 
             var subtitleProviders = _subtitleManager.GetSupportedProviders(dummy);
 
-            // Subtitle fetchers
-            pluginList.AddRange(subtitleProviders.Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.SubtitleFetcher
-            }));
+            summary.Plugins = summary
+                                .Plugins
+                                .Concat(GetMetadataPlugins(dummy, libraryOptions, options))
+                                .Concat(GetImagePlugins(imageProviders))
+                                .Concat(subtitleProviders.Select(i => new MetadataPlugin
+                                {
+                                    Name = i.Name,
+                                    Type = MetadataPluginType.SubtitleFetcher
+                                }))
+                                .ToArray();
 
-            summary.Plugins = pluginList.ToArray();
-
-            var supportedImageTypes = imageProviders.OfType<IRemoteImageProvider>()
-                .SelectMany(i => i.GetSupportedImages(dummy))
-                .ToList();
-
-            supportedImageTypes.AddRange(imageProviders.OfType<IDynamicImageProvider>()
-                .SelectMany(i => i.GetSupportedImages(dummy)));
-
-            summary.SupportedImageTypes = supportedImageTypes.Distinct().ToArray();
+            summary.SupportedImageTypes = imageProviders
+                                            .OfType<IRemoteImageProvider>()
+                                            .SelectMany(i => i.GetSupportedImages(dummy))
+                                            .Concat(imageProviders.OfType<IDynamicImageProvider>().SelectMany(i => i.GetSupportedImages(dummy)))
+                                            .Distinct()
+                                            .ToArray();
 
             return summary;
         }
 
-        private void AddMetadataPlugins<T>(List<MetadataPlugin> list, T item, LibraryOptions libraryOptions, MetadataOptions options)
+        private IEnumerable<MetadataPlugin> GetMetadataPlugins<T>(T item, LibraryOptions libraryOptions, MetadataOptions options)
             where T : BaseItem
         {
-            var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true).ToList();
+            var providers = GetMetadataProvidersInternal<T>(item, libraryOptions, options, true, true);
 
-            // Locals
-            list.AddRange(providers.Where(i => i is ILocalMetadataProvider).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.LocalMetadataProvider
-            }));
+            var providerPlugins = providers
+                                    .Where(i => i is ILocalMetadataProvider || i is IRemoteMetadataProvider)
+                                    .Select(i => new MetadataPlugin
+                                    {
+                                        Name = i.Name,
+                                        Type = i is ILocalMetadataProvider ? MetadataPluginType.LocalMetadataProvider : MetadataPluginType.MetadataFetcher
+                                    });
 
-            // Fetchers
-            list.AddRange(providers.Where(i => i is IRemoteMetadataProvider).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.MetadataFetcher
-            }));
+            var saverPlugins = _savers
+                                    .Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, true))
+                                    .OrderBy(i => i.Name)
+                                    .Select(i => new MetadataPlugin
+                                    {
+                                        Name = i.Name,
+                                        Type = MetadataPluginType.MetadataSaver
+                                    });
 
-            // Savers
-            list.AddRange(_savers.Where(i => IsSaverEnabledForItem(i, item, libraryOptions, ItemUpdateType.MetadataEdit, true)).OrderBy(i => i.Name).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.MetadataSaver
-            }));
+            return providerPlugins.Concat(saverPlugins);
         }
 
-        private void AddImagePlugins(List<MetadataPlugin> list, List<IImageProvider> imageProviders)
-        {
-            // Locals
-            list.AddRange(imageProviders.Where(i => i is ILocalImageProvider).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.LocalImageProvider
-            }));
-
-            // Fetchers
-            list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (i is IRemoteImageProvider)).Select(i => new MetadataPlugin
-            {
-                Name = i.Name,
-                Type = MetadataPluginType.ImageFetcher
-            }));
-        }
+        private IEnumerable<MetadataPlugin> GetImagePlugins(IEnumerable<IImageProvider> imageProviders)
+            => imageProviders
+                .Where(i => i is ILocalImageProvider || i is IDynamicImageProvider)
+                .Select(i => new MetadataPlugin
+                {
+                    Name = i.Name,
+                    Type = i is ILocalImageProvider ? MetadataPluginType.LocalImageProvider : MetadataPluginType.ImageFetcher
+                });
 
         /// <inheritdoc/>
         public MetadataOptions GetMetadataOptions(BaseItem item)
@@ -888,14 +873,12 @@ namespace MediaBrowser.Providers.Manager
         {
             var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
 
-            var list = results.ToList();
-
-            foreach (var item in list)
+            foreach (var item in results)
             {
                 item.SearchProviderName = provider.Name;
             }
 
-            return list;
+            return results;
         }
 
         /// <inheritdoc/>

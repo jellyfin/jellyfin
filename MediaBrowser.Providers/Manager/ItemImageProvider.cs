@@ -58,9 +58,9 @@ namespace MediaBrowser.Providers.Manager
 
             if (!(item is Photo))
             {
-                var images = providers.OfType<ILocalImageProvider>()
-                    .SelectMany(i => i.GetImages(item, directoryService))
-                    .ToList();
+                var images = providers
+                                .OfType<ILocalImageProvider>()
+                                .SelectMany(i => i.GetImages(item, directoryService));
 
                 if (MergeImages(item, images))
                 {
@@ -74,7 +74,7 @@ namespace MediaBrowser.Providers.Manager
         public async Task<RefreshResult> RefreshImages(
             BaseItem item,
             LibraryOptions libraryOptions,
-            List<IImageProvider> providers,
+            IEnumerable<IImageProvider> providers,
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
@@ -206,7 +206,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="backdropLimit">The backdrop limit.</param>
         /// <param name="screenshotLimit">The screenshot limit.</param>
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
-        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
+        private bool ContainsImages(BaseItem item, IEnumerable<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
         {
             if (_singularImages.Any(i => images.Contains(i) && !HasImage(item, i) && savedOptions.GetLimit(i) > 0))
             {
@@ -261,7 +261,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!refreshOptions.ReplaceAllImages &&
                     refreshOptions.ReplaceImages.Length == 0 &&
-                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit, screenshotLimit))
+                    ContainsImages(item, provider.GetSupportedImages(item), savedOptions, backdropLimit, screenshotLimit))
                 {
                     return;
                 }
@@ -277,7 +277,6 @@ namespace MediaBrowser.Providers.Manager
                     },
                     cancellationToken).ConfigureAwait(false);
 
-                var list = images.ToList();
                 int minWidth;
 
                 foreach (var imageType in _singularImages)
@@ -290,7 +289,7 @@ namespace MediaBrowser.Providers.Manager
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
-                        var downloaded = await DownloadImage(item, libraryOptions, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
+                        var downloaded = await DownloadImage(item, libraryOptions, provider, result, images, minWidth, imageType, cancellationToken).ConfigureAwait(false);
 
                         if (downloaded)
                         {
@@ -300,12 +299,12 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadBackdrops(item, libraryOptions, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                await DownloadBackdrops(item, libraryOptions, ImageType.Backdrop, backdropLimit, provider, result, images, minWidth, cancellationToken).ConfigureAwait(false);
 
                 if (item is IHasScreenshots hasScreenshots)
                 {
                     minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadBackdrops(item, libraryOptions, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    await DownloadBackdrops(item, libraryOptions, ImageType.Screenshot, screenshotLimit, provider, result, images, minWidth, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -329,7 +328,7 @@ namespace MediaBrowser.Providers.Manager
             var deleted = false;
             var deletedImages = new List<ItemImageInfo>();
 
-            foreach (var image in item.GetImages(type).ToList())
+            foreach (var image in item.GetImages(type))
             {
                 if (!image.IsLocalFile)
                 {
@@ -355,7 +354,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public bool MergeImages(BaseItem item, List<LocalImageInfo> images)
+        public bool MergeImages(BaseItem item, IEnumerable<LocalImageInfo> images)
         {
             var changed = false;
 
@@ -423,22 +422,14 @@ namespace MediaBrowser.Providers.Manager
             return changed;
         }
 
-        private bool UpdateMultiImages(BaseItem item, List<LocalImageInfo> images, ImageType type)
+        private bool UpdateMultiImages(BaseItem item, IEnumerable<LocalImageInfo> images, ImageType type)
         {
-            var changed = false;
+            var newImageFileInfos = images
+                                        .Where(i => i.Type == type)
+                                        .Select(i => i.FileInfo)
+                                        .ToList();
 
-            var newImages = images.Where(i => i.Type == type).ToList();
-
-            var newImageFileInfos = newImages
-                    .Select(i => i.FileInfo)
-                    .ToList();
-
-            if (item.AddImages(type, newImageFileInfos))
-            {
-                changed = true;
-            }
-
-            return changed;
+            return item.AddImages(type, newImageFileInfos);
         }
 
         private async Task<bool> DownloadImage(
@@ -452,10 +443,9 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
-                .ToList();
+                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth));
 
-            if (EnableImageStub(item, libraryOptions) && eligibleImages.Count > 0)
+            if (EnableImageStub(item, libraryOptions) && eligibleImages.Any())
             {
                 SaveImageStub(item, type, eligibleImages.Select(i => i.Url));
                 result.UpdateType |= ItemUpdateType.ImageUpdate;

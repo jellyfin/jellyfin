@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Manager
             var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
             var localImagesFailed = false;
 
-            var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
+            var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions);
 
             // Start by validating images
             try
@@ -120,10 +120,9 @@ namespace MediaBrowser.Providers.Manager
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
-                var providers = GetProviders(item, libraryOptions, refreshOptions, isFirstRefresh, requiresRefresh)
-                    .ToList();
+                var providers = GetProviders(item, libraryOptions, refreshOptions, isFirstRefresh, requiresRefresh);
 
-                if (providers.Count > 0 || isFirstRefresh || requiresRefresh)
+                if (providers.Any() || isFirstRefresh || requiresRefresh)
                 {
                     if (item.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata))
                     {
@@ -131,7 +130,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                if (providers.Count > 0)
+                if (providers.Any())
                 {
                     var id = itemOfType.GetLookupInfo();
 
@@ -156,9 +155,9 @@ namespace MediaBrowser.Providers.Manager
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != MetadataRefreshMode.ValidationOnly)
             {
-                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshOptions).ToList();
+                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshOptions);
 
-                if (providers.Count > 0)
+                if (providers.Any())
                 {
                     var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken).ConfigureAwait(false);
 
@@ -543,7 +542,7 @@ namespace MediaBrowser.Providers.Manager
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
             // Get providers to refresh
-            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item, libraryOptions).ToList();
+            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item, libraryOptions);
 
             var metadataRefreshMode = options.MetadataRefreshMode;
 
@@ -564,10 +563,9 @@ namespace MediaBrowser.Providers.Manager
                         }
 
                         return false;
-                    })
-                    .ToList();
+                    });
 
-                if (providersWithChanges.Count == 0)
+                if (!providersWithChanges.Any())
                 {
                     providers = new List<IMetadataProvider<TItemType>>();
                 }
@@ -603,7 +601,7 @@ namespace MediaBrowser.Providers.Manager
 
                         // Run custom refresh providers if they report a change or any remote providers change
                         return anyRemoteProvidersChanged || providersWithChanges.Contains(i);
-                    }).ToList();
+                    });
                 }
             }
 
@@ -613,7 +611,7 @@ namespace MediaBrowser.Providers.Manager
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
             // Get providers to refresh
-            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
+            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider));
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
@@ -632,8 +630,7 @@ namespace MediaBrowser.Providers.Manager
                         }
 
                         return false;
-                    })
-                    .ToList();
+                    });
             }
 
             return providers;
@@ -653,7 +650,7 @@ namespace MediaBrowser.Providers.Manager
             MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
-            List<IMetadataProvider> providers,
+            IEnumerable<IMetadataProvider> providers,
             ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {
@@ -664,7 +661,7 @@ namespace MediaBrowser.Providers.Manager
 
             var item = metadata.Item;
 
-            var customProviders = providers.OfType<ICustomMetadataProvider<TItemType>>().ToList();
+            var customProviders = providers.OfType<ICustomMetadataProvider<TItemType>>();
             var logName = !item.IsFileProtocol ? item.Name ?? item.Path : item.Path ?? item.Name;
 
             foreach (var provider in customProviders.Where(i => i is IPreRefreshProvider))
@@ -693,7 +690,7 @@ namespace MediaBrowser.Providers.Manager
 
             var hasLocalMetadata = false;
 
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
+            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
             {
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {0} for {1}", providerName, logName);
