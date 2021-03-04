@@ -571,21 +571,16 @@ namespace MediaBrowser.Providers.Manager
                 }
                 else
                 {
-                    var anyRemoteProvidersChanged = providersWithChanges.OfType<IRemoteMetadataProvider>()
-                        .Any();
+                    var anyRemoteProvidersChanged = providersWithChanges.Any(p => p is IRemoteMetadataProvider);
 
-                    var anyLocalProvidersChanged = providersWithChanges.OfType<ILocalMetadataProvider>()
-                        .Any();
-
-                    var anyLocalPreRefreshProvidersChanged = providersWithChanges.OfType<IPreRefreshProvider>()
-                        .Any();
+                    var anyLocalOrPreRefreshProvidersChanged = providersWithChanges.Any(p => p is ILocalMetadataProvider || p is IPreRefreshProvider);
 
                     providers = providers.Where(i =>
                     {
                         // If any provider reports a change, always run local ones as well
                         if (i is ILocalMetadataProvider)
                         {
-                            return anyRemoteProvidersChanged || anyLocalProvidersChanged || anyLocalPreRefreshProvidersChanged;
+                            return anyRemoteProvidersChanged || anyLocalOrPreRefreshProvidersChanged;
                         }
 
                         // If any remote providers changed, run them all so that priorities can be honored

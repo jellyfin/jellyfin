@@ -201,26 +201,31 @@ namespace MediaBrowser.Providers.Manager
         /// Determines if an item already contains the given images.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="images">The images.</param>
+        /// <param name="imageTypes">The images.</param>
         /// <param name="savedOptions">The saved options.</param>
         /// <param name="backdropLimit">The backdrop limit.</param>
         /// <param name="screenshotLimit">The screenshot limit.</param>
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
-        private bool ContainsImages(BaseItem item, IEnumerable<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
+        private bool ContainsImages(BaseItem item, IEnumerable<ImageType> imageTypes, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
         {
-            if (_singularImages.Any(i => images.Contains(i) && !HasImage(item, i) && savedOptions.GetLimit(i) > 0))
+            foreach (var imageType in imageTypes)
             {
-                return false;
-            }
+                var singularImageIndex = Array.IndexOf(_singularImages, imageType);
+                if (singularImageIndex != -1)
+                {
+                    var singularImage = _singularImages[singularImageIndex];
+                    if (!HasImage(item, singularImage) && savedOptions.GetLimit(singularImage) > 0)
+                    {
+                        return false;
+                    }
+                }
 
-            if (images.Contains(ImageType.Backdrop) && item.GetImages(ImageType.Backdrop).Count() < backdropLimit)
-            {
-                return false;
-            }
-
-            if (images.Contains(ImageType.Screenshot) && item.GetImages(ImageType.Screenshot).Count() < screenshotLimit)
-            {
-                return false;
+                switch (imageType)
+                {
+                    case ImageType.Backdrop when item.GetImages(ImageType.Backdrop).Count() < backdropLimit:
+                    case ImageType.Screenshot when item.GetImages(ImageType.Screenshot).Count() < screenshotLimit:
+                        return false;
+                }
             }
 
             return true;
