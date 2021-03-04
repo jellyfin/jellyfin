@@ -67,15 +67,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var credits = seasonResult.Credits;
             if (credits?.Cast != null)
             {
-                var cast = credits.Cast.OrderBy(c => c.Order).Take(TmdbUtils.MaxCastMembers).ToList();
-                for (var i = 0; i < cast.Count; i++)
+                foreach (var cast in credits.Cast.OrderBy(c => c.Order).Take(TmdbUtils.MaxCastMembers))
                 {
                     result.AddPerson(new PersonInfo
                     {
-                        Name = cast[i].Name.Trim(),
-                        Role = cast[i].Character,
+                        Name = cast.Name.Trim(),
+                        Role = cast.Character,
                         Type = PersonType.Actor,
-                        SortOrder = cast[i].Order
+                        SortOrder = cast.Order
                     });
                 }
             }

@@ -45,9 +45,9 @@ namespace MediaBrowser.Providers.Music
                 using (var response = await MusicBrainzAlbumProvider.Current.GetMusicBrainzResponse(url, cancellationToken).ConfigureAwait(false))
                 await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    var results = GetResultsFromResponse(stream).ToList();
+                    var results = GetResultsFromResponse(stream);
 
-                    if (results.Count > 0)
+                    if (results.Any())
                     {
                         return results;
                     }
@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Music
 
                                         using (var subReader = reader.ReadSubtree())
                                         {
-                                            return ParseArtistList(subReader).ToList();
+                                            return ParseArtistList(subReader);
                                         }
                                     }
 

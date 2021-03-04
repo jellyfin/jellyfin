@@ -188,7 +188,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Releases?.Countries != null)
             {
-                var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification)).ToList();
+                var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification));
 
                 var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
                 var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
