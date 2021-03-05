@@ -2788,10 +2788,9 @@ namespace Emby.Server.Implementations.Library
                             continue;
                         }
 
-                        var substitutionResult = SubstitutePathInternal(path, pathInfo.Path, pathInfo.NetworkPath);
-                        if (substitutionResult.Item2)
+                        if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out var newPath))
                         {
-                            return substitutionResult.Item1;
+                            return newPath;
                         }
                     }
                 }
@@ -2802,22 +2801,22 @@ namespace Emby.Server.Implementations.Library
 
             if (!string.IsNullOrWhiteSpace(metadataPath) && !string.IsNullOrWhiteSpace(metadataNetworkPath))
             {
-                var metadataSubstitutionResult = SubstitutePathInternal(path, metadataPath, metadataNetworkPath);
-                if (metadataSubstitutionResult.Item2)
+                if (path.TryReplaceSubPath(metadataPath, metadataNetworkPath, out var newPath))
                 {
-                    return metadataSubstitutionResult.Item1;
+                    return newPath;
                 }
             }
 
             foreach (var map in _configurationManager.Configuration.PathSubstitutions)
             {
-                if (!string.IsNullOrWhiteSpace(map.From))
+                if (string.IsNullOrWhiteSpace(map.From))
                 {
-                    var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
-                    if (substitutionResult.Item2)
-                    {
-                        return substitutionResult.Item1;
-                    }
+                    continue;
+                }
+
+                if (path.TryReplaceSubPath(map.From, map.To, out var newPath))
+                {
+                    return newPath;
                 }
             }
 
@@ -2826,47 +2825,12 @@ namespace Emby.Server.Implementations.Library
 
         public string SubstitutePath(string path, string from, string to)
         {
-            return SubstitutePathInternal(path, from, to).Item1;
-        }
-
-        private Tuple<string, bool> SubstitutePathInternal(string path, string from, string to)
-        {
-            if (string.IsNullOrWhiteSpace(path))
+            if (path.TryReplaceSubPath(from, to, out var newPath))
             {
-                throw new ArgumentNullException(nameof(path));
+                return newPath;
             }
 
-            if (string.IsNullOrWhiteSpace(from))
-            {
-                throw new ArgumentNullException(nameof(from));
-            }
-
-            if (string.IsNullOrWhiteSpace(to))
-            {
-                throw new ArgumentNullException(nameof(to));
-            }
-
-            from = from.Trim();
-            to = to.Trim();
-
-            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
-            var changed = false;
-
-            if (!string.Equals(newPath, path, StringComparison.Ordinal))
-            {
-                if (to.IndexOf('/', StringComparison.Ordinal) != -1)
-                {
-                    newPath = newPath.Replace('\\', '/');
-                }
-                else
-                {
-                    newPath = newPath.Replace('/', '\\');
-                }
-
-                changed = true;
-            }
-
-            return new Tuple<string, bool>(newPath, changed);
+            return path;
         }
 
         private void SetExtraTypeFromFilename(Video item)
