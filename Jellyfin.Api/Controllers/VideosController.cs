@@ -217,9 +217,7 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest("Please supply at least two videos to merge.");
             }
 
-            var videosWithVersions = items.Where(i => i.MediaSourceCount > 1).ToList();
-
-            var primaryVersion = videosWithVersions.FirstOrDefault();
+            var primaryVersion = items.FirstOrDefault(i => i.MediaSourceCount > 1 && string.IsNullOrEmpty(i.PrimaryVersionId));
             if (primaryVersion == null)
             {
                 primaryVersion = items
