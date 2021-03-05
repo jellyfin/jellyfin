@@ -12,7 +12,7 @@ namespace Jellyfin.Api.Models.LibraryStructureDto
         /// Gets or sets the library name.
         /// </summary>
         [Required]
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets library folder path information.
