@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Jellyfin.Server;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -26,9 +25,9 @@ namespace Jellyfin.Server.Integration.Tests
         private readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JellyfinApplicationFactory"/> class.
+        /// Initializes static members of the <see cref="JellyfinApplicationFactory"/> class.
         /// </summary>
-        public JellyfinApplicationFactory()
+        static JellyfinApplicationFactory()
         {
             // Perform static initialization that only needs to happen once per test-run
             Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
