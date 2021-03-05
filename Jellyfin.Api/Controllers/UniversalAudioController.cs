@@ -112,7 +112,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxAudioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
             [FromQuery] bool? enableRemoteMedia,
-            [FromQuery] bool breakOnNonKeyFrames,
+            [FromQuery] bool breakOnNonKeyFrames = false,
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
