@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
   </ItemGroup>
 
