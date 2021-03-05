@@ -232,7 +232,10 @@ namespace Emby.Server.Implementations.TV
                         IsPlayed = false,
                         IsVirtualItem = false,
                         DtoOptions = dtoOptions
-                    }).Cast<Episode>().Where(episode => episode.AirsBeforeSeasonNumber != null || episode.AirsAfterSeasonNumber != null).ToList();
+                    })
+                    .Cast<Episode>()
+                    .Where(episode => episode.AirsBeforeSeasonNumber != null || episode.AirsAfterSeasonNumber != null)
+                    .ToList();
 
                     if (lastWatchedEpisode != null)
                     {
@@ -245,7 +248,8 @@ namespace Emby.Server.Implementations.TV
                         consideredEpisodes.Add(nextEpisode);
                     }
 
-                    var sortedConsideredEpisodes = _libraryManager.Sort(consideredEpisodes, user, new[] { (ItemSortBy.AiredEpisodeOrder, SortOrder.Ascending) }).Cast<Episode>();
+                    var sortedConsideredEpisodes = _libraryManager.Sort(consideredEpisodes, user, new[] { (ItemSortBy.AiredEpisodeOrder, SortOrder.Ascending) })
+                        .Cast<Episode>();
                     if (lastWatchedEpisode != null)
                     {
                         sortedConsideredEpisodes = sortedConsideredEpisodes.SkipWhile(episode => episode.Id != lastWatchedEpisode.Id).Skip(1);
