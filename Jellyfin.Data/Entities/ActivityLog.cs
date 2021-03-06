@@ -18,8 +18,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="name">The name.</param>
         /// <param name="type">The type.</param>
         /// <param name="userId">The user id.</param>
-        /// <param name="logLevel">The log level.</param>
-        public ActivityLog(string name, string type, Guid userId, LogLevel logLevel = LogLevel.Information)
+        public ActivityLog(string name, string type, Guid userId)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -35,15 +34,7 @@ namespace Jellyfin.Data.Entities
             Type = type;
             UserId = userId;
             DateCreated = DateTime.UtcNow;
-            LogSeverity = logLevel;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityLog"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected ActivityLog()
-        {
+            LogSeverity = LogLevel.Information;
         }
 
         /// <summary>

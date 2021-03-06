@@ -25,16 +25,6 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Library"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Library()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>

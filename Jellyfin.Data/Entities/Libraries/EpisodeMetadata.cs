@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -13,24 +12,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="episode">The episode.</param>
-        public EpisodeMetadata(string title, string language, Episode episode) : base(title, language)
-        {
-            if (episode == null)
-            {
-                throw new ArgumentNullException(nameof(episode));
-            }
-
-            episode.EpisodeMetadata.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EpisodeMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected EpisodeMetadata()
+        public EpisodeMetadata(string title, string language) : base(title, language)
         {
         }
 

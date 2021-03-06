@@ -29,13 +29,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemDisplayPreferences"/> class.
-        /// </summary>
-        protected ItemDisplayPreferences()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the Id.
         /// </summary>
         /// <remarks>

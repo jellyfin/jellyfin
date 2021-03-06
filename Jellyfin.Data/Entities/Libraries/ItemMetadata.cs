@@ -43,16 +43,6 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to being abstract.
-        /// </remarks>
-        protected ItemMetadata()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>

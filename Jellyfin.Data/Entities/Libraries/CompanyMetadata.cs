@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -13,21 +12,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="company">The company.</param>
-        public CompanyMetadata(string title, string language, Company company) : base(title, language)
-        {
-            if (company == null)
-            {
-                throw new ArgumentNullException(nameof(company));
-            }
-
-            company.CompanyMetadata.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CompanyMetadata"/> class.
-        /// </summary>
-        protected CompanyMetadata()
+        public CompanyMetadata(string title, string language) : base(title, language)
         {
         }
 

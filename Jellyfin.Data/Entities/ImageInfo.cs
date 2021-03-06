@@ -20,16 +20,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ImageInfo"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected ImageInfo()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>

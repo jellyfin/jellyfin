@@ -15,22 +15,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="title">The title or name of the album.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="album">The music album.</param>
-        public MusicAlbumMetadata(string title, string language, MusicAlbum album) : base(title, language)
+        public MusicAlbumMetadata(string title, string language) : base(title, language)
         {
             Labels = new HashSet<Company>();
-
-            album.MusicAlbumMetadata.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MusicAlbumMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MusicAlbumMetadata()
-        {
         }
 
         /// <summary>

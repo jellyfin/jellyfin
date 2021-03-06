@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -14,32 +13,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Genre"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="itemMetadata">The metadata.</param>
-        public Genre(string name, ItemMetadata itemMetadata)
+        public Genre(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             Name = name;
-
-            if (itemMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(itemMetadata));
-            }
-
-            itemMetadata.Genres.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Genre"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Genre()
-        {
         }
 
         /// <summary>

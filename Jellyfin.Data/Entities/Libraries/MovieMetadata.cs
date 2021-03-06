@@ -17,22 +17,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="title">The title or name of the movie.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="movie">The movie.</param>
-        public MovieMetadata(string title, string language, Movie movie) : base(title, language)
+        public MovieMetadata(string title, string language) : base(title, language)
         {
             Studios = new HashSet<Company>();
-
-            movie.MovieMetadata.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MovieMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MovieMetadata()
-        {
         }
 
         /// <summary>

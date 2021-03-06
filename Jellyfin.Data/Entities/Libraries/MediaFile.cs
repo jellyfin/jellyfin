@@ -19,8 +19,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="path">The path relative to the LibraryRoot.</param>
         /// <param name="kind">The file kind.</param>
-        /// <param name="release">The release.</param>
-        public MediaFile(string path, MediaFileKind kind, Release release)
+        public MediaFile(string path, MediaFileKind kind)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -30,24 +29,7 @@ namespace Jellyfin.Data.Entities.Libraries
             Path = path;
             Kind = kind;
 
-            if (release == null)
-            {
-                throw new ArgumentNullException(nameof(release));
-            }
-
-            release.MediaFiles.Add(this);
-
             MediaFileStreams = new HashSet<MediaFileStream>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MediaFile"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MediaFile()
-        {
         }
 
         /// <summary>

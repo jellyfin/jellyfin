@@ -15,22 +15,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Company"/> class.
         /// </summary>
-        /// <param name="owner">The owner of this company.</param>
-        public Company(IHasCompanies owner)
+        public Company()
         {
-            owner?.Companies.Add(this);
-
             CompanyMetadata = new HashSet<CompanyMetadata>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Company"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Company()
-        {
         }
 
         /// <summary>

@@ -24,14 +24,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Preference"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Preference()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id of this preference.
         /// </summary>
         /// <remarks>

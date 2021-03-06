@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -14,27 +13,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Rating"/> class.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="itemMetadata">The metadata.</param>
-        public Rating(double value, ItemMetadata itemMetadata)
+        public Rating(double value)
         {
             Value = value;
-
-            if (itemMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(itemMetadata));
-            }
-
-            itemMetadata.Ratings.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Rating"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Rating()
-        {
         }
 
         /// <summary>

@@ -18,8 +18,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="kind">The kind of art.</param>
-        /// <param name="owner">The owner.</param>
-        public Artwork(string path, ArtKind kind, IHasArtwork owner)
+        public Artwork(string path, ArtKind kind)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -28,18 +27,6 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Path = path;
             Kind = kind;
-
-            owner?.Artwork.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Artwork"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Artwork()
-        {
         }
 
         /// <summary>

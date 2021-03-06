@@ -78,14 +78,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="User"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected User()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the Id of the user.
         /// </summary>
         /// <remarks>

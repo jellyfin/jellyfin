@@ -1,6 +1,5 @@
 #pragma warning disable CA2227
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -18,27 +17,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="title">The title or name of the object.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="series">The series.</param>
-        public SeriesMetadata(string title, string language, Series series) : base(title, language)
+        public SeriesMetadata(string title, string language) : base(title, language)
         {
-            if (series == null)
-            {
-                throw new ArgumentNullException(nameof(series));
-            }
-
-            series.SeriesMetadata.Add(this);
-
             Networks = new HashSet<Company>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SeriesMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected SeriesMetadata()
-        {
         }
 
         /// <summary>

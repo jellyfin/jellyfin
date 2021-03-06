@@ -17,8 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="startTime">The start time for this chapter.</param>
-        /// <param name="release">The release.</param>
-        public Chapter(string language, long startTime, Release release)
+        public Chapter(string language, long startTime)
         {
             if (string.IsNullOrEmpty(language))
             {
@@ -27,23 +26,6 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Language = language;
             StartTime = startTime;
-
-            if (release == null)
-            {
-                throw new ArgumentNullException(nameof(release));
-            }
-
-            release.Chapters.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Chapter"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Chapter()
-        {
         }
 
         /// <summary>

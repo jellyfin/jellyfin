@@ -15,22 +15,15 @@ namespace Jellyfin.Data.Entities
         /// <param name="userId">The user id.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client.</param>
-        /// <param name="preferenceKey">The preference key.</param>
-        /// <param name="preferenceValue">The preference value.</param>
-        public CustomItemDisplayPreferences(Guid userId, Guid itemId, string client, string preferenceKey, string preferenceValue)
+        /// <param name="key">The preference key.</param>
+        /// <param name="value">The preference value.</param>
+        public CustomItemDisplayPreferences(Guid userId, Guid itemId, string client, string key, string value)
         {
             UserId = userId;
             ItemId = itemId;
             Client = client;
-            Key = preferenceKey;
-            Value = preferenceValue;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CustomItemDisplayPreferences"/> class.
-        /// </summary>
-        protected CustomItemDisplayPreferences()
-        {
+            Key = key;
+            Value = value;
         }
 
         /// <summary>

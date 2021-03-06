@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 
@@ -25,14 +24,6 @@ namespace Jellyfin.Data.Entities
             DayOfWeek = dayOfWeek;
             StartHour = startHour;
             EndHour = endHour;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AccessSchedule"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected AccessSchedule()
-        {
         }
 
         /// <summary>

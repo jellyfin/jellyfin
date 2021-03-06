@@ -33,16 +33,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Group"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Group()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id of this group.
         /// </summary>
         /// <remarks>

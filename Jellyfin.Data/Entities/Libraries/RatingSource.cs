@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -15,28 +14,10 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="minimumValue">The minimum value.</param>
         /// <param name="maximumValue">The maximum value.</param>
-        /// <param name="rating">The rating.</param>
-        public RatingSource(double minimumValue, double maximumValue, Rating rating)
+        public RatingSource(double minimumValue, double maximumValue)
         {
             MinimumValue = minimumValue;
             MaximumValue = maximumValue;
-
-            if (rating == null)
-            {
-                throw new ArgumentNullException(nameof(rating));
-            }
-
-            rating.RatingType = this;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RatingSource"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected RatingSource()
-        {
         }
 
         /// <summary>
