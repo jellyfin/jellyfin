@@ -805,7 +805,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         ImageType imageType = GetImageType(artType);
 
-                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri) || uri == null)
+                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
                         {
                             Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
                             break;
