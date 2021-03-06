@@ -85,7 +85,7 @@ Before the project can be built, you must first install the [.NET 5.0 SDK](https
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
-[ffmpeg](https://ffmpeg.org/download.html) will also need to be installed.
+[ffmpeg](https://github.com/jellyfin/jellyfin-ffmpeg) will also need to be installed.
 
 ### Cloning the Repository
 
