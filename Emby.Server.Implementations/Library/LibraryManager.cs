@@ -2783,11 +2783,6 @@ namespace Emby.Server.Implementations.Library
                 {
                     foreach (var pathInfo in libraryOptions.PathInfos)
                     {
-                        if (string.IsNullOrWhiteSpace(pathInfo.Path) || string.IsNullOrWhiteSpace(pathInfo.NetworkPath))
-                        {
-                            continue;
-                        }
-
                         if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out var newPath))
                         {
                             return newPath;
@@ -2809,11 +2804,6 @@ namespace Emby.Server.Implementations.Library
 
             foreach (var map in _configurationManager.Configuration.PathSubstitutions)
             {
-                if (string.IsNullOrWhiteSpace(map.From))
-                {
-                    continue;
-                }
-
                 if (path.TryReplaceSubPath(map.From, map.To, out var newPath))
                 {
                     return newPath;
