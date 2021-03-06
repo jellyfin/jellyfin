@@ -103,28 +103,18 @@ namespace Emby.Server.Implementations.Library
 
             // We have to ensure that the sub path ends with a directory separator otherwise we'll get weird results
             // when the sub path matches a similar but in-complete subpath
-            if (!subPath.EndsWith(newDirectorySeparatorChar))
+            var oldSubPathEndsWithSeparator = subPath[^1] == newDirectorySeparatorChar;
+            if (!path.StartsWith(subPath, StringComparison.OrdinalIgnoreCase)
+                || (!oldSubPathEndsWithSeparator && path[subPath.Length] != newDirectorySeparatorChar))
             {
-                subPath += newDirectorySeparatorChar;
-            }
-
-            if (newSubPath.Contains(oldDirectorySeparatorChar, StringComparison.Ordinal))
-            {
-                newSubPath = newSubPath.Replace(oldDirectorySeparatorChar, newDirectorySeparatorChar);
-            }
-
-            if (!newSubPath.EndsWith(newDirectorySeparatorChar))
-            {
-                newSubPath += newDirectorySeparatorChar;
-            }
-
-            if (!path.Contains(subPath, StringComparison.OrdinalIgnoreCase))
-            {
-                newPath = null;
                 return false;
             }
 
-            newPath = path.Replace(subPath, newSubPath, StringComparison.OrdinalIgnoreCase);
+            var newSubPathTrimmed = newSubPath.AsSpan().TrimEnd(newDirectorySeparatorChar);
+            // Ensure that the path with the old subpath removed starts with a leading dir separator
+            int idx = oldSubPathEndsWithSeparator ? subPath.Length - 1 : subPath.Length;
+            newPath = string.Concat(newSubPathTrimmed, path.AsSpan(idx));
+
             return true;
         }
     }
