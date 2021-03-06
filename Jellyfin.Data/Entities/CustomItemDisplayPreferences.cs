@@ -57,7 +57,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required. Max Length = 32.
         /// </remarks>
-        [Required]
         [MaxLength(32)]
         [StringLength(32)]
         public string Client { get; set; }
@@ -68,7 +67,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public string Key { get; set; }
 
         /// <summary>
@@ -77,7 +75,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public string Value { get; set; }
     }
 }

@@ -44,7 +44,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
-        [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Path { get; set; }

@@ -1,7 +1,6 @@
 #pragma warning disable CA2227
 
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -32,7 +31,6 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual ICollection<Company> Publishers { get; protected set; }
 
         /// <inheritdoc />
-        [NotMapped]
         public ICollection<Company> Companies => Publishers;
     }
 }

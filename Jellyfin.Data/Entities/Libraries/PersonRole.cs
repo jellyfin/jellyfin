@@ -17,9 +17,12 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
         /// <param name="type">The role type.</param>
-        public PersonRole(PersonRoleType type)
+        /// <param name="person">The person.</param>
+        public PersonRole(PersonRoleType type, Person person)
         {
             Type = type;
+            Person = person;
+            Artwork = new HashSet<Artwork>();
             Sources = new HashSet<MetadataProviderId>();
         }
 
@@ -40,7 +43,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         /// <summary>
         /// Gets or sets the person's role type.
@@ -60,7 +63,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public virtual Person Person { get; set; }
 
         /// <inheritdoc />

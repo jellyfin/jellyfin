@@ -39,7 +39,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         [MaxLength(512)]
         [StringLength(512)]
         public string Path { get; set; }

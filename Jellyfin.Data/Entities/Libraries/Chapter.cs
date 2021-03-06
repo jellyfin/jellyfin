@@ -45,7 +45,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the language.
@@ -54,7 +54,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Required, Min length = 3, Max length = 3
         /// ISO-639-3 3-character language codes.
         /// </remarks>
-        [Required]
         [MinLength(3)]
         [MaxLength(3)]
         [StringLength(3)]

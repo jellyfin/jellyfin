@@ -26,8 +26,8 @@ namespace Jellyfin.Api.Tests
         {
             var user = new User(
                 "jellyfin",
-                typeof(DefaultAuthenticationProvider).FullName,
-                typeof(DefaultPasswordResetProvider).FullName);
+                typeof(DefaultAuthenticationProvider).FullName!,
+                typeof(DefaultPasswordResetProvider).FullName!);
 
             // Set administrator flag.
             user.SetPermission(PermissionKind.IsAdministrator, role.Equals(UserRoles.Administrator, StringComparison.OrdinalIgnoreCase));

@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         /// <summary>
         /// Gets or sets the headquarters.
@@ -34,7 +34,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string Headquarters { get; set; }
+        public string? Headquarters { get; set; }
 
         /// <summary>
         /// Gets or sets the country code.
@@ -44,7 +44,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(2)]
         [StringLength(2)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets the homepage.
@@ -54,6 +54,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Homepage { get; set; }
+        public string? Homepage { get; set; }
     }
 }

@@ -352,8 +352,13 @@ namespace Emby.Drawing
         }
 
         /// <inheritdoc />
-        public string GetImageCacheTag(User user)
+        public string? GetImageCacheTag(User user)
         {
+            if (user.ProfileImage == null)
+            {
+                return null;
+            }
+
             return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
                 .ToString("N", CultureInfo.InvariantCulture);
         }

@@ -51,6 +51,7 @@ namespace Jellyfin.Data.Entities
             PasswordResetProviderId = passwordResetProviderId;
 
             AccessSchedules = new HashSet<AccessSchedule>();
+            DisplayPreferences = new HashSet<DisplayPreferences>();
             ItemDisplayPreferences = new HashSet<ItemDisplayPreferences>();
             // Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
@@ -92,7 +93,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Username { get; set; }
@@ -105,7 +105,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         /// <summary>
         /// Gets or sets the user's easy password, or <c>null</c> if none is set.
@@ -115,7 +115,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string EasyPassword { get; set; }
+        public string? EasyPassword { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
@@ -133,7 +133,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string AudioLanguagePreference { get; set; }
+        public string? AudioLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets the authentication provider id.
@@ -141,7 +141,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string AuthenticationProviderId { get; set; }
@@ -152,7 +151,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string PasswordResetProviderId { get; set; }
@@ -209,7 +207,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string SubtitleLanguagePreference { get; set; }
+        public string? SubtitleLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether missing episodes should be displayed.
@@ -304,7 +302,7 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
         // [ForeignKey("UserId")]
-        public virtual ImageInfo ProfileImage { get; set; }
+        public virtual ImageInfo? ProfileImage { get; set; }
 
         /// <summary>
         /// Gets or sets the user's display preferences.
@@ -312,8 +310,7 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
-        public virtual DisplayPreferences DisplayPreferences { get; set; }
+        public virtual ICollection<DisplayPreferences> DisplayPreferences { get; set; }
 
         /// <summary>
         /// Gets or sets the level of sync play permissions this user has.

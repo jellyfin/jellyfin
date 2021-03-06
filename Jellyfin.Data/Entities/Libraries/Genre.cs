@@ -33,7 +33,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Indexed, Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }

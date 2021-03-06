@@ -30,7 +30,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Outline { get; set; }
+        public string? Outline { get; set; }
 
         /// <summary>
         /// Gets or sets the plot.
@@ -40,7 +40,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Plot { get; set; }
+        public string? Plot { get; set; }
 
         /// <summary>
         /// Gets or sets the tagline.
@@ -50,7 +50,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Tagline { get; set; }
+        public string? Tagline { get; set; }
 
         /// <summary>
         /// Gets or sets the country code.
@@ -60,7 +60,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(2)]
         [StringLength(2)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the networks.
@@ -68,7 +68,6 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual ICollection<Company> Networks { get; protected set; }
 
         /// <inheritdoc />
-        [NotMapped]
         public ICollection<Company> Companies => Networks;
     }
 }

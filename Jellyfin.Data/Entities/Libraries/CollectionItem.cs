@@ -10,6 +10,15 @@ namespace Jellyfin.Data.Entities.Libraries
     public class CollectionItem : IHasConcurrencyToken
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionItem"/> class.
+        /// </summary>
+        /// <param name="libraryItem">The library item.</param>
+        public CollectionItem(LibraryItem libraryItem)
+        {
+            LibraryItem = libraryItem;
+        }
+
+        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>
@@ -36,7 +45,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// TODO check if this properly updated Dependant and has the proper principal relationship.
         /// </remarks>
-        public virtual CollectionItem Next { get; set; }
+        public virtual CollectionItem? Next { get; set; }
 
         /// <summary>
         /// Gets or sets the previous item in the collection.
@@ -44,7 +53,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// TODO check if this properly updated Dependant and has the proper principal relationship.
         /// </remarks>
-        public virtual CollectionItem Previous { get; set; }
+        public virtual CollectionItem? Previous { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

@@ -46,7 +46,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
-        [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Value { get; set; }

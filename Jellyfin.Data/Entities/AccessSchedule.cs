@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
@@ -33,8 +32,6 @@ namespace Jellyfin.Data.Entities
         /// Identity, Indexed, Required.
         /// </remarks>
         [XmlIgnore]
-        [Key]
-        [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 
@@ -42,28 +39,24 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the id of the associated user.
         /// </summary>
         [XmlIgnore]
-        [Required]
         public Guid UserId { get; protected set; }
 
         /// <summary>
         /// Gets or sets the day of week.
         /// </summary>
         /// <value>The day of week.</value>
-        [Required]
         public DynamicDayOfWeek DayOfWeek { get; set; }
 
         /// <summary>
         /// Gets or sets the start hour.
         /// </summary>
         /// <value>The start hour.</value>
-        [Required]
         public double StartHour { get; set; }
 
         /// <summary>
         /// Gets or sets the end hour.
         /// </summary>
         /// <value>The end hour.</value>
-        [Required]
         public double EndHour { get; set; }
 
         /// <summary>

@@ -45,7 +45,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 1024.
         /// </remarks>
-        [Required]
         [MaxLength(1024)]
         [StringLength(1024)]
         public string Name { get; set; }

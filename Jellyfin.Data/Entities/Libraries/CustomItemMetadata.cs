@@ -1,5 +1,3 @@
-using System;
-
 namespace Jellyfin.Data.Entities.Libraries
 {
     /// <summary>

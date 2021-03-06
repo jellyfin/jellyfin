@@ -44,7 +44,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public virtual Library Library { get; set; }
 
         /// <inheritdoc />

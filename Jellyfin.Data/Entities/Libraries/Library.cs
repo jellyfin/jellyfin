@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -14,14 +13,11 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Library"/> class.
         /// </summary>
         /// <param name="name">The name of the library.</param>
-        public Library(string name)
+        /// <param name="path">The path of the library.</param>
+        public Library(string name, string path)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
             Name = name;
+            Path = path;
         }
 
         /// <summary>
@@ -39,7 +35,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 128.
         /// </remarks>
-        [Required]
         [MaxLength(128)]
         [StringLength(128)]
         public string Name { get; set; }
@@ -50,7 +45,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public string Path { get; set; }
 
         /// <inheritdoc />

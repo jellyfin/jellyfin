@@ -48,7 +48,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Gets or sets the rating type.
         /// If this is <c>null</c> it's the internal user rating.
         /// </summary>
-        public virtual RatingSource RatingType { get; set; }
+        public virtual RatingSource? RatingType { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

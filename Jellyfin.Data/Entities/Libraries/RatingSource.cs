@@ -37,7 +37,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum value.
@@ -62,7 +62,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Gets or sets the metadata source.
         /// </summary>
-        public virtual MetadataProviderId Source { get; set; }
+        public virtual MetadataProviderId? Source { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

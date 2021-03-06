@@ -18,6 +18,7 @@ namespace Jellyfin.Data.Entities.Libraries
         public Company()
         {
             CompanyMetadata = new HashSet<CompanyMetadata>();
+            ChildCompanies = new HashSet<Company>();
         }
 
         /// <summary>
@@ -44,7 +45,6 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual ICollection<Company> ChildCompanies { get; protected set; }
 
         /// <inheritdoc />
-        [NotMapped]
         public ICollection<Company> Companies => ChildCompanies;
 
         /// <inheritdoc />

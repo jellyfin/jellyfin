@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Outline { get; set; }
+        public string? Outline { get; set; }
 
         /// <summary>
         /// Gets or sets the plot.
@@ -34,7 +34,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Plot { get; set; }
+        public string? Plot { get; set; }
 
         /// <summary>
         /// Gets or sets the tagline.
@@ -44,6 +44,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Tagline { get; set; }
+        public string? Tagline { get; set; }
     }
 }
