@@ -803,25 +803,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             break;
                         }
 
-                        ImageType imageType = artType switch
-                        {
-                            "banner" => ImageType.Banner,
-                            "clearlogo" => ImageType.Logo,
-                            "discart" => ImageType.Disc,
-                            "landscape" => ImageType.Thumb,
-                            "clearart" => ImageType.Art,
-                            // unknown type (including "poster") --> primary
-                            _ => ImageType.Primary,
-                        };
+                        ImageType imageType = GetImageType(artType);
 
-                        Uri uri;
-                        try
+                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri) || uri == null)
                         {
-                            uri = new Uri(val);
-                        }
-                        catch (UriFormatException ex)
-                        {
-                            Logger.LogError(ex, "Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
+                            Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
                             break;
                         }
 
@@ -1255,6 +1241,25 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             value = value.Trim().Trim(separator);
 
             return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <summary>
+        /// Parses the ImageType from the nfo aspect property.
+        /// </summary>
+        /// <param name="aspect">The nfo aspect property.</param>
+        /// <returns>The image type.</returns>
+        private static ImageType GetImageType(string aspect)
+        {
+            return aspect switch
+            {
+                "banner" => ImageType.Banner,
+                "clearlogo" => ImageType.Logo,
+                "discart" => ImageType.Disc,
+                "landscape" => ImageType.Thumb,
+                "clearart" => ImageType.Art,
+                // unknown type (including "poster") --> primary
+                _ => ImageType.Primary,
+            };
         }
     }
 }
