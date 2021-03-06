@@ -2776,6 +2776,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem)
         {
+            string newPath;
             if (ownerItem != null)
             {
                 var libraryOptions = GetLibraryOptions(ownerItem);
@@ -2783,7 +2784,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     foreach (var pathInfo in libraryOptions.PathInfos)
                     {
-                        if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out var newPath))
+                        if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out newPath))
                         {
                             return newPath;
                         }
@@ -2794,17 +2795,14 @@ namespace Emby.Server.Implementations.Library
             var metadataPath = _configurationManager.Configuration.MetadataPath;
             var metadataNetworkPath = _configurationManager.Configuration.MetadataNetworkPath;
 
-            if (!string.IsNullOrWhiteSpace(metadataPath) && !string.IsNullOrWhiteSpace(metadataNetworkPath))
+            if (path.TryReplaceSubPath(metadataPath, metadataNetworkPath, out newPath))
             {
-                if (path.TryReplaceSubPath(metadataPath, metadataNetworkPath, out var newPath))
-                {
-                    return newPath;
-                }
+                return newPath;
             }
 
             foreach (var map in _configurationManager.Configuration.PathSubstitutions)
             {
-                if (path.TryReplaceSubPath(map.From, map.To, out var newPath))
+                if (path.TryReplaceSubPath(map.From, map.To, out newPath))
                 {
                     return newPath;
                 }
