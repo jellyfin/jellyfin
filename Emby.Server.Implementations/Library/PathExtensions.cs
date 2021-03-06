@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Emby.Server.Implementations.Library
@@ -60,19 +61,11 @@ namespace Emby.Server.Implementations.Library
         /// <exception cref="ArgumentNullException"><paramref name="path" />, <paramref name="newSubPath" /> or <paramref name="newSubPath" /> is empty.</exception>
         public static bool TryReplaceSubPath(this string path, string subPath, string newSubPath, [NotNullWhen(true)] out string? newPath)
         {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
+            newPath = null;
 
-            if (string.IsNullOrWhiteSpace(subPath))
+            if (path.Length == 0 || subPath.Length == 0 || newSubPath.Length == 0 || subPath.Length > path.Length)
             {
-                throw new ArgumentNullException(nameof(subPath));
-            }
-
-            if (string.IsNullOrWhiteSpace(newSubPath))
-            {
-                throw new ArgumentNullException(nameof(newSubPath));
+                return false;
             }
 
             char oldDirectorySeparatorChar;
@@ -91,15 +84,8 @@ namespace Emby.Server.Implementations.Library
                 newDirectorySeparatorChar = '\\';
             }
 
-            if (path.Contains(oldDirectorySeparatorChar, StringComparison.Ordinal))
-            {
-                path = path.Replace(oldDirectorySeparatorChar, newDirectorySeparatorChar);
-            }
-
-            if (subPath.Contains(oldDirectorySeparatorChar, StringComparison.Ordinal))
-            {
-                subPath = subPath.Replace(oldDirectorySeparatorChar, newDirectorySeparatorChar);
-            }
+            path = path.Replace(oldDirectorySeparatorChar, newDirectorySeparatorChar);
+            subPath = subPath.Replace(oldDirectorySeparatorChar, newDirectorySeparatorChar);
 
             // We have to ensure that the sub path ends with a directory separator otherwise we'll get weird results
             // when the sub path matches a similar but in-complete subpath
