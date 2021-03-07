@@ -193,7 +193,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var resolved = false;
 
-            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 while (true)
                 {
