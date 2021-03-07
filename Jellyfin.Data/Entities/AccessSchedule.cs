@@ -58,18 +58,5 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <value>The end hour.</value>
         public double EndHour { get; set; }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="dayOfWeek">The day of the week.</param>
-        /// <param name="startHour">The start hour.</param>
-        /// <param name="endHour">The end hour.</param>
-        /// <param name="userId">The associated user's id.</param>
-        /// <returns>The newly created instance.</returns>
-        public static AccessSchedule Create(DynamicDayOfWeek dayOfWeek, double startHour, double endHour, Guid userId)
-        {
-            return new AccessSchedule(dayOfWeek, startHour, endHour, userId);
-        }
     }
 }
