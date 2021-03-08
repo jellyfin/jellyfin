@@ -43,6 +43,7 @@ using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
+using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Networking.Configuration;
@@ -99,6 +100,7 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
@@ -118,6 +120,7 @@ namespace Emby.Server.Implementations
         private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
         private readonly IFileSystem _fileSystemManager;
+        private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly IPluginManager _pluginManager;
@@ -133,9 +136,6 @@ namespace Emby.Server.Implementations
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
 
         public bool CoreStartupHasCompleted { get; private set; }
-
-        /// <inheritdoc />
-        public Uri PublishedServerUrl => _startupOptions.PublishedServerUrl;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -231,6 +231,11 @@ namespace Emby.Server.Implementations
         public int HttpsPort { get; private set; }
 
         /// <summary>
+        /// Gets the value of the PublishedServerUrl setting.
+        /// </summary>
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
+
+        /// <summary>
         /// Gets the server configuration manager.
         /// </summary>
         /// <value>The server configuration manager.</value>
@@ -242,12 +247,14 @@ namespace Emby.Server.Implementations
         /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
+        /// <param name="startupConfig">The <see cref="IConfiguration" /> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
+            IConfiguration startupConfig,
             IFileSystem fileSystem,
             IServiceCollection serviceCollection)
         {
@@ -270,6 +277,7 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
             _startupOptions = options;
+            _startupConfig = startupConfig;
 
             // Initialize runtime stat collection
             if (ServerConfigurationManager.Configuration.EnableMetrics)
@@ -1155,10 +1163,10 @@ namespace Emby.Server.Implementations
         public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
         {
             // Published server ends with a /
-            if (_startupOptions.PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+                return PublishedServerUrl.Trim('/');
             }
 
             string smart = NetManager.GetBindInterface(ipAddress, out port);
@@ -1175,10 +1183,10 @@ namespace Emby.Server.Implementations
         public string GetSmartApiUrl(HttpRequest request, int? port = null)
         {
             // Published server ends with a /
-            if (_startupOptions.PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+                return PublishedServerUrl.Trim('/');
             }
 
             string smart = NetManager.GetBindInterface(request, out port);
@@ -1195,10 +1203,10 @@ namespace Emby.Server.Implementations
         public string GetSmartApiUrl(string hostname, int? port = null)
         {
             // Published server ends with a /
-            if (_startupOptions.PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().Trim('/');
+                return PublishedServerUrl.Trim('/');
             }
 
             string smart = NetManager.GetBindInterface(hostname, out port);
