@@ -1247,7 +1247,7 @@ namespace Emby.Server.Implementations.Library
             {
                 // TODO: @bond use a ReadOnlySpan<char> here when Enum.TryParse supports it
                 // https://github.com/dotnet/runtime/issues/20008
-                if (Enum.TryParse<CollectionTypeOptions>(Path.GetExtension(file), true, out var res))
+                if (Enum.TryParse<CollectionTypeOptions>(Path.GetFileNameWithoutExtension(file), true, out var res))
                 {
                     return res;
                 }
@@ -3001,7 +3001,7 @@ namespace Emby.Server.Implementations.Library
 
                 if (collectionType != null)
                 {
-                    var path = Path.Combine(virtualFolderPath, collectionType.ToString() + ".collection");
+                    var path = Path.Combine(virtualFolderPath, collectionType.ToString().ToLowerInvariant() + ".collection");
 
                     File.WriteAllBytes(path, Array.Empty<byte>());
                 }
