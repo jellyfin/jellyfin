@@ -63,7 +63,7 @@ namespace Emby.Server.Implementations.Library
         {
             newPath = null;
 
-            if (path.Length == 0 || subPath.Length == 0 || newSubPath.Length == 0 || subPath.Length > path.Length)
+            if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(subPath) || string.IsNullOrEmpty(newSubPath) || subPath.Length > path.Length)
             {
                 return false;
             }
