@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.7.0~rc4
+Version:        10.7.0
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -137,35 +137,5 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
-* Sun Feb 21 2021 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.7.0-rc4; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.0-rc4
-* Sat Jan 23 2021 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.7.0-rc3; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.0-rc3
-* Thu Dec 31 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.7.0-rc2; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.0-rc2
-* Fri Dec 04 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.7.0-rc1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.0-rc1
-* Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
-- Forthcoming stable release
-* Mon Mar 23 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
-- Forthcoming stable release
-* Fri Oct 11 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.5.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.5.0
-* Sat Aug 31 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.4.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.4.0
-* Wed Jul 24 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.7; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.7
-* Sat Jul 06 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.6; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.6
-* Sun Jun 09 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.5; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.5
-* Thu Jun 06 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.4; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.4
-* Fri May 17 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.3; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.3
-* Tue Apr 30 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.2; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.2
-* Sat Apr 20 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.1; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.1
-* Fri Apr 19 2019 Jellyfin Packaging Team <packaging@jellyfin.org>
-- New upstream version 10.3.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.3.0
+* Mon Mar 08 2021 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.7.0; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.0
