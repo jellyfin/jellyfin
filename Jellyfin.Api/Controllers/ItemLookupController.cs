@@ -346,11 +346,12 @@ namespace Jellyfin.Api.Controllers
             Directory.CreateDirectory(directory);
             using (var stream = result.Content)
             {
+                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
                 await using var fileStream = new FileStream(
                     fullCachePath,
                     FileMode.Create,
                     FileAccess.Write,
-                    FileShare.Read,
+                    FileShare.None,
                     IODefaults.FileStreamBufferSize,
                     true);
 

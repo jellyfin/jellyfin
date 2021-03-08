@@ -1860,7 +1860,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1924,7 +1925,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
