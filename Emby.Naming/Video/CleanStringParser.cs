@@ -33,6 +33,12 @@ namespace Emby.Naming.Video
 
         private static bool TryClean(string name, Regex expression, out ReadOnlySpan<char> newName)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                newName = ReadOnlySpan<char>.Empty;
+                return false;
+            }
+
             var match = expression.Match(name);
             int index = match.Index;
             if (match.Success && index != 0)
@@ -41,7 +47,7 @@ namespace Emby.Naming.Video
                 return true;
             }
 
-            newName = string.Empty;
+            newName = ReadOnlySpan<char>.Empty;
             return false;
         }
     }
