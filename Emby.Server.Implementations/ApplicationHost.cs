@@ -43,6 +43,7 @@ using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
+using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Networking.Configuration;
@@ -233,7 +234,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the value of the PublishedServerUrl setting.
         /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig["PublishedServerUrl"];
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
 
         /// <summary>
         /// Gets the server configuration manager.
