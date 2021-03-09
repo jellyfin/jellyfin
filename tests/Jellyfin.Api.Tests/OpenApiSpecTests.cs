@@ -26,7 +26,7 @@ namespace Jellyfin.Api.Tests
             var client = _factory.CreateClient();
 
             // Act
-            var response = await client.GetAsync("/api-docs/openapi.json");
+            var response = await client.GetAsync("/api-docs/v1/openapi.json");
 
             // Assert
             response.EnsureSuccessStatusCode();
