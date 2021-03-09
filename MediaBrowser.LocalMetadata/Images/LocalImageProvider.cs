@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -59,8 +60,6 @@ namespace MediaBrowser.LocalMetadata.Images
         };
 
         private readonly IFileSystem _fileSystem;
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
@@ -436,7 +435,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var seasonMarker = seasonNumber.Value == 0
                                    ? "-specials"
-                                   : seasonNumber.Value.ToString("00", _usCulture);
+                                   : seasonNumber.Value.ToString("00", CultureDefault.USCulture);
 
             // Get this one directly from the file system since we have to go up a level
             if (!string.Equals(prefix, seasonMarker, StringComparison.OrdinalIgnoreCase))

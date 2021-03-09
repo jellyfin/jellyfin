@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Common.Net;
 
 namespace Emby.Dlna.PlayTo
@@ -18,8 +19,6 @@ namespace Emby.Dlna.PlayTo
     {
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
         private const string FriendlyName = "Jellyfin";
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IHttpClientFactory _httpClientFactory;
 
@@ -77,10 +76,10 @@ namespace Emby.Dlna.PlayTo
         {
             using var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
             options.Headers.UserAgent.ParseAdd(USERAGENT);
-            options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(_usCulture));
-            options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(_usCulture) + ">");
+            options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(CultureDefault.USCulture));
+            options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(CultureDefault.USCulture) + ">");
             options.Headers.TryAddWithoutValidation("NT", "upnp:event");
-            options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(_usCulture));
+            options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(CultureDefault.USCulture));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)

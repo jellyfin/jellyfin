@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -22,7 +23,6 @@ namespace Emby.Server.Implementations.MediaEncoder
 {
     public class EncodingManager : IEncodingManager
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<EncodingManager> _logger;
         private readonly IMediaEncoder _encoder;
@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
         private string GetChapterImagePath(Video video, long chapterPositionTicks)
         {
-            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
+            var filename = video.DateModified.Ticks.ToString(CultureDefault.USCulture) + "_" + chapterPositionTicks.ToString(CultureDefault.USCulture) + ".jpg";
 
             return Path.Combine(GetChapterImagesPath(video), filename);
         }

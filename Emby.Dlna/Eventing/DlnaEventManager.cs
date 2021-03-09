@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
@@ -22,8 +23,6 @@ namespace Emby.Dlna.Eventing
 
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public DlnaEventManager(ILogger logger, IHttpClientFactory httpClientFactory)
         {
@@ -86,7 +85,7 @@ namespace Emby.Dlna.Eventing
                 // Starts with SECOND-
                 header = header.Split('-')[^1];
 
-                if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
+                if (int.TryParse(header, NumberStyles.Integer, CultureDefault.USCulture, out var val))
                 {
                     return val;
                 }
@@ -117,7 +116,7 @@ namespace Emby.Dlna.Eventing
             };
 
             response.Headers["SID"] = subscriptionId;
-            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
+            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(CultureDefault.USCulture)) : requestedTimeoutString;
 
             return response;
         }
@@ -174,7 +173,7 @@ namespace Emby.Dlna.Eventing
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
             options.Headers.TryAddWithoutValidation("SID", subscription.Id);
-            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(_usCulture));
+            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(CultureDefault.USCulture));
 
             try
             {

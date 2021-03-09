@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -51,8 +52,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _userManager = userManager;
             _userDataManager = userDataManager;
         }
-
-        protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the logger.
@@ -246,7 +245,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     && !tmdbId.IsWhiteSpace()
                     && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                 {
-                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(UsCulture));
+                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(CultureDefault.USCulture));
                 }
             }
 
@@ -263,7 +262,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         && !tvdbId.IsWhiteSpace()
                         && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
                     {
-                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
+                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(CultureDefault.USCulture));
                     }
                 }
             }
@@ -331,7 +330,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrEmpty(text))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, UsCulture, out var value))
+                            if (float.TryParse(text, NumberStyles.Any, CultureDefault.USCulture, out var value))
                             {
                                 item.CriticRating = value;
                             }
@@ -392,7 +391,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var count))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureDefault.USCulture, out var count))
                             {
                                 userData.PlayCount = count;
                             }
@@ -497,7 +496,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, UsCulture, out var runtime))
+                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, CultureDefault.USCulture, out var runtime))
                             {
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
@@ -1110,7 +1109,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var intVal))
+                                    if (int.TryParse(val, NumberStyles.Integer, CultureDefault.USCulture, out var intVal))
                                     {
                                         sortOrder = intVal;
                                     }

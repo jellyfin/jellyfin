@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -20,8 +21,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class BaseItemXmlParser<T>
         where T : BaseItem
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private Dictionary<string, string>? _validProviderIds;
 
         /// <summary>
@@ -179,7 +178,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrEmpty(text))
                     {
-                        if (float.TryParse(text, NumberStyles.Any, _usCulture, out var value))
+                        if (float.TryParse(text, NumberStyles.Any, CultureDefault.USCulture, out var value))
                         {
                             item.CriticRating = value;
                         }
@@ -331,7 +330,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out var runtime))
+                        if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, CultureDefault.USCulture, out var runtime))
                         {
                             item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }
@@ -1135,7 +1134,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var intVal))
+                                if (int.TryParse(val, NumberStyles.Integer, CultureDefault.USCulture, out var intVal))
                                 {
                                     sortOrder = intVal;
                                 }

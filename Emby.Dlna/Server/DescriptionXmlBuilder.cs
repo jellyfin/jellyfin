@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security;
 using System.Text;
 using Emby.Dlna.Common;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Server
@@ -15,7 +16,6 @@ namespace Emby.Dlna.Server
     {
         private readonly DeviceProfile _profile;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _serverUdn;
         private readonly string _serverAddress;
         private readonly string _serverName;
@@ -193,10 +193,10 @@ namespace Emby.Dlna.Server
                     .Append(SecurityElement.Escape(icon.MimeType ?? string.Empty))
                     .Append("</mimetype>");
                 builder.Append("<width>")
-                    .Append(SecurityElement.Escape(icon.Width.ToString(_usCulture)))
+                    .Append(SecurityElement.Escape(icon.Width.ToString(CultureDefault.USCulture)))
                     .Append("</width>");
                 builder.Append("<height>")
-                    .Append(SecurityElement.Escape(icon.Height.ToString(_usCulture)))
+                    .Append(SecurityElement.Escape(icon.Height.ToString(CultureDefault.USCulture)))
                     .Append("</height>");
                 builder.Append("<depth>")
                     .Append(SecurityElement.Escape(icon.Depth ?? string.Empty))

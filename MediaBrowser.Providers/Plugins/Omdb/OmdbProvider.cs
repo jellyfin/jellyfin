@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Common.Net;
@@ -28,7 +29,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IApplicationHost _appHost;
         private readonly JsonSerializerOptions _jsonOptions;
 
@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureDefault.USCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -82,14 +82,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureDefault.USCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureDefault.USCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureDefault.USCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -183,14 +183,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureDefault.USCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureDefault.USCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json.Serialization;
+using MediaBrowser.Common.Culture;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -52,9 +53,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            var usCulture = new CultureInfo("en-US");
-
-            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out var year))
+            if (!int.TryParse(Name, NumberStyles.Integer, CultureDefault.USCulture, out var year))
             {
                 return new List<BaseItem>();
             }
