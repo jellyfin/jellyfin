@@ -216,11 +216,11 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <inheritdoc/>
-        public override bool Equals(IPAddress address)
+        public override bool Equals(IPAddress ip)
         {
-            if (address != null && !address.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
+            if (ip != null && !ip.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
             {
-                return address.Equals(Address);
+                return ip.Equals(Address);
             }
 
             return false;

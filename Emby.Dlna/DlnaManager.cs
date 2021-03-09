@@ -36,7 +36,7 @@ namespace Emby.Dlna
         private readonly ILogger<DlnaManager> _logger;
         private readonly IServerApplicationHost _appHost;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 

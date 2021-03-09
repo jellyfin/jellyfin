@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Formatters
         /// <summary>
         /// Initializes a new instance of the <see cref="PascalCaseJsonProfileFormatter"/> class.
         /// </summary>
-        public PascalCaseJsonProfileFormatter() : base(JsonDefaults.GetPascalCaseOptions())
+        public PascalCaseJsonProfileFormatter() : base(JsonDefaults.PascalCaseOptions)
         {
             SupportedMediaTypes.Clear();
             // Add application/json for default formatter

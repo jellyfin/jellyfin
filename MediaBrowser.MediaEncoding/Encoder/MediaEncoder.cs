@@ -86,7 +86,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _localization = localization;
             _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
-            _jsonSerializerOptions = JsonDefaults.GetOptions();
+            _jsonSerializerOptions = JsonDefaults.Options;
         }
 
         /// <inheritdoc />
