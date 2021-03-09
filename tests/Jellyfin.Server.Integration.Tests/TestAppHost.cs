@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Api.Tests
+namespace Jellyfin.Server.Integration.Tests
 {
     /// <summary>
     /// Implementation of the abstract <see cref="ApplicationHost" /> class.
