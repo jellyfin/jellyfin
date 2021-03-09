@@ -15,6 +15,6 @@ namespace MediaBrowser.Common.Culture
         /// <summary>
         /// US Culture Info.
         /// </summary>
-        public static readonly CultureInfo USCulture = new ("en-US");
+        public static readonly CultureInfo USCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
     }
 }
