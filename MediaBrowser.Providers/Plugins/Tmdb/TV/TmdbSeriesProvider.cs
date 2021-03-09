@@ -207,7 +207,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 // ParseName is required here.
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
-                var searchResults = await _tmdbClientManager.SearchSeriesAsync(parsedName.Name, info.MetadataLanguage, info.Year ?? 0, cancellationToken).ConfigureAwait(false);
+                var searchResults = await _tmdbClientManager.SearchSeriesAsync(parsedName.Name, info.MetadataLanguage, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
