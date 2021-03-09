@@ -157,15 +157,16 @@ namespace Jellyfin.Networking.Manager
         /// Creates a new network collection.
         /// </summary>
         /// <param name="source">Items to assign the collection, or null.</param>
+        /// <param name="unique"><c>True</c> if subnets that overlap should be merged (default).</param>
         /// <returns>The collection created.</returns>
-        public static Collection<IPObject> CreateCollection(IEnumerable<IPObject>? source = null)
+        public static Collection<IPObject> CreateCollection(IEnumerable<IPObject>? source = null, bool unique = true)
         {
             var result = new Collection<IPObject>();
             if (source != null)
             {
                 foreach (var item in source)
                 {
-                    result.AddItem(item);
+                    result.AddItem(item, unique);
                 }
             }
 
@@ -386,10 +387,12 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Get the first LAN interface address that isn't a loopback.
-            var interfaces = CreateCollection(_interfaceAddresses
-                .Exclude(_bindExclusions)
-                .Where(IsInLocalNetwork)
-                .OrderBy(p => p.Tag));
+            var interfaces = CreateCollection(
+                _interfaceAddresses
+                    .Exclude(_bindExclusions)
+                    .Where(IsInLocalNetwork)
+                    .OrderBy(p => p.Tag),
+                false);
 
             if (interfaces.Count > 0)
             {
@@ -429,11 +432,11 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Count > 0)
                 {
                     // Return all the internal interfaces except the ones excluded.
-                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)));
+                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)), false);
                 }
 
                 // No bind address, so return all internal interfaces.
-                return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
+                return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()), false);
             }
 
             return new Collection<IPObject>(_bindAddresses);
@@ -555,7 +558,7 @@ namespace Jellyfin.Networking.Manager
                         && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        result.AddItem(iface);
+                        result.AddItem(iface, false);
                     }
                 }
 
@@ -599,8 +602,8 @@ namespace Jellyfin.Networking.Manager
                     var address = IPNetAddress.Parse(parts[0]);
                     var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                     address.Tag = index;
-                    _interfaceAddresses.AddItem(address);
-                    _interfaceNames.Add(parts[2], Math.Abs(index));
+                    _interfaceAddresses.AddItem(address, false);
+                    _interfaceNames[parts[2]] = Math.Abs(index);
                 }
             }
 
@@ -977,7 +980,7 @@ namespace Jellyfin.Networking.Manager
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
                     // Internal interfaces must be private and not excluded.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)), false);
 
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = new Collection<IPObject>();
@@ -1012,7 +1015,7 @@ namespace Jellyfin.Networking.Manager
                     }
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)), false);
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
@@ -1071,7 +1074,7 @@ namespace Jellyfin.Networking.Manager
                                         nw.Tag *= -1;
                                     }
 
-                                    _interfaceAddresses.AddItem(nw);
+                                    _interfaceAddresses.AddItem(nw, false);
 
                                     // Store interface name so we can use the name in Collections.
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
@@ -1092,7 +1095,7 @@ namespace Jellyfin.Networking.Manager
                                         nw.Tag *= -1;
                                     }
 
-                                    _interfaceAddresses.AddItem(nw);
+                                    _interfaceAddresses.AddItem(nw, false);
 
                                     // Store interface name so we can use the name in Collections.
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
@@ -1126,10 +1129,10 @@ namespace Jellyfin.Networking.Manager
                         {
                             _logger.LogWarning("No interfaces information available. Using loopback.");
                             // Last ditch attempt - use loopback address.
-                            _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
+                            _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
                             if (IsIP6Enabled)
                             {
-                                _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
+                                _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
                             }
                         }
                     }
