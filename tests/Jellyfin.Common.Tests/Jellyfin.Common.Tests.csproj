@@ -10,6 +10,8 @@
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +23,6 @@
 
   <!-- Code Analyzers -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" PrivateAssets="All" />
     <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
@@ -31,9 +32,5 @@
     <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
     <ProjectReference Include="../../MediaBrowser.Providers/MediaBrowser.Providers.csproj" />
   </ItemGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
 
 </Project>

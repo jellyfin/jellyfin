@@ -166,19 +166,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <inheritdoc />
         public abstract bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
 
-        protected virtual List<string> GetTagsUsed(BaseItem item)
+        protected virtual IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = new List<string>();
             foreach (var providerKey in item.ProviderIds.Keys)
             {
                 var providerIdTagName = GetTagForProviderKey(providerKey);
                 if (!_commonTags.Contains(providerIdTagName))
                 {
-                    list.Add(providerIdTagName);
+                    yield return providerIdTagName;
                 }
             }
-
-            return list;
         }
 
         /// <inheritdoc />
@@ -261,7 +258,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     AddMediaInfo(hasMediaSources, writer);
                 }
 
-                var tagsUsed = GetTagsUsed(item);
+                var tagsUsed = GetTagsUsed(item).ToList();
 
                 try
                 {
@@ -351,10 +348,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
 
                 var scanType = stream.IsInterlaced ? "interlaced" : "progressive";
-                if (!string.IsNullOrEmpty(scanType))
-                {
-                    writer.WriteElementString("scantype", scanType);
-                }
+                writer.WriteElementString("scantype", scanType);
 
                 if (stream.Channels.HasValue)
                 {
@@ -968,7 +962,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
-        private void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger<BaseNfoSaver> logger)
+        private void AddCustomTags(string path, IReadOnlyCollection<string> xmlTagsUsed, XmlWriter writer, ILogger<BaseNfoSaver> logger)
         {
             var settings = new XmlReaderSettings()
             {

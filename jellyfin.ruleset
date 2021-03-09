@@ -38,7 +38,7 @@
     <Rule Id="SA1633" Action="None" />
   </Rules>
 
-  <Rules AnalyzerId="Microsoft.CodeAnalysis.FxCopAnalyzers" RuleNamespace="Microsoft.Design">
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.Design">
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
@@ -53,6 +53,8 @@
     <Rule Id="CA1716" Action="Info" />
     <!-- disable warning CA1720: Identifiers should not contain type names -->
     <Rule Id="CA1720" Action="Info" />
+    <!-- disable warning CA1805: Do not initialize unnecessarily -->
+    <Rule Id="CA1805" Action="Info" />
     <!-- disable warning CA1812: internal class that is apparently never instantiated.
         If so, remove the code from the assembly.
         If this class is intended to contain only static members, make it static -->
@@ -61,7 +63,11 @@
     <Rule Id="CA1822" Action="Info" />
     <!-- disable warning CA2000: Dispose objects before losing scope -->
     <Rule Id="CA2000" Action="Info" />
+    <!-- disable warning CA5394: Do not use insecure randomness -->
+    <Rule Id="CA5394" Action="Info" />
 
+    <!-- disable warning CA1014: Mark assemblies with CLSCompliantAttribute -->
+    <Rule Id="CA1014" Action="Info" />
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />
     <!-- disable warning CA1055: URI return values should not be strings -->

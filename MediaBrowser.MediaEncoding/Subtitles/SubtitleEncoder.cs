@@ -25,7 +25,7 @@ using UtfUnknown;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
-    public class SubtitleEncoder : ISubtitleEncoder
+    public sealed class SubtitleEncoder : ISubtitleEncoder
     {
         private readonly ILogger<SubtitleEncoder> _logger;
         private readonly IApplicationPaths _appPaths;
@@ -484,7 +484,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 _logger.LogError("ffmpeg subtitle conversion failed for {Path}", inputPath);
 
-                throw new Exception(
+                throw new FfmpegException(
                     string.Format(CultureInfo.InvariantCulture, "ffmpeg subtitle conversion failed for {0}", inputPath));
             }
 
@@ -637,7 +637,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 _logger.LogError(msg);
 
-                throw new Exception(msg);
+                throw new FfmpegException(msg);
             }
             else
             {
