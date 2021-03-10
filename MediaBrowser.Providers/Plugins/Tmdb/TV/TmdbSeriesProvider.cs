@@ -43,9 +43,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
-
-            if (!string.IsNullOrEmpty(tmdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbId))
             {
                 var series = await _tmdbClientManager
                     .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, cancellationToken)
@@ -59,9 +57,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
-
-            if (!string.IsNullOrEmpty(imdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out var imdbId))
             {
                 var findResult = await _tmdbClientManager
                     .FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, searchInfo.MetadataLanguage, cancellationToken)
@@ -82,9 +78,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvdbId = searchInfo.GetProviderId(MetadataProvider.Tvdb);
-
-            if (!string.IsNullOrEmpty(tvdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tvdb, out var tvdbId))
             {
                 var findResult = await _tmdbClientManager
                     .FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, searchInfo.MetadataLanguage, cancellationToken)
@@ -171,33 +165,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrEmpty(tmdbId) && info.TryGetProviderId(MetadataProvider.Imdb, out var imdbId))
             {
-                var imdbId = info.GetProviderId(MetadataProvider.Imdb);
-
-                if (!string.IsNullOrEmpty(imdbId))
+                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (searchResult?.TvResults.Count > 0)
                 {
-                    var searchResult = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                    if (searchResult != null)
-                    {
-                        tmdbId = searchResult.TvResults.FirstOrDefault()?.Id.ToString(CultureInfo.InvariantCulture);
-                    }
+                    tmdbId = searchResult.TvResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrEmpty(tmdbId) && info.TryGetProviderId(MetadataProvider.Tvdb, out var tvdbId))
             {
-                var tvdbId = info.GetProviderId(MetadataProvider.Tvdb);
-
-                if (!string.IsNullOrEmpty(tvdbId))
+                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (searchResult?.TvResults.Count > 0)
                 {
-                    var searchResult = await _tmdbClientManager.FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                    if (searchResult != null)
-                    {
-                        tmdbId = searchResult.TvResults.FirstOrDefault()?.Id.ToString(CultureInfo.InvariantCulture);
-                    }
+                    tmdbId = searchResult.TvResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
@@ -215,32 +197,34 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (!string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrEmpty(tmdbId))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var tvShow = await _tmdbClientManager
-                    .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
-                    .ConfigureAwait(false);
-
-                result = new MetadataResult<Series>
-                {
-                    Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
-                    ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
-                };
-
-                foreach (var person in GetPersons(tvShow))
-                {
-                    result.AddPerson(person);
-                }
-
-                result.HasMetadata = result.Item != null;
+                return result;
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var tvShow = await _tmdbClientManager
+                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .ConfigureAwait(false);
+
+            result = new MetadataResult<Series>
+            {
+                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
+                ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
+            };
+
+            foreach (var person in GetPersons(tvShow))
+            {
+                result.AddPerson(person);
+            }
+
+            result.HasMetadata = result.Item != null;
 
             return result;
         }
 
-        private Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
         {
             var series = new Series
             {
