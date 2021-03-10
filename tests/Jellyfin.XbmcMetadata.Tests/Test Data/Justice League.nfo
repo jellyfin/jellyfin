@@ -91,7 +91,8 @@
     </fanart>
     <mpaa>Australia:M</mpaa>
     <id>tt0974015</id>
-    <uniqueid type="imdb" default="true">tt0974015</uniqueid>
+    <uniqueid type="imdb">tt0974015</uniqueid>
+    <uniqueid type="tmdb">141052</uniqueid>
     <genre>Action</genre>
     <genre>Adventure</genre>
     <genre>Fantasy</genre>
