@@ -85,7 +85,7 @@ namespace Emby.Dlna.Eventing
                 // Starts with SECOND-
                 header = header.Split('-')[^1];
 
-                if (int.TryParse(header, NumberStyles.Integer, CultureDefault.USCulture, out var val))
+                if (int.TryParse(header, NumberStyles.Integer, CultureDefault.UsCulture, out var val))
                 {
                     return val;
                 }
@@ -116,7 +116,7 @@ namespace Emby.Dlna.Eventing
             };
 
             response.Headers["SID"] = subscriptionId;
-            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(CultureDefault.USCulture)) : requestedTimeoutString;
+            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(CultureDefault.UsCulture)) : requestedTimeoutString;
 
             return response;
         }
@@ -173,7 +173,7 @@ namespace Emby.Dlna.Eventing
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
             options.Headers.TryAddWithoutValidation("SID", subscription.Id);
-            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(CultureDefault.USCulture));
+            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(CultureDefault.UsCulture));
 
             try
             {

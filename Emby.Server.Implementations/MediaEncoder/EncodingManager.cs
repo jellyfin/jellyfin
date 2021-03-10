@@ -197,7 +197,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
         private string GetChapterImagePath(Video video, long chapterPositionTicks)
         {
-            var filename = video.DateModified.Ticks.ToString(CultureDefault.USCulture) + "_" + chapterPositionTicks.ToString(CultureDefault.USCulture) + ".jpg";
+            var filename = video.DateModified.Ticks.ToString(CultureDefault.UsCulture) + "_" + chapterPositionTicks.ToString(CultureDefault.UsCulture) + ".jpg";
 
             return Path.Combine(GetChapterImagesPath(video), filename);
         }

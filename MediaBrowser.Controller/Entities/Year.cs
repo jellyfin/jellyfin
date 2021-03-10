@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            if (!int.TryParse(Name, NumberStyles.Integer, CultureDefault.USCulture, out var year))
+            if (!int.TryParse(Name, NumberStyles.Integer, CultureDefault.UsCulture, out var year))
             {
                 return new List<BaseItem>();
             }

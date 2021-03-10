@@ -178,7 +178,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrEmpty(text))
                     {
-                        if (float.TryParse(text, NumberStyles.Any, CultureDefault.USCulture, out var value))
+                        if (float.TryParse(text, NumberStyles.Any, CultureDefault.UsCulture, out var value))
                         {
                             item.CriticRating = value;
                         }
@@ -330,7 +330,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, CultureDefault.USCulture, out var runtime))
+                        if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, CultureDefault.UsCulture, out var runtime))
                         {
                             item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }
@@ -1134,7 +1134,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                if (int.TryParse(val, NumberStyles.Integer, CultureDefault.USCulture, out var intVal))
+                                if (int.TryParse(val, NumberStyles.Integer, CultureDefault.UsCulture, out var intVal))
                                 {
                                     sortOrder = intVal;
                                 }

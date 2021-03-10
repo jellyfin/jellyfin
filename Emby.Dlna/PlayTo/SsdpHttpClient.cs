@@ -76,10 +76,10 @@ namespace Emby.Dlna.PlayTo
         {
             using var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
             options.Headers.UserAgent.ParseAdd(USERAGENT);
-            options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(CultureDefault.USCulture));
-            options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(CultureDefault.USCulture) + ">");
+            options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(CultureDefault.UsCulture));
+            options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(CultureDefault.UsCulture) + ">");
             options.Headers.TryAddWithoutValidation("NT", "upnp:event");
-            options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(CultureDefault.USCulture));
+            options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(CultureDefault.UsCulture));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)

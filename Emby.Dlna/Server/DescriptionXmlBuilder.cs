@@ -193,10 +193,10 @@ namespace Emby.Dlna.Server
                     .Append(SecurityElement.Escape(icon.MimeType ?? string.Empty))
                     .Append("</mimetype>");
                 builder.Append("<width>")
-                    .Append(SecurityElement.Escape(icon.Width.ToString(CultureDefault.USCulture)))
+                    .Append(SecurityElement.Escape(icon.Width.ToString(CultureDefault.UsCulture)))
                     .Append("</width>");
                 builder.Append("<height>")
-                    .Append(SecurityElement.Escape(icon.Height.ToString(CultureDefault.USCulture)))
+                    .Append(SecurityElement.Escape(icon.Height.ToString(CultureDefault.UsCulture)))
                     .Append("</height>");
                 builder.Append("<depth>")
                     .Append(SecurityElement.Escape(icon.Depth ?? string.Empty))

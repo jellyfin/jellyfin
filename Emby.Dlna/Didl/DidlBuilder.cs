@@ -313,7 +313,7 @@ namespace Emby.Dlna.Didl
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
-                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", CultureDefault.USCulture));
+                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", CultureDefault.UsCulture));
             }
 
             if (filter.Contains("res@size"))
@@ -324,7 +324,7 @@ namespace Emby.Dlna.Didl
 
                     if (size.HasValue)
                     {
-                        writer.WriteAttributeString("size", size.Value.ToString(CultureDefault.USCulture));
+                        writer.WriteAttributeString("size", size.Value.ToString(CultureDefault.UsCulture));
                     }
                 }
             }
@@ -338,7 +338,7 @@ namespace Emby.Dlna.Didl
 
             if (targetChannels.HasValue)
             {
-                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(CultureDefault.USCulture));
+                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (filter.Contains("res@resolution"))
@@ -357,12 +357,12 @@ namespace Emby.Dlna.Didl
 
             if (targetSampleRate.HasValue)
             {
-                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(CultureDefault.USCulture));
+                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (totalBitrate.HasValue)
             {
-                writer.WriteAttributeString("bitrate", totalBitrate.Value.ToString(CultureDefault.USCulture));
+                writer.WriteAttributeString("bitrate", totalBitrate.Value.ToString(CultureDefault.UsCulture));
             }
 
             var mediaProfile = _profile.GetVideoMediaProfile(
@@ -548,7 +548,7 @@ namespace Emby.Dlna.Didl
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
-                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", CultureDefault.USCulture));
+                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", CultureDefault.UsCulture));
             }
 
             if (filter.Contains("res@size"))
@@ -559,7 +559,7 @@ namespace Emby.Dlna.Didl
 
                     if (size.HasValue)
                     {
-                        writer.WriteAttributeString("size", size.Value.ToString(CultureDefault.USCulture));
+                        writer.WriteAttributeString("size", size.Value.ToString(CultureDefault.UsCulture));
                     }
                 }
             }
@@ -571,17 +571,17 @@ namespace Emby.Dlna.Didl
 
             if (targetChannels.HasValue)
             {
-                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(CultureDefault.USCulture));
+                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (targetSampleRate.HasValue)
             {
-                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(CultureDefault.USCulture));
+                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (targetAudioBitrate.HasValue)
             {
-                writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(CultureDefault.USCulture));
+                writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(CultureDefault.UsCulture));
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(
@@ -634,7 +634,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("searchable", "1");
-            writer.WriteAttributeString("childCount", childCount.ToString(CultureDefault.USCulture));
+            writer.WriteAttributeString("childCount", childCount.ToString(CultureDefault.UsCulture));
 
             var clientId = GetClientId(folder, stubType);
 
@@ -926,11 +926,11 @@ namespace Emby.Dlna.Didl
 
             if (item.IndexNumber.HasValue)
             {
-                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(CultureDefault.USCulture), NsUpnp);
+                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(CultureDefault.UsCulture), NsUpnp);
 
                 if (item is Episode)
                 {
-                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(CultureDefault.USCulture), NsUpnp);
+                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(CultureDefault.UsCulture), NsUpnp);
                 }
             }
         }

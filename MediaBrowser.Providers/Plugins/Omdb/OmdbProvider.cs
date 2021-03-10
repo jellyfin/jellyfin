@@ -68,7 +68,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureDefault.USCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureDefault.UsCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -82,14 +82,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureDefault.USCulture, out var voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureDefault.UsCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureDefault.USCulture, out var imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureDefault.UsCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureDefault.USCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureDefault.UsCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -183,14 +183,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureDefault.USCulture, out var voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureDefault.UsCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureDefault.USCulture, out var imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureDefault.UsCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;

@@ -680,7 +680,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetAudioStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out string index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, CultureDefault.USCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureDefault.UsCulture, out var val))
                         {
                             return SetAudioStreamIndex(val);
                         }
@@ -692,7 +692,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetSubtitleStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, CultureDefault.USCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureDefault.UsCulture, out var val))
                         {
                             return SetSubtitleStreamIndex(val);
                         }
@@ -704,7 +704,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetVolume:
                     if (command.Arguments.TryGetValue("Volume", out string vol))
                     {
-                        if (int.TryParse(vol, NumberStyles.Integer, CultureDefault.USCulture, out var volume))
+                        if (int.TryParse(vol, NumberStyles.Integer, CultureDefault.UsCulture, out var volume))
                         {
                             return _device.SetVolume(volume, cancellationToken);
                         }

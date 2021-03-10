@@ -59,17 +59,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (episode.IndexNumber.HasValue)
             {
-                writer.WriteElementString("episode", episode.IndexNumber.Value.ToString(CultureDefault.USCulture));
+                writer.WriteElementString("episode", episode.IndexNumber.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (episode.IndexNumberEnd.HasValue)
             {
-                writer.WriteElementString("episodenumberend", episode.IndexNumberEnd.Value.ToString(CultureDefault.USCulture));
+                writer.WriteElementString("episodenumberend", episode.IndexNumberEnd.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (episode.ParentIndexNumber.HasValue)
             {
-                writer.WriteElementString("season", episode.ParentIndexNumber.Value.ToString(CultureDefault.USCulture));
+                writer.WriteElementString("season", episode.ParentIndexNumber.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (episode.PremiereDate.HasValue)
@@ -83,28 +83,28 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 if (episode.AirsAfterSeasonNumber.HasValue && episode.AirsAfterSeasonNumber.Value != -1)
                 {
-                    writer.WriteElementString("airsafter_season", episode.AirsAfterSeasonNumber.Value.ToString(CultureDefault.USCulture));
+                    writer.WriteElementString("airsafter_season", episode.AirsAfterSeasonNumber.Value.ToString(CultureDefault.UsCulture));
                 }
 
                 if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
                 {
-                    writer.WriteElementString("airsbefore_episode", episode.AirsBeforeEpisodeNumber.Value.ToString(CultureDefault.USCulture));
+                    writer.WriteElementString("airsbefore_episode", episode.AirsBeforeEpisodeNumber.Value.ToString(CultureDefault.UsCulture));
                 }
 
                 if (episode.AirsBeforeSeasonNumber.HasValue && episode.AirsBeforeSeasonNumber.Value != -1)
                 {
-                    writer.WriteElementString("airsbefore_season", episode.AirsBeforeSeasonNumber.Value.ToString(CultureDefault.USCulture));
+                    writer.WriteElementString("airsbefore_season", episode.AirsBeforeSeasonNumber.Value.ToString(CultureDefault.UsCulture));
                 }
 
                 if (episode.AirsBeforeEpisodeNumber.HasValue && episode.AirsBeforeEpisodeNumber.Value != -1)
                 {
-                    writer.WriteElementString("displayepisode", episode.AirsBeforeEpisodeNumber.Value.ToString(CultureDefault.USCulture));
+                    writer.WriteElementString("displayepisode", episode.AirsBeforeEpisodeNumber.Value.ToString(CultureDefault.UsCulture));
                 }
 
                 var specialSeason = episode.AiredSeasonNumber;
                 if (specialSeason.HasValue && specialSeason.Value != -1)
                 {
-                    writer.WriteElementString("displayseason", specialSeason.Value.ToString(CultureDefault.USCulture));
+                    writer.WriteElementString("displayseason", specialSeason.Value.ToString(CultureDefault.UsCulture));
                 }
             }
         }

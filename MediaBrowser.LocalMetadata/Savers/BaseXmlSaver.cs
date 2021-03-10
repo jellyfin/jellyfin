@@ -218,7 +218,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.CriticRating.HasValue)
             {
-                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(CultureDefault.USCulture));
+                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
@@ -303,12 +303,12 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.CommunityRating.HasValue)
             {
-                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(CultureDefault.USCulture));
+                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (item.ProductionYear.HasValue && !(item is Person))
             {
-                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(CultureDefault.USCulture));
+                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(CultureDefault.UsCulture));
             }
 
             var hasAspectRatio = item as IHasAspectRatio;
@@ -337,7 +337,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 var timespan = TimeSpan.FromTicks(runTimeTicks!.Value);
 
-                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(CultureDefault.USCulture));
+                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(CultureDefault.UsCulture));
             }
 
             if (item.ProviderIds != null)
@@ -410,7 +410,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     if (person.SortOrder.HasValue)
                     {
-                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(CultureDefault.USCulture));
+                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(CultureDefault.UsCulture));
                     }
 
                     writer.WriteEndElement();

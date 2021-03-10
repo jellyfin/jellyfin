@@ -735,7 +735,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string GetTimeParameter(TimeSpan time)
         {
-            return time.ToString(@"hh\:mm\:ss\.fff", CultureDefault.USCulture);
+            return time.ToString(@"hh\:mm\:ss\.fff", CultureDefault.UsCulture);
         }
 
         public async Task ExtractVideoImagesOnInterval(
@@ -752,11 +752,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
 
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureDefault.USCulture);
+            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureDefault.UsCulture);
 
             if (maxWidth.HasValue)
             {
-                var maxWidthParam = maxWidth.Value.ToString(CultureDefault.USCulture);
+                var maxWidthParam = maxWidth.Value.ToString(CultureDefault.UsCulture);
 
                 vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }
