@@ -148,6 +148,15 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 }
             }
 
+            if (string.IsNullOrEmpty(tmdbId) && !string.IsNullOrEmpty(imdbId))
+            {
+                var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (movieResultFromImdbId?.MovieResults.Count > 0)
+                {
+                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString();
+                }
+            }
+
             if (string.IsNullOrEmpty(tmdbId))
             {
                 return new MetadataResult<Movie>();
