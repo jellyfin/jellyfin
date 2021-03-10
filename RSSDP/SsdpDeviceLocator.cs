@@ -31,7 +31,7 @@ namespace Rssdp.Infrastructure
             {
                 throw new ArgumentNullException(nameof(communicationsServer));
             }
-            
+
             _CommunicationsServer = communicationsServer;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
 
