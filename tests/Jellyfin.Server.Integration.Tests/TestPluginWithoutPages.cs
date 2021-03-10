@@ -6,7 +6,7 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
-namespace Jellyfin.Api.Tests
+namespace Jellyfin.Server.Integration.Tests
 {
     public class TestPluginWithoutPages : BasePlugin<BasePluginConfiguration>
     {

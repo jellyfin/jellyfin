@@ -4,17 +4,17 @@ using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Jellyfin.Server;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Extensions.Logging;
 
-namespace Jellyfin.Api.Tests
+namespace Jellyfin.Server.Integration.Tests
 {
     /// <summary>
     /// Factory for bootstrapping the Jellyfin application in memory for functional end to end tests.
@@ -25,9 +25,9 @@ namespace Jellyfin.Api.Tests
         private readonly ConcurrentBag<IDisposable> _disposableComponents = new ConcurrentBag<IDisposable>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JellyfinApplicationFactory"/> class.
+        /// Initializes static members of the <see cref="JellyfinApplicationFactory"/> class.
         /// </summary>
-        public JellyfinApplicationFactory()
+        static JellyfinApplicationFactory()
         {
             // Perform static initialization that only needs to happen once per test-run
             Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
@@ -78,6 +78,7 @@ namespace Jellyfin.Api.Tests
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
+                new ConfigurationBuilder().Build(),
                 new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 serviceCollection);
             _disposableComponents.Add(appHost);

@@ -448,7 +448,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (result == null || (result.Streams == null && result.Format == null))
                 {
-                    throw new Exception("ffprobe failed - streams and format are both null.");
+                    throw new FfmpegException("ffprobe failed - streams and format are both null.");
                 }
 
                 if (result.Streams != null)
@@ -571,32 +571,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.
             // This filter chain may have adverse effects on recorded tv thumbnails if ar changes during presentation ex. commercials @ diff ar
-            var vf = string.Empty;
-
-            if (threedFormat.HasValue)
+            var vf = threedFormat switch
             {
-                switch (threedFormat.Value)
-                {
-                    case Video3DFormat.HalfSideBySide:
-                        vf = "-vf crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
-                        // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
-                        break;
-                    case Video3DFormat.FullSideBySide:
-                        vf = "-vf crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
-                        // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
-                        break;
-                    case Video3DFormat.HalfTopAndBottom:
-                        vf = "-vf crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
-                        // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made
-                        break;
-                    case Video3DFormat.FullTopAndBottom:
-                        vf = "-vf crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1";
-                        // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made
-                        break;
-                    default:
-                        break;
-                }
-            }
+                // hsbs crop width in half,scale to correct size, set the display aspect,crop out any black bars we may have made. Work out the correct height based on the display aspect it will maintain the aspect where -1 in this case (3d) may not.
+                Video3DFormat.HalfSideBySide => "-vf crop=iw/2:ih:0:0,scale=(iw*2):ih,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                // fsbs crop width in half,set the display aspect,crop out any black bars we may have made
+                Video3DFormat.FullSideBySide => "-vf crop=iw/2:ih:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                // htab crop heigh in half,scale to correct size, set the display aspect,crop out any black bars we may have made
+                Video3DFormat.HalfTopAndBottom => "-vf crop=iw:ih/2:0:0,scale=(iw*2):ih),setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                // ftab crop heigt in half, set the display aspect,crop out any black bars we may have made
+                Video3DFormat.FullTopAndBottom => "-vf crop=iw:ih/2:0:0,setdar=dar=a,crop=min(iw\\,ih*dar):min(ih\\,iw/dar):(iw-min(iw\\,iw*sar))/2:(ih - min (ih\\,ih/sar))/2,setsar=sar=1",
+                _ => string.Empty
+            };
 
             var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
@@ -604,7 +590,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (enableHdrExtraction)
             {
                 string tonemapFilters = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=100,zscale=t=bt709:m=bt709,format=yuv420p";
-                if (string.IsNullOrEmpty(vf))
+                if (vf.Length == 0)
                 {
                     vf = "-vf " + tonemapFilters;
                 }
@@ -633,33 +619,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
 
-            var probeSizeArgument = string.Empty;
-            var analyzeDurationArgument = string.Empty;
-
-            if (!string.IsNullOrWhiteSpace(probeSizeArgument))
-            {
-                args = probeSizeArgument + " " + args;
-            }
-
-            if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
-            {
-                args = analyzeDurationArgument + " " + args;
-            }
-
             if (offset.HasValue)
             {
                 args = string.Format(CultureInfo.InvariantCulture, "-ss {0} ", GetTimeParameter(offset.Value)) + args;
-            }
-
-            if (videoStream != null)
-            {
-                /* fix
-                var decoder = encodinghelper.GetHardwareAcceleratedVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
-                if (!string.IsNullOrWhiteSpace(decoder))
-                {
-                    args = decoder + " " + args;
-                }
-                */
             }
 
             if (!string.IsNullOrWhiteSpace(container))
@@ -723,7 +685,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     _logger.LogError(msg);
 
-                    throw new Exception(msg);
+                    throw new FfmpegException(msg);
                 }
 
                 return tempExtractPath;
@@ -769,30 +731,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
             var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, threads);
-
-            var probeSizeArgument = string.Empty;
-            var analyzeDurationArgument = string.Empty;
-
-            if (!string.IsNullOrWhiteSpace(probeSizeArgument))
-            {
-                args = probeSizeArgument + " " + args;
-            }
-
-            if (!string.IsNullOrWhiteSpace(analyzeDurationArgument))
-            {
-                args = analyzeDurationArgument + " " + args;
-            }
-
-            if (videoStream != null)
-            {
-                /* fix
-                var decoder = encodinghelper.GetHardwareAcceleratedVideoDecoder(VideoType.VideoFile, videoStream, GetEncodingOptions());
-                if (!string.IsNullOrWhiteSpace(decoder))
-                {
-                    args = decoder + " " + args;
-                }
-                */
-            }
 
             if (!string.IsNullOrWhiteSpace(container))
             {
@@ -872,7 +810,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     _logger.LogError(msg);
 
-                    throw new Exception(msg);
+                    throw new FfmpegException(msg);
                 }
             }
         }

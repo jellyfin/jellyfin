@@ -152,7 +152,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Playing/Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PingPlaybackSession([FromQuery] string playSessionId)
+        public ActionResult PingPlaybackSession([FromQuery, Required] string playSessionId)
         {
             _transcodingJobHelper.PingTranscodingJob(playSessionId, null);
             return NoContent();
@@ -202,9 +202,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? mediaSourceId,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] PlayMethod playMethod,
+            [FromQuery] PlayMethod? playMethod,
             [FromQuery] string? liveStreamId,
-            [FromQuery] string playSessionId,
+            [FromQuery] string? playSessionId,
             [FromQuery] bool canSeek = false)
         {
             var playbackStartInfo = new PlaybackStartInfo
@@ -214,7 +214,7 @@ namespace Jellyfin.Api.Controllers
                 MediaSourceId = mediaSourceId,
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                PlayMethod = playMethod,
+                PlayMethod = playMethod ?? PlayMethod.Transcode,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId
             };
@@ -254,10 +254,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? volumeLevel,
-            [FromQuery] PlayMethod playMethod,
+            [FromQuery] PlayMethod? playMethod,
             [FromQuery] string? liveStreamId,
-            [FromQuery] string playSessionId,
-            [FromQuery] RepeatMode repeatMode,
+            [FromQuery] string? playSessionId,
+            [FromQuery] RepeatMode? repeatMode,
             [FromQuery] bool isPaused = false,
             [FromQuery] bool isMuted = false)
         {
@@ -271,10 +271,10 @@ namespace Jellyfin.Api.Controllers
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
                 VolumeLevel = volumeLevel,
-                PlayMethod = playMethod,
+                PlayMethod = playMethod ?? PlayMethod.Transcode,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId,
-                RepeatMode = repeatMode
+                RepeatMode = repeatMode ?? RepeatMode.RepeatNone
             };
 
             playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
@@ -352,7 +352,7 @@ namespace Jellyfin.Api.Controllers
             return _userDataRepository.GetUserDataDto(item, user);
         }
 
-        private PlayMethod ValidatePlayMethod(PlayMethod method, string playSessionId)
+        private PlayMethod ValidatePlayMethod(PlayMethod method, string? playSessionId)
         {
             if (method == PlayMethod.Transcode)
             {

@@ -96,7 +96,9 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Videos/ActiveEncodings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult StopEncodingProcess([FromQuery] string deviceId, [FromQuery] string playSessionId)
+        public ActionResult StopEncodingProcess(
+            [FromQuery, Required] string deviceId,
+            [FromQuery, Required] string playSessionId)
         {
             _transcodingJobHelper.KillTranscodingJobs(deviceId, playSessionId, path => true);
             return NoContent();

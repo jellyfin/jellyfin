@@ -96,6 +96,7 @@ using MediaBrowser.Providers.Subtitles;
 using MediaBrowser.XbmcMetadata.Providers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
@@ -115,6 +116,7 @@ namespace Emby.Server.Implementations
         private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
         private readonly IFileSystem _fileSystemManager;
+        private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly IPluginManager _pluginManager;
@@ -130,9 +132,6 @@ namespace Emby.Server.Implementations
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
 
         public bool CoreStartupHasCompleted { get; private set; }
-
-        /// <inheritdoc />
-        public Uri PublishedServerUrl => _startupOptions.PublishedServerUrl;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -239,12 +238,14 @@ namespace Emby.Server.Implementations
         /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
+        /// <param name="startupConfig">The <see cref="IConfiguration" /> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
+            IConfiguration startupConfig,
             IFileSystem fileSystem,
             IServiceCollection serviceCollection)
         {
@@ -267,6 +268,7 @@ namespace Emby.Server.Implementations
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
             _startupOptions = options;
+            _startupConfig = startupConfig;
 
             // Initialize runtime stat collection
             if (ServerConfigurationManager.Configuration.EnableMetrics)

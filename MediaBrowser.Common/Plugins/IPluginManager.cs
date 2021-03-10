@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the Plugins.
         /// </summary>
-        IList<LocalPlugin> Plugins { get; }
+        IReadOnlyList<LocalPlugin> Plugins { get; }
 
         /// <summary>
         /// Creates the plugins.

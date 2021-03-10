@@ -269,7 +269,8 @@ namespace Emby.Dlna
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }
