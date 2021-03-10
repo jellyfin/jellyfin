@@ -133,6 +133,11 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
+        /// <summary>
+        /// Gets the configured published server url.
+        /// </summary>
+        public string? PublishedServerUrl => _startupOptions.PublishedServerUrl;
+
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -1147,11 +1152,9 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress)
         {
-            // Published server ends with a /
-            if (_startupOptions.PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().TrimEnd('/');
+                return _startupOptions.PublishedServerUrl;
             }
 
             string smart = NetManager.GetBindInterface(new IPNetAddress(ipAddress), out int? port);
@@ -1167,11 +1170,10 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request)
         {
-            // Published server ends with a /
-            if (_startupOptions.PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl.ToString().TrimEnd('/');
+                return _startupOptions.PublishedServerUrl;
             }
 
             string smart = NetManager.GetBindInterface(request, out int? port);
@@ -1198,6 +1200,11 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLocalApiUrl(string host, string scheme = null, int? port = null)
         {
+            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
+            {
+                return _startupOptions.PublishedServerUrl;
+            }
+
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder
