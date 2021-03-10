@@ -136,7 +136,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the configured published server url.
         /// </summary>
-        public string? PublishedServerUrl => _startupOptions.PublishedServerUrl;
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl;
 
         public virtual bool CanLaunchWebBrowser
         {
