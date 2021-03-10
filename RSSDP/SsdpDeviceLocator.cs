@@ -33,9 +33,8 @@ namespace Rssdp.Infrastructure
             }
             
             _CommunicationsServer = communicationsServer;
-
-            // This can occur is dlna is enabled, but defined to run over https.
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
+
             _Devices = new List<DiscoveredSsdpDevice>();
         }
 
