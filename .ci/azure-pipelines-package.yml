@@ -186,9 +186,6 @@ jobs:
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
-  dependsOn:
-  - BuildPackage
-  condition: succeeded('BuildPackage')
 
   pool:
     vmImage: 'ubuntu-latest'
