@@ -393,8 +393,8 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var files = new[]
             {
-                @"/movies/John Wick - Chapter 3 (2019)/John Wick - Kapitel 3 (2019) [Version 1].mkv",
-                @"/movies/John Wick - Chapter 3 (2019)/John Wick - Kapitel 3 (2019) [Version 2.mkv"
+                @"/movies/John Wick - Chapter 3 (2019)/John Wick - Chapter 3 (2019) [Version 1].mkv",
+                @"/movies/John Wick - Chapter 3 (2019)/John Wick - Chapter 3 (2019) [Version 2.mkv"
             };
 
             var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
