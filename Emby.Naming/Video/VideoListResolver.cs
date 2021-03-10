@@ -221,20 +221,23 @@ namespace Emby.Naming.Video
             string testFilename = Path.GetFileNameWithoutExtension(testFilePath);
             if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
             {
-                if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
-                {
-                    testFilename = cleanName.ToString();
-                }
-
+                // Remove the folder name before cleaning as we don't care about cleaning that part
                 if (folderName.Length <= testFilename.Length)
                 {
                     testFilename = testFilename.Substring(folderName.Length).Trim();
                 }
 
+                if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
+                {
+                    testFilename = cleanName.ToString();
+                }
+
+                // The CleanStringParser should have removed common keywords etc., so if it starts with -, _ or [ it's eligible.
                 return string.IsNullOrEmpty(testFilename)
-                   || testFilename[0] == '-'
-                   || testFilename[0] == '_'
-                   || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
+                       || testFilename[0] == '-'
+                       || testFilename[0] == '_'
+                       || testFilename[0] == '['
+                       || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
             }
 
             return false;
