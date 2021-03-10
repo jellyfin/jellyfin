@@ -31,11 +31,10 @@ namespace Rssdp.Infrastructure
             {
                 throw new ArgumentNullException(nameof(communicationsServer));
             }
-            
-            _CommunicationsServer = communicationsServer;
 
-            // This can occur is dlna is enabled, but defined to run over https.
+            _CommunicationsServer = communicationsServer;
             _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
+
             _Devices = new List<DiscoveredSsdpDevice>();
         }
 
