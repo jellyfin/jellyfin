@@ -229,15 +229,14 @@ namespace Emby.Naming.Video
 
                 if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
                 {
-                    testFilename = cleanName.ToString();
+                    testFilename = cleanName.Trim().ToString();
                 }
 
-                // The CleanStringParser should have removed common keywords etc., so if it starts with -, _ or [ it's eligible.
+                // The CleanStringParser should have removed common keywords etc.
                 return string.IsNullOrEmpty(testFilename)
                        || testFilename[0] == '-'
                        || testFilename[0] == '_'
-                       || testFilename[0] == '['
-                       || string.IsNullOrWhiteSpace(Regex.Replace(testFilename, @"\[([^]]*)\]", string.Empty));
+                       || Regex.IsMatch(testFilename, @"^\[([^]]*)\]");
             }
 
             return false;
