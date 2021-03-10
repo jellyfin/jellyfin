@@ -157,16 +157,15 @@ namespace Jellyfin.Networking.Manager
         /// Creates a new network collection.
         /// </summary>
         /// <param name="source">Items to assign the collection, or null.</param>
-        /// <param name="unique"><c>True</c> if subnets that overlap should be merged (default).</param>
         /// <returns>The collection created.</returns>
-        public static Collection<IPObject> CreateCollection(IEnumerable<IPObject>? source = null, bool unique = true)
+        public static Collection<IPObject> CreateCollection(IEnumerable<IPObject>? source = null)
         {
             var result = new Collection<IPObject>();
             if (source != null)
             {
                 foreach (var item in source)
                 {
-                    result.AddItem(item, unique);
+                    result.AddItem(item, false);
                 }
             }
 
@@ -391,8 +390,7 @@ namespace Jellyfin.Networking.Manager
                 _interfaceAddresses
                     .Exclude(_bindExclusions)
                     .Where(IsInLocalNetwork)
-                    .OrderBy(p => p.Tag),
-                false);
+                    .OrderBy(p => p.Tag));
 
             if (interfaces.Count > 0)
             {
@@ -432,11 +430,11 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Count > 0)
                 {
                     // Return all the internal interfaces except the ones excluded.
-                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)), false);
+                    return CreateCollection(_internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)));
                 }
 
                 // No bind address, so return all internal interfaces.
-                return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()), false);
+                return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
             }
 
             return new Collection<IPObject>(_bindAddresses);
@@ -980,7 +978,7 @@ namespace Jellyfin.Networking.Manager
                 {
                     _logger.LogDebug("Using LAN interface addresses as user provided no LAN details.");
                     // Internal interfaces must be private and not excluded.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)), false);
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
 
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = new Collection<IPObject>();
@@ -1015,7 +1013,7 @@ namespace Jellyfin.Networking.Manager
                     }
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)), false);
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
