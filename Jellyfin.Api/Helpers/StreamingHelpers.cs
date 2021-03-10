@@ -510,10 +510,7 @@ namespace Jellyfin.Api.Helpers
         {
             if (!string.IsNullOrWhiteSpace(deviceProfileId))
             {
-                if (state.DeviceProfile == null)
-                {
-                    state.DeviceProfile = dlnaManager.GetProfile(deviceProfileId);
-                }
+                state.DeviceProfile = dlnaManager.GetProfile(deviceProfileId);
 
                 if (state.DeviceProfile == null)
                 {
