@@ -27,13 +27,13 @@ namespace Rssdp.Infrastructure
         /// </summary>
         public SsdpDeviceLocator(ISsdpCommunicationsServer communicationsServer)
         {
-            if (communicationsServer == null)
-            {
-                throw new ArgumentNullException(nameof(communicationsServer));
-            }
-
             _CommunicationsServer = communicationsServer;
-            _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
+
+            if (communicationsServer != null)
+            {
+                // This can occur is dlna is enabled, but defined to run over https.
+                _CommunicationsServer.ResponseReceived += CommsServer_ResponseReceived;
+            }
 
             _Devices = new List<DiscoveredSsdpDevice>();
         }
