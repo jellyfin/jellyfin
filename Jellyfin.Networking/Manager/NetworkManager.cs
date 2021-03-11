@@ -593,18 +593,7 @@ namespace Jellyfin.Networking.Manager
                 if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
-                    bool isListed = RemoteAddressFilter.ContainsAddress(remoteIp);
-                    if (config.IsRemoteIPFilterBlacklist)
-                    {
-                        // Black list, so flip over.
-                        isListed = !isListed;
-                    }
-
-                    if (!isListed)
-                    {
-                        // If your name isn't on the list, you arn't coming in.
-                        return false;
-                    }
+                    return RemoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
                 }
             }
             else if (!IsInLocalNetwork(remoteIp))
