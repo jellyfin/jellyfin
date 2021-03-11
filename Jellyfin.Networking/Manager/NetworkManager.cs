@@ -577,6 +577,46 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <summary>
+        /// Checks to see if <paramref name="remoteIp"/> has access.
+        /// </summary>
+        /// <param name="remoteIp">IP Address of client.</param>
+        /// <returns><b>True</b> if has access, otherwise <b>false</b>.</returns>
+        public bool HasRemoteAccess(IPAddress remoteIp)
+        {
+            var config = _configurationManager.GetNetworkConfiguration();
+            if (config.EnableRemoteAccess)
+            {
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                var remoteAddressFilter = RemoteAddressFilter;
+
+                if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
+                {
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    bool isListed = RemoteAddressFilter.ContainsAddress(remoteIp);
+                    if (config.IsRemoteIPFilterBlacklist)
+                    {
+                        // Black list, so flip over.
+                        isListed = !isListed;
+                    }
+
+                    if (!isListed)
+                    {
+                        // If your name isn't on the list, you arn't coming in.
+                        return false;
+                    }
+                }
+            }
+            else if (!IsInLocalNetwork(remoteIp))
+            {
+                // Remote not enabled. So everyone should be LAN.
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
         /// <param name="configuration">The <see cref="NetworkConfiguration"/> to use.</param>
