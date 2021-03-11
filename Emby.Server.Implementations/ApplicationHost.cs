@@ -14,6 +14,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -84,6 +86,7 @@ using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -266,15 +269,20 @@ namespace Emby.Server.Implementations
             LoggerFactory = loggerFactory;
             _fileSystemManager = fileSystem;
 
+            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
+
+            // Have to migrate settings here as it needs to be done before system.xml is processed.
+            XmlConfigMigrationHelper.MigrateConfigurationTo<ServerConfiguration, NetworkConfiguration>(
+               Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "system.xml"),
+               Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "network.xml"),
+               Logger,
+               _xmlSerializer);
+
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
-            // Have to migrate settings here as migration subsystem not yet initialised.
-            MigrateNetworkConfiguration();
 
             // Have to pre-register the NetworkConfigurationFactory, as the configuration sub-system is not yet initialised.
             ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
-
-            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
             _startupOptions = options;
             _startupConfig = startupConfig;
@@ -297,22 +305,6 @@ namespace Emby.Server.Implementations
                 ServerConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
-        }
-
-        /// <summary>
-        /// Temporary function to migration network settings out of system.xml and into network.xml.
-        /// TODO: remove at the point when a fixed migration path has been decided upon.
-        /// </summary>
-        private void MigrateNetworkConfiguration()
-        {
-            string path = Path.Combine(ConfigurationManager.CommonApplicationPaths.ConfigurationDirectoryPath, "network.xml");
-            if (!File.Exists(path))
-            {
-                var networkSettings = new NetworkConfiguration();
-                ClassMigrationHelper.CopyProperties(ServerConfigurationManager.Configuration, networkSettings);
-                _xmlSerializer.SerializeToFile(networkSettings, path);
-                Logger?.LogDebug("Successfully migrated network settings.");
-            }
         }
 
         public string ExpandVirtualPath(string path)
