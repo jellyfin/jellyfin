@@ -271,13 +271,6 @@ namespace Emby.Server.Implementations
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
 
-            // Have to migrate settings here as it needs to be done before system.xml is processed.
-            XmlConfigMigrationHelper.MigrateConfigurationTo<ServerConfiguration, NetworkConfiguration>(
-               Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "system.xml"),
-               Path.Combine(ApplicationPaths.ConfigurationDirectoryPath, "network.xml"),
-               Logger,
-               _xmlSerializer);
-
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             // Have to pre-register the NetworkConfigurationFactory, as the configuration sub-system is not yet initialised.
