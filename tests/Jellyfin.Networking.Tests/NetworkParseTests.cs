@@ -516,10 +516,9 @@ namespace Jellyfin.Networking.Tests
         }
 
         [Theory]
-        [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", false, true)] // whitelist
-        [InlineData("185.10.10.10", "185.10.10.10", false, false)] // whitelist
-        [InlineData("185.10.10.10", "79.2.3.4", true, false)] // blacklist
-        public void TestRemoteAccess(string addresses, string remoteIp, bool blacklist, bool denied)
+        [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", true)]
+        [InlineData("185.10.10.10", "185.10.10.10", false)]
+        public void HasRemoteAccess_GivenNonEmptyWhitelist_AllowsOnlyIpsInWhitelist(string addresses, string remoteIp, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
@@ -527,7 +526,25 @@ namespace Jellyfin.Networking.Tests
             {
                 EnableIPV4 = true,
                 RemoteIPFilter = addresses.Split(","),
-                IsRemoteIPFilterBlacklist = blacklist
+                IsRemoteIPFilterBlacklist = false
+            };
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+        }
+
+        [Theory]
+        [InlineData("185.10.10.10", "79.2.3.4", false)] // blacklist
+        [InlineData("185.10.10.10", "185.10.10.10", true)] // blacklist
+        public void HasRemoteAccess_GivenNonEmptBlacklist_BlacklistTheIps(string addresses, string remoteIp, bool denied)
+        {
+            // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+            // If left blank, all remote addresses will be allowed.
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV4 = true,
+                RemoteIPFilter = addresses.Split(","),
+                IsRemoteIPFilterBlacklist = true
             };
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
