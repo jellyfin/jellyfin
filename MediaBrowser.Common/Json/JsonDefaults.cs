@@ -39,7 +39,8 @@ namespace MediaBrowser.Common.Json
                 new JsonStringEnumConverter(),
                 new JsonNullableStructConverterFactory(),
                 new JsonBoolNumberConverter(),
-                new JsonDateTimeConverter()
+                new JsonDateTimeConverter(),
+                new JsonStringConverter()
             }
         };
 
