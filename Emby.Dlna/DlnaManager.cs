@@ -17,6 +17,7 @@ using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
@@ -27,7 +28,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna
 {
-    public class DlnaManager : IDlnaManager
+    public class DlnaManager : IDlnaManager, IServerEntryPoint, IRunBeforeStartup
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;
@@ -57,7 +58,7 @@ namespace Emby.Dlna
 
         private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
 
-        public async Task InitProfilesAsync()
+        public async Task RunAsync()
         {
             try
             {
@@ -207,7 +208,12 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+            var info = GetProfileInfosInternal().FirstOrDefault(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+
+            if (info == null)
+            {
+                return null;
+            }
 
             return ParseProfileFile(info.Path, info.Info.Type);
         }
@@ -368,6 +374,11 @@ namespace Emby.Dlna
             var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
             return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions);
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
 
         private class InternalProfileInfo

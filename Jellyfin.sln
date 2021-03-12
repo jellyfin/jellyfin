@@ -25,8 +25,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DvdLib", "DvdLib\DvdLib.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Server.Implementations", "Emby.Server.Implementations\Emby.Server.Implementations.csproj", "{E383961B-9356-4D5D-8233-9A1079D03055}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSSDP", "RSSDP\RSSDP.csproj", "{21002819-C39A-4D3E-BE83-2A276A77FB1F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Dlna", "Emby.Dlna\Emby.Dlna.csproj", "{805844AB-E92F-45E6-9D99-4F6D48D129A5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emby.Notifications", "Emby.Notifications\Emby.Notifications.csproj", "{2E030C33-6923-4530-9E54-FA29FA6AD1A9}"
@@ -75,7 +73,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.XbmcMetadata.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Model.Tests", "tests\Jellyfin.Model.Tests\Jellyfin.Model.Tests.csproj", "{FC1BC0CE-E8D2-4AE9-A6AB-8A02143B335D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}"
 EndProject
@@ -131,10 +129,6 @@ Global
 		{E383961B-9356-4D5D-8233-9A1079D03055}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E383961B-9356-4D5D-8233-9A1079D03055}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E383961B-9356-4D5D-8233-9A1079D03055}.Release|Any CPU.Build.0 = Release|Any CPU
-		{21002819-C39A-4D3E-BE83-2A276A77FB1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{21002819-C39A-4D3E-BE83-2A276A77FB1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{21002819-C39A-4D3E-BE83-2A276A77FB1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{21002819-C39A-4D3E-BE83-2A276A77FB1F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{805844AB-E92F-45E6-9D99-4F6D48D129A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
