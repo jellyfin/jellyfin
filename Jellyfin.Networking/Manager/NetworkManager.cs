@@ -576,11 +576,7 @@ namespace Jellyfin.Networking.Manager
             return false;
         }
 
-        /// <summary>
-        /// Checks to see if <paramref name="remoteIp"/> has access.
-        /// </summary>
-        /// <param name="remoteIp">IP Address of client.</param>
-        /// <returns><b>True</b> if has access, otherwise <b>false</b>.</returns>
+        /// <inheritdoc/>
         public bool HasRemoteAccess(IPAddress remoteIp)
         {
             var config = _configurationManager.GetNetworkConfiguration();
