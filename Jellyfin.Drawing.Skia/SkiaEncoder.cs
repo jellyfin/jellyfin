@@ -111,6 +111,113 @@ namespace Jellyfin.Drawing.Skia
             };
         }
 
+        /// <summary>
+        /// Resizes an image on the CPU, by utilizing a surface and canvas.
+        ///
+        /// The convolutional matrix kernel used in this resize function gives a (light) sharpening effect.
+        /// This technique is similar to effect that can be created using for example the [Convolution matrix filter in GIMP](https://docs.gimp.org/2.10/en/gimp-filter-convolution-matrix.html).
+        /// </summary>
+        /// <param name="source">The source bitmap.</param>
+        /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
+        /// <param name="isAntialias">This enables anti-aliasing on the SKPaint instance.</param>
+        /// <param name="isDither">This enables dithering on the SKPaint instance.</param>
+        /// <returns>The resized image.</returns>
+        internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
+        {
+            using var surface = SKSurface.Create(targetInfo);
+            using var canvas = surface.Canvas;
+            using var paint = new SKPaint
+            {
+                FilterQuality = SKFilterQuality.High,
+                IsAntialias = isAntialias,
+                IsDither = isDither
+            };
+
+            var kernel = new float[9]
+            {
+                0,    -.1f,    0,
+                -.1f, 1.4f, -.1f,
+                0,    -.1f,    0,
+            };
+
+            var kernelSize = new SKSizeI(3, 3);
+            var kernelOffset = new SKPointI(1, 1);
+
+            paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
+                kernelSize,
+                kernel,
+                1f,
+                0f,
+                kernelOffset,
+                SKShaderTileMode.Clamp,
+                true);
+
+            canvas.DrawBitmap(
+                source,
+                SKRect.Create(0, 0, source.Width, source.Height),
+                SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
+                paint);
+
+            return surface.Snapshot();
+        }
+
+        /// <summary>
+        /// Decode an image.
+        /// </summary>
+        /// <param name="path">The filepath of the image to decode.</param>
+        /// <param name="forceCleanBitmap">Whether to force clean the bitmap.</param>
+        /// <param name="orientation">The orientation of the image.</param>
+        /// <param name="origin">The detected origin of the image.</param>
+        /// <returns>The resulting bitmap of the image.</returns>
+        internal SKBitmap? Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
+        {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("File not found", path);
+            }
+
+            var requiresTransparencyHack = _transparentImageTypes.Contains(Path.GetExtension(path));
+
+            if (requiresTransparencyHack || forceCleanBitmap)
+            {
+                using var codec = SKCodec.Create(NormalizePath(path));
+                if (codec == null)
+                {
+                    origin = GetSKEncodedOrigin(orientation);
+                    return null;
+                }
+
+                // create the bitmap
+                var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
+
+                // decode
+                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
+
+                origin = codec.EncodedOrigin;
+
+                return bitmap;
+            }
+
+            var resultBitmap = SKBitmap.Decode(NormalizePath(path));
+
+            if (resultBitmap == null)
+            {
+                return Decode(path, true, orientation, out origin);
+            }
+
+            // If we have to resize these they often end up distorted
+            if (resultBitmap.ColorType == SKColorType.Gray8)
+            {
+                using (resultBitmap)
+                {
+                    return Decode(path, true, orientation, out origin);
+                }
+            }
+
+            origin = SKEncodedOrigin.TopLeft;
+            return resultBitmap;
+        }
+
         private static bool IsTransparentRow(SKBitmap bmp, int row)
         {
             for (var i = 0; i < bmp.Width; ++i)
@@ -255,63 +362,6 @@ namespace Jellyfin.Drawing.Skia
             };
         }
 
-        /// <summary>
-        /// Decode an image.
-        /// </summary>
-        /// <param name="path">The filepath of the image to decode.</param>
-        /// <param name="forceCleanBitmap">Whether to force clean the bitmap.</param>
-        /// <param name="orientation">The orientation of the image.</param>
-        /// <param name="origin">The detected origin of the image.</param>
-        /// <returns>The resulting bitmap of the image.</returns>
-        internal SKBitmap? Decode(string path, bool forceCleanBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
-        {
-            if (!File.Exists(path))
-            {
-                throw new FileNotFoundException("File not found", path);
-            }
-
-            var requiresTransparencyHack = _transparentImageTypes.Contains(Path.GetExtension(path));
-
-            if (requiresTransparencyHack || forceCleanBitmap)
-            {
-                using var codec = SKCodec.Create(NormalizePath(path));
-                if (codec == null)
-                {
-                    origin = GetSKEncodedOrigin(orientation);
-                    return null;
-                }
-
-                // create the bitmap
-                var bitmap = new SKBitmap(codec.Info.Width, codec.Info.Height, !requiresTransparencyHack);
-
-                // decode
-                _ = codec.GetPixels(bitmap.Info, bitmap.GetPixels());
-
-                origin = codec.EncodedOrigin;
-
-                return bitmap;
-            }
-
-            var resultBitmap = SKBitmap.Decode(NormalizePath(path));
-
-            if (resultBitmap == null)
-            {
-                return Decode(path, true, orientation, out origin);
-            }
-
-            // If we have to resize these they often end up distorted
-            if (resultBitmap.ColorType == SKColorType.Gray8)
-            {
-                using (resultBitmap)
-                {
-                    return Decode(path, true, orientation, out origin);
-                }
-            }
-
-            origin = SKEncodedOrigin.TopLeft;
-            return resultBitmap;
-        }
-
         private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool forceAnalyzeBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
         {
             if (cropWhitespace)
@@ -396,56 +446,6 @@ namespace Jellyfin.Drawing.Skia
             return rotated;
         }
 
-        /// <summary>
-        /// Resizes an image on the CPU, by utilizing a surface and canvas.
-        ///
-        /// The convolutional matrix kernel used in this resize function gives a (light) sharpening effect.
-        /// This technique is similar to effect that can be created using for example the [Convolution matrix filter in GIMP](https://docs.gimp.org/2.10/en/gimp-filter-convolution-matrix.html).
-        /// </summary>
-        /// <param name="source">The source bitmap.</param>
-        /// <param name="targetInfo">This specifies the target size and other information required to create the surface.</param>
-        /// <param name="isAntialias">This enables anti-aliasing on the SKPaint instance.</param>
-        /// <param name="isDither">This enables dithering on the SKPaint instance.</param>
-        /// <returns>The resized image.</returns>
-        internal static SKImage ResizeImage(SKBitmap source, SKImageInfo targetInfo, bool isAntialias = false, bool isDither = false)
-        {
-            using var surface = SKSurface.Create(targetInfo);
-            using var canvas = surface.Canvas;
-            using var paint = new SKPaint
-            {
-                FilterQuality = SKFilterQuality.High,
-                IsAntialias = isAntialias,
-                IsDither = isDither
-            };
-
-            var kernel = new float[9]
-            {
-                0,    -.1f,    0,
-                -.1f, 1.4f, -.1f,
-                0,    -.1f,    0,
-            };
-
-            var kernelSize = new SKSizeI(3, 3);
-            var kernelOffset = new SKPointI(1, 1);
-
-            paint.ImageFilter = SKImageFilter.CreateMatrixConvolution(
-                kernelSize,
-                kernel,
-                1f,
-                0f,
-                kernelOffset,
-                SKShaderTileMode.Clamp,
-                true);
-
-            canvas.DrawBitmap(
-                source,
-                SKRect.Create(0, 0, source.Width, source.Height),
-                SKRect.Create(0, 0, targetInfo.Width, targetInfo.Height),
-                paint);
-
-            return surface.Snapshot();
-        }
-
         /// <inheritdoc/>
         public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
         {
@@ -511,11 +511,12 @@ namespace Jellyfin.Drawing.Skia
                 canvas.Clear(SKColor.Parse(options.BackgroundColor));
             }
 
+            using var paint = new SKPaint();
+            paint.FilterQuality = SKFilterQuality.High;
             // Add blur if option is present
             if (blur > 0)
             {
                 // create image from resized bitmap to apply blur
-                using var paint = new SKPaint();
                 using var filter = SKImageFilter.CreateBlur(blur, blur);
                 paint.ImageFilter = filter;
                 canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
@@ -523,7 +524,7 @@ namespace Jellyfin.Drawing.Skia
             else
             {
                 // draw resized bitmap onto canvas
-                canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height));
+                canvas.DrawBitmap(resizedBitmap, SKRect.Create(width, height), paint);
             }
 
             // If foreground layer present then draw

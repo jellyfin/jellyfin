@@ -107,15 +107,18 @@ namespace Jellyfin.Drawing.Skia
 
             // resize to the same aspect as the original
             var backdropHeight = Math.Abs(width * backdrop.Height / backdrop.Width);
-            using var residedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+            using var resizedImage = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+            using var paint = new SKPaint();
+            paint.FilterQuality = SKFilterQuality.High;
             // draw the backdrop
-            canvas.DrawImage(residedBackdrop, 0, 0);
+            canvas.DrawImage(resizedImage, 0, 0, paint);
 
             // draw shadow rectangle
             var paintColor = new SKPaint
             {
                 Color = SKColors.Black.WithAlpha(0x78),
-                Style = SKPaintStyle.Fill
+                Style = SKPaintStyle.Fill,
+                FilterQuality = SKFilterQuality.High
             };
             canvas.DrawRect(0, 0, width, height, paintColor);
 
@@ -137,7 +140,8 @@ namespace Jellyfin.Drawing.Skia
                 TextSize = 112,
                 TextAlign = SKTextAlign.Center,
                 Typeface = typeFace,
-                IsAntialias = true
+                IsAntialias = true,
+                FilterQuality = SKFilterQuality.High
             };
 
             // scale down text to 90% of the width if text is larger than 95% of the width
@@ -200,14 +204,16 @@ namespace Jellyfin.Drawing.Skia
                         continue;
                     }
 
-                    // Scale image. The FromBitmap creates a copy
+                    // Scale image. The FromImage creates a copy
                     var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
-                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
+                    using var resizedImage = SkiaEncoder.ResizeImage(currentBitmap, imageInfo);
+                    using var paint = new SKPaint();
+                    paint.FilterQuality = SKFilterQuality.High;
 
                     // draw this image into the strip at the next position
                     var xPos = x * cellWidth;
                     var yPos = y * cellHeight;
-                    canvas.DrawBitmap(resizedBitmap, xPos, yPos);
+                    canvas.DrawImage(resizedImage, xPos, yPos, paint);
                 }
             }
 
