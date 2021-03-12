@@ -333,7 +333,12 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+            var info = GetProfileInfosInternal().FirstOrDefault(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+
+            if (info == null)
+            {
+                return null;
+            }
 
             return ParseProfileFile(info.Path, info.Info.Type);
         }
