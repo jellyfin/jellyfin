@@ -79,5 +79,29 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 Convert.ToHexString(expected),
                 Convert.ToHexString(buffer.Slice(0, len)));
         }
+
+        [Fact]
+        public void WriteSetMessage_LockKey_Success()
+        {
+            ReadOnlySpan<byte> expected = stackalloc byte[]
+            {
+                0, 4,
+                0, 26,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                21,
+                4, 0x00, 0x01, 0x38, 0xd5,
+                0x8e, 0xb6, 0x06, 0x82
+            };
+
+            Span<byte> buffer = stackalloc byte[128];
+            int len = HdHomerunManager.WriteSetMessage(buffer, 0, "N", "value", 80085);
+
+            Assert.Equal(
+                Convert.ToHexString(expected),
+                Convert.ToHexString(buffer.Slice(0, len)));
+        }
     }
 }
