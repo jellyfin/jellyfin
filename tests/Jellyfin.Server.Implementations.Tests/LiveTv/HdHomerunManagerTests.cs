@@ -124,23 +124,6 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         }
 
         [Fact]
-        public void TryGetReturnValueOfGetSet_InvalidPacketType_False()
-        {
-            ReadOnlySpan<byte> packet = new byte[]
-            {
-                0, 4,
-                0, 20,
-                3,
-                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
-                4,
-                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
-                0x7d, 0xa3, 0xa3, 0xf3
-            };
-
-            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
-        }
-
-        [Fact]
         public void TryGetReturnValueOfGetSet_InvalidCrc_False()
         {
             ReadOnlySpan<byte> packet = new byte[]
@@ -152,6 +135,23 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 4,
                 6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
                 0x7d, 0xa3, 0xa3, 0xf4
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_InvalidPacketType_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 4,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0xa9, 0x49, 0xd0, 0x68
             };
 
             Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
