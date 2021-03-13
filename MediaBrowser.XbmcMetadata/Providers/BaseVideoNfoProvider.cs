@@ -22,7 +22,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
 
-        public BaseVideoNfoProvider(
+        protected BaseVideoNfoProvider(
             ILogger<BaseVideoNfoProvider<T>> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,

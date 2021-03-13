@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Plugins
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
         private readonly ServerConfiguration _config;
-        private readonly IList<LocalPlugin> _plugins;
+        private readonly List<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
 
         private IHttpClientFactory? _httpClientFactory;
@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Gets the Plugins.
         /// </summary>
-        public IList<LocalPlugin> Plugins => _plugins;
+        public IReadOnlyList<LocalPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Returns all the assemblies.
