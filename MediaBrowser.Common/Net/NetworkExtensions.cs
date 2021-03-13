@@ -27,10 +27,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="item">Item to add.</param>
-        /// <param name="unique"><c>True</c> if subnets that overlap should be merged (default).</param>
-        public static void AddItem(this Collection<IPObject> source, IPObject item, bool unique = true)
+        /// <param name="itemsAreNetworks">If <c>true</c> the values are treated as subnets. 
+        /// If <b>false</b> items are addresses.</param>
+        public static void AddItem(this Collection<IPObject> source, IPObject item, bool itemsAreNetworks = true)
         {
-            if (!source.ContainsAddress(item) || !unique)
+            if (!source.ContainsAddress(item) || !itemsAreNetworks)
             {
                 source.Add(item);
             }
