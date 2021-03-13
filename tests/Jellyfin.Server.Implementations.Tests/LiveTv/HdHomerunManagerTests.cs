@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
 using Xunit;
 
@@ -105,9 +106,9 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         }
 
         [Fact]
-        public void ParseReturnMessage_Valid_Success()
+        public void TryGetReturnValueOfGetSet_Valid_Success()
         {
-            ReadOnlySpan<byte> packet = stackalloc byte[]
+            ReadOnlySpan<byte> packet = new byte[]
             {
                 0, 5,
                 0, 20,
@@ -118,8 +119,208 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 0x7d, 0xa3, 0xa3, 0xf3
             };
 
-            Assert.True(HdHomerunManager.ParseReturnMessage(packet.ToArray(), packet.Length, out var value));
-            Assert.Equal("value", value);
+            Assert.True(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out var value));
+            Assert.Equal("value", Encoding.UTF8.GetString(value));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_InvalidPacketType_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 4,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x7d, 0xa3, 0xa3, 0xf3
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_InvalidCrc_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x7d, 0xa3, 0xa3, 0xf4
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_InvalidPacket_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                0x7d, 0xa3, 0xa3
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_TooSmallMessageLength_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 19,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x25, 0x25, 0x44, 0x9a
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_TooLargeMessageLength_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 21,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0xe3, 0x20, 0x79, 0x6c
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_TooLargeNameLength_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                20, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0xe1, 0x8e, 0x9c, 0x74
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_InvalidGetSetNameTag_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                4,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0xee, 0x05, 0xe7, 0x12
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_InvalidGetSetValueTag_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                3,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x64, 0xaa, 0x66, 0xf9
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void TryGetReturnValueOfGetSet_TooLargeValueLength_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                7, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0xc9, 0xa8, 0xd4, 0x55
+            };
+
+            Assert.False(HdHomerunManager.TryGetReturnValueOfGetSet(packet, out _));
+        }
+
+        [Fact]
+        public void VerifyReturnValueOfGetSet_Valid_True()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x7d, 0xa3, 0xa3, 0xf3
+            };
+
+            Assert.True(HdHomerunManager.VerifyReturnValueOfGetSet(packet, "value"));
+        }
+
+        [Fact]
+        public void VerifyReturnValueOfGetSet_WrongValue_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x7d, 0xa3, 0xa3, 0xf3
+            };
+
+            Assert.False(HdHomerunManager.VerifyReturnValueOfGetSet(packet, "none"));
+        }
+
+        [Fact]
+        public void VerifyReturnValueOfGetSet_InvalidPacket_False()
+        {
+            ReadOnlySpan<byte> packet = new byte[]
+            {
+                0, 4,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x7d, 0xa3, 0xa3, 0xf3
+            };
+
+            Assert.False(HdHomerunManager.VerifyReturnValueOfGetSet(packet, "value"));
         }
     }
 }
