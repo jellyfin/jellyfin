@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -30,7 +31,7 @@ namespace MediaBrowser.Common.Json.Converters
         private static string GetRawValue(Utf8JsonReader reader)
         {
             var utf8Bytes = reader.HasValueSequence
-                ? reader.ValueSequence.FirstSpan
+                ? reader.ValueSequence.ToArray()
                 : reader.ValueSpan;
             return Encoding.UTF8.GetString(utf8Bytes);
         }
