@@ -225,7 +225,7 @@ namespace Jellyfin.Server.Extensions
                 .AddJsonOptions(options =>
                 {
                     // Update all properties that are set in JsonDefaults
-                    var jsonOptions = JsonDefaults.GetPascalCaseOptions();
+                    var jsonOptions = JsonDefaults.PascalCaseOptions;
 
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;

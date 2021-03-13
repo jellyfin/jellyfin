@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Localization
 
         private List<CultureDto> _cultures;
 
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.

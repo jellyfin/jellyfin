@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Library
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private IMediaSourceProvider[] _providers;
 
