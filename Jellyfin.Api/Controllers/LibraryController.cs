@@ -303,7 +303,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="204">Library scan started.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpGet("Library/Refresh")]
+        [HttpPost("Library/Refresh")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> RefreshLibrary()
