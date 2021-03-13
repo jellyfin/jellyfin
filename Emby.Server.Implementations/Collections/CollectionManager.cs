@@ -348,11 +348,13 @@ namespace Emby.Server.Implementations.Collections
                         foreach (var child in item.GetMediaSources(true))
                         {
 
-                            if (results.ContainsKey(Guid.Parse(child.Id)))
+                            if (Guid.TryParse(child.Id, out var id) && results.ContainsKey(id))
                             {
                                 alreadyInResults = true;
+                                break;
                             }
                         }
+
                         if (!alreadyInResults)
                         {
 
