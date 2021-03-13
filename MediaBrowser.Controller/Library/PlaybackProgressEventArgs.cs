@@ -42,7 +42,5 @@ namespace MediaBrowser.Controller.Library
         public string ClientName { get; set; }
 
         public string PlaySessionId { get; set; }
-
-        public SessionInfo Session { get; set; }
     }
 }

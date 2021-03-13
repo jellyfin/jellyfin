@@ -1,19 +1,18 @@
-﻿using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Session;
+﻿using System;
 
 namespace MediaBrowser.Controller.Events.Session
 {
     /// <summary>
     /// An event that fires when a session is started.
     /// </summary>
-    public class SessionStartedEventArgs : GenericEventArgs<SessionInfo>
+    public class SessionStartedEventArgs : EventArgs
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SessionStartedEventArgs"/> class.
-        /// </summary>
-        /// <param name="arg">The session info.</param>
-        public SessionStartedEventArgs(SessionInfo arg) : base(arg)
-        {
-        }
+        public string UserName { get; set; }
+
+        public Guid UserId { get; set; }
+
+        public string DeviceName { get; set; }
+
+        public string RemoteEndPoint { get; set; }
     }
 }

@@ -171,13 +171,25 @@ namespace Emby.Server.Implementations.Session
             }
 
             // TODO: make the entire call async
-            _eventBus.Send(new SessionStartedEventArgs(info)).GetAwaiter().GetResult();
+            _eventBus.Send(new SessionStartedEventArgs
+            {
+                UserId = info.UserId,
+                UserName = info.UserName,
+                DeviceName = info.DeviceName,
+                RemoteEndPoint = info.RemoteEndPoint
+            }).GetAwaiter().GetResult();
         }
 
         private void OnSessionEnded(SessionInfo info)
         {
             // TODO: make the entire call async
-            _eventBus.Send(new SessionEndedEventArgs(info)).GetAwaiter().GetResult();
+            _eventBus.Send(new SessionEndedEventArgs
+            {
+                UserId = info.UserId,
+                UserName = info.UserName,
+                DeviceName = info.DeviceName,
+                RemoteEndPoint = info.RemoteEndPoint
+            }).GetAwaiter().GetResult();
 
             info.Dispose();
         }
@@ -627,8 +639,7 @@ namespace Emby.Server.Implementations.Session
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
-                DeviceId = session.DeviceId,
-                Session = session
+                DeviceId = session.DeviceId
             }).ConfigureAwait(false);
 
             StartIdleCheckTimer();
@@ -709,8 +720,7 @@ namespace Emby.Server.Implementations.Session
                 DeviceId = session.DeviceId,
                 IsPaused = info.IsPaused,
                 PlaySessionId = info.PlaySessionId,
-                IsAutomated = isAutomated,
-                Session = session
+                IsAutomated = isAutomated
             }).ConfigureAwait(false);
 
             if (!isAutomated)
@@ -899,8 +909,7 @@ namespace Emby.Server.Implementations.Session
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
-                DeviceId = session.DeviceId,
-                Session = session
+                DeviceId = session.DeviceId
             }).ConfigureAwait(false);
         }
 

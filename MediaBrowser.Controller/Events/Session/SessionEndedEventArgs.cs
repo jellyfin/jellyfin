@@ -1,19 +1,18 @@
-﻿using Jellyfin.Data.Events;
-using MediaBrowser.Controller.Session;
+﻿using System;
 
 namespace MediaBrowser.Controller.Events.Session
 {
     /// <summary>
     /// An event that fires when a session is ended.
     /// </summary>
-    public class SessionEndedEventArgs : GenericEventArgs<SessionInfo>
+    public class SessionEndedEventArgs : EventArgs
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SessionEndedEventArgs"/> class.
-        /// </summary>
-        /// <param name="arg">The session info.</param>
-        public SessionEndedEventArgs(SessionInfo arg) : base(arg)
-        {
-        }
+        public string UserName { get; set; }
+
+        public Guid UserId { get; set; }
+
+        public string DeviceName { get; set; }
+
+        public string RemoteEndPoint { get; set; }
     }
 }
