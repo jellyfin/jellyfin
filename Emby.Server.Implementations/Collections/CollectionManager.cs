@@ -354,7 +354,6 @@ namespace Emby.Server.Implementations.Collections
                         }
                         if (!alreadyInResults)
                         {
-
                             results[item.Id] = item;
                         }
                     }
