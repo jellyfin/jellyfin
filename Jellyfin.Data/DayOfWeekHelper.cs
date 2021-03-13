@@ -11,7 +11,7 @@ namespace Jellyfin.Data
         {
             return day switch
             {
-                DynamicDayOfWeek.Everyday => new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday },
+                DynamicDayOfWeek.Everyday => new[] { DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
                 DynamicDayOfWeek.Weekday => new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday },
                 DynamicDayOfWeek.Weekend => new[] { DayOfWeek.Sunday, DayOfWeek.Saturday },
                 _ => new[] { (DayOfWeek)day }
