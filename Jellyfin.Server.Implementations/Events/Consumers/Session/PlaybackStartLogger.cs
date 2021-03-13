@@ -44,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return;
             }
 
-            if (eventArgs.Item != null && eventArgs.Item.IsThemeMedia)
+            if (eventArgs.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;

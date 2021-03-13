@@ -620,7 +620,8 @@ namespace Emby.Server.Implementations.Session
 
             await _eventBus.Send(new PlaybackStartEventArgs
             {
-                Item = libraryItem,
+                ItemId = libraryItem?.Id,
+                IsThemeMedia = libraryItem?.IsThemeMedia ?? false,
                 Users = users,
                 MediaSourceId = info.MediaSourceId,
                 MediaInfo = info.Item,
@@ -697,7 +698,8 @@ namespace Emby.Server.Implementations.Session
 
             await _eventBus.Send(new PlaybackProgressEventArgs
             {
-                Item = libraryItem,
+                ItemId = libraryItem?.Id,
+                IsThemeMedia = libraryItem?.IsThemeMedia ?? false,
                 Users = users,
                 PlaybackPositionTicks = session.PlayState.PositionTicks,
                 MediaSourceId = session.PlayState.MediaSourceId,
@@ -888,7 +890,8 @@ namespace Emby.Server.Implementations.Session
 
             await _eventBus.Send(new PlaybackStopEventArgs
             {
-                Item = libraryItem,
+                ItemId = libraryItem?.Id,
+                IsThemeMedia = libraryItem?.IsThemeMedia ?? false,
                 Users = users,
                 PlaybackPositionTicks = info.PositionTicks,
                 PlayedToCompletion = playedToCompletion,
