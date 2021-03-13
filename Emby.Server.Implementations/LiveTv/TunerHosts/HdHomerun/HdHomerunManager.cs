@@ -355,7 +355,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return offset + 4;
         }
 
-        private static bool ParseReturnMessage(byte[] buf, int numBytes, out string returnVal)
+        internal static bool ParseReturnMessage(byte[] buf, int numBytes, out string returnVal)
         {
             returnVal = string.Empty;
 

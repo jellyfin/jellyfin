@@ -103,5 +103,23 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 Convert.ToHexString(expected),
                 Convert.ToHexString(buffer.Slice(0, len)));
         }
+
+        [Fact]
+        public void ParseReturnMessage_Valid_Success()
+        {
+            ReadOnlySpan<byte> packet = stackalloc byte[]
+            {
+                0, 5,
+                0, 20,
+                3,
+                10, (byte)'/', (byte)'t', (byte)'u', (byte)'n', (byte)'e', (byte)'r', (byte)'0', (byte)'/', (byte)'N', 0,
+                4,
+                6, (byte)'v', (byte)'a', (byte)'l', (byte)'u', (byte)'e', 0,
+                0x7d, 0xa3, 0xa3, 0xf3
+            };
+
+            Assert.True(HdHomerunManager.ParseReturnMessage(packet.ToArray(), packet.Length, out var value));
+            Assert.Equal("value", value);
+        }
     }
 }
