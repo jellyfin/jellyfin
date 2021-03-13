@@ -292,7 +292,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return FinishPacket(buffer, offset);
         }
 
-        private static int WriteSetMessage(Span<byte> buffer, int tuner, string name, string value, uint? lockkey)
+        internal static int WriteSetMessage(Span<byte> buffer, int tuner, string name, string value, uint? lockkey)
         {
             var byteName = string.Format(CultureInfo.InvariantCulture, "/tuner{0}/{1}", tuner, name);
             int offset = WriteHeaderAndPayload(buffer, byteName);
