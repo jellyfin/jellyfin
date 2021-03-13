@@ -16,10 +16,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Dlna;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +25,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Emby.Dlna
 {
-    public class DlnaManager : IDlnaManager, IServerEntryPoint, IRunBeforeStartup
+    public class DlnaManager : IDlnaManager
     {
         private readonly IApplicationPaths _appPaths;
         private readonly IXmlSerializer _xmlSerializer;
@@ -44,13 +41,13 @@ namespace Emby.Dlna
             IXmlSerializer xmlSerializer,
             IFileSystem fileSystem,
             IApplicationPaths appPaths,
-            ILoggerFactory loggerFactory,
+            ILogger<DlnaManager> logger,
             IServerApplicationHost appHost)
         {
             _xmlSerializer = xmlSerializer;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
-            _logger = loggerFactory.CreateLogger<DlnaManager>();
+            _logger = logger;
             _appHost = appHost;
         }
 
@@ -58,7 +55,7 @@ namespace Emby.Dlna
 
         private string SystemProfilesPath => Path.Combine(_appPaths.ConfigurationDirectoryPath, "dlna", "system");
 
-        public async Task RunAsync()
+        public async Task LoadAllProfiles()
         {
             try
             {

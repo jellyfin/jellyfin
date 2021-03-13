@@ -588,6 +588,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(NetManager);
             ServiceCollection.AddSingleton<ZeroConf>();
+            ServiceCollection.AddSingleton<IDlnaManager, DlnaManager>();
 
             ServiceCollection.AddSingleton<ITaskManager, TaskManager>();
 
@@ -703,6 +704,10 @@ namespace Emby.Server.Implementations
         {
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
+
+            // Load transcoding profiles.
+            var profileManager = (DlnaManager)Resolve<IDlnaManager>();
+            await profileManager.LoadAllProfiles().ConfigureAwait(false);
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
@@ -1082,6 +1087,9 @@ namespace Emby.Server.Implementations
 
             // Network
             yield return typeof(NetworkManager).Assembly;
+
+            // Dlna profile manager
+            yield return typeof(DlnaManager).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
             {

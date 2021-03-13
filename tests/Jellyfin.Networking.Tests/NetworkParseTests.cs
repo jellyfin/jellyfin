@@ -83,7 +83,7 @@ namespace Jellyfin.Networking.Tests
         /// <summary>
         /// Checks IP address formats.
         /// </summary>
-        /// <param name="address"></param>
+        /// <param name="address">IP address.</param>
         [Theory]
         [InlineData("127.0.0.1")]
         [InlineData("127.0.0.1:123")]
@@ -107,7 +107,7 @@ namespace Jellyfin.Networking.Tests
         /// <summary>
         /// Checks IP address formats.
         /// </summary>
-        /// <param name="address"></param>
+        /// <param name="address">Ip address.</param>
         [Theory]
         [InlineData("127.0.0.1")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]

@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +10,11 @@ namespace MediaBrowser.Controller.Dlna
 {
     public interface IDlnaManager
     {
+        /// <summary>
+        /// Extracts/ Loads profiles.
+        /// </summary>
+        Task LoadAllProfiles();
+
         /// <summary>
         /// Gets the profile infos.
         /// </summary>

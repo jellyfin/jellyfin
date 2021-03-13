@@ -31,6 +31,7 @@ namespace MediaBrowser.Model.Dlna
             MaxStreamingBitrate = 8000000;
             MaxStaticBitrate = 8000000;
             MusicStreamingTranscodingBitrate = 128000;
+            EncodeContextOnTransmission = false;
         }
 
         /// <summary>
@@ -103,6 +104,11 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets a value indicating whether EnableSingleSubtitleLimit.
         /// </summary>
         public bool EnableSingleSubtitleLimit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether didl should be encoded to this device.
+        /// </summary>
+        public bool EncodeContextOnTransmission { get; set; }
 
         /// <summary>
         /// Gets or sets the SupportedMediaTypes.
