@@ -590,15 +590,15 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Reports that new movies have been added by an external source.
         /// </summary>
-        /// <param name="updates">A list of updated media paths.</param>
+        /// <param name="dto">The update paths.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Library/Media/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMedia([FromBody, Required] MediaUpdateInfoDto[] updates)
+        public ActionResult PostUpdatedMedia([FromBody, Required] MediaUpdateInfoDto dto)
         {
-            foreach (var item in updates)
+            foreach (var item in dto.Updates)
             {
                 _libraryMonitor.ReportFileSystemChanged(item.Path);
             }
