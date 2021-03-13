@@ -101,7 +101,7 @@ namespace Jellyfin.Api.Helpers
             var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
             {
                 Request = streamingRequest,
-                RequestedUrl = url,
+                RequestedUrl = httpRequest.Path,
                 UserAgent = httpRequest.Headers[HeaderNames.UserAgent],
                 EnableDlnaHeaders = enableDlnaHeaders
             };
