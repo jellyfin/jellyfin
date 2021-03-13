@@ -347,7 +347,6 @@ namespace Emby.Server.Implementations.Collections
                         var alreadyInResults = false;
                         foreach (var child in item.GetMediaSources(true))
                         {
-
                             if (results.ContainsKey(Guid.Parse(child.Id)))
                             {
                                 alreadyInResults = true;
