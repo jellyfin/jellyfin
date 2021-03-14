@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>`0.</returns>
-        protected override T Resolve(ItemResolveArgs args)
+        public override T Resolve(ItemResolveArgs args)
         {
             return ResolveVideo<T>(args, false);
         }

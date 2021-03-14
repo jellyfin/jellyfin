@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
     {
         private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
 
-        protected override Book Resolve(ItemResolveArgs args)
+        public override Book Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 
