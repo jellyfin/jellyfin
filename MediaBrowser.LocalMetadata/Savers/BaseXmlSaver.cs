@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -37,7 +36,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BaseXmlSaver}"/> interface.</param>
-        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
+        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
@@ -133,7 +132,8 @@ namespace MediaBrowser.LocalMetadata.Savers
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 stream.CopyTo(filestream);
             }
@@ -420,20 +420,17 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            var boxset = item as BoxSet;
-            if (boxset != null)
+            if (item is BoxSet boxset)
             {
                 AddLinkedChildren(boxset, writer, "CollectionItems", "CollectionItem");
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null && !Playlist.IsPlaylistFile(playlist.Path))
+            if (item is Playlist playlist && !Playlist.IsPlaylistFile(playlist.Path))
             {
                 AddLinkedChildren(playlist, writer, "PlaylistItems", "PlaylistItem");
             }
 
-            var hasShares = item as IHasShares;
-            if (hasShares != null)
+            if (item is IHasShares hasShares)
             {
                 AddShares(hasShares, writer);
             }
@@ -540,11 +537,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
 
             writer.WriteEndElement();
-        }
-
-        private bool IsPersonType(PersonInfo person, string type)
-        {
-            return string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IMediaEncoder _mediaEncoder;
 
-        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationController"/> class.

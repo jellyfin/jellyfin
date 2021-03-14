@@ -49,7 +49,7 @@
     "NotificationOptionAudioPlayback": "Audió lejátszás elkezdve",
     "NotificationOptionAudioPlaybackStopped": "Audió lejátszás leállítva",
     "NotificationOptionCameraImageUploaded": "Kamera kép feltöltve",
-    "NotificationOptionInstallationFailed": "Telepítési hiba",
+    "NotificationOptionInstallationFailed": "Telepítés sikertelen",
     "NotificationOptionNewLibraryContent": "Új tartalom hozzáadva",
     "NotificationOptionPluginError": "Bővítmény hiba",
     "NotificationOptionPluginInstalled": "Bővítmény telepítve",

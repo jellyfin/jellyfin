@@ -1168,11 +1168,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> SplitNames(string value)
         {
-            value = value ?? string.Empty;
-
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
-            var separator = value.IndexOf('|', StringComparison.Ordinal) == -1 && value.IndexOf(';', StringComparison.Ordinal) == -1
+            var separator = !value.Contains('|', StringComparison.Ordinal) && !value.Contains(';', StringComparison.Ordinal)
                 ? new[] { ',' }
                 : new[] { '|', ';' };
 

@@ -10,7 +10,7 @@ namespace Jellyfin.Naming.Tests.AudioBook
     {
         private readonly NamingOptions _namingOptions = new NamingOptions();
 
-        public static IEnumerable<object[]> GetResolveFileTestData()
+        public static IEnumerable<object[]> Resolve_ValidFileNameTestData()
         {
             yield return new object[]
             {
@@ -36,7 +36,7 @@ namespace Jellyfin.Naming.Tests.AudioBook
         }
 
         [Theory]
-        [MemberData(nameof(GetResolveFileTestData))]
+        [MemberData(nameof(Resolve_ValidFileNameTestData))]
         public void Resolve_ValidFileName_Success(AudioBookFileInfo expectedResult)
         {
             var result = new AudioBookResolver(_namingOptions).Resolve(expectedResult.Path);

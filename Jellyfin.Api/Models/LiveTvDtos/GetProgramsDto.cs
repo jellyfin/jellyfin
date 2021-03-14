@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Json.Converters;

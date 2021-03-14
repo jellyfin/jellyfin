@@ -53,7 +53,8 @@ namespace Emby.Server.Implementations.AppBase
 
                 Directory.CreateDirectory(directory);
                 // Save it after load in case we got new items
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     fs.Write(newBytes, 0, newBytesLen);
                 }
