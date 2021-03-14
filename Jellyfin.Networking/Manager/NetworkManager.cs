@@ -274,7 +274,7 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Count > 0)
                 {
                     // Return all the interfaces except the ones specifically excluded.
-                    return _interfaceAddresses.Exclude(_bindExclusions);
+                    return _interfaceAddresses.Exclude(_bindExclusions, false);
                 }
 
                 if (individualInterfaces)
@@ -299,7 +299,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Remove any excluded bind interfaces.
-            return _bindAddresses.Exclude(_bindExclusions);
+            return _bindAddresses.Exclude(_bindExclusions, false);
         }
 
         /// <inheritdoc/>
@@ -388,7 +388,7 @@ namespace Jellyfin.Networking.Manager
             // Get the first LAN interface address that isn't a loopback.
             var interfaces = CreateCollection(
                 _interfaceAddresses
-                    .Exclude(_bindExclusions)
+                    .Exclude(_bindExclusions, false)
                     .Where(IsInLocalNetwork)
                     .OrderBy(p => p.Tag));
 
@@ -396,6 +396,16 @@ namespace Jellyfin.Networking.Manager
             {
                 if (haveSource)
                 {
+                    foreach (var intf in interfaces)
+                    {
+                        if (intf.Address.Equals(source.Address))
+                        {
+                            result = FormatIP6String(intf.Address);
+                            _logger.LogDebug("{Source}: GetBindInterface: Has found matching interface. {Result}", source, result);
+                            return result;
+                        }
+                    }
+
                     // Does the request originate in one of the interface subnets?
                     // (For systems with multiple internal network cards, and multiple subnets)
                     foreach (var intf in interfaces)
@@ -522,10 +532,10 @@ namespace Jellyfin.Networking.Manager
         {
             if (filter == null)
             {
-                return _lanSubnets.Exclude(_excludedSubnets).AsNetworks();
+                return _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks();
             }
 
-            return _lanSubnets.Exclude(filter);
+            return _lanSubnets.Exclude(filter, true);
         }
 
         /// <inheritdoc/>
@@ -1018,7 +1028,7 @@ namespace Jellyfin.Networking.Manager
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets.AsString());
-                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets).AsNetworks().AsString());
+                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks().AsString());
             }
         }
 
@@ -1207,7 +1217,7 @@ namespace Jellyfin.Networking.Manager
         private bool MatchesBindInterface(IPObject source, bool isInExternalSubnet, out string result)
         {
             result = string.Empty;
-            var addresses = _bindAddresses.Exclude(_bindExclusions);
+            var addresses = _bindAddresses.Exclude(_bindExclusions, false);
 
             int count = addresses.Count;
             if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses[0].Equals(IPAddress.IPv6Any)))
@@ -1292,7 +1302,7 @@ namespace Jellyfin.Networking.Manager
             result = string.Empty;
             // Get the first WAN interface address that isn't a loopback.
             var extResult = _interfaceAddresses
-                .Exclude(_bindExclusions)
+                .Exclude(_bindExclusions, false)
                 .Where(p => !IsInLocalNetwork(p))
                 .OrderBy(p => p.Tag);
 
