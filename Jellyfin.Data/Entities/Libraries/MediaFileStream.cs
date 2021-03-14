@@ -1,6 +1,5 @@
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -16,27 +15,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="MediaFileStream"/> class.
         /// </summary>
         /// <param name="streamNumber">The number of this stream.</param>
-        /// <param name="mediaFile">The media file.</param>
-        public MediaFileStream(int streamNumber, MediaFile mediaFile)
+        public MediaFileStream(int streamNumber)
         {
             StreamNumber = streamNumber;
-
-            if (mediaFile == null)
-            {
-                throw new ArgumentNullException(nameof(mediaFile));
-            }
-
-            mediaFile.MediaFileStreams.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MediaFileStream"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MediaFileStream()
-        {
         }
 
         /// <summary>

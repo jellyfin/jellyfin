@@ -25,14 +25,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Permission"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Permission()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id of this permission.
         /// </summary>
         /// <remarks>

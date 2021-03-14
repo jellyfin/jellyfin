@@ -184,8 +184,8 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = new User(
                 name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
+                _defaultAuthenticationProvider.GetType().FullName!,
+                _defaultPasswordResetProvider.GetType().FullName!)
             {
                 InternalId = max + 1
             };
@@ -444,7 +444,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (!string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);
