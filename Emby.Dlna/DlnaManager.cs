@@ -36,7 +36,7 @@ namespace Emby.Dlna
         private readonly ILogger<DlnaManager> _logger;
         private readonly IServerApplicationHost _appHost;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 
@@ -395,7 +395,8 @@ namespace Emby.Dlna
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }

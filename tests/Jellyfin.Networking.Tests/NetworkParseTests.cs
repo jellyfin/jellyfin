@@ -1,13 +1,13 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Net;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
-using System.Collections.ObjectModel;
 
 namespace Jellyfin.Networking.Tests
 {
@@ -126,7 +126,6 @@ namespace Jellyfin.Networking.Tests
             Assert.True(IPNetAddress.TryParse(address, out _));
         }
 
-
         /// <summary>
         /// All should be invalid address strings.
         /// </summary>
@@ -143,7 +142,6 @@ namespace Jellyfin.Networking.Tests
             Assert.False(IPHost.TryParse(address, out _));
         }
 
-
         /// <summary>
         /// Test collection parsing.
         /// </summary>
@@ -154,19 +152,22 @@ namespace Jellyfin.Networking.Tests
         /// <param name="result4">Excluded IP4 addresses from the collection.</param>
         /// <param name="result5">Network addresses of the collection.</param>
         [Theory]
-        [InlineData("127.0.0.1#",
+        [InlineData(
+            "127.0.0.1#",
             "[]",
             "[]",
             "[]",
             "[]",
             "[]")]
-        [InlineData("!127.0.0.1",
+        [InlineData(
+            "!127.0.0.1",
             "[]",
             "[]",
             "[127.0.0.1/32]",
             "[127.0.0.1/32]",
             "[]")]
-        [InlineData("",
+        [InlineData(
+            "",
             "[]",
             "[]",
             "[]",
@@ -179,7 +180,8 @@ namespace Jellyfin.Networking.Tests
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
             "[192.158.0.0/16,127.0.0.1/32,::1/128,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
-        [InlineData("192.158.1.2/255.255.0.0,192.169.1.2/8",
+        [InlineData(
+            "192.158.1.2/255.255.0.0,192.169.1.2/8",
             "[192.158.1.2/16,192.169.1.2/8]",
             "[192.158.1.2/16,192.169.1.2/8]",
             "[]",
@@ -196,12 +198,12 @@ namespace Jellyfin.Networking.Tests
             {
                 EnableIPV6 = true,
                 EnableIPV4 = true,
-            };           
+            };
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included.
-            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false); 
+            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.Equal(nc.AsString(), result1);
 
             // Test excluded.
@@ -210,7 +212,7 @@ namespace Jellyfin.Networking.Tests
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
-            
+
             // Test IP4 included.
             nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.Equal(nc.AsString(), result2);
@@ -253,7 +255,6 @@ namespace Jellyfin.Networking.Tests
             {
                 throw new ArgumentNullException(nameof(result));
             }
-
 
             var conf = new NetworkConfiguration()
             {
@@ -380,7 +381,6 @@ namespace Jellyfin.Networking.Tests
             Assert.True(ncResult.Compare(resultCollection));
         }
 
-
         [Theory]
         [InlineData("10.1.1.1/32", "10.1.1.1")]
         [InlineData("192.168.1.254/32", "192.168.1.254/255.255.255.255")]
@@ -457,7 +457,7 @@ namespace Jellyfin.Networking.Tests
         // On my system eth16 is internal, eth11 external (Windows defines the indexes).
         //
         // This test is to replicate how subnet bound ServerPublisherUri work throughout the system.
-        
+
         // User on internal network, we're bound internal and external - so result is internal override.
         [InlineData("192.168.1.1", "192.168.1.0/24", "eth16,eth11", false, "192.168.1.0/24=internal.jellyfin", "internal.jellyfin")]
 
@@ -481,7 +481,6 @@ namespace Jellyfin.Networking.Tests
 
         // User is internal, no binding - so result is the 1st internal, which is then overridden.
         [InlineData("192.168.1.1", "192.168.1.0/24", "", false, "eth16=http://helloworld.com", "http://helloworld.com")]
-
         public void TestBindInterfaceOverrides(string source, string lan, string bindAddresses, bool ipv6enabled, string publishedServers, string result)
         {
             if (lan == null)

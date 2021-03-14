@@ -164,6 +164,7 @@ namespace Jellyfin.Server
                 appPaths,
                 _loggerFactory,
                 options,
+                startupConfig,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 serviceCollection);
 
@@ -221,7 +222,7 @@ namespace Jellyfin.Server
             }
             finally
             {
-                appHost?.Dispose();
+                appHost.Dispose();
             }
 
             if (_restartOnShutdown)
@@ -280,7 +281,7 @@ namespace Jellyfin.Server
                     bool flagged = false;
                     foreach (IPObject netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on {0}", netAdd);
+                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
                         options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
@@ -622,7 +623,7 @@ namespace Jellyfin.Server
             string commandLineArgsString;
             if (options.RestartArgs != null)
             {
-                commandLineArgsString = options.RestartArgs ?? string.Empty;
+                commandLineArgsString = options.RestartArgs;
             }
             else
             {

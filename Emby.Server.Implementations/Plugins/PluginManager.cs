@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Plugins
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
         private readonly ServerConfiguration _config;
-        private readonly IList<LocalPlugin> _plugins;
+        private readonly List<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
 
         private IHttpClientFactory? _httpClientFactory;
@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options)
             {
                 WriteIndented = true
             };
@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Gets the Plugins.
         /// </summary>
-        public IList<LocalPlugin> Plugins => _plugins;
+        public IReadOnlyList<LocalPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Returns all the assemblies.
@@ -678,7 +678,7 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.DllFiles.AddRange(Directory.EnumerateFiles(entry.Path, "*.dll", SearchOption.AllDirectories));
+                    entry.DllFiles = Directory.GetFiles(entry.Path, "*.dll", SearchOption.AllDirectories);
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;
