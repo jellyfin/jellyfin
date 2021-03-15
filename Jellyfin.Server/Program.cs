@@ -9,20 +9,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
 using CommandLine;
 using Emby.Server.Implementations;
+using Emby.Server.Implementations.Configuration;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Serialization;
-using Jellyfin.Api.Controllers;
-using Jellyfin.Networking.Configuration;
+using Jellyfin.Server.Migrations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
-using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -163,7 +158,8 @@ namespace Jellyfin.Server
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             PerformStaticInitialization();
-            MigrateNetworkSettings(_logger, appPaths);
+
+            MigrationRunner.RunNetworkSettingMigration(appPaths, _loggerFactory.CreateLogger<MigrationRunner>());
 
             var serviceCollection = new ServiceCollection();
 
@@ -653,79 +649,6 @@ namespace Jellyfin.Server
             }
 
             return "\"" + arg + "\"";
-        }
-
-        private static void MigrateNetworkSettings(ILogger logger, ServerApplicationPaths appPaths)
-        {
-            var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
-            if (!File.Exists(destFile))
-            {
-                var settings = new NetworkConfiguration();
-                var settingsType = typeof(NetworkConfiguration);
-                var props = settingsType.GetProperties().Where(x => x.CanWrite).ToList();
-
-                // manually load source xml file.
-                var serializer = new XmlSerializer(typeof(ServerConfiguration));
-                serializer.UnknownElement += (object? sender, XmlElementEventArgs e) =>
-                {
-                    var p = props.Find(x => x.Name == e.Element.Name);
-                    if (p != null)
-                    {
-                        if (p.PropertyType == typeof(bool))
-                        {
-                            bool.TryParse(e.Element.InnerText, out var boolVal);
-                            p.SetValue(settings, boolVal);
-                        }
-                        else if (p.PropertyType == typeof(int))
-                        {
-                            int.TryParse(e.Element.InnerText, out var intVal);
-                            p.SetValue(settings, intVal);
-                        }
-                        else if (p.PropertyType == typeof(string[]))
-                        {
-                            var items = new List<string>();
-                            foreach (XmlNode el in e.Element.ChildNodes)
-                            {
-                                items.Add(el.InnerText);
-                            }
-
-                            p.SetValue(settings, items.ToArray());
-                        }
-                        else
-                        {
-                            try
-                            {
-                                p.SetValue(settings, e.Element.InnerText ?? string.Empty);
-                            }
-                            catch
-                            {
-                                logger.LogDebug(
-                                    "Unable to migrate value {Name}. Unknown datatype {DataType}. Value {Value}.",
-                                    e.Element.Name,
-                                    p.PropertyType,
-                                    e.Element.InnerText);
-                            }
-                        }
-                    }
-                };
-
-                ServerConfiguration? deserialized;
-                try
-                {
-                    using (StreamReader reader = new StreamReader(appPaths.SystemConfigurationFilePath))
-                    {
-                        deserialized = (ServerConfiguration?)serializer.Deserialize(reader);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Catch everything, so we don't bomb out JF.
-                    logger.LogDebug(ex, "Exception occurred migrating settings.");
-                }
-
-                var xmlSerializer = new MyXmlSerializer();
-                xmlSerializer.SerializeToFile(settings, destFile);
-            }
         }
     }
 }
