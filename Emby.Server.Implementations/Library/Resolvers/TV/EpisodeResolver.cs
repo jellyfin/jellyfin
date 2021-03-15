@@ -13,6 +13,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     public class EpisodeResolver : BaseVideoResolver<Episode>
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        public EpisodeResolver(ILibraryManager libraryManager)
+            : base(libraryManager)
+        {
+        }
+
+        /// <summary>
         /// Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
@@ -40,7 +49,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             if ((season != null ||
                  string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ||
                  args.HasParent<Series>())
-                && !BaseItem.AllExtrasTypesFolderNames.Contains(parent.Name, StringComparer.OrdinalIgnoreCase))
+                && (parent is Series || !BaseItem.AllExtrasTypesFolderNames.Contains(parent.Name, StringComparer.OrdinalIgnoreCase)))
             {
                 var episode = ResolveVideo<Episode>(args, false);
 
@@ -75,15 +84,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
-        /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        public EpisodeResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
-        {
         }
     }
 }
