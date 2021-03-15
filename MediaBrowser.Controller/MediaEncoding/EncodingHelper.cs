@@ -2673,8 +2673,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // When burning in graphical subtitles using overlay_qsv or software decoding, upload videostream to the same qsv context.
-            else if ((isLinux && hasGraphicalSubs && (isQsvH264Encoder || isQsvHevcEncoder)
-                     && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported)) || isSwDecoder)
+            else if (((isLinux && hasGraphicalSubs && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported))
+                || isSwDecoder) && (isQsvH264Encoder || isQsvHevcEncoder))
             {
                 filters.Add("hwupload=extra_hw_frames=64");
             }
