@@ -129,12 +129,12 @@ namespace Jellyfin.Server.Migrations
                     {
                         if (p.PropertyType == typeof(bool))
                         {
-                            bool.TryParse(e.Element.InnerText, out var boolVal);
+                            _ = bool.TryParse(e.Element.InnerText, out var boolVal);
                             p.SetValue(settings, boolVal);
                         }
                         else if (p.PropertyType == typeof(int))
                         {
-                            int.TryParse(e.Element.InnerText, out var intVal);
+                            _ = int.TryParse(e.Element.InnerText, out var intVal);
                             p.SetValue(settings, intVal);
                         }
                         else if (p.PropertyType == typeof(string[]))
@@ -165,12 +165,11 @@ namespace Jellyfin.Server.Migrations
                     }
                 };
 
-                ServerConfiguration? deserialized;
                 try
                 {
-                    using (StreamReader reader = new StreamReader(appPaths.SystemConfigurationFilePath))
+                    using (var xmlReader = new XmlTextReader(appPaths.SystemConfigurationFilePath))
                     {
-                        deserialized = (ServerConfiguration?)serializer.Deserialize(reader);
+                        var deserialized = (ServerConfiguration?)serializer.Deserialize(xmlReader);
                     }
 
                     var xmlSerializer = new MyXmlSerializer();
