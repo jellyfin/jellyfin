@@ -2672,9 +2672,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 filters.Add("hwupload");
             }
 
-            // When burning in graphical subtitles using overlay_qsv, upload videostream to the same qsv context.
-            else if (isLinux && hasGraphicalSubs && (isQsvH264Encoder || isQsvHevcEncoder)
-                     && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported))
+            // When burning in graphical subtitles using overlay_qsv or software decoding, upload videostream to the same qsv context.
+            else if ((isLinux && hasGraphicalSubs && (isQsvH264Encoder || isQsvHevcEncoder)
+                     && !(isTonemappingSupportedOnQsv && isVppTonemappingSupported)) || isSwDecoder)
             {
                 filters.Add("hwupload=extra_hw_frames=64");
             }
