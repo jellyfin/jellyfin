@@ -295,12 +295,9 @@ namespace Jellyfin.Naming.Tests.Video
                 FullName = i
             }).ToList()).ToList();
 
-            Assert.Single(result);
+            Assert.Equal(7, result.Count);
             Assert.Empty(result[0].Extras);
-            Assert.Equal(6, result[0].AlternateVersions.Count);
-            Assert.False(result[0].AlternateVersions[2].Is3D);
-            Assert.True(result[0].AlternateVersions[3].Is3D);
-            Assert.True(result[0].AlternateVersions[4].Is3D);
+            Assert.Empty(result[0].AlternateVersions);
         }
 
         [Fact]
