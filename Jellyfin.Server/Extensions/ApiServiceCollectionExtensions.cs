@@ -261,15 +261,16 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
+                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString() ?? "0.0.0.1";
                 c.SwaggerDoc("api-docs", new OpenApiInfo
                 {
                     Title = "Jellyfin API",
-                    Version = "v1",
+                    Version = version,
                     Extensions = new Dictionary<string, IOpenApiExtension>
                     {
                         {
                             "x-jellyfin-version",
-                            new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                            new OpenApiString(version)
                         }
                     }
                 });
