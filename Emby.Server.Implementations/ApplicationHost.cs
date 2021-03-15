@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            
+
             _startupOptions = options;
             _startupConfig = startupConfig;
 
