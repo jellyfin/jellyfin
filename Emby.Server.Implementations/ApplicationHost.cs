@@ -14,8 +14,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Serialization;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
@@ -86,7 +84,6 @@ using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -269,14 +266,14 @@ namespace Emby.Server.Implementations
             LoggerFactory = loggerFactory;
             _fileSystemManager = fileSystem;
 
-            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-
             ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
 
             // Have to pre-register the NetworkConfigurationFactory, as the configuration sub-system is not yet initialised.
             ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
             NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
+            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
+            
             _startupOptions = options;
             _startupConfig = startupConfig;
 
