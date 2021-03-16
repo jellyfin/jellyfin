@@ -58,6 +58,54 @@ namespace MediaBrowser.Model.Drawing
         }
 
         /// <summary>
+        /// Resizes to fill box.
+        /// Returns original size if both width and height are null or zero.
+        /// </summary>
+        /// <param name="size">The original size object.</param>
+        /// <param name="fillWidth">A new fixed width, if desired.</param>
+        /// <param name="fillHeight">A new fixed height, if desired.</param>
+        /// <returns>A new size object or size.</returns>
+        public static ImageDimensions ResizeFill(
+            ImageDimensions size,
+            int? fillWidth,
+            int? fillHeight)
+        {
+            // Return original size if input is invalid.
+            if (
+                (fillWidth == null && fillHeight == null)
+                || (fillWidth == 0 || fillHeight == 0))
+            {
+                return size;
+            }
+
+            if (fillWidth == null || fillWidth == 0)
+            {
+                fillWidth = 1;
+            }
+
+            if (fillHeight == null || fillHeight == 0)
+            {
+                fillHeight = 1;
+            }
+
+            double widthRatio = (double)size.Width / (double)fillWidth;
+            double heightRatio = (double)size.Height / (double)fillHeight!;
+            // min()
+            double scaleRatio = widthRatio > heightRatio ? heightRatio : widthRatio;
+
+            // Clamp to current size.
+            if (scaleRatio < 1)
+            {
+                return size;
+            }
+
+            int newWidth = Convert.ToInt32(Math.Ceiling((double)size.Width / scaleRatio));
+            int newHeight = Convert.ToInt32(Math.Ceiling((double)size.Height / scaleRatio));
+
+            return new ImageDimensions(newWidth, newHeight);
+        }
+
+        /// <summary>
         /// Gets the new width.
         /// </summary>
         /// <param name="currentHeight">Height of the current.</param>

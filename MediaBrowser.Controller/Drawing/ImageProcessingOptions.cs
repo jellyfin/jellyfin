@@ -32,6 +32,10 @@ namespace MediaBrowser.Controller.Drawing
 
         public int? MaxHeight { get; set; }
 
+        public int? FillWidth { get; set; }
+
+        public int? FillHeight { get; set; }
+
         public int Quality { get; set; }
 
         public IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; set; }
