@@ -5179,7 +5179,7 @@ AND Type = @InternalPersonType)");
                 statement?.TryBind("@NameContains", "%" + query.NameContains + "%");
             }
 
-            if (query.User != null)
+            if (query.User != null && (statement?.SQL.Contains("@UserId", StringComparison.Ordinal) ?? false))
             {
                 statement?.TryBind("@UserId", query.User.InternalId);
             }
