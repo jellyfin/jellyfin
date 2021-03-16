@@ -36,9 +36,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 
         /// <inheritdoc />
-        protected override string TmdbRegex => "themoviedb\\.org\\/tv\\/([0-9]+)";
-
-        /// <inheritdoc />
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
         {
             var item = itemResult.Item;

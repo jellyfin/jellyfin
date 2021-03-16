@@ -6,11 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -62,8 +63,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected IProviderManager ProviderManager { get; }
 
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
-
-        protected virtual string TmdbRegex => "themoviedb\\.org\\/movie\\/([0-9]+)";
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
@@ -220,31 +219,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected void ParseProviderLinks(T item, string xml)
         {
-            // IMDB:
-            // https://www.imdb.com/title/tt4154796
-            var imdbRegex = Regex.Match(xml, "tt([0-9]{7,8})", RegexOptions.Compiled);
-            if (imdbRegex.Success)
+            if (ProviderIdParsers.TryParseImdbId(xml, out var imdbId))
             {
-                item.SetProviderId(MetadataProvider.Imdb, imdbRegex.Value);
+                item.SetProviderId(MetadataProvider.Imdb, imdbId);
             }
 
-            // TMDB:
-            // https://www.themoviedb.org/movie/30287-fallo (movie)
-            // https://www.themoviedb.org/tv/1668-friends (tv)
-            var tmdbRegex = Regex.Match(xml, TmdbRegex, RegexOptions.Compiled);
-            if (tmdbRegex.Success)
+            if (item is Movie)
             {
-                item.SetProviderId(MetadataProvider.Tmdb, tmdbRegex.Groups[1].Value);
+                if (ProviderIdParsers.TryParseTmdbMovieId(xml, out var tmdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+                }
             }
 
-            // TVDB:
-            // https://www.thetvdb.com/?tab=series&id=121361
             if (item is Series)
             {
-                var tvdbRegex = Regex.Match(xml, "thetvdb\\.com\\/\\?tab=series\\&id=([0-9]+)", RegexOptions.Compiled);
-                if (tvdbRegex.Success)
+                if (ProviderIdParsers.TryParseTmdbSeriesId(xml, out var tmdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Tvdb, tvdbRegex.Groups[1].Value);
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+                }
+
+                if (ProviderIdParsers.TryParseTvdbId(xml, out var tvdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
                 }
             }
         }
