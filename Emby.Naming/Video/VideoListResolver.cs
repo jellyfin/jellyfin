@@ -235,7 +235,6 @@ namespace Emby.Naming.Video
                 // The CleanStringParser should have removed common keywords etc.
                 return string.IsNullOrEmpty(testFilename)
                        || testFilename[0] == '-'
-                       || testFilename[0] == '_'
                        || Regex.IsMatch(testFilename, @"^\[([^]]*)\]");
             }
 
