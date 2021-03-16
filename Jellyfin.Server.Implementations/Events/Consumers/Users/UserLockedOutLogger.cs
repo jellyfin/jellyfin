@@ -30,15 +30,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task Handle(UserLockedOutEventArgs eventArgs)
+        public async Task Handle(UserLockedOutEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("UserLockedOutWithName"),
-                    eventArgs.Argument.Username),
+                    message.Argument.Username),
                 NotificationType.UserLockedOut.ToString(),
-                eventArgs.Argument.Id)
+                message.Argument.Id)
             {
                 LogSeverity = LogLevel.Error
             }).ConfigureAwait(false);

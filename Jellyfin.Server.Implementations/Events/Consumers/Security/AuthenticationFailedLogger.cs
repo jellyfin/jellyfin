@@ -30,13 +30,13 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
         }
 
         /// <inheritdoc />
-        public async Task Handle(AuthenticationFailedEventArgs eventArgs)
+        public async Task Handle(AuthenticationFailedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("FailedLoginAttemptWithUserName"),
-                    eventArgs.Argument.Username),
+                    message.Argument.Username),
                 "AuthenticationFailed",
                 Guid.Empty)
             {
@@ -44,7 +44,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
-                    eventArgs.Argument.RemoteEndPoint),
+                    message.Argument.RemoteEndPoint),
             }).ConfigureAwait(false);
         }
     }

@@ -29,13 +29,13 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task Handle(UserDeletedEventArgs eventArgs)
+        public async Task Handle(UserDeletedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserDeletedWithName"),
-                        eventArgs.Argument.Username),
+                        message.Argument.Username),
                     "UserDeleted",
                     Guid.Empty))
                 .ConfigureAwait(false);

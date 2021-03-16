@@ -28,15 +28,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task Handle(UserCreatedEventArgs eventArgs)
+        public async Task Handle(UserCreatedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserCreatedWithName"),
-                        eventArgs.Argument.Username),
+                        message.Argument.Username),
                     "UserCreated",
-                    eventArgs.Argument.Id))
+                    message.Argument.Id))
                 .ConfigureAwait(false);
         }
     }

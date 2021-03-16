@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public LiveStreamHelper(IMediaEncoder mediaEncoder, ILogger logger, IApplicationPaths appPaths)
         {

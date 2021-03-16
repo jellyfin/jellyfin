@@ -24,9 +24,9 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task Handle(PluginInstallingEventArgs eventArgs)
+        public async Task Handle(PluginInstallingEventArgs message)
         {
-            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstalling, eventArgs.Argument, CancellationToken.None).ConfigureAwait(false);
+            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstalling, message.Argument, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

@@ -30,21 +30,21 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task Handle(InstallationFailedEventArgs eventArgs)
+        public async Task Handle(InstallationFailedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("NameInstallFailed"),
-                    eventArgs.InstallationInfo.Name),
+                    message.InstallationInfo.Name),
                 NotificationType.InstallationFailed.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("VersionNumber"),
-                    eventArgs.InstallationInfo.Version),
-                Overview = eventArgs.Exception.Message
+                    message.InstallationInfo.Version),
+                Overview = message.Exception.Message
             }).ConfigureAwait(false);
         }
     }

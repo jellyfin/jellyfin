@@ -28,9 +28,9 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task Handle(SessionStartedEventArgs eventArgs)
+        public async Task Handle(SessionStartedEventArgs message)
         {
-            if (string.IsNullOrEmpty(eventArgs.UserName))
+            if (string.IsNullOrEmpty(message.UserName))
             {
                 return;
             }
@@ -39,15 +39,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("UserOnlineFromDevice"),
-                    eventArgs.UserName,
-                    eventArgs.DeviceName),
+                    message.UserName,
+                    message.DeviceName),
                 "SessionStarted",
-                eventArgs.UserId)
+                message.UserId)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
-                    eventArgs.RemoteEndPoint)
+                    message.RemoteEndPoint)
             }).ConfigureAwait(false);
         }
     }

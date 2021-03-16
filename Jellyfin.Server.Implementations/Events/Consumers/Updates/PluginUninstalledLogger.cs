@@ -30,13 +30,13 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task Handle(PluginUninstalledEventArgs e)
+        public async Task Handle(PluginUninstalledEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("PluginUninstalledWithName"),
-                        e.Argument.Name),
+                        message.Argument.Name),
                     NotificationType.PluginUninstalled.ToString(),
                     Guid.Empty))
                 .ConfigureAwait(false);

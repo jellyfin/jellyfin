@@ -1,6 +1,5 @@
 #pragma warning disable CA2227
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -18,29 +17,13 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
         /// <param name="type">The role type.</param>
-        /// <param name="itemMetadata">The metadata.</param>
-        public PersonRole(PersonRoleType type, ItemMetadata itemMetadata)
+        /// <param name="person">The person.</param>
+        public PersonRole(PersonRoleType type, Person person)
         {
             Type = type;
-
-            if (itemMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(itemMetadata));
-            }
-
-            itemMetadata.PersonRoles.Add(this);
-
+            Person = person;
+            Artwork = new HashSet<Artwork>();
             Sources = new HashSet<MetadataProviderId>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonRole"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected PersonRole()
-        {
         }
 
         /// <summary>
@@ -60,7 +43,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         /// <summary>
         /// Gets or sets the person's role type.
@@ -80,7 +63,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public virtual Person Person { get; set; }
 
         /// <inheritdoc />

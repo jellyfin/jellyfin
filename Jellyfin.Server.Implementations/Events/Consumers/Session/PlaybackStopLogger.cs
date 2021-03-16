@@ -36,9 +36,9 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task Handle(PlaybackStopEventArgs eventArgs)
+        public async Task Handle(PlaybackStopEventArgs message)
         {
-            var item = eventArgs.MediaInfo;
+            var item = message.MediaInfo;
 
             if (item == null)
             {
@@ -46,18 +46,18 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return;
             }
 
-            if (eventArgs.IsThemeMedia)
+            if (message.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
             }
 
-            if (eventArgs.Users.Count == 0)
+            if (message.Users.Count == 0)
             {
                 return;
             }
 
-            var user = eventArgs.Users[0];
+            var user = message.Users[0];
 
             var notificationType = GetPlaybackStoppedNotificationType(item.MediaType);
             if (notificationType == null)
@@ -71,7 +71,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                         _localizationManager.GetLocalizedString("UserStoppedPlayingItemWithValues"),
                         user.Username,
                         GetItemName(item),
-                        eventArgs.DeviceName),
+                        message.DeviceName),
                     notificationType,
                     user.Id))
                 .ConfigureAwait(false);

@@ -30,21 +30,21 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task Handle(PluginUpdatedEventArgs eventArgs)
+        public async Task Handle(PluginUpdatedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("PluginUpdatedWithName"),
-                    eventArgs.Argument.Name),
+                    message.Argument.Name),
                 NotificationType.PluginUpdateInstalled.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("VersionNumber"),
-                    eventArgs.Argument.Version),
-                Overview = eventArgs.Argument.Changelog
+                    message.Argument.Version),
+                Overview = message.Argument.Changelog
             }).ConfigureAwait(false);
         }
     }

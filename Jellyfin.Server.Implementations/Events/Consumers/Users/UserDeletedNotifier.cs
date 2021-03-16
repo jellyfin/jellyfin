@@ -27,12 +27,12 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task Handle(UserDeletedEventArgs eventArgs)
+        public async Task Handle(UserDeletedEventArgs message)
         {
             await _sessionManager.SendMessageToUserSessions(
-                new List<Guid> { eventArgs.Argument.Id },
+                new List<Guid> { message.Argument.Id },
                 SessionMessageType.UserDeleted,
-                eventArgs.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
+                message.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
                 CancellationToken.None).ConfigureAwait(false);
         }
     }

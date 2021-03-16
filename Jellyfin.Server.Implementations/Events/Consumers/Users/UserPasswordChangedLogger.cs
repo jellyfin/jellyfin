@@ -28,15 +28,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task Handle(UserPasswordChangedEventArgs eventArgs)
+        public async Task Handle(UserPasswordChangedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserPasswordChangedWithName"),
-                        eventArgs.Argument.Username),
+                        message.Argument.Username),
                     "UserPasswordChanged",
-                    eventArgs.Argument.Id))
+                    message.Argument.Id))
                 .ConfigureAwait(false);
         }
     }

@@ -22,7 +22,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public AudioDbAlbumImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {

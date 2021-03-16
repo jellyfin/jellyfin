@@ -32,19 +32,19 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Library
         }
 
         /// <inheritdoc />
-        public async Task Handle(SubtitleDownloadFailureEventArgs eventArgs)
+        public async Task Handle(SubtitleDownloadFailureEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
-                    eventArgs.Provider,
-                    GetItemName(eventArgs.Item)),
+                    message.Provider,
+                    GetItemName(message.Item)),
                 "SubtitleDownloadFailure",
                 Guid.Empty)
             {
-                ItemId = eventArgs.Item.Id.ToString("N", CultureInfo.InvariantCulture),
-                ShortOverview = eventArgs.Exception.Message
+                ItemId = message.Item.Id.ToString("N", CultureInfo.InvariantCulture),
+                ShortOverview = message.Exception.Message
             }).ConfigureAwait(false);
         }
 

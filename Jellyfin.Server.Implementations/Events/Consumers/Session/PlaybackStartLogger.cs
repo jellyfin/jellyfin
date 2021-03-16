@@ -36,35 +36,35 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task Handle(PlaybackStartEventArgs eventArgs)
+        public async Task Handle(PlaybackStartEventArgs message)
         {
-            if (eventArgs.MediaInfo == null)
+            if (message.MediaInfo == null)
             {
                 _logger.LogWarning("PlaybackStart reported with null media info.");
                 return;
             }
 
-            if (eventArgs.IsThemeMedia)
+            if (message.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
             }
 
-            if (eventArgs.Users.Count == 0)
+            if (message.Users.Count == 0)
             {
                 return;
             }
 
-            var user = eventArgs.Users[0];
+            var user = message.Users[0];
 
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserStartedPlayingItemWithValues"),
                         user.Username,
-                        GetItemName(eventArgs.MediaInfo),
-                        eventArgs.DeviceName),
-                    GetPlaybackNotificationType(eventArgs.MediaInfo.MediaType),
+                        GetItemName(message.MediaInfo),
+                        message.DeviceName),
+                    GetPlaybackNotificationType(message.MediaInfo.MediaType),
                     user.Id))
                 .ConfigureAwait(false);
         }
@@ -86,7 +86,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
             return name;
         }
 
-        private static string? GetPlaybackNotificationType(string mediaType)
+        private static string GetPlaybackNotificationType(string mediaType)
         {
             if (string.Equals(mediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
             {
@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return NotificationType.VideoPlayback.ToString();
             }
 
-            return null;
+            return "Playback";
         }
     }
 }

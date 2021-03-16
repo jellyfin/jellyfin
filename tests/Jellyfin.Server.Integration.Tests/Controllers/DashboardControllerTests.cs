@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
     public sealed class DashboardControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private readonly JellyfinApplicationFactory _factory;
-        private readonly JsonSerializerOptions _jsonOpions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOpions = JsonDefaults.Options;
 
         public DashboardControllerTests(JellyfinApplicationFactory factory)
         {

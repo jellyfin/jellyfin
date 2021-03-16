@@ -25,9 +25,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public Task Handle(UserUpdatedEventArgs e)
+        public Task Handle(UserUpdatedEventArgs message)
         {
-            var user = e.Argument;
+            var user = message.Argument;
             if (!user.HasPermission(PermissionKind.EnableAllDevices))
             {
                 UpdateDeviceAccess(user);

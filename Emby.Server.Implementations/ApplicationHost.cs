@@ -50,6 +50,7 @@ using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -466,7 +467,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc />
-        public IReadOnlyCollection<T> GetExports<T>(CreationDelegate defaultFunc, bool manageLifetime = true)
+        public IReadOnlyCollection<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true)
         {
             // Convert to list so this isn't executed for each iteration
             var parts = GetExportTypes<T>()

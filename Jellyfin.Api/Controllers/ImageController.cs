@@ -196,6 +196,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -235,6 +240,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -1469,7 +1479,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user?.ProfileImage == null)
             {
                 return NotFound();
             }
