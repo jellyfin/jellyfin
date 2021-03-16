@@ -529,6 +529,7 @@ namespace Emby.Server.Implementations
 
         private IEnumerable<Task> StartEntryPoints(IEnumerable<IServerEntryPoint> entryPoints, bool isBeforeStartup)
         {
+            var entryPointTasks = new List<Task>();
             foreach (var entryPoint in entryPoints)
             {
                 if (isBeforeStartup != (entryPoint is IRunBeforeStartup))
@@ -538,8 +539,21 @@ namespace Emby.Server.Implementations
 
                 Logger.LogDebug("Starting entry point {Type}", entryPoint.GetType());
 
-                yield return entryPoint.RunAsync();
+                try
+                {
+                    entryPointTasks.Add(entryPoint.RunAsync());
+                }
+                catch (MissingMethodException ex)
+                {
+                    Logger.LogError(ex, "Failed to start entry point for {Type}, there is a missing method", entryPoint.GetType());
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Failed to start entry point for {Type}", entryPoint.GetType());
+                }
             }
+
+            return entryPointTasks;
         }
 
         /// <inheritdoc/>
