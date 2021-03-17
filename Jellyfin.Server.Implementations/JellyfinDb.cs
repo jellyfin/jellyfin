@@ -150,16 +150,8 @@ namespace Jellyfin.Server.Implementations
             modelBuilder.HasDefaultSchema("jellyfin");
 
             modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => entity.UserId)
-                .IsUnique(false);
-
-            modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
                 .IsUnique();
-
-            modelBuilder.Entity<CustomItemDisplayPreferences>()
-                .HasIndex(entity => entity.UserId)
-                .IsUnique(false);
 
             modelBuilder.Entity<CustomItemDisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
