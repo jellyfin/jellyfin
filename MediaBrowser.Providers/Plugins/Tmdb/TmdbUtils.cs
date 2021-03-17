@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
 
@@ -12,6 +13,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public static class TmdbUtils
     {
+        private static readonly Regex _nonWords = new (@"[\W_]+", RegexOptions.Compiled);
+
         /// <summary>
         /// URL of the TMDB instance to use.
         /// </summary>
@@ -41,6 +44,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             PersonType.Writer,
             PersonType.Producer
         };
+
+        /// <summary>
+        /// Cleans the name according to TMDb requirements.
+        /// </summary>
+        /// <param name="name">The name of the entity.</param>
+        /// <returns>The cleaned name.</returns>
+        public static string CleanName(string name)
+        {
+            // TMDb expects a space separated list of words make sure that is the case
+            return _nonWords.Replace(name, " ");
+        }
 
         /// <summary>
         /// Maps the TMDB provided roles for crew members to Jellyfin roles.
