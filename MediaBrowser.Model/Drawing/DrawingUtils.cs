@@ -58,7 +58,7 @@ namespace MediaBrowser.Model.Drawing
         }
 
         /// <summary>
-        /// Resizes to fill box.
+        /// Scale down to fill box.
         /// Returns original size if both width and height are null or zero.
         /// </summary>
         /// <param name="size">The original size object.</param>
@@ -71,9 +71,8 @@ namespace MediaBrowser.Model.Drawing
             int? fillHeight)
         {
             // Return original size if input is invalid.
-            if (
-                (fillWidth == null && fillHeight == null)
-                || (fillWidth == 0 || fillHeight == 0))
+            if ((fillWidth == null || fillWidth == 0)
+                && (fillHeight == null || fillHeight == 0))
             {
                 return size;
             }
@@ -89,9 +88,8 @@ namespace MediaBrowser.Model.Drawing
             }
 
             double widthRatio = (double)size.Width / (double)fillWidth;
-            double heightRatio = (double)size.Height / (double)fillHeight!;
-            // min()
-            double scaleRatio = widthRatio > heightRatio ? heightRatio : widthRatio;
+            double heightRatio = (double)size.Height / (double)fillHeight;
+            double scaleRatio = Math.Min(widthRatio, heightRatio);
 
             // Clamp to current size.
             if (scaleRatio < 1)

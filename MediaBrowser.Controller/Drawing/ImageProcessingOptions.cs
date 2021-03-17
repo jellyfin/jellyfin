@@ -97,6 +97,16 @@ namespace MediaBrowser.Controller.Drawing
                 return false;
             }
 
+            if (FillWidth.HasValue && sizeValue.Width > FillWidth.Value)
+            {
+                return false;
+            }
+
+            if (FillHeight.HasValue && sizeValue.Height > FillHeight.Value)
+            {
+                return false;
+            }
+
             return true;
         }
 

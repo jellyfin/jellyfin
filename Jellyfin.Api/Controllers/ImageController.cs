@@ -521,6 +521,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] string? tag,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
@@ -530,9 +532,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromQuery] int? imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -553,8 +553,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -607,6 +607,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] string? tag,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
@@ -615,9 +617,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? unplayedCount,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -638,8 +638,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -691,6 +691,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromRoute, Required] string tag,
             [FromQuery] bool? cropWhitespace,
             [FromRoute, Required] ImageFormat format,
@@ -700,9 +702,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute, Required] int imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -723,8 +723,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -780,14 +780,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromRoute, Required] int imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromRoute, Required] int imageIndex)
         {
             var item = _libraryManager.GetArtist(name);
             if (item == null)
@@ -808,8 +808,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -865,14 +865,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromQuery] int? imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetGenre(name);
             if (item == null)
@@ -893,8 +893,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -951,13 +951,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetGenre(name);
             if (item == null)
@@ -978,8 +978,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1035,14 +1035,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromQuery] int? imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetMusicGenre(name);
             if (item == null)
@@ -1063,8 +1063,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1121,13 +1121,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetMusicGenre(name);
             if (item == null)
@@ -1148,8 +1148,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1205,14 +1205,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromQuery] int? imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetPerson(name);
             if (item == null)
@@ -1233,8 +1233,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1291,13 +1291,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetPerson(name);
             if (item == null)
@@ -1318,8 +1318,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1375,14 +1375,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromQuery] int? imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] int? imageIndex)
         {
             var item = _libraryManager.GetStudio(name);
             if (item == null)
@@ -1403,8 +1403,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1461,13 +1461,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] string? foregroundLayer)
         {
             var item = _libraryManager.GetStudio(name);
             if (item == null)
@@ -1488,8 +1488,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1545,14 +1545,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
             [FromQuery] string? foregroundLayer,
-            [FromQuery] int? imageIndex,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
             if (user?.ProfileImage == null)
@@ -1590,8 +1590,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1649,13 +1649,13 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] int? fillHeight,
-            [FromQuery] int? fillWidth)
+            [FromQuery] string? foregroundLayer)
         {
             var user = _userManager.GetUserById(userId);
             if (user?.ProfileImage == null)
@@ -1693,8 +1693,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    fillHeight,
                     fillWidth,
+                    fillHeight,
                     cropWhitespace,
                     addPlayedIndicator,
                     blur,
@@ -1779,8 +1779,8 @@ namespace Jellyfin.Api.Controllers
             int? width,
             int? height,
             int? quality,
-            int? fillHeight,
             int? fillWidth,
+            int? fillHeight,
             bool? cropWhitespace, // TODO: Remove
             bool? addPlayedIndicator,
             int? blur,
@@ -1844,11 +1844,13 @@ namespace Jellyfin.Api.Controllers
                 item,
                 itemId,
                 imageIndex,
-                height,
-                maxHeight,
-                maxWidth,
-                quality,
                 width,
+                height,
+                maxWidth,
+                maxHeight,
+                fillWidth,
+                fillHeight,
+                quality,
                 addPlayedIndicator,
                 percentPlayed,
                 unplayedCount,
@@ -1859,9 +1861,7 @@ namespace Jellyfin.Api.Controllers
                 outputFormats,
                 cacheDuration,
                 responseHeaders,
-                isHeadRequest,
-                fillHeight,
-                fillWidth).ConfigureAwait(false);
+                isHeadRequest).ConfigureAwait(false);
         }
 
         private ImageFormat[] GetOutputFormats(ImageFormat? format)
@@ -1944,11 +1944,13 @@ namespace Jellyfin.Api.Controllers
             BaseItem? item,
             Guid itemId,
             int? index,
-            int? height,
-            int? maxHeight,
-            int? maxWidth,
-            int? quality,
             int? width,
+            int? height,
+            int? maxWidth,
+            int? maxHeight,
+            int? fillWidth,
+            int? fillHeight,
+            int? quality,
             bool? addPlayedIndicator,
             double? percentPlayed,
             int? unplayedCount,
@@ -1959,9 +1961,7 @@ namespace Jellyfin.Api.Controllers
             IReadOnlyCollection<ImageFormat> supportedFormats,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
-            bool isHeadRequest,
-            int? fillHeight,
-            int? fillWidth)
+            bool isHeadRequest)
         {
             if (!imageInfo.IsLocalFile && item != null)
             {
