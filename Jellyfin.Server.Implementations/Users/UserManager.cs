@@ -190,6 +190,9 @@ namespace Jellyfin.Server.Implementations.Users
                 InternalId = max + 1
             };
 
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
+
             _users.Add(user.Id, user);
 
             return user;
