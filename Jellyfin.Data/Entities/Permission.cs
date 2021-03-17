@@ -25,21 +25,21 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Gets or sets the id of this permission.
+        /// Gets the id of this permission.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the type of this permission.
+        /// Gets the type of this permission.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        public PermissionKind Kind { get; protected set; }
+        public PermissionKind Kind { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the associated user has this permission.
@@ -51,7 +51,7 @@ namespace Jellyfin.Data.Entities
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()

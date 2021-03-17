@@ -24,21 +24,21 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Gets or sets the id of this preference.
+        /// Gets the id of this preference.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the type of this preference.
+        /// Gets the type of this preference.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        public PreferenceKind Kind { get; protected set; }
+        public PreferenceKind Kind { get; private set; }
 
         /// <summary>
         /// Gets or sets the value of this preference.
@@ -52,7 +52,7 @@ namespace Jellyfin.Data.Entities
 
         /// <inheritdoc/>
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()
