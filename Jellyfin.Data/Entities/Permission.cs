@@ -1,5 +1,6 @@
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
@@ -32,6 +33,11 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the id of the associated user.
+        /// </summary>
+        public Guid UserId { get; set; }
 
         /// <summary>
         /// Gets the type of this permission.
