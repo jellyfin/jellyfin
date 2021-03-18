@@ -128,61 +128,62 @@ namespace MediaBrowser.Common.Net
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
         public static bool TryParse(string host, out IPHost hostObj)
         {
-            if (!string.IsNullOrEmpty(host))
+            if (string.IsNullOrWhiteSpace(host))
             {
-                // See if it's an IPv6 with port address e.g. [::1]:120.
-                int i = host.IndexOf("]:", StringComparison.OrdinalIgnoreCase);
-                if (i != -1)
+                hostObj = IPHost.None;
+                return false;
+            }
+
+            // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
+            int i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+            if (i != -1)
+            {
+                return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
+            }
+
+            if (IPNetAddress.TryParse(host, out var netAddress))
+            {
+                // Host name is an ip address, so fake resolve.
+                hostObj = new IPHost(host, netAddress.Address);
+                return true;
+            }
+
+            // Is it a host, IPv4/6 with/out port?
+            string[] hosts = host.Split(':');
+
+            if (hosts.Length <= 2)
+            {
+                // This is either a hostname: port, or an IP4:port.
+                host = hosts[0];
+
+                if (string.Equals("localhost", host, StringComparison.OrdinalIgnoreCase))
                 {
-                    return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
-                }
-                else
-                {
-                    // See if it's an IPv6 in [] with no port.
-                    i = host.IndexOf(']', StringComparison.OrdinalIgnoreCase);
-                    if (i != -1)
-                    {
-                        return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
-                    }
-
-                    // Is it a host or IPv4 with port?
-                    string[] hosts = host.Split(':');
-
-                    if (hosts.Length > 2)
-                    {
-                        hostObj = new IPHost(string.Empty, IPAddress.None);
-                        return false;
-                    }
-
-                    // Remove port from IPv4 if it exists.
-                    host = hosts[0];
-
-                    if (string.Equals("localhost", host, StringComparison.OrdinalIgnoreCase))
-                    {
-                        hostObj = new IPHost(host, new IPAddress(Ipv4Loopback));
-                        return true;
-                    }
-
-                    if (IPNetAddress.TryParse(host, out IPNetAddress netIP))
-                    {
-                        // Host name is an ip address, so fake resolve.
-                        hostObj = new IPHost(host, netIP.Address);
-                        return true;
-                    }
+                    hostObj = new IPHost(host);
+                    return true;
                 }
 
-                // Only thing left is to see if it's a host string.
-                if (!string.IsNullOrEmpty(host))
+                if (IPAddress.TryParse(host, out var netIP))
                 {
-                    // Use regular expression as CheckHostName isn't RFC5892 compliant.
-                    // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-                    Regex re = new Regex(@"^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    if (re.Match(host).Success)
-                    {
-                        hostObj = new IPHost(host);
-                        return true;
-                    }
+                    // Host name is an ip address, so fake resolve.
+                    hostObj = new IPHost(host, netIP);
+                    return true;
                 }
+            }
+            else
+            {
+                // Invalid host name, as it cannot contain :
+                hostObj = new IPHost(string.Empty, IPAddress.None);
+                return false;
+            }
+
+            // Use regular expression as CheckHostName isn't RFC5892 compliant.
+            // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)$";
+
+            if (Regex.IsMatch(host, pattern))
+            {
+                hostObj = new IPHost(host);
+                return true;
             }
 
             hostObj = IPHost.None;
@@ -344,9 +345,13 @@ namespace MediaBrowser.Common.Net
                     {
                         output += "Any Address,";
                     }
-                    else
+                    else if (i.AddressFamily == AddressFamily.InterNetwork)
                     {
                         output += $"{i}/32,";
+                    }
+                    else
+                    {
+                        output += $"{i}/128,";
                     }
                 }
 
@@ -401,7 +406,7 @@ namespace MediaBrowser.Common.Net
             }
 
             // If we haven't resolved before, or our timer has run out...
-            if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved?.AddMinutes(Timeout)))
+            if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
             {
                 _lastResolved = DateTime.UtcNow;
                 ResolveHostInternal().GetAwaiter().GetResult();

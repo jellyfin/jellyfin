@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             // Can't dispose the response as it's required up the call chain.
-            var response = await httpClient.GetAsync(new Uri(state.MediaPath)).ConfigureAwait(false);
+            var response = await httpClient.GetAsync(new Uri(state.MediaPath), cancellationToken).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType?.ToString();
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
@@ -107,7 +107,8 @@ namespace Jellyfin.Api.Helpers
             // Headers only
             if (isHeadRequest)
             {
-                return new FileContentResult(Array.Empty<byte>(), contentType);
+                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
+                return new OkResult();
             }
 
             var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);

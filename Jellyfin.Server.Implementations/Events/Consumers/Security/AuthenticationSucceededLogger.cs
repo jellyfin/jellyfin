@@ -29,20 +29,20 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Security
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(GenericEventArgs<AuthenticationResult> e)
+        public async Task OnEvent(GenericEventArgs<AuthenticationResult> eventArgs)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("AuthenticationSucceededWithUserName"),
-                    e.Argument.User.Name),
+                    eventArgs.Argument.User.Name),
                 "AuthenticationSucceeded",
-                e.Argument.User.Id)
+                eventArgs.Argument.User.Id)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
-                    e.Argument.SessionInfo.RemoteEndPoint),
+                    eventArgs.Argument.SessionInfo.RemoteEndPoint),
             }).ConfigureAwait(false);
         }
     }

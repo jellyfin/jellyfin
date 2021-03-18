@@ -132,7 +132,10 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.Users.First();
 
-            user.Username = startupUserDto.Name;
+            if (startupUserDto.Name != null)
+            {
+                user.Username = startupUserDto.Name;
+            }
 
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 

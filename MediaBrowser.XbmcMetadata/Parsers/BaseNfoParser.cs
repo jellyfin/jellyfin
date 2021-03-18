@@ -12,6 +12,7 @@ using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Configuration;
@@ -24,20 +25,31 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         where T : BaseItem
     {
         private readonly IConfigurationManager _config;
+        private readonly IUserManager _userManager;
+        private readonly IUserDataManager _userDataManager;
         private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfoParser{T}" /> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">the configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public BaseNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        public BaseNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
         {
             Logger = logger;
             _config = config;
             ProviderManager = providerManager;
             _validProviderIds = new Dictionary<string, string>();
+            _userManager = userManager;
+            _userDataManager = userDataManager;
         }
 
         protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
@@ -261,6 +273,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var nfoConfiguration = _config.GetNfoConfiguration();
+            UserItemData? userData = null;
+            if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
+            {
+                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
+                userData = _userDataManager.GetUserData(user, item);
+            }
+
             switch (reader.Name)
             {
                 // DateCreated
@@ -351,6 +371,50 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
 
                         item.PreferredMetadataLanguage = val;
+
+                        break;
+                    }
+
+                case "watched":
+                    {
+                        var val = reader.ReadElementContentAsBoolean();
+
+                        if (userData != null)
+                        {
+                            userData.Played = val;
+                        }
+
+                        break;
+                    }
+
+                case "playcount":
+                    {
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        {
+                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var count))
+                            {
+                                userData.PlayCount = count;
+                            }
+                        }
+
+                        break;
+                    }
+
+                case "lastplayed":
+                    {
+                        var val = reader.ReadElementContentAsString();
+                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
+                        {
+                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
+                            {
+                                userData.LastPlayedDate = added.ToUniversalTime();
+                            }
+                            else
+                            {
+                                Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
+                            }
+                        }
 
                         break;
                     }
@@ -622,7 +686,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "premiered":
                 case "releasedate":
                     {
-                        var formatString = _config.GetNfoConfiguration().ReleaseDateFormat;
+                        var formatString = nfoConfiguration.ReleaseDateFormat;
 
                         var val = reader.ReadElementContentAsString();
 
@@ -640,7 +704,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "enddate":
                     {
-                        var formatString = _config.GetNfoConfiguration().ReleaseDateFormat;
+                        var formatString = nfoConfiguration.ReleaseDateFormat;
 
                         var val = reader.ReadElementContentAsString();
 
@@ -717,20 +781,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             item.SetProviderId(provider, id);
                         }
-
-                        break;
-                    }
-
-                case "musicBrainzArtistID":
-                    {
-                        if (reader.IsEmptyElement)
-                        {
-                            reader.Read();
-                            break;
-                        }
-
-                        var id = reader.ReadElementContentAsString();
-                        item.SetProviderId(MetadataProvider.MusicBrainzArtist.ToString(), id);
 
                         break;
                     }
@@ -1118,11 +1168,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> SplitNames(string value)
         {
-            value = value ?? string.Empty;
-
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
-            var separator = value.IndexOf('|', StringComparison.Ordinal) == -1 && value.IndexOf(';', StringComparison.Ordinal) == -1
+            var separator = !value.Contains('|', StringComparison.Ordinal) && !value.Contains(';', StringComparison.Ordinal)
                 ? new[] { ',' }
                 : new[] { '|', ';' };
 

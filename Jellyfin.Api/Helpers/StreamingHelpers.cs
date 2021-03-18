@@ -183,7 +183,7 @@ namespace Jellyfin.Api.Helpers
             if (string.IsNullOrEmpty(containerInternal))
             {
                 containerInternal = streamingRequest.Static ?
-                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, state.MediaPath, null, DlnaProfileType.Audio)
+                    StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(state.InputContainer, null, DlnaProfileType.Audio)
                     : GetOutputFileExtension(state);
             }
 
@@ -245,7 +245,7 @@ namespace Jellyfin.Api.Helpers
 
             var ext = string.IsNullOrWhiteSpace(state.OutputContainer)
                 ? GetOutputFileExtension(state)
-                : ('.' + state.OutputContainer);
+                : ("." + state.OutputContainer);
 
             state.OutputFilePath = GetOutputFilePath(state, ext!, serverConfigurationManager, streamingRequest.DeviceId, streamingRequest.PlaySessionId);
 
@@ -508,17 +508,15 @@ namespace Jellyfin.Api.Helpers
 
         private static void ApplyDeviceProfileSettings(StreamState state, IDlnaManager dlnaManager, IDeviceManager deviceManager, HttpRequest request, string? deviceProfileId, bool? @static)
         {
-            var headers = request.Headers;
-
             if (!string.IsNullOrWhiteSpace(deviceProfileId))
             {
                 state.DeviceProfile = dlnaManager.GetProfile(deviceProfileId);
-            }
-            else if (!string.IsNullOrWhiteSpace(deviceProfileId))
-            {
-                var caps = deviceManager.GetCapabilities(deviceProfileId);
 
-                state.DeviceProfile = caps == null ? dlnaManager.GetProfile(headers) : caps.DeviceProfile;
+                if (state.DeviceProfile == null)
+                {
+                    var caps = deviceManager.GetCapabilities(deviceProfileId);
+                    state.DeviceProfile = caps == null ? dlnaManager.GetProfile(request.Headers) : caps.DeviceProfile;
+                }
             }
 
             var profile = state.DeviceProfile;

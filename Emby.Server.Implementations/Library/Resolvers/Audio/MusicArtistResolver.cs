@@ -79,11 +79,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 return new MusicArtist();
             }
 
-            if (_config.Configuration.EnableSimpleArtistDetection)
-            {
-                return null;
-            }
-
             // Avoid mis-identifying top folders
             if (args.Parent.IsRoot)
             {

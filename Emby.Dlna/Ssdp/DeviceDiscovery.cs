@@ -69,7 +69,7 @@ namespace Emby.Dlna.Ssdp
         {
             lock (_syncLock)
             {
-                if (_listenerCount > 0 && _deviceLocator == null)
+                if (_listenerCount > 0 && _deviceLocator == null && _commsServer != null)
                 {
                     _deviceLocator = new SsdpDeviceLocator(_commsServer);
 

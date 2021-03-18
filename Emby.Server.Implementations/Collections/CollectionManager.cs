@@ -107,7 +107,7 @@ namespace Emby.Server.Implementations.Collections
 
             var name = _localizationManager.GetLocalizedString("Collections");
 
-            await _libraryManager.AddVirtualFolder(name, CollectionType.BoxSets, libraryOptions, true).ConfigureAwait(false);
+            await _libraryManager.AddVirtualFolder(name, CollectionTypeOptions.BoxSets, libraryOptions, true).ConfigureAwait(false);
 
             return FindFolders(path).First();
         }
@@ -344,7 +344,20 @@ namespace Emby.Server.Implementations.Collections
                     }
                     else
                     {
-                        results[item.Id] = item;
+                        var alreadyInResults = false;
+                        foreach (var child in item.GetMediaSources(true))
+                        {
+                            if (Guid.TryParse(child.Id, out var id) && results.ContainsKey(id))
+                            {
+                                alreadyInResults = true;
+                                break;
+                            }
+                        }
+
+                        if (!alreadyInResults)
+                        {
+                            results[item.Id] = item;
+                        }
                     }
                 }
             }

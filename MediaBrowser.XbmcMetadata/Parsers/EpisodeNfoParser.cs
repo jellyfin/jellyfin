@@ -6,6 +6,7 @@ using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using Microsoft.Extensions.Logging;
 
@@ -19,11 +20,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodeNfoParser"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">the configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public EpisodeNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
+        /// <param name="logger">Instance of the <see cref="ILogger{BaseNfoParser}"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        public EpisodeNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
+            : base(logger, config, providerManager, userManager, userDataManager)
         {
         }
 
@@ -35,19 +43,23 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 item.ResetPeople();
 
-                var xml = streamReader.ReadToEnd();
+                var xmlFile = streamReader.ReadToEnd();
 
                 var srch = "</episodedetails>";
-                var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+                var index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+
+                var xml = xmlFile;
 
                 if (index != -1)
                 {
-                    xml = xml.Substring(0, index + srch.Length);
+                    xml = xmlFile.Substring(0, index + srch.Length);
+                    xmlFile = xmlFile.Substring(index + srch.Length);
                 }
 
                 // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
                 try
                 {
+                    // Extract episode details from the first episodedetails block
                     using (var stringReader = new StringReader(xml))
                     using (var reader = XmlReader.Create(stringReader, settings))
                     {
@@ -66,6 +78,25 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             else
                             {
                                 reader.Read();
+                            }
+                        }
+                    }
+
+                    // Extract the last episode number from nfo
+                    // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
+                    while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
+                    {
+                        xml = xmlFile.Substring(0, index + srch.Length);
+                        xmlFile = xmlFile.Substring(index + srch.Length);
+
+                        using (var stringReader = new StringReader(xml))
+                        using (var reader = XmlReader.Create(stringReader, settings))
+                        {
+                            reader.MoveToContent();
+
+                            if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
+                            {
+                                item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
                             }
                         }
                     }

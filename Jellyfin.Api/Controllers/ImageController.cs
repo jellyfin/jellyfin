@@ -87,6 +87,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Users/{userId}/Images/{imageType}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
@@ -112,7 +113,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -133,6 +134,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Users/{userId}/Images/{imageType}/{index}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
@@ -158,7 +160,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -194,6 +196,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -233,6 +240,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -312,6 +324,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpPost("Items/{itemId}/Images/{imageType}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -346,6 +359,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpPost("Items/{itemId}/Images/{imageType}/{imageIndex}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -388,7 +402,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] int newIndex)
+            [FromQuery, Required] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -737,7 +751,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetArtistImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -816,7 +830,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -896,7 +910,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -974,7 +988,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetMusicGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1054,7 +1068,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1132,7 +1146,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetPersonImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1212,7 +1226,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1465,7 +1479,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user?.ProfileImage == null)
             {
                 return NotFound();
             }

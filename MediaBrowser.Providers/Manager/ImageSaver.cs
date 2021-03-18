@@ -102,10 +102,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 saveLocally = false;
 
-                var season = item as Season;
-
                 // If season is virtual under a physical series, save locally if using compatible convention
-                if (season != null && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
+                if (item is Season season && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
                 {
                     var series = season.Series;
 
@@ -138,7 +136,7 @@ namespace MediaBrowser.Providers.Manager
                 var memoryStream = new MemoryStream();
                 await using (source.ConfigureAwait(false))
                 {
-                    await source.CopyToAsync(memoryStream).ConfigureAwait(false);
+                    await source.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 }
 
                 source = memoryStream;
@@ -263,7 +261,8 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.SetAttributes(path, false, false);
 
-                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 {
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }

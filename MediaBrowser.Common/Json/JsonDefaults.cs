@@ -31,7 +31,6 @@ namespace MediaBrowser.Common.Json
             WriteIndented = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
-            PropertyNameCaseInsensitive = true,
             Converters =
             {
                 new JsonGuidConverter(),
@@ -62,7 +61,7 @@ namespace MediaBrowser.Common.Json
         /// If the defaults must be modified the author must use the copy constructor.
         /// </remarks>
         /// <returns>The default <see cref="JsonSerializerOptions" /> options.</returns>
-        public static JsonSerializerOptions GetOptions()
+        public static JsonSerializerOptions Options
             => _jsonSerializerOptions;
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace MediaBrowser.Common.Json
         /// If the defaults must be modified the author must use the copy constructor.
         /// </remarks>
         /// <returns>The camelCase <see cref="JsonSerializerOptions" /> options.</returns>
-        public static JsonSerializerOptions GetCamelCaseOptions()
+        public static JsonSerializerOptions CamelCaseOptions
             => _camelCaseJsonSerializerOptions;
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace MediaBrowser.Common.Json
         /// If the defaults must be modified the author must use the copy constructor.
         /// </remarks>
         /// <returns>The PascalCase <see cref="JsonSerializerOptions" /> options.</returns>
-        public static JsonSerializerOptions GetPascalCaseOptions()
+        public static JsonSerializerOptions PascalCaseOptions
             => _pascalCaseJsonSerializerOptions;
     }
 }

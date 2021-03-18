@@ -1,8 +1,10 @@
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -11,9 +13,11 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Json.Converters;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -30,8 +34,23 @@ namespace Emby.Server.Implementations.Plugins
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
         private readonly ServerConfiguration _config;
-        private readonly IList<LocalPlugin> _plugins;
+        private readonly List<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
+
+        private IHttpClientFactory? _httpClientFactory;
+
+        private IHttpClientFactory HttpClientFactory
+        {
+            get
+            {
+                if (_httpClientFactory == null)
+                {
+                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
+                }
+
+                return _httpClientFactory;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
@@ -51,7 +70,7 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options)
             {
                 WriteIndented = true
             };
@@ -75,7 +94,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Gets the Plugins.
         /// </summary>
-        public IList<LocalPlugin> Plugins => _plugins;
+        public IReadOnlyList<LocalPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Returns all the assemblies.
@@ -332,32 +351,74 @@ namespace Emby.Server.Implementations.Plugins
             ChangePluginState(plugin, PluginStatus.Malfunctioned);
         }
 
-        /// <summary>
-        /// Saves the manifest back to disk.
-        /// </summary>
-        /// <param name="manifest">The <see cref="PluginManifest"/> to save.</param>
-        /// <param name="path">The path where to save the manifest.</param>
-        /// <returns>True if successful.</returns>
+        /// <inheritdoc/>
         public bool SaveManifest(PluginManifest manifest, string path)
         {
-            if (manifest == null)
+            try
+            {
+                var data = JsonSerializer.Serialize(manifest, _jsonOptions);
+                File.WriteAllText(Path.Combine(path, "meta.json"), data);
+                return true;
+            }
+            catch (ArgumentException e)
+            {
+                _logger.LogWarning(e, "Unable to save plugin manifest due to invalid value. {Path}", path);
+                return false;
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path)
+        {
+            if (packageInfo == null)
             {
                 return false;
             }
 
-            try
+            var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
+            var imagePath = string.Empty;
+
+            if (!string.IsNullOrEmpty(packageInfo.ImageUrl))
             {
-                var data = JsonSerializer.Serialize(manifest, _jsonOptions);
-                File.WriteAllText(Path.Combine(path, "meta.json"), data, Encoding.UTF8);
-                return true;
+                var url = new Uri(packageInfo.ImageUrl);
+                imagePath = Path.Join(path, url.Segments[^1]);
+
+                await using var fileStream = File.OpenWrite(imagePath);
+
+                try
+                {
+                    await using var downloadStream = await HttpClientFactory
+                        .CreateClient(NamedClient.Default)
+                        .GetStreamAsync(url)
+                        .ConfigureAwait(false);
+
+                    await downloadStream.CopyToAsync(fileStream).ConfigureAwait(false);
+                }
+                catch (HttpRequestException ex)
+                {
+                    _logger.LogError(ex, "Failed to download image to path {Path} on disk.", imagePath);
+                    imagePath = string.Empty;
+                }
             }
-#pragma warning disable CA1031 // Do not catch general exception types
-            catch (Exception e)
-#pragma warning restore CA1031 // Do not catch general exception types
+
+            var manifest = new PluginManifest
             {
-                _logger.LogWarning(e, "Unable to save plugin manifest. {Path}", path);
-                return false;
-            }
+                Category = packageInfo.Category,
+                Changelog = versionInfo.Changelog ?? string.Empty,
+                Description = packageInfo.Description,
+                Id = new Guid(packageInfo.Id),
+                Name = packageInfo.Name,
+                Overview = packageInfo.Overview,
+                Owner = packageInfo.Owner,
+                TargetAbi = versionInfo.TargetAbi ?? string.Empty,
+                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp),
+                Version = versionInfo.Version,
+                Status = PluginStatus.Active,
+                AutoUpdate = true,
+                ImagePath = imagePath
+            };
+
+            return SaveManifest(manifest, path);
         }
 
         /// <summary>
@@ -410,7 +471,7 @@ namespace Emby.Server.Implementations.Plugins
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.
-                    // TODO: remove this code, if all provided have been released as separate plugins.
+                    // TODO: remove this code once all provided have been released as separate plugins.
                     plugin = new LocalPlugin(
                         instance.AssemblyFilePath,
                         true,
@@ -519,7 +580,7 @@ namespace Emby.Server.Implementations.Plugins
             return _plugins.Remove(plugin);
         }
 
-        private LocalPlugin LoadManifest(string dir)
+        internal LocalPlugin LoadManifest(string dir)
         {
             Version? version;
             PluginManifest? manifest = null;
@@ -617,7 +678,7 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.DllFiles.AddRange(Directory.EnumerateFiles(entry.Path, "*.dll", SearchOption.AllDirectories));
+                    entry.DllFiles = Directory.GetFiles(entry.Path, "*.dll", SearchOption.AllDirectories);
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;

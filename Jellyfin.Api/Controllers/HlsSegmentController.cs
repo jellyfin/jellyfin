@@ -2,13 +2,11 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
@@ -98,7 +96,9 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Videos/ActiveEncodings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult StopEncodingProcess([FromQuery] string deviceId, [FromQuery] string playSessionId)
+        public ActionResult StopEncodingProcess(
+            [FromQuery, Required] string deviceId,
+            [FromQuery, Required] string playSessionId)
         {
             _transcodingJobHelper.KillTranscodingJobs(deviceId, playSessionId, path => true);
             return NoContent();

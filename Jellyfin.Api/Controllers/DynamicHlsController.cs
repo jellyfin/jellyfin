@@ -15,7 +15,6 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -204,7 +203,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -219,7 +218,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions,
             [FromQuery] bool enableAdaptiveBitrateStreaming = true)
         {
@@ -256,7 +255,7 @@ namespace Jellyfin.Api.Controllers
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
                 RequireAvc = requireAvc ?? true,
@@ -271,7 +270,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions,
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
@@ -371,7 +370,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -386,7 +385,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions,
             [FromQuery] bool enableAdaptiveBitrateStreaming = true)
         {
@@ -423,7 +422,7 @@ namespace Jellyfin.Api.Controllers
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
                 RequireAvc = requireAvc ?? true,
@@ -438,7 +437,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions,
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
@@ -534,7 +533,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -549,7 +548,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
             var cancellationTokenSource = new CancellationTokenSource();
@@ -586,7 +585,7 @@ namespace Jellyfin.Api.Controllers
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
                 RequireAvc = requireAvc ?? true,
@@ -601,7 +600,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -699,7 +698,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -714,7 +713,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
             var cancellationTokenSource = new CancellationTokenSource();
@@ -751,7 +750,7 @@ namespace Jellyfin.Api.Controllers
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
                 RequireAvc = requireAvc ?? true,
@@ -766,7 +765,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -869,7 +868,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -884,7 +883,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
             var streamingRequest = new VideoRequestDto
@@ -921,7 +920,7 @@ namespace Jellyfin.Api.Controllers
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
                 RequireAvc = requireAvc ?? true,
@@ -936,7 +935,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -1041,7 +1040,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -1056,7 +1055,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
             var streamingRequest = new StreamingRequestDto
@@ -1093,7 +1092,7 @@ namespace Jellyfin.Api.Controllers
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
                 RequireAvc = requireAvc ?? true,
@@ -1108,7 +1107,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 

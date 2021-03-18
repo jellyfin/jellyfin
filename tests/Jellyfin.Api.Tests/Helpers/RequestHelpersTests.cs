@@ -6,11 +6,11 @@ using Xunit;
 
 namespace Jellyfin.Api.Tests.Helpers
 {
-    public class RequestHelpersTests
+    public static class RequestHelpersTests
     {
         [Theory]
         [MemberData(nameof(GetOrderBy_Success_TestData))]
-        public void GetOrderBy_Success(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder, (string, SortOrder)[] expected)
+        public static void GetOrderBy_Success(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder, (string, SortOrder)[] expected)
         {
             Assert.Equal(expected, RequestHelpers.GetOrderBy(sortBy, requestedSortOrder));
         }
@@ -54,6 +54,36 @@ namespace Jellyfin.Api.Tests.Helpers
                     ("ProductionYear", SortOrder.Descending),
                 }
             };
+        }
+
+        [Fact]
+        public static void GetItemTypeStrings_Empty_Empty()
+        {
+            Assert.Empty(RequestHelpers.GetItemTypeStrings(Array.Empty<BaseItemKind>()));
+        }
+
+        [Fact]
+        public static void GetItemTypeStrings_Valid_Success()
+        {
+            BaseItemKind[] input =
+            {
+                BaseItemKind.AggregateFolder,
+                BaseItemKind.Audio,
+                BaseItemKind.BasePluginFolder,
+                BaseItemKind.CollectionFolder
+            };
+
+            string[] expected =
+            {
+                "AggregateFolder",
+                "Audio",
+                "BasePluginFolder",
+                "CollectionFolder"
+            };
+
+            var res = RequestHelpers.GetItemTypeStrings(input);
+
+            Assert.Equal(expected, res);
         }
     }
 }

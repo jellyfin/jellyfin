@@ -1,3 +1,6 @@
+#nullable enable
+
+using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +32,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// The UDP server.
         /// </summary>
-        private UdpServer _udpServer;
+        private UdpServer? _udpServer;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private bool _disposed = false;
 
@@ -49,6 +52,8 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <inheritdoc />
         public Task RunAsync()
         {
+            CheckDisposed();
+
             try
             {
                 _udpServer = new UdpServer(_logger, _appHost, _config);
@@ -62,6 +67,14 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(this.GetType().Name);
+            }
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
@@ -71,9 +84,8 @@ namespace Emby.Server.Implementations.EntryPoints
             }
 
             _cancellationTokenSource.Cancel();
-            _udpServer.Dispose();
             _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
+            _udpServer?.Dispose();
             _udpServer = null;
 
             _disposed = true;

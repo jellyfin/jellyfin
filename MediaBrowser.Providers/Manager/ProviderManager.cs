@@ -242,6 +242,7 @@ namespace MediaBrowser.Providers.Manager
                 languages.Add(preferredLanguage);
             }
 
+            // TODO include [query.IncludeAllLanguages] as an argument to the providers
             var tasks = providers.Select(i => GetImages(item, i, languages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -869,13 +870,13 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
                 }
-                catch (Exception)
+#pragma warning disable CA1031 // do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // do not catch general exception types
                 {
-                    // Logged at lower levels
+                    _logger.LogError(ex, "Provider {ProviderName} failed to retrieve search results", provider.Name);
                 }
             }
-
-            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }

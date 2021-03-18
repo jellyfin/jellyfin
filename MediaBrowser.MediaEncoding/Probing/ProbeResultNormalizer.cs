@@ -640,7 +640,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             // Filter out junk
-            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && streamInfo.CodecTagString.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && !streamInfo.CodecTagString.Contains("[0]", StringComparison.OrdinalIgnoreCase))
             {
                 stream.CodecTag = streamInfo.CodecTagString;
             }
@@ -681,9 +681,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 stream.Type = MediaStreamType.Subtitle;
                 stream.Codec = NormalizeSubtitleCodec(stream.Codec);
-                stream.localizedUndefined = _localization.GetLocalizedString("Undefined");
-                stream.localizedDefault = _localization.GetLocalizedString("Default");
-                stream.localizedForced = _localization.GetLocalizedString("Forced");
+                stream.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
+                stream.LocalizedDefault = _localization.GetLocalizedString("Default");
+                stream.LocalizedForced = _localization.GetLocalizedString("Forced");
             }
             else if (string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase))
             {
@@ -1496,19 +1496,31 @@ namespace MediaBrowser.MediaEncoding.Probing
                             video.IndexNumber = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[0], CultureInfo.InvariantCulture);
                             int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", string.Empty, StringComparison.Ordinal).Split('/')[1], CultureInfo.InvariantCulture);
 
-                            description = string.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
+                            description = string.Join(' ', numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
                         }
                         else
                         {
-                            throw new Exception(); // Switch to default parsing
+                            // Switch to default parsing
+                            if (subtitle.Contains('.', StringComparison.Ordinal))
+                            {
+                                // skip the comment, keep the subtitle
+                                description = string.Join('.', subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            }
+                            else
+                            {
+                                description = subtitle.Trim(); // Clean up whitespaces and save it
+                            }
                         }
                     }
-                    catch // Default parsing
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error while parsing subtitle field");
+
+                        // Default parsing
                         if (subtitle.Contains('.', StringComparison.Ordinal))
                         {
                             // skip the comment, keep the subtitle
-                            description = string.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            description = string.Join('.', subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
                         }
                         else
                         {

@@ -18,8 +18,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="name">The name.</param>
         /// <param name="type">The type.</param>
         /// <param name="userId">The user id.</param>
-        /// <param name="logLevel">The log level.</param>
-        public ActivityLog(string name, string type, Guid userId, LogLevel logLevel = LogLevel.Information)
+        public ActivityLog(string name, string type, Guid userId)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -35,15 +34,7 @@ namespace Jellyfin.Data.Entities
             Type = type;
             UserId = userId;
             DateCreated = DateTime.UtcNow;
-            LogSeverity = logLevel;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityLog"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected ActivityLog()
-        {
+            LogSeverity = LogLevel.Information;
         }
 
         /// <summary>
@@ -59,7 +50,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 512.
         /// </remarks>
-        [Required]
         [MaxLength(512)]
         [StringLength(512)]
         public string Name { get; set; }
@@ -72,7 +62,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(512)]
         [StringLength(512)]
-        public string Overview { get; set; }
+        public string? Overview { get; set; }
 
         /// <summary>
         /// Gets or sets the short overview.
@@ -82,7 +72,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(512)]
         [StringLength(512)]
-        public string ShortOverview { get; set; }
+        public string? ShortOverview { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
@@ -90,7 +80,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 256.
         /// </remarks>
-        [Required]
         [MaxLength(256)]
         [StringLength(256)]
         public string Type { get; set; }
@@ -111,7 +100,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(256)]
         [StringLength(256)]
-        public string ItemId { get; set; }
+        public string? ItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the date created. This should be in UTC.

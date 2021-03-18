@@ -1240,11 +1240,20 @@ namespace Emby.Server.Implementations.Library
             return info;
         }
 
-        private string GetCollectionType(string path)
+        private CollectionTypeOptions? GetCollectionType(string path)
         {
-            return _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false)
-                .Select(Path.GetFileNameWithoutExtension)
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
+            foreach (var file in files)
+            {
+                // TODO: @bond use a ReadOnlySpan<char> here when Enum.TryParse supports it
+                // https://github.com/dotnet/runtime/issues/20008
+                if (Enum.TryParse<CollectionTypeOptions>(Path.GetFileNameWithoutExtension(file), true, out var res))
+                {
+                    return res;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -2767,6 +2776,7 @@ namespace Emby.Server.Implementations.Library
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem)
         {
+            string newPath;
             if (ownerItem != null)
             {
                 var libraryOptions = GetLibraryOptions(ownerItem);
@@ -2774,15 +2784,9 @@ namespace Emby.Server.Implementations.Library
                 {
                     foreach (var pathInfo in libraryOptions.PathInfos)
                     {
-                        if (string.IsNullOrWhiteSpace(pathInfo.Path) || string.IsNullOrWhiteSpace(pathInfo.NetworkPath))
+                        if (path.TryReplaceSubPath(pathInfo.Path, pathInfo.NetworkPath, out newPath))
                         {
-                            continue;
-                        }
-
-                        var substitutionResult = SubstitutePathInternal(path, pathInfo.Path, pathInfo.NetworkPath);
-                        if (substitutionResult.Item2)
-                        {
-                            return substitutionResult.Item1;
+                            return newPath;
                         }
                     }
                 }
@@ -2791,24 +2795,16 @@ namespace Emby.Server.Implementations.Library
             var metadataPath = _configurationManager.Configuration.MetadataPath;
             var metadataNetworkPath = _configurationManager.Configuration.MetadataNetworkPath;
 
-            if (!string.IsNullOrWhiteSpace(metadataPath) && !string.IsNullOrWhiteSpace(metadataNetworkPath))
+            if (path.TryReplaceSubPath(metadataPath, metadataNetworkPath, out newPath))
             {
-                var metadataSubstitutionResult = SubstitutePathInternal(path, metadataPath, metadataNetworkPath);
-                if (metadataSubstitutionResult.Item2)
-                {
-                    return metadataSubstitutionResult.Item1;
-                }
+                return newPath;
             }
 
             foreach (var map in _configurationManager.Configuration.PathSubstitutions)
             {
-                if (!string.IsNullOrWhiteSpace(map.From))
+                if (path.TryReplaceSubPath(map.From, map.To, out newPath))
                 {
-                    var substitutionResult = SubstitutePathInternal(path, map.From, map.To);
-                    if (substitutionResult.Item2)
-                    {
-                        return substitutionResult.Item1;
-                    }
+                    return newPath;
                 }
             }
 
@@ -2817,47 +2813,12 @@ namespace Emby.Server.Implementations.Library
 
         public string SubstitutePath(string path, string from, string to)
         {
-            return SubstitutePathInternal(path, from, to).Item1;
-        }
-
-        private Tuple<string, bool> SubstitutePathInternal(string path, string from, string to)
-        {
-            if (string.IsNullOrWhiteSpace(path))
+            if (path.TryReplaceSubPath(from, to, out var newPath))
             {
-                throw new ArgumentNullException(nameof(path));
+                return newPath;
             }
 
-            if (string.IsNullOrWhiteSpace(from))
-            {
-                throw new ArgumentNullException(nameof(from));
-            }
-
-            if (string.IsNullOrWhiteSpace(to))
-            {
-                throw new ArgumentNullException(nameof(to));
-            }
-
-            from = from.Trim();
-            to = to.Trim();
-
-            var newPath = path.Replace(from, to, StringComparison.OrdinalIgnoreCase);
-            var changed = false;
-
-            if (!string.Equals(newPath, path, StringComparison.Ordinal))
-            {
-                if (to.IndexOf('/', StringComparison.Ordinal) != -1)
-                {
-                    newPath = newPath.Replace('\\', '/');
-                }
-                else
-                {
-                    newPath = newPath.Replace('/', '\\');
-                }
-
-                changed = true;
-            }
-
-            return new Tuple<string, bool>(newPath, changed);
+            return path;
         }
 
         private void SetExtraTypeFromFilename(Video item)
@@ -2956,7 +2917,7 @@ namespace Emby.Server.Implementations.Library
             throw new InvalidOperationException();
         }
 
-        public async Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary)
+        public async Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -2990,9 +2951,9 @@ namespace Emby.Server.Implementations.Library
             {
                 Directory.CreateDirectory(virtualFolderPath);
 
-                if (!string.IsNullOrEmpty(collectionType))
+                if (collectionType != null)
                 {
-                    var path = Path.Combine(virtualFolderPath, collectionType + ".collection");
+                    var path = Path.Combine(virtualFolderPath, collectionType.ToString().ToLowerInvariant() + ".collection");
 
                     File.WriteAllBytes(path, Array.Empty<byte>());
                 }

@@ -1,8 +1,8 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using System.Globalization;
+using System.Linq;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna

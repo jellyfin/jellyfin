@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -284,14 +285,25 @@ namespace Jellyfin.Networking.Manager
                 // No bind address and no exclusions, so listen on all interfaces.
                 Collection<IPObject> result = new Collection<IPObject>();
 
-                if (IsIP4Enabled)
+                if (IsIP6Enabled && IsIP4Enabled)
+                {
+                    // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any
+                    result.AddItem(IPAddress.IPv6Any);
+                }
+                else if (IsIP4Enabled)
                 {
                     result.AddItem(IPAddress.Any);
                 }
-
-                if (IsIP6Enabled)
+                else if (IsIP6Enabled)
                 {
-                    result.AddItem(IPAddress.IPv6Any);
+                    // Cannot use IPv6Any as Kestrel will bind to IPv4 addresses.
+                    foreach (var iface in _interfaceAddresses)
+                    {
+                        if (iface.AddressFamily == AddressFamily.InterNetworkV6)
+                        {
+                            result.AddItem(iface.Address);
+                        }
+                    }
                 }
 
                 return result;
@@ -413,7 +425,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // There isn't any others, so we'll use the loopback.
-            result = IsIP6Enabled ? "::" : "127.0.0.1";
+            result = IsIP6Enabled ? "::1" : "127.0.0.1";
             _logger.LogWarning("{Source}: GetBindInterface: Loopback {Result} returned.", source, result);
             return result;
         }
@@ -691,11 +703,11 @@ namespace Jellyfin.Networking.Manager
         /// Checks the string to see if it matches any interface names.
         /// </summary>
         /// <param name="token">String to check.</param>
-        /// <param name="index">Interface index number.</param>
+        /// <param name="index">Interface index numbers that match.</param>
         /// <returns><c>true</c> if an interface name matches the token, <c>False</c> otherwise.</returns>
-        private bool IsInterface(string token, out int index)
+        private bool TryGetInterfaces(string token, [NotNullWhen(true)] out List<int>? index)
         {
-            index = -1;
+            index = null;
 
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
@@ -712,13 +724,13 @@ namespace Jellyfin.Networking.Manager
                     if ((!partial && string.Equals(interfc, token, StringComparison.OrdinalIgnoreCase))
                         || (partial && interfc.StartsWith(token, true, CultureInfo.InvariantCulture)))
                     {
-                        index = interfcIndex;
-                        return true;
+                        index ??= new List<int>();
+                        index.Add(interfcIndex);
                     }
                 }
             }
 
-            return false;
+            return index != null;
         }
 
         /// <summary>
@@ -730,14 +742,14 @@ namespace Jellyfin.Networking.Manager
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
-            if (IsInterface(token, out int index))
+            if (TryGetInterfaces(token, out var indices))
             {
                 _logger.LogInformation("Interface {Token} used in settings. Using its interface addresses.", token);
 
-                // Replace interface tags with the interface IP's.
+                // Replace all the interface tags with the interface IP's.
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
-                    if (Math.Abs(iface.Tag) == index
+                    if (indices.Contains(Math.Abs(iface.Tag))
                         && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
@@ -916,11 +928,19 @@ namespace Jellyfin.Networking.Manager
                 // Add virtual machine interface names to the list of bind exclusions, so that they are auto-excluded.
                 if (config.IgnoreVirtualInterfaces)
                 {
-                    var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',');
-                    var newList = new string[lanAddresses.Length + virtualInterfaceNames.Length];
-                    Array.Copy(lanAddresses, newList, lanAddresses.Length);
-                    Array.Copy(virtualInterfaceNames, 0, newList, lanAddresses.Length, virtualInterfaceNames.Length);
-                    lanAddresses = newList;
+                    // each virtual interface name must be pre-pended with the exclusion symbol !
+                    var virtualInterfaceNames = config.VirtualInterfaceNames.Split(',').Select(p => "!" + p).ToArray();
+                    if (lanAddresses.Length > 0)
+                    {
+                        var newList = new string[lanAddresses.Length + virtualInterfaceNames.Length];
+                        Array.Copy(lanAddresses, newList, lanAddresses.Length);
+                        Array.Copy(virtualInterfaceNames, 0, newList, lanAddresses.Length, virtualInterfaceNames.Length);
+                        lanAddresses = newList;
+                    }
+                    else
+                    {
+                        lanAddresses = virtualInterfaceNames;
+                    }
                 }
 
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.

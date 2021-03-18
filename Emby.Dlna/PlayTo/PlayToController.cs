@@ -132,7 +132,7 @@ namespace Emby.Dlna.PlayTo
 
         private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
         {
-            if (_disposed)
+            if (_disposed || string.IsNullOrEmpty(e.OldMediaInfo.Url))
             {
                 return;
             }
@@ -777,7 +777,7 @@ namespace Emby.Dlna.PlayTo
             var currentWait = 0;
             while (_device.TransportState != TransportState.Playing && currentWait < MaxWait)
             {
-                await Task.Delay(Interval).ConfigureAwait(false);
+                await Task.Delay(Interval, cancellationToken).ConfigureAwait(false);
                 currentWait += Interval;
             }
 

@@ -43,16 +43,6 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to being abstract.
-        /// </remarks>
-        protected ItemMetadata()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>
@@ -67,7 +57,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 1024.
         /// </remarks>
-        [Required]
         [MaxLength(1024)]
         [StringLength(1024)]
         public string Title { get; set; }
@@ -80,7 +69,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string OriginalTitle { get; set; }
+        public string? OriginalTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the sort title.
@@ -90,7 +79,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string SortTitle { get; set; }
+        public string? SortTitle { get; set; }
 
         /// <summary>
         /// Gets or sets the language.
@@ -99,7 +88,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Required, Min length = 3, Max length = 3.
         /// ISO-639-3 3-character language codes.
         /// </remarks>
-        [Required]
         [MinLength(3)]
         [MaxLength(3)]
         [StringLength(3)]

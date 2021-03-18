@@ -97,6 +97,11 @@ namespace Rssdp.Infrastructure
 
         private async void OnBroadcastTimerCallback(object state)
         {
+            if (IsDisposed)
+            {
+                return;
+            }
+
             StartListeningForNotifications();
             RemoveExpiredDevicesFromCache();
 
@@ -180,8 +185,6 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
         public void StartListeningForNotifications()
         {
-            ThrowIfDisposed();
-
             _CommunicationsServer.RequestReceived -= CommsServer_RequestReceived;
             _CommunicationsServer.RequestReceived += CommsServer_RequestReceived;
             _CommunicationsServer.BeginListeningForBroadcasts();
@@ -353,7 +356,7 @@ namespace Rssdp.Infrastructure
             {
                 return;
             }
-            
+
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
             {
@@ -515,11 +518,6 @@ namespace Rssdp.Infrastructure
 
         private void RemoveExpiredDevicesFromCache()
         {
-            if (this.IsDisposed)
-            {
-                return;
-            }
-
             DiscoveredSsdpDevice[] expiredDevices = null;
             lock (_Devices)
             {

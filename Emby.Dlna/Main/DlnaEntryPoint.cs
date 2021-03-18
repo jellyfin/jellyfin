@@ -128,7 +128,8 @@ namespace Emby.Dlna.Main
 
             _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
             _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
-            if (_disabled)
+
+            if (_disabled && _config.GetDlnaConfiguration().EnableServer)
             {
                 _logger.LogError("The DLNA specification does not support HTTPS.");
             }
@@ -228,7 +229,10 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                if (communicationsServer != null)
+                {
+                    ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                }
             }
             catch (Exception ex)
             {
@@ -313,9 +317,12 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
-                // DLNA will only work over http, so we must reset to http:// : {port}
-                uri.Scheme = "http://";
-                uri.Port = _netConfig.HttpServerPortNumber;
+                if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
+                {
+                    // DLNA will only work over http, so we must reset to http:// : {port}.
+                    uri.Scheme = "http";
+                    uri.Port = _netConfig.HttpServerPortNumber;
+                }
 
                 var device = new SsdpRootDevice
                 {
