@@ -10,6 +10,9 @@ namespace MediaBrowser.Common.Providers
     /// </summary>
     public static class ProviderIdParsers
     {
+        private const int ImdbMinNumbers = 7;
+        private const int ImdbMaxNumbers = 8;
+
         /// <summary>
         /// Parses an IMDb id from a string.
         /// </summary>
@@ -21,7 +24,8 @@ namespace MediaBrowser.Common.Providers
             var span = text.AsSpan();
             var tt = "tt".AsSpan();
 
-            while (true)
+            // imdb id is at least 9 chars (tt + 7 numbers)
+            while (span.Length >= 2 + ImdbMinNumbers)
             {
                 var ttPos = span.IndexOf(tt);
                 if (ttPos == -1)
@@ -31,27 +35,28 @@ namespace MediaBrowser.Common.Providers
                 }
 
                 span = span.Slice(ttPos + tt.Length);
-
-                int i = 0;
-                // IMDb id has a maximum of 8 digits
-                int max = span.Length > 8 ? 8 : span.Length;
-                for (; i < max; i++)
+                var i = 0;
+                for (; i < Math.Min(span.Length, ImdbMaxNumbers); i++)
                 {
                     var c = span[i];
-
-                    if (c < '0' || c > '9')
+                    if (!IsDigit(c))
                     {
                         break;
                     }
                 }
 
-                // IMDb id has a minimum of 7 digits
-                if (i >= 7)
+                // skip if more than 8 digits
+                if (i <= ImdbMaxNumbers && i >= ImdbMinNumbers)
                 {
                     imdbId = string.Concat(tt, span.Slice(0, i));
                     return true;
                 }
+
+                span = span.Slice(i);
             }
+
+            imdbId = default;
+            return false;
         }
 
         /// <summary>
@@ -86,34 +91,39 @@ namespace MediaBrowser.Common.Providers
             var span = text.AsSpan();
             var searchSpan = searchString.AsSpan();
 
-            while (true)
+            var searchPos = span.IndexOf(searchSpan);
+            if (searchPos == -1)
             {
-                var searchPos = span.IndexOf(searchSpan);
-                if (searchPos == -1)
+                providerId = default;
+                return false;
+            }
+
+            span = span.Slice(searchPos + searchSpan.Length);
+
+            int i = 0;
+            for (; i < span.Length; i++)
+            {
+                var c = span[i];
+
+                if (!IsDigit(c))
                 {
-                    providerId = default;
-                    return false;
-                }
-
-                span = span.Slice(searchPos + searchSpan.Length);
-
-                int i = 0;
-                for (; i < span.Length; i++)
-                {
-                    var c = span[i];
-
-                    if (c < '0' || c > '9')
-                    {
-                        break;
-                    }
-                }
-
-                if (i >= 1)
-                {
-                    providerId = span.Slice(0, i).ToString();
-                    return true;
+                    break;
                 }
             }
+
+            if (i >= 1)
+            {
+                providerId = span.Slice(0, i).ToString();
+                return true;
+            }
+
+            providerId = default;
+            return false;
+        }
+
+        private static bool IsDigit(char c)
+        {
+            return c >= '0' && c <= '9';
         }
     }
 }

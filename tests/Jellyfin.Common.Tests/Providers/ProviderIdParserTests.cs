@@ -17,6 +17,7 @@ namespace Jellyfin.Common.Tests.Providers
         [InlineData("Jellyfin", false, null)]
         [InlineData("tt1234567tt7654321", true, "tt1234567")]
         [InlineData("tt12345678tt7654321", true, "tt12345678")]
+        [InlineData("tt123456789", true, "tt12345678")]
         public void Parse_Imdb(string text, bool shouldSucceed, string? imdbId)
         {
             var succeeded = ProviderIdParsers.TryParseImdbId(text, out string? parsedId);
