@@ -138,7 +138,7 @@ namespace MediaBrowser.Common.Net
             int i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
             if (i != -1)
             {
-                return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
+                return TryParse(host.Remove(i).TrimStart(' ', '['), out hostObj);
             }
 
             if (IPNetAddress.TryParse(host, out var netAddress))

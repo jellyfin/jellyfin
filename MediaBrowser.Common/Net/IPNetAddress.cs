@@ -105,6 +105,13 @@ namespace MediaBrowser.Common.Net
             {
                 addr = addr.Trim();
 
+                // see if specified string is IPv6 inside square brackets []
+                int index = addr.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+                if (index != -1)
+                {
+                    return TryParse(addr.Remove(index).TrimStart(' ', '['), out ip);
+                }
+
                 // Try to parse it as is.
                 if (IPAddress.TryParse(addr, out IPAddress? res))
                 {
