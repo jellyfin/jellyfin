@@ -87,8 +87,8 @@ namespace MediaBrowser.Model.Drawing
                 fillHeight = 1;
             }
 
-            double widthRatio = (double)size.Width / (double)fillWidth;
-            double heightRatio = (double)size.Height / (double)fillHeight;
+            double widthRatio = size.Width / (double)fillWidth;
+            double heightRatio = size.Height / (double)fillHeight;
             double scaleRatio = Math.Min(widthRatio, heightRatio);
 
             // Clamp to current size.
@@ -97,8 +97,8 @@ namespace MediaBrowser.Model.Drawing
                 return size;
             }
 
-            int newWidth = Convert.ToInt32(Math.Ceiling((double)size.Width / scaleRatio));
-            int newHeight = Convert.ToInt32(Math.Ceiling((double)size.Height / scaleRatio));
+            int newWidth = Convert.ToInt32(Math.Ceiling(size.Width / scaleRatio));
+            int newHeight = Convert.ToInt32(Math.Ceiling(size.Height / scaleRatio));
 
             return new ImageDimensions(newWidth, newHeight);
         }
