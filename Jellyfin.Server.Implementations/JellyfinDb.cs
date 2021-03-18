@@ -149,6 +149,31 @@ namespace Jellyfin.Server.Implementations
 
             modelBuilder.HasDefaultSchema("jellyfin");
 
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.ProfileImage)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Permissions)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Preferences)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.AccessSchedules)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.DisplayPreferences)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
                 .IsUnique();
