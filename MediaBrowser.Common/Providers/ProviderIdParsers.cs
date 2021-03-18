@@ -19,27 +19,26 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text to parse.</param>
         /// <param name="imdbId">The parsed IMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseImdbId(string text, [NotNullWhen(true)] out string? imdbId)
+        public static bool TryParseImdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? imdbId)
         {
-            var span = text.AsSpan();
             var tt = "tt".AsSpan();
 
             // imdb id is at least 9 chars (tt + 7 numbers)
-            while (span.Length >= 2 + ImdbMinNumbers)
+            while (text.Length >= 2 + ImdbMinNumbers)
             {
-                var ttPos = span.IndexOf(tt);
+                var ttPos = text.IndexOf(tt);
                 if (ttPos == -1)
                 {
                     imdbId = default;
                     return false;
                 }
 
-                span = span.Slice(ttPos + tt.Length);
+                text = text.Slice(ttPos + tt.Length);
                 var i = 0;
-                for (; i < Math.Min(span.Length, ImdbMaxNumbers); i++)
+                for (; i < Math.Min(text.Length, ImdbMaxNumbers); i++)
                 {
-                    var c = span[i];
-                    if (!IsDigit(c))
+                    var c = text[i];
+                    if (!char.IsDigit(c))
                     {
                         break;
                     }
@@ -48,11 +47,11 @@ namespace MediaBrowser.Common.Providers
                 // skip if more than 8 digits
                 if (i <= ImdbMaxNumbers && i >= ImdbMinNumbers)
                 {
-                    imdbId = string.Concat(tt, span.Slice(0, i));
+                    imdbId = string.Concat(tt, text.Slice(0, i));
                     return true;
                 }
 
-                span = span.Slice(i);
+                text = text.Slice(i);
             }
 
             imdbId = default;
@@ -65,7 +64,7 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tmdbId">The parsed TMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseTmdbMovieId(string text, [NotNullWhen(true)] out string? tmdbId)
+        public static bool TryParseTmdbMovieId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? tmdbId)
             => TryParseProviderId(text, "themoviedb.org/movie/", out tmdbId);
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tmdbId">The parsed TMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseTmdbSeriesId(string text, [NotNullWhen(true)] out string? tmdbId)
+        public static bool TryParseTmdbSeriesId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? tmdbId)
             => TryParseProviderId(text, "themoviedb.org/tv/", out tmdbId);
 
         /// <summary>
@@ -83,29 +82,26 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tvdbId">The parsed TVDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseTvdbId(string text, [NotNullWhen(true)] out string? tvdbId)
+        public static bool TryParseTvdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? tvdbId)
             => TryParseProviderId(text, "thetvdb.com/?tab=series&id=", out tvdbId);
 
-        private static bool TryParseProviderId(string text, string searchString, [NotNullWhen(true)] out string? providerId)
+        private static bool TryParseProviderId(ReadOnlySpan<char> text, ReadOnlySpan<char> searchString, [NotNullWhen(true)] out string? providerId)
         {
-            var span = text.AsSpan();
-            var searchSpan = searchString.AsSpan();
-
-            var searchPos = span.IndexOf(searchSpan);
+            var searchPos = text.IndexOf(searchString);
             if (searchPos == -1)
             {
                 providerId = default;
                 return false;
             }
 
-            span = span.Slice(searchPos + searchSpan.Length);
+            text = text.Slice(searchPos + searchString.Length);
 
             int i = 0;
-            for (; i < span.Length; i++)
+            for (; i < text.Length; i++)
             {
-                var c = span[i];
+                var c = text[i];
 
-                if (!IsDigit(c))
+                if (!char.IsDigit(c))
                 {
                     break;
                 }
@@ -113,17 +109,12 @@ namespace MediaBrowser.Common.Providers
 
             if (i >= 1)
             {
-                providerId = span.Slice(0, i).ToString();
+                providerId = text.Slice(0, i).ToString();
                 return true;
             }
 
             providerId = default;
             return false;
-        }
-
-        private static bool IsDigit(char c)
-        {
-            return c >= '0' && c <= '9';
         }
     }
 }
