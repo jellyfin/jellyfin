@@ -29,8 +29,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         private readonly IConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly Dictionary<string, string> _validProviderIds;
+        private readonly IProviderManager _providerManager;
         private readonly IDirectoryService _directoryService;
-        private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseNfoParser{T}" /> class.
@@ -51,8 +52,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             Logger = logger;
             _config = config;
-            ProviderManager = providerManager;
-            _validProviderIds = new Dictionary<string, string>();
+            _providerManager = providerManager;
+            _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             _userManager = userManager;
             _userDataManager = userDataManager;
             _directoryService = directoryService;
@@ -65,67 +66,49 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         protected ILogger Logger { get; }
 
-        protected IProviderManager ProviderManager { get; }
-
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="metadataFile">The metadata file.</param>
+        /// <param name="metadataResult">The metadata result.</param>
+        /// <param name="nfoPath">The nfo path.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException"><c>item</c> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException"><c>metadataFile</c> is <c>null</c> or empty.</exception>
-        public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
+        /// <exception cref="ArgumentNullException"><c>metadataResult</c> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><c>nfoPath</c> is <c>null</c> or empty.</exception>
+        public void Fetch(MetadataResult<T> metadataResult, string nfoPath, CancellationToken cancellationToken)
         {
-            if (item.Item == null)
+            if (metadataResult.Item == null)
             {
-                throw new ArgumentException("Item can't be null.", nameof(item));
+                throw new ArgumentException("Item can't be null.", nameof(metadataResult));
             }
 
-            if (string.IsNullOrEmpty(metadataFile))
+            if (string.IsNullOrEmpty(nfoPath))
             {
-                throw new ArgumentException("The metadata filepath was empty.", nameof(metadataFile));
+                throw new ArgumentException("The metadata filepath was empty.", nameof(nfoPath));
             }
 
-            _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            CreateProviderIdMappings(metadataResult.Item);
 
-            var idInfos = ProviderManager.GetExternalIdInfos(item.Item);
-
-            foreach (var info in idInfos)
-            {
-                var id = info.Key + "Id";
-                if (!_validProviderIds.ContainsKey(id))
-                {
-                    _validProviderIds.Add(id, info.Key);
-                }
-            }
-
-            // Additional Mappings
-            _validProviderIds.Add("collectionnumber", "TmdbCollection");
-            _validProviderIds.Add("tmdbcolid", "TmdbCollection");
-            _validProviderIds.Add("imdb_id", "Imdb");
-
-            Fetch(item, metadataFile, GetXmlReaderSettings(), cancellationToken);
+            Fetch(metadataResult, nfoPath, GetXmlReaderSettings(), cancellationToken);
         }
 
         /// <summary>
         /// Fetches the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="metadataFile">The metadata file.</param>
+        /// <param name="metadataResult">The metadata result.</param>
+        /// <param name="nfoPath">The nfo path.</param>
         /// <param name="settings">The settings.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        protected virtual void Fetch(MetadataResult<T> metadataResult, string nfoPath, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             if (!SupportsUrlAfterClosingXmlTag)
             {
-                using (var fileStream = File.OpenRead(metadataFile))
+                using (var fileStream = File.OpenRead(nfoPath))
                 using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
                 using (var reader = XmlReader.Create(streamReader, settings))
                 {
-                    item.ResetPeople();
+                    metadataResult.ResetPeople();
 
                     reader.MoveToContent();
                     reader.Read();
@@ -137,7 +120,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (reader.NodeType == XmlNodeType.Element)
                         {
-                            FetchDataFromXmlNode(reader, item);
+                            FetchDataFromXmlNode(reader, metadataResult);
                         }
                         else
                         {
@@ -149,10 +132,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 return;
             }
 
-            using (var fileStream = File.OpenRead(metadataFile))
+            using (var fileStream = File.OpenRead(nfoPath))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
             {
-                item.ResetPeople();
+                metadataResult.ResetPeople();
 
                 // Need to handle a url after the xml data
                 // http://kodi.wiki/view/NFO_files/movies
@@ -173,7 +156,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 {
                     var endingXml = xml.Substring(index);
 
-                    ParseProviderLinks(item.Item, endingXml);
+                    ParseProviderLinks(metadataResult.Item, endingXml);
 
                     // If the file is just an imdb url, don't go any further
                     if (index == 0)
@@ -186,7 +169,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 else
                 {
                     // If the file is just provider urls, handle that
-                    ParseProviderLinks(item.Item, xml);
+                    ParseProviderLinks(metadataResult.Item, xml);
 
                     return;
                 }
@@ -207,7 +190,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                             if (reader.NodeType == XmlNodeType.Element)
                             {
-                                FetchDataFromXmlNode(reader, item);
+                                FetchDataFromXmlNode(reader, metadataResult);
                             }
                             else
                             {
@@ -1080,6 +1063,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             value = value.Trim().Trim(separator);
 
             return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <summary>
+        /// Create Mappings for Provider Ids enabled for item.
+        /// </summary>
+        /// <param name="item">The item to create the mappings for.</param>
+        private void CreateProviderIdMappings(T item)
+        {
+            var idInfos = _providerManager.GetExternalIdInfos(item);
+
+            foreach (var info in idInfos)
+            {
+                var id = info.Key + "Id";
+                if (!_validProviderIds.ContainsKey(id))
+                {
+                    _validProviderIds.Add(id, info.Key);
+                }
+            }
+
+            // Additional Mappings
+            _validProviderIds.Add("collectionnumber", "TmdbCollection");
+            _validProviderIds.Add("tmdbcolid", "TmdbCollection");
+            _validProviderIds.Add("imdb_id", "Imdb");
         }
 
         /// <summary>
