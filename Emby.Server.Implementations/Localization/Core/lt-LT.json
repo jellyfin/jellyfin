@@ -113,5 +113,9 @@
     "TasksChannelsCategory": "Internetiniai Kanalai",
     "TasksApplicationCategory": "Programa",
     "TasksLibraryCategory": "Mediateka",
-    "TasksMaintenanceCategory": "Priežiūra"
+    "TasksMaintenanceCategory": "Priežiūra",
+    "TaskCleanActivityLog": "Švarus veiklos žurnalas",
+    "Undefined": "Neapibrėžtas",
+    "Forced": "Priverstas",
+    "Default": "Numatytas"
 }
