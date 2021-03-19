@@ -149,6 +149,14 @@ namespace Jellyfin.Server.Implementations
 
             modelBuilder.HasDefaultSchema("jellyfin");
 
+            // Collations
+
+            modelBuilder.Entity<User>()
+                .Property(user => user.Username)
+                .UseCollation("NOCASE");
+
+            // Delete behavior
+
             modelBuilder.Entity<User>()
                 .HasOne(u => u.ProfileImage)
                 .WithOne()
@@ -174,6 +182,11 @@ namespace Jellyfin.Server.Implementations
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Indexes
+
+            modelBuilder.Entity<User>()
+                .HasIndex(entity => entity.Username)
+                .IsUnique();
 
             modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
