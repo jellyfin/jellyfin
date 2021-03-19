@@ -174,12 +174,26 @@ namespace Jellyfin.Server.Implementations
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
 
+
             modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
                 .IsUnique();
 
             modelBuilder.Entity<CustomItemDisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
+                .IsUnique();
+
+            // Used to get a user's permissions or a specific permission for a user.
+            // Also prevents multiple values being created for a user.
+            // Filtered over non-null user ids for when other entities (groups, API keys) get permissions
+            modelBuilder.Entity<Permission>()
+                .HasIndex(p => new { p.UserId, p.Kind })
+                .HasFilter("[UserId] IS NOT NULL")
+                .IsUnique();
+
+            modelBuilder.Entity<Preference>()
+                .HasIndex(p => new { p.UserId, p.Kind })
+                .HasFilter("[UserId] IS NOT NULL")
                 .IsUnique();
         }
     }
