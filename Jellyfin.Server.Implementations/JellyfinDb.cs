@@ -165,11 +165,13 @@ namespace Jellyfin.Server.Implementations
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Permissions)
                 .WithOne()
+                .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Preferences)
                 .WithOne()
+                .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
