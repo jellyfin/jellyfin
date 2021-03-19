@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
@@ -699,22 +700,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                // todo
+                // Read Provider Ids
                 default:
-                    string readerName = reader.Name;
-                    if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
-                    {
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(providerIdValue, id);
-                        }
-                    }
-                    else
-                    {
-                        reader.Skip();
-                    }
-
+                    reader.ReadProviderIdFromNfo(item, _validProviderIds);
                     break;
             }
         }

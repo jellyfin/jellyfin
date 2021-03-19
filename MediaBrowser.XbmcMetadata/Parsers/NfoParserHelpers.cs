@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
@@ -49,6 +51,23 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var value = xmlReader.ReadElementContentAsBoolean();
             return value;
+        }
+
+        internal static void ReadProviderIdFromNfo(this XmlReader xmlReader, IHasProviderIds item, Dictionary<string, string> providerIds)
+        {
+            string readerName = xmlReader.Name;
+            if (providerIds.TryGetValue(readerName, out string? providerIdValue))
+            {
+                var id = xmlReader.ReadElementContentAsString();
+                if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
+                {
+                    item.SetProviderId(providerIdValue, id);
+                }
+            }
+            else
+            {
+                xmlReader.Skip();
+            }
         }
     }
 }
