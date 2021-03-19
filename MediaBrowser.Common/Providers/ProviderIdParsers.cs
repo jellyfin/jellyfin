@@ -38,7 +38,7 @@ namespace MediaBrowser.Common.Providers
                 for (; i < Math.Min(text.Length, ImdbMaxNumbers); i++)
                 {
                     var c = text[i];
-                    if (!char.IsDigit(c))
+                    if (!IsDigit(c))
                     {
                         break;
                     }
@@ -101,7 +101,7 @@ namespace MediaBrowser.Common.Providers
             {
                 var c = text[i];
 
-                if (!char.IsDigit(c))
+                if (!IsDigit(c))
                 {
                     break;
                 }
@@ -115,6 +115,11 @@ namespace MediaBrowser.Common.Providers
 
             providerId = default;
             return false;
+        }
+
+        private static bool IsDigit(char c)
+        {
+            return c >= '0' && c <= '9';
         }
     }
 }
