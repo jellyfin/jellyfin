@@ -73,9 +73,6 @@ namespace Jellyfin.Data.Entities
             PlayDefaultAudioTrack = true;
             SubtitleMode = SubtitlePlaybackMode.Default;
             SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
-
-            AddDefaultPermissions();
-            AddDefaultPreferences();
         }
 
         /// <summary>
@@ -483,18 +480,11 @@ namespace Jellyfin.Data.Entities
             return Array.IndexOf(GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders), id) != -1;
         }
 
-        private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
-        {
-            var localTime = date.ToLocalTime();
-            var hour = localTime.TimeOfDay.TotalHours;
-
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
-                   && hour >= schedule.StartHour
-                   && hour <= schedule.EndHour;
-        }
-
+        /// <summary>
+        /// Initializes the default permissions for a user. Should only be called on user creation.
+        /// </summary>
         // TODO: make these user configurable?
-        private void AddDefaultPermissions()
+        public void AddDefaultPermissions()
         {
             Permissions.Add(new Permission(PermissionKind.IsAdministrator, false));
             Permissions.Add(new Permission(PermissionKind.IsDisabled, false));
@@ -519,12 +509,25 @@ namespace Jellyfin.Data.Entities
             Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
         }
 
-        private void AddDefaultPreferences()
+        /// <summary>
+        /// Initializes the default preferences. Should only be called on user creation.
+        /// </summary>
+        public void AddDefaultPreferences()
         {
             foreach (var val in Enum.GetValues(typeof(PreferenceKind)).Cast<PreferenceKind>())
             {
                 Preferences.Add(new Preference(val, string.Empty));
             }
+        }
+
+        private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
+        {
+            var localTime = date.ToLocalTime();
+            var hour = localTime.TimeOfDay.TotalHours;
+
+            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
+                   && hour >= schedule.StartHour
+                   && hour <= schedule.EndHour;
         }
     }
 }
