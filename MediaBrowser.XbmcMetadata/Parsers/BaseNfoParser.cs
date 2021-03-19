@@ -266,149 +266,70 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 // DateCreated
                 case "dateadded":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
-                            {
-                                item.DateCreated = added.ToUniversalTime();
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Invalid Added value found: {Value}", val);
-                            }
-                        }
-
-                        break;
-                    }
+                    item.DateCreated = reader.ReadDateFromNfo() ?? item.DateCreated;
+                    break;
 
                 case "originaltitle":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrEmpty(val))
-                        {
-                            item.OriginalTitle = val;
-                        }
-
-                        break;
-                    }
+                    item.OriginalTitle = reader.ReadStringFromNfo() ?? item.OriginalTitle;
+                    break;
 
                 case "name":
                 case "title":
                 case "localtitle":
-                    item.Name = reader.ReadElementContentAsString();
+                    item.Name = reader.ReadStringFromNfo() ?? item.Name;
                     break;
 
                 case "sortname":
-                    item.SortName = reader.ReadElementContentAsString();
+                    item.SortName = reader.ReadStringFromNfo() ?? item.SortName;
                     break;
 
                 case "criticrating":
-                    {
-                        var text = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrEmpty(text))
-                        {
-                            if (float.TryParse(text, NumberStyles.Any, UsCulture, out var value))
-                            {
-                                item.CriticRating = value;
-                            }
-                        }
-
-                        break;
-                    }
+                    item.CriticRating = reader.ReadFloatFromNfo() ?? item.CriticRating;
+                    break;
 
                 case "sorttitle":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.ForcedSortName = val;
-                        }
-
-                        break;
-                    }
+                    item.SortName = reader.ReadStringFromNfo() ?? item.SortName;
+                    break;
 
                 case "biography":
                 case "plot":
                 case "review":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.Overview = val;
-                        }
-
-                        break;
-                    }
+                    item.Overview = reader.ReadStringFromNfo() ?? item.Overview;
+                    break;
 
                 case "language":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        item.PreferredMetadataLanguage = val;
-
-                        break;
-                    }
+                    item.PreferredMetadataLanguage = reader.ReadStringFromNfo() ?? item.PreferredMetadataLanguage;
+                    break;
 
                 case "watched":
+                    if (userData != null)
                     {
-                        var val = reader.ReadElementContentAsBoolean();
-
-                        if (userData != null)
-                        {
-                            userData.Played = val;
-                        }
-
-                        break;
+                        userData.Played = reader.ReadBoolFromNfo() ?? userData.Played;
                     }
+
+                    break;
 
                 case "playcount":
+                    if (userData != null)
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
-                        {
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var count))
-                            {
-                                userData.PlayCount = count;
-                            }
-                        }
-
-                        break;
+                        userData.PlayCount = reader.ReadIntFromNfo() ?? userData.PlayCount;
                     }
+
+                    break;
 
                 case "lastplayed":
+                    if (userData != null)
                     {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val) && userData != null)
-                        {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
-                            {
-                                userData.LastPlayedDate = added.ToUniversalTime();
-                            }
-                            else
-                            {
-                                Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
-                            }
-                        }
-
-                        break;
+                        userData.LastPlayedDate = reader.ReadDateFromNfo() ?? userData.LastPlayedDate;
                     }
+
+                    break;
 
                 case "countrycode":
-                    {
-                        var val = reader.ReadElementContentAsString();
+                    item.PreferredMetadataCountryCode = reader.ReadStringFromNfo() ?? item.PreferredMetadataCountryCode;
+                    break;
 
-                        item.PreferredMetadataCountryCode = val;
-
-                        break;
-                    }
-
+                // todo
                 case "lockedfields":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -430,9 +351,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "tagline":
-                    item.Tagline = reader.ReadElementContentAsString();
+                    item.Tagline = reader.ReadStringFromNfo() ?? item.Tagline;
                     break;
 
+                // todo
                 case "country":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -449,29 +371,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "mpaa":
-                    {
-                        var rating = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            item.OfficialRating = rating;
-                        }
-
-                        break;
-                    }
+                    item.OfficialRating = reader.ReadStringFromNfo() ?? item.OfficialRating;
+                    break;
 
                 case "customrating":
-                    {
-                        var val = reader.ReadElementContentAsString();
+                    item.CustomRating = reader.ReadStringFromNfo() ?? item.CustomRating;
+                    break;
 
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.CustomRating = val;
-                        }
-
-                        break;
-                    }
-
+                // todo
                 case "runtime":
                     {
                         var text = reader.ReadElementContentAsString();
@@ -488,30 +395,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "aspectratio":
+                    if (item is IHasAspectRatio hasAspectRatio)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val)
-                            && item is IHasAspectRatio hasAspectRatio)
-                        {
-                            hasAspectRatio.AspectRatio = val;
-                        }
-
-                        break;
+                        hasAspectRatio.AspectRatio = reader.ReadStringFromNfo() ?? hasAspectRatio.AspectRatio;
                     }
+
+                    break;
 
                 case "lockdata":
-                    {
-                        var val = reader.ReadElementContentAsString();
+                    item.IsLocked = reader.ReadBoolFromNfo() ?? item.IsLocked;
+                    break;
 
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.IsLocked = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
-                        }
-
-                        break;
-                    }
-
+                // todo
                 case "studio":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -524,6 +419,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "director":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -540,6 +436,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "credits":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -563,6 +460,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "writer":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -579,6 +477,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "actor":
                     {
                         if (!reader.IsEmptyElement)
@@ -601,6 +500,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "trailer":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -616,52 +516,22 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 case "displayorder":
+                    if (item is IHasDisplayOrder hasDisplayOrder)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        var hasDisplayOrder = item as IHasDisplayOrder;
-                        if (hasDisplayOrder != null)
-                        {
-                            if (!string.IsNullOrWhiteSpace(val))
-                            {
-                                hasDisplayOrder.DisplayOrder = val;
-                            }
-                        }
-
-                        break;
+                        hasDisplayOrder.DisplayOrder = reader.ReadStringFromNfo() ?? hasDisplayOrder.DisplayOrder;
                     }
+
+                    break;
 
                 case "year":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (int.TryParse(val, out var productionYear) && productionYear > 1850)
-                            {
-                                item.ProductionYear = productionYear;
-                            }
-                        }
-
-                        break;
-                    }
+                    item.ProductionYear = reader.ReadIntFromNfo() ?? item.ProductionYear;
+                    break;
 
                 case "rating":
-                    {
-                        var rating = reader.ReadElementContentAsString();
+                    item.CommunityRating = reader.ReadFloatFromNfo() ?? item.CommunityRating;
+                    break;
 
-                        if (!string.IsNullOrWhiteSpace(rating))
-                        {
-                            // All external meta is saving this as '.' for decimal I believe...but just to be sure
-                            if (float.TryParse(rating.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var val))
-                            {
-                                item.CommunityRating = val;
-                            }
-                        }
-
-                        break;
-                    }
-
+                // todo
                 case "aired":
                 case "formed":
                 case "premiered":
@@ -683,6 +553,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "enddate":
                     {
                         var formatString = nfoConfiguration.ReleaseDateFormat;
@@ -700,6 +571,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "genre":
                     {
                         var val = reader.ReadElementContentAsString();
@@ -719,6 +591,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "style":
                 case "tag":
                     {
@@ -731,6 +604,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "fileinfo":
                     {
                         if (!reader.IsEmptyElement)
@@ -748,6 +622,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 case "uniqueid":
                     {
                         if (reader.IsEmptyElement)
@@ -824,6 +699,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                // todo
                 default:
                     string readerName = reader.Name;
                     if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
