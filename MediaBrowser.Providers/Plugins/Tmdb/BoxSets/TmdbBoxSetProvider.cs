@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -19,11 +20,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly TmdbClientManager _tmdbClientManager;
+        private readonly ILibraryManager _libraryManager;
 
-        public TmdbBoxSetProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
+        public TmdbBoxSetProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager, ILibraryManager libraryManager)
         {
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
+            _libraryManager = libraryManager;
         }
 
         public string Name => TmdbUtils.ProviderName;
@@ -83,7 +86,11 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             // We don't already have an Id, need to fetch it
             if (tmdbId <= 0)
             {
-                var searchResults = await _tmdbClientManager.SearchCollectionAsync(id.Name, language, cancellationToken).ConfigureAwait(false);
+                // ParseName is required here.
+                // Caller provides the filename with extension stripped and NOT the parsed filename
+                var parsedName = _libraryManager.ParseName(id.Name);
+                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
+                var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults != null && searchResults.Count > 0)
                 {
