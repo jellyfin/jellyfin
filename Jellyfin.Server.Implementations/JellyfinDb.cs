@@ -184,6 +184,16 @@ namespace Jellyfin.Server.Implementations
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.ItemDisplayPreferences)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DisplayPreferences>()
+                .HasMany(d => d.HomeSections)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Indexes
 
             modelBuilder.Entity<User>()
