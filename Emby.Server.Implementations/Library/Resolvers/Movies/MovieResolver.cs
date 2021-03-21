@@ -69,6 +69,110 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return result;
         }
 
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>Video.</returns>
+        public override Video Resolve(ItemResolveArgs args)
+        {
+            var collectionType = args.GetCollectionType();
+
+            // Find movies with their own folders
+            if (args.IsDirectory)
+            {
+                if (IsInvalid(args.Parent, collectionType))
+                {
+                    return null;
+                }
+
+                var files = args.FileSystemChildren
+                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
+                    .ToList();
+
+                if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FindMovie<MusicVideo>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
+                }
+
+                if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FindMovie<Video>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
+                }
+
+                if (string.IsNullOrEmpty(collectionType))
+                {
+                    // Owned items will be caught by the plain video resolver
+                    if (args.Parent == null)
+                    {
+                        // return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
+                        return null;
+                    }
+
+                    if (args.HasParent<Series>())
+                    {
+                        return null;
+                    }
+
+                    {
+                        return FindMovie<Movie>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
+                    }
+                }
+
+                if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
+                {
+                    return FindMovie<Movie>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
+                }
+
+                return null;
+            }
+
+            // Handle owned items
+            if (args.Parent == null)
+            {
+                return base.Resolve(args);
+            }
+
+            if (IsInvalid(args.Parent, collectionType))
+            {
+                return null;
+            }
+
+            Video item = null;
+
+            if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
+            {
+                item = ResolveVideo<MusicVideo>(args, false);
+            }
+
+            // To find a movie file, the collection type must be movies or boxsets
+            else if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
+            {
+                item = ResolveVideo<Movie>(args, true);
+            }
+            else if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            {
+                item = ResolveVideo<Video>(args, false);
+            }
+            else if (string.IsNullOrEmpty(collectionType))
+            {
+                if (args.HasParent<Series>())
+                {
+                    return null;
+                }
+
+                item = ResolveVideo<Video>(args, false);
+            }
+
+            if (item != null)
+            {
+                item.IsInMixedFolder = true;
+            }
+
+            return item;
+        }
+
         private MultiItemResolverResult ResolveMultipleInternal(
             Folder parent,
             List<FileSystemMetadata> files,
@@ -214,110 +318,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         private static bool ContainsFile(VideoFileInfo result, FileSystemMetadata file)
         {
             return string.Equals(result.Path, file.FullName, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Resolves the specified args.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>Video.</returns>
-        protected override Video Resolve(ItemResolveArgs args)
-        {
-            var collectionType = args.GetCollectionType();
-
-            // Find movies with their own folders
-            if (args.IsDirectory)
-            {
-                if (IsInvalid(args.Parent, collectionType))
-                {
-                    return null;
-                }
-
-                var files = args.FileSystemChildren
-                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
-                    .ToList();
-
-                if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
-                {
-                    return FindMovie<MusicVideo>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
-                }
-
-                if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase))
-                {
-                    return FindMovie<Video>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
-                }
-
-                if (string.IsNullOrEmpty(collectionType))
-                {
-                    // Owned items will be caught by the plain video resolver
-                    if (args.Parent == null)
-                    {
-                        // return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
-                        return null;
-                    }
-
-                    if (args.HasParent<Series>())
-                    {
-                        return null;
-                    }
-
-                    {
-                        return FindMovie<Movie>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
-                    }
-                }
-
-                if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
-                {
-                    return FindMovie<Movie>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, true);
-                }
-
-                return null;
-            }
-
-            // Handle owned items
-            if (args.Parent == null)
-            {
-                return base.Resolve(args);
-            }
-
-            if (IsInvalid(args.Parent, collectionType))
-            {
-                return null;
-            }
-
-            Video item = null;
-
-            if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
-            {
-                item = ResolveVideo<MusicVideo>(args, false);
-            }
-
-            // To find a movie file, the collection type must be movies or boxsets
-            else if (string.Equals(collectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
-            {
-                item = ResolveVideo<Movie>(args, true);
-            }
-            else if (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
-            {
-                item = ResolveVideo<Video>(args, false);
-            }
-            else if (string.IsNullOrEmpty(collectionType))
-            {
-                if (args.HasParent<Series>())
-                {
-                    return null;
-                }
-
-                item = ResolveVideo<Video>(args, false);
-            }
-
-            if (item != null)
-            {
-                item.IsInMixedFolder = true;
-            }
-
-            return item;
         }
 
         /// <summary>
