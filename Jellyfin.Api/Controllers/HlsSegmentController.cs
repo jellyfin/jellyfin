@@ -61,7 +61,13 @@ namespace Jellyfin.Api.Controllers
         {
             // TODO: Deprecate with new iOS app
             var file = segmentId + Path.GetExtension(Request.Path);
-            file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
+            var transcodePath = _serverConfigurationManager.GetTranscodePath();
+            file = Path.GetFullPath(Path.Combine(transcodePath, file));
+            var fileDir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath))
+            {
+                return BadRequest("Invalid segment.");
+            }
 
             return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file)!, false, HttpContext);
         }
@@ -81,7 +87,13 @@ namespace Jellyfin.Api.Controllers
         public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
         {
             var file = playlistId + Path.GetExtension(Request.Path);
-            file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
+            var transcodePath = _serverConfigurationManager.GetTranscodePath();
+            file = Path.GetFullPath(Path.Combine(transcodePath, file));
+            var fileDir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath) || Path.GetExtension(file) != ".m3u8")
+            {
+                return BadRequest("Invalid segment.");
+            }
 
             return GetFileResult(file, file);
         }
@@ -130,7 +142,12 @@ namespace Jellyfin.Api.Controllers
             var file = segmentId + Path.GetExtension(Request.Path);
             var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
 
-            file = Path.Combine(transcodeFolderPath, file);
+            file = Path.GetFullPath(Path.Combine(transcodeFolderPath, file));
+            var fileDir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodeFolderPath))
+            {
+                return BadRequest("Invalid segment.");
+            }
 
             var normalizedPlaylistId = playlistId;
 

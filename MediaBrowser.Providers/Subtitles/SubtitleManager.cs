@@ -205,12 +205,30 @@ namespace MediaBrowser.Providers.Subtitles
 
                 if (saveInMediaFolder)
                 {
-                    savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
+                    var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
+                    // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                    if (mediaFolderPath.StartsWith(video.ContainingFolderPath))
+                    {
+                        savePaths.Add(mediaFolderPath);
+                    }
                 }
 
-                savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+                var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
 
-                await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
+                if (internalPath.StartsWith(video.GetInternalMetadataPath()))
+                {
+                    savePaths.Add(internalPath);
+                }
+
+                if (savePaths.Count > 0)
+                {
+                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
+                }
             }
         }
 
