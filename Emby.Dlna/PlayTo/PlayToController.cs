@@ -945,7 +945,7 @@ namespace Emby.Dlna.PlayTo
                 request.LiveStreamId = values.GetValueOrDefault("LiveStreamId");
 
                 // Be careful, IsDirectStream==true by default (Static != false or not in query).
-                // See initialization of StreamingRequestDto in AudioController.GetAudioStream() method : Static = @static ?? true.
+                // See initialization of StreamingRequestDto in AudioController.GetAudioStream() method : Static = @static ?? false.
                 request.IsDirectStream = !string.Equals("false", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
 
                 request.AudioStreamIndex = GetIntValue(values, "AudioStreamIndex");
