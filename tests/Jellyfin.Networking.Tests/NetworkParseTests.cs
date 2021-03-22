@@ -518,7 +518,9 @@ namespace Jellyfin.Networking.Tests
         [Theory]
         [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", true)]
         [InlineData("185.10.10.10", "185.10.10.10", false)]
-        public void HasRemoteAccess_GivenNonEmptyWhitelist_AllowsOnlyIpsInWhitelist(string addresses, string remoteIp, bool denied)
+        [InlineData("", "100.100.100.100", false)]
+
+        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIpsInWhitelist(string addresses, string remoteIp, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
@@ -534,9 +536,10 @@ namespace Jellyfin.Networking.Tests
         }
 
         [Theory]
-        [InlineData("185.10.10.10", "79.2.3.4", false)] // blacklist
-        [InlineData("185.10.10.10", "185.10.10.10", true)] // blacklist
-        public void HasRemoteAccess_GivenNonEmptyBlacklist_BlacklistTheIps(string addresses, string remoteIp, bool denied)
+        [InlineData("185.10.10.10", "79.2.3.4", false)]
+        [InlineData("185.10.10.10", "185.10.10.10", true)]
+        [InlineData("", "100.100.100.100", false)]
+        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIps(string addresses, string remoteIp, bool denied)
         {
             // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
             // If left blank, all remote addresses will be allowed.
