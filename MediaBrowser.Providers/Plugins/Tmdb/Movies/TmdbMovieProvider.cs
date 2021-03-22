@@ -188,23 +188,33 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Releases?.Countries != null)
             {
-                var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification));
-
-                var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
-                var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
-
-                if (ourRelease != null)
+                var ourReleaseFound = false;
+                var usReleaseFound = false;
+                foreach (var country in movieResult.Releases.Countries)
                 {
-                    var ratingPrefix = string.Equals(info.MetadataCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? string.Empty : info.MetadataCountryCode + "-";
-                    var newRating = ratingPrefix + ourRelease.Certification;
+                    if (!string.IsNullOrWhiteSpace(country.Certification))
+                    {
+                        if (!ourReleaseFound && country.Iso_3166_1.Equals(info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var ratingPrefix = info.MetadataCountryCode.Equals("US", StringComparison.OrdinalIgnoreCase) ? string.Empty : info.MetadataCountryCode + "-";
 
-                    newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
+                            var newRating = ratingPrefix + country.Certification;
+                            newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
 
-                    movie.OfficialRating = newRating;
-                }
-                else if (usRelease != null)
-                {
-                    movie.OfficialRating = usRelease.Certification;
+                            movie.OfficialRating = newRating;
+                            ourReleaseFound = true;
+                        }
+
+                        if (!usReleaseFound && country.Iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase))
+                        {
+                            movie.OfficialRating = country.Certification;
+                            usReleaseFound = true;
+                        }
+                    }
+                    if (ourReleaseFound && usReleaseFound)
+                    {
+                        break;
+                    }
                 }
             }
 
