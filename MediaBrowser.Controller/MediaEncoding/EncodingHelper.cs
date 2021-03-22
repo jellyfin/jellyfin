@@ -542,7 +542,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             .Append(' ');
                     }
 
-                    arg.Append("-autorotate 0");
+                    arg.Append("-autorotate 0 ");
                 }
 
                 if (state.IsVideoRequest
