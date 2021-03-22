@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -70,15 +71,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking", "Jell
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Dlna.Tests", "tests\Jellyfin.Dlna.Tests\Jellyfin.Dlna.Tests.csproj", "{B8AE4B9D-E8D3-4B03-A95E-7FD8CECECC50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.XbmcMetadata.Tests", "tests\Jellyfin.XbmcMetadata.Tests\Jellyfin.XbmcMetadata.Tests.csproj", "{30922383-D513-4F4D-B890-A940B57FA353}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.XbmcMetadata.Tests", "tests\Jellyfin.XbmcMetadata.Tests\Jellyfin.XbmcMetadata.Tests.csproj", "{30922383-D513-4F4D-B890-A940B57FA353}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Model.Tests", "tests\Jellyfin.Model.Tests\Jellyfin.Model.Tests.csproj", "{FC1BC0CE-E8D2-4AE9-A6AB-8A02143B335D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Model.Tests", "tests\Jellyfin.Model.Tests\Jellyfin.Model.Tests.csproj", "{FC1BC0CE-E8D2-4AE9-A6AB-8A02143B335D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -210,6 +211,10 @@ Global
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
