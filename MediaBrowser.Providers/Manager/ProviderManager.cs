@@ -827,10 +827,12 @@ namespace MediaBrowser.Providers.Manager
             {
                 try
                 {
-                    var results = await GetSearchResults(provider, searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
+                    var results = await provider.GetSearchResults(searchInfo.SearchInfo, cancellationToken).ConfigureAwait(false);
 
                     foreach (var result in results)
                     {
+                        result.SearchProviderName = provider.Name;
+
                         var existingMatch = resultList.FirstOrDefault(i => i.ProviderIds.Any(p => string.Equals(result.GetProviderId(p.Key), p.Value, StringComparison.OrdinalIgnoreCase)));
 
                         if (existingMatch == null)
@@ -863,22 +865,6 @@ namespace MediaBrowser.Providers.Manager
             // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
-        }
-
-        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResults<TLookupType>(
-            IRemoteSearchProvider<TLookupType> provider,
-            TLookupType searchInfo,
-            CancellationToken cancellationToken)
-            where TLookupType : ItemLookupInfo
-        {
-            var results = await provider.GetSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-
-            foreach (var item in results)
-            {
-                item.SearchProviderName = provider.Name;
-            }
-
-            return results;
         }
 
         /// <inheritdoc/>
