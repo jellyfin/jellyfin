@@ -17,8 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Release"/> class.
         /// </summary>
         /// <param name="name">The name of this release.</param>
-        /// <param name="owner">The owner of this release.</param>
-        public Release(string name, IHasReleases owner)
+        public Release(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -27,20 +26,8 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Name = name;
 
-            owner?.Releases.Add(this);
-
             MediaFiles = new HashSet<MediaFile>();
             Chapters = new HashSet<Chapter>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Release"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Release()
-        {
         }
 
         /// <summary>
@@ -58,7 +45,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 1024.
         /// </remarks>
-        [Required]
         [MaxLength(1024)]
         [StringLength(1024)]
         public string Name { get; set; }

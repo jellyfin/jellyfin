@@ -16,7 +16,7 @@ namespace Jellyfin.MediaEncoding.Tests
             var path = Path.Join("Test Data", fileName);
             using (var stream = File.OpenRead(path))
             {
-                await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+                await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(stream, JsonDefaults.Options).ConfigureAwait(false);
             }
         }
     }

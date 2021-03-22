@@ -36,7 +36,7 @@ namespace Emby.Dlna
         private readonly ILogger<DlnaManager> _logger;
         private readonly IServerApplicationHost _appHost;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 
@@ -333,7 +333,12 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+            var info = GetProfileInfosInternal().FirstOrDefault(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+
+            if (info == null)
+            {
+                return null;
+            }
 
             return ParseProfileFile(info.Path, info.Info.Type);
         }

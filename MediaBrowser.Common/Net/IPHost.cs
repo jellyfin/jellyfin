@@ -406,7 +406,7 @@ namespace MediaBrowser.Common.Net
             }
 
             // If we haven't resolved before, or our timer has run out...
-            if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved?.AddMinutes(Timeout)))
+            if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
             {
                 _lastResolved = DateTime.UtcNow;
                 ResolveHostInternal().GetAwaiter().GetResult();

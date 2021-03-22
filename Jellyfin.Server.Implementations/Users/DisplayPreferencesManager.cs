@@ -1,4 +1,5 @@
 ﻿#pragma warning disable CA1307
+#pragma warning disable CA1309
 
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             if (prefs == null)
             {
-                prefs = new DisplayPreferences(userId,  itemId, client);
+                prefs = new DisplayPreferences(userId, itemId, client);
                 _dbContext.DisplayPreferences.Add(prefs);
             }
 

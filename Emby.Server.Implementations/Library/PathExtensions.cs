@@ -59,11 +59,18 @@ namespace Emby.Server.Implementations.Library
         /// <param name="newPath">The result of the sub path replacement</param>
         /// <returns>The path after replacing the sub path.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="path" />, <paramref name="newSubPath" /> or <paramref name="newSubPath" /> is empty.</exception>
-        public static bool TryReplaceSubPath(this string path, string subPath, string newSubPath, [NotNullWhen(true)] out string? newPath)
+        public static bool TryReplaceSubPath(
+            [NotNullWhen(true)] this string? path,
+            [NotNullWhen(true)] string? subPath,
+            [NotNullWhen(true)] string? newSubPath,
+            [NotNullWhen(true)] out string? newPath)
         {
             newPath = null;
 
-            if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(subPath) || string.IsNullOrEmpty(newSubPath) || subPath.Length > path.Length)
+            if (string.IsNullOrEmpty(path)
+                || string.IsNullOrEmpty(subPath)
+                || string.IsNullOrEmpty(newSubPath)
+                || subPath.Length > path.Length)
             {
                 return false;
             }
