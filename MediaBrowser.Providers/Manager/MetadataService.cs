@@ -541,8 +541,9 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>IEnumerable{`0}.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
-            // Get providers to refresh
-            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item, libraryOptions);
+            // Get providers to refresh. The ToList call is needed to allow for multiple enumerations without calling
+            // the expensive GetMetadataProviders over and over.
+            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item, libraryOptions).ToList();
 
             var metadataRefreshMode = options.MetadataRefreshMode;
 
@@ -552,55 +553,48 @@ namespace MediaBrowser.Providers.Manager
                 (isFirstRefresh && metadataRefreshMode >= MetadataRefreshMode.Default) ||
                 (requiresRefresh && metadataRefreshMode >= MetadataRefreshMode.Default);
 
-            if (!runAllProviders)
+            if (runAllProviders)
             {
-                var providersWithChanges = providers
-                    .Where(i =>
-                    {
-                        if (i is IHasItemChangeMonitor hasFileChangeMonitor)
-                        {
-                            return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
-                        }
+                return providers;
+            }
 
-                        return false;
-                    });
-
-                if (!providersWithChanges.Any())
+            var providersWithChanges = new HashSet<IMetadataProvider>(providers.Count);
+            var anyRemoteProvidersChanged = false;
+            var anyLocalOrPreRefreshProvidersChanged = false;
+            foreach (var provider in providers)
+            {
+                if (provider is IHasItemChangeMonitor hasItemChangeMonitor &&
+                    HasChanged(item, hasItemChangeMonitor, options.DirectoryService))
                 {
-                    providers = new List<IMetadataProvider<TItemType>>();
-                }
-                else
-                {
-                    var anyRemoteProvidersChanged = providersWithChanges.Any(p => p is IRemoteMetadataProvider);
-
-                    var anyLocalOrPreRefreshProvidersChanged = providersWithChanges.Any(p => p is ILocalMetadataProvider || p is IPreRefreshProvider);
-
-                    providers = providers.Where(i =>
-                    {
-                        // If any provider reports a change, always run local ones as well
-                        if (i is ILocalMetadataProvider)
-                        {
-                            return anyRemoteProvidersChanged || anyLocalOrPreRefreshProvidersChanged;
-                        }
-
-                        // If any remote providers changed, run them all so that priorities can be honored
-                        if (i is IRemoteMetadataProvider)
-                        {
-                            if (options.MetadataRefreshMode == MetadataRefreshMode.ValidationOnly)
-                            {
-                                return false;
-                            }
-
-                            return anyRemoteProvidersChanged;
-                        }
-
-                        // Run custom refresh providers if they report a change or any remote providers change
-                        return anyRemoteProvidersChanged || providersWithChanges.Contains(i);
-                    });
+                    providersWithChanges.Add(provider);
+                    anyRemoteProvidersChanged |= provider is IRemoteMetadataProvider;
+                    anyLocalOrPreRefreshProvidersChanged |= provider is ILocalMetadataProvider ||
+                                                            provider is IPreRefreshProvider;
                 }
             }
 
-            return providers;
+            if (providersWithChanges.Count == 0)
+            {
+                return Array.Empty<IMetadataProvider>();
+            }
+
+            return providers.Where(provider =>
+            {
+                // If any provider reports a change, always run local ones as well
+                if (provider is ILocalMetadataProvider)
+                {
+                    return anyRemoteProvidersChanged || anyLocalOrPreRefreshProvidersChanged;
+                }
+
+                // If any remote providers changed, run them all so that priorities can be honored
+                if (provider is IRemoteMetadataProvider)
+                {
+                    return options.MetadataRefreshMode != MetadataRefreshMode.ValidationOnly && anyRemoteProvidersChanged;
+                }
+
+                // Run custom refresh providers if they report a change or any remote providers change
+                return anyRemoteProvidersChanged || providersWithChanges.Contains(provider);
+            });
         }
 
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
