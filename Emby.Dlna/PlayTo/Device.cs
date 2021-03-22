@@ -219,7 +219,7 @@ namespace Emby.Dlna.PlayTo
         {
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
             if (command == null)
             {
                 return false;
@@ -259,7 +259,7 @@ namespace Emby.Dlna.PlayTo
         {
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
             if (command == null)
             {
                 return;
@@ -290,7 +290,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Seek");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Seek");
             if (command == null)
             {
                 return;
@@ -323,7 +323,7 @@ namespace Emby.Dlna.PlayTo
 
             _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
             {
                 return;
@@ -403,6 +403,10 @@ namespace Emby.Dlna.PlayTo
         public async Task SetPlay(CancellationToken cancellationToken)
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
+            if (avCommands == null)
+            {
+                return;
+            }
 
             await SetPlay(avCommands, cancellationToken).ConfigureAwait(false);
 
@@ -413,7 +417,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Stop");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Stop");
             if (command == null)
             {
                 return;
@@ -437,7 +441,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Pause");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Pause");
             if (command == null)
             {
                 return;
@@ -565,7 +569,7 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
             if (command == null)
             {
                 return;
@@ -615,7 +619,7 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
             if (command == null)
             {
                 return;
@@ -702,6 +706,10 @@ namespace Emby.Dlna.PlayTo
             }
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
+            if (rendererCommands == null)
+            {
+                return null;
+            }
 
             var result = await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(
                 Properties.BaseUrl,
@@ -769,6 +777,11 @@ namespace Emby.Dlna.PlayTo
             }
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
+
+            if (rendererCommands == null)
+            {
+                return (false, null);
+            }
 
             var result = await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(
                 Properties.BaseUrl,
@@ -951,6 +964,10 @@ namespace Emby.Dlna.PlayTo
             var httpClient = new SsdpHttpClient(_httpClientFactory);
 
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
+            if (document == null)
+            {
+                return null;
+            }
 
             AvCommands = TransportCommands.Create(document);
             return AvCommands;
@@ -979,6 +996,10 @@ namespace Emby.Dlna.PlayTo
             var httpClient = new SsdpHttpClient(_httpClientFactory);
             _logger.LogDebug("Dlna Device.GetRenderingProtocolAsync");
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
+            if (document == null)
+            {
+                return null;
+            }
 
             RendererCommands = TransportCommands.Create(document);
             return RendererCommands;
@@ -1010,6 +1031,10 @@ namespace Emby.Dlna.PlayTo
             var ssdpHttpClient = new SsdpHttpClient(httpClientFactory);
 
             var document = await ssdpHttpClient.GetDataAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+            if (document == null)
+            {
+                return null;
+            }
 
             var friendlyNames = new List<string>();
 
