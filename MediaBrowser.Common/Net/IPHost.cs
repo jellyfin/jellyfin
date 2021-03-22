@@ -38,9 +38,10 @@ namespace MediaBrowser.Common.Net
         /// Initializes a new instance of the <see cref="IPHost"/> class.
         /// </summary>
         /// <param name="name">Host name to assign.</param>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public IPHost(string name)
         {
-            HostName = name ?? throw new ArgumentNullException(nameof(name));
+            SetName(name);
             _addresses = Array.Empty<IPAddress>();
             Resolved = false;
         }
@@ -51,8 +52,9 @@ namespace MediaBrowser.Common.Net
         /// <param name="name">Host name to assign.</param>
         /// <param name="address">Address to assign.</param>
         private IPHost(string name, IPAddress address)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            HostName = name ?? throw new ArgumentNullException(nameof(name));
+            SetName(name);
             _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
             Resolved = !address.Equals(IPAddress.None);
         }
@@ -100,7 +102,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the host name of this object.
         /// </summary>
-        public string HostName { get; }
+        public string HostName { get; internal set; }
 
         /// <summary>
         /// Gets a value indicating whether this host has attempted to be resolved.
@@ -444,6 +446,21 @@ namespace MediaBrowser.Common.Net
                         Debug.WriteLine("GetHostEntryAsync failed with {Message}.", ex.Message);
                     }
                 }
+            }
+        }
+
+        private void SetName(string name)
+        {
+            char[] separators = { '/', '%' };
+            var i = name.IndexOfAny(separators);
+
+            if (i != -1)
+            {
+                HostName = name.Substring(0, i);
+            }
+            else
+            {
+                HostName = name;
             }
         }
     }

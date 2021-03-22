@@ -15,7 +15,7 @@ namespace Jellyfin.Networking.Tests
         /// Checks if the specified string is a valid IP host (IP address or domain name).
         /// </summary>
         /// <param name="address">The host to check.</param>
-        /// <param name="hostname">The hostname which should be parsed.</param>
+        /// <param name="hostname">The hostname which should be parsed, or the ip address if not a host name.</param>
         [Theory]
         [InlineData("127.0.0.1", "127.0.0.1")]
         [InlineData("127.0.0.1:123", "127.0.0.1")]
@@ -24,14 +24,13 @@ namespace Jellyfin.Networking.Tests
         [InlineData("www.google.co.uk", "www.google.co.uk")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517", "fd23:184f:2029:0:3139:7386:67d7:d517")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124", "fd23:184f:2029:0:3139:7386:67d7:d517")]
-        // TODO: Tests failing
-        // [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", "fd23:184f:2029:0:3139:7386:67d7:d517")]
-        // [InlineData("fe80::7add:12ff:febb:c67b%16", "fe80::7add:12ff:febb:c67b")]
-        // [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", "fe80::7add:12ff:febb:c67b")]
-        // [InlineData("fe80::7add:12ff:febb:c67b%16:123", "fe80::7add:12ff:febb:c67b")]
-        // [InlineData("[fe80::7add:12ff:febb:c67b%16]", "fe80::7add:12ff:febb:c67b")]
-        // [InlineData("192.168.1.2/255.255.255.0", "192.168.1.2")]
-        // [InlineData("192.168.1.2/24", "192.168.1.2")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", "fd23:184f:2029:0:3139:7386:67d7:d517")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16", "fe80::7add:12ff:febb:c67b")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", "fe80::7add:12ff:febb:c67b")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16:123", "fe80::7add:12ff:febb:c67b")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]", "fe80::7add:12ff:febb:c67b")]
+        [InlineData("192.168.1.2/255.255.255.0", "192.168.1.2")]
+        [InlineData("192.168.1.2/24", "192.168.1.2")]
         public void Parse_ValidIPHost_Success(string address, string hostname)
         {
             Assert.True(IPHost.TryParse(address, out IPHost parsed));
