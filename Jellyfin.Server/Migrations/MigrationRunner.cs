@@ -1,15 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
 using Emby.Server.Implementations.Serialization;
-using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -98,97 +92,29 @@ namespace Jellyfin.Server.Migrations
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public static void RunNetworkSettingMigration(IServerApplicationPaths appPaths, ILogger logger)
         {
-            const string NetworkRoutine = "909525D1-AC26-4DCF-9100-6E94742F3016";
-            string routineComplete = "    <ValueTupleOfGuidString>\r\n      <Item1>" + NetworkRoutine + "</Item1>\r\n      <Item2>NetworkSettingMigration</Item2>\r\n    </ValueTupleOfGuidString>";
-
-            // Cannot use ConfigurationManager as it overwrites the changes we need to see, so we need to emulate the
-            // function of the MigrationsFactory.
-            var migrateFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "migrations.xml");
-            bool needToRun = true;
-            List<string>? completedMigrations = null;
-
-            if (File.Exists(migrateFile))
+            var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
+            if (!File.Exists(destFile))
             {
-                completedMigrations = File.ReadLines(migrateFile, Encoding.UTF8).ToList();
-                needToRun = string.IsNullOrEmpty(completedMigrations.FirstOrDefault(p => p.IndexOf(NetworkRoutine, StringComparison.Ordinal) != -1));
-            }
-
-            if (needToRun)
-            {
-                var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
-                NetworkConfiguration settings = new ();
-                var settingsType = typeof(NetworkConfiguration);
-                var props = settingsType.GetProperties().Where(x => x.CanWrite).ToList();
-
                 // manually load source xml file.
-                var serializer = new XmlSerializer(typeof(ServerConfiguration));
-                serializer.UnknownElement += (object? sender, XmlElementEventArgs e) =>
-                {
-                    var p = props.Find(x => string.Equals(x.Name, e.Element.Name, StringComparison.Ordinal));
-                    if (p != null)
-                    {
-                        if (p.PropertyType == typeof(bool))
-                        {
-                            _ = bool.TryParse(e.Element.InnerText, out var boolVal);
-                            p.SetValue(settings, boolVal);
-                        }
-                        else if (p.PropertyType == typeof(int))
-                        {
-                            _ = int.TryParse(e.Element.InnerText, out var intVal);
-                            p.SetValue(settings, intVal);
-                        }
-                        else if (p.PropertyType == typeof(string[]))
-                        {
-                            var items = new List<string>();
-                            foreach (XmlNode el in e.Element.ChildNodes)
-                            {
-                                items.Add(el.InnerText);
-                            }
-
-                            p.SetValue(settings, items.ToArray());
-                        }
-                        else
-                        {
-                            try
-                            {
-                                p.SetValue(settings, e.Element.InnerText ?? string.Empty);
-                            }
-                            catch
-                            {
-                                logger.LogDebug(
-                                    "Unable to migrate value {Name}. Unknown datatype {DataType}. Value {Value}.",
-                                    e.Element.Name,
-                                    p.PropertyType,
-                                    e.Element.InnerText);
-                            }
-                        }
-                    }
-                };
-
                 try
                 {
-                    using (var xmlReader = new XmlTextReader(appPaths.SystemConfigurationFilePath))
-                    {
-                        var deserialized = (ServerConfiguration?)serializer.Deserialize(xmlReader);
-                    }
-
                     var xmlSerializer = new MyXmlSerializer();
-                    xmlSerializer.SerializeToFile(settings, destFile);
+                    var source = xmlSerializer.DeserializeFromFile(typeof(Legacy.ServerConfiguration), appPaths.SystemConfigurationFilePath);
 
-                    // Insert our completed state at the end of the migrations, but before the Applied element.
-                    if (completedMigrations == null)
+                    Legacy.NetworkConfiguration target = new ();
+
+                    var tprops = typeof(Legacy.NetworkConfiguration).GetProperties();
+                    tprops.Where(x => x.CanWrite == true).ToList().ForEach(prop =>
                     {
-                        // Create the file.
-                        File.WriteAllText(
-                            migrateFile,
-                            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<MigrationOptions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\r\n  <Applied>\r\n" + routineComplete + "\r\n   </Applied>\r\n</MigrationOptions>\r\n");
-                    }
-                    else
-                    {
-                        // Append us to the end of the elements in the file. (the last 2 lines are the root and top element.)
-                        completedMigrations.Insert(completedMigrations.Count - 2, routineComplete);
-                        File.WriteAllLines(migrateFile, completedMigrations.ToArray());
-                    }
+                        var sp = source.GetType().GetProperty(prop.Name);
+                        if (sp != null)
+                        {
+                            var value = sp.GetValue(source, null);
+                            target.GetType().GetProperty(prop.Name)?.SetValue(target, value, null);
+                        }
+                    });
+
+                    xmlSerializer.SerializeToFile(target, destFile);
                 }
                 catch (Exception ex)
                 {
