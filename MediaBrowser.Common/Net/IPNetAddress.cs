@@ -123,15 +123,27 @@ namespace MediaBrowser.Common.Net
                     if (IPAddress.TryParse(tokens[0], out res))
                     {
                         // Is the subnet part a cidr?
-                        if (byte.TryParse(tokens[1], out byte cidr))
+                        if (int.TryParse(tokens[1], out int cidr))
                         {
-                            ip = new IPNetAddress(res, cidr);
+                            if (cidr <= 0 || cidr >= 255)
+                            {
+                                ip = None;
+                                return false;
+                            }
+
+                            ip = new IPNetAddress(res, (byte)cidr);
                             return true;
                         }
 
                         // Is the subnet in x.y.a.b form?
                         if (IPAddress.TryParse(tokens[1], out IPAddress? mask))
                         {
+                            if (mask.Equals(IPAddress.Any))
+                            {
+                                ip = None;
+                                return false;
+                            }
+
                             ip = new IPNetAddress(res, MaskToCidr(mask));
                             return true;
                         }

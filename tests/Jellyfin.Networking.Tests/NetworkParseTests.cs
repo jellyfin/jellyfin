@@ -129,6 +129,9 @@ namespace Jellyfin.Networking.Tests
         /// </summary>
         /// <param name="address">Invalid address strings.</param>
         [Theory]
+        [InlineData("127.0.0.1/0")]
+        [InlineData("10.10.10.1/255")]
+        [InlineData("10.10.10.1/65535")]
         [InlineData("256.128.0.0.0.1")]
         [InlineData("127.0.0.1#")]
         [InlineData("localhost!")]
