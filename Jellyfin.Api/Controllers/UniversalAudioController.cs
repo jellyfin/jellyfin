@@ -251,7 +251,7 @@ namespace Jellyfin.Api.Controllers
                 AudioBitRate = isStatic ? (int?)null : (audioBitRate ?? maxStreamingBitrate),
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = maxAudioChannels,
-                CopyTimestamps = true,
+                CopyTimestamps = false,
                 StartTimeTicks = startTimeTicks,
                 SubtitleMethod = SubtitleDeliveryMethod.Embed,
                 TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
