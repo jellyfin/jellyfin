@@ -596,8 +596,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
                     && isNvdecDecoder)
                 {
-                    arg.Append("-hwaccel_output_format cuda ")
-                        .Append("-autorotate 0 ");
+                    arg.Append("-hwaccel_output_format cuda -autorotate 0 ");
                 }
 
                 if (state.IsVideoRequest
