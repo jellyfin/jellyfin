@@ -122,7 +122,9 @@ namespace MediaBrowser.Providers.Manager
             {
                 var providers = GetProviders(item, libraryOptions, refreshOptions, isFirstRefresh, requiresRefresh);
 
-                if (providers.Any() || isFirstRefresh || requiresRefresh)
+                var hasProviders = providers.Any();
+
+                if (hasProviders || isFirstRefresh || requiresRefresh)
                 {
                     if (item.BeforeMetadataRefresh(refreshOptions.ReplaceAllMetadata))
                     {
@@ -130,7 +132,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                if (providers.Any())
+                if (hasProviders)
                 {
                     var id = itemOfType.GetLookupInfo();
 
@@ -155,11 +157,11 @@ namespace MediaBrowser.Providers.Manager
             // Next run remote image providers, but only if local image providers didn't throw an exception
             if (!localImagesFailed && refreshOptions.ImageRefreshMode != MetadataRefreshMode.ValidationOnly)
             {
-                var providers = GetNonLocalImageProviders(item, allImageProviders, refreshOptions);
+                var nonLocalProviders = GetNonLocalImageProviders(item, allImageProviders, refreshOptions);
 
-                if (providers.Any())
+                if (nonLocalProviders.Any())
                 {
-                    var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken).ConfigureAwait(false);
+                    var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, nonLocalProviders, refreshOptions, cancellationToken).ConfigureAwait(false);
 
                     updateType |= result.UpdateType;
                     if (result.Failures > 0)
@@ -599,30 +601,21 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
-            // Get providers to refresh
-            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider));
-
-            var dateLastImageRefresh = item.DateLastRefreshed;
-
             // Run all if either of these flags are true
-            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh || dateLastImageRefresh == default(DateTime);
+            var runAllProviders = options.ImageRefreshMode == MetadataRefreshMode.FullRefresh ||
+                                  item.DateLastRefreshed == default(DateTime);
 
-            if (!runAllProviders)
+            foreach (var provider in allImageProviders)
             {
-                providers = providers
-                    .Where(i =>
+                if (provider is not ILocalImageProvider)
+                {
+                    if (runAllProviders ||
+                    (provider is IHasItemChangeMonitor hasItemChangeMonitor && HasChanged(item, hasItemChangeMonitor, options.DirectoryService)))
                     {
-                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
-                        if (hasFileChangeMonitor != null)
-                        {
-                            return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
-                        }
-
-                        return false;
-                    });
+                        yield return provider;
+                    }
+                }
             }
-
-            return providers;
         }
 
         public bool CanRefresh(BaseItem item)
@@ -649,11 +642,42 @@ namespace MediaBrowser.Providers.Manager
             };
 
             var item = metadata.Item;
-
-            var customProviders = providers.OfType<ICustomMetadataProvider<TItemType>>();
             var logName = !item.IsFileProtocol ? item.Name ?? item.Path : item.Path ?? item.Name;
 
-            foreach (var provider in customProviders.Where(i => i is IPreRefreshProvider))
+            var preRefreshProviders = new List<ICustomMetadataProvider<TItemType>>();
+            var postRefreshProviders = new List<ICustomMetadataProvider<TItemType>>();
+            var remoteMetadataProviders = new List<IRemoteMetadataProvider<TItemType, TIdType>>();
+            var localMetadataProviders = new List<ILocalMetadataProvider<TItemType>>();
+            var hasNonCustomProviders = false;
+
+            foreach (var provider in providers)
+            {
+                if (provider is ICustomMetadataProvider<TItemType>)
+                {
+                    if (provider is IPreRefreshProvider)
+                    {
+                        preRefreshProviders.Add((ICustomMetadataProvider<TItemType>)provider);
+                    }
+                    else
+                    {
+                        postRefreshProviders.Add((ICustomMetadataProvider<TItemType>)provider);
+                    }
+                }
+
+                if (provider is IRemoteMetadataProvider<TItemType, TIdType>)
+                {
+                    remoteMetadataProviders.Add((IRemoteMetadataProvider<TItemType, TIdType>)provider);
+                }
+
+                if (provider is ILocalMetadataProvider<TItemType>)
+                {
+                    localMetadataProviders.Add((ILocalMetadataProvider<TItemType>)provider);
+                }
+
+                hasNonCustomProviders |= provider is not ICustomMetadataProvider;
+            }
+
+            foreach (var provider in preRefreshProviders)
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
@@ -669,7 +693,7 @@ namespace MediaBrowser.Providers.Manager
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, remoteMetadataProviders, cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
@@ -679,7 +703,7 @@ namespace MediaBrowser.Providers.Manager
 
             var hasLocalMetadata = false;
 
-            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>())
+            foreach (var provider in localMetadataProviders)
             {
                 var providerName = provider.GetType().Name;
                 Logger.LogDebug("Running {0} for {1}", providerName, logName);
@@ -732,7 +756,7 @@ namespace MediaBrowser.Providers.Manager
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh || !item.StopRefreshIfLocalMetadataFound))
             {
-                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, remoteMetadataProviders, cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
@@ -740,31 +764,24 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.Failures += remoteResult.Failures;
             }
 
-            if (providers.Any(i => !(i is ICustomMetadataProvider)))
+            if (hasNonCustomProviders && refreshResult.UpdateType > ItemUpdateType.None)
             {
-                if (refreshResult.UpdateType > ItemUpdateType.None)
+                if (hasLocalMetadata)
                 {
-                    if (hasLocalMetadata)
-                    {
-                        MergeData(temp, metadata, item.LockedFields, true, true);
-                    }
-                    else
-                    {
-                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
-                        MergeData(temp, metadata, item.LockedFields, true, false);
-                    }
+                    MergeData(temp, metadata, item.LockedFields, true, true);
+                }
+                else
+                {
+                    // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
+                    MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                    MergeData(temp, metadata, item.LockedFields, true, false);
                 }
             }
 
-            // var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
-
-            foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
+            foreach (var provider in postRefreshProviders)
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
-
-            // ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
         }
