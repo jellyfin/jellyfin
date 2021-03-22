@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Emby.Server.Implementations.Serialization;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using Microsoft.Extensions.DependencyInjection;
@@ -86,7 +87,7 @@ namespace Jellyfin.Server.Migrations
         }
 
         /// <summary>
-        /// Runs the network setting migration.
+        /// Runs the network setting migration, which has to be done before settings.xml is loaded.
         /// </summary>
         /// <param name="appPaths">The <see cref="IServerApplicationPaths"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
@@ -95,15 +96,13 @@ namespace Jellyfin.Server.Migrations
             var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
             if (!File.Exists(destFile))
             {
-                // manually load source xml file.
                 try
                 {
                     var xmlSerializer = new MyXmlSerializer();
                     var source = xmlSerializer.DeserializeFromFile(typeof(Legacy.ServerConfiguration), appPaths.SystemConfigurationFilePath);
 
-                    Legacy.NetworkConfiguration target = new ();
-
-                    var tprops = typeof(Legacy.NetworkConfiguration).GetProperties();
+                    var target = new NetworkConfiguration();
+                    var tprops = typeof(NetworkConfiguration).GetProperties();
                     tprops.Where(x => x.CanWrite == true).ToList().ForEach(prop =>
                     {
                         var sp = source.GetType().GetProperty(prop.Name);
