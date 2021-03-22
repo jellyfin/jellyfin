@@ -99,6 +99,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
+        [InlineData("[fd23:184f:2029:0::/56]")]
         public void ValidHostStrings(string address)
         {
             Assert.True(IPHost.TryParse(address, out _));
