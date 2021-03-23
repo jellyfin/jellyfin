@@ -56,26 +56,15 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new UserItemData());
 
             var directoryService = new Mock<IDirectoryService>();
-            if (MediaBrowser.Common.System.OperatingSystem.Id != OperatingSystemId.Windows)
+            _localImageFileMetadata = new FileSystemMetadata()
             {
-                _localImageFileMetadata = new FileSystemMetadata()
-                {
-                    Exists = true,
-                    FullName = "/media/movies/Justice League (2017).jpg"
-                };
-                directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))
-                    .Returns(_localImageFileMetadata);
-            }
-            else
-            {
-                _localImageFileMetadata = new FileSystemMetadata()
-                {
-                    Exists = true,
-                    FullName = "C:\\media\\movies\\Justice League (2017).jpg"
-                };
-                directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))
-                    .Returns(_localImageFileMetadata);
-            }
+                Exists = true,
+                FullName = MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows ?
+                    "C:\\media\\movies\\Justice League (2017).jpg"
+                    : "/media/movies/Justice League (2017).jpg"
+            };
+            directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))
+                .Returns(_localImageFileMetadata);
 
             _userDataManager = userData.Object;
             _parser = new MovieNfoParser(
