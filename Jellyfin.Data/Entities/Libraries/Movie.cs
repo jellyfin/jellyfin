@@ -13,7 +13,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Movie"/> class.
         /// </summary>
-        public Movie()
+        /// <param name="library">The library.</param>
+        public Movie(Library library) : base(library)
         {
             Releases = new HashSet<Release>();
             MovieMetadata = new HashSet<MovieMetadata>();

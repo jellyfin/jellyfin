@@ -1,6 +1,5 @@
 #pragma warning disable CA2227
 
-using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -14,28 +13,11 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Track"/> class.
         /// </summary>
-        /// <param name="album">The album.</param>
-        public Track(MusicAlbum album)
+        /// <param name="library">The library.</param>
+        public Track(Library library) : base(library)
         {
-            if (album == null)
-            {
-                throw new ArgumentNullException(nameof(album));
-            }
-
-            album.Tracks.Add(this);
-
             Releases = new HashSet<Release>();
             TrackMetadata = new HashSet<TrackMetadata>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Track"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Track()
-        {
         }
 
         /// <summary>

@@ -70,7 +70,7 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options)
             {
                 WriteIndented = true
             };
@@ -678,7 +678,7 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.DllFiles.AddRange(Directory.EnumerateFiles(entry.Path, "*.dll", SearchOption.AllDirectories));
+                    entry.DllFiles = Directory.GetFiles(entry.Path, "*.dll", SearchOption.AllDirectories);
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;

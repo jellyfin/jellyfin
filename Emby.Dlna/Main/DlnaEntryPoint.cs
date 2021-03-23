@@ -128,7 +128,8 @@ namespace Emby.Dlna.Main
 
             _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
             _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
-            if (_disabled)
+
+            if (_disabled && _config.GetDlnaConfiguration().EnableServer)
             {
                 _logger.LogError("The DLNA specification does not support HTTPS.");
             }

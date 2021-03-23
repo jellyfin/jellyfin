@@ -224,7 +224,7 @@ namespace Jellyfin.Server
             }
             finally
             {
-                appHost?.Dispose();
+                appHost.Dispose();
             }
 
             if (_restartOnShutdown)
@@ -625,7 +625,7 @@ namespace Jellyfin.Server
             string commandLineArgsString;
             if (options.RestartArgs != null)
             {
-                commandLineArgsString = options.RestartArgs ?? string.Empty;
+                commandLineArgsString = options.RestartArgs;
             }
             else
             {

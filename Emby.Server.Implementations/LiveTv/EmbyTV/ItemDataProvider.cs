@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly string _dataPath;
         private readonly object _fileDataLock = new object();
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private T[] _items;
 
         public ItemDataProvider(
