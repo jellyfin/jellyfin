@@ -134,12 +134,14 @@ namespace Jellyfin.Networking.Tests
         [InlineData("127.0.0.1/0")]
         [InlineData("10.10.10.1/255")]
         [InlineData("10.10.10.1/65535")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231/0")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231/129")]
         [InlineData("256.128.0.0.0.1")]
         [InlineData("127.0.0.1#")]
         [InlineData("localhost!")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
-        public void InvalidAddressString(string address)
+        public void Check_Invalid_Addresses(string address)
         {
             Assert.False(IPNetAddress.TryParse(address, out _));
             Assert.False(IPHost.TryParse(address, out _));
@@ -178,8 +180,8 @@ namespace Jellyfin.Networking.Tests
             "[]")]
         [InlineData(
             "192.158.1.2/16, localhost, fd23:184f:2029:0:3139:7386:67d7:d517,    !10.10.10.10",
-            "[192.158.1.2/16,[127.0.0.1/32,::1/128],fd23:184f:2029:0:3139:7386:67d7:d517/128]",
-            "[192.158.1.2/16,127.0.0.1/32]",
+            "[192.158.1.2/16,localhost [127.0.0.1/32,::1/128],fd23:184f:2029:0:3139:7386:67d7:d517/128]",
+            "[192.158.1.2/16,localhost [127.0.0.1/32]]",
             "[10.10.10.10/32]",
             "[10.10.10.10/32]",
             "[192.158.0.0/16,127.0.0.1/32,::1/128,fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
@@ -190,7 +192,7 @@ namespace Jellyfin.Networking.Tests
             "[]",
             "[]",
             "[192.158.0.0/16,192.0.0.0/8]")]
-        public void TestCollections(string settings, string result1, string result2, string result3, string result4, string result5)
+        public void Test_Collection_Parsing(string settings, string result1, string result2, string result3, string result4, string result5)
         {
             if (settings == null)
             {

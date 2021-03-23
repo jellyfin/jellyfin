@@ -101,55 +101,58 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if the values parsed successfully. False if not, resulting in the IP being null.</returns>
         public static bool TryParse(string addr, out IPNetAddress ip)
         {
-            if (!string.IsNullOrEmpty(addr))
+            if (string.IsNullOrEmpty(addr))
             {
-                addr = addr.Trim();
+                ip = None;
+                return false;
+            }
 
-                // Is it a network?
-                string[] tokens = addr.Split("/");
+            addr = addr.Trim();
 
-                if (tokens.Length > 2)
+            // Is it a network?
+            string[] tokens = addr.Split("/");
+
+            if (tokens.Length > 2)
+            {
+                ip = None;
+                return false;
+            }
+
+            if (IPAddress.TryParse(tokens[0].TrimEnd(), out var res))
+            {
+                // Is the subnet part a cidr?
+                if (tokens.Length == 1)
                 {
-                    ip = None;
-                    return false;
+                    ip = new IPNetAddress(res);
+                    return true;
                 }
 
-                if (IPAddress.TryParse(tokens[0].TrimEnd(), out res))
+                var subnet = tokens[1].TrimStart();
+                if (int.TryParse(subnet, out int cidr))
                 {
-                    // Is the subnet part a cidr?
-                    if (tokens.Length == 1)
+                    if (cidr <= 0 ||
+                        ((cidr > 32) && (res.AddressFamily == AddressFamily.InterNetwork)) ||
+                        ((cidr > 128) && (res.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        ip = new IPNetAddress(res);
-                        return;
+                        ip = None;
+                        return false;
                     }
 
-                    var subnet = tokens[1].TrimStart()
-                    if (int.TryParse(subnet, out int cidr))
-                    {
-                        if (cidr <= 0 ||
-                            (cidr >= 32 && res.AddressFamily = AddressFamily.InterNetwork) ||
-                            (cidr >= 128 && res.AddressFamily = AddressFamily.InterNetworkV6))
-                        {
-                            ip = None;
-                            return false;
-                        }
+                    ip = new IPNetAddress(res, (byte)cidr);
+                    return true;
+                }
 
-                        ip = new IPNetAddress(res, (byte)cidr);
-                        return true;
+                // Is the subnet in x.y.a.b form?
+                if (IPAddress.TryParse(subnet, out IPAddress? mask))
+                {
+                    if (mask.Equals(IPAddress.Any))
+                    {
+                        ip = None;
+                        return false;
                     }
 
-                    // Is the subnet in x.y.a.b form?
-                    if (IPAddress.TryParse(subnet, out IPAddress? mask))
-                    {
-                        if (mask.Equals(IPAddress.Any))
-                        {
-                            ip = None;
-                            return false;
-                        }
-
-                        ip = new IPNetAddress(res, MaskToCidr(mask));
-                        return true;
-                    }
+                    ip = new IPNetAddress(res, MaskToCidr(mask));
+                    return true;
                 }
             }
 
