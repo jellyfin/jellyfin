@@ -29,9 +29,8 @@ namespace Jellyfin.Server.Middleware
         /// </summary>
         /// <param name="httpContext">The current HTTP context.</param>
         /// <param name="networkManager">The network manager.</param>
-        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <returns>The async task.</returns>
-        public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
+        public async Task Invoke(HttpContext httpContext, INetworkManager networkManager)
         {
             if (httpContext.IsLocal())
             {
