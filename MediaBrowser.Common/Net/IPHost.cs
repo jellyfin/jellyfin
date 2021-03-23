@@ -33,7 +33,9 @@ namespace MediaBrowser.Common.Net
         /// Gets the IP Addresses, attempting to resolve the name, if there are none.
         /// </summary>
         private IPAddress[] _addresses;
+        private string _hostName;
 
+#pragma warning disable CS8618 // Reason: _hostName is set via HostName property.
         /// <summary>
         /// Initializes a new instance of the <see cref="IPHost"/> class.
         /// </summary>
@@ -56,6 +58,7 @@ namespace MediaBrowser.Common.Net
             _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
             Resolved = !address.Equals(IPAddress.None);
         }
+#pragma warning restore CS8618
 
         /// <summary>
         /// Gets or sets the object's first IP address.
@@ -100,7 +103,25 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the host name of this object.
         /// </summary>
-        public string HostName { get; }
+        public string HostName
+        {
+            get => _hostName;
+
+            private set
+            {
+                char[] separators = { '/', '%' };
+                var i = value.IndexOfAny(separators);
+
+                if (i != -1)
+                {
+                    _hostName = value.Substring(0, i);
+                }
+                else
+                {
+                    _hostName = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this host has attempted to be resolved.
@@ -134,55 +155,53 @@ namespace MediaBrowser.Common.Net
                 return false;
             }
 
+            host = host.Trim();
+
             // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
-            int i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
-            if (i != -1)
+            if (host[0] == '[')
             {
-                return TryParse(host.Remove(i).TrimStart(' ', '['), out hostObj);
+                int i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+                if (i != -1)
+                {
+                    return TryParse(host.Remove(i).Substring(1), out hostObj);
+                }
+
+                hostObj = IPHost.None;
+                return false;
             }
 
-            if (IPNetAddress.TryParse(host, out var netAddress))
+            string[] hosts;
+
+            // Use regular expression as CheckHostName isn't RFC5892 compliant.
+            // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5})?$";
+
+            if (Regex.IsMatch(host, pattern))
             {
-                // Host name is an ip address, so fake resolve.
-                hostObj = new IPHost(host, netAddress.Address);
+                hosts = host.Split(':');
+                hostObj = new IPHost(hosts[0]);
                 return true;
             }
 
             // Is it a host, IPv4/6 with/out port?
-            string[] hosts = host.Split(':');
+            hosts = host.Split(':');
 
             if (hosts.Length <= 2)
             {
                 // This is either a hostname: port, or an IP4:port.
                 host = hosts[0];
 
-                if (string.Equals("localhost", host, StringComparison.OrdinalIgnoreCase))
-                {
-                    hostObj = new IPHost(host);
-                    return true;
-                }
-
-                if (IPAddress.TryParse(host, out var netIP))
+                if (IPAddress.TryParse(host, out var netAddress))
                 {
                     // Host name is an ip address, so fake resolve.
-                    hostObj = new IPHost(host, netIP);
+                    hostObj = new IPHost(host, netAddress);
                     return true;
                 }
             }
-            else
+            else if (hosts.Length <= 8 && IPAddress.TryParse(host, out var netAddress))
             {
-                // Invalid host name, as it cannot contain :
-                hostObj = new IPHost(string.Empty, IPAddress.None);
-                return false;
-            }
-
-            // Use regular expression as CheckHostName isn't RFC5892 compliant.
-            // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)$";
-
-            if (Regex.IsMatch(host, pattern))
-            {
-                hostObj = new IPHost(host);
+                // Host name is an ip6 address, so fake resolve.
+                hostObj = new IPHost(host, netAddress);
                 return true;
             }
 
@@ -318,20 +337,14 @@ namespace MediaBrowser.Common.Net
         public override string ToString()
         {
             // StringBuilder not optimum here.
-            string output = string.Empty;
-            if (_addresses.Length > 0)
+            if (GetAddresses().Length > 0)
             {
-                bool moreThanOne = _addresses.Length > 1;
-                if (moreThanOne)
-                {
-                    output = "[";
-                }
-
+                string output = HostName + " [";
                 foreach (var i in _addresses)
                 {
                     if (Address.Equals(IPAddress.None) && Address.AddressFamily == AddressFamily.Unspecified)
                     {
-                        output += HostName + ",";
+                        return "None";
                     }
                     else if (i.Equals(IPAddress.Any))
                     {
@@ -349,25 +362,16 @@ namespace MediaBrowser.Common.Net
                     {
                         output += $"{i}/32,";
                     }
-                    else
+                    else if (!Address.Equals(IPAddress.None) && Address.AddressFamily != AddressFamily.Unspecified)
                     {
                         output += $"{i}/128,";
                     }
                 }
 
-                output = output[0..^1];
-
-                if (moreThanOne)
-                {
-                    output += "]";
-                }
-            }
-            else
-            {
-                output = HostName;
+                return output[0..^1] + "]";
             }
 
-            return output;
+            return HostName;
         }
 
         /// <inheritdoc/>

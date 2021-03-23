@@ -81,34 +81,35 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Checks IP address formats.
+        /// Checks the validity of IP address formats.
         /// </summary>
-        /// <param name="address"></param>
+        /// <param name="address">IP Address.</param>
+        /// <param name="valid">Expected result.</param>
         [Theory]
-        [InlineData("127.0.0.1")]
-        [InlineData("127.0.0.1:123")]
-        [InlineData("localhost")]
-        [InlineData("localhost:1345")]
-        [InlineData("www.google.co.uk")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
-        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124")]
-        [InlineData("fe80::7add:12ff:febb:c67b%16")]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
-        [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
-        [InlineData("192.168.1.2/255.255.255.0")]
-        [InlineData("192.168.1.2/24")]
-        [InlineData("[fd23:184f:2029:0::/56]")]
-        public void ValidHostStrings(string address)
+        [InlineData("127.0.0.1", true)]
+        [InlineData("127.0.0.1:123", true)]
+        [InlineData("localhost", true)]
+        [InlineData("localhost:1345", true)]
+        [InlineData("www.google.co.uk", true)]
+        [InlineData("www.google.co.uk:1273", true)]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517", true)]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", false)]
+        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124", true)]
+        [InlineData("fe80::7add:12ff:febb:c67b%16", true)]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", true)]
+        [InlineData("fe80::7add:12ff:febb:c67b%16:123", true)]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]", true)]
+        [InlineData("192.168.1.2/255.255.255.0", false)]
+        [InlineData("192.168.1.2/24", false)]
+        public void Check_Host_Is_Valid_String(string address, bool valid)
         {
-            Assert.True(IPHost.TryParse(address, out _));
+            Assert.Equal(IPHost.TryParse(address, out _), valid);
         }
 
         /// <summary>
         /// Checks IP address formats.
         /// </summary>
-        /// <param name="address"></param>
+        /// <param name="address">IP Address.</param>
         [Theory]
         [InlineData("127.0.0.1")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
