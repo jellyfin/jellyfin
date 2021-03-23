@@ -125,7 +125,7 @@ namespace MediaBrowser.Common.Net
                         // Is the subnet part a cidr?
                         if (int.TryParse(tokens[1], out int cidr))
                         {
-                            if (cidr <= 0 || cidr >= 255)
+                            if (cidr <= 0 || cidr >= 128)
                             {
                                 ip = None;
                                 return false;
