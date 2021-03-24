@@ -120,7 +120,6 @@ namespace MediaBrowser.Common.Net
 
             if (IPAddress.TryParse(tokens[0].TrimEnd(), out var res))
             {
-                // Is the subnet part a cidr?
                 if (tokens.Length == 1)
                 {
                     ip = new IPNetAddress(res);
@@ -128,6 +127,8 @@ namespace MediaBrowser.Common.Net
                 }
 
                 var subnet = tokens[1].TrimStart();
+                
+                // Is the subnet part a cidr?                
                 if (int.TryParse(subnet, out int cidr))
                 {
                     if (cidr <= 0 ||
