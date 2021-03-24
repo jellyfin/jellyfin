@@ -46,9 +46,9 @@ namespace MediaBrowser.Controller.LiveTv
         public ChannelType ChannelType { get; set; }
 
         /// <summary>
-        /// Gets or sets the group of the channel
+        /// Gets or sets the group of the channel.
         /// </summary>
-        /// <value>The group of the channel</value>
+        /// <value>The group of the channel.</value>
         public string ChannelGroup { get; set; }
 
         /// <summary>
