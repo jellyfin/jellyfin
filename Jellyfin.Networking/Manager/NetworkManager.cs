@@ -194,13 +194,13 @@ namespace Jellyfin.Networking.Manager
                 return false;
             }
 
-            return _internalInterfaces.Any(i => i.Address!.Equals(addressObj?.Address) && i.Tag < 0);
+            return _internalInterfaces.Any(i => i.Address!.Equals(addressObj.Address) && i.Tag < 0);
         }
 
         /// <inheritdoc/>
         public bool IsGatewayInterface(IPAddress? addressObj)
         {
-            return _internalInterfaces.Any(i => i.Address != null && i.Address.Equals(addressObj) && i.Tag < 0);
+            return _internalInterfaces.Any(i => i.Address!.Equals(addressObj) && i.Tag < 0);
         }
 
         /// <inheritdoc/>
@@ -567,7 +567,7 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index
-                        && ((IsIP4Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetwork)
+                        && ((IsIP4Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetwork) // iface.Address is not null here.
                             || (IsIP6Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         result.AddItem(iface);
@@ -759,7 +759,7 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (indices.Contains(Math.Abs(iface.Tag))
-                        && ((IsIP4Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetwork)
+                        && ((IsIP4Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetwork) // iface.Address is not null here.
                             || (IsIP6Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         col.AddItem(iface);
@@ -769,7 +769,7 @@ namespace Jellyfin.Networking.Manager
             else if (TryParse(token, out IPObject obj))
             {
                 // Expand if the ip address is "any".
-                if ((obj.Address!.Equals(IPAddress.Any) && IsIP4Enabled)
+                if ((obj.Address!.Equals(IPAddress.Any) && IsIP4Enabled) // obj.Address is not null here, as TryParse would return false.
                     || (obj.Address!.Equals(IPAddress.IPv6Any) && IsIP6Enabled))
                 {
                     foreach (IPNetAddress iface in _interfaceAddresses)
@@ -1178,7 +1178,7 @@ namespace Jellyfin.Networking.Manager
             foreach (var addr in _publishedServerUrls)
             {
                 // Remaining. Match anything.
-                if (addr.Key.Address!.Equals(IPAddress.Broadcast))
+                if (addr.Key.Address!.Equals(IPAddress.Broadcast)) // _publishedServerUrls does not contain null addresses.
                 {
                     bindPreference = addr.Value;
                     break;
