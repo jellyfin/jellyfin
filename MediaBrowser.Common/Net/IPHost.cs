@@ -193,7 +193,7 @@ namespace MediaBrowser.Common.Net
 
                 if (IPAddress.TryParse(host, out var netAddress))
                 {
-                    // Host name is an ip address, so fake resolve.
+                    // Host name is an ip4 address, so fake resolve.
                     hostObj = new IPHost(host, netAddress);
                     return true;
                 }
