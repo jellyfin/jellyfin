@@ -1,6 +1,6 @@
 [Unit]
 Description = Jellyfin Media Server
-After = network.target
+After = network-online.target
 
 [Service]
 Type = simple
