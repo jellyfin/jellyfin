@@ -335,13 +335,13 @@ namespace Jellyfin.Server.Extensions
             {
                 if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
                 {
-                    AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                    AddIpAddress(config, options, addr.Address!, addr.PrefixLength);
                 }
                 else if (IPHost.TryParse(allowedProxies[i], out var host))
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                        AddIpAddress(config, options, addr.Address!, addr.PrefixLength);
                     }
                 }
             }

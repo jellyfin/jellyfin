@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 
@@ -13,7 +14,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Represents an IPNetAddress that has no value.
         /// </summary>
-        public static readonly IPNetAddress None = new IPNetAddress(IPAddress.None);
+        public static readonly IPNetAddress None = new IPNetAddress(null);
 
         /// <summary>
         /// IPv4 multicast address.
@@ -43,16 +44,19 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Object's IP address.
         /// </summary>
-        private IPAddress _address;
+        private IPAddress? _address;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IPNetAddress"/> class.
         /// </summary>
         /// <param name="address">Address to assign.</param>
-        public IPNetAddress(IPAddress address)
+        public IPNetAddress(IPAddress? address)
         {
-            _address = address ?? throw new ArgumentNullException(nameof(address));
-            PrefixLength = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+            _address = address;
+            if (address != null)
+            {
+                PrefixLength = (byte)(address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
+            }
         }
 
         /// <summary>
@@ -77,7 +81,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets the object's IP address.
         /// </summary>
-        public override IPAddress Address
+        public override IPAddress? Address
         {
             get
             {
@@ -86,7 +90,7 @@ namespace MediaBrowser.Common.Net
 
             set
             {
-                _address = value ?? IPAddress.None;
+                _address = value;
             }
         }
 
@@ -99,6 +103,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="addr">IP address to parse. Can be CIDR or X.X.X.X notation.</param>
         /// <param name="ip">Resultant object.</param>
         /// <returns>True if the values parsed successfully. False if not, resulting in the IP being null.</returns>
+        /// <remarks>For security purposes, this will treat ip addreses with a mask of 0 as invalid unless the address is 'Any'.</remarks>
         public static bool TryParse(string addr, out IPNetAddress ip)
         {
             if (string.IsNullOrEmpty(addr))
@@ -168,6 +173,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="addr">String to parse.</param>
         /// <returns>IPNetAddress object.</returns>
+        /// <remarks>For security purposes, this will treat ip addreses with a mask of 0 as invalid unless the address is 'Any'.</remarks>
         public static IPNetAddress Parse(string addr)
         {
             if (TryParse(addr, out IPNetAddress o))
@@ -186,6 +192,11 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
+            if (Address == null || NetworkAddress.Address == null)
+            {
+                return false;
+            }
+
             if (address.IsIPv4MappedToIPv6)
             {
                 address = address.MapToIPv4();
@@ -198,6 +209,11 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPObject address)
         {
+            if (Address == null)
+            {
+                return false;
+            }
+
             if (address is IPHost addressObj && addressObj.HasAddress)
             {
                 foreach (IPAddress addr in addressObj.GetAddresses())
@@ -211,12 +227,12 @@ namespace MediaBrowser.Common.Net
             else if (address is IPNetAddress netaddrObj)
             {
                 // Have the same network address, but different subnets?
-                if (NetworkAddress.Address.Equals(netaddrObj.NetworkAddress.Address))
+                if (NetworkAddress.Address!.Equals(netaddrObj.NetworkAddress.Address))
                 {
                     return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength);
+                var altAddress = NetworkAddressOf(netaddrObj.Address!, PrefixLength);
                 return NetworkAddress.Address.Equals(altAddress.Address);
             }
 
@@ -226,7 +242,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Equals(IPObject? other)
         {
-            if (other is IPNetAddress otherObj && !Address.Equals(IPAddress.None) && !otherObj.Address.Equals(IPAddress.None))
+            if (other is IPNetAddress otherObj && Address != null && otherObj.Address != null)
             {
                 return Address.Equals(otherObj.Address) &&
                     PrefixLength == otherObj.PrefixLength;
@@ -238,7 +254,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Equals(IPAddress ip)
         {
-            if (ip != null && !ip.Equals(IPAddress.None) && !Address.Equals(IPAddress.None))
+            if (ip != null && Address != null)
             {
                 return ip.Equals(Address);
             }
@@ -259,37 +275,42 @@ namespace MediaBrowser.Common.Net
         /// <returns>String representation of this object.</returns>
         public string ToString(bool shortVersion)
         {
-            if (!Address.Equals(IPAddress.None))
+            if (Address == null)
             {
-                if (Address.Equals(IPAddress.Any))
-                {
-                    return "Any IP4 Address";
-                }
-
-                if (Address.Equals(IPAddress.IPv6Any))
-                {
-                    return "Any IP6 Address";
-                }
-
-                if (Address.Equals(IPAddress.Broadcast))
-                {
-                    return "Any Address";
-                }
-
-                if (shortVersion)
-                {
-                    return Address.ToString();
-                }
-
-                return $"{Address}/{PrefixLength}";
+                return "None";
             }
 
-            return string.Empty;
+            if (Address.Equals(IPAddress.Any))
+            {
+                return "Any IP4 Address";
+            }
+
+            if (Address.Equals(IPAddress.IPv6Any))
+            {
+                return "Any IP6 Address";
+            }
+
+            if (Address.Equals(IPAddress.Broadcast))
+            {
+                return "Any Address";
+            }
+
+            if (shortVersion)
+            {
+                return Address.ToString();
+            }
+
+            return $"{Address}/{PrefixLength}";
         }
 
         /// <inheritdoc/>
         protected override IPObject CalculateNetworkAddress()
         {
+            if (_address == null)
+            {
+                return IPNetAddress.None;
+            }
+
             var value = NetworkAddressOf(_address, PrefixLength);
             return new IPNetAddress(value.Address, value.PrefixLength);
         }

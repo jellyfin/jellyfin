@@ -33,7 +33,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets the object's IP address.
         /// </summary>
-        public abstract IPAddress Address { get; set; }
+        public abstract IPAddress? Address { get; set; }
 
         /// <summary>
         /// Gets the object's network address.
@@ -52,9 +52,7 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                // Keep terms separate as Address performs other functions in inherited objects.
-                IPAddress address = Address;
-                return address.Equals(IPAddress.None) ? AddressFamily.Unspecified : address.AddressFamily;
+                return Address == null ? AddressFamily.Unspecified : Address.AddressFamily;
             }
         }
 
@@ -125,17 +123,12 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (!address.Equals(IPAddress.None))
+            if (address.IsIPv4MappedToIPv6)
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
-
-                return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
+                address = address.MapToIPv4();
             }
 
-            return false;
+            return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
         }
 
         /// <summary>
@@ -155,7 +148,7 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
-            return !address.Equals(IPAddress.None) && (address.AddressFamily == AddressFamily.InterNetworkV6);
+            return address.AddressFamily == AddressFamily.InterNetworkV6;
         }
 
         /// <summary>
@@ -170,38 +163,31 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (!address.Equals(IPAddress.None))
+            if (address.IsIPv4MappedToIPv6)
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
-
-                if (address.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    // GetAddressBytes
-                    Span<byte> octet = stackalloc byte[4];
-                    address.TryWriteBytes(octet, out _);
-
-                    return (octet[0] == 10)
-                           || (octet[0] == 172 && octet[1] >= 16 && octet[1] <= 31) // RFC1918
-                           || (octet[0] == 192 && octet[1] == 168) // RFC1918
-                           || (octet[0] == 127); // RFC1122
-                }
-                else
-                {
-                    // GetAddressBytes
-                    Span<byte> octet = stackalloc byte[16];
-                    address.TryWriteBytes(octet, out _);
-
-                    uint word = (uint)(octet[0] << 8) + octet[1];
-
-                    return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
-                           || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
-                }
+                address = address.MapToIPv4();
             }
 
-            return false;
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                // GetAddressBytes
+                Span<byte> ip4octet = stackalloc byte[4];
+                address.TryWriteBytes(ip4octet, out _);
+
+                return (ip4octet[0] == 10)
+                        || (ip4octet[0] == 172 && ip4octet[1] >= 16 && ip4octet[1] <= 31) // RFC1918
+                        || (ip4octet[0] == 192 && ip4octet[1] == 168) // RFC1918
+                        || (ip4octet[0] == 127); // RFC1122
+            }
+
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[16];
+            address.TryWriteBytes(octet, out _);
+
+            uint word = (uint)(octet[0] << 8) + octet[1];
+
+            return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
+                    || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
         }
 
         /// <summary>
@@ -306,7 +292,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it is.</returns>
         public virtual bool IsLoopback()
         {
-            return IsLoopback(Address);
+            return Address != null && IsLoopback(Address);
         }
 
         /// <summary>
@@ -324,7 +310,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True if it is.</returns>
         public virtual bool IsIP6()
         {
-            return IsIP6(Address);
+            return Address != null && IsIP6(Address);
         }
 
         /// <summary>
@@ -333,7 +319,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>True this object has a private address.</returns>
         public virtual bool IsPrivateAddressRange()
         {
-            return IsPrivateAddressRange(Address);
+            return Address != null && IsPrivateAddressRange(Address);
         }
 
         /// <summary>
@@ -343,14 +329,14 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPAddress ip)
         {
-            if (ip != null)
+            if (ip != null && Address != null)
             {
                 if (ip.IsIPv4MappedToIPv6)
                 {
                     ip = ip.MapToIPv4();
                 }
 
-                return !Address.Equals(IPAddress.None) && Address.Equals(ip);
+                return Address.Equals(ip);
             }
 
             return false;
@@ -363,9 +349,9 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPObject? other)
         {
-            if (other != null)
+            if (other != null && Address != null)
             {
-                return !Address.Equals(IPAddress.None) && Address.Equals(other.Address);
+                return Address.Equals(other.Address);
             }
 
             return false;
@@ -388,7 +374,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return Address.GetHashCode();
+            return Address != null ? Address.GetHashCode() : 0;
         }
 
         /// <inheritdoc/>

@@ -189,14 +189,18 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsGatewayInterface(IPObject? addressObj)
         {
-            var address = addressObj?.Address ?? IPAddress.None;
-            return _internalInterfaces.Any(i => i.Address.Equals(address) && i.Tag < 0);
+            if (addressObj?.Address == null)
+            {
+                return false;
+            }
+
+            return _internalInterfaces.Any(i => i.Address!.Equals(addressObj?.Address) && i.Tag < 0);
         }
 
         /// <inheritdoc/>
         public bool IsGatewayInterface(IPAddress? addressObj)
         {
-            return _internalInterfaces.Any(i => i.Address.Equals(addressObj ?? IPAddress.None) && i.Tag < 0);
+            return _internalInterfaces.Any(i => i.Address != null && i.Address.Equals(addressObj) && i.Tag < 0);
         }
 
         /// <inheritdoc/>
@@ -359,7 +363,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Do we have a source?
-            bool haveSource = !source.Address.Equals(IPAddress.None);
+            bool haveSource = source.Address != null;
             bool isExternal = false;
 
             if (haveSource)
@@ -458,7 +462,7 @@ namespace Jellyfin.Networking.Manager
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (address.Equals(IPAddress.None))
+            if (address.Address == null)
             {
                 return false;
             }
@@ -563,8 +567,8 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index
-                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
-                            || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
+                        && ((IsIP4Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetwork)
+                            || (IsIP6Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         result.AddItem(iface);
                     }
@@ -674,8 +678,13 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="address">Address to convert.</param>
         /// <returns>URI safe conversion of the address.</returns>
-        private static string FormatIP6String(IPAddress address)
+        private static string FormatIP6String(IPAddress? address)
         {
+            if (address == null)
+            {
+                return string.Empty;
+            }
+
             var str = address.ToString();
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
@@ -750,8 +759,8 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (indices.Contains(Math.Abs(iface.Tag))
-                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
-                            || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
+                        && ((IsIP4Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetwork)
+                            || (IsIP6Enabled && iface.Address!.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         col.AddItem(iface);
                     }
@@ -760,8 +769,8 @@ namespace Jellyfin.Networking.Manager
             else if (TryParse(token, out IPObject obj))
             {
                 // Expand if the ip address is "any".
-                if ((obj.Address.Equals(IPAddress.Any) && IsIP4Enabled)
-                    || (obj.Address.Equals(IPAddress.IPv6Any) && IsIP6Enabled))
+                if ((obj.Address!.Equals(IPAddress.Any) && IsIP4Enabled)
+                    || (obj.Address!.Equals(IPAddress.IPv6Any) && IsIP6Enabled))
                 {
                     foreach (IPNetAddress iface in _interfaceAddresses)
                     {
@@ -1169,7 +1178,7 @@ namespace Jellyfin.Networking.Manager
             foreach (var addr in _publishedServerUrls)
             {
                 // Remaining. Match anything.
-                if (addr.Key.Address.Equals(IPAddress.Broadcast))
+                if (addr.Key.Address!.Equals(IPAddress.Broadcast))
                 {
                     bindPreference = addr.Value;
                     break;
@@ -1258,7 +1267,7 @@ namespace Jellyfin.Networking.Manager
                 {
                     // Look for the best internal address.
                     bindAddress = addresses
-                        .Where(p => IsInLocalNetwork(p) && (p.Contains(source) || p.Equals(IPAddress.None)))
+                        .Where(p => IsInLocalNetwork(p) && (p.Contains(source) || p.Equals(IPAddress.Any)))
                         .OrderBy(p => p.Tag)
                         .FirstOrDefault()?.Address;
                 }

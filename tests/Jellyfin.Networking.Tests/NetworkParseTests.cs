@@ -19,6 +19,7 @@ namespace Jellyfin.Networking.Tests
             {
                 CallBase = true
             };
+
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
             return (IConfigurationManager)configManager.Object;
         }
@@ -84,26 +85,35 @@ namespace Jellyfin.Networking.Tests
         /// Checks the validity of IP address formats.
         /// </summary>
         /// <param name="address">IP Address.</param>
-        /// <param name="valid">Expected result.</param>
+        /// <param name="valid">Expected outcome.</param>
+        /// <param name="expected">Expected value.</param>
         [Theory]
-        [InlineData("127.0.0.1", true)]
-        [InlineData("127.0.0.1:123", true)]
-        [InlineData("localhost", true)]
-        [InlineData("localhost:1345", true)]
-        [InlineData("www.google.co.uk", true)]
-        [InlineData("www.google.co.uk:1273", true)]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517", true)]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", false)]
-        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124", true)]
-        [InlineData("fe80::7add:12ff:febb:c67b%16", true)]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", true)]
-        [InlineData("fe80::7add:12ff:febb:c67b%16:123", true)]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]", true)]
-        [InlineData("192.168.1.2/255.255.255.0", false)]
-        [InlineData("192.168.1.2/24", false)]
-        public void Check_Host_Is_Valid_String(string address, bool valid)
+        [InlineData("127.0.0.1", true, "127.0.0.1 [127.0.0.1/32]")]
+        [InlineData("127.0.0.1:123", true, "127.0.0.1 [127.0.0.1/32]")]
+        [InlineData("localhost", true, "localhost [127.0.0.1/32,::1/128]")]
+        [InlineData("localhost:1345", true, "localhost [127.0.0.1/32,::1/128]")]
+        [InlineData("www.google.co.uk", true, "")]
+        [InlineData("www.google.co.uk:1273", true, "")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517", true, "fd23:184f:2029:0:3139:7386:67d7:d517 [fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", false, "None")]
+        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124", true, "fd23:184f:2029:0:3139:7386:67d7:d517 [fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16:123", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b/128]")]
+        [InlineData("[fe80::7add:12ff:febb:c67b%16]", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
+        [InlineData("192.168.1.2/255.255.255.0", false, "None")]
+        [InlineData("192.168.1.2/24", false, "None")]
+
+        public void Check_Host_Is_Valid_String(string address, bool valid, string expected)
         {
-            Assert.Equal(IPHost.TryParse(address, out _), valid);
+            var ret = IPHost.TryParse(address, out var result);
+            Assert.Equal(valid, ret);
+
+            // Cannot safely check dns names as the ip responses change.
+            if (!string.IsNullOrEmpty(expected))
+            {
+                Assert.True(string.Equals(result.ToString(), expected, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         /// <summary>
@@ -121,6 +131,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
+        [InlineData("0.0.0.0/0")]
         public void ValidIPStrings(string address)
         {
             Assert.True(IPNetAddress.TryParse(address, out _));
@@ -141,6 +152,8 @@ namespace Jellyfin.Networking.Tests
         [InlineData("localhost!")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
+        [InlineData("129.10.20.30/0")]
+        [InlineData("fe80::7add:12ff:febb:c67b%16/0")]
         public void Check_Invalid_Addresses(string address)
         {
             Assert.False(IPNetAddress.TryParse(address, out _));

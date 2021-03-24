@@ -22,7 +22,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Represents an IPHost that has no value.
         /// </summary>
-        public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
+        public static readonly IPHost None = new IPHost(string.Empty, null);
 
         /// <summary>
         /// Time when last resolved in ticks.
@@ -52,22 +52,30 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="name">Host name to assign.</param>
         /// <param name="address">Address to assign.</param>
-        private IPHost(string name, IPAddress address)
+        private IPHost(string name, IPAddress? address)
         {
             HostName = name ?? throw new ArgumentNullException(nameof(name));
-            _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
-            Resolved = !address.Equals(IPAddress.None);
+            Resolved = true;
+            if (address != null)
+            {
+                _addresses = new IPAddress[] { address };
+            }
+            else
+            {
+                _addresses = Array.Empty<IPAddress>();
+                Resolved = true;
+            }
         }
 #pragma warning restore CS8618
 
         /// <summary>
         /// Gets or sets the object's first IP address.
         /// </summary>
-        public override IPAddress Address
+        public override IPAddress? Address
         {
             get
             {
-                return ResolveHost() ? this[0] : IPAddress.None;
+                return this[0];
             }
 
             set
@@ -132,12 +140,12 @@ namespace MediaBrowser.Common.Net
         /// Gets or sets the IP Addresses associated with this object.
         /// </summary>
         /// <param name="index">Index of address.</param>
-        public IPAddress this[int index]
+        public IPAddress? this[int index]
         {
             get
             {
                 ResolveHost();
-                return index >= 0 && index < _addresses.Length ? _addresses[index] : IPAddress.None;
+                return index >= 0 && index < _addresses.Length ? _addresses[index] : null;
             }
         }
 
@@ -174,21 +182,20 @@ namespace MediaBrowser.Common.Net
 
             // Use regular expression as CheckHostName isn't RFC5892 compliant.
             // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5})?$";
+            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
 
-            if (Regex.IsMatch(host, pattern))
-            {
-                hosts = host.Split(':');
-                hostObj = new IPHost(hosts[0]);
-                return true;
-            }
-
-            // Is it a host, IPv4/6 with/out port?
             hosts = host.Split(':');
 
             if (hosts.Length <= 2)
             {
-                // This is either a hostname: port, or an IP4:port.
+                // Is hostname or hostname:port
+                if (Regex.IsMatch(hosts[0], pattern))
+                {
+                    hostObj = new IPHost(hosts[0]);
+                    return true;
+                }
+
+                // Is an IP4 or IP4:port
                 host = hosts[0];
 
                 if (IPAddress.TryParse(host, out var netAddress))
@@ -198,7 +205,7 @@ namespace MediaBrowser.Common.Net
                     return true;
                 }
             }
-            else if (hosts.Length <= 8 && IPAddress.TryParse(host, out var netAddress))
+            else if (hosts.Length <= 9 && IPAddress.TryParse(host, out var netAddress)) // 8 octets + port
             {
                 // Host name is an ip6 address, so fake resolve.
                 hostObj = new IPHost(host, netAddress);
@@ -262,7 +269,7 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPAddress address)
         {
-            if (address != null && !Address.Equals(IPAddress.None))
+            if (address != null && Address != null)
             {
                 if (address.IsIPv4MappedToIPv6)
                 {
@@ -342,27 +349,22 @@ namespace MediaBrowser.Common.Net
                 string output = HostName + " [";
                 foreach (var i in _addresses)
                 {
-                    if (Address.Equals(IPAddress.None) && Address.AddressFamily == AddressFamily.Unspecified)
+                    if (i.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        return "None";
+                        if (i.Equals(IPAddress.Any))
+                        {
+                            output += "Any IP4 Address,";
+                        }
+                        else
+                        {
+                            output += $"{i}/32,";
+                        }
                     }
-                    else if (i.Equals(IPAddress.Any))
-                    {
-                        output += "Any IP4 Address,";
-                    }
-                    else if (Address.Equals(IPAddress.IPv6Any))
+                    else if (i.Equals(IPAddress.IPv6Any))
                     {
                         output += "Any IP6 Address,";
                     }
-                    else if (i.Equals(IPAddress.Broadcast))
-                    {
-                        output += "Any Address,";
-                    }
-                    else if (i.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        output += $"{i}/32,";
-                    }
-                    else if (!Address.Equals(IPAddress.None) && Address.AddressFamily != AddressFamily.Unspecified)
+                    else
                     {
                         output += $"{i}/128,";
                     }
@@ -371,7 +373,7 @@ namespace MediaBrowser.Common.Net
                 return output[0..^1] + "]";
             }
 
-            return HostName;
+            return string.IsNullOrEmpty(HostName) ? "None" : HostName;
         }
 
         /// <inheritdoc/>
@@ -393,7 +395,12 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         protected override IPObject CalculateNetworkAddress()
         {
-            var netAddr = NetworkAddressOf(this[0], PrefixLength);
+            if (Address == null)
+            {
+                return None;
+            }
+
+            var netAddr = NetworkAddressOf(Address, PrefixLength);
             return new IPNetAddress(netAddr.Address, netAddr.PrefixLength);
         }
 
