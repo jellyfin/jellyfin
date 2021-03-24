@@ -208,7 +208,7 @@ namespace Emby.Server.Implementations.Library
         /// Gets or sets the list of entity resolution ignore rules.
         /// </summary>
         /// <value>The entity resolution ignore rules.</value>
-        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; }
+        private IResolverIgnoreRule[] EntityResolutionIgnoreRules { get; set; } = Array.Empty<IResolverIgnoreRule>();
 
         /// <summary>
         /// Gets or sets the list of currently registered entity resolvers.
