@@ -131,9 +131,11 @@ namespace MediaBrowser.Common.Net
                 // Is the subnet part a cidr?
                 if (int.TryParse(subnet, out int cidr))
                 {
-                    if (cidr <= 0 ||
+                    // If the cidr out of bounds for the ip type, or is it zero and the ip address isn't 'Any', it's invalid.
+                    if (cidr < 0 ||
                         ((cidr > 32) && (res.AddressFamily == AddressFamily.InterNetwork)) ||
-                        ((cidr > 128) && (res.AddressFamily == AddressFamily.InterNetworkV6)))
+                        ((cidr > 128) && (res.AddressFamily == AddressFamily.InterNetworkV6)) ||
+                        (cidr == 0 && (!res.Equals(IPAddress.Any) && !res.Equals(IPAddress.IPv6Any))))
                     {
                         ip = None;
                         return false;
