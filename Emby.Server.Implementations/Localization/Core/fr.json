@@ -99,7 +99,7 @@
     "TaskRefreshChannels": "Rafraîchir les chaines",
     "TaskCleanTranscodeDescription": "Supprime les fichiers transcodés de plus d'un jour.",
     "TaskCleanTranscode": "Nettoyer les dossier des transcodages",
-    "TaskUpdatePluginsDescription": "Télécharge et installe les mises à jours des extensions configurés pour être mises à jour automatiquement.",
+    "TaskUpdatePluginsDescription": "Télécharge et installe les mises à jours des extensions configurées pour être mises à jour automatiquement.",
     "TaskUpdatePlugins": "Mettre à jour les extensions",
     "TaskRefreshPeopleDescription": "Met à jour les métadonnées pour les acteurs et réalisateurs dans votre bibliothèque.",
     "TaskRefreshPeople": "Rafraîchir les acteurs",
