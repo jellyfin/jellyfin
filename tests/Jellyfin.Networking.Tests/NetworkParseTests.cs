@@ -11,24 +11,65 @@ using Xunit;
 
 namespace Jellyfin.Networking.Tests
 {
+    /// <summary>
+    ///  Defines the <seealso cref="NetworkParseTests"/>.
+    /// </summary>
+    /// <remarks>
+    /// Mock network settings permit the testing of other physical setups via the NetworkManager.MockNetworkSettings property.
+    ///
+    /// The network is defined by a series of values, separated by the character |
+    ///
+    /// The format is [ip address],[interface index],[interface name]
+    /// .
+    /// </remarks>
     public class NetworkParseTests
     {
         /// <summary>
-        /// Checks the ability to ignore virtual interfaces.
+        /// Tests the ability of the system to ignore interfaces specified, returning local interfaces.
+        /// This functionality is used to filter out virtual interfaces. <see cref="NetworkConfiguration.VirtualInterfaceNames"/>.
         /// </summary>
-        /// <param name="interfaces">Mock network setup, in the format (IP address, interface index, interface name) | .... </param>
-        /// <param name="lan">LAN addresses.</param>
-        /// <param name="value">Bind addresses that are excluded.</param>
+        /// <param name="interfaces">Mock network setup (see remarks above).</param>
+        /// <param name="value">Interface addresses after filter.</param>
         [Theory]
         // All valid
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
-        // eth16 only
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
-        // All interfaces excluded.
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
+        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.208/24,200.200.200.200/24")]
         // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
-        public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "200.200.200.200/24")]
+        // All invalid
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212", "")]
+        public void Interfaces_Ignore_Virtual(string interfaces, string value)
+        {
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+                LocalNetworkSubnets = new string[] { "0.0.0.0/0" }
+            };
+
+            NetworkManager.MockNetworkSettings = interfaces;
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+            NetworkManager.MockNetworkSettings = string.Empty;
+
+            Assert.Equal(nm.GetInternalBindAddresses().AsString(), '[' + value + ']');
+        }
+
+        /// <summary>
+        /// Tests the ability of the system to ignore interfaces specified, returning local interfaces.
+        /// This functionality is used to filter out virtual interfaces. <see cref="NetworkConfiguration.VirtualInterfaceNames"/>.
+        /// </summary>
+        /// <param name="interfaces">Mock network setup (see remarks above).</param>
+        /// <param name="lan">LAN address range.</param>
+        /// <param name="value">Interface addresses after filter..</param>
+        [Theory]
+        // All valid
+        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "192.168.1.208/24,200.200.200.200/24")]
+        // eth16 only
+        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "192.168.1.208/24")]
+        // All interfaces excluded.
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "")]
+        // vEthernet1 and vEthernet212 should be excluded.
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "200.200.200.200/24")]
+        public void Interfaces_Ignore_Virtual_Filter_On_Internal(string interfaces, string lan, string value)
         {
             var conf = new NetworkConfiguration()
             {
@@ -41,17 +82,17 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            Assert.Equal(nm.GetInternalBindAddresses().AsString(), value);
+            Assert.Equal(nm.GetInternalBindAddresses().AsString(), '[' + value + ']');
         }
 
         /// <summary>
-        /// Check that the value given is in the network provided.
+        /// Tests IP addresses are NOT part of, or have been excluded from the network range provided.
         /// </summary>
-        /// <param name="network">Network address.</param>
+        /// <param name="network">Network ranges.</param>
         /// <param name="value">Value to check.</param>
         [Theory]
-        [InlineData("192.168.10.0/24, !192.168.10.60/32", "192.168.10.60")]
-        public void IsInNetwork(string network, string value)
+        [InlineData("192.168.10.0/24,!192.168.10.60/32", "192.168.10.60")]
+        public void Is_In_Network(string network, string value)
         {
             if (network == null)
             {
@@ -291,6 +332,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("10.128.240.50/30", "10.128.240.50")]
         [InlineData("10.128.240.50/30", "10.128.240.51")]
         [InlineData("127.0.0.1/8", "127.0.0.1")]
+        [InlineData("0.0.0.0/0", "192.168.10.60")]
         public void IpV4SubnetMaskMatchesValidIpAddress(string netMask, string ipAddress)
         {
             var ipAddressObj = IPNetAddress.Parse(netMask);
@@ -304,6 +346,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("10.128.240.50/30", "10.128.240.52")]
         [InlineData("10.128.240.50/30", "10.128.239.50")]
         [InlineData("10.128.240.50/30", "10.127.240.51")]
+        [InlineData("0.0.0.0/32", "192.168.10.60")]
         public void IpV4SubnetMaskDoesNotMatchInvalidIpAddress(string netMask, string ipAddress)
         {
             var ipAddressObj = IPNetAddress.Parse(netMask);
