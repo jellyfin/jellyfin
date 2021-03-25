@@ -123,7 +123,7 @@ namespace MediaBrowser.Common.Cryptography
                     int splitIndex = parameter.IndexOf('=');
                     if (splitIndex == -1 || splitIndex == 0 || splitIndex == parameter.Length - 1)
                     {
-                        throw new FormatException($"Malformed parameter in password hash string");
+                        throw new FormatException("Malformed parameter in password hash string");
                     }
 
                     (parameters ??= new Dictionary<string, string>()).Add(
@@ -143,7 +143,7 @@ namespace MediaBrowser.Common.Cryptography
 
             if (nextSegment == 0)
             {
-                throw new FormatException($"Hash string contains an empty segment");
+                throw new FormatException("Hash string contains an empty segment");
             }
 
             byte[] hash;
