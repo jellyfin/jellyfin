@@ -313,6 +313,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return null;
             }
 
+            // ISO files don't have an ffmpeg format
+            if (string.Equals(container, "iso", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             return container;
         }
 

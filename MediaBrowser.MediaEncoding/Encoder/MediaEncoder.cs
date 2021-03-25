@@ -370,7 +370,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
             var prefix = "file";
-            if (mediaSource.VideoType == VideoType.BluRay || mediaSource.VideoType == VideoType.Iso)
+            if (mediaSource.VideoType == VideoType.BluRay)
             {
                 prefix = "bluray";
             }

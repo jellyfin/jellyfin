@@ -82,11 +82,6 @@ namespace Emby.Server.Implementations.MediaEncoder
                 return false;
             }
 
-            if (video.VideoType == VideoType.Dvd)
-            {
-                return false;
-            }
-
             if (video.IsShortcut)
             {
                 return false;
