@@ -1,6 +1,7 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Networking.Configuration
@@ -227,5 +228,24 @@ namespace Jellyfin.Networking.Configuration
         /// Gets or sets the known proxies. If the proxy is a network, it's added to the KnownNetworks.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Returns the IP Classes that are supported.
+        /// </summary>
+        /// <returns>The value as a <see cref="IpClassType"/>.</returns>
+        public IpClassType ClassType()
+        {
+            if (EnableIPV6)
+            {
+                if (EnableIPV4)
+                {
+                    return IpClassType.IpBoth;
+                }
+
+                return IpClassType.Ip6Only;
+            }
+
+            return IpClassType.Ip4Only;
+        }
     }
 }

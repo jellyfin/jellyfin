@@ -46,9 +46,9 @@ namespace Jellyfin.Server.Middleware
             {
                 // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
                 // If left blank, all remote addresses will be allowed.
-                var remoteAddressFilter = networkManager.RemoteAddressFilter;
+                var remoteAddressFilter = networkManager.RemoteAddressFilter();
 
-                if (remoteAddressFilter.Count > 0 && !networkManager.IsInLocalNetwork(remoteIp))
+                if (remoteAddressFilter.Length > 0 && !networkManager.IsInLocalNetwork(remoteIp))
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
                     bool isListed = remoteAddressFilter.ContainsAddress(remoteIp);

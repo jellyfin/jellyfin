@@ -13,17 +13,6 @@ namespace Jellyfin.Networking.Tests
 {
     public class NetworkParseTests
     {
-        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
-        {
-            var configManager = new Mock<IConfigurationManager>
-            {
-                CallBase = true
-            };
-
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
-        }
-
         /// <summary>
         /// Checks the ability to ignore virtual interfaces.
         /// </summary>
@@ -95,25 +84,30 @@ namespace Jellyfin.Networking.Tests
         [InlineData("www.google.co.uk", true, "")]
         [InlineData("www.google.co.uk:1273", true, "")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517", true, "fd23:184f:2029:0:3139:7386:67d7:d517 [fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", false, "None")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", false, "")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124", true, "fd23:184f:2029:0:3139:7386:67d7:d517 [fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
         [InlineData("fe80::7add:12ff:febb:c67b%16", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
         [InlineData("fe80::7add:12ff:febb:c67b%16:123", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b/128]")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
-        [InlineData("192.168.1.2/255.255.255.0", false, "None")]
-        [InlineData("192.168.1.2/24", false, "None")]
+        [InlineData("192.168.1.2/255.255.255.0", false, "")]
+        [InlineData("192.168.1.2/24", false, "")]
 
         public void Check_Host_Is_Valid_String(string address, bool valid, string expected)
         {
-            var ret = IPHost.TryParse(address, out var result);
-            Assert.Equal(valid, ret);
-
-            // Cannot safely check dns names as the ip responses change.
-            if (!string.IsNullOrEmpty(expected))
+            if (IPHost.TryParse(address, out var result, IpClassType.IpBoth))
             {
-                Assert.True(string.Equals(result.ToString(), expected, StringComparison.OrdinalIgnoreCase));
+                // Cannot safely check dns names as the ip responses change.
+                if (!string.IsNullOrEmpty(expected))
+                {
+                    Assert.True(string.Equals(result.ToString(), expected, StringComparison.OrdinalIgnoreCase));
+                }
+
+                Assert.True(valid);
+                return;
             }
+
+            Assert.False(valid);
         }
 
         /// <summary>
@@ -134,7 +128,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("0.0.0.0/0")]
         public void ValidIPStrings(string address)
         {
-            Assert.True(IPNetAddress.TryParse(address, out _));
+            Assert.True(IPNetAddress.TryParse(address, out _, IpClassType.IpBoth));
         }
 
         /// <summary>
@@ -156,19 +150,19 @@ namespace Jellyfin.Networking.Tests
         [InlineData("fe80::7add:12ff:febb:c67b%16/0")]
         public void Check_Invalid_Addresses(string address)
         {
-            Assert.False(IPNetAddress.TryParse(address, out _));
-            Assert.False(IPHost.TryParse(address, out _));
+            Assert.False(IPNetAddress.TryParse(address, out _, IpClassType.IpBoth));
+            Assert.False(IPHost.TryParse(address, out _, IpClassType.IpBoth));
         }
 
         /// <summary>
         /// Test collection parsing.
         /// </summary>
         /// <param name="settings">Collection to parse.</param>
-        /// <param name="result1">Included addresses from the collection.</param>
-        /// <param name="result2">Included IP4 addresses from the collection.</param>
-        /// <param name="result3">Excluded addresses from the collection.</param>
-        /// <param name="result4">Excluded IP4 addresses from the collection.</param>
-        /// <param name="result5">Network addresses of the collection.</param>
+        /// <param name="includedItems">Included addresses from the collection.</param>
+        /// <param name="includedIp4Items">Included IP4 addresses from the collection.</param>
+        /// <param name="excludedItems">Excluded addresses from the collection.</param>
+        /// <param name="excludedIp4Items">Excluded IP4 addresses from the collection.</param>
+        /// <param name="networkAddress">Network addresses of the collection.</param>
         [Theory]
         [InlineData(
             "127.0.0.1#",
@@ -205,7 +199,8 @@ namespace Jellyfin.Networking.Tests
             "[]",
             "[]",
             "[192.158.0.0/16,192.0.0.0/8]")]
-        public void Test_Collection_Parsing(string settings, string result1, string result2, string result3, string result4, string result5)
+
+        public void Test_Collection_Parsing(string settings, string includedItems, string includedIp4Items, string excludedItems, string excludedIp4Items, string networkAddress)
         {
             if (settings == null)
             {
@@ -221,31 +216,31 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included.
-            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false);
-            Assert.Equal(nc.AsString(), result1);
+            Collection<IPNetAddress> nc = nm.CreateIPCollection(settings.Split(","), false);
+            Assert.Equal(nc.AsString(), includedItems);
 
             // Test excluded.
             nc = nm.CreateIPCollection(settings.Split(","), true);
-            Assert.Equal(nc.AsString(), result3);
+            Assert.Equal(nc.AsString(), excludedItems);
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
 
             // Test IP4 included.
             nc = nm.CreateIPCollection(settings.Split(","), false);
-            Assert.Equal(nc.AsString(), result2);
+            Assert.Equal(nc.AsString(), includedIp4Items);
 
             // Test IP4 excluded.
             nc = nm.CreateIPCollection(settings.Split(","), true);
-            Assert.Equal(nc.AsString(), result4);
+            Assert.Equal(nc.AsString(), excludedIp4Items);
 
             conf.EnableIPV6 = true;
             nm.UpdateSettings(conf);
 
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(","), false);
-            nc = nc.AsNetworks();
-            Assert.Equal(nc.AsString(), result5);
+            var nca = nc.AsNetworkAddresses();
+            Assert.Equal(nca.AsString(), networkAddress);
         }
 
         /// <summary>
@@ -282,8 +277,8 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(","), false);
-            Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(","), false);
+            Collection<IPNetAddress> nc1 = nm.CreateIPCollection(settings.Split(","), false);
+            Collection<IPNetAddress> nc2 = nm.CreateIPCollection(compare.Split(","), false);
 
             Assert.Equal(nc1.Union(nc2).AsString(), result);
         }
@@ -354,9 +349,9 @@ namespace Jellyfin.Networking.Tests
 
         public void TestSubnetContains(string network, string ip)
         {
-            Assert.True(IPNetAddress.TryParse(network, out var networkObj));
-            Assert.True(IPNetAddress.TryParse(ip, out var ipObj));
-            Assert.True(networkObj.Contains(ipObj));
+            Assert.True(IPNetAddress.TryParse(network, out var networkObj, IpClassType.IpBoth));
+            Assert.True(IPNetAddress.TryParse(ip, out IPNetAddress? ipObj, IpClassType.IpBoth));
+            Assert.True(networkObj?.Contains(ipObj!));
         }
 
         [Theory]
@@ -392,10 +387,10 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(","));
-            Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(","));
-            Collection<IPObject> ncResult = ncSource.Union(ncDest);
-            Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(","));
+            Collection<IPNetAddress> ncSource = nm.CreateIPCollection(source.Split(","));
+            Collection<IPNetAddress> ncDest = nm.CreateIPCollection(dest.Split(","));
+            Collection<IPNetAddress> ncResult = ncSource.Union(ncDest);
+            Collection<IPNetAddress> resultCollection = nm.CreateIPCollection(result.Split(","));
             Assert.True(ncResult.Compare(resultCollection));
         }
 
@@ -458,7 +453,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
+            _ = nm.TryParseInterface(result, out Collection<IPNetAddress>? resultObj);
 
             if (resultObj != null)
             {
@@ -524,7 +519,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            if (nm.TryParseInterface(result, out Collection<IPObject>? resultObj) && resultObj != null)
+            if (nm.TryParseInterface(result, out Collection<IPNetAddress>? resultObj) && resultObj != null)
             {
                 // Parse out IPAddresses so we can do a string comparison. (Ignore subnet masks).
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
@@ -533,6 +528,17 @@ namespace Jellyfin.Networking.Tests
             var intf = nm.GetBindInterface(source, out int? _);
 
             Assert.Equal(intf, result);
+        }
+
+        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IConfigurationManager>
+            {
+                CallBase = true
+            };
+
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IConfigurationManager)configManager.Object;
         }
     }
 }

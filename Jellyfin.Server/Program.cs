@@ -279,7 +279,7 @@ namespace Jellyfin.Server
                     var addresses = appHost.NetManager.GetAllBindInterfaces();
 
                     bool flagged = false;
-                    foreach (IPObject netAdd in addresses)
+                    foreach (IPNetAddress netAdd in addresses)
                     {
                         _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
                         options.Listen(netAdd.Address, appHost.HttpPort);

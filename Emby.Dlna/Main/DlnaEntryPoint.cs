@@ -288,11 +288,12 @@ namespace Emby.Dlna.Main
             var udn = CreateUuid(_appHost.SystemId);
             var descriptorUri = "/dlna/" + udn + "/description.xml";
 
-            var bindAddresses = NetworkManager.CreateCollection(
-                _networkManager.GetInternalBindAddresses()
-                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
+            var bindAddresses = _networkManager
+                .GetInternalBindAddresses()
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
+                .ToArray();
 
-            if (bindAddresses.Count == 0)
+            if (bindAddresses.Length == 0)
             {
                 // No interfaces returned, so use loopback.
                 bindAddresses = _networkManager.GetLoopbacks();
