@@ -17,6 +17,7 @@
  - [bugfixin](https://github.com/bugfixin)
  - [chaosinnovator](https://github.com/chaosinnovator)
  - [ckcr4lyf](https://github.com/ckcr4lyf)
+ - [cocool97](https://github.com/cocool97)
  - [ConfusedPolarBear](https://github.com/ConfusedPolarBear)
  - [crankdoofus](https://github.com/crankdoofus)
  - [crobibero](https://github.com/crobibero)
