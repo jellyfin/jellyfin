@@ -21,6 +21,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly IProviderManager _providerManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IDirectoryService _directoryService;
 
         protected BaseVideoNfoProvider(
             ILogger<BaseVideoNfoProvider<T>> logger,
@@ -28,7 +29,8 @@ namespace MediaBrowser.XbmcMetadata.Providers
             IConfigurationManager config,
             IProviderManager providerManager,
             IUserManager userManager,
-            IUserDataManager userDataManager)
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
             : base(fileSystem)
         {
             _logger = logger;
@@ -36,6 +38,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _providerManager = providerManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
+            _directoryService = directoryService;
         }
 
         /// <inheritdoc />
@@ -45,10 +48,12 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 Item = result.Item
             };
-            new MovieNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager).Fetch(tmpItem, path, cancellationToken);
+            new MovieNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(tmpItem, path, cancellationToken);
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;
+            result.Images = tmpItem.Images;
+            result.RemoteImages = tmpItem.RemoteImages;
 
             if (tmpItem.UserDataList != null)
             {
