@@ -697,6 +697,8 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddScoped<MediaInfoHelper>();
             ServiceCollection.AddScoped<AudioHelper>();
             ServiceCollection.AddScoped<DynamicHlsHelper>();
+
+            ServiceCollection.AddSingleton<IDirectoryService, DirectoryService>();
         }
 
         /// <summary>
