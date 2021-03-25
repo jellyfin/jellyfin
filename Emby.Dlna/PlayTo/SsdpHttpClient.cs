@@ -94,10 +94,17 @@ namespace Emby.Dlna.PlayTo
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            return await XDocument.LoadAsync(
-                stream,
-                LoadOptions.PreserveWhitespace,
-                cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await XDocument.LoadAsync(
+                    stream,
+                    LoadOptions.PreserveWhitespace,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private async Task<HttpResponseMessage> PostSoapDataAsync(
