@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Providers;
+﻿using System;
+using MediaBrowser.Common.Providers;
 using Xunit;
 
 namespace Jellyfin.Common.Tests.Providers
@@ -20,9 +21,9 @@ namespace Jellyfin.Common.Tests.Providers
         [InlineData("tt123456789", true, "tt12345678")]
         public void Parse_Imdb(string text, bool shouldSucceed, string? imdbId)
         {
-            var succeeded = ProviderIdParsers.TryParseImdbId(text, out string? parsedId);
+            var succeeded = ProviderIdParsers.TryFindImdbId(text, out ReadOnlySpan<char> parsedId);
             Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(imdbId, parsedId);
+            Assert.Equal(imdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
         }
 
         [Theory]
@@ -32,9 +33,9 @@ namespace Jellyfin.Common.Tests.Providers
         [InlineData("https://www.themoviedb.org/tv/1668-friends", false, null)]
         public void Parse_TmdbMovie(string text, bool shouldSucceed, string? tmdbId)
         {
-            var succeeded = ProviderIdParsers.TryParseTmdbMovieId(text, out string? parsedId);
+            var succeeded = ProviderIdParsers.TryFindTmdbMovieId(text, out ReadOnlySpan<char> parsedId);
             Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(tmdbId, parsedId);
+            Assert.Equal(tmdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
         }
 
         [Theory]
@@ -44,9 +45,9 @@ namespace Jellyfin.Common.Tests.Providers
         [InlineData("https://www.themoviedb.org/movie/30287-fallo", false, null)]
         public void Parse_TmdbSeries(string text, bool shouldSucceed, string? tmdbId)
         {
-            var succeeded = ProviderIdParsers.TryParseTmdbSeriesId(text, out string? parsedId);
+            var succeeded = ProviderIdParsers.TryFindTmdbSeriesId(text, out ReadOnlySpan<char> parsedId);
             Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(tmdbId, parsedId);
+            Assert.Equal(tmdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
         }
 
         [Theory]
@@ -56,9 +57,9 @@ namespace Jellyfin.Common.Tests.Providers
         [InlineData("https://www.themoviedb.org/tv/1668-friends", false, null)]
         public void Parse_Tvdb(string text, bool shouldSucceed, string? tvdbId)
         {
-            var succeeded = ProviderIdParsers.TryParseTvdbId(text, out string? parsedId);
+            var succeeded = ProviderIdParsers.TryFindTvdbId(text, out ReadOnlySpan<char> parsedId);
             Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(tvdbId, parsedId);
+            Assert.Equal(tvdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
         }
     }
 }

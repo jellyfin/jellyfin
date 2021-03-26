@@ -219,29 +219,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected void ParseProviderLinks(T item, string xml)
         {
-            if (ProviderIdParsers.TryParseImdbId(xml, out var imdbId))
+            if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
             {
-                item.SetProviderId(MetadataProvider.Imdb, imdbId);
+                item.SetProviderId(MetadataProvider.Imdb, imdbId.ToString());
             }
 
             if (item is Movie)
             {
-                if (ProviderIdParsers.TryParseTmdbMovieId(xml, out var tmdbId))
+                if (ProviderIdParsers.TryFindTmdbMovieId(xml, out var tmdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
                 }
             }
 
             if (item is Series)
             {
-                if (ProviderIdParsers.TryParseTmdbSeriesId(xml, out var tmdbId))
+                if (ProviderIdParsers.TryFindTmdbSeriesId(xml, out var tmdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
                 }
 
-                if (ProviderIdParsers.TryParseTvdbId(xml, out var tvdbId))
+                if (ProviderIdParsers.TryFindTvdbId(xml, out var tvdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
+                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString());
                 }
             }
         }

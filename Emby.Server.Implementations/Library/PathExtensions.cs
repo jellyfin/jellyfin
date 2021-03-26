@@ -44,8 +44,8 @@ namespace Emby.Server.Implementations.Library
             // for imdbid we also accept pattern matching
             if (string.Equals(attribute, "imdbid", StringComparison.OrdinalIgnoreCase))
             {
-                var match = ProviderIdParsers.TryParseImdbId(str, out var imdbId);
-                return match ? imdbId : null;
+                var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
+                return match ? imdbId.ToString() : null;
             }
 
             return null;

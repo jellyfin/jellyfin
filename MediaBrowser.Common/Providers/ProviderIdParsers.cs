@@ -12,6 +12,7 @@ namespace MediaBrowser.Common.Providers
     {
         private const int ImdbMinNumbers = 7;
         private const int ImdbMaxNumbers = 8;
+        private const string ImdbPrefix = "tt";
 
         /// <summary>
         /// Parses an IMDb id from a string.
@@ -19,9 +20,9 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text to parse.</param>
         /// <param name="imdbId">The parsed IMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseImdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? imdbId)
+        public static bool TryFindImdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> imdbId)
         {
-            var tt = "tt".AsSpan();
+            var tt = ImdbPrefix.AsSpan();
 
             // imdb id is at least 9 chars (tt + 7 numbers)
             while (text.Length >= 2 + ImdbMinNumbers)
@@ -33,9 +34,10 @@ namespace MediaBrowser.Common.Providers
                     return false;
                 }
 
-                text = text.Slice(ttPos + tt.Length);
-                var i = 0;
-                for (; i < Math.Min(text.Length, ImdbMaxNumbers); i++)
+                text = text.Slice(ttPos);
+                var i = 2;
+                var limit = Math.Min(text.Length, ImdbMaxNumbers + 2);
+                for (; i < limit; i++)
                 {
                     var c = text[i];
                     if (!IsDigit(c))
@@ -44,10 +46,10 @@ namespace MediaBrowser.Common.Providers
                     }
                 }
 
-                // skip if more than 8 digits
-                if (i <= ImdbMaxNumbers && i >= ImdbMinNumbers)
+                // skip if more than 8 digits + 2 chars for tt
+                if (i <= ImdbMaxNumbers + 2 && i >= ImdbMinNumbers + 2)
                 {
-                    imdbId = string.Concat(tt, text.Slice(0, i));
+                    imdbId = text.Slice(0, i);
                     return true;
                 }
 
@@ -64,8 +66,8 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tmdbId">The parsed TMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseTmdbMovieId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? tmdbId)
-            => TryParseProviderId(text, "themoviedb.org/movie/", out tmdbId);
+        public static bool TryFindTmdbMovieId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> tmdbId)
+            => TryFindProviderId(text, "themoviedb.org/movie/", out tmdbId);
 
         /// <summary>
         /// Parses an TMDb id from a series url.
@@ -73,8 +75,8 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tmdbId">The parsed TMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseTmdbSeriesId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? tmdbId)
-            => TryParseProviderId(text, "themoviedb.org/tv/", out tmdbId);
+        public static bool TryFindTmdbSeriesId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> tmdbId)
+            => TryFindProviderId(text, "themoviedb.org/tv/", out tmdbId);
 
         /// <summary>
         /// Parses an TVDb id from a url.
@@ -82,10 +84,10 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tvdbId">The parsed TVDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryParseTvdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? tvdbId)
-            => TryParseProviderId(text, "thetvdb.com/?tab=series&id=", out tvdbId);
+        public static bool TryFindTvdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> tvdbId)
+            => TryFindProviderId(text, "thetvdb.com/?tab=series&id=", out tvdbId);
 
-        private static bool TryParseProviderId(ReadOnlySpan<char> text, ReadOnlySpan<char> searchString, [NotNullWhen(true)] out string? providerId)
+        private static bool TryFindProviderId(ReadOnlySpan<char> text, ReadOnlySpan<char> searchString, [NotNullWhen(true)] out ReadOnlySpan<char> providerId)
         {
             var searchPos = text.IndexOf(searchString);
             if (searchPos == -1)
@@ -109,7 +111,7 @@ namespace MediaBrowser.Common.Providers
 
             if (i >= 1)
             {
-                providerId = text.Slice(0, i).ToString();
+                providerId = text.Slice(0, i);
                 return true;
             }
 
