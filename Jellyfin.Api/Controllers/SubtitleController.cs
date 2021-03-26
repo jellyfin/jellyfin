@@ -201,7 +201,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string mediaSourceId,
             [FromRoute, Required] int index,
             [FromRoute, Required] string routeFormat,
-            [FromQuery] string? format,
+            [FromQuery, ParameterObsolete] string? format,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false,
@@ -278,7 +278,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] int index,
             [FromRoute, Required] long startPositionTicks,
             [FromRoute, Required] string routeFormat,
-            [FromQuery] string? format,
+            [FromQuery, ParameterObsolete] string? format,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false)
