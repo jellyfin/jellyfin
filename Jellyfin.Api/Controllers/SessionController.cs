@@ -327,11 +327,13 @@ namespace Jellyfin.Api.Controllers
             {
                 throw new ArgumentException("Request body may not be null");
             }
-            //Need to check if message.Text is null, since [Required] can't be applied to properties of a deserialized object.
+
+            // Need to check if message.Text is null, since [Required] can't be applied to properties of a deserialized object.
             if (string.IsNullOrWhiteSpace(command.Text))
             {
                 throw new ArgumentNullException("Message Text may not be empty.");
             }
+
             var nullCorrectedCommand = new MessageCommand
             {
                 Header = string.IsNullOrWhiteSpace(command.Header) ? "Message from Server" : command.Header,
