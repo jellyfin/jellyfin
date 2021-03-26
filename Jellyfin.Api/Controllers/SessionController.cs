@@ -167,7 +167,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] PlayCommand playCommand,
             [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds,
             [FromQuery] long? startPositionTicks,
-            [FromQuery] string mediaSourceId,
+            [FromQuery] string? mediaSourceId,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? startIndex)
