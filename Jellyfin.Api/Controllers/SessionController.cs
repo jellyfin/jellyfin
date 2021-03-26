@@ -313,9 +313,7 @@ namespace Jellyfin.Api.Controllers
         /// Issues a command to a client to display a message to the user.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="text">The message test.</param>
-        /// <param name="header">The message header.</param>
-        /// <param name="timeoutMs">The message timeout. If omitted the user will have to confirm viewing the message.</param>
+        /// <param name="command">The <see cref="MessageCommand" /> object containing Header, Message Text, and TimeoutMs.</param>
         /// <response code="204">Message sent.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Message")]
@@ -323,18 +321,25 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
             [FromRoute, Required] string sessionId,
-            [FromQuery, Required] string text,
-            [FromQuery] string? header,
-            [FromQuery] long? timeoutMs)
+            [FromBody] MessageCommand command)
         {
-            var command = new MessageCommand
+            if (command == null)
             {
-                Header = string.IsNullOrEmpty(header) ? "Message from Server" : header,
-                TimeoutMs = timeoutMs,
-                Text = text
+                throw new ArgumentException("Request body may not be null");
+            }
+            //Need to check if message.Text is null, since [Required] can't be applied to properties of a deserialized object.
+            if (string.IsNullOrWhiteSpace(command.Text))
+            {
+                throw new ArgumentNullException("Message Text may not be empty.");
+            }
+            var nullCorrectedCommand = new MessageCommand
+            {
+                Header = string.IsNullOrWhiteSpace(command.Header) ? "Message from Server" : command.Header,
+                TimeoutMs = command.TimeoutMs,
+                Text = command.Text
             };
 
-            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, command, CancellationToken.None);
+            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, nullCorrectedCommand, CancellationToken.None);
 
             return NoContent();
         }
