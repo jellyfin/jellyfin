@@ -412,7 +412,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/John Wick - Kapitel 3 (2019) [imdbid=tt6146586]/John Wick - Kapitel 3 (2019) [imdbid=tt6146586] - Version 2.mkv"
             };
 
-            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = GetResolver().Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -432,7 +432,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/movies/John Wick - Chapter 3 (2019)/John Wick - Chapter 3 (2019) [Version 2.mkv"
             };
 
-            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = GetResolver().Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
