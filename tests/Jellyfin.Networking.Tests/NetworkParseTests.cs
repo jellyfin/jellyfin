@@ -201,29 +201,29 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included.
-            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(","), false);
+            Collection<IPObject> nc = nm.CreateIPCollection(settings.Split(','), false);
             Assert.Equal(nc.AsString(), result1);
 
             // Test excluded.
-            nc = nm.CreateIPCollection(settings.Split(","), true);
+            nc = nm.CreateIPCollection(settings.Split(','), true);
             Assert.Equal(nc.AsString(), result3);
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
 
             // Test IP4 included.
-            nc = nm.CreateIPCollection(settings.Split(","), false);
+            nc = nm.CreateIPCollection(settings.Split(','), false);
             Assert.Equal(nc.AsString(), result2);
 
             // Test IP4 excluded.
-            nc = nm.CreateIPCollection(settings.Split(","), true);
+            nc = nm.CreateIPCollection(settings.Split(','), true);
             Assert.Equal(nc.AsString(), result4);
 
             conf.EnableIPV6 = true;
             nm.UpdateSettings(conf);
 
             // Test network addresses of collection.
-            nc = nm.CreateIPCollection(settings.Split(","), false);
+            nc = nm.CreateIPCollection(settings.Split(','), false);
             nc = nc.AsNetworks();
             Assert.Equal(nc.AsString(), result5);
         }
@@ -262,8 +262,8 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(","), false);
-            Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(","), false);
+            Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(','), false);
+            Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(','), false);
 
             Assert.Equal(nc1.Union(nc2).AsString(), result);
         }
@@ -372,10 +372,10 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(","));
-            Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(","));
+            Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(','));
+            Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(','));
             Collection<IPObject> ncResult = ncSource.Union(ncDest);
-            Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(","));
+            Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(','));
             Assert.True(ncResult.Compare(resultCollection));
         }
 
@@ -527,7 +527,7 @@ namespace Jellyfin.Networking.Tests
             var conf = new NetworkConfiguration()
             {
                 EnableIPV4 = true,
-                RemoteIPFilter = addresses.Split(","),
+                RemoteIPFilter = addresses.Split(','),
                 IsRemoteIPFilterBlacklist = false
             };
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
@@ -546,7 +546,7 @@ namespace Jellyfin.Networking.Tests
             var conf = new NetworkConfiguration()
             {
                 EnableIPV4 = true,
-                RemoteIPFilter = addresses.Split(","),
+                RemoteIPFilter = addresses.Split(','),
                 IsRemoteIPFilterBlacklist = true
             };
 
