@@ -514,6 +514,8 @@ namespace MediaBrowser.Model.Dlna
 
         private static List<TranscodeReason> GetTranscodeReasonsFromDirectPlayProfile(MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream, IEnumerable<DirectPlayProfile> directPlayProfiles)
         {
+            var mediaType = videoStream != null ? DlnaProfileType.Video : DlnaProfileType.Audio;
+
             var containerSupported = false;
             var audioSupported = false;
             var videoSupported = false;
@@ -521,7 +523,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (var profile in directPlayProfiles)
             {
                 // Check container type
-                if (profile.SupportsContainer(item.Container))
+                if (profile.Type == mediaType && profile.SupportsContainer(item.Container))
                 {
                     containerSupported = true;
 
