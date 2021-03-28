@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
@@ -274,7 +275,7 @@ namespace Emby.Drawing
             string backgroundColor,
             string foregroundLayer)
         {
-            var filename = new StringBuilder(128);
+            var filename = new StringBuilder(256);
             filename.Append(originalPath);
 
             filename.Append(",quality=");
