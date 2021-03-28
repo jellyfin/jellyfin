@@ -321,12 +321,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
             [FromRoute, Required] string sessionId,
-            [FromBody] MessageCommand command)
+            [FromBody, Required] MessageCommand command)
         {
-            if (command == null)
-            {
-                throw new ArgumentException("Request body may not be null");
-            }
 
             // Need to check if message.Text is null, since [Required] can't be applied to properties of a deserialized object.
             if (string.IsNullOrWhiteSpace(command.Text))
