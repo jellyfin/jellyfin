@@ -274,7 +274,7 @@ namespace Emby.Drawing
             string backgroundColor,
             string foregroundLayer)
         {
-            System.Text.StringBuilder filename = new System.Text.StringBuilder(128);
+            var filename = new StringBuilder(128);
             filename.Append(originalPath);
 
             filename.Append(",quality=");
