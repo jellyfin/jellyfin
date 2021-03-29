@@ -8,6 +8,7 @@ namespace MediaBrowser.Model.Session
     public class MessageCommand
     {
         public string Header { get; set; }
+
         [Required(AllowEmptyStrings = false)]
         public string Text { get; set; }
 
