@@ -22,12 +22,10 @@ namespace MediaBrowser.Common.Providers
         /// <returns>True if parsing was successful, false otherwise.</returns>
         public static bool TryFindImdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> imdbId)
         {
-            var tt = ImdbPrefix.AsSpan();
-
             // imdb id is at least 9 chars (tt + 7 numbers)
             while (text.Length >= 2 + ImdbMinNumbers)
             {
-                var ttPos = text.IndexOf(tt);
+                var ttPos = text.IndexOf(ImdbPrefix);
                 if (ttPos == -1)
                 {
                     imdbId = default;

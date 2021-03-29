@@ -7,59 +7,79 @@ namespace Jellyfin.Common.Tests.Providers
     public class ProviderIdParserTests
     {
         [Theory]
-        [InlineData("tt123456", false, null)]
-        [InlineData("tt1234567", true, "tt1234567")]
-        [InlineData("tt12345678", true, "tt12345678")]
-        [InlineData("https://www.imdb.com/title/tt123456", false, null)]
-        [InlineData("https://www.imdb.com/title/tt1234567", true, "tt1234567")]
-        [InlineData("https://www.imdb.com/title/tt12345678", true, "tt12345678")]
-        [InlineData(@"multiline\nhttps://www.imdb.com/title/tt1234567", true, "tt1234567")]
-        [InlineData(@"multiline\nhttps://www.imdb.com/title/tt12345678", true, "tt12345678")]
-        [InlineData("Jellyfin", false, null)]
-        [InlineData("tt1234567tt7654321", true, "tt1234567")]
-        [InlineData("tt12345678tt7654321", true, "tt12345678")]
-        [InlineData("tt123456789", true, "tt12345678")]
-        public void Parse_Imdb(string text, bool shouldSucceed, string? imdbId)
+        [InlineData("tt1234567", "tt1234567")]
+        [InlineData("tt12345678", "tt12345678")]
+        [InlineData("https://www.imdb.com/title/tt1234567", "tt1234567")]
+        [InlineData("https://www.imdb.com/title/tt12345678", "tt12345678")]
+        [InlineData(@"multiline\nhttps://www.imdb.com/title/tt1234567", "tt1234567")]
+        [InlineData(@"multiline\nhttps://www.imdb.com/title/tt12345678", "tt12345678")]
+        [InlineData("tt1234567tt7654321", "tt1234567")]
+        [InlineData("tt12345678tt7654321", "tt12345678")]
+        [InlineData("tt123456789", "tt12345678")]
+        public void FindImdbId_Valid_Success(string text, string expected)
         {
-            var succeeded = ProviderIdParsers.TryFindImdbId(text, out ReadOnlySpan<char> parsedId);
-            Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(imdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
+            Assert.True(ProviderIdParsers.TryFindImdbId(text, out ReadOnlySpan<char> parsedId));
+            Assert.Equal(expected, parsedId.ToString());
         }
 
         [Theory]
-        [InlineData("https://www.themoviedb.org/movie/30287-fallo", true, "30287")]
-        [InlineData("themoviedb.org/movie/30287", true, "30287")]
-        [InlineData("https://www.themoviedb.org/movie/fallo-30287", false, null)]
-        [InlineData("https://www.themoviedb.org/tv/1668-friends", false, null)]
-        public void Parse_TmdbMovie(string text, bool shouldSucceed, string? tmdbId)
+        [InlineData("tt123456")]
+        [InlineData("https://www.imdb.com/title/tt123456")]
+        [InlineData("Jellyfin")]
+        public void FindImdbId_Invalid_Success(string text)
         {
-            var succeeded = ProviderIdParsers.TryFindTmdbMovieId(text, out ReadOnlySpan<char> parsedId);
-            Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(tmdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
+            Assert.False(ProviderIdParsers.TryFindImdbId(text, out _));
         }
 
         [Theory]
-        [InlineData("https://www.themoviedb.org/tv/1668-friends", true, "1668")]
-        [InlineData("themoviedb.org/tv/1668", true, "1668")]
-        [InlineData("https://www.themoviedb.org/tv/friends-1668", false, null)]
-        [InlineData("https://www.themoviedb.org/movie/30287-fallo", false, null)]
-        public void Parse_TmdbSeries(string text, bool shouldSucceed, string? tmdbId)
+        [InlineData("https://www.themoviedb.org/movie/30287-fallo", "30287")]
+        [InlineData("themoviedb.org/movie/30287", "30287")]
+        public void FindTmdbMovieId_Valid_Success(string text, string expected)
         {
-            var succeeded = ProviderIdParsers.TryFindTmdbSeriesId(text, out ReadOnlySpan<char> parsedId);
-            Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(tmdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
+            Assert.True(ProviderIdParsers.TryFindTmdbMovieId(text, out ReadOnlySpan<char> parsedId));
+            Assert.Equal(expected, parsedId.ToString());
         }
 
         [Theory]
-        [InlineData("https://www.thetvdb.com/?tab=series&id=121361", true, "121361")]
-        [InlineData("thetvdb.com/?tab=series&id=121361", true, "121361")]
-        [InlineData("thetvdb.com/?tab=series&id=Jellyfin121361", false, null)]
-        [InlineData("https://www.themoviedb.org/tv/1668-friends", false, null)]
-        public void Parse_Tvdb(string text, bool shouldSucceed, string? tvdbId)
+        [InlineData("https://www.themoviedb.org/movie/fallo-30287")]
+        [InlineData("https://www.themoviedb.org/tv/1668-friends")]
+        public void FindTmdbMovieId_Invalid_Success(string text)
         {
-            var succeeded = ProviderIdParsers.TryFindTvdbId(text, out ReadOnlySpan<char> parsedId);
-            Assert.Equal(shouldSucceed, succeeded);
-            Assert.Equal(tvdbId ?? Span<char>.Empty.ToString(), parsedId.ToString());
+            Assert.False(ProviderIdParsers.TryFindTmdbMovieId(text, out _));
+        }
+
+        [Theory]
+        [InlineData("https://www.themoviedb.org/tv/1668-friends", "1668")]
+        [InlineData("themoviedb.org/tv/1668", "1668")]
+        public void FindTmdbSeriesId_Valid_Success(string text, string expected)
+        {
+            Assert.True(ProviderIdParsers.TryFindTmdbSeriesId(text, out ReadOnlySpan<char> parsedId));
+            Assert.Equal(expected, parsedId.ToString());
+        }
+
+        [Theory]
+        [InlineData("https://www.themoviedb.org/tv/friends-1668")]
+        [InlineData("https://www.themoviedb.org/movie/30287-fallo")]
+        public void FindTmdbSeriesId_Invalid_Success(string text)
+        {
+            Assert.False(ProviderIdParsers.TryFindTmdbSeriesId(text, out _));
+        }
+
+        [Theory]
+        [InlineData("https://www.thetvdb.com/?tab=series&id=121361", "121361")]
+        [InlineData("thetvdb.com/?tab=series&id=121361", "121361")]
+        public void FindTvdbId_Valid_Success(string text, string expected)
+        {
+            Assert.True(ProviderIdParsers.TryFindTvdbId(text, out ReadOnlySpan<char> parsedId));
+            Assert.Equal(expected, parsedId.ToString());
+        }
+
+        [Theory]
+        [InlineData("thetvdb.com/?tab=series&id=Jellyfin121361")]
+        [InlineData("https://www.themoviedb.org/tv/1668-friends")]
+        public void FindTvdbId_Invalid_Success(string text)
+        {
+            Assert.False(ProviderIdParsers.TryFindTvdbId(text, out _));
         }
     }
 }
