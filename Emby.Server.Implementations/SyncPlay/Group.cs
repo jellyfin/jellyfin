@@ -647,8 +647,9 @@ namespace Emby.Server.Implementations.SyncPlay
         public PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason)
         {
             var startPositionTicks = PositionTicks;
+            var isPlaying = _state.Type.Equals(GroupStateType.Playing);
 
-            if (_state.Type.Equals(GroupStateType.Playing))
+            if (isPlaying)
             {
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - LastActivity;
@@ -667,6 +668,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayQueue.GetPlaylist(),
                 PlayQueue.PlayingItemIndex,
                 startPositionTicks,
+                isPlaying,
                 PlayQueue.ShuffleMode,
                 PlayQueue.RepeatMode);
         }
