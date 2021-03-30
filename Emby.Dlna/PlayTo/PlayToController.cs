@@ -175,6 +175,11 @@ namespace Emby.Dlna.PlayTo
 
                 // Send a message to the DLNA device to notify what is the next track in the playlist.
                 var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId == streamInfo.ItemId);
+                if (currentItemIndex >= 0)
+                {
+                    _currentPlaylistIndex = currentItemIndex;
+                }
+
                 await SendNextTrackMessage(currentItemIndex, CancellationToken.None);
             }
             catch (Exception ex)
