@@ -323,12 +323,10 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromBody, Required] MessageCommand command)
         {
-            var nullCorrectedCommand = new MessageCommand
+            if (string.IsNullOrWhiteSpace(command.Header)) 
             {
-                Header = string.IsNullOrWhiteSpace(command.Header) ? "Message from Server" : command.Header,
-                TimeoutMs = command.TimeoutMs,
-                Text = command.Text
-            };
+                command.Header =  "Message from Server";
+            }
 
             _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, nullCorrectedCommand, CancellationToken.None);
 
