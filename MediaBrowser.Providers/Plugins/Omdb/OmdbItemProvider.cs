@@ -48,7 +48,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _configurationManager = configurationManager;
             _appHost = appHost;
 
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions());
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableInt32Converter());
         }

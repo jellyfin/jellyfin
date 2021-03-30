@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>`0.</returns>
-        protected virtual T Resolve(ItemResolveArgs args)
+        public virtual T Resolve(ItemResolveArgs args)
         {
             return null;
         }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -256,35 +257,38 @@ namespace MediaBrowser.Common.Udp
         /// </summary>
         /// <param name="port">Port to listen upon.</param>
         /// <param name="addresses">List of addresses to use.</param>
-        /// <param name="ip4compliant">True if the port should be IPv4 compatible.</param>
-        /// <param name="ip6compliant">True if the port should be IPv6 compatible.</param>
+        /// <param name="classType"><see cref="IpClassType"/> containg the IP seetings.</param>
         /// <param name="processor">Optional. An <see cref="UdpProcessor"/> delegate for the incoming packets.</param>
         /// <param name="logger">Optional. An <see cref="ILogger"/> instance.</param>
         /// <param name="failure">Optional. An <see cref="FailureFunction"/> delegate to use in case of listening failure.</param>
         /// <param name="enableTracing">Optional. Enables tracing on the ports.</param>
-        /// <returns>A <see cref="List{UdpProcess}"/>.</returns>
-        public static List<UdpProcess> CreateMulticastClients(
+        /// <returns>A <see cref="Collection{UdpProcess}"/>.</returns>
+        public static Collection<UdpProcess> CreateMulticastClients(
             int port,
             Collection<IPObject> addresses,
-            bool ip4compliant,
-            bool ip6compliant,
+            IpClassType classType,
             UdpProcessor? processor = null,
             ILogger? logger = null,
             FailureFunction? failure = null,
             bool enableTracing = false)
         {
-            var clients = new List<UdpProcess>();
-
-            foreach (IPObject ip in addresses ?? throw new ArgumentNullException(nameof(addresses)))
+            if (addresses == null)
             {
-                if (((!ip6compliant) && (ip.AddressFamily == AddressFamily.InterNetworkV6))
-                    || ((!ip4compliant) && (ip.AddressFamily == AddressFamily.InterNetwork)))
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
+            var clients = new Collection<UdpProcess>();
+
+            UdpProcess? client;
+            foreach (var ip in addresses)
+            {
+                if (((classType == IpClassType.Ip4Only) && (ip.AddressFamily == AddressFamily.InterNetworkV6))
+                    || ((classType == IpClassType.Ip6Only) && (ip.AddressFamily == AddressFamily.InterNetwork)))
                 {
                     continue;
                 }
 
-                UdpProcess? client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
-                if (client != null)
+                if ((client = CreateMulticastClient(ip.Address, port, processor, logger, failure)) != null)
                 {
                     client.Tracing = enableTracing;
                     clients.Add(client);
@@ -310,20 +314,9 @@ namespace MediaBrowser.Common.Udp
             ILogger? logger = null,
             FailureFunction? failure = null)
         {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
             if (address.AddressFamily == AddressFamily.InterNetworkV6 && address.ScopeId == 0)
             {
                 logger?.LogError("Cannot create multicast client on {Address}. ScopeId: {ScopeId}", address, address.ScopeId);
-                return null;
-            }
-
-            if (address.AddressFamily != AddressFamily.InterNetwork && address.AddressFamily != AddressFamily.InterNetworkV6)
-            {
-                logger?.LogError("Invalid interface type of {AddressFamily} on {Address}", address.AddressFamily, address);
                 return null;
             }
 
@@ -355,7 +348,6 @@ namespace MediaBrowser.Common.Udp
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
                     udp.JoinMulticastGroup(IPNetAddress.SSDPMulticastIPv4, address);
-                    // udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, address.GetAddressBytes());
                 }
                 else
                 {
@@ -367,8 +359,6 @@ namespace MediaBrowser.Common.Udp
                     {
                         udp.JoinMulticastGroup((int)address.ScopeId, IPNetAddress.SSDPMulticastIPv6SiteLocal);
                     }
-
-                    // udp.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface, address.GetAddressBytes());
                 }
 
                 udp.IsMulticast = true;
@@ -395,16 +385,6 @@ namespace MediaBrowser.Common.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendUnicast(UdpProcess client, string packet, IPEndPoint remote, int sendCount = 1)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
-            if (remote == null)
-            {
-                throw new ArgumentNullException(nameof(remote));
-            }
-
             if (client.LocalEndPoint.AddressFamily != remote.AddressFamily)
             {
                 throw new ArgumentException($"Address families don't match. {client.LocalEndPoint} {remote}");
@@ -433,18 +413,13 @@ namespace MediaBrowser.Common.Udp
         /// <summary>
         /// Sends a packet via multicast over multiple sockets.
         /// </summary>
-        /// <param name="clients">The <see cref="List{UdpProcess}"/> to use.</param>
+        /// <param name="clients">The <see cref="Collection{UdpProcess}"/> to use.</param>
         /// <param name="port">UDP port number to use.</param>
         /// <param name="packet">Packet to send.</param>
         /// <param name="sendCount">Optional. The number of times to transmit <paramref name="packet" />. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task SendMulticasts(List<UdpProcess> clients, int port, string packet, int sendCount = 1)
+        public static async Task SendMulticasts(Collection<UdpProcess> clients, int port, string packet, int sendCount = 1)
         {
-            if (clients == null)
-            {
-                throw new ArgumentNullException(nameof(clients));
-            }
-
             foreach (var client in clients)
             {
                 await SendMulticast(client, port, packet, sendCount).ConfigureAwait(false);
@@ -461,11 +436,6 @@ namespace MediaBrowser.Common.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticast(UdpProcess client, int port, string packet, int sendCount = 1)
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
             if (!client.IsMulticast)
             {
                 throw new ArgumentException("Client is not a multicast client.");
@@ -514,7 +484,7 @@ namespace MediaBrowser.Common.Udp
         /// Disposes multiple of UDP clients.
         /// </summary>
         /// <param name="clients">A <see cref="List{UdpProcess}"/>.</param>
-        public static void DisposeClients(List<UdpProcess>? clients)
+        public static void DisposeClients(IEnumerable<UdpProcess>? clients)
         {
             if (clients == null)
             {

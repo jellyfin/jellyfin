@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _networkManager = networkManager;
             _streamHelper = streamHelper;
 
-            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions = JsonDefaults.Options;
 
             _config = (NetworkConfiguration)config.GetConfiguration("Network");
         }

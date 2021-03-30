@@ -86,7 +86,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _localization = localization;
             _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
-            _jsonSerializerOptions = JsonDefaults.GetOptions();
+            _jsonSerializerOptions = JsonDefaults.Options;
         }
 
         /// <inheritdoc />
@@ -370,7 +370,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
             var prefix = "file";
-            if (mediaSource.VideoType == VideoType.BluRay || mediaSource.VideoType == VideoType.Iso)
+            if (mediaSource.VideoType == VideoType.BluRay)
             {
                 prefix = "bluray";
             }

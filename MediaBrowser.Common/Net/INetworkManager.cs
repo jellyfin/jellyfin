@@ -35,14 +35,19 @@ namespace MediaBrowser.Common.Net
         Collection<IPObject> RemoteAddressFilter { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether iP6 is enabled.
+        /// Gets a value indicating whether iP6 is enabled.
         /// </summary>
-        bool IsIP6Enabled { get; set; }
+        bool IsIP6Enabled { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether iP4 is enabled.
+        /// Gets a value indicating whether iP4 is enabled.
         /// </summary>
-        bool IsIP4Enabled { get; set; }
+        bool IsIP4Enabled { get; }
+
+        /// <summary>
+        /// Gets a value indicating which IP classes are enabled.
+        /// </summary>
+        IpClassType IpClasses { get; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -229,5 +234,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
+
+        /// <summary>
+        /// Checks to see if <paramref name="remoteIp"/> has access.
+        /// </summary>
+        /// <param name="remoteIp">IP Address of client.</param>
+        /// <returns><b>True</b> if has access, otherwise <b>false</b>.</returns>
+        bool HasRemoteAccess(IPAddress remoteIp);
     }
 }

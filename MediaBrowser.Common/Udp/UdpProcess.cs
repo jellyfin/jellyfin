@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Common.Udp
 {
     /// <summary>
-    /// Provides logging capabilities.
+    /// Delegate used for logging.
     /// </summary>
     /// <param name="client">Client to whom the failure relates.</param>
     /// <param name="ex">Optional exception details.</param>
@@ -28,7 +28,7 @@ namespace MediaBrowser.Common.Udp
         /// <param name="logger">Logger instance to use.</param>
         /// <param name="failure">Failure function.</param>
         public UdpProcess(IPAddress localIpAddress, int portNumber, UdpProcessor? processor = null, ILogger? logger = null, FailureFunction? failure = null)
-            : base(localIpAddress?.AddressFamily ?? throw new NullReferenceException(nameof(localIpAddress)))
+            : base(localIpAddress.AddressFamily)
         {
             LocalEndPoint = new IPEndPoint(
                 UdpHelper.EnableMultiSocketBinding ? localIpAddress :

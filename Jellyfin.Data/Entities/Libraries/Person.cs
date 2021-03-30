@@ -32,16 +32,6 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Person"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Person()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>
@@ -56,7 +46,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 1024.
         /// </remarks>
-        [Required]
         [MaxLength(1024)]
         [StringLength(1024)]
         public string Name { get; set; }
@@ -69,7 +58,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(256)]
         [StringLength(256)]
-        public string SourceId { get; set; }
+        public string? SourceId { get; set; }
 
         /// <summary>
         /// Gets or sets the date added.

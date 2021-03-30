@@ -13,7 +13,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomItem"/> class.
         /// </summary>
-        public CustomItem()
+        /// <param name="library">The library.</param>
+        public CustomItem(Library library) : base(library)
         {
             CustomItemMetadata = new HashSet<CustomItemMetadata>();
             Releases = new HashSet<Release>();

@@ -53,6 +53,8 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private readonly Dictionary<IPNetAddress, string> _publishedServerUrls;
 
+        private IpClassType _ipClassType;
+
         /// <summary>
         /// Used to stop "event-racing conditions".
         /// </summary>
@@ -104,13 +106,12 @@ namespace Jellyfin.Networking.Manager
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
-
+            _ipClassType = IpClassType.IpBoth;
             _interfaceAddresses = new Collection<IPObject>();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new Dictionary<string, int>();
             _publishedServerUrls = new Dictionary<IPNetAddress, string>();
             _eventFireLock = new object();
-
             UpdateSettings(_configurationManager.GetNetworkConfiguration());
 
             NetworkChange.NetworkAddressChanged += OnNetworkAddressChanged;
@@ -131,14 +132,19 @@ namespace Jellyfin.Networking.Manager
         public static string MockNetworkSettings { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether IP6 is enabled.
+        /// Gets a value indicating whether IP6 is enabled.
         /// </summary>
-        public bool IsIP6Enabled { get; set; }
+        public bool IsIP6Enabled => _ipClassType != IpClassType.Ip4Only;
 
         /// <summary>
-        /// Gets or sets a value indicating whether IP4 is enabled.
+        /// Gets a value indicating whether IP4 is enabled.
         /// </summary>
-        public bool IsIP4Enabled { get; set; }
+        public bool IsIP4Enabled => _ipClassType != IpClassType.Ip6Only;
+
+        /// <summary>
+        /// Gets a value indicating which IP classes are enabled.
+        /// </summary>
+        public IpClassType IpClasses => _ipClassType;
 
         /// <inheritdoc/>
         public Collection<IPObject> RemoteAddressFilter { get; private set; }
@@ -576,6 +582,29 @@ namespace Jellyfin.Networking.Manager
             return false;
         }
 
+        /// <inheritdoc/>
+        public bool HasRemoteAccess(IPAddress remoteIp)
+        {
+            var config = _configurationManager.GetNetworkConfiguration();
+            if (config.EnableRemoteAccess)
+            {
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
+                {
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    return RemoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
+                }
+            }
+            else if (!IsInLocalNetwork(remoteIp))
+            {
+                // Remote not enabled. So everyone should be LAN.
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>
@@ -584,13 +613,20 @@ namespace Jellyfin.Networking.Manager
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
-            IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
-
-            if (!IsIP6Enabled && !IsIP4Enabled)
+            if (Socket.OSSupportsIPv4 && config.EnableIPV6)
             {
-                _logger.LogError("IPv4 and IPv6 cannot both be disabled.");
-                IsIP4Enabled = true;
+                if (Socket.OSSupportsIPv6 && config.EnableIPV4)
+                {
+                    _ipClassType = IpClassType.IpBoth;
+                }
+                else
+                {
+                    _ipClassType = IpClassType.Ip6Only;
+                }
+            }
+            else
+            {
+                _ipClassType = IpClassType.Ip4Only;
             }
 
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;

@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.Data
             _imageProcessor = imageProcessor;
 
             _typeMapper = new TypeMapper();
-            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions = JsonDefaults.Options;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }

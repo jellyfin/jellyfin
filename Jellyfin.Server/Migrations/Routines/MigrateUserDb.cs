@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities;
@@ -76,7 +74,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                 foreach (var entry in queryResult)
                 {
-                    UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.GetOptions());
+                    UserMockup? mockup = JsonSerializer.Deserialize<UserMockup>(entry[2].ToBlob(), JsonDefaults.Options);
                     if (mockup == null)
                     {
                         continue;
@@ -104,7 +102,7 @@ namespace Jellyfin.Server.Migrations.Routines
                         _ => policy.LoginAttemptsBeforeLockout
                     };
 
-                    var user = new User(mockup.Name, policy.AuthenticationProviderId, policy.PasswordResetProviderId)
+                    var user = new User(mockup.Name, policy.AuthenticationProviderId!, policy.PasswordResetProviderId!)
                     {
                         Id = entry[1].ReadGuidFromBlob(),
                         InternalId = entry[0].ToInt64(),

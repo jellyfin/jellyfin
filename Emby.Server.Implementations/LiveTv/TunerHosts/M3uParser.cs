@@ -133,6 +133,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 channel.ImageUrl = value;
             }
 
+            if (attributes.TryGetValue("group-title", out string groupTitle))
+            {
+                channel.ChannelGroup = groupTitle;
+            }
+
             channel.Name = GetChannelName(extInf, attributes);
             channel.Number = GetChannelNumber(extInf, attributes, mediaUrl);
 

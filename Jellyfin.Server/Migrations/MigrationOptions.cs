@@ -16,9 +16,12 @@ namespace Jellyfin.Server.Migrations
             Applied = new List<(Guid Id, string Name)>();
         }
 
+// .Net xml serializer can't handle interfaces
+#pragma warning disable CA1002 // Do not expose generic lists
         /// <summary>
         /// Gets the list of applied migration routine names.
         /// </summary>
         public List<(Guid Id, string Name)> Applied { get; }
+#pragma warning restore CA1002
     }
 }

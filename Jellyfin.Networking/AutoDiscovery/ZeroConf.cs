@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -27,7 +28,7 @@ namespace Jellyfin.Networking.AutoDiscovery
         private readonly IConfigurationManager _configuration;
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
-        private List<UdpProcess>? _udpProcess;
+        private Collection<UdpProcess>? _udpProcess;
         private bool _disposedValue;
 
         /// <summary>
@@ -101,8 +102,7 @@ namespace Jellyfin.Networking.AutoDiscovery
             _udpProcess = UdpHelper.CreateMulticastClients(
                 PortNumber,
                 _networkManager.GetAllBindInterfaces(true),
-                _networkManager.IsIP4Enabled,
-                _networkManager.IsIP6Enabled,
+                _networkManager.IpClasses,
                 ProcessMessage,
                 _logger,
                 null,

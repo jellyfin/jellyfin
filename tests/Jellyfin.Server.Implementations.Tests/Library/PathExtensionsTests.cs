@@ -40,12 +40,16 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         }
 
         [Theory]
+        [InlineData(null, null, null)]
+        [InlineData(null, "/my/path", "/another/path")]
+        [InlineData("/my/path", null, "/another/path")]
+        [InlineData("/my/path", "/another/path", null)]
         [InlineData("", "", "")]
         [InlineData("/my/path", "", "")]
         [InlineData("", "/another/path", "")]
         [InlineData("", "", "/new/subpath")]
         [InlineData("/home/jeff/music/jeff's band/consistently inconsistent.mp3", "/home/jeff/music/not jeff's band", "/home/not jeff")]
-        public void TryReplaceSubPath_InvalidInput_ReturnsFalseAndNull(string path, string subPath, string newSubPath)
+        public void TryReplaceSubPath_InvalidInput_ReturnsFalseAndNull(string? path, string? subPath, string? newSubPath)
         {
             Assert.False(PathExtensions.TryReplaceSubPath(path, subPath, newSubPath, out var result));
             Assert.Null(result);

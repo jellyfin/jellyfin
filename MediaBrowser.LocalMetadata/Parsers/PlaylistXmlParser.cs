@@ -23,9 +23,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
         }
 
         /// <inheritdoc />
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> result)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> itemResult)
         {
-            var item = result.Item;
+            var item = itemResult.Item;
 
             switch (reader.Name)
             {
@@ -53,7 +53,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, result);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }
