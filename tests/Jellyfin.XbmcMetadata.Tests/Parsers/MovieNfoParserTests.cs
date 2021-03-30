@@ -204,6 +204,21 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         }
 
         [Fact]
+        public void Parse_RadarrUrlFile_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Radarr.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal("583689", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
+            Assert.Equal("tt4154796", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
+        }
+
+        [Fact]
         public void Fetch_WithNullItem_ThrowsArgumentException()
         {
             var result = new MetadataResult<Video>();
