@@ -323,7 +323,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string sessionId,
             [FromBody, Required] MessageCommand command)
         {
-            if (string.IsNullOrWhiteSpace(command.Header)) 
+            if (string.IsNullOrWhiteSpace(command.Header))
             {
                 command.Header =  "Message from Server";
             }
