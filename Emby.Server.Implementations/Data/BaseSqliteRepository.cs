@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Data
             WriteConnection = SQLiteDatabaseConnectionBuilder.Create(
                 DbFilePath,
                 connectionFlags: DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite)
-                .WithScalarFunc("REGEXP", (ISQLiteValue value, ISQLiteValue pattern) => Regex.IsMatch(Convert.ToString(value), Convert.ToString(pattern)).ToSQLiteValue())
+                .WithScalarFunc("REGEXP", (ISQLiteValue pattern, ISQLiteValue value) => Regex.IsMatch(Convert.ToString(value), Convert.ToString(pattern)).ToSQLiteValue())
                 .Build();
 
             if (CacheSize.HasValue)

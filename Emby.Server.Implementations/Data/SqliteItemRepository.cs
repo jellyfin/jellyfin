@@ -3859,8 +3859,16 @@ namespace Emby.Server.Implementations.Data
 
             if (!string.IsNullOrWhiteSpace(query.NameStartsWith))
             {
-                whereClauses.Add("SortName like @NameStartsWith");
-                statement?.TryBind("@NameStartsWith", query.NameStartsWith + "%");
+                if (query.NameStartsWith == "#")
+                {
+                    whereClauses.Add("SortName REGEXP @NameStartsWith");
+                    statement?.TryBind("@NameStartsWith", "^[^A-Za-z]");
+                }
+                else
+                {
+                    whereClauses.Add("SortName like @NameStartsWith");
+                    statement?.TryBind("@NameStartsWith", query.NameStartsWith + "%");
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(query.NameStartsWithOrGreater))
