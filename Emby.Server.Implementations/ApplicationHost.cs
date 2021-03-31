@@ -12,7 +12,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -55,7 +54,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -585,7 +583,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton(NetManager);
             ServiceCollection.AddSingleton<ZeroConf>();
-            ServiceCollection.AddSingleton<IDlnaManager, DlnaManager>();
 
             ServiceCollection.AddSingleton<ITaskManager, TaskManager>();
 
@@ -656,8 +653,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            ServiceCollection.AddSingleton<IDlnaManager, DlnaManager>();
-
             ServiceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             ServiceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
@@ -703,10 +698,6 @@ namespace Emby.Server.Implementations
         {
             var localizationManager = (LocalizationManager)Resolve<ILocalizationManager>();
             await localizationManager.LoadAll().ConfigureAwait(false);
-
-            // Load transcoding profiles.
-            var profileManager = (DlnaManager)Resolve<IDlnaManager>();
-            await profileManager.LoadAllProfiles().ConfigureAwait(false);
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
@@ -1086,9 +1077,6 @@ namespace Emby.Server.Implementations
 
             // Network
             yield return typeof(NetworkManager).Assembly;
-
-            // Dlna profile manager
-            yield return typeof(DlnaManager).Assembly;
 
             foreach (var i in GetAssembliesWithPartsInternal())
             {

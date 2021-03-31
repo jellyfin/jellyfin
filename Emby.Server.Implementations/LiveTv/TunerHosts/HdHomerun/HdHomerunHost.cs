@@ -14,11 +14,11 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -264,17 +264,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             using (var manager = new HdHomerunManager())
             {
-                IPObject ipInfo;
-                if (_config.HDHomeRunIP6)
-                {
-                    ipInfo = IPHost.Parse(uri.Host, AddressFamily.InterNetworkV6);
-                }
-                else
-                {
-                    // Legacy HdHomeruns are IPv4 only.
-                    // IPHost.Parse will remove any IPv6 responses from the DNS lookup.
-                    ipInfo = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
-                }
+                var ipInfo = IPHost.Parse(uri.Host, _config.HDHomeRunIP6 ? IpClassType.Ip6Only : IpClassType.Ip4Only);
 
                 for (int i = 0; i < model.TunerCount; ++i)
                 {
@@ -690,7 +680,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 var configuration = Config.GetNetworkConfiguration();
                 var family = _config.HDHomeRunIP6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
                 using var udpSocket = UdpHelper.CreateUdpBroadcastSocket(
-                    UdpHelper.GetPort(configuration.HDHomerunPortRange ?? configuration.UDPPortRange),
+                    UdpHelper.GetPort(configuration.HDHomerunPortRange),
                     family,
                     Logger);
 

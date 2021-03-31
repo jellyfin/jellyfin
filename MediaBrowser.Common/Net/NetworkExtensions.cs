@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -10,26 +11,15 @@ namespace MediaBrowser.Common.Net
     public static class NetworkExtensions
     {
         /// <summary>
-        /// Add an address to the collection.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="ip">Item to add.</param>
-        public static void AddItem(this Collection<IPObject> source, IPAddress ip)
-        {
-            if (!source.ContainsAddress(ip))
-            {
-                source.Add(new IPNetAddress(ip, 32));
-            }
-        }
-
-        /// <summary>
         /// Adds a network to the collection.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPNetAddress}"/>.</param>
         /// <param name="item">Item to add.</param>
-        public static void AddItem(this Collection<IPObject> source, IPObject item)
+        /// <param name="itemsAreNetworks">If <c>true</c> the values are treated as subnets.
+        /// If <b>false</b> items are addresses.</param>
+        public static void AddItem(this Collection<IPNetAddress> source, IPNetAddress item, bool itemsAreNetworks)
         {
-            if (!source.ContainsAddress(item))
+            if (!itemsAreNetworks || !source.ContainsAddress(item))
             {
                 source.Add(item);
             }
@@ -38,9 +28,9 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Converts this object to a string.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <param name="source">The <see cref="IEnumerable{IPNetAddress}"/>.</param>
         /// <returns>Returns a string representation of this object.</returns>
-        public static string AsString(this Collection<IPObject> source)
+        public static string AsString(this IEnumerable<IPNetAddress> source)
         {
             return $"[{string.Join(',', source)}]";
         }
@@ -49,16 +39,11 @@ namespace MediaBrowser.Common.Net
         /// Returns true if the collection contains an item with the ip address,
         /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <param name="source">The <see cref="IEnumerable{IPNetAddress}"/>.</param>
         /// <param name="item">The item to look for.</param>
         /// <returns>True if the collection contains the item.</returns>
-        public static bool ContainsAddress(this Collection<IPObject> source, IPAddress item)
+        public static bool ContainsAddress(this IEnumerable<IPNetAddress> source, IPAddress item)
         {
-            if (source.Count == 0)
-            {
-                return false;
-            }
-
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -84,16 +69,11 @@ namespace MediaBrowser.Common.Net
         /// Returns true if the collection contains an item with the ip address,
         /// or the ip address falls within any of the collection's network ranges.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <param name="source">The <see cref="IEnumerable{IPNetAddress}"/>.</param>
         /// <param name="item">The item to look for.</param>
         /// <returns>True if the collection contains the item.</returns>
-        public static bool ContainsAddress(this Collection<IPObject> source, IPObject item)
+        public static bool ContainsAddress(this IEnumerable<IPNetAddress> source, IPNetAddress item)
         {
-            if (source.Count == 0)
-            {
-                return false;
-            }
-
             if (item == null)
             {
                 throw new ArgumentNullException(nameof(item));
@@ -111,63 +91,22 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Compares two Collection{IPObject} objects. The order is ignored.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <param name="dest">Item to compare to.</param>
-        /// <returns>True if both are equal.</returns>
-        public static bool Compare(this Collection<IPObject> source, Collection<IPObject> dest)
-        {
-            if (dest == null || source.Count != dest.Count)
-            {
-                return false;
-            }
-
-            foreach (var sourceItem in source)
-            {
-                bool found = false;
-                foreach (var destItem in dest)
-                {
-                    if (sourceItem.Equals(destItem))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Returns a collection containing the subnets of this collection given.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
-        /// <returns>Collection{IPObject} object containing the subnets.</returns>
-        public static Collection<IPObject> AsNetworks(this Collection<IPObject> source)
+        /// <param name="source">The <see cref="IEnumerable{IPNetAddress}"/>.</param>
+        /// <returns>Collection{IPNetAddress} object containing the subnets.</returns>
+        public static Collection<IPNetAddress> AsNetworkAddresses(this IEnumerable<IPNetAddress> source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            Collection<IPObject> res = new Collection<IPObject>();
+            var result = new Collection<IPNetAddress>();
 
-            foreach (IPObject i in source)
+            foreach (IPNetAddress i in source)
             {
-                if (i is IPNetAddress nw)
-                {
-                    // Add the subnet calculated from the interface address/mask.
-                    var na = nw.NetworkAddress;
-                    na.Tag = i.Tag;
-                    res.AddItem(na);
-                }
-                else if (i is IPHost ipHost)
+                if (i is IPHost ipHost)
                 {
                     // Flatten out IPHost and add all its ip addresses.
                     foreach (var addr in ipHost.GetAddresses())
@@ -177,33 +116,38 @@ namespace MediaBrowser.Common.Net
                             Tag = i.Tag
                         };
 
-                        res.AddItem(host);
+                        result.AddItem(host, true);
                     }
+                }
+                else
+                {
+                    // Add the subnet calculated from the interface address/mask.
+                    result.AddItem(i.Network, true);
                 }
             }
 
-            return res;
+            return result;
         }
 
         /// <summary>
         /// Excludes all the items from this list that are found in excludeList.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPNetAddress}"/>.</param>
         /// <param name="excludeList">Items to exclude.</param>
+        /// <param name="isNetwork">Collection is a network collection.</param>
         /// <returns>A new collection, with the items excluded.</returns>
-        public static Collection<IPObject> Exclude(this Collection<IPObject> source, Collection<IPObject> excludeList)
+        public static IEnumerable<IPNetAddress> Exclude(this IEnumerable<IPNetAddress> source, IEnumerable<IPNetAddress> excludeList, bool isNetwork)
         {
-            if (source.Count == 0 || excludeList == null)
+            if (excludeList == null)
             {
-                return new Collection<IPObject>(source);
+                return source;
             }
 
-            Collection<IPObject> results = new Collection<IPObject>();
+            var results = new Collection<IPNetAddress>();
 
-            bool found;
             foreach (var outer in source)
             {
-                found = false;
+                bool found = false;
 
                 foreach (var inner in excludeList)
                 {
@@ -216,7 +160,7 @@ namespace MediaBrowser.Common.Net
 
                 if (!found)
                 {
-                    results.AddItem(outer);
+                    results.AddItem(outer, isNetwork);
                 }
             }
 
@@ -226,14 +170,14 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Returns all items that co-exist in this object and target.
         /// </summary>
-        /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
+        /// <param name="source">The <see cref="Collection{IPNetAddress}"/>.</param>
         /// <param name="target">Collection to compare with.</param>
         /// <returns>A collection containing all the matches.</returns>
-        public static Collection<IPObject> Union(this Collection<IPObject> source, Collection<IPObject> target)
+        public static Collection<IPNetAddress> ThatAreContainedInNetworks(this Collection<IPNetAddress> source, Collection<IPNetAddress> target)
         {
             if (source.Count == 0)
             {
-                return new Collection<IPObject>();
+                return new Collection<IPNetAddress>();
             }
 
             if (target == null)
@@ -241,17 +185,17 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(target));
             }
 
-            Collection<IPObject> nc = new Collection<IPObject>();
+            var results = new Collection<IPNetAddress>();
 
-            foreach (IPObject i in source)
+            foreach (IPNetAddress i in source)
             {
                 if (target.ContainsAddress(i))
                 {
-                    nc.AddItem(i);
+                    results.AddItem(i, true);
                 }
             }
 
-            return nc;
+            return results;
         }
     }
 }

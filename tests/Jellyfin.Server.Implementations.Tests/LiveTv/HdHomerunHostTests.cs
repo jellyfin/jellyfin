@@ -7,9 +7,12 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.LiveTv;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -37,23 +40,37 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                         });
                     });
 
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+                LocalNetworkSubnets = new string[] { "0.0.0.0/0" }
+            };
+
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))
                 .Returns(new HttpClient(messageHandler.Object));
-
             _fixture = new Fixture();
             _fixture.Customize(new AutoMoqCustomization
             {
                 ConfigureMembers = true
             }).Inject(http);
-
-            var configManager = _fixture.Freeze<Mock<IServerConfigurationManager>>();
-            configManager.CallBase = true;
-
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new NetworkConfiguration());
-
+            _fixture.Inject<IServerConfigurationManager>(GetMockConfig(conf));
+            _fixture.Inject<INetworkManager>(nm);
             _hdHomerunHost = _fixture.Create<HdHomerunHost>();
+        }
+
+        internal static IServerConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IServerConfigurationManager>
+            {
+                CallBase = true
+            };
+
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IServerConfigurationManager)configManager.Object;
         }
 
         [Fact]

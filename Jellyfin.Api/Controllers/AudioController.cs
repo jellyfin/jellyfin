@@ -15,7 +15,6 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The audio controller.
     /// </summary>
-    // TODO: In order to authenticate this in the future, Dlna playback will require updating
     public class AudioController : BaseJellyfinApiController
     {
         private readonly AudioHelper _audioHelper;

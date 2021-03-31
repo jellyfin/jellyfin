@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Net
@@ -20,21 +19,6 @@ namespace MediaBrowser.Common.Net
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets the published server urls list.
-        /// </summary>
-        Dictionary<IPNetAddress, string> PublishedServerUrls { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
-        /// </summary>
-        bool TrustAllIP6Interfaces { get; }
-
-        /// <summary>
-        /// Gets the remote address filter.
-        /// </summary>
-        Collection<IPObject> RemoteAddressFilter { get; }
-
-        /// <summary>
         /// Gets a value indicating whether iP6 is enabled.
         /// </summary>
         bool IsIP6Enabled { get; }
@@ -45,24 +29,18 @@ namespace MediaBrowser.Common.Net
         bool IsIP4Enabled { get; }
 
         /// <summary>
-        /// Gets a value indicating which IP classes are enabled.
-        /// </summary>
-        IpClassType IpClasses { get; }
-
-        /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
-        /// <returns>A Collection{IPObject} object containing all the interfaces to bind.
+        /// <returns>A Collection{IPNetAddress} object containing all the interfaces to bind.
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
-        /// <param name="individualInterfaces">When false, return <see cref="IPAddress.Any"/> or <see cref="IPAddress.IPv6Any"/> for all interfaces.</param>
-        Collection<IPObject> GetAllBindInterfaces(bool individualInterfaces = false);
+        IPNetAddress[] GetAllBindInterfaces();
 
         /// <summary>
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
-        /// <returns>Collection{IPObject}.</returns>
-        Collection<IPObject> GetLoopbacks();
+        /// <returns>Collection{IPNetAddress}.</returns>
+        IPNetAddress[] GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -93,12 +71,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(IPObject source, out int? port);
+        string GetBindInterface(IPNetAddress source, out int? port);
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindInterface(IPObject, out int?)"/>.
+        /// (See <see cref="GetBindInterface(IPNetAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
@@ -108,7 +86,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindInterface(IPObject, out int?)"/>.
+        /// (See <see cref="GetBindInterface(IPNetAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">IP address of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
@@ -118,7 +96,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
         /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindInterface(IPObject, out int?)"/>.
+        /// (See <see cref="GetBindInterface(IPNetAddress, out int?)"/>.
         /// </summary>
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
@@ -126,39 +104,10 @@ namespace MediaBrowser.Common.Net
         string GetBindInterface(string source, out int? port);
 
         /// <summary>
-        /// Checks to see if the ip address is specifically excluded in LocalNetworkAddresses.
-        /// </summary>
-        /// <param name="address">IP address to check.</param>
-        /// <returns>True if it is.</returns>
-        bool IsExcludedInterface(IPAddress address);
-
-        /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.
         /// </summary>
         /// <returns>List of MAC addresses.</returns>
         IReadOnlyCollection<PhysicalAddress> GetMacAddresses();
-
-        /// <summary>
-        /// Checks to see if the IP Address provided matches an interface that has a gateway.
-        /// </summary>
-        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
-        /// <returns>Result of the check.</returns>
-        bool IsGatewayInterface(IPObject? addressObj);
-
-        /// <summary>
-        /// Checks to see if the IP Address provided matches an interface that has a gateway.
-        /// </summary>
-        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPObject.</param>
-        /// <returns>Result of the check.</returns>
-        bool IsGatewayInterface(IPAddress? addressObj);
-
-        /// <summary>
-        /// Returns true if the address is a private address.
-        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
-        /// </summary>
-        /// <param name="address">Address to check.</param>
-        /// <returns>True or False.</returns>
-        bool IsPrivateAddressRange(IPObject address);
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
@@ -174,7 +123,7 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="address">IP to check.</param>
         /// <returns>True if endpoint is within the LAN range.</returns>
-        bool IsInLocalNetwork(IPObject address);
+        bool IsInLocalNetwork(IPNetAddress address);
 
         /// <summary>
         /// Returns true if the address is part of the user defined LAN.
@@ -191,35 +140,22 @@ namespace MediaBrowser.Common.Net
         /// <param name="token">Token to parse.</param>
         /// <param name="result">Resultant object's ip addresses, if successful.</param>
         /// <returns>Success of the operation.</returns>
-        bool TryParseInterface(string token, out Collection<IPObject>? result);
+        bool TryParseInterface(string token, out Collection<IPNetAddress>? result);
 
         /// <summary>
-        /// Parses an array of strings into a Collection{IPObject}.
+        /// Parses an array of strings into a Collection{IPNetAddress}.
         /// </summary>
         /// <param name="values">Values to parse.</param>
         /// <param name="negated">When true, only include values beginning with !. When false, ignore ! values.</param>
+        /// <param name="combineNetworks">When true, networks are merged where possible.</param>
         /// <returns>IPCollection object containing the value strings.</returns>
-        Collection<IPObject> CreateIPCollection(string[] values, bool negated = false);
+        Collection<IPNetAddress> CreateIPCollection(string[] values, bool negated, bool combineNetworks);
 
         /// <summary>
         /// Returns all the internal Bind interface addresses.
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
-        Collection<IPObject> GetInternalBindAddresses();
-
-        /// <summary>
-        /// Checks to see if an IP address is still a valid interface address.
-        /// </summary>
-        /// <param name="address">IP address to check.</param>
-        /// <returns>True if it is.</returns>
-        bool IsValidInterfaceAddress(IPAddress address);
-
-        /// <summary>
-        /// Returns true if the IP address is in the excluded list.
-        /// </summary>
-        /// <param name="ip">IP to check.</param>
-        /// <returns>True if excluded.</returns>
-        bool IsExcluded(IPAddress ip);
+        IPNetAddress[] GetInternalBindAddresses();
 
         /// <summary>
         /// Returns true if the IP address is in the excluded list.
@@ -227,13 +163,6 @@ namespace MediaBrowser.Common.Net
         /// <param name="ip">IP to check.</param>
         /// <returns>True if excluded.</returns>
         bool IsExcluded(EndPoint ip);
-
-        /// <summary>
-        /// Gets the filtered LAN ip addresses.
-        /// </summary>
-        /// <param name="filter">Optional filter for the list.</param>
-        /// <returns>Returns a filtered list of LAN addresses.</returns>
-        Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
 
         /// <summary>
         /// Checks to see if <paramref name="remoteIp"/> has access.

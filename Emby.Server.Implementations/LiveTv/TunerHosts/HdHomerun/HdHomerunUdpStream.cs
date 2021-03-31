@@ -10,9 +10,9 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -62,14 +62,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            var localPort = UdpHelper.GetPort(_config.UDPPortRange);
+            var localPort = UdpHelper.GetPort(_config.HDHomerunPortRange);
             Logger.LogDebug("Using udp port {Port}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 
-            var remote = IPHost.Parse(uri.Host, AddressFamily.InterNetwork);
+            var remote = IPHost.Parse(uri.Host, _config.HDHomeRunIP6 ? IpClassType.Ip6Only : IpClassType.Ip4Only);
 
             Logger.LogDebug("Parsed host from {Host} as {Remote}", uri.Host, remote);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
@@ -521,7 +521,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="mediaSource">Media source.</param>
         /// <param name="profile">Device profile.</param>
         /// <param name="type">Dlna profile type.</param>
-        public void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile profile, DlnaProfileType type)
+        public void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile? profile, DlnaProfileType type)
         {
             mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, profile, type);
         }

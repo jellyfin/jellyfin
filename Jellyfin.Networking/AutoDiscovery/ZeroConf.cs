@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Udp;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.ApiClient;
 using Microsoft.Extensions.Logging;
@@ -28,7 +27,7 @@ namespace Jellyfin.Networking.AutoDiscovery
         private readonly IConfigurationManager _configuration;
         private readonly INetworkManager _networkManager;
         private readonly ILogger _logger;
-        private Collection<UdpProcess>? _udpProcess;
+        private UdpProcess[]? _udpProcess;
         private bool _disposedValue;
 
         /// <summary>
@@ -101,14 +100,13 @@ namespace Jellyfin.Networking.AutoDiscovery
 
             _udpProcess = UdpHelper.CreateMulticastClients(
                 PortNumber,
-                _networkManager.GetAllBindInterfaces(true),
-                _networkManager.IpClasses,
+                _networkManager.GetAllBindInterfaces(),
                 ProcessMessage,
                 _logger,
                 null,
                 config.AutoDiscoveryTracing);
 
-            if (_udpProcess.Count == 0)
+            if (_udpProcess.Length == 0)
             {
                 _logger.LogWarning("Unable to start listener on UDP port {PortNumber}", PortNumber);
             }

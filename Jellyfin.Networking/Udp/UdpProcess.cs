@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
-namespace MediaBrowser.Common.Udp
+namespace Jellyfin.Networking.Udp
 {
     /// <summary>
     /// Delegate used for logging.
@@ -60,19 +60,19 @@ namespace MediaBrowser.Common.Udp
         public IPEndPoint LocalEndPoint { get; }
 
         /// <summary>
-        /// Gets or sets the optional processing function. Called when data is received on this port.
+        /// Gets the optional processing function. Called when data is received on this port.
         /// </summary>
-        public UdpProcessor? Processor { get; set; }
+        public UdpProcessor? Processor { get; }
 
         /// <summary>
-        /// Gets or sets the optional logger instance.
+        /// Gets the optional logger instance.
         /// </summary>
-        public ILogger? Logger { get; set; }
+        public ILogger? Logger { get; }
 
         /// <summary>
-        /// Gets or sets the optional failure function. Called when an error occurs in the receiver.
+        /// Gets the optional failure function. Called when an error occurs in the receiver.
         /// </summary>
-        public FailureFunction? OnFailure { get; set; }
+        public FailureFunction? OnFailure { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether traffic through this port should be logged.
@@ -96,7 +96,7 @@ namespace MediaBrowser.Common.Udp
         /// <returns>Uninitialised UdpProcess.</returns>
         public static UdpProcess CreateIsolated(IPAddress localIpAddress)
         {
-            return new UdpProcess(localIpAddress);
+            return new (localIpAddress);
         }
 
         /// <summary>
@@ -117,9 +117,9 @@ namespace MediaBrowser.Common.Udp
         public void Track(string msg, IPEndPoint localIpAddress, IPEndPoint remote, params object[] parameters)
         {
             bool log = TracingFilter == null
-                       || TracingFilter.Equals(localIpAddress)
-                       || ((remote != null) && TracingFilter.Equals(remote.Address))
-                       || (localIpAddress != null && (localIpAddress.Equals(IPAddress.Any) || localIpAddress.Equals(IPAddress.IPv6Any)));
+                       || TracingFilter.Equals(localIpAddress.Address)
+                       || TracingFilter.Equals(remote.Address)
+                       || (IPAddress.Any.Equals(localIpAddress.Address) || IPAddress.IPv6Any.Equals(localIpAddress.Address));
 
             if (log)
             {

@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace MediaBrowser.Common.Udp
+namespace Jellyfin.Networking.Udp
 {
     /// <summary>
     /// Defines the <see cref="StringExtensions" />.

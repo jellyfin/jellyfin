@@ -224,7 +224,7 @@ namespace Jellyfin.Api.Controllers
             {
                 foreach (var mediaSource in info.MediaSources)
                 {
-                    _mediaInfoHelper.NormalizeMediaSourceContainer(mediaSource, profile!, DlnaProfileType.Video);
+                    _mediaInfoHelper.NormalizeMediaSourceContainer(mediaSource, profile, DlnaProfileType.Video);
                 }
             }
 

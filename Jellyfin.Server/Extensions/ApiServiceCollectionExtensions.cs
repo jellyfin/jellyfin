@@ -15,6 +15,7 @@ using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
+using Jellyfin.Api.Auth.LocalNetworkAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Constants;
@@ -62,6 +63,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeOrIgnoreParentalControlSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, LocalNetworkAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
             return serviceCollection.AddAuthorizationCore(options =>
@@ -156,6 +158,13 @@ namespace Jellyfin.Server.Extensions
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
                         policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
+                    });
+                options.AddPolicy(
+                    Policies.LocalNetworkAccessPolicy,
+                    policy =>
+                    {
+                        policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
+                        policy.AddRequirements(new LocalNetworkAccessRequirement());
                     });
             });
         }
@@ -260,7 +269,7 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
-                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString() ?? "0.0.0.1";
+                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
                 c.SwaggerDoc("api-docs", new OpenApiInfo
                 {
                     Title = "Jellyfin API",
@@ -319,7 +328,6 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
-                c.DocumentFilter<WebsocketModelFilter>();
             });
         }
 
@@ -331,17 +339,18 @@ namespace Jellyfin.Server.Extensions
         /// <param name="options">The <see cref="ForwardedHeadersOptions"/> instance.</param>
         internal static void AddProxyAddresses(NetworkConfiguration config, string[] allowedProxies, ForwardedHeadersOptions options)
         {
+            var classType = config.ClassType();
             for (var i = 0; i < allowedProxies.Length; i++)
             {
-                if (IPNetAddress.TryParse(allowedProxies[i], out var addr))
+                if (IPNetAddress.TryParse(allowedProxies[i], out var addr, classType))
                 {
                     AddIpAddress(config, options, addr.Address, addr.PrefixLength);
                 }
-                else if (IPHost.TryParse(allowedProxies[i], out var host))
+                else if (IPHost.TryParse(allowedProxies[i], out var host, classType))
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }
                 }
             }
@@ -349,11 +358,6 @@ namespace Jellyfin.Server.Extensions
 
         private static void AddIpAddress(NetworkConfiguration config, ForwardedHeadersOptions options, IPAddress addr, int prefixLength)
         {
-            if ((!config.EnableIPV4 && addr.AddressFamily == AddressFamily.InterNetwork) || (!config.EnableIPV6 && addr.AddressFamily == AddressFamily.InterNetworkV6))
-            {
-                return;
-            }
-
             // In order for dual-mode sockets to be used, IP6 has to be enabled in JF and an interface has to have an IP6 address.
             if (addr.AddressFamily == AddressFamily.InterNetwork && config.EnableIPV6)
             {
