@@ -325,10 +325,10 @@ namespace Jellyfin.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(command.Header))
             {
-                command.Header =  "Message from Server";
+                command.Header = "Message from Server";
             }
 
-            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, nullCorrectedCommand, CancellationToken.None);
+            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, command, CancellationToken.None);
 
             return NoContent();
         }
