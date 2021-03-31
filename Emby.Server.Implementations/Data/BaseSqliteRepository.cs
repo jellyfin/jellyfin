@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -104,10 +105,11 @@ namespace Emby.Server.Implementations.Data
                 return new ManagedConnection(WriteConnection, WriteLock);
             }
 
-            WriteConnection = SQLite3.Open(
+            WriteConnection = SQLiteDatabaseConnectionBuilder.Create(
                 DbFilePath,
-                DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite,
-                null);
+                connectionFlags: DefaultConnectionFlags | ConnectionFlags.Create | ConnectionFlags.ReadWrite)
+                .WithScalarFunc("REGEXP", (ISQLiteValue value, ISQLiteValue pattern) => Regex.IsMatch(Convert.ToString(value), Convert.ToString(pattern)).ToSQLiteValue())
+                .Build();
 
             if (CacheSize.HasValue)
             {
