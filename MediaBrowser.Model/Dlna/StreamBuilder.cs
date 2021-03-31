@@ -1017,6 +1017,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             DeviceProfile profile = options.Profile;
+            string container = mediaSource.Container;
 
             // See if it can be direct played
             DirectPlayProfile directPlay = null;
@@ -1032,15 +1033,15 @@ namespace MediaBrowser.Model.Dlna
             if (directPlay == null)
             {
                 _logger.LogInformation(
-                    "Profile: {0}, No video direct play profiles found for {1} with codec {2}",
-                    profile?.Name ?? "Unknown Profile",
-                    mediaSource?.Path ?? "Unknown path",
-                    videoStream?.Codec ?? "Unknown codec");
+                    "Container: {0}, Video: {1}, Audio: {2} cannot be direct played by profile: {3} for path: {4}",
+                    container,
+                    videoStream?.Codec ?? "no video",
+                    audioStream?.Codec ?? "no audio",
+                    profile.Name ?? "unknown profile",
+                    mediaSource.Path ?? "unknown path");
 
                 return (null, GetTranscodeReasonsFromDirectPlayProfile(mediaSource, videoStream, audioStream, profile.DirectPlayProfiles));
             }
-
-            string container = mediaSource.Container;
 
             var conditions = new List<ProfileCondition>();
             foreach (var i in profile.ContainerProfiles)
