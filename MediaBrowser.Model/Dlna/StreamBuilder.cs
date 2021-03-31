@@ -1023,7 +1023,7 @@ namespace MediaBrowser.Model.Dlna
             DirectPlayProfile directPlay = null;
             foreach (var p in profile.DirectPlayProfiles)
             {
-                if (p.Type == DlnaProfileType.Video && IsVideoDirectPlaySupported(p, mediaSource, videoStream, audioStream))
+                if (p.Type == DlnaProfileType.Video && IsVideoDirectPlaySupported(p, container, videoStream, audioStream))
                 {
                     directPlay = p;
                     break;
@@ -1897,10 +1897,10 @@ namespace MediaBrowser.Model.Dlna
             return true;
         }
 
-        private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream)
+        private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, string container, MediaStream videoStream, MediaStream audioStream)
         {
             // Check container type
-            if (!profile.SupportsContainer(item.Container))
+            if (!profile.SupportsContainer(container))
             {
                 return false;
             }
