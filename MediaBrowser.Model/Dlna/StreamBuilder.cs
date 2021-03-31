@@ -1033,7 +1033,7 @@ namespace MediaBrowser.Model.Dlna
             if (directPlay == null)
             {
                 _logger.LogInformation(
-                    "Container: {0}, Video: {1}, Audio: {2} cannot be direct played by profile: {3} for path: {4}",
+                    "Container: {Container}, Video: {Video}, Audio: {Audio} cannot be direct played by profile: {Profile} for path: {Path}",
                     container,
                     videoStream?.Codec ?? "no video",
                     audioStream?.Codec ?? "no audio",
