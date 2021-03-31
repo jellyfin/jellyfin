@@ -6,11 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -66,8 +67,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected IProviderManager ProviderManager { get; }
 
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
-
-        protected virtual string MovieDbParserSearchString => "themoviedb.org/movie/";
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
@@ -185,8 +184,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
                 else
                 {
-                    // If the file is just an Imdb url, handle that
-
+                    // If the file is just provider urls, handle that
                     ParseProviderLinks(item.Item, xml);
 
                     return;
@@ -225,50 +223,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected void ParseProviderLinks(T item, string xml)
         {
-            // Look for a match for the Regex pattern "tt" followed by 7 or 8 digits
-            var m = Regex.Match(xml, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
-            if (m.Success)
+            if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
             {
-                item.SetProviderId(MetadataProvider.Imdb, m.Value);
+                item.SetProviderId(MetadataProvider.Imdb, imdbId.ToString());
             }
 
-            // Support Tmdb
-            // https://www.themoviedb.org/movie/30287-fallo
-            var srch = MovieDbParserSearchString;
-            var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-
-            if (index != -1)
+            if (item is Movie)
             {
-                var tmdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
-                index = tmdbId.IndexOf('-');
-                if (index != -1)
+                if (ProviderIdParsers.TryFindTmdbMovieId(xml, out var tmdbId))
                 {
-                    tmdbId = tmdbId.Slice(0, index);
-                }
-
-                if (!tmdbId.IsEmpty
-                    && !tmdbId.IsWhiteSpace()
-                    && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                {
-                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(UsCulture));
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
                 }
             }
 
             if (item is Series)
             {
-                srch = "thetvdb.com/?tab=series&id=";
-
-                index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-
-                if (index != -1)
+                if (ProviderIdParsers.TryFindTmdbSeriesId(xml, out var tmdbId))
                 {
-                    var tvdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
-                    if (!tvdbId.IsEmpty
-                        && !tvdbId.IsWhiteSpace()
-                        && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                    {
-                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
-                    }
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
+                }
+
+                if (ProviderIdParsers.TryFindTvdbId(xml, out var tvdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString());
                 }
             }
         }

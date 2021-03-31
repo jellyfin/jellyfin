@@ -49,12 +49,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
+                        // get ids from attributes
                         string? imdbId = reader.GetAttribute("IMDB");
                         string? tmdbId = reader.GetAttribute("TMDB");
 
-                        if (string.IsNullOrWhiteSpace(imdbId))
+                        // read id from content
+                        var contentId = reader.ReadElementContentAsString();
+                        if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
                         {
-                            imdbId = reader.ReadElementContentAsString();
+                            imdbId = contentId;
+                        }
+                        else if (string.IsNullOrEmpty(tmdbId))
+                        {
+                            tmdbId = contentId;
                         }
 
                         if (!string.IsNullOrWhiteSpace(imdbId))
