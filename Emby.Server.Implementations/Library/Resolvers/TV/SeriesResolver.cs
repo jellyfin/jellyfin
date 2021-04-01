@@ -165,7 +165,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="isTvContentType">if set to <c>true</c> [is tv content type].</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
         private static bool IsSeasonFolder(string path, bool isTvContentType)
         {
