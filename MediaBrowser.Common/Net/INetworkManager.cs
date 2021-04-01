@@ -201,5 +201,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">IP address to check.</param>
         /// <returns>True if it is.</returns>
         bool IsValidInterfaceAddress(IPAddress address);
+
+        /// <summary>
+        /// Checks to see if <paramref name="remoteIp"/> has access.
+        /// </summary>
+        /// <param name="remoteIp">IP Address of client.</param>
+        /// <returns><b>True</b> if has access, otherwise <b>false</b>.</returns>
+        bool HasRemoteAccess(IPAddress remoteIp);
     }
 }

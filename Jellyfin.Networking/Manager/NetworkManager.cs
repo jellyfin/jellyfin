@@ -562,6 +562,29 @@ namespace Jellyfin.Networking.Manager
             return false;
         }
 
+        /// <inheritdoc/>
+        public bool HasRemoteAccess(IPAddress remoteIp)
+        {
+            var config = _configurationManager.GetNetworkConfiguration();
+            if (config.EnableRemoteAccess)
+            {
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
+                {
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    return RemoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
+                }
+            }
+            else if (!IsInLocalNetwork(remoteIp))
+            {
+                // Remote not enabled. So everyone should be LAN.
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Reloads all settings and re-initialises the instance.
         /// </summary>

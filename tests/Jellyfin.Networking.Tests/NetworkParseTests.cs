@@ -257,6 +257,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included.
+
             Collection<IPNetAddress> nc = nm.CreateIPCollection(settings.Split(","), false);
             Assert.Equal(nc.AsString(), includedItems);
 
@@ -573,7 +574,7 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(intf, result);
         }
 
-        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        private static IConfigurationManager(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
             {
@@ -582,6 +583,46 @@ namespace Jellyfin.Networking.Tests
 
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
             return (IConfigurationManager)configManager.Object;
+        }
+      
+        [Theory]
+        [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", true)]
+        [InlineData("185.10.10.10", "185.10.10.10", false)]
+        [InlineData("", "100.100.100.100", false)]
+
+        public void HasRemoteAccess_GivenWhitelist_AllowsOnlyIpsInWhitelist(string addresses, string remoteIp, bool denied)
+        {
+            // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+            // If left blank, all remote addresses will be allowed.
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV4 = true,
+                RemoteIPFilter = addresses.Split(','),
+                IsRemoteIPFilterBlacklist = false
+            };
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+        }
+
+        [Theory]
+        [InlineData("185.10.10.10", "79.2.3.4", false)]
+        [InlineData("185.10.10.10", "185.10.10.10", true)]
+        [InlineData("", "100.100.100.100", false)]
+        public void HasRemoteAccess_GivenBlacklist_BlacklistTheIps(string addresses, string remoteIp, bool denied)
+        {
+            // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+            // If left blank, all remote addresses will be allowed.
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV4 = true,
+                RemoteIPFilter = addresses.Split(','),
+                IsRemoteIPFilterBlacklist = true
+            };
+
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
         }
     }
 }
