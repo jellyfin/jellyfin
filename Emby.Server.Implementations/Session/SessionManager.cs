@@ -1437,11 +1437,6 @@ namespace Emby.Server.Implementations.Session
             return AuthenticateNewSessionInternal(request, true);
         }
 
-        public Task<AuthenticationResult> CreateNewSession(AuthenticationRequest request)
-        {
-            return AuthenticateNewSessionInternal(request, false);
-        }
-
         public Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token)
         {
             var result = _authRepo.Get(new AuthenticationInfoQuery()
@@ -1784,18 +1779,9 @@ namespace Emby.Server.Implementations.Session
             }
 
             var item = _libraryManager.GetItemById(new Guid(itemId));
-
-            var info = GetItemInfo(item, null);
-
-            ReportNowViewingItem(sessionId, info);
-        }
-
-        /// <inheritdoc />
-        public void ReportNowViewingItem(string sessionId, BaseItemDto item)
-        {
             var session = GetSession(sessionId);
 
-            session.NowViewingItem = item;
+            session.NowViewingItem = GetItemInfo(item, null);
         }
 
         /// <inheritdoc />

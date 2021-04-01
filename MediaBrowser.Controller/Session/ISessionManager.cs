@@ -8,7 +8,6 @@ using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -264,13 +263,6 @@ namespace MediaBrowser.Controller.Session
         void ReportNowViewingItem(string sessionId, string itemId);
 
         /// <summary>
-        /// Reports the now viewing item.
-        /// </summary>
-        /// <param name="sessionId">The session identifier.</param>
-        /// <param name="item">The item.</param>
-        void ReportNowViewingItem(string sessionId, BaseItemDto item);
-
-        /// <summary>
         /// Authenticates the new session.
         /// </summary>
         /// <param name="request">The request.</param>
@@ -284,13 +276,6 @@ namespace MediaBrowser.Controller.Session
         /// <param name="token">Quick connect access token.</param>
         /// <returns>Task{SessionInfo}.</returns>
         Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token);
-
-        /// <summary>
-        /// Creates the new session.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task&lt;AuthenticationResult&gt;.</returns>
-        Task<AuthenticationResult> CreateNewSession(AuthenticationRequest request);
 
         /// <summary>
         /// Reports the capabilities.
