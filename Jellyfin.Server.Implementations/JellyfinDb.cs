@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,8 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+
+        public virtual DbSet<ApiKey> ApiKeys { get; set; }
 
         public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
 
@@ -195,6 +198,10 @@ namespace Jellyfin.Server.Implementations
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Indexes
+
+            modelBuilder.Entity<ApiKey>()
+                .HasIndex(entity => entity.AccessToken)
+                .IsUnique();
 
             modelBuilder.Entity<User>()
                 .HasIndex(entity => entity.Username)
