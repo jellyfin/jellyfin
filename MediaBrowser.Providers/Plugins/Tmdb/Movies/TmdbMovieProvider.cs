@@ -175,6 +175,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var movie = new Movie
             {
                 Name = movieResult.Title ?? movieResult.OriginalTitle,
+                OriginalTitle = movieResult.OriginalTitle,
                 Overview = movieResult.Overview?.Replace("\n\n", "\n", StringComparison.InvariantCulture),
                 Tagline = movieResult.Tagline,
                 ProductionLocations = movieResult.ProductionCountries.Select(pc => pc.Name).ToArray()
