@@ -87,7 +87,7 @@
     "UserOnlineFromDevice": "{0} è online su {1}",
     "UserPasswordChangedWithName": "La password è stata cambiata per l'utente {0}",
     "UserPolicyUpdatedWithName": "La policy dell'utente è stata aggiornata per {0}",
-    "UserStartedPlayingItemWithValues": "{0} ha avviato la riproduzione di {1} su {2}",
+    "UserStartedPlayingItemWithValues": "{0} ha avviato la riproduzione di \"{1}\" su {2}",
     "UserStoppedPlayingItemWithValues": "{0} ha interrotto la riproduzione di {1} su {2}",
     "ValueHasBeenAddedToLibrary": "{0} è stato aggiunto alla tua libreria multimediale",
     "ValueSpecialEpisodeName": "Speciale - {0}",
