@@ -1,10 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,24 +16,15 @@ namespace Jellyfin.Api.Controllers
     [Route("Auth")]
     public class ApiKeyController : BaseJellyfinApiController
     {
-        private readonly ISessionManager _sessionManager;
-        private readonly IServerApplicationHost _appHost;
-        private readonly IAuthenticationRepository _authRepo;
+        private readonly IAuthenticationManager _authenticationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApiKeyController"/> class.
         /// </summary>
-        /// <param name="sessionManager">Instance of <see cref="ISessionManager"/> interface.</param>
-        /// <param name="appHost">Instance of <see cref="IServerApplicationHost"/> interface.</param>
-        /// <param name="authRepo">Instance of <see cref="IAuthenticationRepository"/> interface.</param>
-        public ApiKeyController(
-            ISessionManager sessionManager,
-            IServerApplicationHost appHost,
-            IAuthenticationRepository authRepo)
+        /// <param name="authenticationManager">Instance of <see cref="IAuthenticationManager"/> interface.</param>
+        public ApiKeyController(IAuthenticationManager authenticationManager)
         {
-            _sessionManager = sessionManager;
-            _appHost = appHost;
-            _authRepo = authRepo;
+            _authenticationManager = authenticationManager;
         }
 
         /// <summary>
@@ -46,14 +35,15 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Keys")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<AuthenticationInfo>> GetKeys()
+        public async Task<ActionResult<QueryResult<AuthenticationInfo>>> GetKeys()
         {
-            var result = _authRepo.Get(new AuthenticationInfoQuery
-            {
-                HasUser = false
-            });
+            var keys = await _authenticationManager.GetApiKeys();
 
-            return result;
+            return new QueryResult<AuthenticationInfo>
+            {
+                Items = keys,
+                TotalRecordCount = keys.Count
+            };
         }
 
         /// <summary>
@@ -65,17 +55,10 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Keys")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CreateKey([FromQuery, Required] string app)
+        public async Task<ActionResult> CreateKey([FromQuery, Required] string app)
         {
-            _authRepo.Create(new AuthenticationInfo
-            {
-                AppName = app,
-                AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-                DateCreated = DateTime.UtcNow,
-                DeviceId = _appHost.SystemId,
-                DeviceName = _appHost.FriendlyName,
-                AppVersion = _appHost.ApplicationVersionString
-            });
+            await _authenticationManager.CreateApiKey(app).ConfigureAwait(false);
+
             return NoContent();
         }
 
@@ -88,9 +71,10 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Keys/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult RevokeKey([FromRoute, Required] string key)
+        public async Task<ActionResult> RevokeKey([FromRoute, Required] Guid key)
         {
-            _sessionManager.RevokeToken(key);
+            await _authenticationManager.DeleteApiKey(key).ConfigureAwait(false);
+
             return NoContent();
         }
     }
