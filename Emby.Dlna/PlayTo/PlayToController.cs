@@ -499,8 +499,8 @@ namespace Emby.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Audio)
             {
-                return new ContentFeatureBuilder(profile)
-                    .BuildAudioHeader(
+                return ContentFeatureBuilder.BuildAudioHeader(
+                        profile,
                         streamInfo.Container,
                         streamInfo.TargetAudioCodec.FirstOrDefault(),
                         streamInfo.TargetAudioBitrate,
@@ -514,8 +514,8 @@ namespace Emby.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
-                var list = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(
+                var list = ContentFeatureBuilder.BuildVideoHeader(
+                        profile,
                         streamInfo.Container,
                         streamInfo.TargetVideoCodec.FirstOrDefault(),
                         streamInfo.TargetAudioCodec.FirstOrDefault(),

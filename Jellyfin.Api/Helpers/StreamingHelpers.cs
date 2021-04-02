@@ -306,7 +306,8 @@ namespace Jellyfin.Api.Helpers
 
             if (!state.IsVideoRequest)
             {
-                responseHeaders.Add("contentFeatures.dlna.org", new ContentFeatureBuilder(profile).BuildAudioHeader(
+                responseHeaders.Add("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
+                    profile,
                     state.OutputContainer,
                     audioCodec,
                     state.OutputAudioBitrate,
@@ -323,7 +324,7 @@ namespace Jellyfin.Api.Helpers
 
                 responseHeaders.Add(
                     "contentFeatures.dlna.org",
-                    new ContentFeatureBuilder(profile).BuildVideoHeader(state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
+                    ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
             }
         }
 
