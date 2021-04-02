@@ -574,7 +574,7 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(intf, result);
         }
 
-        private static IConfigurationManager(NetworkConfiguration conf)
+        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
             {
@@ -584,7 +584,7 @@ namespace Jellyfin.Networking.Tests
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
             return (IConfigurationManager)configManager.Object;
         }
-      
+
         [Theory]
         [InlineData("185.10.10.10,200.200.200.200", "79.2.3.4", true)]
         [InlineData("185.10.10.10", "185.10.10.10", false)]

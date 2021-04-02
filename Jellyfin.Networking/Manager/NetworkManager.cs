@@ -570,10 +570,10 @@ namespace Jellyfin.Networking.Manager
             {
                 // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
                 // If left blank, all remote addresses will be allowed.
-                if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
+                if (_remoteAddressFilter.Length > 0 && !IsInLocalNetwork(remoteIp))
                 {
                     // remoteAddressFilter is a whitelist or blacklist.
-                    return RemoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
+                    return _remoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
                 }
             }
             else if (!IsInLocalNetwork(remoteIp))
