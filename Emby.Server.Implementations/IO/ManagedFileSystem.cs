@@ -55,7 +55,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(filename);
-            return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
+            return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -487,26 +487,9 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var separatorChar = Path.DirectorySeparatorChar;
-
-            return path.IndexOf(parentPath.TrimEnd(separatorChar) + separatorChar, StringComparison.OrdinalIgnoreCase) != -1;
-        }
-
-        public virtual bool IsRootPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var parent = Path.GetDirectoryName(path);
-
-            if (!string.IsNullOrEmpty(parent))
-            {
-                return false;
-            }
-
-            return true;
+            return path.Contains(
+                Path.TrimEndingDirectorySeparator(parentPath) + Path.DirectorySeparatorChar,
+                _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
         public virtual string NormalizePath(string path)
@@ -521,7 +504,7 @@ namespace Emby.Server.Implementations.IO
                 return path;
             }
 
-            return path.TrimEnd(Path.DirectorySeparatorChar);
+            return Path.TrimEndingDirectorySeparator(path);
         }
 
         public virtual bool AreEqual(string path1, string path2)
@@ -536,7 +519,10 @@ namespace Emby.Server.Implementations.IO
                 return false;
             }
 
-            return string.Equals(NormalizePath(path1), NormalizePath(path2), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(
+                NormalizePath(path1),
+                NormalizePath(path2),
+                _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
         public virtual string GetFileNameWithoutExtension(FileSystemMetadata info)

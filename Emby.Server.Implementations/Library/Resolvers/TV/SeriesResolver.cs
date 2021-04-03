@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             {
                 if (child.IsDirectory)
                 {
-                    if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
+                    if (IsSeasonFolder(child.FullName, isTvContentType))
                     {
                         logger.LogDebug("{Path} is a series because of season folder {Dir}.", path, child.FullName);
                         return true;
@@ -161,31 +161,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         }
 
         /// <summary>
-        /// Determines whether [is place holder] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
-        private static bool IsVideoPlaceHolder(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var extension = Path.GetExtension(path);
-
-            return string.Equals(extension, ".disc", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
         /// Determines whether [is season folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="isTvContentType">if set to <c>true</c> [is tv content type].</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsSeasonFolder(string path, bool isTvContentType, ILibraryManager libraryManager)
+        private static bool IsSeasonFolder(string path, bool isTvContentType)
         {
             var seasonNumber = SeasonPathParser.Parse(path, isTvContentType, isTvContentType).SeasonNumber;
 
