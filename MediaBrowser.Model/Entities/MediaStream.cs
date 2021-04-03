@@ -121,6 +121,18 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has HDR.
+        /// </summary>
+        /// <value><c>true</c> if this instance has HDR; otherwise, <c>false</c>.</value>
+        public bool IsHDR
+        {
+            get
+            {
+                return string.Equals(VideoRange, "HDR", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
         public string LocalizedUndefined { get; set; }
 
         public string LocalizedDefault { get; set; }

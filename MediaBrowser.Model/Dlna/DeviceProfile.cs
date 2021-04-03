@@ -434,6 +434,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="numAudioStreams">The number of audio streams.</param>
         /// <param name="videoCodecTag">The video Codec tag.</param>
         /// <param name="isAvc">True if Avc.</param>
+        /// <param name="isHdr">True if HDR.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
         public ResponseProfile? GetVideoMediaProfile(
             string container,
@@ -454,7 +455,8 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string videoCodecTag,
-            bool? isAvc)
+            bool? isAvc,
+            bool? isHdr)
         {
             foreach (var i in ResponseProfiles)
             {
@@ -483,7 +485,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, isHdr))
                     {
                         anyOff = true;
                         break;

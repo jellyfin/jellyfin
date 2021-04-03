@@ -463,6 +463,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
         }
 
+        public bool? IsTargetHDR
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.IsHDR;
+                }
+
+                return false;
+            }
+        }
+
         public int? TargetVideoStreamCount
         {
             get

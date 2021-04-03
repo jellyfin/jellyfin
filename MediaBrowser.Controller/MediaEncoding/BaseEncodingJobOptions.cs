@@ -145,6 +145,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public bool RequireNonAnamorphic { get; set; }
 
+        public bool RequireNonHdr { get; set; }
+
         public int? TranscodingMaxAudioChannels { get; set; }
 
         public int? CpuCoreLimit { get; set; }

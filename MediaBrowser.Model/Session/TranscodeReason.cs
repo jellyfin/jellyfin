@@ -27,6 +27,7 @@ namespace MediaBrowser.Model.Session
         AudioBitDepthNotSupported = 20,
         SubtitleCodecNotSupported = 21,
         DirectPlayError = 22,
-        AudioIsExternal = 23
+        AudioIsExternal = 23,
+        VideoRangeNotSupported = 24
     }
 }

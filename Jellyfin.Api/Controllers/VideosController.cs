@@ -313,6 +313,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
+        /// <param name="requireNonHdr">Optional. Whether to require a non HDR stream.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
@@ -371,6 +372,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
+            [FromQuery] bool? requireNonHdr,
             [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
@@ -428,6 +430,7 @@ namespace Jellyfin.Api.Controllers
                 TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
+                RequireNonHdr = requireNonHdr ?? false,
                 Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
@@ -569,6 +572,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
+        /// <param name="requireNonHdr">Optional. Whether to require a non HDR stream.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
         /// <response code="200">Video stream returned.</response>
@@ -627,6 +631,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
+            [FromQuery] bool? requireNonHdr,
             [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
@@ -680,6 +685,7 @@ namespace Jellyfin.Api.Controllers
                 transcodeReasons,
                 audioStreamIndex,
                 videoStreamIndex,
+                requireNonHdr,
                 context,
                 streamOptions);
         }

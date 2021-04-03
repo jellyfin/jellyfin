@@ -222,6 +222,9 @@ namespace MediaBrowser.Model.Dlna
                 case ProfileConditionValue.Width:
                     return TranscodeReason.VideoResolutionNotSupported;
 
+                case ProfileConditionValue.IsHdr:
+                    return TranscodeReason.VideoRangeNotSupported;
+
                 default:
                     return null;
             }
@@ -776,6 +779,7 @@ namespace MediaBrowser.Model.Dlna
                             bool? isInterlaced = videoStream?.IsInterlaced;
                             string videoCodecTag = videoStream?.CodecTag;
                             bool? isAvc = videoStream?.IsAVC;
+                            bool? isHdr = videoStream?.IsHDR;
 
                             TransportStreamTimestamp? timestamp = videoStream == null ? TransportStreamTimestamp.None : item.Timestamp;
                             int? packetLength = videoStream?.PacketLength;
@@ -784,7 +788,7 @@ namespace MediaBrowser.Model.Dlna
                             int? numAudioStreams = item.GetStreamCount(MediaStreamType.Audio);
                             int? numVideoStreams = item.GetStreamCount(MediaStreamType.Video);
 
-                            if (!ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                            if (!ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, isHdr))
                             {
                                 // LogConditionFailure(options.Profile, "VideoCodecProfile.ApplyConditions", applyCondition, item);
                                 applyConditions = false;
@@ -1068,6 +1072,7 @@ namespace MediaBrowser.Model.Dlna
             bool? isInterlaced = videoStream?.IsInterlaced;
             string videoCodecTag = videoStream?.CodecTag;
             bool? isAvc = videoStream?.IsAVC;
+            bool? isHdr = videoStream?.IsHDR;
 
             int? audioBitrate = audioStream?.BitRate;
             int? audioChannels = audioStream?.Channels;
@@ -1085,7 +1090,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!ConditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                if (!ConditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, isHdr))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -1108,7 +1113,7 @@ namespace MediaBrowser.Model.Dlna
                     bool applyConditions = true;
                     foreach (ProfileCondition applyCondition in i.ApplyConditions)
                     {
-                        if (!ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                        if (!ConditionProcessor.IsVideoConditionSatisfied(applyCondition, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, isHdr))
                         {
                             // LogConditionFailure(profile, "VideoCodecProfile.ApplyConditions", applyCondition, mediaSource);
                             applyConditions = false;
@@ -1128,7 +1133,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!ConditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                if (!ConditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc, isHdr))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
@@ -1610,6 +1615,28 @@ namespace MediaBrowser.Model.Dlna
                                 else if (!isAnamorphic && condition.Condition == ProfileConditionType.NotEquals)
                                 {
                                     item.RequireNonAnamorphic = true;
+                                }
+                            }
+
+                            break;
+                        }
+
+                    case ProfileConditionValue.IsHdr:
+                        {
+                            if (!enableNonQualifiedConditions)
+                            {
+                                continue;
+                            }
+
+                            if (bool.TryParse(value, out var isHdr))
+                            {
+                                if (!isHdr && condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.RequireNonHdr = true;
+                                }
+                                else if (isHdr && condition.Condition == ProfileConditionType.NotEquals)
+                                {
+                                    item.RequireNonHdr = true;
                                 }
                             }
 

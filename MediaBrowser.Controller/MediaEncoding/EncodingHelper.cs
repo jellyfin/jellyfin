@@ -1660,6 +1660,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
+            if (videoStream.IsHDR && request.RequireNonHdr)
+            {
+                return false;
+            }
+
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue
                 && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode)

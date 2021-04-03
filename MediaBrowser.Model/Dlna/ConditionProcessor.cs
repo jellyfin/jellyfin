@@ -26,7 +26,8 @@ namespace MediaBrowser.Model.Dlna
             int? numVideoStreams,
             int? numAudioStreams,
             string? videoCodecTag,
-            bool? isAvc)
+            bool? isAvc,
+            bool? isHdr)
         {
             switch (condition.Property)
             {
@@ -62,6 +63,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, numVideoStreams);
                 case ProfileConditionValue.VideoTimestamp:
                     return IsConditionSatisfied(condition, timestamp);
+                case ProfileConditionValue.IsHdr:
+                    return IsConditionSatisfied(condition, isHdr);
                 default:
                     return true;
             }

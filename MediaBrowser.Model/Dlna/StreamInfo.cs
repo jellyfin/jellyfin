@@ -51,6 +51,8 @@ namespace MediaBrowser.Model.Dlna
 
         public bool RequireNonAnamorphic { get; set; }
 
+        public bool RequireNonHdr { get; set; }
+
         public bool CopyTimestamps { get; set; }
 
         public bool EnableMpegtsM2TsMode { get; set; }
@@ -494,6 +496,19 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
+        public bool? IsTargetHDR
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return TargetVideoStream == null ? null : TargetVideoStream.IsHDR;
+                }
+
+                return false;
+            }
+        }
+
         public int? TargetWidth
         {
             get
@@ -729,6 +744,11 @@ namespace MediaBrowser.Model.Dlna
                 if (item.RequireNonAnamorphic)
                 {
                     list.Add(new NameValuePair("RequireNonAnamorphic", item.RequireNonAnamorphic.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
+                }
+
+                if (item.RequireNonHdr)
+                {
+                    list.Add(new NameValuePair("RequireNonHdr", item.RequireNonHdr.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
                 }
 
                 list.Add(new NameValuePair("TranscodingMaxAudioChannels", item.TranscodingMaxAudioChannels.HasValue ? item.TranscodingMaxAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));

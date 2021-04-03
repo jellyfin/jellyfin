@@ -567,7 +567,8 @@ namespace Emby.Dlna.PlayTo
                         streamInfo.TargetVideoStreamCount,
                         streamInfo.TargetAudioStreamCount,
                         streamInfo.TargetVideoCodecTag,
-                        streamInfo.IsTargetAVC);
+                        streamInfo.IsTargetAVC,
+                        streamInfo.IsTargetHDR);
 
                 return list.Count == 0 ? null : list[0];
             }
