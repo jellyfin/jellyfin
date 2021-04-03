@@ -514,7 +514,7 @@ namespace MediaBrowser.Model.Dlna
 
         private static List<TranscodeReason> GetTranscodeReasonsFromDirectPlayProfile(MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream, IEnumerable<DirectPlayProfile> directPlayProfiles)
         {
-            var mediaType = videoStream != null ? DlnaProfileType.Video : DlnaProfileType.Audio;
+            var mediaType = videoStream == null ? DlnaProfileType.Audio : DlnaProfileType.Video;
 
             var containerSupported = false;
             var audioSupported = false;
