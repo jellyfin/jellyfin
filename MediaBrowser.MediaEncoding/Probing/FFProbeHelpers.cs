@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
@@ -90,7 +91,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            if (DateTime.TryParse(val, out var i))
+            if (DateTime.TryParse(val, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AssumeUniversal, out var i))
             {
                 return i.ToUniversalTime();
             }
