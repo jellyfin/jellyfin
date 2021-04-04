@@ -53,7 +53,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly Lazy<EncodingHelper> _encodingHelperFactory;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
@@ -70,21 +69,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
-        private int threads;
+        private int _threads;
 
         public MediaEncoder(
             ILogger<MediaEncoder> logger,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             ILocalizationManager localization,
-            Lazy<EncodingHelper> encodingHelperFactory,
             IConfiguration config)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
-            _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.Options;
         }
@@ -108,8 +105,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // 2) Check if the --ffmpeg CLI switch has been given
                 if (!ValidatePath(_startupOptionFFmpegPath, FFmpegLocation.SetByArgument))
                 {
-                    // 3) Search system $PATH environment variable for valid FFmpeg
-                    if (!ValidatePath(ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System))
+                    // 3) Check "ffmpeg"
+                    if (!ValidatePath("ffmpeg", FFmpegLocation.System))
                     {
                         EncoderLocation = FFmpegLocation.NotFound;
                         _ffmpegPath = null;
@@ -134,7 +131,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
                 SetAvailableHwaccels(validator.GetHwaccels());
-                threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
+                _threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
             _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
@@ -156,14 +153,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 throw new ArgumentException("Unexpected pathType value");
             }
-            else if (string.IsNullOrWhiteSpace(path))
+
+            if (string.IsNullOrWhiteSpace(path))
             {
                 // User had cleared the custom path in UI
                 newPath = string.Empty;
-            }
-            else if (File.Exists(path))
-            {
-                newPath = path;
             }
             else if (Directory.Exists(path))
             {
@@ -172,7 +166,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                throw new ResourceNotFoundException();
+                newPath = path;
             }
 
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
@@ -194,30 +188,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
         private bool ValidatePath(string path, FFmpegLocation location)
         {
-            bool rc = false;
-
-            if (!string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
-                if (File.Exists(path))
-                {
-                    rc = new EncoderValidator(_logger, path).ValidateVersion();
-
-                    if (!rc)
-                    {
-                        _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
-                    }
-
-                    _ffmpegPath = path;
-                    EncoderLocation = location;
-                    return true;
-                }
-                else
-                {
-                    _logger.LogWarning("FFmpeg: {Location}: File not found: {Path}", location, path);
-                }
+                return false;
             }
 
-            return rc;
+            bool rc = new EncoderValidator(_logger, path).ValidateVersion();
+            if (!rc)
+            {
+                _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
+                return false;
+            }
+
+            _ffmpegPath = path;
+            EncoderLocation = location;
+            return true;
         }
 
         private string GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
@@ -236,34 +221,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // Trap all exceptions, like DirNotExists, and return null
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Search the system $PATH environment variable looking for given filename.
-        /// </summary>
-        /// <param name="fileName">The filename.</param>
-        /// <returns>The full path to the file.</returns>
-        private string ExistsOnSystemPath(string fileName)
-        {
-            var inJellyfinPath = GetEncoderPathFromDirectory(AppContext.BaseDirectory, fileName, recursive: true);
-            if (!string.IsNullOrEmpty(inJellyfinPath))
-            {
-                return inJellyfinPath;
-            }
-
-            var values = Environment.GetEnvironmentVariable("PATH");
-
-            foreach (var path in values.Split(Path.PathSeparator))
-            {
-                var candidatePath = GetEncoderPathFromDirectory(path, fileName);
-
-                if (!string.IsNullOrEmpty(candidatePath))
-                {
-                    return candidatePath;
-                }
-            }
-
-            return null;
         }
 
         public void SetAvailableEncoders(IEnumerable<string> list)
@@ -396,7 +353,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
-            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, threads).Trim();
+            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, _threads).Trim();
 
             var process = new Process
             {
@@ -617,7 +574,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads);
 
             if (offset.HasValue)
             {
@@ -730,7 +687,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, _threads);
 
             if (!string.IsNullOrWhiteSpace(container))
             {
