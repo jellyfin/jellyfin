@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
@@ -18,7 +16,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Configuration;
-using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -248,7 +245,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             switch (reader.Name)
             {
-                // DateCreated
                 case "dateadded":
                     item.DateCreated = reader.ReadDateFromNfo() ?? item.DateCreated;
                     break;
@@ -291,6 +287,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         userData.Played = reader.ReadBoolFromNfo() ?? userData.Played;
                     }
 
+                    reader.Read();
                     break;
 
                 case "playcount":
@@ -299,6 +296,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         userData.PlayCount = reader.ReadIntFromNfo() ?? userData.PlayCount;
                     }
 
+                    reader.Read();
                     break;
 
                 case "lastplayed":
@@ -307,52 +305,25 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         userData.LastPlayedDate = reader.ReadDateFromNfo() ?? userData.LastPlayedDate;
                     }
 
+                    reader.Read();
                     break;
 
                 case "countrycode":
                     item.PreferredMetadataCountryCode = reader.ReadStringFromNfo() ?? item.PreferredMetadataCountryCode;
                     break;
 
-                // todo
                 case "lockedfields":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.LockedFields = val.Split('|').Select(i =>
-                            {
-                                if (Enum.TryParse(i, true, out MetadataField field))
-                                {
-                                    return (MetadataField?)field;
-                                }
-
-                                return null;
-                            }).OfType<MetadataField>().ToArray();
-                        }
-
-                        break;
-                    }
+                    var locked = reader.ReadStringFromNfo() ?? string.Empty;
+                    item.LockedFields = NfoParserHelpers.ParseLockedFields(locked);
+                    break;
 
                 case "tagline":
                     item.Tagline = reader.ReadStringFromNfo() ?? item.Tagline;
                     break;
 
-                // todo
                 case "country":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.ProductionLocations = val.Split('/')
-                                .Select(i => i.Trim())
-                                .Where(i => !string.IsNullOrWhiteSpace(i))
-                                .ToArray();
-                        }
-
-                        break;
-                    }
+                    item.ProductionLocations = reader.ReadStringArrayFromNfo();
+                    break;
 
                 case "mpaa":
                     item.OfficialRating = reader.ReadStringFromNfo() ?? item.OfficialRating;
@@ -362,21 +333,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.CustomRating = reader.ReadStringFromNfo() ?? item.CustomRating;
                     break;
 
-                // todo
                 case "runtime":
-                    {
-                        var text = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, UsCulture, out var runtime))
-                            {
-                                item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
-                            }
-                        }
-
-                        break;
-                    }
+                    item.RunTimeTicks = TimeSpan.FromMinutes(reader.ReadIntFromNfo() ?? 0.0).Ticks;
+                    break;
 
                 case "aspectratio":
                     if (item is IHasAspectRatio hasAspectRatio)
@@ -390,114 +349,40 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.IsLocked = reader.ReadBoolFromNfo() ?? item.IsLocked;
                     break;
 
-                // todo
                 case "studio":
+                    var studio = reader.ReadStringFromNfo();
+                    if (!string.IsNullOrWhiteSpace(studio))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddStudio(val);
-                        }
-
-                        break;
+                        item.AddStudio(studio);
                     }
 
-                // todo
+                    break;
+
                 case "director":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Director }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
+                    NfoSubtreeParsers<T>.ReadPersonInfoFromNfo(reader, itemResult, PersonType.Director);
+                    break;
 
-                            itemResult.AddPerson(p);
-                        }
-
-                        break;
-                    }
-
-                // todo
                 case "credits":
-                    {
-                        var val = reader.ReadElementContentAsString();
+                    NfoSubtreeParsers<T>.ReadPersonInfoFromNfo(reader, itemResult, PersonType.Writer);
+                    break;
 
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            var parts = val.Split('/').Select(i => i.Trim())
-                                .Where(i => !string.IsNullOrEmpty(i));
-
-                            foreach (var p in parts.Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
-                            {
-                                if (string.IsNullOrWhiteSpace(p.Name))
-                                {
-                                    continue;
-                                }
-
-                                itemResult.AddPerson(p);
-                            }
-                        }
-
-                        break;
-                    }
-
-                // todo
                 case "writer":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        foreach (var p in SplitNames(val).Select(v => new PersonInfo { Name = v.Trim(), Type = PersonType.Writer }))
-                        {
-                            if (string.IsNullOrWhiteSpace(p.Name))
-                            {
-                                continue;
-                            }
+                    NfoSubtreeParsers<T>.ReadPersonInfoFromNfo(reader, itemResult, PersonType.Writer);
+                    break;
 
-                            itemResult.AddPerson(p);
-                        }
-
-                        break;
-                    }
-
-                // todo
                 case "actor":
-                    {
-                        if (!reader.IsEmptyElement)
-                        {
-                            using (var subtree = reader.ReadSubtree())
-                            {
-                                var person = GetPersonFromXmlNode(subtree);
+                    NfoSubtreeParsers<T>.ReadActorNode(reader, itemResult);
+                    break;
 
-                                if (!string.IsNullOrWhiteSpace(person.Name))
-                                {
-                                    itemResult.AddPerson(person);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-
-                        break;
-                    }
-
-                // todo
                 case "trailer":
+                    var parsed = reader.ReadTrailerUrlFromNfo();
+                    if (string.IsNullOrWhiteSpace(parsed))
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            val = val.Replace("plugin://plugin.video.youtube/?action=play_video&videoid=", BaseNfoSaver.YouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
-
-                            item.AddTrailerUrl(val);
-                        }
-
                         break;
                     }
+
+                    item.AddTrailerUrl(parsed);
+                    break;
 
                 case "displayorder":
                     if (item is IHasDisplayOrder hasDisplayOrder)
@@ -515,276 +400,54 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.CommunityRating = reader.ReadFloatFromNfo() ?? item.CommunityRating;
                     break;
 
-                // todo
                 case "aired":
                 case "formed":
                 case "premiered":
                 case "releasedate":
-                    {
-                        var formatString = nfoConfiguration.ReleaseDateFormat;
-
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) && date.Year > 1850)
-                            {
-                                item.PremiereDate = date.ToUniversalTime();
-                                item.ProductionYear = date.Year;
-                            }
-                        }
-
-                        break;
-                    }
-
-                // todo
-                case "enddate":
-                    {
-                        var formatString = nfoConfiguration.ReleaseDateFormat;
-
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) && date.Year > 1850)
-                            {
-                                item.EndDate = date.ToUniversalTime();
-                            }
-                        }
-
-                        break;
-                    }
-
-                // todo
-                case "genre":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            var parts = val.Split('/')
-                                .Select(i => i.Trim())
-                                .Where(i => !string.IsNullOrWhiteSpace(i));
-
-                            foreach (var p in parts)
-                            {
-                                item.AddGenre(p);
-                            }
-                        }
-
-                        break;
-                    }
-
-                // todo
-                case "style":
-                case "tag":
-                    {
-                        var val = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AddTag(val);
-                        }
-
-                        break;
-                    }
-
-                case "fileinfo":
-                    NfoSubtreeParsers.ReadFileinfoSubtree(reader, item);
+                    item.PremiereDate = reader.ReadDateFromNfo() ?? item.PremiereDate;
+                    item.ProductionYear = item.PremiereDate?.Year ?? item.ProductionYear;
                     break;
 
-                // todo
-                case "uniqueid":
+                case "enddate":
+                    item.EndDate = reader.ReadDateFromNfo() ?? item.EndDate;
+                    break;
+
+                case "genre":
+                    var genres = reader.ReadStringArrayFromNfo();
+                    foreach (var genre in genres)
                     {
-                        if (reader.IsEmptyElement)
-                        {
-                            reader.Read();
-                            break;
-                        }
-
-                        var provider = reader.GetAttribute("type");
-                        var id = reader.ReadElementContentAsString();
-                        if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
-                        {
-                            item.SetProviderId(provider, id);
-                        }
-
-                        break;
+                        item.AddGenre(genre);
                     }
+
+                    break;
+
+                case "style":
+                case "tag":
+                    var tag = reader.ReadStringFromNfo();
+                    if (!string.IsNullOrWhiteSpace(tag))
+                    {
+                        item.AddTag(tag);
+                    }
+
+                    break;
+
+                case "fileinfo":
+                    NfoSubtreeParsers<T>.ReadFileinfoSubtree(reader, item);
+                    break;
+
+                case "uniqueid":
+                    reader.ReadUniqueIdFromNfo(item);
+                    break;
 
                 case "thumb":
-                    {
-                        var artType = reader.GetAttribute("aspect");
-                        var val = reader.ReadElementContentAsString();
-
-                        // skip:
-                        // - empty aspect tag
-                        // - empty uri
-                        // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
-                        if (string.IsNullOrEmpty(artType) || string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
-                        {
-                            break;
-                        }
-
-                        ImageType imageType = GetImageType(artType);
-
-                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
-                        {
-                            Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
-                            break;
-                        }
-
-                        if (uri.IsFile)
-                        {
-                            // only allow one item of each type
-                            if (itemResult.Images.Any(x => x.Type == imageType))
-                            {
-                                break;
-                            }
-
-                            var fileSystemMetadata = _directoryService.GetFile(val);
-                            // non existing file returns null
-                            if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
-                            {
-                                Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, item.Name);
-                                break;
-                            }
-
-                            itemResult.Images.Add(new LocalImageInfo()
-                            {
-                                FileInfo = fileSystemMetadata,
-                                Type = imageType
-                            });
-                        }
-                        else
-                        {
-                            // only allow one item of each type
-                            if (itemResult.RemoteImages.Any(x => x.type == imageType))
-                            {
-                                break;
-                            }
-
-                            itemResult.RemoteImages.Add((uri.ToString(), imageType));
-                        }
-
-                        break;
-                    }
+                    NfoSubtreeParsers<T>.ReadThumbNode(reader, itemResult, _directoryService, Logger);
+                    break;
 
                 // Read Provider Ids
                 default:
                     reader.ReadProviderIdFromNfo(item, _validProviderIds);
                     break;
             }
-        }
-
-        /// <summary>
-        /// Gets the persons from XML node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <returns>IEnumerable{PersonInfo}.</returns>
-        private PersonInfo GetPersonFromXmlNode(XmlReader reader)
-        {
-            var name = string.Empty;
-            var type = PersonType.Actor;  // If type is not specified assume actor
-            var role = string.Empty;
-            int? sortOrder = null;
-            string? imageUrl = null;
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "name":
-                            name = reader.ReadElementContentAsString() ?? string.Empty;
-                            break;
-
-                        case "role":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    role = val;
-                                }
-
-                                break;
-                            }
-
-                        case "type":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    type = val switch
-                                    {
-                                        PersonType.Composer => PersonType.Composer,
-                                        PersonType.Conductor => PersonType.Conductor,
-                                        PersonType.Director => PersonType.Director,
-                                        PersonType.Lyricist => PersonType.Lyricist,
-                                        PersonType.Producer => PersonType.Producer,
-                                        PersonType.Writer => PersonType.Writer,
-                                        PersonType.GuestStar => PersonType.GuestStar,
-                                        // unknown type --> actor
-                                        _ => PersonType.Actor
-                                    };
-                                }
-
-                                break;
-                            }
-
-                        case "order":
-                        case "sortorder":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var intVal))
-                                    {
-                                        sortOrder = intVal;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                        case "thumb":
-                            {
-                                var val = reader.ReadElementContentAsString();
-
-                                if (!string.IsNullOrWhiteSpace(val))
-                                {
-                                    imageUrl = val;
-                                }
-
-                                break;
-                            }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            return new PersonInfo
-            {
-                Name = name.Trim(),
-                Role = role,
-                Type = type,
-                SortOrder = sortOrder,
-                ImageUrl = imageUrl
-            };
         }
 
         // todo remove
@@ -796,24 +459,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 IgnoreProcessingInstructions = true,
                 IgnoreComments = true
             };
-
-        /// <summary>
-        /// Used to split names of comma or pipe delimeted genres and people.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>IEnumerable{System.String}.</returns>
-        private IEnumerable<string> SplitNames(string value)
-        {
-            // Only split by comma if there is no pipe in the string
-            // We have to be careful to not split names like Matthew, Jr.
-            var separator = !value.Contains('|', StringComparison.Ordinal) && !value.Contains(';', StringComparison.Ordinal)
-                ? new[] { ',' }
-                : new[] { '|', ';' };
-
-            value = value.Trim().Trim(separator);
-
-            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
-        }
 
         /// <summary>
         /// Create Mappings for Provider Ids enabled for item.
@@ -836,25 +481,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _validProviderIds.Add("collectionnumber", "TmdbCollection");
             _validProviderIds.Add("tmdbcolid", "TmdbCollection");
             _validProviderIds.Add("imdb_id", "Imdb");
-        }
-
-        /// <summary>
-        /// Parses the ImageType from the nfo aspect property.
-        /// </summary>
-        /// <param name="aspect">The nfo aspect property.</param>
-        /// <returns>The image type.</returns>
-        private static ImageType GetImageType(string aspect)
-        {
-            return aspect switch
-            {
-                "banner" => ImageType.Banner,
-                "clearlogo" => ImageType.Logo,
-                "discart" => ImageType.Disc,
-                "landscape" => ImageType.Thumb,
-                "clearart" => ImageType.Art,
-                // unknown type (including "poster") --> primary
-                _ => ImageType.Primary,
-            };
         }
     }
 }

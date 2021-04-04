@@ -38,12 +38,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         }
 
         /// <inheritdoc />
-        protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<Episode> metadataResult, string nfoPath, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
-            using (var fileStream = File.OpenRead(metadataFile))
+            using (var fileStream = File.OpenRead(nfoPath))
             using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
             {
-                item.ResetPeople();
+                metadataResult.ResetPeople();
 
                 var xmlFile = streamReader.ReadToEnd();
 
@@ -75,7 +75,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                             if (reader.NodeType == XmlNodeType.Element)
                             {
-                                FetchDataFromXmlNode(reader, item);
+                                FetchDataFromXmlNode(reader, metadataResult);
                             }
                             else
                             {
@@ -98,7 +98,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                             if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
                             {
-                                item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
+                                metadataResult.Item.IndexNumberEnd = Math.Max(num, metadataResult.Item.IndexNumberEnd ?? num);
                             }
                         }
                     }
