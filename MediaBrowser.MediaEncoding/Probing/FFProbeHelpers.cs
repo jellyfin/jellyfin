@@ -85,12 +85,14 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var val = GetDictionaryValue(tags, key);
 
-            if (!string.IsNullOrEmpty(val))
+            if (string.IsNullOrEmpty(val))
             {
-                if (DateTime.TryParse(val, out var i))
-                {
-                    return i.ToUniversalTime();
-                }
+                return null;
+            }
+
+            if (DateTime.TryParse(val, out var i))
+            {
+                return i.ToUniversalTime();
             }
 
             return null;
