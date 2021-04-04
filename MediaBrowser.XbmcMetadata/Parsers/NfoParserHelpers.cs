@@ -117,6 +117,33 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        internal static void SetSeriesIds(XmlReader reader, BaseItem item)
+        {
+            string? imdbId = reader.GetAttribute("IMDB");
+            string? tmdbId = reader.GetAttribute("TMDB");
+            string? tvdbId = reader.GetAttribute("TVDB");
+
+            if (string.IsNullOrWhiteSpace(tvdbId))
+            {
+                tvdbId = reader.ReadElementContentAsString();
+            }
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                item.SetProviderId(MetadataProvider.Imdb, imdbId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(tmdbId))
+            {
+                item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(tvdbId))
+            {
+                item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
+            }
+        }
+
         /// <summary>
         /// Parses the ImageType from the nfo aspect property.
         /// </summary>
