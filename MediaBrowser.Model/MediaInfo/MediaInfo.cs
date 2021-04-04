@@ -51,6 +51,8 @@ namespace MediaBrowser.Model.MediaInfo
 
         public string ShowName { get; set; }
 
+        public string ForcedSortName { get; set; }
+
         public int? IndexNumber { get; set; }
 
         public int? ParentIndexNumber { get; set; }
