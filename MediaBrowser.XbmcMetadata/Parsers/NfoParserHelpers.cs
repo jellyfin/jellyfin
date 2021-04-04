@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Savers;
 
@@ -114,6 +113,34 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
             {
                 item.SetProviderId(provider, id);
+            }
+        }
+
+        internal static void SetMovieids(XmlReader reader, BaseItem item)
+        {
+            // get ids from attributes
+            string? imdbId = reader.GetAttribute("IMDB");
+            string? tmdbId = reader.GetAttribute("TMDB");
+
+            // read id from content
+            var contentId = reader.ReadElementContentAsString();
+            if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
+            {
+                imdbId = contentId;
+            }
+            else if (string.IsNullOrEmpty(tmdbId))
+            {
+                tmdbId = contentId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                item.SetProviderId(MetadataProvider.Imdb, imdbId);
+            }
+
+            if (!string.IsNullOrWhiteSpace(tmdbId))
+            {
+                item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
             }
         }
 

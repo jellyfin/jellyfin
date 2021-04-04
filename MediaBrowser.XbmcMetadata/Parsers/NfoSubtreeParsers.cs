@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Xml;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -141,6 +142,48 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
 
                 metadataResult.AddPerson(p);
+            }
+        }
+
+        internal static void ReadSetNode(XmlReader reader, Movie movie)
+        {
+            var tmdbcolid = reader.GetAttribute("tmdbcolid");
+            if (!string.IsNullOrWhiteSpace(tmdbcolid))
+            {
+                movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
+            }
+
+            using var subReader = reader.ReadSubtree();
+            subReader.MoveToContent();
+            subReader.Read();
+            subReader.MoveToContent();
+
+            // check if tag content is just text or has child tags
+            if (subReader.NodeType == XmlNodeType.Text)
+            {
+                movie.CollectionName = subReader.ReadString();
+            }
+            else if (subReader.NodeType == XmlNodeType.Element)
+            {
+                while (!subReader.EOF && subReader.ReadState == ReadState.Interactive)
+                {
+                    if (subReader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (subReader.Name)
+                        {
+                            case "name":
+                                movie.CollectionName = subReader.ReadElementContentAsString();
+                                break;
+                            default:
+                                subReader.Skip();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        subReader.Read();
+                    }
+                }
             }
         }
 

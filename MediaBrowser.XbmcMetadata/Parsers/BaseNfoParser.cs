@@ -450,8 +450,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        // todo remove
-        internal XmlReaderSettings GetXmlReaderSettings()
+        private static XmlReaderSettings GetXmlReaderSettings()
             => new XmlReaderSettings()
             {
                 ValidationType = ValidationType.None,
