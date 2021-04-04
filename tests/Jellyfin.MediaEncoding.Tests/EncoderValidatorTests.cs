@@ -9,12 +9,13 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     public class EncoderValidatorTests
     {
+        private readonly EncoderValidator _encoderValidator = new EncoderValidator(new NullLogger<EncoderValidatorTests>(), "ffmpeg");
+
         [Theory]
         [ClassData(typeof(GetFFmpegVersionTestData))]
         public void GetFFmpegVersionTest(string versionOutput, Version? version)
         {
-            var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
-            Assert.Equal(version, val.GetFFmpegVersion(versionOutput));
+            Assert.Equal(version, _encoderValidator.GetFFmpegVersion(versionOutput));
         }
 
         [Theory]
@@ -28,8 +29,7 @@ namespace Jellyfin.MediaEncoding.Tests
         [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput, false)]
         public void ValidateVersionInternalTest(string versionOutput, bool valid)
         {
-            var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
-            Assert.Equal(valid, val.ValidateVersionInternal(versionOutput));
+            Assert.Equal(valid, _encoderValidator.ValidateVersionInternal(versionOutput));
         }
 
         private class GetFFmpegVersionTestData : IEnumerable<object?[]>
