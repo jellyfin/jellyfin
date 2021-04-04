@@ -16,14 +16,12 @@ using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -89,9 +87,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
 
-        /// <inheritdoc />
-        public FFmpegLocation EncoderLocation { get; private set; }
-
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
         /// Sets global variables FFmpegPath.
@@ -100,18 +95,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetFFmpegPath()
         {
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
-            if (!ValidatePath(_configurationManager.GetEncodingOptions().EncoderAppPath, FFmpegLocation.Custom))
+            var ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+            if (string.IsNullOrEmpty(ffmpegPath))
             {
                 // 2) Check if the --ffmpeg CLI switch has been given
-                if (!ValidatePath(_startupOptionFFmpegPath, FFmpegLocation.SetByArgument))
+                ffmpegPath = _startupOptionFFmpegPath;
+                if (string.IsNullOrEmpty(ffmpegPath))
                 {
                     // 3) Check "ffmpeg"
-                    if (!ValidatePath("ffmpeg", FFmpegLocation.System))
-                    {
-                        EncoderLocation = FFmpegLocation.NotFound;
-                        _ffmpegPath = null;
-                    }
+                    ffmpegPath = "ffmpeg";
                 }
+            }
+
+            if (!ValidatePath(ffmpegPath))
+            {
+                _ffmpegPath = null;
             }
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
@@ -134,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
-            _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
+            _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
         }
 
         /// <summary>
@@ -181,12 +179,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <summary>
         /// Validates the supplied FQPN to ensure it is a ffmpeg utility.
-        /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
+        /// If checks pass, global variable FFmpegPath is updated.
         /// </summary>
         /// <param name="path">FQPN to test.</param>
-        /// <param name="location">Location (External, Custom, System) of tool.</param>
         /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
-        private bool ValidatePath(string path, FFmpegLocation location)
+        private bool ValidatePath(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -196,12 +193,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool rc = new EncoderValidator(_logger, path).ValidateVersion();
             if (!rc)
             {
-                _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
+                _logger.LogWarning("FFmpeg: Failed version check: {Path}", path);
                 return false;
             }
 
             _ffmpegPath = path;
-            EncoderLocation = location;
             return true;
         }
 

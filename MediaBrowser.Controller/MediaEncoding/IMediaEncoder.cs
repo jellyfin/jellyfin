@@ -7,9 +7,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -18,11 +16,6 @@ namespace MediaBrowser.Controller.MediaEncoding
     /// </summary>
     public interface IMediaEncoder : ITranscoderSupport
     {
-        /// <summary>
-        /// The location of the discovered FFmpeg tool.
-        /// </summary>
-        FFmpegLocation EncoderLocation { get; }
-
         /// <summary>
         /// Gets the encoder path.
         /// </summary>
