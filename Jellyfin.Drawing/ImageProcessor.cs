@@ -17,7 +17,7 @@ using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 using Photo = MediaBrowser.Controller.Entities.Photo;
 
-namespace Emby.Drawing
+namespace Jellyfin.Drawing
 {
     /// <summary>
     /// Class ImageProcessor.
