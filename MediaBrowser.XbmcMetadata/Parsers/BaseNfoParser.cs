@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
@@ -23,6 +23,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     public class BaseNfoParser<T>
         where T : BaseItem
     {
+        private readonly ILogger _logger;
         private readonly IConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -47,7 +48,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IUserDataManager userDataManager,
             IDirectoryService directoryService)
         {
-            Logger = logger;
+            _logger = logger;
             _config = config;
             _providerManager = providerManager;
             _validProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -55,13 +56,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _userDataManager = userDataManager;
             _directoryService = directoryService;
         }
-
-        protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        protected ILogger Logger { get; }
 
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
 
@@ -202,35 +196,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        protected void ParseProviderLinks(T item, string xml)
-        {
-            if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
-            {
-                item.SetProviderId(MetadataProvider.Imdb, imdbId.ToString());
-            }
-
-            if (item is Movie)
-            {
-                if (ProviderIdParsers.TryFindTmdbMovieId(xml, out var tmdbId))
-                {
-                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
-                }
-            }
-
-            if (item is Series)
-            {
-                if (ProviderIdParsers.TryFindTmdbSeriesId(xml, out var tmdbId))
-                {
-                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
-                }
-
-                if (ProviderIdParsers.TryFindTvdbId(xml, out var tvdbId))
-                {
-                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString());
-                }
-            }
-        }
-
         protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
             var item = itemResult.Item;
@@ -322,7 +287,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "country":
-                    item.ProductionLocations = reader.ReadStringArrayFromNfo();
+                    item.ProductionLocations = item.ProductionLocations.Concat(reader.ReadStringArrayFromNfo()).ToArray();
                     break;
 
                 case "mpaa":
@@ -440,13 +405,42 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "thumb":
-                    NfoSubtreeParsers<T>.ReadThumbNode(reader, itemResult, _directoryService, Logger);
+                    NfoSubtreeParsers<T>.ReadThumbNode(reader, itemResult, _directoryService, _logger);
                     break;
 
                 // Read Provider Ids
                 default:
                     reader.ReadProviderIdFromNfo(item, _validProviderIds);
                     break;
+            }
+        }
+
+        private static void ParseProviderLinks(T item, string xml)
+        {
+            if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
+            {
+                item.SetProviderId(MetadataProvider.Imdb, imdbId.ToString());
+            }
+
+            if (item is Movie)
+            {
+                if (ProviderIdParsers.TryFindTmdbMovieId(xml, out var tmdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
+                }
+            }
+
+            if (item is Series)
+            {
+                if (ProviderIdParsers.TryFindTmdbSeriesId(xml, out var tmdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
+                }
+
+                if (ProviderIdParsers.TryFindTvdbId(xml, out var tvdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString());
+                }
             }
         }
 

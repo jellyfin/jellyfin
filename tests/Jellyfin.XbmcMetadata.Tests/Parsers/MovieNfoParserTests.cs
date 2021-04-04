@@ -116,6 +116,11 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Single(item.RemoteTrailers);
             Assert.Equal("https://www.youtube.com/watch?v=dQw4w9WgXcQ", item.RemoteTrailers[0].Url);
 
+            Assert.Equal(3, item.ProductionLocations.Length);
+            Assert.Contains("USA", item.ProductionLocations);
+            Assert.Contains("Canada", item.ProductionLocations);
+            Assert.Contains("UK", item.ProductionLocations);
+
             Assert.Equal(20, result.People.Count);
 
             var writers = result.People.Where(x => x.Type == PersonType.Writer).ToArray();
