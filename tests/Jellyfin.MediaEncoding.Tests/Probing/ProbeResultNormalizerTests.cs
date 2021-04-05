@@ -19,9 +19,9 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
-            var bytes = File.ReadAllBytes("Test Data/Probing/some_matadata.json");
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_metadata.json");
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
-            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/some_matadata.mkv", MediaProtocol.File);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
 
             Assert.Single(res.MediaStreams);
 
