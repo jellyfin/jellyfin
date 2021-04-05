@@ -23,7 +23,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
-
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
@@ -444,7 +443,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             CurrentCancellationTokenSource = null;
             CurrentProgress = null;
 
-            OnTaskCompleted(startTime, endTime, status, failureException);
+            await OnTaskCompleted(startTime, endTime, status, failureException).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -588,7 +587,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="endTime">The end time.</param>
         /// <param name="status">The status.</param>
         /// <param name="ex">The exception.</param>
-        private void OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, Exception ex)
+        private async Task OnTaskCompleted(DateTime startTime, DateTime endTime, TaskCompletionStatus status, Exception ex)
         {
             var elapsedTime = endTime - startTime;
 
@@ -613,15 +612,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             LastExecutionResult = result;
 
-            ((TaskManager)_taskManager).OnTaskCompleted(this, result);
+            await ((TaskManager)_taskManager).OnTaskCompleted(this, result).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
-        public void Dispose()
+        /// <returns>A value task representing the disposal of this worker.</returns>
+        public async ValueTask DisposeAsync()
         {
-            Dispose(true);
+            await Dispose(true).ConfigureAwait(false);
             GC.SuppressFinalize(this);
         }
 
@@ -629,7 +629,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
+        /// <returns>A task representing the disposal of this worker.</returns>
+        protected virtual async Task Dispose(bool dispose)
         {
             if (dispose)
             {
@@ -690,7 +691,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 if (wassRunning)
                 {
-                    OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null);
+                    await OnTaskCompleted(startTime, DateTime.UtcNow, TaskCompletionStatus.Aborted, null).ConfigureAwait(false);
                 }
             }
         }

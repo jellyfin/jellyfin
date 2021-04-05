@@ -85,7 +85,8 @@ namespace MediaBrowser.Common.Updates
         /// Uninstalls a plugin.
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        void UninstallPlugin(LocalPlugin plugin);
+        /// <returns>A task representing the uninstallation of the plugin.</returns>
+        Task UninstallPlugin(LocalPlugin plugin);
 
         /// <summary>
         /// Cancels the installation.

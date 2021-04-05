@@ -3,10 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 
@@ -17,8 +14,6 @@ namespace MediaBrowser.Controller
     /// </summary>
     public interface IServerApplicationHost : IApplicationHost
     {
-        event EventHandler HasUpdateAvailableChanged;
-
         bool CoreStartupHasCompleted { get; }
 
         bool CanLaunchWebBrowser { get; }

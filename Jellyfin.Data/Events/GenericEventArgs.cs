@@ -18,9 +18,10 @@ namespace Jellyfin.Data.Events
         }
 
         /// <summary>
-        /// Gets the argument.
+        /// Gets or sets the argument.
+        /// This must be settable for Rebus to work.
         /// </summary>
         /// <value>The argument.</value>
-        public T Argument { get; }
+        public T Argument { get; set; }
     }
 }

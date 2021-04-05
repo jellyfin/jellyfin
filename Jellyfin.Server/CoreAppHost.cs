@@ -76,9 +76,8 @@ namespace Jellyfin.Server
             ServiceCollection.AddDbContextPool<JellyfinDb>(
                  options => options.UseSqlite($"Filename={Path.Combine(ApplicationPaths.DataPath, "jellyfin.db")}"));
 
-            ServiceCollection.AddEventServices();
+            ServiceCollection.AddEventServices(LoggerFactory, GetComposablePartAssemblies());
             ServiceCollection.AddSingleton<IBaseItemManager, BaseItemManager>();
-            ServiceCollection.AddSingleton<IEventManager, EventManager>();
             ServiceCollection.AddSingleton<JellyfinDbProvider>();
 
             ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
@@ -105,6 +104,9 @@ namespace Jellyfin.Server
 
             // Jellyfin.Server.Implementations
             yield return typeof(JellyfinDb).Assembly;
+
+            // Jellyfin.Api
+            yield return typeof(SessionInfoWebSocketListener).Assembly;
         }
 
         /// <inheritdoc />

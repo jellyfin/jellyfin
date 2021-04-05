@@ -2,19 +2,22 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.SyncPlay.Requests;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Emby.Server.Implementations.SyncPlay
 {
     /// <summary>
     /// Class SyncPlayManager.
     /// </summary>
-    public class SyncPlayManager : ISyncPlayManager, IDisposable
+    public class SyncPlayManager : ISyncPlayManager
     {
         /// <summary>
         /// The logger.
@@ -67,8 +70,6 @@ namespace Emby.Server.Implementations.SyncPlay
         /// </remarks>
         private readonly object _groupsLock = new object();
 
-        private bool _disposed = false;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncPlayManager" /> class.
         /// </summary>
@@ -87,14 +88,12 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
-            _sessionManager.SessionControllerConnected += OnSessionControllerConnected;
         }
 
         /// <inheritdoc />
-        public void Dispose()
+        public IGroupStateContext GetGroupForSession(string sessionId)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            return _sessionToGroupMap.TryGetValue(sessionId, out var group) ? group : null;
         }
 
         /// <inheritdoc />
@@ -338,32 +337,6 @@ namespace Emby.Server.Implementations.SyncPlay
             else
             {
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// Releases unmanaged and optionally managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _sessionManager.SessionControllerConnected -= OnSessionControllerConnected;
-            _disposed = true;
-        }
-
-        private void OnSessionControllerConnected(object sender, SessionEventArgs e)
-        {
-            var session = e.SessionInfo;
-
-            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
-            {
-                var request = new JoinGroupRequest(group.GroupId);
-                JoinGroup(session, request, CancellationToken.None);
             }
         }
 

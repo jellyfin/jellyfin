@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dto;
@@ -10,13 +9,14 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 {
     /// <summary>
     /// Creates an entry in the activity log whenever a user starts playback.
     /// </summary>
-    public class PlaybackStartLogger : IEventConsumer<PlaybackStartEventArgs>
+    public class PlaybackStartLogger : IHandleMessages<PlaybackStartEventArgs>
     {
         private readonly ILogger<PlaybackStartLogger> _logger;
         private readonly ILocalizationManager _localizationManager;
@@ -36,35 +36,35 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PlaybackStartEventArgs eventArgs)
+        public async Task Handle(PlaybackStartEventArgs message)
         {
-            if (eventArgs.MediaInfo == null)
+            if (message.MediaInfo == null)
             {
                 _logger.LogWarning("PlaybackStart reported with null media info.");
                 return;
             }
 
-            if (eventArgs.Item != null && eventArgs.Item.IsThemeMedia)
+            if (message.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
             }
 
-            if (eventArgs.Users.Count == 0)
+            if (message.Users.Count == 0)
             {
                 return;
             }
 
-            var user = eventArgs.Users[0];
+            var user = message.Users[0];
 
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserStartedPlayingItemWithValues"),
                         user.Username,
-                        GetItemName(eventArgs.MediaInfo),
-                        eventArgs.DeviceName),
-                    GetPlaybackNotificationType(eventArgs.MediaInfo.MediaType),
+                        GetItemName(message.MediaInfo),
+                        message.DeviceName),
+                    GetPlaybackNotificationType(message.MediaInfo.MediaType),
                     user.Id))
                 .ConfigureAwait(false);
         }

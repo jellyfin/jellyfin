@@ -4,16 +4,16 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events.Users;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
     /// <summary>
     /// Notifies the user's sessions when a user is deleted.
     /// </summary>
-    public class UserDeletedNotifier : IEventConsumer<UserDeletedEventArgs>
+    public class UserDeletedNotifier : IHandleMessages<UserDeletedEventArgs>
     {
         private readonly ISessionManager _sessionManager;
 
@@ -27,12 +27,12 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(UserDeletedEventArgs eventArgs)
+        public async Task Handle(UserDeletedEventArgs message)
         {
             await _sessionManager.SendMessageToUserSessions(
-                new List<Guid> { eventArgs.Argument.Id },
+                new List<Guid> { message.Argument.Id },
                 SessionMessageType.UserDeleted,
-                eventArgs.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
+                message.Argument.Id.ToString("N", CultureInfo.InvariantCulture),
                 CancellationToken.None).ConfigureAwait(false);
         }
     }

@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
@@ -16,27 +16,42 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
     /// <summary>
     /// Creates an activity log entry whenever a task is completed.
     /// </summary>
-    public class TaskCompletedLogger : IEventConsumer<TaskCompletionEventArgs>
+    public sealed class TaskCompletedLogger : IServerEntryPoint
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
+        private readonly ITaskManager _taskManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TaskCompletedLogger"/> class.
         /// </summary>
         /// <param name="localizationManager">The localization manager.</param>
         /// <param name="activityManager">The activity manager.</param>
-        public TaskCompletedLogger(ILocalizationManager localizationManager, IActivityManager activityManager)
+        /// <param name="taskManager">The task manager.</param>
+        public TaskCompletedLogger(ILocalizationManager localizationManager, IActivityManager activityManager, ITaskManager taskManager)
         {
             _localizationManager = localizationManager;
             _activityManager = activityManager;
+            _taskManager = taskManager;
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(TaskCompletionEventArgs eventArgs)
+        public Task RunAsync()
         {
-            var result = eventArgs.Result;
-            var task = eventArgs.Task;
+            _taskManager.TaskCompleted += Handle;
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            _taskManager.TaskCompleted -= Handle;
+        }
+
+        private async void Handle(object? sender, TaskCompletionEventArgs e)
+        {
+            var result = e.Result;
+            var task = e.Task;
 
             if (task.ScheduledTask is IConfigurableScheduledTask activityTask
                 && !activityTask.IsLogged)
@@ -54,14 +69,14 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
             {
                 var vals = new List<string>();
 
-                if (!string.IsNullOrEmpty(eventArgs.Result.ErrorMessage))
+                if (!string.IsNullOrEmpty(e.Result.ErrorMessage))
                 {
-                    vals.Add(eventArgs.Result.ErrorMessage);
+                    vals.Add(e.Result.ErrorMessage);
                 }
 
-                if (!string.IsNullOrEmpty(eventArgs.Result.LongErrorMessage))
+                if (!string.IsNullOrEmpty(e.Result.LongErrorMessage))
                 {
-                    vals.Add(eventArgs.Result.LongErrorMessage);
+                    vals.Add(e.Result.LongErrorMessage);
                 }
 
                 await _activityManager.CreateAsync(new ActivityLog(

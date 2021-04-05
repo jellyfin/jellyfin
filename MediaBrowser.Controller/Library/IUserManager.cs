@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Events;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
@@ -16,11 +15,6 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public interface IUserManager
     {
-        /// <summary>
-        /// Occurs when a user is updated.
-        /// </summary>
-        event EventHandler<GenericEventArgs<User>> OnUserUpdated;
-
         /// <summary>
         /// Gets the users.
         /// </summary>
@@ -108,7 +102,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        void ResetEasyPassword(User user);
+        Task ResetEasyPassword(User user);
 
         /// <summary>
         /// Changes the password.
@@ -118,7 +112,8 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Changes the easy password.
         /// </summary>
-        void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
+        /// <returns>A task representing the change of the user's easy password.</returns>
+        Task ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
 
         /// <summary>
         /// Gets the user dto.

@@ -7,7 +7,7 @@ using Jellyfin.Data.Events;
 
 namespace MediaBrowser.Model.Tasks
 {
-    public interface ITaskManager : IDisposable
+    public interface ITaskManager : IAsyncDisposable
     {
         event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
 

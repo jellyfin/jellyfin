@@ -3,17 +3,17 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
 {
     /// <summary>
     /// Creates an entry in the activity log when a package installation fails.
     /// </summary>
-    public class PluginInstallationFailedLogger : IEventConsumer<InstallationFailedEventArgs>
+    public class PluginInstallationFailedLogger : IHandleMessages<InstallationFailedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -30,21 +30,21 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(InstallationFailedEventArgs eventArgs)
+        public async Task Handle(InstallationFailedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("NameInstallFailed"),
-                    eventArgs.InstallationInfo.Name),
+                    message.InstallationInfo.Name),
                 NotificationType.InstallationFailed.ToString(),
                 Guid.Empty)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("VersionNumber"),
-                    eventArgs.InstallationInfo.Version),
-                Overview = eventArgs.Exception.Message
+                    message.InstallationInfo.Version),
+                Overview = message.Exception.Message
             }).ConfigureAwait(false);
         }
     }

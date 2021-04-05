@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
@@ -18,7 +17,7 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Events.Security;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -33,6 +32,7 @@ using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 
 namespace Emby.Server.Implementations.Session
@@ -42,9 +42,9 @@ namespace Emby.Server.Implementations.Session
     /// </summary>
     public class SessionManager : ISessionManager, IDisposable
     {
+        private readonly IBus _eventBus;
         private readonly IUserDataManager _userDataManager;
         private readonly ILogger<SessionManager> _logger;
-        private readonly IEventManager _eventManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IMusicManager _musicManager;
@@ -67,7 +67,6 @@ namespace Emby.Server.Implementations.Session
 
         public SessionManager(
             ILogger<SessionManager> logger,
-            IEventManager eventManager,
             IUserDataManager userDataManager,
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -77,10 +76,10 @@ namespace Emby.Server.Implementations.Session
             IServerApplicationHost appHost,
             IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
-            IMediaSourceManager mediaSourceManager)
+            IMediaSourceManager mediaSourceManager,
+            IBus eventBus)
         {
             _logger = logger;
-            _eventManager = eventManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -91,45 +90,10 @@ namespace Emby.Server.Implementations.Session
             _authRepo = authRepo;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
+            _eventBus = eventBus;
 
             _deviceManager.DeviceOptionsUpdated += OnDeviceManagerDeviceOptionsUpdated;
         }
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<AuthenticationRequest>> AuthenticationFailed;
-
-        /// <inheritdoc />
-        public event EventHandler<GenericEventArgs<AuthenticationResult>> AuthenticationSucceeded;
-
-        /// <summary>
-        /// Occurs when playback has started.
-        /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackStart;
-
-        /// <summary>
-        /// Occurs when playback has progressed.
-        /// </summary>
-        public event EventHandler<PlaybackProgressEventArgs> PlaybackProgress;
-
-        /// <summary>
-        /// Occurs when playback has stopped.
-        /// </summary>
-        public event EventHandler<PlaybackStopEventArgs> PlaybackStopped;
-
-        /// <inheritdoc />
-        public event EventHandler<SessionEventArgs> SessionStarted;
-
-        /// <inheritdoc />
-        public event EventHandler<SessionEventArgs> CapabilitiesChanged;
-
-        /// <inheritdoc />
-        public event EventHandler<SessionEventArgs> SessionEnded;
-
-        /// <inheritdoc />
-        public event EventHandler<SessionEventArgs> SessionActivity;
-
-        /// <inheritdoc />
-        public event EventHandler<SessionEventArgs> SessionControllerConnected;
 
         /// <summary>
         /// Gets all connections.
@@ -206,30 +170,26 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            _eventManager.Publish(new SessionStartedEventArgs(info));
-
-            EventHelper.QueueEventIfNotNull(
-                SessionStarted,
-                this,
-                new SessionEventArgs
-                {
-                    SessionInfo = info
-                },
-                _logger);
+            // TODO: make the entire call async
+            _eventBus.Send(new SessionStartedEventArgs
+            {
+                UserId = info.UserId,
+                UserName = info.UserName,
+                DeviceName = info.DeviceName,
+                RemoteEndPoint = info.RemoteEndPoint
+            }).GetAwaiter().GetResult();
         }
 
         private void OnSessionEnded(SessionInfo info)
         {
-            EventHelper.QueueEventIfNotNull(
-                SessionEnded,
-                this,
-                new SessionEventArgs
-                {
-                    SessionInfo = info
-                },
-                _logger);
-
-            _eventManager.Publish(new SessionEndedEventArgs(info));
+            // TODO: make the entire call async
+            _eventBus.Send(new SessionEndedEventArgs
+            {
+                UserId = info.UserId,
+                UserName = info.UserName,
+                DeviceName = info.DeviceName,
+                RemoteEndPoint = info.RemoteEndPoint
+            }).GetAwaiter().GetResult();
 
             info.Dispose();
         }
@@ -304,28 +264,17 @@ namespace Emby.Server.Implementations.Session
 
             if ((activityDate - lastActivityDate).TotalSeconds > 10)
             {
-                SessionActivity?.Invoke(
-                    this,
-                    new SessionEventArgs
-                    {
-                        SessionInfo = session
-                    });
+                // TODO: make the entire call async
+                _eventBus.Send(new SessionActivityEventArgs(session)).GetAwaiter().GetResult();
             }
 
             return session;
         }
 
         /// <inheritdoc />
-        public void OnSessionControllerConnected(SessionInfo info)
+        public Task OnSessionControllerConnected(SessionInfo info)
         {
-            EventHelper.QueueEventIfNotNull(
-                SessionControllerConnected,
-                this,
-                new SessionEventArgs
-                {
-                    SessionInfo = info
-                },
-                _logger);
+            return _eventBus.Send(new SessionControllerConnectedEventArgs(info));
         }
 
         /// <inheritdoc />
@@ -681,27 +630,17 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            var eventArgs = new PlaybackStartEventArgs
+            await _eventBus.Send(new PlaybackStartEventArgs
             {
-                Item = libraryItem,
+                ItemId = libraryItem?.Id,
+                IsThemeMedia = libraryItem?.IsThemeMedia ?? false,
                 Users = users,
                 MediaSourceId = info.MediaSourceId,
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
-                DeviceId = session.DeviceId,
-                Session = session
-            };
-
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
-
-            // Nothing to save here
-            // Fire events to inform plugins
-            EventHelper.QueueEventIfNotNull(
-                PlaybackStart,
-                this,
-                eventArgs,
-                _logger);
+                DeviceId = session.DeviceId
+            }).ConfigureAwait(false);
 
             StartIdleCheckTimer();
         }
@@ -768,9 +707,10 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            var eventArgs = new PlaybackProgressEventArgs
+            await _eventBus.Send(new PlaybackProgressEventArgs
             {
-                Item = libraryItem,
+                ItemId = libraryItem?.Id,
+                IsThemeMedia = libraryItem?.IsThemeMedia ?? false,
                 Users = users,
                 PlaybackPositionTicks = session.PlayState.PositionTicks,
                 MediaSourceId = session.PlayState.MediaSourceId,
@@ -780,13 +720,8 @@ namespace Emby.Server.Implementations.Session
                 DeviceId = session.DeviceId,
                 IsPaused = info.IsPaused,
                 PlaySessionId = info.PlaySessionId,
-                IsAutomated = isAutomated,
-                Session = session
-            };
-
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
-
-            PlaybackProgress?.Invoke(this, eventArgs);
+                IsAutomated = isAutomated
+            }).ConfigureAwait(false);
 
             if (!isAutomated)
             {
@@ -963,9 +898,10 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            var eventArgs = new PlaybackStopEventArgs
+            await _eventBus.Send(new PlaybackStopEventArgs
             {
-                Item = libraryItem,
+                ItemId = libraryItem?.Id,
+                IsThemeMedia = libraryItem?.IsThemeMedia ?? false,
                 Users = users,
                 PlaybackPositionTicks = info.PositionTicks,
                 PlayedToCompletion = playedToCompletion,
@@ -973,13 +909,8 @@ namespace Emby.Server.Implementations.Session
                 MediaInfo = info.Item,
                 DeviceName = session.DeviceName,
                 ClientName = session.Client,
-                DeviceId = session.DeviceId,
-                Session = session
-            };
-
-            await _eventManager.PublishAsync(eventArgs).ConfigureAwait(false);
-
-            EventHelper.QueueEventIfNotNull(PlaybackStopped, this, eventArgs, _logger);
+                DeviceId = session.DeviceId
+            }).ConfigureAwait(false);
         }
 
         private bool OnPlaybackStopped(User user, BaseItem item, long? positionTicks, bool playbackFailed)
@@ -1492,7 +1423,7 @@ namespace Emby.Server.Implementations.Session
 
             if (user == null)
             {
-                AuthenticationFailed?.Invoke(this, new GenericEventArgs<AuthenticationRequest>(request));
+                await _eventBus.Send(new AuthenticationFailedEventArgs(request)).ConfigureAwait(false);
                 throw new AuthenticationException("Invalid username or password entered.");
             }
 
@@ -1528,7 +1459,7 @@ namespace Emby.Server.Implementations.Session
                 ServerId = _appHost.SystemId
             };
 
-            AuthenticationSucceeded?.Invoke(this, new GenericEventArgs<AuthenticationResult>(returnResult));
+            await _eventBus.Send(new AuthenticationSucceededEventArgs(returnResult)).ConfigureAwait(false);
 
             return returnResult;
         }
@@ -1688,12 +1619,8 @@ namespace Emby.Server.Implementations.Session
 
             if (saveCapabilities)
             {
-                CapabilitiesChanged?.Invoke(
-                    this,
-                    new SessionEventArgs
-                    {
-                        SessionInfo = session
-                    });
+                // TODO: make the entire call async
+                _eventBus.Send(new SessionCapabilitiesChangedEventArgs(session)).GetAwaiter().GetResult();
 
                 _deviceManager.SaveCapabilities(session.DeviceId, capabilities);
             }

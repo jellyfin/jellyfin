@@ -1,17 +1,17 @@
 ﻿using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 {
     /// <summary>
     /// Creates an entry in the activity log when a session is started.
     /// </summary>
-    public class SessionStartedLogger : IEventConsumer<SessionStartedEventArgs>
+    public class SessionStartedLogger : IHandleMessages<SessionStartedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -28,9 +28,9 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(SessionStartedEventArgs eventArgs)
+        public async Task Handle(SessionStartedEventArgs message)
         {
-            if (string.IsNullOrEmpty(eventArgs.Argument.UserName))
+            if (string.IsNullOrEmpty(message.UserName))
             {
                 return;
             }
@@ -39,15 +39,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("UserOnlineFromDevice"),
-                    eventArgs.Argument.UserName,
-                    eventArgs.Argument.DeviceName),
+                    message.UserName,
+                    message.DeviceName),
                 "SessionStarted",
-                eventArgs.Argument.UserId)
+                message.UserId)
             {
                 ShortOverview = string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("LabelIpAddressValue"),
-                    eventArgs.Argument.RemoteEndPoint)
+                    message.RemoteEndPoint)
             }).ConfigureAwait(false);
         }
     }

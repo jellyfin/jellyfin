@@ -1,17 +1,27 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Api.WebSocketListeners
 {
     /// <summary>
     /// Class SessionInfoWebSocketListener.
     /// </summary>
-    public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>, WebSocketListenerState>
+    public class SessionInfoWebSocketListener : BasePeriodicWebSocketListener<IEnumerable<SessionInfo>,
+            WebSocketListenerState>,
+            IHandleMessages<PlaybackStartEventArgs>,
+            IHandleMessages<PlaybackProgressEventArgs>,
+            IHandleMessages<PlaybackStopEventArgs>,
+            IHandleMessages<SessionStartedEventArgs>,
+            IHandleMessages<SessionEndedEventArgs>,
+            IHandleMessages<SessionCapabilitiesChangedEventArgs>,
+            IHandleMessages<SessionActivityEventArgs>
     {
         private readonly ISessionManager _sessionManager;
 
@@ -24,14 +34,6 @@ namespace Jellyfin.Api.WebSocketListeners
             : base(logger)
         {
             _sessionManager = sessionManager;
-
-            _sessionManager.SessionStarted += OnSessionManagerSessionStarted;
-            _sessionManager.SessionEnded += OnSessionManagerSessionEnded;
-            _sessionManager.PlaybackStart += OnSessionManagerPlaybackStart;
-            _sessionManager.PlaybackStopped += OnSessionManagerPlaybackStopped;
-            _sessionManager.PlaybackProgress += OnSessionManagerPlaybackProgress;
-            _sessionManager.CapabilitiesChanged += OnSessionManagerCapabilitiesChanged;
-            _sessionManager.SessionActivity += OnSessionManagerSessionActivity;
         }
 
         /// <inheritdoc />
@@ -43,6 +45,48 @@ namespace Jellyfin.Api.WebSocketListeners
         /// <inheritdoc />
         protected override SessionMessageType StopType => SessionMessageType.SessionsStop;
 
+        /// <inheritdoc />
+        public async Task Handle(SessionActivityEventArgs eventArgs)
+        {
+            await SendData(false).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task Handle(SessionCapabilitiesChangedEventArgs eventArgs)
+        {
+            await SendData(true).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task Handle(PlaybackProgressEventArgs eventArgs)
+        {
+            await SendData(!eventArgs.IsAutomated).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task Handle(PlaybackStopEventArgs eventArgs)
+        {
+            await SendData(true).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task Handle(PlaybackStartEventArgs eventArgs)
+        {
+            await SendData(true).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task Handle(SessionStartedEventArgs e)
+        {
+            await SendData(true).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task Handle(SessionEndedEventArgs e)
+        {
+            await SendData(true).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Gets the data to send.
         /// </summary>
@@ -50,55 +94,6 @@ namespace Jellyfin.Api.WebSocketListeners
         protected override Task<IEnumerable<SessionInfo>> GetDataToSend()
         {
             return Task.FromResult(_sessionManager.Sessions);
-        }
-
-        /// <inheritdoc />
-        protected override void Dispose(bool dispose)
-        {
-            _sessionManager.SessionStarted -= OnSessionManagerSessionStarted;
-            _sessionManager.SessionEnded -= OnSessionManagerSessionEnded;
-            _sessionManager.PlaybackStart -= OnSessionManagerPlaybackStart;
-            _sessionManager.PlaybackStopped -= OnSessionManagerPlaybackStopped;
-            _sessionManager.PlaybackProgress -= OnSessionManagerPlaybackProgress;
-            _sessionManager.CapabilitiesChanged -= OnSessionManagerCapabilitiesChanged;
-            _sessionManager.SessionActivity -= OnSessionManagerSessionActivity;
-
-            base.Dispose(dispose);
-        }
-
-        private async void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
-        {
-            await SendData(false).ConfigureAwait(false);
-        }
-
-        private async void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
-        {
-            await SendData(true).ConfigureAwait(false);
-        }
-
-        private async void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
-        {
-            await SendData(!e.IsAutomated).ConfigureAwait(false);
-        }
-
-        private async void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
-        {
-            await SendData(true).ConfigureAwait(false);
-        }
-
-        private async void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
-        {
-            await SendData(true).ConfigureAwait(false);
-        }
-
-        private async void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
-        {
-            await SendData(true).ConfigureAwait(false);
-        }
-
-        private async void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
-        {
-            await SendData(true).ConfigureAwait(false);
         }
     }
 }

@@ -2,18 +2,18 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
 {
     /// <summary>
     /// Creates an entry in the activity log when a plugin is uninstalled.
     /// </summary>
-    public class PluginUninstalledLogger : IEventConsumer<PluginUninstalledEventArgs>
+    public class PluginUninstalledLogger : IHandleMessages<PluginUninstalledEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -30,13 +30,13 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PluginUninstalledEventArgs eventArgs)
+        public async Task Handle(PluginUninstalledEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("PluginUninstalledWithName"),
-                        eventArgs.Argument.Name),
+                        message.Argument.Name),
                     NotificationType.PluginUninstalled.ToString(),
                     Guid.Empty))
                 .ConfigureAwait(false);

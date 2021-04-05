@@ -2,16 +2,16 @@
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events.Users;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
     /// <summary>
     /// Creates an entry in the activity log when a user's password is changed.
     /// </summary>
-    public class UserPasswordChangedLogger : IEventConsumer<UserPasswordChangedEventArgs>
+    public class UserPasswordChangedLogger : IHandleMessages<UserPasswordChangedEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -28,15 +28,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(UserPasswordChangedEventArgs eventArgs)
+        public async Task Handle(UserPasswordChangedEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         _localizationManager.GetLocalizedString("UserPasswordChangedWithName"),
-                        eventArgs.Argument.Username),
+                        message.Argument.Username),
                     "UserPasswordChanged",
-                    eventArgs.Argument.Id))
+                    message.Argument.Id))
                 .ConfigureAwait(false);
         }
     }

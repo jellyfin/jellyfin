@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
@@ -19,11 +18,11 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 
 namespace Emby.Server.Implementations.Updates
 {
@@ -37,7 +36,7 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         private readonly ILogger<InstallationManager> _logger;
         private readonly IApplicationPaths _appPaths;
-        private readonly IEventManager _eventManager;
+        private readonly IBus _eventBus;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -67,7 +66,7 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="logger">The <see cref="ILogger{InstallationManager}"/>.</param>
         /// <param name="appHost">The <see cref="IServerApplicationHost"/>.</param>
         /// <param name="appPaths">The <see cref="IApplicationPaths"/>.</param>
-        /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
+        /// <param name="eventBus">The <see cref="IBus"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
         /// <param name="zipClient">The <see cref="IZipClient"/>.</param>
@@ -76,7 +75,7 @@ namespace Emby.Server.Implementations.Updates
             ILogger<InstallationManager> logger,
             IServerApplicationHost appHost,
             IApplicationPaths appPaths,
-            IEventManager eventManager,
+            IBus eventBus,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             IZipClient zipClient,
@@ -88,7 +87,7 @@ namespace Emby.Server.Implementations.Updates
             _logger = logger;
             _applicationHost = appHost;
             _appPaths = appPaths;
-            _eventManager = eventManager;
+            _eventBus = eventBus;
             _httpClientFactory = httpClientFactory;
             _config = config;
             _zipClient = zipClient;
@@ -323,7 +322,7 @@ namespace Emby.Server.Implementations.Updates
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, innerCancellationTokenSource.Token);
             var linkedToken = linkedTokenSource.Token;
 
-            await _eventManager.PublishAsync(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
+            await _eventBus.Send(new PluginInstallingEventArgs(package)).ConfigureAwait(false);
 
             try
             {
@@ -335,11 +334,11 @@ namespace Emby.Server.Implementations.Updates
                 }
 
                 _completedInstallationsInternal.Add(package);
-                await _eventManager.PublishAsync(isUpdate
-                    ? (GenericEventArgs<InstallationInfo>)new PluginUpdatedEventArgs(package)
+                await _eventBus.Send(isUpdate
+                    ? new PluginUpdatedEventArgs(package)
                     : new PluginInstalledEventArgs(package)).ConfigureAwait(false);
 
-                _applicationHost.NotifyPendingRestart();
+                await _applicationHost.NotifyPendingRestart().ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -350,7 +349,7 @@ namespace Emby.Server.Implementations.Updates
 
                 _logger.LogInformation("Package installation cancelled: {0} {1}", package.Name, package.Version);
 
-                await _eventManager.PublishAsync(new PluginInstallationCancelledEventArgs(package)).ConfigureAwait(false);
+                await _eventBus.Send(new PluginInstallationCancelledEventArgs(package)).ConfigureAwait(false);
 
                 throw;
             }
@@ -363,7 +362,7 @@ namespace Emby.Server.Implementations.Updates
                     _currentInstallations.Remove(tuple);
                 }
 
-                await _eventManager.PublishAsync(new InstallationFailedEventArgs
+                await _eventBus.Send(new InstallationFailedEventArgs
                 {
                     InstallationInfo = package,
                     Exception = ex
@@ -382,7 +381,7 @@ namespace Emby.Server.Implementations.Updates
         /// Uninstalls a plugin.
         /// </summary>
         /// <param name="plugin">The <see cref="LocalPlugin"/> to uninstall.</param>
-        public void UninstallPlugin(LocalPlugin plugin)
+        public async Task UninstallPlugin(LocalPlugin plugin)
         {
             if (plugin == null)
             {
@@ -400,9 +399,9 @@ namespace Emby.Server.Implementations.Updates
             // Remove it the quick way for now
             _pluginManager.RemovePlugin(plugin);
 
-            _eventManager.Publish(new PluginUninstalledEventArgs(plugin.GetPluginInfo()));
+            await _eventBus.Send(new PluginUninstalledEventArgs(plugin.GetPluginInfo())).ConfigureAwait(false);
 
-            _applicationHost.NotifyPendingRestart();
+            await _applicationHost.NotifyPendingRestart().ConfigureAwait(false);
         }
 
         /// <inheritdoc/>

@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dto;
@@ -10,13 +9,14 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Session
 {
     /// <summary>
     /// Creates an activity log entry whenever a user stops playback.
     /// </summary>
-    public class PlaybackStopLogger : IEventConsumer<PlaybackStopEventArgs>
+    public class PlaybackStopLogger : IHandleMessages<PlaybackStopEventArgs>
     {
         private readonly ILogger<PlaybackStopLogger> _logger;
         private readonly ILocalizationManager _localizationManager;
@@ -36,9 +36,9 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(PlaybackStopEventArgs eventArgs)
+        public async Task Handle(PlaybackStopEventArgs message)
         {
-            var item = eventArgs.MediaInfo;
+            var item = message.MediaInfo;
 
             if (item == null)
             {
@@ -46,18 +46,18 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return;
             }
 
-            if (eventArgs.Item != null && eventArgs.Item.IsThemeMedia)
+            if (message.IsThemeMedia)
             {
                 // Don't report theme song or local trailer playback
                 return;
             }
 
-            if (eventArgs.Users.Count == 0)
+            if (message.Users.Count == 0)
             {
                 return;
             }
 
-            var user = eventArgs.Users[0];
+            var user = message.Users[0];
 
             var notificationType = GetPlaybackStoppedNotificationType(item.MediaType);
             if (notificationType == null)
@@ -71,7 +71,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                         _localizationManager.GetLocalizedString("UserStoppedPlayingItemWithValues"),
                         user.Username,
                         GetItemName(item),
-                        eventArgs.DeviceName),
+                        message.DeviceName),
                     notificationType,
                     user.Id))
                 .ConfigureAwait(false);

@@ -4,18 +4,18 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Events;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Library
 {
     /// <summary>
     /// Creates an entry in the activity log whenever a subtitle download fails.
     /// </summary>
-    public class SubtitleDownloadFailureLogger : IEventConsumer<SubtitleDownloadFailureEventArgs>
+    public class SubtitleDownloadFailureLogger : IHandleMessages<SubtitleDownloadFailureEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -32,19 +32,19 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Library
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(SubtitleDownloadFailureEventArgs eventArgs)
+        public async Task Handle(SubtitleDownloadFailureEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("SubtitleDownloadFailureFromForItem"),
-                    eventArgs.Provider,
-                    GetItemName(eventArgs.Item)),
+                    message.Provider,
+                    GetItemName(message.Item)),
                 "SubtitleDownloadFailure",
                 Guid.Empty)
             {
-                ItemId = eventArgs.Item.Id.ToString("N", CultureInfo.InvariantCulture),
-                ShortOverview = eventArgs.Exception.Message
+                ItemId = message.Item.Id.ToString("N", CultureInfo.InvariantCulture),
+                ShortOverview = message.Exception.Message
             }).ConfigureAwait(false);
         }
 

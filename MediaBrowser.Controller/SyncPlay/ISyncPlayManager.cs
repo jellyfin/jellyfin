@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -12,6 +14,13 @@ namespace MediaBrowser.Controller.SyncPlay
     /// </summary>
     public interface ISyncPlayManager
     {
+        /// <summary>
+        /// Gets the group associated with the provided session id.
+        /// </summary>
+        /// <param name="sessionId">The id of the session.</param>
+        /// <returns>The group, or null.</returns>
+        IGroupStateContext? GetGroupForSession(string sessionId);
+
         /// <summary>
         /// Creates a new group.
         /// </summary>

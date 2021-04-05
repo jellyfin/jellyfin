@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Cryptography;
@@ -18,7 +17,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
@@ -27,6 +25,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Rebus.Bus;
 
 namespace Jellyfin.Server.Implementations.Users
 {
@@ -36,7 +35,7 @@ namespace Jellyfin.Server.Implementations.Users
     public class UserManager : IUserManager
     {
         private readonly JellyfinDbProvider _dbProvider;
-        private readonly IEventManager _eventManager;
+        private readonly IBus _eventBus;
         private readonly ICryptoProvider _cryptoProvider;
         private readonly INetworkManager _networkManager;
         private readonly IApplicationHost _appHost;
@@ -54,7 +53,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// Initializes a new instance of the <see cref="UserManager"/> class.
         /// </summary>
         /// <param name="dbProvider">The database provider.</param>
-        /// <param name="eventManager">The event manager.</param>
+        /// <param name="eventBus">The event bus.</param>
         /// <param name="cryptoProvider">The cryptography provider.</param>
         /// <param name="networkManager">The network manager.</param>
         /// <param name="appHost">The application host.</param>
@@ -62,7 +61,7 @@ namespace Jellyfin.Server.Implementations.Users
         /// <param name="logger">The logger.</param>
         public UserManager(
             JellyfinDbProvider dbProvider,
-            IEventManager eventManager,
+            IBus eventBus,
             ICryptoProvider cryptoProvider,
             INetworkManager networkManager,
             IApplicationHost appHost,
@@ -70,7 +69,7 @@ namespace Jellyfin.Server.Implementations.Users
             ILogger<UserManager> logger)
         {
             _dbProvider = dbProvider;
-            _eventManager = eventManager;
+            _eventBus = eventBus;
             _cryptoProvider = cryptoProvider;
             _networkManager = networkManager;
             _appHost = appHost;
@@ -96,9 +95,6 @@ namespace Jellyfin.Server.Implementations.Users
                 _users.Add(user.Id, user);
             }
         }
-
-        /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<User>>? OnUserUpdated;
 
         /// <inheritdoc/>
         public IEnumerable<User> Users => _users.Values;
@@ -154,7 +150,7 @@ namespace Jellyfin.Server.Implementations.Users
 
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
-            OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
+            await _eventBus.Send(new UserUpdatedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -218,7 +214,7 @@ namespace Jellyfin.Server.Implementations.Users
             dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            await _eventManager.PublishAsync(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
+            await _eventBus.Send(new UserCreatedEventArgs(newUser)).ConfigureAwait(false);
 
             return newUser;
         }
@@ -265,7 +261,7 @@ namespace Jellyfin.Server.Implementations.Users
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
 
-            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
+            await _eventBus.Send(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -275,9 +271,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ResetEasyPassword(User user)
+        public Task ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, string.Empty, null);
+            return ChangeEasyPassword(user, string.Empty, null);
         }
 
         /// <inheritdoc/>
@@ -291,11 +287,11 @@ namespace Jellyfin.Server.Implementations.Users
             await GetAuthenticationProvider(user).ChangePassword(user, newPassword).ConfigureAwait(false);
             await UpdateUserAsync(user).ConfigureAwait(false);
 
-            await _eventManager.PublishAsync(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
+            await _eventBus.Send(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -308,9 +304,9 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
-            _eventManager.Publish(new UserPasswordChangedEventArgs(user));
+            await _eventBus.Send(new UserPasswordChangedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -875,7 +871,7 @@ namespace Jellyfin.Server.Implementations.Users
             if (maxInvalidLogins.HasValue && user.InvalidLoginAttemptCount >= maxInvalidLogins)
             {
                 user.SetPermission(PermissionKind.IsDisabled, true);
-                await _eventManager.PublishAsync(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
+                await _eventBus.Send(new UserLockedOutEventArgs(user)).ConfigureAwait(false);
                 _logger.LogWarning(
                     "Disabling user {Username} due to {Attempts} unsuccessful login attempts.",
                     user.Username,

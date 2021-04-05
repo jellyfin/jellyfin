@@ -10,13 +10,13 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
 using Emby.Drawing;
-using Emby.Notifications;
 using Emby.Photos;
 using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Channels;
@@ -44,10 +44,12 @@ using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data.Events.System;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
@@ -66,7 +68,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Plugins;
@@ -101,6 +102,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
+using Rebus.Bus;
+using Rebus.ServiceProvider;
 using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
@@ -126,6 +129,8 @@ namespace Emby.Server.Implementations
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
         private string[] _urlPrefixes;
+
+        private IBus _eventBus;
 
         /// <summary>
         /// Gets a value indicating whether this instance can self restart.
@@ -162,11 +167,6 @@ namespace Emby.Server.Implementations
         /// Gets the <see cref="INetworkManager"/> singleton instance.
         /// </summary>
         public INetworkManager NetManager { get; internal set; }
-
-        /// <summary>
-        /// Occurs when [has pending restart changed].
-        /// </summary>
-        public event EventHandler HasPendingRestartChanged;
 
         /// <summary>
         /// Gets a value indicating whether this instance has changes that require the entire application to restart.
@@ -673,8 +673,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
-            ServiceCollection.AddSingleton<INotificationManager, NotificationManager>();
-
             ServiceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             ServiceCollection.AddSingleton<IChapterManager, ChapterManager>();
@@ -721,6 +719,9 @@ namespace Emby.Server.Implementations
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
 
             FindParts();
+
+            ServiceProvider.UseRebus();
+            _eventBus = Resolve<IBus>();
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)
@@ -850,8 +851,6 @@ namespace Emby.Server.Implementations
             Resolve<IChannelManager>().AddParts(GetExports<IChannel>());
 
             Resolve<IMediaSourceManager>().AddParts(GetExports<IMediaSourceProvider>());
-
-            Resolve<INotificationManager>().AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
         }
 
         /// <summary>
@@ -925,7 +924,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void OnConfigurationUpdated(object sender, EventArgs e)
+        protected async void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
             var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
@@ -961,7 +960,7 @@ namespace Emby.Server.Implementations
             {
                 Logger.LogInformation("App needs to be restarted due to configuration change.");
 
-                NotifyPendingRestart();
+                await NotifyPendingRestart().ConfigureAwait(false);
             }
         }
 
@@ -992,10 +991,8 @@ namespace Emby.Server.Implementations
             return false;
         }
 
-        /// <summary>
-        /// Notifies that the kernel that a change has been made that requires a restart.
-        /// </summary>
-        public void NotifyPendingRestart()
+        /// <inheritdoc />
+        public async Task NotifyPendingRestart()
         {
             Logger.LogInformation("App needs to be restarted.");
 
@@ -1005,7 +1002,7 @@ namespace Emby.Server.Implementations
 
             if (changed)
             {
-                EventHelper.QueueEventIfNotNull(HasPendingRestartChanged, this, EventArgs.Empty, Logger);
+                await _eventBus.Send(new PendingRestartEventArgs()).ConfigureAwait(false);
             }
         }
 
@@ -1082,9 +1079,6 @@ namespace Emby.Server.Implementations
 
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
-
-            // Notifications
-            yield return typeof(NotificationManager).Assembly;
 
             // Xbmc
             yield return typeof(ArtistNfoProvider).Assembly;

@@ -7,7 +7,7 @@ namespace MediaBrowser.Model.Tasks
     /// <summary>
     /// Interface IScheduledTaskWorker.
     /// </summary>
-    public interface IScheduledTaskWorker : IDisposable
+    public interface IScheduledTaskWorker : IAsyncDisposable
     {
         /// <summary>
         /// Occurs when [task progress].

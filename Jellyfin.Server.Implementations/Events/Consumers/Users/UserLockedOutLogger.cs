@@ -2,18 +2,18 @@
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events.Users;
-using MediaBrowser.Controller.Events;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Notifications;
 using Microsoft.Extensions.Logging;
+using Rebus.Handlers;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Users
 {
     /// <summary>
     /// Creates an entry in the activity log when a user is locked out.
     /// </summary>
-    public class UserLockedOutLogger : IEventConsumer<UserLockedOutEventArgs>
+    public class UserLockedOutLogger : IHandleMessages<UserLockedOutEventArgs>
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IActivityManager _activityManager;
@@ -30,15 +30,15 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(UserLockedOutEventArgs eventArgs)
+        public async Task Handle(UserLockedOutEventArgs message)
         {
             await _activityManager.CreateAsync(new ActivityLog(
                 string.Format(
                     CultureInfo.InvariantCulture,
                     _localizationManager.GetLocalizedString("UserLockedOutWithName"),
-                    eventArgs.Argument.Username),
+                    message.Argument.Username),
                 NotificationType.UserLockedOut.ToString(),
-                eventArgs.Argument.Id)
+                message.Argument.Id)
             {
                 LogSeverity = LogLevel.Error
             }).ConfigureAwait(false);

@@ -23,7 +23,9 @@ namespace MediaBrowser.Controller.Library
 
         public long? PlaybackPositionTicks { get; set; }
 
-        public BaseItem Item { get; set; }
+        public Guid? ItemId { get; set; }
+
+        public bool IsThemeMedia { get; set; }
 
         public BaseItemDto MediaInfo { get; set; }
 
@@ -40,7 +42,5 @@ namespace MediaBrowser.Controller.Library
         public string ClientName { get; set; }
 
         public string PlaySessionId { get; set; }
-
-        public SessionInfo Session { get; set; }
     }
 }

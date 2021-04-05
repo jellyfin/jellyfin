@@ -1,8 +1,6 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -13,11 +11,6 @@ namespace MediaBrowser.Controller.Subtitles
 {
     public interface ISubtitleManager
     {
-        /// <summary>
-        /// Occurs when [subtitle download failure].
-        /// </summary>
-        event EventHandler<SubtitleDownloadFailureEventArgs> SubtitleDownloadFailure;
-
         /// <summary>
         /// Adds the parts.
         /// </summary>
