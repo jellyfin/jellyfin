@@ -60,8 +60,8 @@ namespace MediaBrowser.Providers.Manager
 
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
         private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
-        private IEnumerable<IMetadataSaver> _savers;
-        private IExternalId[] _externalIds;
+        private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
+        private IExternalId[] _externalIds = Array.Empty<IExternalId>();
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers
-                .Where(i => !(i is IConfigurableProvider configurable) || configurable.IsEnabled)
+                .Where(i => i is not IConfigurableProvider configurable || configurable.IsEnabled)
                 .ToArray();
         }
 

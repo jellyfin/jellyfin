@@ -111,8 +111,6 @@ namespace Jellyfin.Networking.Tests
             Assert.False(nm.IsInLocalNetwork(value));
         }
 
-        /// <summary>
-        /// Checks the validity of IP address formats.
         /// </summary>
         /// <param name="address">IP Address.</param>
         /// <param name="valid">Expected outcome.</param>

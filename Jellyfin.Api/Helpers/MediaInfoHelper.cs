@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,7 +180,7 @@ namespace Jellyfin.Api.Helpers
             bool enableTranscoding,
             bool allowVideoStreamCopy,
             bool allowAudioStreamCopy,
-            string ipAddress)
+            IPAddress ipAddress)
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
@@ -551,7 +552,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private int? GetMaxBitrate(int? clientMaxBitrate, User user, string ipAddress)
+        private int? GetMaxBitrate(int? clientMaxBitrate, User user, IPAddress ipAddress)
         {
             var maxBitrate = clientMaxBitrate;
             var remoteClientMaxBitrate = user.RemoteClientBitrateLimit ?? 0;
