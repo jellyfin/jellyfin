@@ -115,7 +115,7 @@
     "TaskRefreshLibraryDescription": "নতুন ফাইলের জন্য মিডিয়া লাইব্রেরি স্ক্যান এবং মেটাডাটা রিফ্রেশ করুন।",
     "Undefined": "অসঙ্গায়িত",
     "Forced": "জোরকরে",
-    "TaskCleanActivityLogDescription": "নির্ধারিত সময়ের আগের কাজের  হিসাব মুছে দিন খালি করুন",
+    "TaskCleanActivityLogDescription": "নির্ধারিত সময়ের আগের কাজের হিসাব মুছে দিন খালি করুন",
     "TaskCleanActivityLog": "কাজের ফাইল খালি করুন",
     "Default": "প্রাথমিক"
 }
