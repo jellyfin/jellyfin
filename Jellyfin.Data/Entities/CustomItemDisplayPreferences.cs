@@ -17,7 +17,7 @@ namespace Jellyfin.Data.Entities
         /// <param name="client">The client.</param>
         /// <param name="preferenceKey">The preference key.</param>
         /// <param name="preferenceValue">The preference value.</param>
-        public CustomItemDisplayPreferences(Guid userId, Guid itemId, string client, string preferenceKey, string preferenceValue)
+        public CustomItemDisplayPreferences(Guid userId, Guid itemId, string client, string preferenceKey, string? preferenceValue)
         {
             UserId = userId;
             ItemId = itemId;
@@ -84,7 +84,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }
