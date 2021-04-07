@@ -319,7 +319,7 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
-                c.DocumentFilter<WebsocketModelFilter>();
+                c.DocumentFilter<AdditionalModelFilter>();
             });
         }
 
