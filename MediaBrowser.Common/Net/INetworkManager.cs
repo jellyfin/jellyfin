@@ -43,7 +43,7 @@ namespace MediaBrowser.Common.Net
         /// Gets the remote address filter.
         /// </summary>
         /// <returns>Array of network addresses.</returns>
-        IPNetAddress[] RemoteAddressFilter();
+        IReadOnlyList<IPNetAddress> RemoteAddressFilter();
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -57,7 +57,7 @@ namespace MediaBrowser.Common.Net
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
         /// <returns>Collection{IPNetAddress}.</returns>
-        IPNetAddress[] GetLoopbacks();
+        IReadOnlyList<IPNetAddress> GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)

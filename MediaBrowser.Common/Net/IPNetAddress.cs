@@ -34,17 +34,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// IP6Loopback address host.
         /// </summary>
-        public static readonly IPNetAddress IP6Loopback = IPNetAddress.Parse("::1");
-
-        /// <summary>
-        /// IPv6 Loopback address.
-        /// </summary>
-        protected static readonly byte[] Ipv6Loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
-
-        /// <summary>
-        /// IPv4 Loopback address.
-        /// </summary>
-        protected static readonly byte[] Ipv4Loopback = { 127, 0, 0, 1 };
+        public static readonly IPNetAddress IP6Loopback = new (IPAddress.IPv6Loopback);
 
         /// <summary>
         /// Object's IP address.
@@ -138,9 +128,7 @@ namespace MediaBrowser.Common.Net
             {
                 if (!_isNetwork)
                 {
-                    var result = NetworkAddressOf(Address, PrefixLength);
-                    _address = result.Address;
-                    PrefixLength = result.PrefixLength;
+                    (_address, PrefixLength) = NetworkAddressOf(Address, PrefixLength);
                 }
 
                 _isNetwork = value;
@@ -148,7 +136,7 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Gets a value indicating the network address of this object. Lazy implimentation.
+        /// Gets a value indicating the network address of this object. Lazy implementation.
         /// </summary>
         public IPNetAddress NetworkAddress
         {
@@ -161,8 +149,8 @@ namespace MediaBrowser.Common.Net
 
                 if (_networkAddress == null)
                 {
-                    var result = NetworkAddressOf(Address, PrefixLength);
-                    _networkAddress = new IPNetAddress(result.Address, result.PrefixLength)
+                    var (address, prefixLength) = NetworkAddressOf(Address, PrefixLength);
+                    _networkAddress = new IPNetAddress(address, prefixLength)
                     {
                         Tag = this.Tag,
                         _isNetwork = true
@@ -179,7 +167,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">IP Address to convert.</param>
         /// <param name="prefixLength">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        public static (IPAddress Address, byte PrefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
+        public static (IPAddress address, byte prefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
         {
             if (address == null)
             {
@@ -193,7 +181,7 @@ namespace MediaBrowser.Common.Net
 
             if (IsLoopback(address))
             {
-                return (Address: address, PrefixLength: prefixLength);
+                return (address, prefixLength);
             }
 
             // An ip address is just a list of bytes, each one representing a segment on the network.
@@ -225,7 +213,7 @@ namespace MediaBrowser.Common.Net
             }
 
             // Return the network address for the prefix.
-            return (Address: new IPAddress(addressBytes), PrefixLength: prefixLength);
+            return (new IPAddress(addressBytes), prefixLength);
         }
 
         /// <summary>
@@ -422,7 +410,7 @@ namespace MediaBrowser.Common.Net
             addr = addr.Trim();
 
             // Is it a network?
-            string[] tokens = addr.Split("/");
+            string[] tokens = addr.Split('/');
 
             if (tokens.Length > 2)
             {
@@ -520,8 +508,8 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
-            var altAddress = NetworkAddressOf(address, PrefixLength);
-            return NetworkAddress.Address.Equals(altAddress.Address) && NetworkAddress.PrefixLength >= altAddress.PrefixLength;
+            var (altAddress, altPrefix) = NetworkAddressOf(address, PrefixLength);
+            return NetworkAddress.Address.Equals(altAddress) && NetworkAddress.PrefixLength >= altPrefix;
         }
 
         /// <summary>
@@ -554,8 +542,8 @@ namespace MediaBrowser.Common.Net
                     return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = NetworkAddressOf(netaddrObj.Address!, PrefixLength);
-                return NetworkAddress.Address.Equals(altAddress.Address);
+                var altAddress = NetworkAddressOf(netaddrObj.Address!, PrefixLength).address;
+                return NetworkAddress.Address.Equals(altAddress);
             }
 
             return false;

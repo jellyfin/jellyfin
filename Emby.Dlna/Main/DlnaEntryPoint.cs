@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -288,12 +289,12 @@ namespace Emby.Dlna.Main
             var udn = CreateUuid(_appHost.SystemId);
             var descriptorUri = "/dlna/" + udn + "/description.xml";
 
-            var bindAddresses = _networkManager
+            IReadOnlyList<IPNetAddress> bindAddresses = _networkManager
                 .GetInternalBindAddresses()
                 .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0))
                 .ToArray();
 
-            if (bindAddresses.Length == 0)
+            if (bindAddresses.Count == 0)
             {
                 // No interfaces returned, so use loopback.
                 bindAddresses = _networkManager.GetLoopbacks();

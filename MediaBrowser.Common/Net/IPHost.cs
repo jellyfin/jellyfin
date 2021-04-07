@@ -156,7 +156,7 @@ namespace MediaBrowser.Common.Net
             // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
             if (host[0] == '[')
             {
-                int i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+                int i = host.IndexOf(']', StringComparison.Ordinal);
                 if (i != -1)
                 {
                     return TryParse(host.Remove(i)[1..], out hostObj, ipTypes);
@@ -412,7 +412,7 @@ namespace MediaBrowser.Common.Net
                 // Resolves the host name - so save a DNS lookup.
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    _addresses = new IPAddress[] { new IPAddress(Ipv4Loopback), new IPAddress(Ipv6Loopback) };
+                    _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
                     return;
                 }
 

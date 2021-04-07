@@ -19,8 +19,7 @@ namespace Jellyfin.Networking.Tests
     ///
     /// The network is defined by a series of values, separated by the character |
     ///
-    /// The format is [ip address],[interface index],[interface name]
-    /// .
+    /// The format is [ip address],[interface index],[interface name].
     /// </remarks>
     public class NetworkParseTests
     {
@@ -92,7 +91,7 @@ namespace Jellyfin.Networking.Tests
         /// <param name="value">Value to check.</param>
         [Theory]
         [InlineData("192.168.10.0/24,!192.168.10.60/32", "192.168.10.60")]
-        public void Is_In_Network(string network, string value)
+        public void Is_Not_In_Network(string network, string value)
         {
             if (network == null)
             {
@@ -111,6 +110,8 @@ namespace Jellyfin.Networking.Tests
             Assert.False(nm.IsInLocalNetwork(value));
         }
 
+        /// <summary>
+        /// Validates that the address is a valid host string.
         /// </summary>
         /// <param name="address">IP Address.</param>
         /// <param name="valid">Expected outcome.</param>
@@ -260,25 +261,25 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(nc.AsString(), includedItems);
 
             // Test excluded.
-            nc = nm.CreateIPCollection(settings.Split(","), true);
+            nc = nm.CreateIPCollection(settings.Split(','), true);
             Assert.Equal(nc.AsString(), excludedItems);
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
 
             // Test IP4 included.
-            nc = nm.CreateIPCollection(settings.Split(","), false);
+            nc = nm.CreateIPCollection(settings.Split(','), false);
             Assert.Equal(nc.AsString(), includedIp4Items);
 
             // Test IP4 excluded.
-            nc = nm.CreateIPCollection(settings.Split(","), true);
+            nc = nm.CreateIPCollection(settings.Split(','), true);
             Assert.Equal(nc.AsString(), excludedIp4Items);
 
             conf.EnableIPV6 = true;
             nm.UpdateSettings(conf);
 
             // Test network addresses of collection.
-            nc = nm.CreateIPCollection(settings.Split(","), false);
+            nc = nm.CreateIPCollection(settings.Split(','), false);
             var nca = nc.AsNetworkAddresses();
             Assert.Equal(nca.AsString(), networkAddress);
         }
@@ -317,8 +318,8 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Collection<IPNetAddress> nc1 = nm.CreateIPCollection(settings.Split(","), false);
-            Collection<IPNetAddress> nc2 = nm.CreateIPCollection(compare.Split(","), false);
+            Collection<IPNetAddress> nc1 = nm.CreateIPCollection(settings.Split(','), false);
+            Collection<IPNetAddress> nc2 = nm.CreateIPCollection(compare.Split(','), false);
 
             Assert.Equal(nc1.Union(nc2).AsString(), result);
         }
@@ -429,10 +430,10 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            Collection<IPNetAddress> ncSource = nm.CreateIPCollection(source.Split(","));
-            Collection<IPNetAddress> ncDest = nm.CreateIPCollection(dest.Split(","));
+            Collection<IPNetAddress> ncSource = nm.CreateIPCollection(source.Split(','));
+            Collection<IPNetAddress> ncDest = nm.CreateIPCollection(dest.Split(','));
             Collection<IPNetAddress> ncResult = ncSource.Union(ncDest);
-            Collection<IPNetAddress> resultCollection = nm.CreateIPCollection(result.Split(","));
+            Collection<IPNetAddress> resultCollection = nm.CreateIPCollection(result.Split(','));
             Assert.True(ncResult.Compare(resultCollection));
         }
 
@@ -572,7 +573,7 @@ namespace Jellyfin.Networking.Tests
             Assert.Equal(intf, result);
         }
 
-        private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        internal static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
             {

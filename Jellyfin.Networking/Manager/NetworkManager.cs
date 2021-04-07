@@ -230,13 +230,13 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public IPNetAddress[] RemoteAddressFilter()
+        public IReadOnlyList<IPNetAddress> RemoteAddressFilter()
         {
             return _remoteAddressFilter;
         }
 
         /// <inheritdoc/>
-        public IPNetAddress[] GetLoopbacks()
+        public IReadOnlyList<IPNetAddress> GetLoopbacks()
         {
             if (_ipClassType == IpClassType.IpBoth)
             {
