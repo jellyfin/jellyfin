@@ -502,7 +502,7 @@ namespace Emby.Server.Implementations.Updates
             foreach (var plugin in plugins)
             {
                 // Don't auto update when plugin marked not to, or when it's disabled.
-                if (plugin.Manifest?.AutoUpdate == false || plugin.Manifest?.Status == MediaBrowser.Model.Plugins.PluginStatus.Disabled)
+                if (plugin.Manifest?.AutoUpdate == false || plugin.Manifest?.Status == PluginStatus.Disabled)
                 {
                     continue;
                 }
