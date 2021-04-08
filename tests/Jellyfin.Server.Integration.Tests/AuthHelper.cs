@@ -44,7 +44,7 @@ namespace Jellyfin.Server.Integration.Tests
             return auth!.AccessToken;
         }
 
-        public static void AddAuthHeader(this HttpRequestHeaders headers, string accessToken)
+        public static void AddAuthHeader(this HttpHeaders headers, string accessToken)
         {
             headers.Add(AuthHeaderName, DummyAuthHeader + $", Token={accessToken}");
         }
