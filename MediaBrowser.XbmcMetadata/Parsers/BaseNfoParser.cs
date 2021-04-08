@@ -231,7 +231,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 if (ProviderIdParsers.TryFindTmdbMovieId(xml, out var tmdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(CultureDefault.UsCulture));
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
                 }
             }
 
@@ -244,7 +244,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 if (ProviderIdParsers.TryFindTvdbId(xml, out var tvdbId))
                 {
-                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString(CultureDefault.UsCulture));
+                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString());
                 }
             }
         }
