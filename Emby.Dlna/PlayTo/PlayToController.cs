@@ -131,7 +131,7 @@ namespace Emby.Dlna.PlayTo
 
         private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
         {
-            if (_disposed)
+            if (_disposed || string.IsNullOrEmpty(e.OldMediaInfo.Url))
             {
                 return;
             }
@@ -942,11 +942,7 @@ namespace Emby.Dlna.PlayTo
                 request.DeviceId = values.GetValueOrDefault("DeviceId");
                 request.MediaSourceId = values.GetValueOrDefault("MediaSourceId");
                 request.LiveStreamId = values.GetValueOrDefault("LiveStreamId");
-
-                // Be careful, IsDirectStream==true by default (Static != false or not in query).
-                // See initialization of StreamingRequestDto in AudioController.GetAudioStream() method : Static = @static ?? true.
-                request.IsDirectStream = !string.Equals("false", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
-
+                request.IsDirectStream = string.Equals("true", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
                 request.AudioStreamIndex = GetIntValue(values, "AudioStreamIndex");
                 request.SubtitleStreamIndex = GetIntValue(values, "SubtitleStreamIndex");
                 request.StartPositionTicks = GetLongValue(values, "StartPositionTicks");

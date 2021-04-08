@@ -29,9 +29,6 @@
 <a href="https://features.jellyfin.org">
 <img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
 </a>
-<a href="https://forum.jellyfin.org">
-<img alt="Discuss on our Forum" src="https://img.shields.io/discourse/https/forum.jellyfin.org/users.svg"/>
-</a>
 <a href="https://matrix.to/#/+jellyfin:matrix.org">
 <img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
 </a>
@@ -84,6 +81,8 @@ These instructions will help you get set up with a local development environment
 Before the project can be built, you must first install the [.NET 5.0 SDK](https://dotnet.microsoft.com/download) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
+
+[ffmpeg](https://github.com/jellyfin/jellyfin-ffmpeg) will also need to be installed.
 
 ### Cloning the Repository
 

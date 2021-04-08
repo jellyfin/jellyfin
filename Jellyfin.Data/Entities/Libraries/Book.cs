@@ -13,7 +13,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Book"/> class.
         /// </summary>
-        public Book()
+        /// <param name="library">The library.</param>
+        public Book(Library library) : base(library)
         {
             BookMetadata = new HashSet<BookMetadata>();
             Releases = new HashSet<Release>();

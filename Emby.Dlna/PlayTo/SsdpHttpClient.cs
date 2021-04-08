@@ -44,10 +44,10 @@ namespace Emby.Dlna.PlayTo
                     cancellationToken)
                 .ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return XDocument.Parse(
-                await reader.ReadToEndAsync().ConfigureAwait(false),
-                LoadOptions.PreserveWhitespace);
+            return await XDocument.LoadAsync(
+                stream,
+                LoadOptions.PreserveWhitespace,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
@@ -93,10 +93,17 @@ namespace Emby.Dlna.PlayTo
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return XDocument.Parse(
-                await reader.ReadToEndAsync().ConfigureAwait(false),
-                LoadOptions.PreserveWhitespace);
+            try
+            {
+                return await XDocument.LoadAsync(
+                    stream,
+                    LoadOptions.PreserveWhitespace,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private async Task<HttpResponseMessage> PostSoapDataAsync(

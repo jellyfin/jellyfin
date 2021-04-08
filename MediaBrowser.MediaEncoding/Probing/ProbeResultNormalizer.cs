@@ -131,6 +131,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date_released") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date");
 
             if (isAudio)
@@ -640,7 +641,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             // Filter out junk
-            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && streamInfo.CodecTagString.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && !streamInfo.CodecTagString.Contains("[0]", StringComparison.OrdinalIgnoreCase))
             {
                 stream.CodecTag = streamInfo.CodecTagString;
             }
@@ -1500,11 +1501,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                         }
                         else
                         {
-                            throw new Exception(); // Switch to default parsing
+                            // Switch to default parsing
+                            if (subtitle.Contains('.', StringComparison.Ordinal))
+                            {
+                                // skip the comment, keep the subtitle
+                                description = string.Join('.', subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            }
+                            else
+                            {
+                                description = subtitle.Trim(); // Clean up whitespaces and save it
+                            }
                         }
                     }
-                    catch // Default parsing
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error while parsing subtitle field");
+
+                        // Default parsing
                         if (subtitle.Contains('.', StringComparison.Ordinal))
                         {
                             // skip the comment, keep the subtitle

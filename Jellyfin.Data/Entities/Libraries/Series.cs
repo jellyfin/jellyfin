@@ -13,7 +13,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Series"/> class.
         /// </summary>
-        public Series()
+        /// <param name="library">The library.</param>
+        public Series(Library library) : base(library)
         {
             DateAdded = DateTime.UtcNow;
             Seasons = new HashSet<Season>();

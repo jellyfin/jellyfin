@@ -31,7 +31,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public AudioDbArtistProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
@@ -155,7 +155,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, true);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 

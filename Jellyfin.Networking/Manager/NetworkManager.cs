@@ -285,14 +285,25 @@ namespace Jellyfin.Networking.Manager
                 // No bind address and no exclusions, so listen on all interfaces.
                 Collection<IPObject> result = new Collection<IPObject>();
 
-                if (IsIP4Enabled)
+                if (IsIP6Enabled && IsIP4Enabled)
+                {
+                    // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any
+                    result.AddItem(IPAddress.IPv6Any);
+                }
+                else if (IsIP4Enabled)
                 {
                     result.AddItem(IPAddress.Any);
                 }
-
-                if (IsIP6Enabled)
+                else if (IsIP6Enabled)
                 {
-                    result.AddItem(IPAddress.IPv6Any);
+                    // Cannot use IPv6Any as Kestrel will bind to IPv4 addresses.
+                    foreach (var iface in _interfaceAddresses)
+                    {
+                        if (iface.AddressFamily == AddressFamily.InterNetworkV6)
+                        {
+                            result.AddItem(iface.Address);
+                        }
+                    }
                 }
 
                 return result;
@@ -414,7 +425,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // There isn't any others, so we'll use the loopback.
-            result = IsIP6Enabled ? "::" : "127.0.0.1";
+            result = IsIP6Enabled ? "::1" : "127.0.0.1";
             _logger.LogWarning("{Source}: GetBindInterface: Loopback {Result} returned.", source, result);
             return result;
         }
@@ -563,6 +574,29 @@ namespace Jellyfin.Networking.Manager
             }
 
             return false;
+        }
+
+        /// <inheritdoc/>
+        public bool HasRemoteAccess(IPAddress remoteIp)
+        {
+            var config = _configurationManager.GetNetworkConfiguration();
+            if (config.EnableRemoteAccess)
+            {
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
+                {
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    return RemoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
+                }
+            }
+            else if (!IsInLocalNetwork(remoteIp))
+            {
+                // Remote not enabled. So everyone should be LAN.
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

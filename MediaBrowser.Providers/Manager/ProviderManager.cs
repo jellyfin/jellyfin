@@ -60,8 +60,8 @@ namespace MediaBrowser.Providers.Manager
 
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
         private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
-        private IEnumerable<IMetadataSaver> _savers;
-        private IExternalId[] _externalIds;
+        private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
+        private IExternalId[] _externalIds = Array.Empty<IExternalId>();
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers
-                .Where(i => !(i is IConfigurableProvider configurable) || configurable.IsEnabled)
+                .Where(i => i is not IConfigurableProvider configurable || configurable.IsEnabled)
                 .ToArray();
         }
 
@@ -242,6 +242,7 @@ namespace MediaBrowser.Providers.Manager
                 languages.Add(preferredLanguage);
             }
 
+            // TODO include [query.IncludeAllLanguages] as an argument to the providers
             var tasks = providers.Select(i => GetImages(item, i, languages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -869,13 +870,13 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
                 }
-                catch (Exception)
+#pragma warning disable CA1031 // do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // do not catch general exception types
                 {
-                    // Logged at lower levels
+                    _logger.LogError(ex, "Provider {ProviderName} failed to retrieve search results", provider.Name);
                 }
             }
-
-            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }

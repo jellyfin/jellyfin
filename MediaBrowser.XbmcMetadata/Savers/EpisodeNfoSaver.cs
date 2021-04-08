@@ -110,24 +110,23 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override List<string> GetTagsUsed(BaseItem item)
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "aired",
-                "season",
-                "episode",
-                "episodenumberend",
-                "airsafter_season",
-                "airsbefore_episode",
-                "airsbefore_season",
-                "displayseason",
-                "displayepisode",
-                "showtitle"
-            });
+                yield return tag;
+            }
 
-            return list;
+            yield return "aired";
+            yield return "season";
+            yield return "episode";
+            yield return "episodenumberend";
+            yield return "airsafter_season";
+            yield return "airsbefore_episode";
+            yield return "airsbefore_season";
+            yield return "displayseason";
+            yield return "displayepisode";
+            yield return "showtitle";
         }
     }
 }

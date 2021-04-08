@@ -197,6 +197,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -236,6 +241,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -393,7 +403,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] int newIndex)
+            [FromQuery, Required] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -742,7 +752,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetArtistImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -821,7 +831,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -901,7 +911,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -979,7 +989,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetMusicGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1059,7 +1069,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1137,7 +1147,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetPersonImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1217,7 +1227,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1470,7 +1480,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user?.ProfileImage == null)
             {
                 return NotFound();
             }

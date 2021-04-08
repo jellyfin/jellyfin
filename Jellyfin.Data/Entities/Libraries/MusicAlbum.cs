@@ -12,7 +12,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="MusicAlbum"/> class.
         /// </summary>
-        public MusicAlbum()
+        /// <param name="library">The library.</param>
+        public MusicAlbum(Library library) : base(library)
         {
             MusicAlbumMetadata = new HashSet<MusicAlbumMetadata>();
             Tracks = new HashSet<Track>();

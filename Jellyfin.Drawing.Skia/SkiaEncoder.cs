@@ -274,8 +274,8 @@ namespace Jellyfin.Drawing.Skia
 
             if (requiresTransparencyHack || forceCleanBitmap)
             {
-                using var codec = SKCodec.Create(NormalizePath(path));
-                if (codec == null)
+                using SKCodec codec = SKCodec.Create(NormalizePath(path), out SKCodecResult res);
+                if (res != SKCodecResult.Success)
                 {
                     origin = GetSKEncodedOrigin(orientation);
                     return null;
@@ -345,11 +345,6 @@ namespace Jellyfin.Drawing.Skia
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
         {
-            if (origin == SKEncodedOrigin.Default)
-            {
-                return bitmap;
-            }
-
             var needsFlip = origin == SKEncodedOrigin.LeftBottom
                             || origin == SKEncodedOrigin.LeftTop
                             || origin == SKEncodedOrigin.RightBottom
@@ -447,7 +442,7 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc/>
-        public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat selectedOutputFormat)
+        public string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat)
         {
             if (inputPath.Length == 0)
             {
@@ -459,7 +454,7 @@ namespace Jellyfin.Drawing.Skia
                 throw new ArgumentException("String can't be empty.", nameof(outputPath));
             }
 
-            var skiaOutputFormat = GetImageFormat(selectedOutputFormat);
+            var skiaOutputFormat = GetImageFormat(outputFormat);
 
             var hasBackgroundColor = !string.IsNullOrWhiteSpace(options.BackgroundColor);
             var hasForegroundColor = !string.IsNullOrWhiteSpace(options.ForegroundLayer);

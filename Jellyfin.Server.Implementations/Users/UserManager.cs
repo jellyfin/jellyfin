@@ -184,11 +184,14 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = new User(
                 name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
+                _defaultAuthenticationProvider.GetType().FullName!,
+                _defaultPasswordResetProvider.GetType().FullName!)
             {
                 InternalId = max + 1
             };
+
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
 
             _users.Add(user.Id, user);
 
@@ -404,27 +407,18 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            bool success;
-            IAuthenticationProvider? authenticationProvider;
+            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+                .ConfigureAwait(false);
+            var authenticationProvider = authResult.authenticationProvider;
+            var success = authResult.success;
 
-            if (user != null)
+            if (user == null)
             {
-                var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
-                success = authResult.success;
-            }
-            else
-            {
-                var authResult = await AuthenticateLocalUser(username, password, null, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
                 string updatedUsername = authResult.username;
-                success = authResult.success;
 
                 if (success
                     && authenticationProvider != null
-                    && !(authenticationProvider is DefaultAuthenticationProvider))
+                    && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
                     username = updatedUsername;
@@ -444,7 +438,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (!string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);

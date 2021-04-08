@@ -1,3 +1,4 @@
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 #pragma warning disable CA2227
 
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]

@@ -7,6 +7,9 @@ namespace MediaBrowser.Common.Json.Converters
     /// <summary>
     /// Converts a Version object or value to/from JSON.
     /// </summary>
+    /// <remarks>
+    /// Required to send <see cref="Version"/> as a string instead of an object.
+    /// </remarks>
     public class JsonVersionConverter : JsonConverter<Version>
     {
         /// <inheritdoc />

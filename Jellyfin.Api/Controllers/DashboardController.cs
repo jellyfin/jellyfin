@@ -95,9 +95,9 @@ namespace Jellyfin.Api.Controllers
             return GetPluginPages(plugin).Select(i => new ConfigurationPageInfo(plugin.Instance, i.Item1));
         }
 
-        private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(LocalPlugin? plugin)
+        private IEnumerable<Tuple<PluginPageInfo, IPlugin>> GetPluginPages(LocalPlugin plugin)
         {
-            if (plugin?.Instance is not IHasWebPages hasWebPages)
+            if (plugin.Instance is not IHasWebPages hasWebPages)
             {
                 return Enumerable.Empty<Tuple<PluginPageInfo, IPlugin>>();
             }

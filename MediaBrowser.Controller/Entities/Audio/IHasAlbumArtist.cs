@@ -1,6 +1,8 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
+using System.Linq;
+using MediaBrowser.Controller.Library;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
@@ -23,15 +25,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public static IEnumerable<string> GetAllArtists<T>(this T item)
             where T : IHasArtist, IHasAlbumArtist
         {
-            foreach (var i in item.AlbumArtists)
-            {
-                yield return i;
-            }
-
-            foreach (var i in item.Artists)
-            {
-                yield return i;
-            }
+            return item.AlbumArtists.Concat(item.Artists).DistinctNames();
         }
     }
 }
