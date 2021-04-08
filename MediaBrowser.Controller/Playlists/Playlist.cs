@@ -44,17 +44,8 @@ namespace MediaBrowser.Controller.Playlists
 
         public static bool IsPlaylistFile(string path)
         {
-            //When a directory contains a `.`, calling "HasExtension" will return true, even if that location is a directory that exists.
-            //This kills the PlaylistXmlSaver, because instead of saving in "config/data/playlists/MyList2.0/playlist.xml",
-            //It saves the information in "config/data/playlists/MyList2.xml". So we just need to see if it's actually a real directory first.
-            //Lucky for us, when a new playlist is created, the directory on the drive is created first, then the Playlist object is created.
-            //And if there's not a directory there, then we can just check if it has an extension.
-            if (new System.IO.DirectoryInfo(path).Exists)
-            { //This is a directory, and therefore definitely not a playlist file.
-                return false;
-            }
-            //Well, there's no directory there, so if it /looks/ like a file path, then it probably is.
-            return System.IO.Path.HasExtension(path);
+            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
+            return Path.HasExtension(path) && !Directory.Exists(path);
         }
 
         [JsonIgnore]
