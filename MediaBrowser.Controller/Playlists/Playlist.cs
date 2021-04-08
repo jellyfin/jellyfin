@@ -45,7 +45,7 @@ namespace MediaBrowser.Controller.Playlists
         public static bool IsPlaylistFile(string path)
         {
             // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
-            return Path.HasExtension(path) && !Directory.Exists(path);
+            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
         }
 
         [JsonIgnore]
