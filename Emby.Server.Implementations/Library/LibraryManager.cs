@@ -2531,7 +2531,7 @@ namespace Emby.Server.Implementations.Library
             {
                 episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new EpisodeInfo(episode.Path);
                 // Resolve from parent folder if it's not the Season folder
-                if (!episodeInfo.EpisodeNumber.HasValue && episode.Parent is not Season)
+                if (!episodeInfo.EpisodeNumber.HasValue && episode.Parent.GetType() == typeof(Folder))
                 {
                     var episodeInfoFromFolder = resolver.Resolve(Path.GetDirectoryName(episode.Path)!, true, null, null, isAbsoluteNaming);
                     // merge the missing information
