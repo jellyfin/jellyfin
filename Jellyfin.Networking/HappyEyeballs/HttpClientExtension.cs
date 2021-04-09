@@ -45,7 +45,7 @@ namespace Jellyfin.Networking.HappyEyeballs
         /// <summary>
         /// Gets or sets a value indicating whether IPv6 should be preferred. Value may change based on runtime failures.
         /// </summary>
-        public static bool UseIPv6 { get; set; } = Socket.OSSupportsIPv6;
+        public static bool? UseIPv6 { get; set; } = null;
 
         /// <summary>
         /// Implements the httpclient callback method.
