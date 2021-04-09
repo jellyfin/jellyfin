@@ -82,7 +82,7 @@ namespace Emby.Dlna.PlayTo
             options.Headers.TryAddWithoutValidation("NT", "upnp:event");
             options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(_usCulture));
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+            using var response = await _httpClientFactory.CreateClient(NamedClient.DirectIp)
                 .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
         }
@@ -92,7 +92,7 @@ namespace Emby.Dlna.PlayTo
             using var options = new HttpRequestMessage(HttpMethod.Get, url);
             options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.DirectIp).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             try
             {
@@ -132,7 +132,7 @@ namespace Emby.Dlna.PlayTo
 
             options.Content = new StringContent(postData, Encoding.UTF8, MediaTypeNames.Text.Xml);
 
-            return await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            return await _httpClientFactory.CreateClient(NamedClient.DirectIp).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -70,15 +70,21 @@ namespace Jellyfin.Server
             var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
             var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
             var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
-            services
-                .AddHttpClient(NamedClient.Default, c =>
+            services.AddHttpClient(NamedClient.Default, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+                .ConfigurePrimaryHttpMessageHandler(x =>
+                {
+                    return new SocketsHttpHandler
+                    {
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                        ConnectCallback = HttpClientExtension.OnConnect,
+                    };
+                });
 
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
@@ -88,15 +94,15 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
-            services.AddHttpClient(NamedClient.HappyEyeballs)
-                .ConfigurePrimaryHttpMessageHandler(x =>
+
+            services.AddHttpClient(NamedClient.DirectIp, c =>
                 {
-                    return new SocketsHttpHandler
-                    {
-                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                        ConnectCallback = HttpClientExtension.OnConnect,
-                    };
-                });
+                    c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
+                })
+                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
 
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();

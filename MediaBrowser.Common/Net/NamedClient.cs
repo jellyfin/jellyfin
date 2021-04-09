@@ -6,7 +6,7 @@ namespace MediaBrowser.Common.Net
     public static class NamedClient
     {
         /// <summary>
-        /// Gets the value for the default named http client.
+        /// Gets the value for the default named http client which implements happy eyeballs.
         /// </summary>
         public const string Default = nameof(Default);
 
@@ -16,8 +16,8 @@ namespace MediaBrowser.Common.Net
         public const string MusicBrainz = nameof(MusicBrainz);
 
         /// <summary>
-        /// Happy eyeballs implementation (Ip6 with fallback to IPv4).
+        /// Non happy eyeballs implementation.
         /// </summary>
-        public const string HappyEyeballs = nameof(HappyEyeballs);
+        public const string DirectIp = nameof(DirectIp);
     }
 }

@@ -178,7 +178,7 @@ namespace Emby.Dlna.Eventing
 
             try
             {
-                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                using var response = await _httpClientFactory.CreateClient(NamedClient.DirectIp)
                     .SendAsync(options, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
