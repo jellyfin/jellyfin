@@ -81,7 +81,7 @@ namespace Jellyfin.Server
                 {
                     return new SocketsHttpHandler
                     {
-                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                        AutomaticDecompression = DecompressionMethods.All,
                         ConnectCallback = HttpClientExtension.OnConnect,
                     };
                 });
