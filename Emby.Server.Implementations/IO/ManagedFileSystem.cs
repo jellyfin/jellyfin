@@ -259,7 +259,7 @@ namespace Emby.Server.Implementations.IO
                         catch (FileNotFoundException ex)
                         {
                             // Dangling symlinks cannot be detected before opening the file unfortunately...
-                            Logger.LogError("Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", ex);
+                            Logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
                             result.Exists = false;
                         }
                     }
