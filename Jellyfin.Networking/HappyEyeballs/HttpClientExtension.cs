@@ -1,5 +1,4 @@
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
@@ -79,8 +78,7 @@ namespace Jellyfin.Networking.HappyEyeballs
                 catch
                 {
                     // very naively fallback to ipv4 permanently for this execution based on the response of the first connection attempt.
-                    // note that this may cause users to eventually get switched to ipv4 (on a random failure when they are switching networks, for instance)
-                    // but in the interest of keeping this implementation simple, this is acceptable.
+                    // Network manager will reset this value in the case of physical network changes / interruptions.
                     UseIPv6 = false;
                 }
                 finally
