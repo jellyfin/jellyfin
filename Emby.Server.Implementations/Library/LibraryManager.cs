@@ -2529,25 +2529,16 @@ namespace Emby.Server.Implementations.Library
             EpisodeInfo episodeInfo = null;
             if (episode.IsFileProtocol)
             {
-                episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new EpisodeInfo(episode.Path);
+                episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming);
                 // Resolve from parent folder if it's not the Season folder
-                if (!episodeInfo.EpisodeNumber.HasValue && episode.Parent.GetType() == typeof(Folder))
+                if (episodeInfo == null && episode.Parent.GetType() == typeof(Folder))
                 {
-                    var episodeInfoFromFolder = resolver.Resolve(Path.GetDirectoryName(episode.Path)!, true, null, null, isAbsoluteNaming);
-                    // merge the missing information
-                    episodeInfo.SeriesName = episodeInfoFromFolder?.SeriesName;
-                    episodeInfo.EpisodeNumber ??= episodeInfoFromFolder?.EpisodeNumber;
-                    episodeInfo.EndingEpisodeNumber ??= episodeInfoFromFolder?.EndingEpisodeNumber;
-                    episodeInfo.SeasonNumber ??= episodeInfoFromFolder?.SeasonNumber;
-                    episodeInfo.Container ??= episodeInfoFromFolder?.Container;
-                    episodeInfo.Format3D ??= episodeInfoFromFolder?.Format3D;
-                    episodeInfo.Is3D = episodeInfoFromFolder?.Is3D ?? episodeInfo.Is3D;
-                    episodeInfo.IsStub = episodeInfoFromFolder?.IsStub ?? episodeInfo.IsStub;
-                    episodeInfo.StubType = episodeInfoFromFolder?.StubType;
-                    episodeInfo.IsByDate = episodeInfoFromFolder?.IsByDate ?? episodeInfo.IsByDate;
-                    episodeInfo.Day ??= episodeInfoFromFolder?.Day;
-                    episodeInfo.Month ??= episodeInfoFromFolder?.Month;
-                    episodeInfo.Year ??= episodeInfoFromFolder?.Year;
+                    episodeInfo = resolver.Resolve(Path.GetDirectoryName(episode.Path)!, true, null, null, isAbsoluteNaming);
+                    if (episodeInfo != null)
+                    {
+                        // add the container
+                        episodeInfo.Container = Path.GetExtension(episode.Path)?.TrimStart('.');
+                    }
                 }
             }
 
