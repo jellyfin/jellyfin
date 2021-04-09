@@ -2544,7 +2544,7 @@ namespace Emby.Server.Implementations.Library
                     episodeInfo.Is3D = episodeInfoFromFolder?.Is3D ?? episodeInfo.Is3D;
                     episodeInfo.IsStub = episodeInfoFromFolder?.IsStub ?? episodeInfo.IsStub;
                     episodeInfo.StubType = episodeInfoFromFolder?.StubType;
-                    episodeInfo.IsByDate = episodeInfoFromFolder?.IsStub ?? episodeInfo.IsByDate;
+                    episodeInfo.IsByDate = episodeInfoFromFolder?.IsByDate ?? episodeInfo.IsByDate;
                     episodeInfo.Day ??= episodeInfoFromFolder?.Day;
                     episodeInfo.Month ??= episodeInfoFromFolder?.Month;
                     episodeInfo.Year ??= episodeInfoFromFolder?.Year;
