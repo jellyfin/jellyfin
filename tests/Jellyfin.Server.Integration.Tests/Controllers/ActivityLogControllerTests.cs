@@ -8,7 +8,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
     public sealed class ActivityLogControllerTests : IClassFixture<JellyfinApplicationFactory>
     {
         private readonly JellyfinApplicationFactory _factory;
-        private string? _accessToken;
+        private static string? _accessToken;
 
         public ActivityLogControllerTests(JellyfinApplicationFactory factory)
         {
