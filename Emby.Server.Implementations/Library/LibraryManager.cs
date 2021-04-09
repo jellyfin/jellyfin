@@ -1914,12 +1914,17 @@ namespace Emby.Server.Implementations.Library
                     }
                     catch (ArgumentException)
                     {
-                        _logger.LogWarning("Cannot get image index for {0}", img.Path);
+                        _logger.LogWarning("Cannot get image index for {ImagePath}", img.Path);
                         continue;
                     }
                     catch (InvalidOperationException)
                     {
-                        _logger.LogWarning("Cannot fetch image from {0}", img.Path);
+                        _logger.LogWarning("Cannot fetch image from {ImagePath}", img.Path);
+                        continue;
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        _logger.LogWarning("Cannot fetch image from {ImagePath}. Http status code: {HttpStatus}", img.Path, ex.StatusCode);
                         continue;
                     }
                 }
@@ -1932,7 +1937,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannot get image dimensions for {0}", image.Path);
+                    _logger.LogError(ex, "Cannot get image dimensions for {ImagePath}", image.Path);
                     image.Width = 0;
                     image.Height = 0;
                     continue;
@@ -1944,7 +1949,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannot compute blurhash for {0}", image.Path);
+                    _logger.LogError(ex, "Cannot compute blurhash for {ImagePath}", image.Path);
                     image.BlurHash = string.Empty;
                 }
 
@@ -1954,7 +1959,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Cannot update DateModified for {0}", image.Path);
+                    _logger.LogError(ex, "Cannot update DateModified for {ImagePath}", image.Path);
                 }
             }
 
