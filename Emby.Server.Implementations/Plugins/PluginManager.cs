@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -368,7 +369,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <inheritdoc/>
-        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path)
+        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
             if (packageInfo == null)
             {
@@ -411,9 +412,9 @@ namespace Emby.Server.Implementations.Plugins
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,
                 TargetAbi = versionInfo.TargetAbi ?? string.Empty,
-                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp),
+                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp, CultureInfo.InvariantCulture),
                 Version = versionInfo.Version,
-                Status = PluginStatus.Active,
+                Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active, // Keep disabled state.
                 AutoUpdate = true,
                 ImagePath = imagePath
             };

@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
 
@@ -194,7 +195,7 @@ namespace Emby.Server.Implementations.Updates
                             var plugin = _pluginManager.GetPlugin(packageGuid, version.VersionNumber);
                             if (plugin != null)
                             {
-                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path);
+                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
                             }
 
                             // Remove versions with a target ABI greater then the current application version.
@@ -500,7 +501,8 @@ namespace Emby.Server.Implementations.Updates
             var plugins = _pluginManager.Plugins;
             foreach (var plugin in plugins)
             {
-                if (plugin.Manifest?.AutoUpdate == false)
+                // Don't auto update when plugin marked not to, or when it's disabled.
+                if (plugin.Manifest?.AutoUpdate == false || plugin.Manifest?.Status == PluginStatus.Disabled)
                 {
                     continue;
                 }
@@ -515,7 +517,7 @@ namespace Emby.Server.Implementations.Updates
             }
         }
 
-        private async Task PerformPackageInstallation(InstallationInfo package, CancellationToken cancellationToken)
+        private async Task PerformPackageInstallation(InstallationInfo package, PluginStatus status, CancellationToken cancellationToken)
         {
             var extension = Path.GetExtension(package.SourceUrl);
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
@@ -567,7 +569,7 @@ namespace Emby.Server.Implementations.Updates
 
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
-            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir);
+            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
             _pluginManager.ImportPluginFrom(targetDir);
         }
 
@@ -576,7 +578,7 @@ namespace Emby.Server.Implementations.Updates
             LocalPlugin? plugin = _pluginManager.Plugins.FirstOrDefault(p => p.Id.Equals(package.Id) && p.Version.Equals(package.Version))
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
 
-            await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
+            await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
 
             return plugin != null;
