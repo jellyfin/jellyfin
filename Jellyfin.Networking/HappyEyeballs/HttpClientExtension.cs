@@ -40,7 +40,7 @@ namespace Jellyfin.Networking.HappyEyeballs
         /// <summary>
         /// Gets a value indicating whether the initial IPv6 check has been performed (to determine whether v6 is available or not).
         /// </summary>
-        private static bool hasResolvedIPv6Availability;
+        private static bool _hasResolvedIPv6Availability;
 
         /// <summary>
         /// Gets or sets a value indicating whether IPv6 should be preferred. Value may change based on runtime failures.
@@ -64,18 +64,20 @@ namespace Jellyfin.Networking.HappyEyeballs
                 {
                     var localToken = cancellationToken;
 
-                    if (!hasResolvedIPv6Availability)
+                    if (!_hasResolvedIPv6Availability)
                     {
                         // to make things move fast, use a very low timeout for the initial ipv6 attempt.
-                        var quickFailCts = new CancellationTokenSource(ConnectionEstablishTimeout);
-                        var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quickFailCts.Token);
+                        using var quickFailCts = new CancellationTokenSource(ConnectionEstablishTimeout);
+                        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, quickFailCts.Token);
 
                         localToken = linkedTokenSource.Token;
                     }
 
                     return await AttemptConnection(AddressFamily.InterNetworkV6, context, localToken).ConfigureAwait(false);
                 }
+#pragma warning disable CA1031 // Do not catch general exception types
                 catch
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     // very naively fallback to ipv4 permanently for this execution based on the response of the first connection attempt.
                     // Network manager will reset this value in the case of physical network changes / interruptions.
@@ -83,7 +85,7 @@ namespace Jellyfin.Networking.HappyEyeballs
                 }
                 finally
                 {
-                    hasResolvedIPv6Availability = true;
+                    _hasResolvedIPv6Availability = true;
                 }
             }
 
