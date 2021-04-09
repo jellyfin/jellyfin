@@ -1,4 +1,4 @@
-﻿namespace MediaBrowser.Common.Net
+namespace MediaBrowser.Common.Net
 {
     /// <summary>
     /// Registered http client names.
@@ -14,5 +14,10 @@
         /// Gets the value for the MusicBrainz named http client.
         /// </summary>
         public const string MusicBrainz = nameof(MusicBrainz);
+
+        /// <summary>
+        /// Happy eyeballs implementation (Ip6 with fallback to IPv4).
+        /// </summary>
+        public const string HappyEyeballs = nameof(HappyEyeballs);
     }
 }

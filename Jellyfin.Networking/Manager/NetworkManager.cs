@@ -609,6 +609,7 @@ namespace Jellyfin.Networking.Manager
 
             IsIP4Enabled = Socket.OSSupportsIPv4 && config.EnableIPV4;
             IsIP6Enabled = Socket.OSSupportsIPv6 && config.EnableIPV6;
+            HappyEyeballs.HttpClientExtension.UseIPv6 = IsIP6Enabled;
 
             if (!IsIP6Enabled && !IsIP4Enabled)
             {
@@ -854,9 +855,19 @@ namespace Jellyfin.Networking.Manager
             try
             {
                 await Task.Delay(2000).ConfigureAwait(false);
-                InitialiseInterfaces();
-                // Recalculate LAN caches.
-                InitialiseLAN(_configurationManager.GetNetworkConfiguration());
+
+                var config = _configurationManager.GetNetworkConfiguration();
+                // Have we lost IPv6 capability?
+                if (IsIP6Enabled && !Socket.OSSupportsIPv6)
+                {
+                    UpdateSettings(config);
+                }
+                else
+                {
+                    InitialiseInterfaces();
+                    // Recalculate LAN caches.
+                    InitialiseLAN(config);
+                }
 
                 NetworkChanged?.Invoke(this, EventArgs.Empty);
             }

@@ -1,6 +1,9 @@
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
@@ -85,6 +88,15 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
                 .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+            services.AddHttpClient(NamedClient.HappyEyeballs)
+                .ConfigurePrimaryHttpMessageHandler(x =>
+                {
+                    return new SocketsHttpHandler
+                    {
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                        ConnectCallback = HttpClientExtension.OnConnect,
+                    };
+                });
 
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();
