@@ -67,14 +67,6 @@ namespace MediaBrowser.Controller.Library
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
-        void UpdateUser(User user);
-
-        /// <summary>
-        /// Updates the user.
-        /// </summary>
-        /// <param name="user">The user.</param>
         /// <exception cref="ArgumentNullException">If user is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">If the provided user doesn't exist.</exception>
         /// <returns>A task representing the update of the user.</returns>
@@ -108,7 +100,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>Task.</returns>
-        void ResetEasyPassword(User user);
+        Task ResetEasyPassword(User user);
 
         /// <summary>
         /// Changes the password.
@@ -118,7 +110,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Changes the easy password.
         /// </summary>
-        void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
+        Task ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
 
         /// <summary>
         /// Gets the user dto.
@@ -155,7 +147,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// This method updates the user's configuration.
         /// This is only included as a stopgap until the new API, using this internally is not recommended.
-        /// Instead, modify the user object directly, then call <see cref="UpdateUser"/>.
+        /// Instead, modify the user object directly, then call <see cref="UpdateUserAsync"/>.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <param name="config">The request containing the new user configuration.</param>
@@ -165,7 +157,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// This method updates the user's policy.
         /// This is only included as a stopgap until the new API, using this internally is not recommended.
-        /// Instead, modify the user object directly, then call <see cref="UpdateUser"/>.
+        /// Instead, modify the user object directly, then call <see cref="UpdateUserAsync"/>.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <param name="policy">The request containing the new user policy.</param>
