@@ -32,6 +32,10 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<ApiKey> ApiKeys { get; set; }
 
+        public virtual DbSet<Device> Devices { get; set; }
+
+        public virtual DbSet<DeviceOptions> DeviceOptions { get; set; }
+
         public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
 
         public virtual DbSet<ImageInfo> ImageInfos { get; set; }
