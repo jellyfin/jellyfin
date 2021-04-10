@@ -644,8 +644,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
 
-            ServiceCollection.AddSingleton<IDeviceManager, DeviceManager>();
-
             ServiceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
             ServiceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();

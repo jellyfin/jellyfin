@@ -6,9 +6,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Data.Entities.Security;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
@@ -357,7 +357,7 @@ namespace Emby.Server.Implementations.Security
                     {
                         statement.TryBind("@DeviceId", deviceId);
 
-                        var result = new DeviceOptions();
+                        var result = new DeviceOptions(deviceId);
 
                         foreach (var row in statement.ExecuteQuery())
                         {

@@ -1,7 +1,9 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
@@ -18,7 +20,6 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         /// <param name="reportedId">The reported identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        /// <returns>Task.</returns>
         void SaveCapabilities(string reportedId, ClientCapabilities capabilities);
 
         /// <summary>
@@ -33,21 +34,21 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns>DeviceInfo.</returns>
-        DeviceInfo GetDevice(string id);
+        Task<DeviceInfo> GetDevice(string id);
 
         /// <summary>
         /// Gets the devices.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
-        QueryResult<DeviceInfo> GetDevices(DeviceQuery query);
+        Task<QueryResult<DeviceInfo>> GetDevices(DeviceQuery query);
 
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.
         /// </summary>
         bool CanAccessDevice(User user, string deviceId);
 
-        void UpdateDeviceOptions(string deviceId, DeviceOptions options);
+        Task UpdateDeviceOptions(string deviceId, DeviceOptions options);
 
         DeviceOptions GetDeviceOptions(string deviceId);
     }

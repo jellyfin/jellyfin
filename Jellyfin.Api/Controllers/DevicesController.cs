@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Entities.Security;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
@@ -47,10 +49,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+        public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
             var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
-            return _deviceManager.GetDevices(deviceQuery);
+            return await _deviceManager.GetDevices(deviceQuery);
         }
 
         /// <summary>
@@ -63,9 +65,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Info")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string id)
+        public async Task<ActionResult<DeviceInfo>> GetDeviceInfo([FromQuery, Required] string id)
         {
-            var deviceInfo = _deviceManager.GetDevice(id);
+            var deviceInfo = await _deviceManager.GetDevice(id).ConfigureAwait(false);
             if (deviceInfo == null)
             {
                 return NotFound();
@@ -106,7 +108,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Options")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateDeviceOptions(
+        public async Task<ActionResult> UpdateDeviceOptions(
             [FromQuery, Required] string id,
             [FromBody, Required] DeviceOptions deviceOptions)
         {
@@ -116,7 +118,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            _deviceManager.UpdateDeviceOptions(id, deviceOptions);
+            await _deviceManager.UpdateDeviceOptions(id, deviceOptions).ConfigureAwait(false);
             return NoContent();
         }
 

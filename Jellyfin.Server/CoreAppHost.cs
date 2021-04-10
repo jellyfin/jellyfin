@@ -9,10 +9,12 @@ using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
@@ -84,6 +86,7 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            ServiceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
             // TODO search the assemblies instead of adding them manually?
             ServiceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();

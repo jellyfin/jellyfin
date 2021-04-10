@@ -1,6 +1,6 @@
 #pragma warning disable CS1591
 
-using MediaBrowser.Model.Devices;
+using Jellyfin.Data.Entities.Security;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Security
