@@ -15,8 +15,8 @@ namespace MediaBrowser.Common.Extensions
         /// <returns><c>true</c> if the request is coming from LAN, <c>false</c> otherwise.</returns>
         public static bool IsLocal(this HttpContext context)
         {
-            return (context.Connection.LocalIpAddress == null
-                    && context.Connection.RemoteIpAddress == null)
+            return context.Connection.LocalIpAddress == null
+                   || context.Connection.RemoteIpAddress == null
                    || context.Connection.LocalIpAddress.Equals(context.Connection.RemoteIpAddress);
         }
 
