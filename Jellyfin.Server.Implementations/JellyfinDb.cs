@@ -211,6 +211,13 @@ namespace Jellyfin.Server.Implementations
                 .HasIndex(entity => entity.Username)
                 .IsUnique();
 
+            modelBuilder.Entity<Device>()
+                .HasIndex(entity => new { entity.DeviceId, entity.DateLastActivity });
+
+            modelBuilder.Entity<DeviceOptions>()
+                .HasIndex(entity => entity.DeviceId)
+                .IsUnique();
+
             modelBuilder.Entity<DisplayPreferences>()
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
                 .IsUnique();
