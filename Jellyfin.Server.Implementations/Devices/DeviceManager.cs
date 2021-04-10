@@ -15,6 +15,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jellyfin.Server.Implementations.Devices
 {
+    /// <summary>
+    /// Manages the creation, updating, and retrieval of devices.
+    /// </summary>
     public class DeviceManager : IDeviceManager
     {
         private readonly JellyfinDbProvider _dbProvider;
@@ -63,9 +66,9 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public ClientCapabilities GetCapabilities(string id)
+        public ClientCapabilities GetCapabilities(string deviceId)
         {
-            return _capabilitiesMap.TryGetValue(id, out ClientCapabilities? result)
+            return _capabilitiesMap.TryGetValue(deviceId, out ClientCapabilities? result)
                 ? result
                 : new ClientCapabilities();
         }
@@ -112,7 +115,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
             }
 
-            var array = await sessions.Select(ToDeviceInfo).ToArrayAsync();
+            var array = await sessions.Select(ToDeviceInfo).ToArrayAsync().ConfigureAwait(false);
 
             return new QueryResult<DeviceInfo>(array);
         }

@@ -18,16 +18,16 @@ namespace MediaBrowser.Controller.Devices
         /// <summary>
         /// Saves the capabilities.
         /// </summary>
-        /// <param name="reportedId">The reported identifier.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <param name="capabilities">The capabilities.</param>
-        void SaveCapabilities(string reportedId, ClientCapabilities capabilities);
+        void SaveCapabilities(string deviceId, ClientCapabilities capabilities);
 
         /// <summary>
         /// Gets the capabilities.
         /// </summary>
-        /// <param name="reportedId">The reported identifier.</param>
+        /// <param name="deviceId">The device id.</param>
         /// <returns>ClientCapabilities.</returns>
-        ClientCapabilities GetCapabilities(string reportedId);
+        ClientCapabilities GetCapabilities(string deviceId);
 
         /// <summary>
         /// Gets the device information.

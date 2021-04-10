@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Jellyfin.Data.Entities.Security
 {
@@ -31,6 +32,10 @@ namespace Jellyfin.Data.Entities.Security
             User = null!;
         }
 
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; private set; }
 
         /// <summary>

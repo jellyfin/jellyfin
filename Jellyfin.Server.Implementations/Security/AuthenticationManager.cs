@@ -52,14 +52,15 @@ namespace Jellyfin.Server.Implementations.Security
         }
 
         /// <inheritdoc />
-        public async Task DeleteApiKey(Guid id)
+        public async Task DeleteApiKey(Guid accessToken)
         {
             await using var dbContext = _dbProvider.CreateContext();
 
             var key = await dbContext.ApiKeys
                 .AsQueryable()
-                .Where(apiKey => apiKey.AccessToken == id)
-                .FirstOrDefaultAsync();
+                .Where(apiKey => apiKey.AccessToken == accessToken)
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
 
             if (key == null)
             {

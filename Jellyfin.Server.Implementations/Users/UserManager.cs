@@ -295,7 +295,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            await UpdateUserAsync(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
             _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }
