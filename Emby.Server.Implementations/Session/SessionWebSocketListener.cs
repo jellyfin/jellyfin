@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public async Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection)
         {
-            var session = GetSession(connection.QueryString, connection.RemoteEndPoint.ToString());
+            var session = await GetSession(connection.QueryString, connection.RemoteEndPoint.ToString()).ConfigureAwait(false);
             if (session != null)
             {
                 EnsureController(session, connection);
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Session
             }
         }
 
-        private SessionInfo GetSession(IQueryCollection queryString, string remoteEndpoint)
+        private Task<SessionInfo> GetSession(IQueryCollection queryString, string remoteEndpoint)
         {
             if (queryString == null)
             {

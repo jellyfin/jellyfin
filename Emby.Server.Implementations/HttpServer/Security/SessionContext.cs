@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
@@ -23,7 +24,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _sessionManager = sessionManager;
         }
 
-        public SessionInfo GetSession(HttpContext requestContext)
+        public Task<SessionInfo> GetSession(HttpContext requestContext)
         {
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
@@ -31,19 +32,19 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.GetNormalizedRemoteIp(), user);
         }
 
-        public SessionInfo GetSession(object requestContext)
+        public Task<SessionInfo> GetSession(object requestContext)
         {
             return GetSession((HttpContext)requestContext);
         }
 
-        public User GetUser(HttpContext requestContext)
+        public async Task<User> GetUser(HttpContext requestContext)
         {
-            var session = GetSession(requestContext);
+            var session = await GetSession(requestContext).ConfigureAwait(false);
 
             return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
         }
 
-        public User GetUser(object requestContext)
+        public Task<User> GetUser(object requestContext)
         {
             return GetUser(((HttpRequest)requestContext).HttpContext);
         }

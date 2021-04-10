@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Session;
 using Microsoft.AspNetCore.Http;
@@ -8,12 +9,12 @@ namespace MediaBrowser.Controller.Net
 {
     public interface ISessionContext
     {
-        SessionInfo GetSession(object requestContext);
+        Task<SessionInfo> GetSession(object requestContext);
 
-        User GetUser(object requestContext);
+        Task<User> GetUser(object requestContext);
 
-        SessionInfo GetSession(HttpContext requestContext);
+        Task<SessionInfo> GetSession(HttpContext requestContext);
 
-        User GetUser(HttpContext requestContext);
+        Task<User> GetUser(HttpContext requestContext);
     }
 }

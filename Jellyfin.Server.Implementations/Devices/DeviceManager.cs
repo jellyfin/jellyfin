@@ -53,12 +53,13 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public DeviceOptions? GetDeviceOptions(string deviceId)
+        public async Task<DeviceOptions?> GetDeviceOptions(string deviceId)
         {
-            using var dbContext = _dbProvider.CreateContext();
-            return dbContext.DeviceOptions
+            await using var dbContext = _dbProvider.CreateContext();
+            return await dbContext.DeviceOptions
                 .AsQueryable()
-                .FirstOrDefault(d => d.DeviceId == deviceId);
+                .FirstOrDefaultAsync(d => d.DeviceId == deviceId)
+                .ConfigureAwait(false);
         }
 
         /// <inheritdoc />

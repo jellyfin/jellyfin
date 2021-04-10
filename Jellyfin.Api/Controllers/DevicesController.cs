@@ -86,9 +86,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Options")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string id)
+        public async Task<ActionResult<DeviceOptions>> GetDeviceOptions([FromQuery, Required] string id)
         {
-            var deviceInfo = _deviceManager.GetDeviceOptions(id);
+            var deviceInfo = await _deviceManager.GetDeviceOptions(id).ConfigureAwait(false);
             if (deviceInfo == null)
             {
                 return NotFound();

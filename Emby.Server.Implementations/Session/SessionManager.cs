@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        public SessionInfo LogSessionActivity(
+        public async Task<SessionInfo> LogSessionActivity(
             string appName,
             string appVersion,
             string deviceId,
@@ -280,7 +280,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             var activityDate = DateTime.UtcNow;
-            var session = GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user);
+            var session = await GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
             var lastActivityDate = session.LastActivityDate;
             session.LastActivityDate = activityDate;
 
@@ -458,7 +458,7 @@ namespace Emby.Server.Implementations.Session
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
         /// <returns>SessionInfo.</returns>
-        private SessionInfo GetSessionInfo(
+        private async Task<SessionInfo> GetSessionInfo(
             string appName,
             string appVersion,
             string deviceId,
@@ -477,9 +477,11 @@ namespace Emby.Server.Implementations.Session
 
             CheckDisposed();
 
-            var sessionInfo = _activeConnections.GetOrAdd(
-                key,
-                k => CreateSession(k, appName, appVersion, deviceId, deviceName, remoteEndPoint, user));
+            if (!_activeConnections.TryGetValue(key, out var sessionInfo))
+            {
+                _activeConnections[key] = await CreateSession(key, appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
+                sessionInfo = _activeConnections[key];
+            }
 
             sessionInfo.UserId = user?.Id ?? Guid.Empty;
             sessionInfo.UserName = user?.Username;
@@ -502,7 +504,7 @@ namespace Emby.Server.Implementations.Session
             return sessionInfo;
         }
 
-        private SessionInfo CreateSession(
+        private async Task<SessionInfo> CreateSession(
             string key,
             string appName,
             string appVersion,
@@ -532,7 +534,7 @@ namespace Emby.Server.Implementations.Session
                 deviceName = "Network Device";
             }
 
-            var deviceOptions = _deviceManager.GetDeviceOptions(deviceId);
+            var deviceOptions = await _deviceManager.GetDeviceOptions(deviceId).ConfigureAwait(false);
             if (string.IsNullOrEmpty(deviceOptions.CustomName))
             {
                 sessionInfo.DeviceName = deviceName;
@@ -1507,13 +1509,13 @@ namespace Emby.Server.Implementations.Session
 
             var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);
 
-            var session = LogSessionActivity(
+            var session = await LogSessionActivity(
                 request.App,
                 request.AppVersion,
                 request.DeviceId,
                 request.DeviceName,
                 request.RemoteEndPoint,
-                user);
+                user).ConfigureAwait(false);
 
             var returnResult = new AuthenticationResult
             {
@@ -1811,7 +1813,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
+        public Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
         {
             if (info == null)
             {
@@ -1844,7 +1846,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public SessionInfo GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
+        public Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
         {
             var items = _authRepo.Get(new AuthenticationInfoQuery
             {

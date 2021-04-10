@@ -50,6 +50,6 @@ namespace MediaBrowser.Controller.Devices
 
         Task UpdateDeviceOptions(string deviceId, DeviceOptions options);
 
-        DeviceOptions GetDeviceOptions(string deviceId);
+        Task<DeviceOptions> GetDeviceOptions(string deviceId);
     }
 }

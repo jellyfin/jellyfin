@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -75,17 +76,17 @@ namespace Jellyfin.Api.Helpers
             return true;
         }
 
-        internal static SessionInfo GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
+        internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
         {
             var authorization = authContext.GetAuthorizationInfo(request);
             var user = authorization.User;
-            var session = sessionManager.LogSessionActivity(
+            var session = await sessionManager.LogSessionActivity(
                 authorization.Client,
                 authorization.Version,
                 authorization.DeviceId,
                 authorization.Device,
                 request.HttpContext.GetNormalizedRemoteIp(),
-                user);
+                user).ConfigureAwait(false);
 
             if (session == null)
             {
@@ -93,6 +94,13 @@ namespace Jellyfin.Api.Helpers
             }
 
             return session;
+        }
+
+        internal static async Task<string> GetSessionId(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
+        {
+            var session = await GetSession(sessionManager, authContext, request).ConfigureAwait(false);
+
+            return session.Id;
         }
 
         internal static QueryResult<BaseItemDto> CreateQueryResult(

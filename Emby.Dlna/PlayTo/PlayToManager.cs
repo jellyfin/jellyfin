@@ -171,7 +171,9 @@ namespace Emby.Dlna.PlayTo
                 uuid = uri.ToString().GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersionString, uuid, null, uri.OriginalString, null);
+            var sessionInfo = await _sessionManager
+                .LogSessionActivity("DLNA", _appHost.ApplicationVersionString, uuid, null, uri.OriginalString, null)
+                .ConfigureAwait(false);
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
