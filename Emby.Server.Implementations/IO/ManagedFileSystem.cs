@@ -249,9 +249,18 @@ namespace Emby.Server.Implementations.IO
                     // Issue #2354 get the size of files behind symbolic links
                     if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
                     {
-                        using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                        try
                         {
-                            result.Length = thisFileStream.Length;
+                            using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                            {
+                                result.Length = thisFileStream.Length;
+                            }
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            // Dangling symlinks cannot be detected before opening the file unfortunately...
+                            Logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
+                            result.Exists = false;
                         }
                     }
 
