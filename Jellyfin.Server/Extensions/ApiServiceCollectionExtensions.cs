@@ -160,7 +160,7 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                     });
                 options.AddPolicy(
-                    Policies.NetworkAccessPolicy,
+                    Policies.LocalNetworkAccessPolicy,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
