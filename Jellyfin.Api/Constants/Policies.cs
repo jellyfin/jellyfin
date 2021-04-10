@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Constants
         /// <summary>
         /// Policy name for requiring local LAN access.
         /// </summary>
-        public const string NetworkAccessPolicy = "NetworkAccessPolicy";
+        public const string LocalNetworkAccessPolicy = "LocalNetworkAccessPolicy";
 
         /// <summary>
         /// Policy name for escaping schedule controls or requiring first time setup.
