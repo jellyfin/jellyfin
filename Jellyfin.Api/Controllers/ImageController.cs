@@ -1695,7 +1695,7 @@ namespace Jellyfin.Api.Controllers
             int? width,
             int? height,
             int? quality,
-            bool? cropWhitespace,
+            bool? cropWhitespace, // TODO: Remove
             bool? addPlayedIndicator,
             int? blur,
             string? backgroundColor,
@@ -1770,7 +1770,6 @@ namespace Jellyfin.Api.Controllers
                 backgroundColor,
                 foregroundLayer,
                 imageInfo,
-                cropWhitespace.Value,
                 outputFormats,
                 cacheDuration,
                 responseHeaders,
@@ -1869,7 +1868,6 @@ namespace Jellyfin.Api.Controllers
             string? backgroundColor,
             string? foregroundLayer,
             ItemImageInfo imageInfo,
-            bool cropWhitespace,
             IReadOnlyCollection<ImageFormat> supportedFormats,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
@@ -1882,7 +1880,6 @@ namespace Jellyfin.Api.Controllers
 
             var options = new ImageProcessingOptions
             {
-                CropWhiteSpace = cropWhitespace,
                 Height = height,
                 ImageIndex = index ?? 0,
                 Image = imageInfo,
