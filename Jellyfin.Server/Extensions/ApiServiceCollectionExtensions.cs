@@ -115,7 +115,7 @@ namespace Jellyfin.Server.Extensions
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new NetworkAccessRequirement());
+                        policy.AddRequirements(new LocalAccessRequirement());
                     });
                 options.AddPolicy(
                     Policies.LocalAccessOrRequiresElevation,
