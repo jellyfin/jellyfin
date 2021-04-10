@@ -26,6 +26,9 @@ namespace Jellyfin.Data.Entities.Security
 
             DateCreated = DateTime.UtcNow;
             DateLastActivity = DateCreated;
+
+            // Non-nullable for EF Core, as this is a required relationship.
+            User = null!;
         }
 
         public int Id { get; private set; }
@@ -77,5 +80,10 @@ namespace Jellyfin.Data.Entities.Security
         /// Gets or sets the date of last activity.
         /// </summary>
         public DateTime DateLastActivity { get; set; }
+
+        /// <summary>
+        /// Gets the user.
+        /// </summary>
+        public User User { get; private set; }
     }
 }
