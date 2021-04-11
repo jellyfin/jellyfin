@@ -313,9 +313,7 @@ namespace Jellyfin.Api.Controllers
         /// Issues a command to a client to display a message to the user.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="text">The message test.</param>
-        /// <param name="header">The message header.</param>
-        /// <param name="timeoutMs">The message timeout. If omitted the user will have to confirm viewing the message.</param>
+        /// <param name="command">The <see cref="MessageCommand" /> object containing Header, Message Text, and TimeoutMs.</param>
         /// <response code="204">Message sent.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Message")]
@@ -323,16 +321,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
             [FromRoute, Required] string sessionId,
-            [FromQuery, Required] string text,
-            [FromQuery] string? header,
-            [FromQuery] long? timeoutMs)
+            [FromBody, Required] MessageCommand command)
         {
-            var command = new MessageCommand
+            if (string.IsNullOrWhiteSpace(command.Header))
             {
-                Header = string.IsNullOrEmpty(header) ? "Message from Server" : header,
-                TimeoutMs = timeoutMs,
-                Text = text
-            };
+                command.Header = "Message from Server";
+            }
 
             _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, command, CancellationToken.None);
 

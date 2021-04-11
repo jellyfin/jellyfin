@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -43,7 +44,8 @@ namespace MediaBrowser.Controller.Playlists
 
         public static bool IsPlaylistFile(string path)
         {
-            return System.IO.Path.HasExtension(path);
+            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
+            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
         }
 
         [JsonIgnore]
