@@ -239,7 +239,7 @@ namespace Jellyfin.Networking.Tests
             Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(','), false);
             Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(','), false);
 
-            Assert.Equal(nc1.Union(nc2).AsString(), result);
+            Assert.Equal(nc1.ThatAreContainedInNetworks(nc2).AsString(), result);
         }
 
         [Theory]
@@ -348,7 +348,7 @@ namespace Jellyfin.Networking.Tests
             // Test included, IP6.
             Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(','));
             Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(','));
-            Collection<IPObject> ncResult = ncSource.Union(ncDest);
+            Collection<IPObject> ncResult = ncSource.ThatAreContainedInNetworks(ncDest);
             Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(','));
             Assert.True(ncResult.Compare(resultCollection));
         }
