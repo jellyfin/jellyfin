@@ -172,7 +172,9 @@ namespace MediaBrowser.Providers.Manager
             SetImagePath(item, type, imageIndex, savedPaths[0]);
 
             // Delete the current path
-            if (currentImageIsLocalFile && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase))
+            if (currentImageIsLocalFile
+                && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase)
+                && (saveLocally || currentImagePath.Contains(_config.ApplicationPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
             {
                 var currentPath = currentImagePath;
 
