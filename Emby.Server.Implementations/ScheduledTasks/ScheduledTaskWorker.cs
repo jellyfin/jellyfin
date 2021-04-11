@@ -178,7 +178,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 lock (_lastExecutionResultSyncLock)
                 {
                     using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-                    JsonSerializer.SerializeAsync(createStream, value, _jsonOptions);
+                    using Utf8JsonWriter jsonStream = new Utf8JsonWriter(createStream);
+                    JsonSerializer.Serialize(jsonStream, value, _jsonOptions);
                 }
             }
         }
@@ -578,7 +579,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-            JsonSerializer.SerializeAsync(createStream, triggers, _jsonOptions);
+            using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(createStream);
+            JsonSerializer.Serialize(jsonWriter, triggers, _jsonOptions);
         }
 
         /// <summary>

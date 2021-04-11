@@ -1917,14 +1917,14 @@ namespace Emby.Server.Implementations.Library
                         _logger.LogWarning("Cannot get image index for {ImagePath}", img.Path);
                         continue;
                     }
-                    catch (InvalidOperationException)
+                    catch (Exception ex) when (ex is InvalidOperationException || ex is IOException)
                     {
-                        _logger.LogWarning("Cannot fetch image from {ImagePath}", img.Path);
+                        _logger.LogWarning(ex, "Cannot fetch image from {ImagePath}", img.Path);
                         continue;
                     }
                     catch (HttpRequestException ex)
                     {
-                        _logger.LogWarning("Cannot fetch image from {ImagePath}. Http status code: {HttpStatus}", img.Path, ex.StatusCode);
+                        _logger.LogWarning(ex, "Cannot fetch image from {ImagePath}. Http status code: {HttpStatus}", img.Path, ex.StatusCode);
                         continue;
                     }
                 }
