@@ -34,6 +34,10 @@ namespace MediaBrowser.Controller.Drawing
 
         public int? MaxHeight { get; set; }
 
+        public int? FillWidth { get; set; }
+
+        public int? FillHeight { get; set; }
+
         public int Quality { get; set; }
 
         public IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; set; }
@@ -91,6 +95,11 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             if (MaxHeight.HasValue && sizeValue.Height > MaxHeight.Value)
+            {
+                return false;
+            }
+
+            if (sizeValue.Width > FillWidth || sizeValue.Height > FillHeight)
             {
                 return false;
             }
