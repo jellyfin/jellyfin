@@ -38,4 +38,4 @@ labels:
 
               **Do not** push your merges to either branch. Use `git reset --hard HEAD~1` to revert both branches to their original state.
 
-              Reply to this PR with a comment beginning "Cherry-pick test completed." and including the merge-conflict-ixing diff(s) if applicable.
+              Reply to this PR with a comment beginning "Cherry-pick test completed." and including the merge-conflict-fixing diff(s) if applicable.
