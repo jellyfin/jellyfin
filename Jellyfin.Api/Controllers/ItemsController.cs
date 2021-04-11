@@ -247,8 +247,13 @@ namespace Jellyfin.Api.Controllers
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            if (folder is IHasCollectionType hasCollectionType
-                && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+            string? collectionType = null;
+            if (folder is IHasCollectionType hasCollectionType)
+            {
+                collectionType = hasCollectionType.CollectionType;
+            }
+
+            if (string.Equals(collectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 recursive = true;
                 includeItemTypes = new[] { "Playlist" };
@@ -271,10 +276,11 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            if (!(item is UserRootFolder)
+            if (item is not UserRootFolder
                 && !isInEnabledFolder
                 && !user.HasPermission(PermissionKind.EnableAllFolders)
-                && !user.HasPermission(PermissionKind.EnableAllChannels))
+                && !user.HasPermission(PermissionKind.EnableAllChannels)
+                && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
