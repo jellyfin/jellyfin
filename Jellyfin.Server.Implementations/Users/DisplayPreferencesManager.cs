@@ -67,7 +67,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc />
-        public Dictionary<string, string?> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client)
+        public Dictionary<string, string> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client)
         {
             return _dbContext.CustomItemDisplayPreferences
                 .AsQueryable()
