@@ -1153,7 +1153,7 @@ namespace Jellyfin.Networking.Manager
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
                 }
-                catch (NetworkInformationException ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in InitialiseInterfaces.");
                 }
