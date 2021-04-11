@@ -36,6 +36,8 @@ labels:
 
               Ensure the `cherry-pick` applies cleanly. If it does not, fix any merge conflicts *preserving as much of the original code as possible*, and make note of the resulting diff.
 
+              Test your changes with a build to ensure they are successful. If not, adjust the diff accordingly.
+
               **Do not** push your merges to either branch. Use `git reset --hard HEAD~1` to revert both branches to their original state.
 
               Reply to this PR with a comment beginning "Cherry-pick test completed." and including the merge-conflict-fixing diff(s) if applicable.
