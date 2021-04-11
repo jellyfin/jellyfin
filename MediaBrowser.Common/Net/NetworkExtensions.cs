@@ -229,7 +229,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="target">Collection to compare with.</param>
         /// <returns>A collection containing all the matches.</returns>
-        public static Collection<IPObject> Union(this Collection<IPObject> source, Collection<IPObject> target)
+        public static Collection<IPObject> ThatAreContainedInNetworks(this Collection<IPObject> source, Collection<IPObject> target)
         {
             if (source.Count == 0)
             {
