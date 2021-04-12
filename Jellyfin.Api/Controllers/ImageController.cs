@@ -1798,7 +1798,7 @@ namespace Jellyfin.Api.Controllers
                     int index = type.IndexOf(';', StringComparison.Ordinal);
                     if (index != -1)
                     {
-                        supportedFormats.Add(type.Substring(0, index));
+                        supportedFormats.Add(type.AsSpan(0, index).ToString());
                     }
                     else
                     {
