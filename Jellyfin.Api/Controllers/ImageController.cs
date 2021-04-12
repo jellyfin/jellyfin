@@ -1789,9 +1789,9 @@ namespace Jellyfin.Api.Controllers
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            var acceptTypes = Request.Headers[HeaderNames.Accept];
+            var acceptTypes = Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
             var supportedFormats = new List<string>();
-            if (acceptTypes.Count > 0)
+            if (acceptTypes.Length > 0)
             {
                 foreach (var type in acceptTypes)
                 {
@@ -1799,6 +1799,10 @@ namespace Jellyfin.Api.Controllers
                     if (index != -1)
                     {
                         supportedFormats.Add(type.Substring(0, index));
+                    }
+                    else
+                    {
+                        supportedFormats.Add(type);
                     }
                 }
             }
