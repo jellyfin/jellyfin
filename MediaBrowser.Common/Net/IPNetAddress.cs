@@ -77,11 +77,6 @@ namespace MediaBrowser.Common.Net
                 _address = address;
             }
 
-            if (PrefixLength > (AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
-            {
-                throw new ArgumentException("Invalid prefix for " + address.ToString());
-            }
-
             PrefixLength = prefixLength;
         }
 
