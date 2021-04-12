@@ -1789,12 +1789,12 @@ namespace Jellyfin.Api.Controllers
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            // Remove charsets etc. (anything after semi-colon)
             var supportedFormats = Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
             if (supportedFormats.Length > 0)
             {
                 for (var i = 0; i < supportedFormats.Length; i++)
                 {
+                    // Remove charsets etc. (anything after semi-colon)
                     var type = supportedFormats[i];
                     int index = type.IndexOf(';', StringComparison.Ordinal);
                     if (index != -1)
