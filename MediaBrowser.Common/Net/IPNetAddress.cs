@@ -138,7 +138,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets a value indicating the network address of this object. Lazy implementation.
         /// </summary>
-        public IPNetAddress NetworkAddress
+        public IPNetAddress Network
         {
             get
             {
@@ -177,11 +177,6 @@ namespace MediaBrowser.Common.Net
             if (address.IsIPv4MappedToIPv6)
             {
                 address = address.MapToIPv4();
-            }
-
-            if (IsLoopback(address))
-            {
-                return (address, prefixLength);
             }
 
             // An ip address is just a list of bytes, each one representing a segment on the network.
@@ -498,7 +493,7 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (Address == null || NetworkAddress.Address == null)
+            if (Address == null || Network.Address == null)
             {
                 return false;
             }
@@ -509,7 +504,7 @@ namespace MediaBrowser.Common.Net
             }
 
             var (altAddress, altPrefix) = NetworkAddressOf(address, PrefixLength);
-            return NetworkAddress.Address.Equals(altAddress) && NetworkAddress.PrefixLength >= altPrefix;
+            return Network.Address.Equals(altAddress) && Network.PrefixLength >= altPrefix;
         }
 
         /// <summary>
@@ -537,13 +532,13 @@ namespace MediaBrowser.Common.Net
             else if (address is IPNetAddress netaddrObj)
             {
                 // Have the same network address, but different subnets?
-                if (NetworkAddress.Address.Equals(netaddrObj.NetworkAddress.Address))
+                if (Network.Address.Equals(netaddrObj.Network.Address))
                 {
-                    return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
+                    return Network.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = NetworkAddressOf(netaddrObj.Address!, PrefixLength).address;
-                return NetworkAddress.Address.Equals(altAddress);
+                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength).address;
+                return Network.Address.Equals(altAddress);
             }
 
             return false;

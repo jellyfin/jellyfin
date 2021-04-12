@@ -141,9 +141,9 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="host">Host name to parse.</param>
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
-        /// <param name="ipTypes"><see cref="IpClassType"/> to filter on.</param>
+        /// <param name="ipType"><see cref="IpClassType"/> to filter on.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParse(string host, [NotNullWhen(true)] out IPHost? hostObj, IpClassType ipTypes)
+        public static bool TryParse(string host, [NotNullWhen(true)] out IPHost? hostObj, IpClassType ipType)
         {
             if (string.IsNullOrWhiteSpace(host))
             {
@@ -159,7 +159,7 @@ namespace MediaBrowser.Common.Net
                 int i = host.IndexOf(']', StringComparison.Ordinal);
                 if (i != -1)
                 {
-                    return TryParse(host.Remove(i)[1..], out hostObj, ipTypes);
+                    return TryParse(host.Remove(i)[1..], out hostObj, ipType);
                 }
 
                 hostObj = null;
@@ -179,8 +179,10 @@ namespace MediaBrowser.Common.Net
                 // Is hostname or hostname:port
                 if (Regex.IsMatch(hosts[0], pattern))
                 {
-                    hostObj = new IPHost(hosts[0]);
-                    hostObj.SetClass(ipTypes);
+                    hostObj = new IPHost(hosts[0])
+                    {
+                        _ipType = ipType
+                    };
                     return true;
                 }
 
@@ -189,8 +191,8 @@ namespace MediaBrowser.Common.Net
 
                 if (IPAddress.TryParse(host, out var netAddress))
                 {
-                    if (((netAddress.AddressFamily == AddressFamily.InterNetwork) && ipTypes == IpClassType.Ip6Only) ||
-                        ((netAddress.AddressFamily == AddressFamily.InterNetworkV6) && ipTypes == IpClassType.Ip4Only))
+                    if (((netAddress.AddressFamily == AddressFamily.InterNetwork) && ipType == IpClassType.Ip6Only) ||
+                        ((netAddress.AddressFamily == AddressFamily.InterNetworkV6) && ipType == IpClassType.Ip4Only))
                     {
                         hostObj = null;
                         return false;
@@ -203,8 +205,8 @@ namespace MediaBrowser.Common.Net
             }
             else if (hosts.Length <= 9 && IPAddress.TryParse(host, out var netAddress)) // 8 octets + port
             {
-                if (((netAddress.AddressFamily == AddressFamily.InterNetwork) && ipTypes == IpClassType.Ip6Only) ||
-                    ((netAddress.AddressFamily == AddressFamily.InterNetworkV6) && ipTypes == IpClassType.Ip4Only))
+                if (((netAddress.AddressFamily == AddressFamily.InterNetwork) && ipType == IpClassType.Ip6Only) ||
+                    ((netAddress.AddressFamily == AddressFamily.InterNetworkV6) && ipType == IpClassType.Ip4Only))
                 {
                     hostObj = null;
                     return false;
@@ -298,15 +300,6 @@ namespace MediaBrowser.Common.Net
             return false;
         }
 
-        /// <summary>
-        /// Limits the class to returning only addresses that match <paramref name="ipClassType"/>.
-        /// </summary>
-        /// <param name="ipClassType"><seealso cref="IpClassType"/>.</param>
-        public void SetClass(IpClassType ipClassType)
-        {
-            _ipType = ipClassType;
-        }
-
         /// <inheritdoc/>
         public override bool IsIP6()
         {
@@ -357,7 +350,7 @@ namespace MediaBrowser.Common.Net
                     }
                 }
 
-                return output[0..^1] + "]";
+                return output[0..^1] + ']';
             }
 
             return string.IsNullOrEmpty(HostName) ? "None" : HostName;

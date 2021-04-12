@@ -23,6 +23,17 @@ namespace Jellyfin.Networking.Tests
     /// </remarks>
     public class NetworkParseTests
     {
+        internal static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IConfigurationManager>
+            {
+                CallBase = true
+            };
+
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IConfigurationManager)configManager.Object;
+        }
+
         /// <summary>
         /// Tests the ability of the system to ignore interfaces specified, returning local interfaces.
         /// This functionality is used to filter out virtual interfaces. <see cref="NetworkConfiguration.VirtualInterfaceNames"/>.
@@ -31,11 +42,11 @@ namespace Jellyfin.Networking.Tests
         /// <param name="value">Interface addresses after filter.</param>
         [Theory]
         // All valid
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.208/24,200.200.200.200/24")]
+        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "[192.168.1.208/24,200.200.200.200/24]")]
         // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "200.200.200.200/24")]
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "[200.200.200.200/24]")]
         // All invalid
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212", "")]
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212", "[]")]
         public void Interfaces_Ignore_Virtual(string interfaces, string value)
         {
             var conf = new NetworkConfiguration()
@@ -49,7 +60,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            Assert.Equal(nm.GetInternalBindAddresses().AsString(), '[' + value + ']');
+            Assert.Equal(value, nm.GetInternalBindAddresses().AsString());
         }
 
         /// <summary>
@@ -61,14 +72,16 @@ namespace Jellyfin.Networking.Tests
         /// <param name="value">Interface addresses after filter..</param>
         [Theory]
         // All valid
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "192.168.1.208/24,200.200.200.200/24")]
+        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
         // eth16 only
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "192.168.1.208/24")]
+        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
         // All interfaces excluded.
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "")]
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
         // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "200.200.200.200/24")]
-        public void Interfaces_Ignore_Virtual_Filter_On_Internal(string interfaces, string lan, string value)
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
+        // Overlapping interface,
+        [InlineData("192.168.1.110/24,-20,br0|192.168.1.10/24,-16,br1|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.110/24,192.168.1.10/24]")]
+        public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
         {
             var conf = new NetworkConfiguration()
             {
@@ -81,7 +94,7 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
             NetworkManager.MockNetworkSettings = string.Empty;
 
-            Assert.Equal(nm.GetInternalBindAddresses().AsString(), '[' + value + ']');
+            Assert.Equal(value, nm.GetInternalBindAddresses().AsString());
         }
 
         /// <summary>
@@ -239,7 +252,6 @@ namespace Jellyfin.Networking.Tests
             "[]",
             "[]",
             "[192.158.0.0/16,192.0.0.0/8]")]
-
         public void Test_Collection_Parsing(string settings, string includedItems, string includedIp4Items, string excludedItems, string excludedIp4Items, string networkAddress)
         {
             if (settings == null)
@@ -258,22 +270,22 @@ namespace Jellyfin.Networking.Tests
             // Test included.
 
             Collection<IPNetAddress> nc = nm.CreateIPCollection(settings.Split(","), false);
-            Assert.Equal(nc.AsString(), includedItems);
+            Assert.Equal(includedItems, nc.AsString());
 
             // Test excluded.
             nc = nm.CreateIPCollection(settings.Split(','), true);
-            Assert.Equal(nc.AsString(), excludedItems);
+            Assert.Equal(excludedItems, nc.AsString());
 
             conf.EnableIPV6 = false;
             nm.UpdateSettings(conf);
 
             // Test IP4 included.
             nc = nm.CreateIPCollection(settings.Split(','), false);
-            Assert.Equal(nc.AsString(), includedIp4Items);
+            Assert.Equal(includedIp4Items, nc.AsString());
 
             // Test IP4 excluded.
             nc = nm.CreateIPCollection(settings.Split(','), true);
-            Assert.Equal(nc.AsString(), excludedIp4Items);
+            Assert.Equal(excludedIp4Items, nc.AsString());
 
             conf.EnableIPV6 = true;
             nm.UpdateSettings(conf);
@@ -281,7 +293,7 @@ namespace Jellyfin.Networking.Tests
             // Test network addresses of collection.
             nc = nm.CreateIPCollection(settings.Split(','), false);
             var nca = nc.AsNetworkAddresses();
-            Assert.Equal(nca.AsString(), networkAddress);
+            Assert.Equal(networkAddress, nca.AsString());
         }
 
         /// <summary>
@@ -321,7 +333,7 @@ namespace Jellyfin.Networking.Tests
             Collection<IPNetAddress> nc1 = nm.CreateIPCollection(settings.Split(','), false);
             Collection<IPNetAddress> nc2 = nm.CreateIPCollection(compare.Split(','), false);
 
-            Assert.Equal(nc1.Union(nc2).AsString(), result);
+            Assert.Equal(result, nc1.ThatAreContainedInNetworks(nc2).AsString());
         }
 
         [Theory]
@@ -430,10 +442,10 @@ namespace Jellyfin.Networking.Tests
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
             // Test included, IP6.
-            Collection<IPNetAddress> ncSource = nm.CreateIPCollection(source.Split(','));
-            Collection<IPNetAddress> ncDest = nm.CreateIPCollection(dest.Split(','));
-            Collection<IPNetAddress> ncResult = ncSource.Union(ncDest);
-            Collection<IPNetAddress> resultCollection = nm.CreateIPCollection(result.Split(','));
+            var ncSource = nm.CreateIPCollection(source.Split(','));
+            var ncDest = nm.CreateIPCollection(dest.Split(','));
+            var ncResult = ncSource.ThatAreContainedInNetworks(ncDest);
+            var resultCollection = nm.CreateIPCollection(result.Split(','));
             Assert.True(ncResult.Compare(resultCollection));
         }
 
@@ -503,7 +515,7 @@ namespace Jellyfin.Networking.Tests
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
                 var intf = nm.GetBindInterface(source, out int? _);
 
-                Assert.Equal(intf, result);
+                Assert.Equal(result, intf);
             }
         }
 
@@ -570,18 +582,7 @@ namespace Jellyfin.Networking.Tests
 
             var intf = nm.GetBindInterface(source, out int? _);
 
-            Assert.Equal(intf, result);
-        }
-
-        internal static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
-        {
-            var configManager = new Mock<IConfigurationManager>
-            {
-                CallBase = true
-            };
-
-            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
+            Assert.Equal(result, intf);
         }
 
         [Theory]
@@ -601,7 +602,7 @@ namespace Jellyfin.Networking.Tests
             };
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+            Assert.NotEqual(denied, nm.HasRemoteAccess(IPAddress.Parse(remoteIp)));
         }
 
         [Theory]
@@ -621,7 +622,7 @@ namespace Jellyfin.Networking.Tests
 
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            Assert.NotEqual(nm.HasRemoteAccess(IPAddress.Parse(remoteIp)), denied);
+            Assert.NotEqual(denied, nm.HasRemoteAccess(IPAddress.Parse(remoteIp)));
         }
     }
 }
