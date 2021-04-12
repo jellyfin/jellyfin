@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun;
+using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Manager;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.LiveTv;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -34,6 +39,15 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                         });
                     });
 
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV6 = true,
+                EnableIPV4 = true,
+                LocalNetworkSubnets = new string[] { "0.0.0.0/0" }
+            };
+
+            var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))
                 .Returns(new HttpClient(messageHandler.Object));
@@ -42,7 +56,20 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
             {
                 ConfigureMembers = true
             }).Inject(http);
+
+            _fixture.Inject<INetworkManager>(nm);
             _hdHomerunHost = _fixture.Create<HdHomerunHost>();
+        }
+
+        internal static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
+        {
+            var configManager = new Mock<IConfigurationManager>
+            {
+                CallBase = true
+            };
+
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
+            return (IConfigurationManager)configManager.Object;
         }
 
         [Fact]

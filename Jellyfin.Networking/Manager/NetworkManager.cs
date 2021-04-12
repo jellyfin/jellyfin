@@ -224,7 +224,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public Collection<IPNetAddress> CreateIPCollection(string[] values, bool negated = false)
+        public Collection<IPNetAddress> CreateIPCollection(string[] values, bool negated, bool combineNetworks)
         {
             Collection<IPNetAddress> col = new Collection<IPNetAddress>();
             if (values == null)
@@ -242,12 +242,12 @@ namespace Jellyfin.Networking.Manager
                     {
                         if (negated)
                         {
-                            AddToCollection(col, v[1..]);
+                            AddToCollection(col, v[1..], combineNetworks);
                         }
                     }
                     else if (!negated)
                     {
-                        AddToCollection(col, v);
+                        AddToCollection(col, v, combineNetworks);
                     }
                 }
                 catch (ArgumentException e)
@@ -531,7 +531,7 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index
-                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork) // iface.Address is not null here.
+                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         result.AddItem(iface, false);
@@ -750,7 +750,8 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         /// <param name="col"><see cref="Collection{IPNetAddress}"/>Collection.</param>
         /// <param name="token">String value to parse.</param>
-        private void AddToCollection(Collection<IPNetAddress> col, string token)
+        /// <param name="itemIsNetwork">True if the item is a network.</param>
+        private void AddToCollection(Collection<IPNetAddress> col, string token, bool itemIsNetwork)
         {
             // Is it the name of an interface (windows) eg, Wireless LAN adapter Wireless Network Connection 1.
             // Null check required here for automated testing.
@@ -765,7 +766,7 @@ namespace Jellyfin.Networking.Manager
                         && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        col.AddItem(iface, true);
+                        col.AddItem(iface, itemIsNetwork);
                     }
                 }
 
@@ -773,7 +774,7 @@ namespace Jellyfin.Networking.Manager
             }
             else if (TryParse(token, out var obj))
             {
-                col.AddItem(obj, true);
+                col.AddItem(obj, itemIsNetwork);
             }
             else
             {
@@ -925,11 +926,11 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.
-                _bindExclusions = CreateIPCollection(intAddresses, true)
+                _bindExclusions = CreateIPCollection(intAddresses, true, false)
                     .Where(p => _interfaceAddresses.ContainsAddress(p))
                     .ToArray();
 
-                _bindAddresses = CreateIPCollection(intAddresses)
+                _bindAddresses = CreateIPCollection(intAddresses, false, false)
                     .Where(p => _interfaceAddresses.ContainsAddress(p))
                     .ToArray();
 
@@ -945,7 +946,7 @@ namespace Jellyfin.Networking.Manager
         {
             lock (_intLock)
             {
-                _remoteAddressFilter = CreateIPCollection(config.RemoteIPFilter).ToArray();
+                _remoteAddressFilter = CreateIPCollection(config.RemoteIPFilter, false, false).ToArray();
             }
         }
 
@@ -962,8 +963,8 @@ namespace Jellyfin.Networking.Manager
                 string[] subnets = config.LocalNetworkSubnets;
                 // Create lists from user settings.
 
-                _lanSubnets = CreateIPCollection(subnets);
-                _excludedSubnets = CreateIPCollection(subnets, true).AsNetworkAddresses();
+                _lanSubnets = CreateIPCollection(subnets, false, true);
+                _excludedSubnets = CreateIPCollection(subnets, true, true).AsNetworkAddresses();
 
                 // NOTE: The order of the commands generating the collection in this statement matters.
                 // Altering the order will cause the collections to be created incorrectly.
@@ -1157,7 +1158,7 @@ namespace Jellyfin.Networking.Manager
             foreach (var addr in _publishedServerUrls)
             {
                 // Remaining. Match anything.
-                if (addr.Key.Address.Equals(IPAddress.Broadcast)) // _publishedServerUrls does not contain null addresses.
+                if (addr.Key.Address.Equals(IPAddress.Broadcast))
                 {
                     bindPreference = addr.Value;
                     break;

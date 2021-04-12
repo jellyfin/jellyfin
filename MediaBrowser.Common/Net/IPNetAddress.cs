@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 
@@ -11,6 +12,8 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public class IPNetAddress
     {
+        private byte _prefixLength;
+
         /// <summary>
         /// IPv4 multicast address.
         /// </summary>
@@ -74,6 +77,11 @@ namespace MediaBrowser.Common.Net
                 _address = address;
             }
 
+            if (PrefixLength > (AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
+            {
+                throw new ArgumentException("Invalid prefix for " + address.ToString());
+            }
+
             PrefixLength = prefixLength;
         }
 
@@ -104,7 +112,19 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets the object's IP address.
         /// </summary>
-        public virtual byte PrefixLength { get; set; }
+        public virtual byte PrefixLength
+        {
+            get => _prefixLength;
+            set
+            {
+                if (value < 0 || value > (Address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), _address.ToString() + '/' + value.ToString(CultureInfo.CurrentCulture));
+                }
+
+                _prefixLength = value;
+            }
+        }
 
         /// <summary>
         /// Gets the AddressFamily of this object.
@@ -128,7 +148,7 @@ namespace MediaBrowser.Common.Net
             {
                 if (!_isNetwork)
                 {
-                    (_address, PrefixLength) = NetworkAddressOf(Address, PrefixLength);
+                    _address = NetworkAddressOf(Address, PrefixLength);
                 }
 
                 _isNetwork = value;
@@ -149,8 +169,8 @@ namespace MediaBrowser.Common.Net
 
                 if (_networkAddress == null)
                 {
-                    var (address, prefixLength) = NetworkAddressOf(Address, PrefixLength);
-                    _networkAddress = new IPNetAddress(address, prefixLength)
+                    var address = NetworkAddressOf(Address, PrefixLength);
+                    _networkAddress = new IPNetAddress(address, PrefixLength)
                     {
                         Tag = this.Tag,
                         _isNetwork = true
@@ -167,11 +187,16 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">IP Address to convert.</param>
         /// <param name="prefixLength">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        public static (IPAddress address, byte prefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
+        public static IPAddress NetworkAddressOf(IPAddress address, byte prefixLength)
         {
             if (address == null)
             {
                 throw new ArgumentNullException(nameof(address));
+            }
+
+            if (prefixLength < 0 || prefixLength > (address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
+            {
+                throw new ArgumentOutOfRangeException(nameof(prefixLength));
             }
 
             if (address.IsIPv4MappedToIPv6)
@@ -208,7 +233,7 @@ namespace MediaBrowser.Common.Net
             }
 
             // Return the network address for the prefix.
-            return (new IPAddress(addressBytes), prefixLength);
+            return new IPAddress(addressBytes);
         }
 
         /// <summary>
@@ -493,7 +518,7 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (Address == null || Network.Address == null)
+            if (address.AddressFamily != AddressFamily)
             {
                 return false;
             }
@@ -503,41 +528,41 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
-            var (altAddress, altPrefix) = NetworkAddressOf(address, PrefixLength);
-            return Network.Address.Equals(altAddress) && Network.PrefixLength >= altPrefix;
+            var altAddress = NetworkAddressOf(address, PrefixLength);
+            return Network.Address.Equals(altAddress) && Network.PrefixLength >= PrefixLength;
         }
 
         /// <summary>
         /// Compares the address in this object and the address in the object passed as a parameter.
         /// </summary>
-        /// <param name="address">Object's IP address to compare to.</param>
+        /// <param name="ip">Object's IP address to compare to.</param>
         /// <returns>Comparison result.</returns>
-        public virtual bool Contains(IPNetAddress address)
+        public virtual bool Contains(IPNetAddress ip)
         {
             if (Address == null)
             {
                 return false;
             }
 
-            if (address is IPHost addressObj && addressObj.HasAddress)
+            if (ip is IPHost addressObj && addressObj.HasAddress)
             {
                 foreach (IPAddress addr in addressObj.GetAddresses())
                 {
-                    if (Contains(addr))
+                    if (addr.AddressFamily == AddressFamily && Contains(addr))
                     {
                         return true;
                     }
                 }
             }
-            else if (address is IPNetAddress netaddrObj)
+            else if (ip.AddressFamily == AddressFamily)
             {
                 // Have the same network address, but different subnets?
-                if (Network.Address.Equals(netaddrObj.Network.Address))
+                if (Network.Address.Equals(ip.Network.Address))
                 {
-                    return Network.PrefixLength <= netaddrObj.PrefixLength;
+                    return Network.PrefixLength <= ip.PrefixLength;
                 }
 
-                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength).address;
+                var altAddress = NetworkAddressOf(ip.Address, PrefixLength);
                 return Network.Address.Equals(altAddress);
             }
 

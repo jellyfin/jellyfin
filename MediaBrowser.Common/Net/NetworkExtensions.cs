@@ -136,7 +136,7 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(source));
             }
 
-            Collection<IPNetAddress> result = new Collection<IPNetAddress>();
+            var result = new Collection<IPNetAddress>();
 
             foreach (IPNetAddress i in source)
             {
@@ -174,10 +174,10 @@ namespace MediaBrowser.Common.Net
         {
             if (excludeList == null)
             {
-                return new Collection<IPNetAddress>((IList<IPNetAddress>)source);
+                return source;
             }
 
-            Collection<IPNetAddress> results = new Collection<IPNetAddress>();
+            var results = new Collection<IPNetAddress>();
 
             bool found;
             foreach (var outer in source)

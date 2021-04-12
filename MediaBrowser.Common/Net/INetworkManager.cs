@@ -186,8 +186,9 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="values">Values to parse.</param>
         /// <param name="negated">When true, only include values beginning with !. When false, ignore ! values.</param>
+        /// <param name="combineNetworks">When true, networks are merged where possible.</param>
         /// <returns>IPCollection object containing the value strings.</returns>
-        Collection<IPNetAddress> CreateIPCollection(string[] values, bool negated = false);
+        Collection<IPNetAddress> CreateIPCollection(string[] values, bool negated, bool combineNetworks);
 
         /// <summary>
         /// Returns all the internal Bind interface addresses.

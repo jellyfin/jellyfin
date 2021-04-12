@@ -80,13 +80,20 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                return (byte)(ResolveHost() ? 128 : 32);
+                ResolveHost();
+                return Address.AddressFamily switch
+                {
+                    AddressFamily.InterNetwork => 32,
+                    AddressFamily.InterNetworkV6 => 128,
+                    _ => 255
+                };
             }
 
             set
             {
                 // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
                 // which is automatically determined by it's IP type. Anything else is meaningless.
+                throw new NotImplementedException();
             }
         }
 
@@ -357,10 +364,10 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <inheritdoc/>
-        public override bool Contains(IPNetAddress address)
+        public override bool Contains(IPNetAddress ip)
         {
             // An IPHost cannot contain another IPNetAddress, it can only be equal.
-            return Equals(address);
+            return Equals(ip);
         }
 
         /// <summary>
@@ -379,15 +386,17 @@ namespace MediaBrowser.Common.Net
             if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
             {
                 _lastResolved = DateTime.UtcNow;
-                ResolveHostInternal().GetAwaiter().GetResult();
-                Resolved = true;
-                if (_ipType == IpClassType.Ip4Only)
+                if (ResolveHostInternal().GetAwaiter().GetResult())
                 {
-                    _addresses = _addresses.Where(p => p.AddressFamily == AddressFamily.InterNetwork).ToArray();
-                }
-                else if (_ipType == IpClassType.Ip6Only)
-                {
-                    _addresses = _addresses.Where(p => p.AddressFamily == AddressFamily.InterNetworkV6).ToArray();
+                    Resolved = true;
+                    if (_ipType == IpClassType.Ip4Only)
+                    {
+                        _addresses = _addresses.Where(p => p.AddressFamily == AddressFamily.InterNetwork).ToArray();
+                    }
+                    else if (_ipType == IpClassType.Ip6Only)
+                    {
+                        _addresses = _addresses.Where(p => p.AddressFamily == AddressFamily.InterNetworkV6).ToArray();
+                    }
                 }
             }
 
@@ -398,7 +407,7 @@ namespace MediaBrowser.Common.Net
         /// Task that looks up a Host name and returns its IP addresses.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private async Task ResolveHostInternal()
+        private async Task<bool> ResolveHostInternal()
         {
             if (!string.IsNullOrEmpty(HostName))
             {
@@ -406,7 +415,7 @@ namespace MediaBrowser.Common.Net
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
                     _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
-                    return;
+                    return true;
                 }
 
                 if (Uri.CheckHostName(HostName).Equals(UriHostNameType.Dns))
@@ -415,6 +424,7 @@ namespace MediaBrowser.Common.Net
                     {
                         IPHostEntry ip = await Dns.GetHostEntryAsync(HostName).ConfigureAwait(false);
                         _addresses = ip.AddressList;
+                        return true;
                     }
                     catch (SocketException ex)
                     {
@@ -423,6 +433,8 @@ namespace MediaBrowser.Common.Net
                     }
                 }
             }
+
+            return false;
         }
     }
 }
