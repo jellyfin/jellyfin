@@ -383,7 +383,8 @@ namespace Jellyfin.Networking.Tests
         // User on external network, no binding - so result is the 1st external.
         [InlineData("jellyfin.org", "", false, "eth11")]
         // Dns failure - should skip the test.
-        [InlineData("ospoakdposkd.abc", "", false, "eth11")]
+        // https://en.wikipedia.org/wiki/.test
+        [InlineData("invalid.domain.test", "", false, "eth11")]
         // User assumed to be internal, no binding - so result is the 1st internal.
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
