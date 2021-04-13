@@ -1074,17 +1074,16 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     var item = libraryManager.GetItemById(refreshItem.Item1);
-                    if (item != null)
+                    if (item == null)
                     {
-                        // Try to throttle this a little bit.
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-
-                        var task = item is MusicArtist artist
-                            ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
-                            : RefreshItem(item, refreshItem.Item2, cancellationToken);
-
-                        await task.ConfigureAwait(false);
+                        continue;
                     }
+
+                    var task = item is MusicArtist artist
+                        ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
+                        : RefreshItem(item, refreshItem.Item2, cancellationToken);
+
+                    await task.ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
