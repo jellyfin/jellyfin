@@ -96,7 +96,7 @@ namespace Jellyfin.Networking.Tests
 
             Assert.Equal(value, nm.GetInternalBindAddresses().AsString());
         }
-        
+
         /// <summary>
         /// Validates that the address is a valid host string.
         /// </summary>
