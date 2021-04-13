@@ -1434,9 +1434,9 @@ namespace MediaBrowser.Controller.Entities
             var linkedChildren = LinkedChildren;
             foreach (var i in linkedChildren)
             {
-                if (i.ItemId.HasValue && i.ItemId.Value == itemId)
+                if (i.ItemId.HasValue)
                 {
-                    return true;
+                    return i.ItemId.Value == itemId;
                 }
 
                 var child = GetLinkedChild(i);
