@@ -96,34 +96,7 @@ namespace Jellyfin.Networking.Tests
 
             Assert.Equal(value, nm.GetInternalBindAddresses().AsString());
         }
-
-        /// <summary>
-        /// Tests IP addresses are NOT part of, or have been excluded from the network range provided.
-        /// </summary>
-        /// <param name="network">Network ranges.</param>
-        /// <param name="value">Value to check.</param>
-        [Theory]
-        [InlineData("192.168.10.0/24,!192.168.10.60/32", "192.168.10.60")]
-        [InlineData("www.google.com", "")]
-        public void Is_Not_In_Network(string network, string value)
-        {
-            if (network == null)
-            {
-                throw new ArgumentNullException(nameof(network));
-            }
-
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
-                LocalNetworkSubnets = network.Split(',')
-            };
-
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-
-            Assert.False(nm.IsInLocalNetwork(value));
-        }
-
+        
         /// <summary>
         /// Validates that the address is a valid host string.
         /// </summary>
