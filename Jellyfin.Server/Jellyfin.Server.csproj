@@ -20,10 +20,6 @@
     <!-- <DisableImplicitAspNetCoreAnalyzers>true</DisableImplicitAspNetCoreAnalyzers> -->
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\SharedVersion.cs" />
   </ItemGroup>
