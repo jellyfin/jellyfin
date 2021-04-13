@@ -34,10 +34,6 @@
     <ProjectReference Include="../../MediaBrowser.Common/MediaBrowser.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NetworkTesting\" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
