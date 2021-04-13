@@ -154,7 +154,7 @@ namespace Jellyfin.Networking.Tests
                 // Cannot safely check dns names as the ip responses change.
                 if (!string.IsNullOrEmpty(expected))
                 {
-                    Assert.True(string.Equals(result.ToString(), expected, StringComparison.OrdinalIgnoreCase));
+                    Assert.Equal(expected, result.ToString());
                 }
 
                 Assert.True(valid);
