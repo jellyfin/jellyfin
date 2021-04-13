@@ -341,12 +341,7 @@ namespace Emby.Server.Implementations.Collections
 
                         itemIsInBoxSet = true;
 
-                        if (results.ContainsKey(boxSet.Id))
-                        {
-                            continue;
-                        }
-
-                        results[boxSet.Id] = boxSet;
+                        results.TryAdd(boxSet.Id, boxSet);
                     }
 
                     // skip any item that is in a box set
@@ -373,7 +368,7 @@ namespace Emby.Server.Implementations.Collections
 
                     if (!alreadyInResults)
                     {
-                        results[item.Id] = item;
+                        results[itemId] = item;
                     }
                 }
             }

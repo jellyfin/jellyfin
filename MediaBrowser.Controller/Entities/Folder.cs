@@ -1436,7 +1436,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (i.ItemId.HasValue)
                 {
-                    return i.ItemId.Value == itemId;
+                    if (i.ItemId.Value == itemId)
+                    {
+                        return true;
+                    }
+
+                    continue;
                 }
 
                 var child = GetLinkedChild(i);
