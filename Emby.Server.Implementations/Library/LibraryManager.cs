@@ -196,13 +196,13 @@ namespace Emby.Server.Implementations.Library
         /// Gets or sets the postscan tasks.
         /// </summary>
         /// <value>The postscan tasks.</value>
-        private ILibraryPostScanTask[] PostscanTasks { get; set; }
+        private ILibraryPostScanTask[] PostscanTasks { get; set; } = Array.Empty<ILibraryPostScanTask>();
 
         /// <summary>
         /// Gets or sets the intro providers.
         /// </summary>
         /// <value>The intro providers.</value>
-        private IIntroProvider[] IntroProviders { get; set; }
+        private IIntroProvider[] IntroProviders { get; set; } = Array.Empty<IIntroProvider>();
 
         /// <summary>
         /// Gets or sets the list of entity resolution ignore rules.
@@ -214,15 +214,15 @@ namespace Emby.Server.Implementations.Library
         /// Gets or sets the list of currently registered entity resolvers.
         /// </summary>
         /// <value>The entity resolvers enumerable.</value>
-        private IItemResolver[] EntityResolvers { get; set; }
+        private IItemResolver[] EntityResolvers { get; set; } = Array.Empty<IItemResolver>();
 
-        private IMultiItemResolver[] MultiItemResolvers { get; set; }
+        private IMultiItemResolver[] MultiItemResolvers { get; set; } = Array.Empty<IMultiItemResolver>();
 
         /// <summary>
         /// Gets or sets the comparers.
         /// </summary>
         /// <value>The comparers.</value>
-        private IBaseItemComparer[] Comparers { get; set; }
+        private IBaseItemComparer[] Comparers { get; set; } = Array.Empty<IBaseItemComparer>();
 
         public bool IsScanRunning { get; private set; }
 
