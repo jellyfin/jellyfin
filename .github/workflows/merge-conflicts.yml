@@ -11,7 +11,7 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
-      - uses: eps1lon/actions-label-merge-conflict@v2.0.0
+      - uses: eps1lon/actions-label-merge-conflict@v2.0.1
         with:
           dirtyLabel: 'merge conflict'
           repoToken: ${{ secrets.GH_TOKEN }}
