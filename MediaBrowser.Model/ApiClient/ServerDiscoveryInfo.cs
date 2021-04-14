@@ -11,22 +11,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="address">The server address.</param>
         /// <param name="id">The server id.</param>
         /// <param name="name">The server name.</param>
-        public ServerDiscoveryInfo(string address, string id, string name)
-        {
-            Address = address;
-            Id = id;
-            Name = name;
-            EndpointAddress = null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServerDiscoveryInfo"/> class.
-        /// </summary>
-        /// <param name="address">The server address.</param>
-        /// <param name="id">The server id.</param>
-        /// <param name="name">The server name.</param>
         /// <param name="endpointAddress">The endpoint address.</param>
-        public ServerDiscoveryInfo(string address, string id, string name, string endpointAddress)
+        public ServerDiscoveryInfo(string address, string id, string name, string? endpointAddress = null)
         {
             Address = address;
             Id = id;
