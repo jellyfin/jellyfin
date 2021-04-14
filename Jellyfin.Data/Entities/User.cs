@@ -64,6 +64,7 @@ namespace Jellyfin.Data.Entities
             EnableUserPreferenceAccess = true;
             MustUpdatePassword = false;
             DisplayMissingEpisodes = false;
+            NextUpTimeout = 0;
             DisplayCollectionsView = false;
             HidePlayedInLatest = true;
             RememberAudioSelections = true;
@@ -213,6 +214,14 @@ namespace Jellyfin.Data.Entities
         /// Required.
         /// </remarks>
         public bool DisplayMissingEpisodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value for the next up timeout.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public int NextUpTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to display the collections view.

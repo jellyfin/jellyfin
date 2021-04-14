@@ -156,7 +156,7 @@ namespace Emby.Server.Implementations.TV
                         return i.Item1 != DateTime.MinValue;
                     }
 
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    if (alwaysEnableFirstEpisode || (i.Item1 != DateTime.MinValue && (user.NextUpTimeout == 0 || (DateTime.Now - i.Item1).TotalDays < user.NextUpTimeout)))
                     {
                         anyFound = true;
                         return true;

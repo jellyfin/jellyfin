@@ -49,6 +49,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool DisplayMissingEpisodes { get; set; }
 
+        public int NextUpTimeout { get; set; }
+
         public string[] GroupedFolders { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }

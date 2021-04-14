@@ -337,6 +337,7 @@ namespace Jellyfin.Server.Implementations.Users
                     PlayDefaultAudioTrack = user.PlayDefaultAudioTrack,
                     DisplayCollectionsView = user.DisplayCollectionsView,
                     DisplayMissingEpisodes = user.DisplayMissingEpisodes,
+                    NextUpTimeout = user.NextUpTimeout,
                     AudioLanguagePreference = user.AudioLanguagePreference,
                     RememberAudioSelections = user.RememberAudioSelections,
                     EnableNextEpisodeAutoPlay = user.EnableNextEpisodeAutoPlay,
@@ -625,6 +626,7 @@ namespace Jellyfin.Server.Implementations.Users
             user.PlayDefaultAudioTrack = config.PlayDefaultAudioTrack;
             user.DisplayCollectionsView = config.DisplayCollectionsView;
             user.DisplayMissingEpisodes = config.DisplayMissingEpisodes;
+            user.NextUpTimeout = config.NextUpTimeout;
             user.AudioLanguagePreference = config.AudioLanguagePreference;
             user.RememberAudioSelections = config.RememberAudioSelections;
             user.EnableNextEpisodeAutoPlay = config.EnableNextEpisodeAutoPlay;
