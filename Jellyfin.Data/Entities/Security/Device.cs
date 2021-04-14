@@ -13,13 +13,15 @@ namespace Jellyfin.Data.Entities.Security
         /// Initializes a new instance of the <see cref="Device"/> class.
         /// </summary>
         /// <param name="userId">The user id.</param>
+        /// <param name="accessToken">The access token.</param>
         /// <param name="appName">The app name.</param>
         /// <param name="appVersion">The app version.</param>
         /// <param name="deviceName">The device name.</param>
         /// <param name="deviceId">The device id.</param>
-        public Device(Guid userId, string appName, string appVersion, string deviceName, string deviceId)
+        public Device(Guid userId, string accessToken, string appName, string appVersion, string deviceName, string deviceId)
         {
             UserId = userId;
+            AccessToken = accessToken;
             AppName = appName;
             AppVersion = appVersion;
             DeviceName = deviceName;
@@ -42,6 +44,11 @@ namespace Jellyfin.Data.Entities.Security
         /// Gets the user id.
         /// </summary>
         public Guid UserId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the access token.
+        /// </summary>
+        public string AccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets the app name.
