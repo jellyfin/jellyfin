@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
-using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.Extensions.Logging;
 
@@ -21,36 +20,26 @@ namespace Emby.Server.Implementations.QuickConnect
     /// </summary>
     public class QuickConnectManager : IQuickConnect, IDisposable
     {
-        private readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
-        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ConcurrentDictionary<string, QuickConnectResult>();
+        private readonly RNGCryptoServiceProvider _rng = new ();
+        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ();
+        private readonly ConcurrentDictionary<string, (string, Guid)> _quickConnectTokens = new ();
 
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<QuickConnectManager> _logger;
-        private readonly IAuthenticationRepository _authenticationRepository;
-        private readonly IAuthorizationContext _authContext;
-        private readonly IServerApplicationHost _appHost;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectManager"/> class.
         /// Should only be called at server startup when a singleton is created.
         /// </summary>
-        /// <param name="config">Configuration.</param>
-        /// <param name="logger">Logger.</param>
-        /// <param name="appHost">Application host.</param>
-        /// <param name="authContext">Authentication context.</param>
-        /// <param name="authenticationRepository">Authentication repository.</param>
-        public QuickConnectManager(
-            IServerConfigurationManager config,
-            ILogger<QuickConnectManager> logger,
-            IServerApplicationHost appHost,
-            IAuthorizationContext authContext,
-            IAuthenticationRepository authenticationRepository)
+        /// <param name="config">The server configuration manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="sessionManager">The session manager.</param>
+        public QuickConnectManager(IServerConfigurationManager config, ILogger<QuickConnectManager> logger, ISessionManager sessionManager)
         {
             _config = config;
             _logger = logger;
-            _appHost = appHost;
-            _authContext = authContext;
-            _authenticationRepository = authenticationRepository;
+            _sessionManager = sessionManager;
 
             ReloadConfiguration();
         }
@@ -138,6 +127,19 @@ namespace Emby.Server.Implementations.QuickConnect
             return result;
         }
 
+        public void AuthenticateRequest(AuthenticationRequest request, string token)
+        {
+            if (!_quickConnectTokens.TryGetValue(token, out var entry))
+            {
+                throw new SecurityException("Unknown quick connect token");
+            }
+
+            request.UserId = entry.Item2;
+            _quickConnectTokens.Remove(token, out _);
+
+            _sessionManager.AuthenticateQuickConnect(request, token);
+        }
+
         /// <inheritdoc/>
         public string GenerateCode()
         {
@@ -179,16 +181,7 @@ namespace Emby.Server.Implementations.QuickConnect
             var added = result.DateAdded ?? DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(Timeout));
             result.DateAdded = added.Subtract(TimeSpan.FromMinutes(Timeout - 1));
 
-            _authenticationRepository.Create(new AuthenticationInfo
-            {
-                AppName = TokenName,
-                AccessToken = result.Authentication,
-                DateCreated = DateTime.UtcNow,
-                DeviceId = _appHost.SystemId,
-                DeviceName = _appHost.FriendlyName,
-                AppVersion = _appHost.ApplicationVersionString,
-                UserId = userId
-            });
+            _quickConnectTokens[result.Authentication] = (TokenName, userId);
 
             _logger.LogDebug("Authorizing device with code {Code} to login as user {userId}", code, userId);
 
@@ -198,19 +191,15 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public int DeleteAllDevices(Guid user)
         {
-            var raw = _authenticationRepository.Get(new AuthenticationInfoQuery()
-            {
-                DeviceId = _appHost.SystemId,
-                UserId = user
-            });
-
-            var tokens = raw.Items.Where(x => x.AppName.StartsWith(TokenName, StringComparison.Ordinal));
+            var tokens = _quickConnectTokens
+                .Where(entry => entry.Value.Item1.StartsWith(TokenName, StringComparison.Ordinal) && entry.Value.Item2 == user)
+                .ToList();
 
             var removed = 0;
             foreach (var token in tokens)
             {
-                _authenticationRepository.Delete(token);
-                _logger.LogDebug("Deleted token {AccessToken}", token.AccessToken);
+                _quickConnectTokens.Remove(token.Key, out _);
+                _logger.LogDebug("Deleted token {AccessToken}", token.Key);
                 removed++;
             }
 

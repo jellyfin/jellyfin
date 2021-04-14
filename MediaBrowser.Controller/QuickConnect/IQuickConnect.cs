@@ -1,4 +1,5 @@
 using System;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.QuickConnect;
 
 namespace MediaBrowser.Controller.QuickConnect
@@ -56,6 +57,13 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <param name="secret">Unique secret identifier of the request.</param>
         /// <returns>Quick connect result.</returns>
         QuickConnectResult CheckRequestStatus(string secret);
+
+        /// <summary>
+        /// Authenticates a QuickConnect request.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="token">The token.</param>
+        void AuthenticateRequest(AuthenticationRequest request, string token);
 
         /// <summary>
         /// Authorizes a quick connect request to connect as the calling user.

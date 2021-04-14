@@ -1441,24 +1441,6 @@ namespace Emby.Server.Implementations.Session
 
         public Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token)
         {
-            var result = _authRepo.Get(new AuthenticationInfoQuery()
-            {
-                AccessToken = token,
-                DeviceId = _appHost.SystemId,
-                Limit = 1
-            });
-
-            if (result.TotalRecordCount == 0)
-            {
-                throw new SecurityException("Unknown quick connect token");
-            }
-
-            var info = result.Items[0];
-            request.UserId = info.UserId;
-
-            // There's no need to keep the quick connect token in the database, as AuthenticateNewSessionInternal() issues a long lived token.
-            _authRepo.Delete(info);
-
             return AuthenticateNewSessionInternal(request, false);
         }
 
