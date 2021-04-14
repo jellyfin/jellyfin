@@ -647,6 +647,16 @@ namespace Jellyfin.Networking.Manager
                     _interfaceAddresses.AddItem(address, false);
                     _interfaceNames[parts[2]] = Math.Abs(index);
                 }
+
+                if (IsIP4Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
+                }
+
+                if (IsIP6Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
+                }
             }
 
             InitialiseLAN(config);
@@ -978,8 +988,8 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.
-                _bindAddresses = CreateIPCollection(lanAddresses).Union(_interfaceAddresses);
-                _bindExclusions = CreateIPCollection(lanAddresses, true).Union(_interfaceAddresses);
+                _bindAddresses = CreateIPCollection(lanAddresses).ThatAreContainedInNetworks(_interfaceAddresses);
+                _bindExclusions = CreateIPCollection(lanAddresses, true).ThatAreContainedInNetworks(_interfaceAddresses);
                 _logger.LogInformation("Using bind addresses: {0}", _bindAddresses.AsString());
                 _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
             }
@@ -1153,36 +1163,40 @@ namespace Jellyfin.Networking.Manager
                         }
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
-
-                    _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
-                    _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
-
-                    // If for some reason we don't have an interface info, resolve our DNS name.
-                    if (_interfaceAddresses.Count == 0)
-                    {
-                        _logger.LogError("No interfaces information available. Resolving DNS name.");
-                        IPHost host = new IPHost(Dns.GetHostName());
-                        foreach (var a in host.GetAddresses())
-                        {
-                            _interfaceAddresses.AddItem(a);
-                        }
-
-                        if (_interfaceAddresses.Count == 0)
-                        {
-                            _logger.LogWarning("No interfaces information available. Using loopback.");
-                            // Last ditch attempt - use loopback address.
-                            _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
-                            if (IsIP6Enabled)
-                            {
-                                _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
-                            }
-                        }
-                    }
                 }
-                catch (NetworkInformationException ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in InitialiseInterfaces.");
                 }
+
+                // If for some reason we don't have an interface info, resolve our DNS name.
+                if (_interfaceAddresses.Count == 0)
+                {
+                    _logger.LogError("No interfaces information available. Resolving DNS name.");
+                    IPHost host = new IPHost(Dns.GetHostName());
+                    foreach (var a in host.GetAddresses())
+                    {
+                        _interfaceAddresses.AddItem(a);
+                    }
+
+                    if (_interfaceAddresses.Count == 0)
+                    {
+                        _logger.LogWarning("No interfaces information available. Using loopback.");
+                    }
+                }
+
+                if (IsIP4Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
+                }
+
+                if (IsIP6Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
+                }
+
+                _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
+                _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
             }
         }
 
