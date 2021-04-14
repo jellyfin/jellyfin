@@ -524,7 +524,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery] string? tag,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
@@ -555,7 +555,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -610,7 +609,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery] string? tag,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
@@ -640,7 +639,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -694,7 +692,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromRoute, Required] string tag,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromRoute, Required] ImageFormat format,
             [FromQuery] bool? addPlayedIndicator,
             [FromRoute, Required] double percentPlayed,
@@ -725,7 +723,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -782,7 +779,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -810,7 +807,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -867,7 +863,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -895,7 +891,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -953,7 +948,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -980,7 +975,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1037,7 +1031,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1065,7 +1059,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1123,7 +1116,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1150,7 +1143,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1207,7 +1199,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1235,7 +1227,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1293,7 +1284,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1320,7 +1311,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1377,7 +1367,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1405,7 +1395,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1463,7 +1452,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1490,7 +1479,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1547,7 +1535,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1592,7 +1580,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1651,7 +1638,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1695,7 +1682,6 @@ namespace Jellyfin.Api.Controllers
                     quality,
                     fillWidth,
                     fillHeight,
-                    cropWhitespace,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1781,7 +1767,6 @@ namespace Jellyfin.Api.Controllers
             int? quality,
             int? fillWidth,
             int? fillHeight,
-            bool? cropWhitespace, // TODO: Remove
             bool? addPlayedIndicator,
             int? blur,
             string? backgroundColor,
@@ -1822,8 +1807,6 @@ namespace Jellyfin.Api.Controllers
                     return NotFound(string.Format(NumberFormatInfo.InvariantInfo, "{0} does not have an image of type {1}", item?.Name, imageType));
                 }
             }
-
-            cropWhitespace ??= imageType == ImageType.Logo || imageType == ImageType.Art;
 
             var outputFormats = GetOutputFormats(format);
 
@@ -1876,17 +1859,15 @@ namespace Jellyfin.Api.Controllers
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            var acceptTypes = Request.Headers[HeaderNames.Accept];
-            var supportedFormats = new List<string>();
-            if (acceptTypes.Count > 0)
+            var supportedFormats = Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
+            for (var i = 0; i < supportedFormats.Length; i++)
             {
-                foreach (var type in acceptTypes)
+                // Remove charsets etc. (anything after semi-colon)
+                var type = supportedFormats[i];
+                int index = type.IndexOf(';', StringComparison.Ordinal);
+                if (index != -1)
                 {
-                    int index = type.IndexOf(';', StringComparison.Ordinal);
-                    if (index != -1)
-                    {
-                        supportedFormats.Add(type.Substring(0, index));
-                    }
+                    supportedFormats[i] = type.Substring(0, index);
                 }
             }
 
