@@ -26,8 +26,8 @@ namespace MediaBrowser.Common.Json.Converters
         {
             if (reader.TokenType == JsonTokenType.String)
             {
-                var stringEntries = reader.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                if (stringEntries == null || stringEntries.Length == 0)
+                var stringEntries = reader.GetString().Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (stringEntries.Length == 0)
                 {
                     return Array.Empty<T>();
                 }

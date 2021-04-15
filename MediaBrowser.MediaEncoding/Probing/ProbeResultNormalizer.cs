@@ -131,6 +131,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date_released") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date");
 
             if (isAudio)

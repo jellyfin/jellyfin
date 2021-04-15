@@ -473,7 +473,7 @@ namespace MediaBrowser.Providers.Manager
             if ((originalPremiereDate ?? DateTime.MinValue) != (item.PremiereDate ?? DateTime.MinValue) ||
                 (originalProductionYear ?? -1) != (item.ProductionYear ?? -1))
             {
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -493,7 +493,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (currentList.Length != item.Genres.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -514,7 +514,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (currentList.Length != item.Studios.Length || !currentList.OrderBy(i => i).SequenceEqual(item.Studios.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -529,7 +529,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (item.UpdateRatingToItems(children))
                 {
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updateType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -686,7 +686,7 @@ namespace MediaBrowser.Providers.Manager
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
-                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
             }
@@ -706,9 +706,15 @@ namespace MediaBrowser.Providers.Manager
 
                     if (localItem.HasMetadata)
                     {
+                        foreach (var remoteImage in localItem.RemoteImages)
+                        {
+                            await ProviderManager.SaveImage(item, remoteImage.url, remoteImage.type, null, cancellationToken).ConfigureAwait(false);
+                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+                        }
+
                         if (imageService.MergeImages(item, localItem.Images))
                         {
-                            refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
+                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                         }
 
                         if (localItem.UserDataList != null)
@@ -717,7 +723,7 @@ namespace MediaBrowser.Providers.Manager
                         }
 
                         MergeData(localItem, temp, Array.Empty<MetadataField>(), !options.ReplaceAllMetadata, true);
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
                         if (item.IsLocked || localItem.Item.IsLocked || IsFullLocalMetadata(localItem.Item))
@@ -749,7 +755,7 @@ namespace MediaBrowser.Providers.Manager
                 var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
-                refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
+                refreshResult.UpdateType |= remoteResult.UpdateType;
                 refreshResult.ErrorMessage = remoteResult.ErrorMessage;
                 refreshResult.Failures += remoteResult.Failures;
             }
@@ -845,7 +851,7 @@ namespace MediaBrowser.Providers.Manager
                         MergeData(result, temp, Array.Empty<MetadataField>(), false, false);
                         MergeNewData(temp.Item, id);
 
-                        refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
+                        refreshResult.UpdateType |= ItemUpdateType.MetadataDownload;
                     }
                     else
                     {

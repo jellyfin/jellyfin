@@ -175,7 +175,7 @@ namespace Jellyfin.Server
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
+                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(

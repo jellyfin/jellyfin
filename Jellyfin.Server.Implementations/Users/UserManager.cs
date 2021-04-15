@@ -407,27 +407,18 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            bool success;
-            IAuthenticationProvider? authenticationProvider;
+            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+                .ConfigureAwait(false);
+            var authenticationProvider = authResult.authenticationProvider;
+            var success = authResult.success;
 
-            if (user != null)
+            if (user == null)
             {
-                var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
-                success = authResult.success;
-            }
-            else
-            {
-                var authResult = await AuthenticateLocalUser(username, password, null, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
                 string updatedUsername = authResult.username;
-                success = authResult.success;
 
                 if (success
                     && authenticationProvider != null
-                    && !(authenticationProvider is DefaultAuthenticationProvider))
+                    && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
                     username = updatedUsername;
