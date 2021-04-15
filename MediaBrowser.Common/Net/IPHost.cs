@@ -173,16 +173,14 @@ namespace MediaBrowser.Common.Net
                 return false;
             }
 
-            string[] hosts;
-
-            // Use regular expression as CheckHostName isn't RFC5892 compliant.
-            // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
-
-            hosts = host.Split(':');
+            string[] hosts = host.Split(':');
 
             if (hosts.Length <= 2)
             {
+                // Use regular expression as CheckHostName isn't RFC5892 compliant.
+                // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+                string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
+
                 // Is hostname or hostname:port
                 if (Regex.IsMatch(hosts[0], pattern))
                 {
@@ -210,17 +208,10 @@ namespace MediaBrowser.Common.Net
                     return true;
                 }
             }
-            else if (hosts.Length <= 9 && IPAddress.TryParse(host, out var netAddress)) // 8 octets + port
+            else if (hosts.Length <= 9 && IPNetAddress.TryParse(host, out var netAddress, ipType)) // 8 octets + port
             {
-                if (((netAddress.AddressFamily == AddressFamily.InterNetwork) && ipType == IpClassType.Ip6Only) ||
-                    ((netAddress.AddressFamily == AddressFamily.InterNetworkV6) && ipType == IpClassType.Ip4Only))
-                {
-                    hostObj = null;
-                    return false;
-                }
-
                 // Host name is an ip6 address, so fake resolve.
-                hostObj = new IPHost(host, netAddress);
+                hostObj = new (host, netAddress.Address);
                 return true;
             }
 

@@ -111,7 +111,7 @@ namespace Jellyfin.Networking.Tests
         [InlineData("www.google.co.uk", true, "")]
         [InlineData("www.google.co.uk:1273", true, "")]
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517", true, "fd23:184f:2029:0:3139:7386:67d7:d517 [fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", false, "")]
+        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56", true, "")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124", true, "fd23:184f:2029:0:3139:7386:67d7:d517 [fd23:184f:2029:0:3139:7386:67d7:d517/128]")]
         [InlineData("fe80::7add:12ff:febb:c67b%16", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
         [InlineData("[fe80::7add:12ff:febb:c67b%16]:123", true, "fe80::7add:12ff:febb:c67b [fe80::7add:12ff:febb:c67b%16/128]")]
@@ -153,9 +153,27 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
         [InlineData("0.0.0.0/0")]
+        [InlineData("2001:db8::/33")]
+        [InlineData("2001:db8::/52")]
+        [InlineData("2001:db8::/122")]
         public void ValidIPStrings(string address)
         {
             Assert.True(IPNetAddress.TryParse(address, out _, IpClassType.IpBoth));
+        }
+
+        /// <summary>
+        /// Checks against overflow errors in Network address calculations.
+        /// </summary>
+        /// <param name="address">IP address</param>
+        [Theory]
+        [InlineData("2001:db8::/33")]
+        [InlineData("2001:db8::/52")]
+        [InlineData("2001:db8::/122")]
+        public void NetworkAddress(string address)
+        {
+            var ip = IPNetAddress.Parse(address);
+            var netAddress = IPNetAddress.NetworkAddressOf(ip.Address, ip.PrefixLength);
+            Assert.True(ip.Equals(netAddress));
         }
 
         /// <summary>
