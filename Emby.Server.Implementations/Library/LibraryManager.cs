@@ -2936,7 +2936,7 @@ namespace Emby.Server.Implementations.Library
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
             while (Directory.Exists(virtualFolderPath))
             {
-                name += "1";
+                name = char.IsDigit(name[^1]) ? name[0..^1] + (char.GetNumericValue(name[^1]) + 1) : name + 1;
                 virtualFolderPath = Path.Combine(rootFolderPath, name);
             }
 
