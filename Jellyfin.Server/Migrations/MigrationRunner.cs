@@ -87,39 +87,62 @@ namespace Jellyfin.Server.Migrations
         }
 
         /// <summary>
-        /// Runs the network setting migration, which has to be done before settings.xml is loaded.
+        /// Performs a network setting migration.
         /// </summary>
         /// <param name="appPaths">The <see cref="IServerApplicationPaths"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
-        public static void RunNetworkSettingMigration(IServerApplicationPaths appPaths, ILogger logger)
+        public static void RunSettingsMigration(IServerApplicationPaths appPaths, ILogger logger)
         {
             var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
             if (!File.Exists(destFile))
             {
-                try
-                {
-                    var xmlSerializer = new MyXmlSerializer();
-                    var source = xmlSerializer.DeserializeFromFile(typeof(Legacy.ServerConfiguration), appPaths.SystemConfigurationFilePath);
+                // Migrate version 7.0.3 network configuration.
+                RunSettingMigration<Legacy.V703.ServerConfiguration, Legacy.V703.NetworkConfiguration>(logger, appPaths.SystemConfigurationFilePath, destFile);
+                logger.LogDebug("Migrated to network configuration 7.0.3");
+            }
+        }
 
-                    var target = new NetworkConfiguration();
-                    var tprops = typeof(NetworkConfiguration).GetProperties();
-                    tprops.Where(x => x.CanWrite == true).ToList().ForEach(prop =>
+        /// <summary>
+        /// Performs a generic setting migration, which has to be done before settings.xml is loaded.
+        /// </summary>
+        /// <typeparam name="T">Source class.</typeparam>
+        /// <typeparam name="TU">Destination class.</typeparam>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="sourceFile">Source filename.</param>
+        /// <param name="destFile">Destination filename.</param>
+        private static void RunSettingMigration<T, TU>(ILogger logger, string sourceFile, string destFile)
+            where TU : new()
+        {
+            try
+            {
+                var xmlSerializer = new MyXmlSerializer();
+                var source = xmlSerializer.DeserializeFromFile(typeof(T), sourceFile);
+
+                var target = new TU();
+                var tprops = typeof(TU).GetProperties();
+                tprops.Where(x => x.CanWrite == true).ToList().ForEach(prop =>
+                {
+                    var sp = source.GetType().GetProperty(prop.Name);
+                    if (sp != null)
                     {
-                        var sp = source.GetType().GetProperty(prop.Name);
-                        if (sp != null)
+                        var value = sp.GetValue(source, null);
+                        try
                         {
-                            var value = sp.GetValue(source, null);
                             target.GetType().GetProperty(prop.Name)?.SetValue(target, value, null);
                         }
-                    });
+                        catch (Exception ex)
+                        {
+                            logger.LogDebug(ex, "Unable to migrate property {Name}", prop.Name);
+                        }
+                    }
+                });
 
-                    xmlSerializer.SerializeToFile(target, destFile);
-                }
-                catch (Exception ex)
-                {
-                    // Catch everything, so we don't bomb out JF.
-                    logger.LogDebug(ex, "Exception occurred migrating settings.");
-                }
+                xmlSerializer.SerializeToFile(target, destFile);
+            }
+            catch (Exception ex)
+            {
+                // Catch everything, so we don't bomb out JF.
+                logger.LogDebug(ex, "Exception occurred migrating settings.");
             }
         }
     }

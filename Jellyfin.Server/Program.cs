@@ -158,7 +158,7 @@ namespace Jellyfin.Server
 
             PerformStaticInitialization();
 
-            MigrationRunner.RunNetworkSettingMigration(appPaths, _loggerFactory.CreateLogger<MigrationRunner>());
+            MigrationRunner.RunSettingsMigration(appPaths, _loggerFactory.CreateLogger<MigrationRunner>());
 
             var serviceCollection = new ServiceCollection();
 

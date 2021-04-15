@@ -1,15 +1,16 @@
-﻿#pragma warning disable CA1819 // Properties should not return arrays
+#pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
 
-namespace Jellyfin.Server.Migrations.Legacy
+namespace Jellyfin.Server.Migrations.Legacy.V703
 {
     /// <summary>
-    /// Defines the legacy <see cref="ServerConfiguration" />.
+    /// Defines the <see cref="NetworkConfiguration" />.
     ///
+    /// Snapshot of 7.03 server configuration.
     /// DO NOT CHANGE, OR USE ELSEWHERE. FOR MIGRATION PURPOSES ONLY.
     /// </summary>
-    public class ServerConfiguration
+    public class NetworkConfiguration
     {
         /// <summary>
         /// The default value for <see cref="HttpServerPortNumber"/>.

@@ -273,22 +273,6 @@ namespace Emby.Server.Implementations
                 ApplicationVersion);
         }
 
-        /// <summary>
-        /// Temporary function to migration network settings out of system.xml and into network.xml.
-        /// TODO: remove at the point when a fixed migration path has been decided upon.
-        /// </summary>
-        private void MigrateNetworkConfiguration()
-        {
-            string path = Path.Combine(ConfigurationManager.CommonApplicationPaths.ConfigurationDirectoryPath, "network.xml");
-            if (!File.Exists(path))
-            {
-                var networkSettings = new NetworkConfiguration();
-                ClassMigrationHelper.CopyProperties(ConfigurationManager.Configuration, networkSettings);
-                _xmlSerializer.SerializeToFile(networkSettings, path);
-                Logger.LogDebug("Successfully migrated network settings.");
-            }
-        }
-
         public string ExpandVirtualPath(string path)
         {
             var appPaths = ApplicationPaths;
@@ -526,8 +510,6 @@ namespace Emby.Server.Implementations
 
             ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
 
-            // Have to migrate settings here as migration subsystem not yet initialised.
-            MigrateNetworkConfiguration();
             NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
 
             // Initialize runtime stat collection
