@@ -216,10 +216,11 @@ namespace MediaBrowser.Common.Net
         /// Attempts to parse the host string.
         /// </summary>
         /// <param name="host">Host name to parse.</param>
+        /// <param name="type">A <see cref="IpClassType"/> to filter on.</param>
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
-        public static new IPHost Parse(string host)
+        public static new IPHost Parse(string host, IpClassType type = IpClassType.IpBoth)
         {
-            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost? res, IpClassType.IpBoth))
+            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost? res, type))
             {
                 return res;
             }

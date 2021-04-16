@@ -34,13 +34,13 @@ namespace MediaBrowser.Common.Net
         /// <returns>A Collection{IPNetAddress} object containing all the interfaces to bind.
         /// If all the interfaces are specified, and none are excluded, it returns zero items
         /// to represent any address.</returns>
-        IEnumerable<IPNetAddress> GetAllBindInterfaces();
+        IPNetAddress[] GetAllBindInterfaces();
 
         /// <summary>
         /// Returns a collection containing the loopback interfaces.
         /// </summary>
         /// <returns>Collection{IPNetAddress}.</returns>
-        IReadOnlyList<IPNetAddress> GetLoopbacks();
+        IPNetAddress[] GetLoopbacks();
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -156,6 +156,13 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
         IPNetAddress[] GetInternalBindAddresses();
+
+        /// <summary>
+        /// Returns true if the IP address is in the excluded list.
+        /// </summary>
+        /// <param name="ip">IP to check.</param>
+        /// <returns>True if excluded.</returns>
+        bool IsExcluded(EndPoint ip);
 
         /// <summary>
         /// Checks to see if <paramref name="remoteIp"/> has access.

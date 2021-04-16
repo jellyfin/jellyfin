@@ -170,6 +170,35 @@ namespace Jellyfin.Networking.Manager
             return result;
         }
 
+        /// <summary>
+        /// Returns true if the IPAddress contains an IP6 Local link address.
+        /// </summary>
+        /// <param name="address">IPAddress object to check.</param>
+        /// <returns>True if it is a local link address.</returns>
+        /// <remarks>
+        /// See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
+        /// it appears that the IPAddress.IsIPv6LinkLocal is out of date.
+        /// </remarks>
+        public static bool IsIPv6LinkLocal(IPAddress address)
+        {
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
+            if (address.AddressFamily != AddressFamily.InterNetworkV6)
+            {
+                return false;
+            }
+
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[16];
+            address.TryWriteBytes(octet, out _);
+            uint word = (uint)(octet[0] << 8) + octet[1];
+
+            return word >= 0xfe80 && word <= 0xfebf; // fe80::/10 :Local link.
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {
@@ -185,7 +214,13 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<IPNetAddress> GetLoopbacks()
+        public bool IsExcluded(EndPoint ip)
+        {
+            return _excludedSubnets.ContainsAddress(((IPEndPoint)ip).Address);
+        }
+
+        /// <inheritdoc/>
+        public IPNetAddress[] GetLoopbacks()
         {
             if (_ipClassType == IpClassType.IpBoth)
             {
@@ -233,14 +268,14 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IPNetAddress> GetAllBindInterfaces()
+        public IPNetAddress[] GetAllBindInterfaces()
         {
             if (_bindAddresses.Length == 0)
             {
                 if (_bindExclusions.Length > 0)
                 {
                     // Return all the interfaces except the ones specifically excluded.
-                    return _interfaceAddresses.Exclude(_bindExclusions, false);
+                    return _interfaceAddresses.Exclude(_bindExclusions, false).ToArray();
                 }
 
                 // No bind address and no exclusions, so listen on all interfaces.
@@ -267,11 +302,11 @@ namespace Jellyfin.Networking.Manager
                     }
                 }
 
-                return result;
+                return result.ToArray();
             }
 
             // Remove any excluded bind interfaces.
-            return _bindAddresses.Exclude(_bindExclusions, false);
+            return _bindAddresses.Exclude(_bindExclusions, false).ToArray();
         }
 
         /// <inheritdoc/>
