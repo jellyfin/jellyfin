@@ -82,7 +82,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
-            [FromQuery] DateTime nextUpDateCutoff,
+            [FromQuery] DateTime? nextUpDateCutoff,
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool disableFirstEpisode = false)
         {
