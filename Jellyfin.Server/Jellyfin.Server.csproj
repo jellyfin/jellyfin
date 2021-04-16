@@ -16,7 +16,6 @@
     <Nullable>enable</Nullable>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <!-- <DisableImplicitAspNetCoreAnalyzers>true</DisableImplicitAspNetCoreAnalyzers> -->
   </PropertyGroup>
 
