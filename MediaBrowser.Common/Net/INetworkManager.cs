@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Net
@@ -20,16 +19,6 @@ namespace MediaBrowser.Common.Net
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets the published server urls list.
-        /// </summary>
-        Dictionary<IPNetAddress, string> PublishedServerUrls { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
-        /// </summary>
-        bool TrustAllIP6Interfaces { get; }
-
-        /// <summary>
         /// Gets a value indicating whether iP6 is enabled.
         /// </summary>
         bool IsIP6Enabled { get; }
@@ -38,12 +27,6 @@ namespace MediaBrowser.Common.Net
         /// Gets a value indicating whether iP4 is enabled.
         /// </summary>
         bool IsIP4Enabled { get; }
-
-        /// <summary>
-        /// Gets the remote address filter.
-        /// </summary>
-        /// <returns>Array of network addresses.</returns>
-        IReadOnlyList<IPNetAddress> RemoteAddressFilter();
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
@@ -127,28 +110,6 @@ namespace MediaBrowser.Common.Net
         IReadOnlyCollection<PhysicalAddress> GetMacAddresses();
 
         /// <summary>
-        /// Checks to see if the IP Address provided matches an interface that has a gateway.
-        /// </summary>
-        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPNetAddress.</param>
-        /// <returns>Result of the check.</returns>
-        bool IsGatewayInterface(IPNetAddress? addressObj);
-
-        /// <summary>
-        /// Checks to see if the IP Address provided matches an interface that has a gateway.
-        /// </summary>
-        /// <param name="addressObj">IP to check. Can be an IPAddress or an IPNetAddress.</param>
-        /// <returns>Result of the check.</returns>
-        bool IsGatewayInterface(IPAddress? addressObj);
-
-        /// <summary>
-        /// Returns true if the address is a private address.
-        /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
-        /// </summary>
-        /// <param name="address">Address to check.</param>
-        /// <returns>True or False.</returns>
-        bool IsPrivateAddressRange(IPNetAddress address);
-
-        /// <summary>
         /// Returns true if the address is part of the user defined LAN.
         /// The configuration option TrustIP6Interfaces overrides this functions behaviour.
         /// </summary>
@@ -195,13 +156,6 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <returns>An internal list of interfaces addresses.</returns>
         IPNetAddress[] GetInternalBindAddresses();
-
-        /// <summary>
-        /// Checks to see if an IP address is still a valid interface address.
-        /// </summary>
-        /// <param name="address">IP address to check.</param>
-        /// <returns>True if it is.</returns>
-        bool IsValidInterfaceAddress(IPAddress address);
 
         /// <summary>
         /// Checks to see if <paramref name="remoteIp"/> has access.

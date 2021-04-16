@@ -12,22 +12,7 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public class IPNetAddress
     {
-        private byte _prefixLength;
-
-        /// <summary>
-        /// IPv4 multicast address.
-        /// </summary>
-        public static readonly IPAddress SSDPMulticastIPv4 = IPAddress.Parse("239.255.255.250");
-
-        /// <summary>
-        /// IPv6 local link multicast address.
-        /// </summary>
-        public static readonly IPAddress SSDPMulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
-
-        /// <summary>
-        /// IPv6 site local multicast address.
-        /// </summary>
-        public static readonly IPAddress SSDPMulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
+        private readonly byte _prefixLength;
 
         /// <summary>
         /// IP4Loopback address host.
@@ -68,14 +53,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="prefixLength">Mask as a CIDR.</param>
         public IPNetAddress(IPAddress address, byte prefixLength)
         {
-            if (address?.IsIPv4MappedToIPv6 ?? throw new ArgumentNullException(nameof(address)))
-            {
-                _address = address.MapToIPv4();
-            }
-            else
-            {
-                _address = address;
-            }
+            _address = address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address;
 
             PrefixLength = prefixLength;
         }
@@ -105,14 +83,14 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Gets or sets the object's IP address.
+        /// Gets the object's IP address.
         /// </summary>
         public virtual byte PrefixLength
         {
             get => _prefixLength;
-            set
+            protected init
             {
-                if (value < 0 || value > (Address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
+                if (value > (Address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), _address.ToString() + '/' + value.ToString(CultureInfo.CurrentCulture));
                 }
@@ -128,7 +106,7 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                return Address == null ? AddressFamily.Unspecified : Address.AddressFamily;
+                return Address.Equals(IPAddress.None) ? AddressFamily.Unspecified : Address.AddressFamily;
             }
         }
 
@@ -144,9 +122,8 @@ namespace MediaBrowser.Common.Net
                 if (!_isNetwork)
                 {
                     _address = NetworkAddressOf(Address, PrefixLength);
+                    _isNetwork = value;
                 }
-
-                _isNetwork = value;
             }
         }
 
@@ -157,11 +134,12 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                if (_isNetwork)
+                if (IsNetwork)
                 {
                     return this;
                 }
 
+                // If we have calculated this before, use that
                 if (_networkAddress == null)
                 {
                     var address = NetworkAddressOf(Address, PrefixLength);
@@ -189,7 +167,7 @@ namespace MediaBrowser.Common.Net
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (prefixLength < 0 || prefixLength > (address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
+            if (prefixLength > (address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128))
             {
                 throw new ArgumentOutOfRangeException(nameof(prefixLength));
             }
@@ -216,7 +194,7 @@ namespace MediaBrowser.Common.Net
                 mod = 8 - mod;
 
                 // Shift out the bits from the octet that we don't want, by moving right then back left.
-                addressBytes[div] = (byte)((int)addressBytes[div] >> mod << mod);
+                addressBytes[div] = (byte)(addressBytes[div] >> mod << mod);
                 // Move on the next byte.
                 div++;
             }
@@ -229,135 +207,6 @@ namespace MediaBrowser.Common.Net
 
             // Return the network address for the prefix.
             return new IPAddress(addressBytes);
-        }
-
-        /// <summary>
-        /// Tests to see if the ip address is a Loopback address.
-        /// </summary>
-        /// <param name="address">Value to test.</param>
-        /// <returns>True if it is.</returns>
-        public static bool IsLoopback(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (address.IsIPv4MappedToIPv6)
-            {
-                address = address.MapToIPv4();
-            }
-
-            return address.Equals(IPAddress.Loopback) || address.Equals(IPAddress.IPv6Loopback);
-        }
-
-        /// <summary>
-        /// Tests to see if the ip address is an IP6 address.
-        /// </summary>
-        /// <param name="address">Value to test.</param>
-        /// <returns>True if it is.</returns>
-        public static bool IsIP6(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (address.IsIPv4MappedToIPv6)
-            {
-                return false;
-            }
-
-            return address.AddressFamily == AddressFamily.InterNetworkV6;
-        }
-
-        /// <summary>
-        /// Tests to see if the address in the private address range.
-        /// </summary>
-        /// <param name="address">Object to test.</param>
-        /// <returns>True if it contains a private address.</returns>
-        public static bool IsPrivateAddressRange(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (address.IsIPv4MappedToIPv6)
-            {
-                address = address.MapToIPv4();
-            }
-
-            if (address.AddressFamily == AddressFamily.InterNetwork)
-            {
-                // GetAddressBytes
-                Span<byte> ip4octet = stackalloc byte[4];
-                address.TryWriteBytes(ip4octet, out _);
-
-                return (ip4octet[0] == 10)
-                        || (ip4octet[0] == 172 && ip4octet[1] >= 16 && ip4octet[1] <= 31) // RFC1918
-                        || (ip4octet[0] == 192 && ip4octet[1] == 168) // RFC1918
-                        || (ip4octet[0] == 127); // RFC1122
-            }
-
-            // GetAddressBytes
-            Span<byte> octet = stackalloc byte[16];
-            address.TryWriteBytes(octet, out _);
-
-            uint word = (uint)(octet[0] << 8) + octet[1];
-
-            return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
-                    || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
-        }
-
-        /// <summary>
-        /// Returns true if the IPAddress contains an IP6 Local link address.
-        /// </summary>
-        /// <param name="address">IPAddress object to check.</param>
-        /// <returns>True if it is a local link address.</returns>
-        /// <remarks>
-        /// See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
-        /// it appears that the IPAddress.IsIPv6LinkLocal is out of date.
-        /// </remarks>
-        public static bool IsIPv6LinkLocal(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (address.IsIPv4MappedToIPv6)
-            {
-                address = address.MapToIPv4();
-            }
-
-            if (address.AddressFamily != AddressFamily.InterNetworkV6)
-            {
-                return false;
-            }
-
-            // GetAddressBytes
-            Span<byte> octet = stackalloc byte[16];
-            address.TryWriteBytes(octet, out _);
-            uint word = (uint)(octet[0] << 8) + octet[1];
-
-            return word >= 0xfe80 && word <= 0xfebf; // fe80::/10 :Local link.
-        }
-
-        /// <summary>
-        /// Convert a subnet mask in CIDR notation to a dotted decimal string value. IPv4 only.
-        /// </summary>
-        /// <param name="cidr">Subnet mask in CIDR notation.</param>
-        /// <param name="family">IPv4 or IPv6 family.</param>
-        /// <returns>String value of the subnet mask in dotted decimal notation.</returns>
-        public static IPAddress CidrToMask(byte cidr, AddressFamily family)
-        {
-            uint addr = 0xFFFFFFFF << (family == AddressFamily.InterNetwork ? 32 : 128 - cidr);
-            addr = ((addr & 0xff000000) >> 24)
-                   | ((addr & 0x00ff0000) >> 8)
-                   | ((addr & 0x0000ff00) << 8)
-                   | ((addr & 0x000000ff) << 24);
-            return new IPAddress(addr);
         }
 
         /// <summary>
@@ -534,12 +383,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Comparison result.</returns>
         public virtual bool Contains(IPNetAddress ip)
         {
-            if (Address == null)
-            {
-                return false;
-            }
-
-            if (ip is IPHost addressObj && addressObj.HasAddress)
+            if (ip is IPHost { HasAddress: true } addressObj)
             {
                 foreach (IPAddress addr in addressObj.GetAddresses())
                 {
@@ -571,12 +415,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public virtual bool Equals(IPNetAddress other)
         {
-            if (other is IPNetAddress otherObj)
-            {
-                return Address.Equals(otherObj.Address) && PrefixLength == otherObj.PrefixLength;
-            }
-
-            return false;
+            return Address.Equals(other.Address) && PrefixLength == other.PrefixLength;
         }
 
         /// <summary>
@@ -586,11 +425,6 @@ namespace MediaBrowser.Common.Net
         /// <returns>Equality result.</returns>
         public bool Equals(IPAddress ip)
         {
-            if (ip == null)
-            {
-                return false;
-            }
-
             if (ip.IsIPv4MappedToIPv6)
             {
                 ip = ip.MapToIPv4();
@@ -612,7 +446,7 @@ namespace MediaBrowser.Common.Net
         /// <returns>String representation of this object.</returns>
         public string ToString(bool shortVersion)
         {
-            if (Address == null)
+            if (Address.Equals(IPAddress.None))
             {
                 return "None";
             }
@@ -644,27 +478,49 @@ namespace MediaBrowser.Common.Net
         /// Tests to see if this object is a Loopback address.
         /// </summary>
         /// <returns>True if it is.</returns>
-        public virtual bool IsLoopback()
+        public bool IsLoopback()
         {
-            return IsLoopback(Address);
-        }
+            var addr = Address;
+            if (addr.IsIPv4MappedToIPv6)
+            {
+                addr = Address.MapToIPv4();
+            }
 
-        /// <summary>
-        /// Tests to see if this object is an IPv6 address.
-        /// </summary>
-        /// <returns>True if it is.</returns>
-        public virtual bool IsIP6()
-        {
-            return IsIP6(Address);
+            return addr.Equals(IPAddress.Loopback) || addr.Equals(IPAddress.IPv6Loopback);
         }
 
         /// <summary>
         /// Returns true if this IP address is in the RFC private address range.
         /// </summary>
         /// <returns>True this object has a private address.</returns>
-        public virtual bool IsPrivateAddressRange()
+        public bool IsPrivateAddressRange()
         {
-            return IsPrivateAddressRange(Address);
+            var address = Address;
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
+            if (address.AddressFamily == AddressFamily.InterNetwork)
+            {
+                // GetAddressBytes
+                Span<byte> ip4Octet = stackalloc byte[4];
+                address.TryWriteBytes(ip4Octet, out _);
+
+                return (ip4Octet[0] == 10)
+                       || (ip4Octet[0] == 172 && ip4Octet[1] >= 16 && ip4Octet[1] <= 31) // RFC1918
+                       || (ip4Octet[0] == 192 && ip4Octet[1] == 168) // RFC1918
+                       || (ip4Octet[0] == 127); // RFC1122
+            }
+
+            // GetAddressBytes
+            Span<byte> octet = stackalloc byte[16];
+            address.TryWriteBytes(octet, out _);
+
+            uint word = (uint)(octet[0] << 8) + octet[1];
+
+            return (word >= 0xfe80 && word <= 0xfebf) // fe80::/10 :Local link.
+                   || (word >= 0xfc00 && word <= 0xfdff); // fc00::/7 :Unique local address.
         }
 
         /// <inheritdoc/>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using Jellyfin.Networking.Configuration;
@@ -23,6 +24,40 @@ namespace Jellyfin.Networking.Tests
     /// </remarks>
     public class NetworkParseTests
     {
+        /// <summary>
+        /// Compares two IEnumerable{IPNetAddress} objects. The order is ignored.
+        /// </summary>
+        /// <param name="source">The <see cref="Collection{IPNetAddress}"/>.</param>
+        /// <param name="dest">Item to compare to.</param>
+        /// <returns>True if both are equal.</returns>
+        internal static bool Compare(IEnumerable<IPNetAddress> source, IEnumerable<IPNetAddress> dest)
+        {
+            if (dest == null)
+            {
+                return false;
+            }
+
+            foreach (var sourceItem in source)
+            {
+                bool found = false;
+                foreach (var destItem in dest)
+                {
+                    if (sourceItem.Equals(destItem))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         internal static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
         {
             var configManager = new Mock<IConfigurationManager>
@@ -76,9 +111,9 @@ namespace Jellyfin.Networking.Tests
         // eth16 only
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
         // All interfaces excluded. (including loopbacks)
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[127.0.0.1/8,::1/128]")]
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
         // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24,127.0.0.1/8,::1/128]")]
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
         // Overlapping interface,
         [InlineData("192.168.1.110/24,-20,br0|192.168.1.10/24,-16,br1|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.110/24,192.168.1.10/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
@@ -164,7 +199,7 @@ namespace Jellyfin.Networking.Tests
         /// <summary>
         /// Checks against overflow errors in Network address calculations.
         /// </summary>
-        /// <param name="address">IP address</param>
+        /// <param name="address">IP address.</param>
         [Theory]
         [InlineData("2001:db8::/33")]
         [InlineData("2001:db8::/52")]
@@ -437,7 +472,7 @@ namespace Jellyfin.Networking.Tests
             var ncDest = nm.CreateIPCollection(dest.Split(','), false, false);
             var ncResult = ncSource.ThatAreContainedInNetworks(ncDest);
             var resultCollection = nm.CreateIPCollection(result.Split(','), false, false);
-            Assert.True(ncResult.Compare(resultCollection));
+            Assert.True(Compare(ncResult, resultCollection));
         }
 
         [Theory]

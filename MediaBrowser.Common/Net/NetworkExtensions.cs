@@ -91,40 +91,6 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Compares two IEnumerable{IPNetAddress} objects. The order is ignored.
-        /// </summary>
-        /// <param name="source">The <see cref="Collection{IPNetAddress}"/>.</param>
-        /// <param name="dest">Item to compare to.</param>
-        /// <returns>True if both are equal.</returns>
-        public static bool Compare(this IEnumerable<IPNetAddress> source, IEnumerable<IPNetAddress> dest)
-        {
-            if (dest == null)
-            {
-                return false;
-            }
-
-            foreach (var sourceItem in source)
-            {
-                bool found = false;
-                foreach (var destItem in dest)
-                {
-                    if (sourceItem.Equals(destItem))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Returns a collection containing the subnets of this collection given.
         /// </summary>
         /// <param name="source">The <see cref="IEnumerable{IPNetAddress}"/>.</param>
@@ -179,10 +145,9 @@ namespace MediaBrowser.Common.Net
 
             var results = new Collection<IPNetAddress>();
 
-            bool found;
             foreach (var outer in source)
             {
-                found = false;
+                bool found = false;
 
                 foreach (var inner in excludeList)
                 {

@@ -18,7 +18,9 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets or sets timeout value before resolve required, in minutes.
         /// </summary>
-        public const int Timeout = 30;
+        private const int Timeout = 30;
+
+        private readonly string _hostName;
 
         /// <summary>
         /// Time when last resolved in ticks.
@@ -29,8 +31,6 @@ namespace MediaBrowser.Common.Net
         /// Gets the IP Addresses, attempting to resolve the name, if there are none.
         /// </summary>
         private IPAddress[] _addresses;
-
-        private string _hostName;
 
         private IpClassType _ipType = IpClassType.IpBoth;
 
@@ -57,7 +57,7 @@ namespace MediaBrowser.Common.Net
             HostName = name ?? throw new ArgumentNullException(nameof(name));
             Resolved = true;
             _lastResolved = DateTime.UtcNow;
-            _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
+            _addresses = new[] { address ?? throw new ArgumentNullException(nameof(address)) };
         }
 #pragma warning restore CS8618
 
@@ -68,12 +68,12 @@ namespace MediaBrowser.Common.Net
         {
             get
             {
-                return this[0];
+                return HasAddress ? this[0] : IPAddress.None;
             }
         }
 
         /// <summary>
-        /// Gets or sets the object's first IP's subnet prefix.
+        /// Gets the object's first IP's subnet prefix.
         /// The setter does nothing, but shouldn't raise an exception.
         /// </summary>
         public override byte PrefixLength
@@ -89,7 +89,7 @@ namespace MediaBrowser.Common.Net
                 };
             }
 
-            set
+            protected init
             {
                 // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
                 // which is automatically determined by it's IP type. Anything else is meaningless.
@@ -109,19 +109,12 @@ namespace MediaBrowser.Common.Net
         {
             get => _hostName;
 
-            private set
+            init
             {
                 char[] separators = { '/', '%' };
                 var i = value.IndexOfAny(separators);
 
-                if (i != -1)
-                {
-                    _hostName = value.Substring(0, i);
-                }
-                else
-                {
-                    _hostName = value;
-                }
+                _hostName = i != -1 ? value.Substring(0, i) : value;
             }
         }
 
@@ -192,7 +185,7 @@ namespace MediaBrowser.Common.Net
                 }
 
                 // Is an IP4 or IP4:port
-                host = hosts[0];
+                host = hosts[0].Split(':')[0];
 
                 if (IPAddress.TryParse(host, out var netAddress))
                 {
@@ -247,19 +240,16 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPAddress address)
         {
-            if (address != null && Address != null)
+            if (address.IsIPv4MappedToIPv6)
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
+                address = address.MapToIPv4();
+            }
 
-                foreach (var addr in GetAddresses())
+            foreach (var addr in GetAddresses())
+            {
+                if (address.Equals(addr))
                 {
-                    if (address.Equals(addr))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -299,26 +289,6 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <inheritdoc/>
-        public override bool IsIP6()
-        {
-            // Returns true if interfaces are only IP6.
-            if (ResolveHost())
-            {
-                foreach (IPAddress i in _addresses)
-                {
-                    if (i.AddressFamily != AddressFamily.InterNetworkV6)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
         public override string ToString()
         {
             // StringBuilder not optimum here.
@@ -348,7 +318,7 @@ namespace MediaBrowser.Common.Net
                     }
                 }
 
-                return output[0..^1] + ']';
+                return output[..^1] + ']';
             }
 
             return string.IsNullOrEmpty(HostName) ? "None" : HostName;
@@ -368,10 +338,7 @@ namespace MediaBrowser.Common.Net
         private bool ResolveHost()
         {
             // When was the last time we resolved?
-            if (_lastResolved == null)
-            {
-                _lastResolved = DateTime.UtcNow;
-            }
+            _lastResolved ??= DateTime.UtcNow;
 
             // If we haven't resolved before, or our timer has run out...
             if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
@@ -405,7 +372,7 @@ namespace MediaBrowser.Common.Net
                 // Resolves the host name - so save a DNS lookup.
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
+                    _addresses = new[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
                     return true;
                 }
 
