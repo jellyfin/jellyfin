@@ -627,10 +627,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     _timerProvider.Update(existingTimer);
                     return Task.FromResult(existingTimer.Id);
                 }
-                else
-                {
-                    throw new ArgumentException("A scheduled recording already exists for this program.");
-                }
+
+                throw new ArgumentException("A scheduled recording already exists for this program.");
             }
 
             timer.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);

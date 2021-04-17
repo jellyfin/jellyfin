@@ -797,10 +797,8 @@ namespace Emby.Server.Implementations.Library
             {
                 return Task.FromResult(info);
             }
-            else
-            {
-                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
-            }
+
+            return Task.FromException<ILiveStream>(new ResourceNotFoundException());
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)

@@ -179,12 +179,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 return false;
             }
-            else if (version < MinVersion) // Version is below what we recommend
+
+            if (version < MinVersion) // Version is below what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The minimum recommended version is {MinVersion}", MinVersion);
                 return false;
             }
-            else if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
+
+            if (MaxVersion != null && version > MaxVersion) // Version is above what we recommend
             {
                 _logger.LogWarning("FFmpeg validation: The maximum recommended version is {MaxVersion}", MaxVersion);
                 return false;

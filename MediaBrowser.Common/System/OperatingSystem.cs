@@ -57,11 +57,13 @@ namespace MediaBrowser.Common.System
                         {
                             return OperatingSystemId.Linux;
                         }
-                        else if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
+
+                        if (osDescription.Contains("darwin", StringComparison.OrdinalIgnoreCase))
                         {
                             return OperatingSystemId.Darwin;
                         }
-                        else if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
+
+                        if (osDescription.Contains("bsd", StringComparison.OrdinalIgnoreCase))
                         {
                             return OperatingSystemId.BSD;
                         }

@@ -1175,7 +1175,8 @@ namespace Emby.Server.Implementations.Data
                 {
                     return false;
                 }
-                else if (type == typeof(UserRootFolder))
+
+                if (type == typeof(UserRootFolder))
                 {
                     return false;
                 }
@@ -1185,55 +1186,68 @@ namespace Emby.Server.Implementations.Data
             {
                 return false;
             }
-            else if (type == typeof(MusicArtist))
+
+            if (type == typeof(MusicArtist))
             {
                 return false;
             }
-            else if (type == typeof(Person))
+
+            if (type == typeof(Person))
             {
                 return false;
             }
-            else if (type == typeof(MusicGenre))
+
+            if (type == typeof(MusicGenre))
             {
                 return false;
             }
-            else if (type == typeof(Genre))
+
+            if (type == typeof(Genre))
             {
                 return false;
             }
-            else if (type == typeof(Studio))
+
+            if (type == typeof(Studio))
             {
                 return false;
             }
-            else if (type == typeof(PlaylistsFolder))
+
+            if (type == typeof(PlaylistsFolder))
             {
                 return false;
             }
-            else if (type == typeof(PhotoAlbum))
+
+            if (type == typeof(PhotoAlbum))
             {
                 return false;
             }
-            else if (type == typeof(Year))
+
+            if (type == typeof(Year))
             {
                 return false;
             }
-            else if (type == typeof(Book))
+
+            if (type == typeof(Book))
             {
                 return false;
             }
-            else if (type == typeof(LiveTvProgram))
+
+            if (type == typeof(LiveTvProgram))
             {
                 return false;
             }
-            else if (type == typeof(AudioBook))
+
+            if (type == typeof(AudioBook))
             {
                 return false;
             }
-            else if (type == typeof(Audio))
+
+            if (type == typeof(Audio))
             {
                 return false;
             }
-            else if (type == typeof(MusicAlbum))
+
+            if (type == typeof(MusicAlbum))
             {
                 return false;
             }
@@ -3056,15 +3070,18 @@ namespace Emby.Server.Implementations.Data
                 // TODO
                 return ("SortName", false);
             }
-            else if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
             {
                 return ("RuntimeTicks", false);
             }
-            else if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
                 return ("RANDOM()", false);
             }
-            else if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 if (query.GroupBySeriesPresentationUniqueKey)
                 {
@@ -3073,51 +3090,63 @@ namespace Emby.Server.Implementations.Data
 
                 return ("LastPlayedDate", false);
             }
-            else if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
             {
                 return ("PlayCount", false);
             }
-            else if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
             {
                 return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", true);
             }
-            else if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
             {
                 return ("IsFolder", true);
             }
-            else if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
             {
                 return ("played", true);
             }
-            else if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
             {
                 return ("played", false);
             }
-            else if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
             {
                 return ("DateLastMediaAdded", false);
             }
-            else if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
             {
                 return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", false);
             }
-            else if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
             {
                 return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
             }
-            else if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
             {
                 return ("InheritedParentalRatingValue", false);
             }
-            else if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
                 return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
             }
-            else if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
             }
-            else if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
             {
                 return ("SeriesName", false);
             }

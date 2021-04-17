@@ -411,14 +411,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 return null;
             }
-            else if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
+
+            if (uri.IndexOf("http", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return uri;
             }
-            else
-            {
-                return apiUrl + "/image/" + uri;
-            }
+
+            return apiUrl + "/image/" + uri;
         }
 
         private static double GetAspectRatio(ScheduleDirect.ImageData i)

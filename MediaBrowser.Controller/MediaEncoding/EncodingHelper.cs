@@ -687,19 +687,19 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return "-bsf:v h264_mp4toannexb";
             }
-            else if (IsH265(stream))
+
+            if (IsH265(stream))
             {
                 return "-bsf:v hevc_mp4toannexb";
             }
-            else if (IsAAC(stream))
+
+            if (IsAAC(stream))
             {
                 // Convert adts header(mpegts) to asc header(mp4).
                 return "-bsf:a aac_adtstoasc";
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         public static string GetAudioBitStreamArguments(EncodingJobInfo state, string segmentContainer, string mediaSourceContainer)
@@ -2932,7 +2932,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 return 0;
             }
-            else if (threads >= Environment.ProcessorCount)
+
+            if (threads >= Environment.ProcessorCount)
             {
                 return Environment.ProcessorCount;
             }

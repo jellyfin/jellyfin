@@ -968,31 +968,38 @@ namespace MediaBrowser.Model.Dlna
             {
                 return 128000;
             }
-            else if (totalBitrate <= 2000000)
+
+            if (totalBitrate <= 2000000)
             {
                 return 384000;
             }
-            else if (totalBitrate <= 3000000)
+
+            if (totalBitrate <= 3000000)
             {
                 return 448000;
             }
-            else if (totalBitrate <= 4000000)
+
+            if (totalBitrate <= 4000000)
             {
                 return 640000;
             }
-            else if (totalBitrate <= 5000000)
+
+            if (totalBitrate <= 5000000)
             {
                 return 768000;
             }
-            else if (totalBitrate <= 10000000)
+
+            if (totalBitrate <= 10000000)
             {
                 return 1536000;
             }
-            else if (totalBitrate <= 15000000)
+
+            if (totalBitrate <= 15000000)
             {
                 return 2304000;
             }
-            else if (totalBitrate <= 20000000)
+
+            if (totalBitrate <= 20000000)
             {
                 return 3584000;
             }
@@ -1325,7 +1332,8 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return false;
                 }
-                else if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv")
+
+                if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv")
                     || ContainerProfile.ContainsContainer(normalizedContainers, "matroska"))
                 {
                     return true;

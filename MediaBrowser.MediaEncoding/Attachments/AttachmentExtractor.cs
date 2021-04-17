@@ -228,10 +228,8 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
                 throw new InvalidOperationException(msg);
             }
-            else
-            {
-                _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
-            }
+
+            _logger.LogInformation("ffmpeg attachment extraction completed for {Path} to {Path}", inputPath, outputPath);
         }
 
         private string GetAttachmentCachePath(string mediaPath, MediaSourceInfo mediaSource, int attachmentStreamIndex)

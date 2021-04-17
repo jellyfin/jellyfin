@@ -529,10 +529,8 @@ namespace Jellyfin.Api.Controllers
                     _logger.LogDebug("Fallback font size is {fileSize} Bytes", fileSize);
                     return PhysicalFile(fontFile.FullName, MimeTypes.GetMimeType(fontFile.FullName));
                 }
-                else
-                {
-                    _logger.LogWarning("The selected font is null or empty");
-                }
+
+                _logger.LogWarning("The selected font is null or empty");
             }
             else
             {
