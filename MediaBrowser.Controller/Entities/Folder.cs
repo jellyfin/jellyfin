@@ -843,6 +843,7 @@ namespace MediaBrowser.Controller.Entities
         private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
         {
             int size = items.Count;
+
             // ids can potentially contain non-unique guids, but query result cannot,
             // so we include only first occurrence of each guid
             var positions = new Dictionary<Guid, int>(size);
@@ -855,14 +856,15 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
+            if (index > size)
+            {
+                size = index;
+            }
+
             var newItems = new BaseItem[size];
             foreach (var item in items)
             {
-                int x = positions[item.Id];
-                if (x != -1)
-                {
-                    newItems[x] = item;
-                }
+                newItems[positions[item.Id]] = item;
             }
 
             return newItems;
