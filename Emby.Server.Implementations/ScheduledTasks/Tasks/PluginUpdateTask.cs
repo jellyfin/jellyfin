@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 

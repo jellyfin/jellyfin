@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
