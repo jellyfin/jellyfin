@@ -311,6 +311,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting the given filter");
+                return false;
             }
 
             if (output.Contains("Filter " + filter, StringComparison.Ordinal))
