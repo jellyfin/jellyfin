@@ -97,14 +97,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool RequiresRefresh()
         {
-            var baseResult = base.RequiresRefresh();
-
-            if (SupportsCumulativeRunTimeTicks && !RunTimeTicks.HasValue)
-            {
-                baseResult = true;
-            }
-
-            return baseResult;
+            return base.RequiresRefresh() || (SupportsCumulativeRunTimeTicks && !RunTimeTicks.HasValue);
         }
 
         [JsonIgnore]

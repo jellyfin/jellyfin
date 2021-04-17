@@ -24,13 +24,10 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
             messageHandler.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .Returns<HttpRequestMessage, CancellationToken>(
-                    (m, _) =>
+                    (m, _) => Task.FromResult(new HttpResponseMessage()
                     {
-                        return Task.FromResult(new HttpResponseMessage()
-                        {
-                            Content = new StreamContent(File.OpenRead("Test Data/Updates/" + m.RequestUri?.Segments[^1]))
-                        });
-                    });
+                        Content = new StreamContent(File.OpenRead("Test Data/Updates/" + m.RequestUri?.Segments[^1]))
+                    }));
 
             var http = new Mock<IHttpClientFactory>();
             http.Setup(x => x.CreateClient(It.IsAny<string>()))

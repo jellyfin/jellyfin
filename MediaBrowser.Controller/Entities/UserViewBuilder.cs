@@ -971,17 +971,11 @@ namespace MediaBrowser.Controller.Entities
             if (user == null)
             {
                 return GetMediaFolders(null)
-                    .Where(i =>
-                    {
-                        return i is ICollectionFolder folder && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-                    }).ToArray();
+                    .Where(i => i is ICollectionFolder folder && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase)).ToArray();
             }
 
             return GetMediaFolders(user)
-                .Where(i =>
-                {
-                    return i is ICollectionFolder folder && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
-                }).ToArray();
+                .Where(i => i is ICollectionFolder folder && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase)).ToArray();
         }
 
         private BaseItem[] GetMediaFolders(Folder parent, User user, IEnumerable<string> viewTypes)

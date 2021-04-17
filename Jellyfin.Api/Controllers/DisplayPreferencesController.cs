@@ -147,9 +147,7 @@ namespace Jellyfin.Api.Controllers
                 : ChromecastVersion.Stable;
             displayPreferences.CustomPrefs.Remove("chromecastVersion");
 
-            existingDisplayPreferences.EnableNextVideoInfoOverlay = displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
-                ? bool.Parse(enableNextVideoInfoOverlay)
-                : true;
+            existingDisplayPreferences.EnableNextVideoInfoOverlay = !displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay) || bool.Parse(enableNextVideoInfoOverlay);
             displayPreferences.CustomPrefs.Remove("enableNextVideoInfoOverlay");
 
             existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
