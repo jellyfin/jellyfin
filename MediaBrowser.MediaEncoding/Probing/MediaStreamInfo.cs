@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Common.Json.Converters;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {

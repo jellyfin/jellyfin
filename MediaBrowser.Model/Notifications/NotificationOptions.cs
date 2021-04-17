@@ -5,8 +5,6 @@ using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Notifications
 {

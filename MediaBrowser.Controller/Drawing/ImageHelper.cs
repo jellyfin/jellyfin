@@ -1,10 +1,7 @@
 #pragma warning disable CS1591
 #nullable enable
 
-using System;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Drawing;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Drawing
 {

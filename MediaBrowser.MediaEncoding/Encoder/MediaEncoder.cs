@@ -16,7 +16,6 @@ using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
