@@ -217,8 +217,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         private IEnumerable<BaseItem> FlattenItems(BaseItem item, List<Guid> expandedFolders)
         {
-            var boxset = item as BoxSet;
-            if (boxset != null)
+            if (item is BoxSet boxset)
             {
                 if (!expandedFolders.Contains(item.Id))
                 {

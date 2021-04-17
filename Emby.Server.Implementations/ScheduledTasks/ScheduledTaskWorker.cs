@@ -349,9 +349,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var trigger = (ITaskTrigger)sender;
 
-            var configurableTask = ScheduledTask as IConfigurableScheduledTask;
-
-            if (configurableTask != null && !configurableTask.IsEnabled)
+            if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
             {
                 return;
             }
