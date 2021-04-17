@@ -25,14 +25,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 return null;
             }
 
-            var season = parent as Season;
-
             // Just in case the user decided to nest episodes.
             // Not officially supported but in some cases we can handle it.
-            if (season == null)
-            {
-                season = parent.GetParents().OfType<Season>().FirstOrDefault();
-            }
+
+            var season = parent as Season ?? parent.GetParents().OfType<Season>().FirstOrDefault();
 
             // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
             // Also handle flat tv folders
@@ -44,11 +40,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                 if (episode != null)
                 {
-                    var series = parent as Series;
-                    if (series == null)
-                    {
-                        series = parent.GetParents().OfType<Series>().FirstOrDefault();
-                    }
+                    var series = parent as Series ?? parent.GetParents().OfType<Series>().FirstOrDefault();
 
                     if (series != null)
                     {

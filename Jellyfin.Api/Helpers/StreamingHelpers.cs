@@ -297,10 +297,7 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            if (profile == null)
-            {
-                profile = dlnaManager.GetDefaultProfile();
-            }
+            profile ??= dlnaManager.GetDefaultProfile();
 
             var audioCodec = state.ActualOutputAudioCodec;
 

@@ -107,10 +107,7 @@ namespace MediaBrowser.Common.Plugins
                 {
                     lock (_configurationSyncLock)
                     {
-                        if (_configuration == null)
-                        {
-                            _configuration = LoadConfiguration();
-                        }
+                        _configuration ??= LoadConfiguration();
                     }
                 }
 

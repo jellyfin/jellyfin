@@ -45,10 +45,7 @@ namespace MediaBrowser.Controller.Providers
 
             if (copy.RefreshPaths != null && copy.RefreshPaths.Length > 0)
             {
-                if (RefreshPaths == null)
-                {
-                    RefreshPaths = Array.Empty<string>();
-                }
+                RefreshPaths ??= Array.Empty<string>();
 
                 RefreshPaths = copy.RefreshPaths.ToArray();
             }

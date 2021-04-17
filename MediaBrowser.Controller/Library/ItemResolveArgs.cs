@@ -147,10 +147,7 @@ namespace MediaBrowser.Controller.Library
                 throw new ArgumentException("The path was empty or null.", nameof(path));
             }
 
-            if (AdditionalLocations == null)
-            {
-                AdditionalLocations = new List<string>();
-            }
+            AdditionalLocations ??= new List<string>();
 
             AdditionalLocations.Add(path);
         }

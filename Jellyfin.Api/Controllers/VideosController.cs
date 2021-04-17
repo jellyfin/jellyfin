@@ -219,22 +219,18 @@ namespace Jellyfin.Api.Controllers
 
             var videosWithVersions = items.Where(i => i.MediaSourceCount > 1).ToList();
 
-            var primaryVersion = videosWithVersions.FirstOrDefault();
-            if (primaryVersion == null)
-            {
-                primaryVersion = items
-                    .OrderBy(i =>
-                    {
-                        if (i.Video3DFormat.HasValue || i.VideoType != VideoType.VideoFile)
-                        {
-                            return 1;
-                        }
+            var primaryVersion = videosWithVersions.FirstOrDefault() ??
+                                    items.OrderBy(i =>
+                                    {
+                                        if (i.Video3DFormat.HasValue || i.VideoType != VideoType.VideoFile)
+                                        {
+                                            return 1;
+                                        }
 
-                        return 0;
-                    })
-                    .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
-                    .First();
-            }
+                                        return 0;
+                                    })
+                                    .ThenByDescending(i => i.GetDefaultVideoStream()?.Width ?? 0)
+                                    .First();
 
             var alternateVersionsOfPrimary = primaryVersion.LinkedAlternateVersions.ToList();
 

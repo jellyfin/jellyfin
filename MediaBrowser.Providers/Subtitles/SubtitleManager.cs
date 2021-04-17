@@ -237,10 +237,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    if (exceptionToThrow == null)
-                    {
-                        exceptionToThrow = ex;
-                    }
+                    exceptionToThrow ??= ex;
                 }
                 finally
                 {

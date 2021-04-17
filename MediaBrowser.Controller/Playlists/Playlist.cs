@@ -125,10 +125,7 @@ namespace MediaBrowser.Controller.Playlists
 
         private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                query = new InternalItemsQuery(user);
-            }
+            query ??= new InternalItemsQuery(user);
 
             query.IsFolder = false;
 
