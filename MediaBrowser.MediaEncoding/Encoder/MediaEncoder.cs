@@ -252,14 +252,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var values = Environment.GetEnvironmentVariable("PATH");
-
-            foreach (var path in values.Split(Path.PathSeparator))
+            // Unlikely that Path isn't set, but...
+            if (values != null)
             {
-                var candidatePath = GetEncoderPathFromDirectory(path, fileName);
-
-                if (!string.IsNullOrEmpty(candidatePath))
+                foreach (var path in values.Split(Path.PathSeparator))
                 {
-                    return candidatePath;
+                    var candidatePath = GetEncoderPathFromDirectory(path, fileName);
+
+                    if (!string.IsNullOrEmpty(candidatePath))
+                    {
+                        return candidatePath;
+                    }
                 }
             }
 

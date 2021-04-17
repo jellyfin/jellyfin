@@ -1140,7 +1140,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 if (isColorDepth10
                     && _mediaEncoder.SupportsHwaccel("opencl")
                     && encodingOptions.EnableTonemapping
-                    && !string.IsNullOrEmpty(videoStream.VideoRange)
+                    && !string.IsNullOrEmpty(videoStream?.VideoRange)
                     && videoStream.VideoRange.Contains("HDR", StringComparison.OrdinalIgnoreCase))
                 {
                     // Enhance workload when tone mapping with AMF on some APUs
