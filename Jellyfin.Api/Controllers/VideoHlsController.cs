@@ -376,7 +376,7 @@ namespace Jellyfin.Api.Controllers
             }
             else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
-                var outputFmp4HeaderArg = string.Empty;
+                string outputFmp4HeaderArg;
                 var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
                 if (isWindows)
                 {

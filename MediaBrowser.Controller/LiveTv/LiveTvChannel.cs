@@ -61,9 +61,7 @@ namespace MediaBrowser.Controller.LiveTv
         {
             if (!string.IsNullOrEmpty(Number))
             {
-                double number = 0;
-
-                if (double.TryParse(Number, NumberStyles.Any, CultureInfo.InvariantCulture, out number))
+                if (double.TryParse(Number, NumberStyles.Any, CultureInfo.InvariantCulture, out double number))
                 {
                     return string.Format(CultureInfo.InvariantCulture, "{0:00000.0}", number) + "-" + (Name ?? string.Empty);
                 }

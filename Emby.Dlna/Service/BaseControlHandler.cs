@@ -47,7 +47,7 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
-            ControlRequestInfo requestInfo = null;
+            ControlRequestInfo requestInfo;
 
             using (var streamReader = new StreamReader(request.InputXml, Encoding.UTF8))
             {

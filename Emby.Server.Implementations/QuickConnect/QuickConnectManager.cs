@@ -258,7 +258,6 @@ namespace Emby.Server.Implementations.QuickConnect
             }
 
             // Expire stale connection requests
-            var code = string.Empty;
             var values = _currentRequests.Values.ToList();
 
             for (int i = 0; i < values.Count; i++)
@@ -266,7 +265,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 var added = values[i].DateAdded ?? DateTime.UnixEpoch;
                 if (DateTime.UtcNow > added.AddMinutes(Timeout) || expireAll)
                 {
-                    code = values[i].Code;
+                    var code = values[i].Code;
                     _logger.LogDebug("Removing expired request {code}", code);
 
                     if (!_currentRequests.TryRemove(code, out _))

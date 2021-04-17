@@ -111,10 +111,10 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                if (streamFileNames == null)
-                {
-                    streamFileNames = Array.Empty<string>();
-                }
+                // if (streamFileNames == null)
+                // {
+                //    streamFileNames = Array.Empty<string>();
+                // }
 
                 mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 

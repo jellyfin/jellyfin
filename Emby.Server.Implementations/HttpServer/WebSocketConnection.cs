@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 
 using System;
 using System.Buffers;
@@ -182,7 +182,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             WebSocketMessage<object>? stub;
-            long bytesConsumed = 0;
+            long bytesConsumed;
             try
             {
                 stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);

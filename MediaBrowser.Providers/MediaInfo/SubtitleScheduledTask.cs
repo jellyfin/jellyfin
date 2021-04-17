@@ -75,21 +75,21 @@ namespace MediaBrowser.Providers.MediaInfo
                 string[] subtitleDownloadLanguages;
                 bool skipIfEmbeddedSubtitlesPresent;
                 bool skipIfAudioTrackMatches;
-                bool requirePerfectMatch;
+                // bool requirePerfectMatch;
 
                 if (libraryOptions.SubtitleDownloadLanguages == null)
                 {
                     subtitleDownloadLanguages = options.DownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
-                    requirePerfectMatch = options.RequirePerfectMatch;
+                    // requirePerfectMatch = options.RequirePerfectMatch;
                 }
                 else
                 {
                     subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                    requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
+                    // requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
                 }
 
                 foreach (var lang in subtitleDownloadLanguages)
