@@ -515,8 +515,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
-                var primary = LibraryManager.GetItemById(PrimaryVersionId) as Video;
-                if (primary != null)
+                if (LibraryManager.GetItemById(PrimaryVersionId) is Video primary)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
                     list.Add(new Tuple<BaseItem, MediaSourceType>(primary, MediaSourceType.Grouping));

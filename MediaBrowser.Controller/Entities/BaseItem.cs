@@ -820,8 +820,7 @@ namespace MediaBrowser.Controller.Entities
         {
             foreach (var parent in GetParents())
             {
-                var item = parent as T;
-                if (item != null)
+                if (parent is T item)
                 {
                     return item;
                 }
@@ -1207,8 +1206,7 @@ namespace MediaBrowser.Controller.Entities
                 terms.Add(item.Name);
             }
 
-            var video = item as Video;
-            if (video != null)
+            if (item is Video video)
             {
                 if (video.Video3DFormat.HasValue)
                 {
@@ -1266,9 +1264,8 @@ namespace MediaBrowser.Controller.Entities
                 .Select(audio =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = LibraryManager.GetItemById(audio.Id) as Audio.Audio;
 
-                    if (dbItem != null)
+                    if (LibraryManager.GetItemById(audio.Id) is Audio.Audio dbItem)
                     {
                         audio = dbItem;
                     }
@@ -1456,8 +1453,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                var hasTrailers = this as IHasTrailers;
-                if (hasTrailers != null)
+                if (this is IHasTrailers hasTrailers)
                 {
                     localTrailersChanged = await RefreshLocalTrailers(hasTrailers, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
                 }

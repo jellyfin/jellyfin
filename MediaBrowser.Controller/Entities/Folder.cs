@@ -479,8 +479,7 @@ namespace MediaBrowser.Controller.Entities
             await ProviderManager.RunMetadataRefresh(
                 async () =>
                 {
-                    var series = container as Series;
-                    if (series != null)
+                    if (container is Series series)
                     {
                         await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                     }
@@ -492,9 +491,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var container = child as IMetadataContainer;
-
-            if (container != null)
+            if (child is IMetadataContainer container)
             {
                 await RefreshAllMetadataForContainer(container, refreshOptions, progress, cancellationToken).ConfigureAwait(false);
             }
@@ -1638,8 +1635,7 @@ namespace MediaBrowser.Controller.Entities
                 if (item.IsVirtualItem)
                 {
                     // The querying doesn't support virtual unaired
-                    var episode = item as Episode;
-                    if (episode != null && episode.IsUnaired)
+                    if (item is Episode episode && episode.IsUnaired)
                     {
                         continue;
                     }
@@ -1721,8 +1717,7 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
 
-                var iItemByName = this as IItemByName;
-                if (iItemByName != null)
+                if (this is IItemByName iItemByName)
                 {
                     var hasDualAccess = this as IHasDualAccess;
                     if (hasDualAccess == null || hasDualAccess.IsAccessedByName)

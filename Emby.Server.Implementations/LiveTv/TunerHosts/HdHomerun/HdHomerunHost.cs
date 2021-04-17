@@ -506,9 +506,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var channelId = channelInfo.Id;
             var hdhrId = GetHdHrIdFromChannelId(channelId);
 
-            var hdHomerunChannelInfo = channelInfo as HdHomerunChannelInfo;
-
-            var isLegacyTuner = hdHomerunChannelInfo != null && hdHomerunChannelInfo.IsLegacyTuner;
+            var isLegacyTuner = channelInfo is HdHomerunChannelInfo hdHomerunChannelInfo && hdHomerunChannelInfo.IsLegacyTuner;
 
             if (isLegacyTuner)
             {

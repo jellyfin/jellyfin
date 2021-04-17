@@ -762,9 +762,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var dbItem = GetItemById(folder.Id) as BasePluginFolder;
-
-            if (dbItem != null && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
+            if (GetItemById(folder.Id) is BasePluginFolder dbItem && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
             {
                 folder = dbItem;
             }
@@ -1698,9 +1696,8 @@ namespace Emby.Server.Implementations.Library
                     else
                     {
                         // Pull the saved db item that will include metadata
-                        var dbItem = GetItemById(video.Id) as Video;
 
-                        if (dbItem != null)
+                        if (GetItemById(video.Id) is Video dbItem)
                         {
                             video = dbItem;
                         }
@@ -2761,9 +2758,8 @@ namespace Emby.Server.Implementations.Library
                 .Select(video =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = GetItemById(video.Id) as Video;
 
-                    if (dbItem != null)
+                    if (GetItemById(video.Id) is Video dbItem)
                     {
                         video = dbItem;
                     }

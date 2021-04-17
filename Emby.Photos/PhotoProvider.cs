@@ -75,16 +75,14 @@ namespace Emby.Photos
                                 var exifStructure = exif.Structure;
                                 if (exifStructure != null)
                                 {
-                                    var entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) as RationalIFDEntry;
-                                    if (entry != null)
+                                    if (exifStructure.GetEntry(0, (ushort)ExifEntryTag.ApertureValue) is RationalIFDEntry entry)
                                     {
                                         item.Aperture = (double)entry.Value.Numerator / entry.Value.Denominator;
                                     }
 
-                                    entry = exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) as RationalIFDEntry;
-                                    if (entry != null)
+                                    if (exifStructure.GetEntry(0, (ushort)ExifEntryTag.ShutterSpeedValue) is RationalIFDEntry entry2)
                                     {
-                                        item.ShutterSpeed = (double)entry.Value.Numerator / entry.Value.Denominator;
+                                        item.ShutterSpeed = (double)entry2.Value.Numerator / entry2.Value.Denominator;
                                     }
                                 }
                             }

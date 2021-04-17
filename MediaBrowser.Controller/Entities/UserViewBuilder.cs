@@ -750,8 +750,7 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.HasTrailer.Value;
                 var trailerCount = 0;
 
-                var hasTrailers = item as IHasTrailers;
-                if (hasTrailers != null)
+                if (item is IHasTrailers hasTrailers)
                 {
                     trailerCount = hasTrailers.GetTrailerIds().Count;
                 }
@@ -974,18 +973,14 @@ namespace MediaBrowser.Controller.Entities
                 return GetMediaFolders(null)
                     .Where(i =>
                     {
-                        var folder = i as ICollectionFolder;
-
-                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                        return i is ICollectionFolder folder && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                     }).ToArray();
             }
 
             return GetMediaFolders(user)
                 .Where(i =>
                 {
-                    var folder = i as ICollectionFolder;
-
-                    return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                    return i is ICollectionFolder folder && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
                 }).ToArray();
         }
 

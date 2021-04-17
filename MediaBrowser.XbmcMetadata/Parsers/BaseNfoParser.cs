@@ -619,8 +619,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        var hasDisplayOrder = item as IHasDisplayOrder;
-                        if (hasDisplayOrder != null)
+                        if (item is IHasDisplayOrder hasDisplayOrder)
                         {
                             if (!string.IsNullOrWhiteSpace(val))
                             {
@@ -955,9 +954,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 var val = reader.ReadElementContentAsString();
 
-                                var video = item as Video;
-
-                                if (video != null)
+                                if (item is Video video)
                                 {
                                     if (string.Equals("HSBS", val, StringComparison.OrdinalIgnoreCase))
                                     {

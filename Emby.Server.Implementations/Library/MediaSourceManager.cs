@@ -586,8 +586,7 @@ namespace Emby.Server.Implementations.Library
         {
             var info = _openStreams.Values.FirstOrDefault(i =>
             {
-                var liveStream = i as ILiveStream;
-                if (liveStream != null)
+                if (i is ILiveStream liveStream)
                 {
                     return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
                 }
