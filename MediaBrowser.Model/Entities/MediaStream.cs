@@ -242,6 +242,11 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
                         }
 
+                        if (!string.IsNullOrEmpty(Codec))
+                        {
+                                attributes.Add(Codec);
+                        }
+
                         if (!string.IsNullOrEmpty(Title))
                         {
                             var result = new StringBuilder(Title);
