@@ -2239,8 +2239,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var enabledTimersForSeries = new List<TimerInfo>();
             foreach (var timer in allTimers)
             {
-                var existingTimer = _timerProvider.GetTimer(timer.Id) ??
-                                    (string.IsNullOrWhiteSpace(timer.ProgramId)
+                var existingTimer = _timerProvider.GetTimer(timer.Id) 
+                                    ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
                                         ? null
                                         : _timerProvider.GetTimerByProgramId(timer.ProgramId));
 
