@@ -33,16 +33,6 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Group"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Group()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id of this group.
         /// </summary>
         /// <remarks>
@@ -56,7 +46,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }

@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ICryptoProvider _cryptoProvider;
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
 
         public SchedulesDirect(

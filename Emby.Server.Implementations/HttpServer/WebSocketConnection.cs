@@ -56,7 +56,7 @@ namespace Emby.Server.Implementations.HttpServer
             RemoteEndPoint = remoteEndPoint;
             QueryString = query;
 
-            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions = JsonDefaults.Options;
             LastActivityDate = DateTime.Now;
         }
 

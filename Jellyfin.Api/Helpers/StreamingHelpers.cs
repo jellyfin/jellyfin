@@ -505,17 +505,15 @@ namespace Jellyfin.Api.Helpers
 
         private static void ApplyDeviceProfileSettings(StreamState state, IDlnaManager dlnaManager, IDeviceManager deviceManager, HttpRequest request, string? deviceProfileId, bool? @static)
         {
-            var headers = request.Headers;
-
             if (!string.IsNullOrWhiteSpace(deviceProfileId))
             {
                 state.DeviceProfile = dlnaManager.GetProfile(deviceProfileId);
-            }
-            else if (!string.IsNullOrWhiteSpace(deviceProfileId))
-            {
-                var caps = deviceManager.GetCapabilities(deviceProfileId);
 
-                state.DeviceProfile = caps == null ? dlnaManager.GetProfile(headers) : caps.DeviceProfile;
+                if (state.DeviceProfile == null)
+                {
+                    var caps = deviceManager.GetCapabilities(deviceProfileId);
+                    state.DeviceProfile = caps == null ? dlnaManager.GetProfile(request.Headers) : caps.DeviceProfile;
+                }
             }
 
             var profile = state.DeviceProfile;

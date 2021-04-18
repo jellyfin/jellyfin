@@ -71,7 +71,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                     _impl.FullName,
                     new[] { searchPattern },
                     false,
-                    searchOption.HasFlag(System.IO.SearchOption.AllDirectories)).ToArray(),
+                    (searchOption & System.IO.SearchOption.AllDirectories) == System.IO.SearchOption.AllDirectories).ToArray(),
                 x => new BdInfoFileInfo(x));
         }
 

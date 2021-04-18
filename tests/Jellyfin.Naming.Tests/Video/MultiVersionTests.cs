@@ -295,12 +295,9 @@ namespace Jellyfin.Naming.Tests.Video
                 FullName = i
             }).ToList()).ToList();
 
-            Assert.Single(result);
+            Assert.Equal(7, result.Count);
             Assert.Empty(result[0].Extras);
-            Assert.Equal(6, result[0].AlternateVersions.Count);
-            Assert.False(result[0].AlternateVersions[2].Is3D);
-            Assert.True(result[0].AlternateVersions[3].Is3D);
-            Assert.True(result[0].AlternateVersions[4].Is3D);
+            Assert.Empty(result[0].AlternateVersions);
         }
 
         [Fact]
@@ -366,6 +363,44 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Single(result);
             Assert.Empty(result[0].Extras);
             Assert.Single(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void Resolve_GivenFolderNameWithBracketsAndHyphens_GroupsBasedOnFolderName()
+        {
+            var files = new[]
+            {
+                @"/movies/John Wick - Kapitel 3 (2019) [imdbid=tt6146586]/John Wick - Kapitel 3 (2019) [imdbid=tt6146586] - Version 1.mkv",
+                @"/movies/John Wick - Kapitel 3 (2019) [imdbid=tt6146586]/John Wick - Kapitel 3 (2019) [imdbid=tt6146586] - Version 2.mkv"
+            };
+
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            }).ToList()).ToList();
+
+            Assert.Single(result);
+            Assert.Empty(result[0].Extras);
+            Assert.Single(result[0].AlternateVersions);
+        }
+
+        [Fact]
+        public void Resolve_GivenUnclosedBrackets_DoesNotGroup()
+        {
+            var files = new[]
+            {
+                @"/movies/John Wick - Chapter 3 (2019)/John Wick - Chapter 3 (2019) [Version 1].mkv",
+                @"/movies/John Wick - Chapter 3 (2019)/John Wick - Chapter 3 (2019) [Version 2.mkv"
+            };
+
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
+            {
+                IsDirectory = false,
+                FullName = i
+            }).ToList()).ToList();
+
+            Assert.Equal(2, result.Count);
         }
 
         [Fact]

@@ -118,13 +118,6 @@ namespace MediaBrowser.Model.IO
         bool ContainsSubPath(string parentPath, string path);
 
         /// <summary>
-        /// Determines whether [is root path] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is root path] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsRootPath(string path);
-
-        /// <summary>
         /// Normalizes the path.
         /// </summary>
         /// <param name="path">The path.</param>

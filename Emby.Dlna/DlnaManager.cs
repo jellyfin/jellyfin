@@ -36,7 +36,7 @@ namespace Emby.Dlna
         private readonly ILogger<DlnaManager> _logger;
         private readonly IServerApplicationHost _appHost;
         private static readonly Assembly _assembly = typeof(DlnaManager).Assembly;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private readonly Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>> _profiles = new Dictionary<string, Tuple<InternalProfileInfo, DeviceProfile>>(StringComparer.Ordinal);
 
@@ -126,14 +126,14 @@ namespace Emby.Dlna
             var builder = new StringBuilder();
 
             builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.Append("FriendlyName:").AppendLine(profile.FriendlyName);
-            builder.Append("Manufacturer:").AppendLine(profile.Manufacturer);
-            builder.Append("ManufacturerUrl:").AppendLine(profile.ManufacturerUrl);
-            builder.Append("ModelDescription:").AppendLine(profile.ModelDescription);
-            builder.Append("ModelName:").AppendLine(profile.ModelName);
-            builder.Append("ModelNumber:").AppendLine(profile.ModelNumber);
-            builder.Append("ModelUrl:").AppendLine(profile.ModelUrl);
-            builder.Append("SerialNumber:").AppendLine(profile.SerialNumber);
+            builder.Append("FriendlyName: ").AppendLine(profile.FriendlyName);
+            builder.Append("Manufacturer: ").AppendLine(profile.Manufacturer);
+            builder.Append("ManufacturerUrl: ").AppendLine(profile.ManufacturerUrl);
+            builder.Append("ModelDescription: ").AppendLine(profile.ModelDescription);
+            builder.Append("ModelName: ").AppendLine(profile.ModelName);
+            builder.Append("ModelNumber: ").AppendLine(profile.ModelNumber);
+            builder.Append("ModelUrl: ").AppendLine(profile.ModelUrl);
+            builder.Append("SerialNumber: ").AppendLine(profile.SerialNumber);
 
             _logger.LogInformation(builder.ToString());
         }
@@ -333,7 +333,12 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+            var info = GetProfileInfosInternal().FirstOrDefault(i => string.Equals(i.Info.Id, id, StringComparison.OrdinalIgnoreCase));
+
+            if (info == null)
+            {
+                return null;
+            }
 
             return ParseProfileFile(info.Path, info.Info.Type);
         }
@@ -395,7 +400,8 @@ namespace Emby.Dlna
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                        // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }

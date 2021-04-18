@@ -1,12 +1,10 @@
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Branding;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Jellyfin.Api.Tests
+namespace Jellyfin.Server.Integration.Tests
 {
     public sealed class OpenApiSpecTests : IClassFixture<JellyfinApplicationFactory>
     {

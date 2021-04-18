@@ -88,7 +88,7 @@ namespace Emby.Server.Implementations.Data
             _imageProcessor = imageProcessor;
 
             _typeMapper = new TypeMapper();
-            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions = JsonDefaults.Options;
 
             DbFilePath = Path.Combine(_config.ApplicationPaths.DataPath, "library.db");
         }
@@ -5415,7 +5415,6 @@ AND Type = @InternalPersonType)");
                 ItemIds = query.ItemIds,
                 TopParentIds = query.TopParentIds,
                 ParentId = query.ParentId,
-                IsPlayed = query.IsPlayed,
                 IsAiring = query.IsAiring,
                 IsMovie = query.IsMovie,
                 IsSports = query.IsSports,
@@ -5441,6 +5440,7 @@ AND Type = @InternalPersonType)");
 
             var outerQuery = new InternalItemsQuery(query.User)
             {
+                IsPlayed = query.IsPlayed,
                 IsFavorite = query.IsFavorite,
                 IsFavoriteOrLiked = query.IsFavoriteOrLiked,
                 IsLiked = query.IsLiked,

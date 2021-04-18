@@ -54,13 +54,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                return null;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var language = item.GetPreferredMetadataLanguage();
 
+            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var series = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             if (series?.Images == null)

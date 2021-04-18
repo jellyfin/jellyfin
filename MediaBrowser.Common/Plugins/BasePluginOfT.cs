@@ -39,29 +39,27 @@ namespace MediaBrowser.Common.Plugins
         {
             ApplicationPaths = applicationPaths;
             XmlSerializer = xmlSerializer;
-            if (this is IPluginAssembly assemblyPlugin)
+
+            var assembly = GetType().Assembly;
+            var assemblyName = assembly.GetName();
+            var assemblyFilePath = assembly.Location;
+
+            var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
+            if (!Directory.Exists(dataFolderPath) && Version != null)
             {
-                var assembly = GetType().Assembly;
-                var assemblyName = assembly.GetName();
-                var assemblyFilePath = assembly.Location;
+                // Try again with the version number appended to the folder name.
+                dataFolderPath = dataFolderPath + "_" + Version.ToString();
+            }
 
-                var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-                if (!Directory.Exists(dataFolderPath) && Version != null)
-                {
-                    // Try again with the version number appended to the folder name.
-                    dataFolderPath = dataFolderPath + "_" + Version.ToString();
-                }
+            SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
 
-                assemblyPlugin.SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
+            var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
+            if (idAttributes.Length > 0)
+            {
+                var attribute = (GuidAttribute)idAttributes[0];
+                var assemblyId = new Guid(attribute.Value);
 
-                var idAttributes = assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-                if (idAttributes.Length > 0)
-                {
-                    var attribute = (GuidAttribute)idAttributes[0];
-                    var assemblyId = new Guid(attribute.Value);
-
-                    assemblyPlugin.SetId(assemblyId);
-                }
+                SetId(assemblyId);
             }
         }
 

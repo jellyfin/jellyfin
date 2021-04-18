@@ -4,20 +4,24 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class MetadataResult<T>
     {
-        public List<LocalImageInfo> Images { get; set; }
-
-        public List<UserItemData> UserDataList { get; set; }
-
         public MetadataResult()
         {
             Images = new List<LocalImageInfo>();
+            RemoteImages = new List<(string url, ImageType type)>();
             ResultLanguage = "en";
         }
+
+        public List<LocalImageInfo> Images { get; set; }
+
+        public List<(string url, ImageType type)> RemoteImages { get; set; }
+
+        public List<UserItemData> UserDataList { get; set; }
 
         public List<PersonInfo> People { get; set; }
 

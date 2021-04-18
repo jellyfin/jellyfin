@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -17,22 +16,9 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="title">The title or name of the movie.</param>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
-        /// <param name="movie">The movie.</param>
-        public MovieMetadata(string title, string language, Movie movie) : base(title, language)
+        public MovieMetadata(string title, string language) : base(title, language)
         {
             Studios = new HashSet<Company>();
-
-            movie.MovieMetadata.Add(this);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MovieMetadata"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MovieMetadata()
-        {
         }
 
         /// <summary>
@@ -43,7 +29,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Outline { get; set; }
+        public string? Outline { get; set; }
 
         /// <summary>
         /// Gets or sets the tagline.
@@ -53,7 +39,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Tagline { get; set; }
+        public string? Tagline { get; set; }
 
         /// <summary>
         /// Gets or sets the plot.
@@ -63,7 +49,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Plot { get; set; }
+        public string? Plot { get; set; }
 
         /// <summary>
         /// Gets or sets the country code.
@@ -73,7 +59,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(2)]
         [StringLength(2)]
-        public string Country { get; set; }
+        public string? Country { get; set; }
 
         /// <summary>
         /// Gets or sets the studios that produced this movie.
@@ -81,7 +67,6 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual ICollection<Company> Studios { get; protected set; }
 
         /// <inheritdoc />
-        [NotMapped]
         public ICollection<Company> Companies => Studios;
     }
 }

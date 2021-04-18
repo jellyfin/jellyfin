@@ -21,13 +21,6 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryItem"/> class.
-        /// </summary>
-        protected LibraryItem()
-        {
-        }
-
-        /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <remarks>
@@ -51,7 +44,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public virtual Library Library { get; set; }
 
         /// <inheritdoc />

@@ -12,7 +12,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Authorization;
@@ -45,7 +44,7 @@ namespace Jellyfin.Api.Controllers
         {
             _installationManager = installationManager;
             _pluginManager = pluginManager;
-            _serializerOptions = JsonDefaults.GetOptions();
+            _serializerOptions = JsonDefaults.Options;
             _config = config;
         }
 
