@@ -20,6 +20,8 @@ namespace Jellyfin.Model.Tests.Entities
         [InlineData("English", "", false, false, "ASS", "English - Und - ASS")]
         [InlineData("English", "", false, false, "", "English - Und")]
         [InlineData("English", "EN", false, false, "", "English")]
+        [InlineData("English", "EN", true, true, "SRT", "English - Default - Forced - SRT")]
+        [InlineData(null, null, false, false, null, "Und")]
         public void GetDisplayTitle_should_return_valid_for_subtitle(string title, string language, bool isForced, bool isDefault, string codec, string expected)
         {
             var mediaStream = new MediaStream { Type = MediaStreamType.Subtitle, Language = language, Title = title, IsForced = isForced, IsDefault = isDefault, Codec = codec };
