@@ -145,16 +145,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show episode group information or null if not found.</returns>
-        public async Task<TvGroupCollection> GetSeriesGroupAsync(int tvShowId, string displayOrder, string language, string imageLanguages, CancellationToken cancellationToken)
+        private async Task<TvGroupCollection> GetSeriesGroupAsync(int tvShowId, string displayOrder, string language, string imageLanguages, CancellationToken cancellationToken)
         {
-            var key = $"group-{tvShowId.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
-            if (_memoryCache.TryGetValue(key, out TvGroupCollection group))
-            {
-                return group;
-            }
-
-            await EnsureClientConfigAsync().ConfigureAwait(false);
-
             TvGroupType? groupType =
                 displayOrder == "absolute" ? TvGroupType.Absolute :
                 displayOrder == "dvd" ? TvGroupType.DVD :
@@ -165,8 +157,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, cancellationToken);
-            var episodeGroupId = series.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
+            var key = $"group-{tvShowId.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
+            if (_memoryCache.TryGetValue(key, out TvGroupCollection group))
+            {
+                return group;
+            }
+
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, cancellationToken).ConfigureAwait(false);
+            var episodeGroupId = series?.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
 
             if (episodeGroupId == null)
             {
@@ -246,6 +246,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             if (group != null)
             {
                 var season = group.Groups.Find(s => s.Order == seasonNumber);
+                // Episode order starts at 0
                 var ep = season?.Episodes.Find(e => e.Order == episodeNumber - 1);
                 if (ep != null)
                 {
