@@ -2,7 +2,6 @@
 
 using System;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Networking.Configuration
 {

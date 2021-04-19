@@ -14,15 +14,18 @@ namespace Emby.Server.Implementations.HttpServer
     public class WebSocketManager : IWebSocketManager
     {
         private readonly IWebSocketListener[] _webSocketListeners;
+        private readonly IAuthService _authService;
         private readonly ILogger<WebSocketManager> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
         public WebSocketManager(
+            IAuthService authService,
             IEnumerable<IWebSocketListener> webSocketListeners,
             ILogger<WebSocketManager> logger,
             ILoggerFactory loggerFactory)
         {
             _webSocketListeners = webSocketListeners.ToArray();
+            _authService = authService;
             _logger = logger;
             _loggerFactory = loggerFactory;
         }
@@ -30,6 +33,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
+            _ = _authService.Authenticate(context.Request);
             try
             {
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);

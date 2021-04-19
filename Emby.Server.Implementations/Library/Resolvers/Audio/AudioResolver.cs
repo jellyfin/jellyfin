@@ -201,6 +201,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     continue;
                 }
 
+                if (resolvedItem.Files.Count == 0)
+                {
+                    continue;
+                }
+
                 var firstMedia = resolvedItem.Files[0];
 
                 var libraryItem = new T

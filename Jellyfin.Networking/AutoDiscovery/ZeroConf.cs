@@ -140,12 +140,10 @@ namespace Jellyfin.Networking.AutoDiscovery
         {
             if (data.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
             {
-                var response = new ServerDiscoveryInfo
-                {
-                    Address = _appHost.GetSmartApiUrl(receivedFrom.Address),
-                    Id = _appHost.SystemId,
-                    Name = _appHost.FriendlyName
-                };
+                var response = new ServerDiscoveryInfo(
+                    _appHost.GetSmartApiUrl(receivedFrom.Address),
+                    _appHost.SystemId,
+                    _appHost.FriendlyName);
                 string reply = JsonSerializer.Serialize(response);
 
                 try

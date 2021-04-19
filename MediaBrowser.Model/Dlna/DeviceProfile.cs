@@ -1,5 +1,4 @@
 #nullable disable
-#pragma warning disable CA1819 // Properties should not return arrays
 using System;
 using System.Linq;
 using System.Net;

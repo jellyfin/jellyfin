@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
@@ -428,7 +427,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, string ipAddress)
+        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, IPAddress ipAddress)
         {
             // Within the local network this will likely do more harm than good.
             if (_networkManager.IsInLocalNetwork(ipAddress))
