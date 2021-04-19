@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoFixture" Version="4.15.0" />
+    <PackageReference Include="AutoFixture" Version="4.16.0" />
     <PackageReference Include="AutoFixture.AutoMoq" Version="4.15.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
     <PackageReference Include="Moq" Version="4.16.1" />
