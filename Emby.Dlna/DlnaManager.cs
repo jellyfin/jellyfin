@@ -106,19 +106,28 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(deviceInfo));
             }
 
-            var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(i.Identification, deviceInfo));
-
-            if (profile != null)
+            try
             {
-                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
+                var profile = GetProfiles()
+                    .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
+
+                if (profile != null)
+                {
+                    _logger.LogDebug("Found matching device profile: {0}", profile.Name);
+                }
+                else
+                {
+                    LogUnmatchedProfile(deviceInfo);
+                }
+
+                return profile;
             }
-            else
+            catch (ArgumentException ex)
             {
-                LogUnmatchedProfile(deviceInfo);
+                _logger.LogError(ex, "Error in profile comparison.");
             }
 
-            return profile;
+            return null;
         }
 
         private void LogUnmatchedProfile(DeviceIdentification profile)
@@ -138,85 +147,82 @@ namespace Emby.Dlna
             _logger.LogInformation(builder.ToString());
         }
 
-        private bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
+        /// <summary>
+        /// Attempts to match a device with a profile.
+        /// Rules:
+        /// - If the profile field has no value, the field matches irregardless of its contents.
+        /// - the profile field can be an exact match, or a reg exp.
+        /// </summary>
+        /// <param name="deviceInfo">The <see cref="DeviceIdentification"/> of the device.</param>
+        /// <param name="profileInfo">The <see cref="DeviceIdentification"/> of the profile.</param>
+        /// <returns><b>True</b> if they match.</returns>
+        public static bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
-            if (!string.IsNullOrEmpty(profileInfo.FriendlyName))
+            if (!IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
             {
-                if (deviceInfo.FriendlyName == null || !IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.Manufacturer))
+            if (!IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
             {
-                if (deviceInfo.Manufacturer == null || !IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ManufacturerUrl))
+            if (!IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
             {
-                if (deviceInfo.ManufacturerUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ModelDescription))
+            if (!IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
             {
-                if (deviceInfo.ModelDescription == null || !IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ModelName))
+            if (!IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName))
             {
-                if (deviceInfo.ModelName == null || !IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ModelNumber))
+            if (!IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
             {
-                if (deviceInfo.ModelNumber == null || !IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.ModelUrl))
+            if (!IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
             {
-                if (deviceInfo.ModelUrl == null || !IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
-                {
-                    return false;
-                }
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(profileInfo.SerialNumber))
+            if (!IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
             {
-                if (deviceInfo.SerialNumber == null || !IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
-                {
-                    return false;
-                }
+                return false;
             }
 
             return true;
         }
 
-        private bool IsRegexOrSubstringMatch(string input, string pattern)
+        public static bool IsRegexOrSubstringMatch(string input, string pattern)
         {
+            if (string.IsNullOrEmpty(pattern))
+            {
+                // In profile identification: An empty pattern matches anything.
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(input))
+            {
+                // The profile contains a value, and the device doesn't.
+                return false;
+            }
+
             try
             {
-                return input.Contains(pattern, StringComparison.OrdinalIgnoreCase) || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                return input.Equals(pattern, StringComparison.OrdinalIgnoreCase)
+                    || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             }
             catch (ArgumentException ex)
             {
-                _logger.LogError(ex, "Error evaluating regex pattern {Pattern}", pattern);
-                return false;
+                throw new ArgumentException("Error evaluating regex pattern " + pattern, ex);
             }
         }
 
