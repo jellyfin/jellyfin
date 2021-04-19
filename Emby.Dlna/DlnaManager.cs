@@ -107,7 +107,7 @@ namespace Emby.Dlna
             }
 
             var profile = GetProfiles()
-                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
+                .FirstOrDefault(i => i.Identification != null && IsMatch(i.Identification, deviceInfo));
 
             if (profile != null)
             {
