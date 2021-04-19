@@ -95,16 +95,17 @@ namespace MediaBrowser.Model.Notifications
         {
             NotificationOption opt = GetOptions(notificationType);
 
-            return opt == null ||
-                   !opt.DisabledServices.Contains(service, StringComparer.OrdinalIgnoreCase);
+            return opt == null
+                   || !opt.DisabledServices.Contains(service, StringComparer.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToMonitorUser(string type, Guid userId)
         {
             NotificationOption opt = GetOptions(type);
 
-            return opt != null && opt.Enabled &&
-                   !opt.DisabledMonitorUsers.Contains(userId.ToString(""), StringComparer.OrdinalIgnoreCase);
+            return opt != null
+                   && opt.Enabled
+                   && !opt.DisabledMonitorUsers.Contains(userId.ToString("N"), StringComparer.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToSendToUser(string type, string userId, User user)
