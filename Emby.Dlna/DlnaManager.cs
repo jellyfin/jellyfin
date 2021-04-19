@@ -158,47 +158,14 @@ namespace Emby.Dlna
         /// <returns><b>True</b> if they match.</returns>
         public static bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
-            if (!IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl))
-            {
-                return false;
-            }
-
-            if (!IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber))
-            {
-                return false;
-            }
-
-            return true;
+            return IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName)
+               && IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer)
+               && IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl)
+               && IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription)
+               && IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName)
+               && IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber)
+               && IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl)
+               && IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber);
         }
 
         public static bool IsRegexOrSubstringMatch(string input, string pattern)
