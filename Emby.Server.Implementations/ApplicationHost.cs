@@ -610,9 +610,8 @@ namespace Emby.Server.Implementations
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
             ServiceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
+            ServiceCollection.AddSingleton<EncodingHelper>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             ServiceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));

@@ -52,7 +52,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
         private readonly ILocalizationManager _localization;
-        private readonly Lazy<EncodingHelper> _encodingHelperFactory;
         private readonly string _startupOptionFFmpegPath;
 
         private readonly SemaphoreSlim _thumbnailResourcePool = new SemaphoreSlim(2, 2);
@@ -76,14 +75,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
             ILocalizationManager localization,
-            Lazy<EncodingHelper> encodingHelperFactory,
             IConfiguration config)
         {
             _logger = logger;
             _configurationManager = configurationManager;
             _fileSystem = fileSystem;
             _localization = localization;
-            _encodingHelperFactory = encodingHelperFactory;
             _startupOptionFFmpegPath = config.GetValue<string>(Controller.Extensions.ConfigurationExtensions.FfmpegPathKey) ?? string.Empty;
             _jsonSerializerOptions = JsonDefaults.Options;
         }
