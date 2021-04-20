@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         {
             if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(Convert.ToInt32(personTmdbId), cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
 
                 if (personResult != null)
                 {

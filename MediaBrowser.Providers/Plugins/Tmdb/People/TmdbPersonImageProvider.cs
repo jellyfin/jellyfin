@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var personResult = await _tmdbClientManager.GetPersonAsync(Convert.ToInt32(personTmdbId), cancellationToken).ConfigureAwait(false);
+            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
             if (personResult?.Images?.Profiles == null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
