@@ -113,7 +113,7 @@ namespace Emby.Dlna
 
                 if (profile != null)
                 {
-                    _logger.LogDebug("Found matching device profile: {0}", profile.Name);
+                    _logger.LogDebug("Found matching device profile: {ProfileName}", profile.Name);
                 }
                 else
                 {
