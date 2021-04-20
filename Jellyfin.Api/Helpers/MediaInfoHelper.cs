@@ -308,7 +308,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
                             && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                            && user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectStream = true;
                         }
