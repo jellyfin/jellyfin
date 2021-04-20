@@ -176,7 +176,7 @@ namespace Emby.Dlna
             try
             {
                 return input.Equals(pattern, StringComparison.OrdinalIgnoreCase)
-                || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                    || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             }
             catch (ArgumentException ex)
             {
