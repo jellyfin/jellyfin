@@ -251,7 +251,7 @@ namespace Emby.Server.Implementations.Library
                 var minIn = TimeSpan.FromTicks(positionTicks).TotalMinutes;
                 var minOut = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
 
-                if (minIn > _config.Configuration.MinAudiobookResume)
+                if (minIn < _config.Configuration.MinAudiobookResume)
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
