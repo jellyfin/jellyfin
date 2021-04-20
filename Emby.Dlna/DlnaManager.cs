@@ -156,7 +156,7 @@ namespace Emby.Dlna
         /// <param name="deviceInfo">The <see cref="DeviceIdentification"/> of the device.</param>
         /// <param name="profileInfo">The <see cref="DeviceIdentification"/> of the profile.</param>
         /// <returns><b>True</b> if they match.</returns>
-        public static bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
+        public bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
             return IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName)
                && IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer)
@@ -168,7 +168,7 @@ namespace Emby.Dlna
                && IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber);
         }
 
-        public static bool IsRegexOrSubstringMatch(string input, string pattern)
+        private bool IsRegexOrSubstringMatch(string input, string pattern)
         {
             if (string.IsNullOrEmpty(pattern))
             {
@@ -182,15 +182,8 @@ namespace Emby.Dlna
                 return false;
             }
 
-            try
-            {
-                return input.Equals(pattern, StringComparison.OrdinalIgnoreCase)
-                    || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ArgumentException("Error evaluating regex pattern " + pattern, ex);
-            }
+            return input.Equals(pattern, StringComparison.OrdinalIgnoreCase)
+                || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
 
         public DeviceProfile GetProfile(IHeaderDictionary headers)

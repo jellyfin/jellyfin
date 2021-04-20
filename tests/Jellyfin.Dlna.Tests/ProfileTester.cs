@@ -1,18 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.PlayTo;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Serialization;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Jellyfin.Dlna.Tests
 {
     public class ProfileTester
     {
+        private DlnaManager GetManager()
+        {
+            var xmlSerializer = new Mock<IXmlSerializer>();
+            var fileSystem = new Mock<IFileSystem>();
+            var appPaths = new Mock<IApplicationPaths>();
+            var loggerFactory = new Mock<ILoggerFactory>();
+            var appHost = new Mock<IServerApplicationHost>();
+
+            return new DlnaManager(xmlSerializer.Object, fileSystem.Object, appPaths.Object, loggerFactory.Object, appHost.Object);
+        }
+
         [Fact]
         public void Test_Profile_Matches()
         {
@@ -46,7 +57,7 @@ namespace Jellyfin.Dlna.Tests
                 }
             };
 
-            Assert.True(DlnaManager.IsMatch(device.ToDeviceIdentification(), profile.Identification));
+            Assert.True(GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification));
 
             var profile2 = new DeviceProfile()
             {
@@ -58,7 +69,7 @@ namespace Jellyfin.Dlna.Tests
                 }
             };
 
-            Assert.True(DlnaManager.IsMatch(device.ToDeviceIdentification(), profile2.Identification));
+            Assert.True(GetManager().IsMatch(device.ToDeviceIdentification(), profile2.Identification));
         }
 
         [Fact]
@@ -90,7 +101,7 @@ namespace Jellyfin.Dlna.Tests
                 }
             };
 
-            Assert.False(DlnaManager.IsMatch(device.ToDeviceIdentification(), profile.Identification));
+            Assert.False(GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification));
         }
     }
 }
