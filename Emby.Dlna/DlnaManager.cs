@@ -173,8 +173,16 @@ namespace Emby.Dlna
                 return false;
             }
 
-            return input.Equals(pattern, StringComparison.OrdinalIgnoreCase)
+            try
+            {
+                return input.Equals(pattern, StringComparison.OrdinalIgnoreCase)
                 || Regex.IsMatch(input, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error evaluating regex pattern {Pattern}", pattern);
+                return false;
+            }
         }
 
         public DeviceProfile GetProfile(IHeaderDictionary headers)
