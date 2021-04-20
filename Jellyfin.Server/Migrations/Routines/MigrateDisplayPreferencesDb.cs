@@ -126,13 +126,13 @@ namespace Jellyfin.Server.Migrations.Routines
                         ShowSidebar = dto.ShowSidebar,
                         ScrollDirection = dto.ScrollDirection,
                         ChromecastVersion = chromecastVersion,
-                        SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length)
+                        SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length) && !string.IsNullOrEmpty(length)
                             ? int.Parse(length, CultureInfo.InvariantCulture)
                             : 30000,
-                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length)
+                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length) && !string.IsNullOrEmpty(length)
                             ? int.Parse(length, CultureInfo.InvariantCulture)
                             : 10000,
-                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled)
+                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled) && !string.IsNullOrEmpty(enabled)
                             ? bool.Parse(enabled)
                             : true,
                         DashboardTheme = dto.CustomPrefs.TryGetValue("dashboardtheme", out var theme) ? theme : string.Empty,
