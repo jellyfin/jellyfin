@@ -106,28 +106,19 @@ namespace Emby.Dlna
                 throw new ArgumentNullException(nameof(deviceInfo));
             }
 
-            try
+            var profile = GetProfiles()
+                .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
+
+            if (profile != null)
             {
-                var profile = GetProfiles()
-                    .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
-
-                if (profile != null)
-                {
-                    _logger.LogDebug("Found matching device profile: {ProfileName}", profile.Name);
-                }
-                else
-                {
-                    LogUnmatchedProfile(deviceInfo);
-                }
-
-                return profile;
+                _logger.LogDebug("Found matching device profile: {ProfileName}", profile.Name);
             }
-            catch (ArgumentException ex)
+            else
             {
-                _logger.LogError(ex, "Error in profile comparison.");
+                LogUnmatchedProfile(deviceInfo);
             }
 
-            return null;
+            return profile;
         }
 
         private void LogUnmatchedProfile(DeviceIdentification profile)
