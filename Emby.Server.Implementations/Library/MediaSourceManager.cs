@@ -46,7 +46,7 @@ namespace Emby.Server.Implementations.Library
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         private IMediaSourceProvider[] _providers;
 
@@ -199,10 +199,15 @@ namespace Emby.Server.Implementations.Library
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
+                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    {
+                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding);
+                        source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
+                    }
                 }
             }
 
-            return SortMediaSources(list).Where(i => i.Type != MediaSourceType.Placeholder).ToList();
+            return SortMediaSources(list);
         }
 
         public MediaProtocol GetPathProtocol(string path)
@@ -436,7 +441,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
+        private static List<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
         {
             return sources.OrderBy(i =>
             {
@@ -451,8 +456,9 @@ namespace Emby.Server.Implementations.Library
             {
                 var stream = i.VideoStream;
 
-                return stream == null || stream.Width == null ? 0 : stream.Width.Value;
+                return stream?.Width ?? 0;
             })
+            .Where(i => i.Type != MediaSourceType.Placeholder)
             .ToList();
         }
 

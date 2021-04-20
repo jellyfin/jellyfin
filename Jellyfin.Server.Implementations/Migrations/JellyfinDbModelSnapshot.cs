@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("jellyfin")
-                .HasAnnotation("ProductVersion", "5.0.0");
+                .HasAnnotation("ProductVersion", "5.0.3");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -110,7 +110,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -448,8 +447,8 @@ namespace Jellyfin.Server.Implementations.Migrations
             modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
                 {
                     b.HasOne("Jellyfin.Data.Entities.User", null)
-                        .WithOne("DisplayPreferences")
-                        .HasForeignKey("Jellyfin.Data.Entities.DisplayPreferences", "UserId")
+                        .WithMany("DisplayPreferences")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -502,8 +501,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                 {
                     b.Navigation("AccessSchedules");
 
-                    b.Navigation("DisplayPreferences")
-                        .IsRequired();
+                    b.Navigation("DisplayPreferences");
 
                     b.Navigation("ItemDisplayPreferences");
 

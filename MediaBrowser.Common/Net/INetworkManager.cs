@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Net
@@ -229,5 +228,12 @@ namespace MediaBrowser.Common.Net
         /// <param name="filter">Optional filter for the list.</param>
         /// <returns>Returns a filtered list of LAN addresses.</returns>
         Collection<IPObject> GetFilteredLANSubnets(Collection<IPObject>? filter = null);
+
+        /// <summary>
+        /// Checks to see if <paramref name="remoteIp"/> has access.
+        /// </summary>
+        /// <param name="remoteIp">IP Address of client.</param>
+        /// <returns><b>True</b> if has access, otherwise <b>false</b>.</returns>
+        bool HasRemoteAccess(IPAddress remoteIp);
     }
 }

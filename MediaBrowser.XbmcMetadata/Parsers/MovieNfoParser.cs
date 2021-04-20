@@ -25,13 +25,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="DirectoryService"/> interface.</param>
         public MovieNfoParser(
             ILogger logger,
             IConfigurationManager config,
             IProviderManager providerManager,
             IUserManager userManager,
-            IUserDataManager userDataManager)
-            : base(logger, config, providerManager, userManager, userDataManager)
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
         }
 
@@ -47,12 +49,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
+                        // get ids from attributes
                         string? imdbId = reader.GetAttribute("IMDB");
                         string? tmdbId = reader.GetAttribute("TMDB");
 
-                        if (string.IsNullOrWhiteSpace(imdbId))
+                        // read id from content
+                        var contentId = reader.ReadElementContentAsString();
+                        if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
                         {
-                            imdbId = reader.ReadElementContentAsString();
+                            imdbId = contentId;
+                        }
+                        else if (string.IsNullOrEmpty(tmdbId))
+                        {
+                            tmdbId = contentId;
                         }
 
                         if (!string.IsNullOrWhiteSpace(imdbId))

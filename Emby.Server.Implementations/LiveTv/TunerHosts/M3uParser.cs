@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -131,6 +130,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (attributes.TryGetValue("tvg-logo", out string value))
             {
                 channel.ImageUrl = value;
+            }
+
+            if (attributes.TryGetValue("group-title", out string groupTitle))
+            {
+                channel.ChannelGroup = groupTitle;
             }
 
             channel.Name = GetChannelName(extInf, attributes);

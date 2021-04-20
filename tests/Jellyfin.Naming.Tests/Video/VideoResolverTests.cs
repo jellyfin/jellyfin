@@ -11,7 +11,7 @@ namespace Jellyfin.Naming.Tests.Video
     {
         private readonly VideoResolver _videoResolver = new VideoResolver(new NamingOptions());
 
-        public static IEnumerable<object[]> GetResolveFileTestData()
+        public static IEnumerable<object[]> ResolveFile_ValidFileNameTestData()
         {
             yield return new object[]
             {
@@ -156,7 +156,7 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Theory]
-        [MemberData(nameof(GetResolveFileTestData))]
+        [MemberData(nameof(ResolveFile_ValidFileNameTestData))]
         public void ResolveFile_ValidFileName_Success(VideoFileInfo expectedResult)
         {
             var result = _videoResolver.ResolveFile(expectedResult.Path);

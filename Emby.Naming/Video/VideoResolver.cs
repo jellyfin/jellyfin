@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
@@ -146,7 +147,7 @@ namespace Emby.Naming.Video
         /// <param name="name">Raw name.</param>
         /// <param name="newName">Clean name.</param>
         /// <returns>True if cleaning of name was successful.</returns>
-        public bool TryCleanString(string name, out ReadOnlySpan<char> newName)
+        public bool TryCleanString([NotNullWhen(true)] string? name, out ReadOnlySpan<char> newName)
         {
             return CleanStringParser.TryClean(name, _options.CleanStringRegexes, out newName);
         }

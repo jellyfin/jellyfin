@@ -22,7 +22,7 @@ namespace MediaBrowser.Common.Plugins
         public LocalPlugin(string path, bool isSupported, PluginManifest manifest)
         {
             Path = path;
-            DllFiles = new List<string>();
+            DllFiles = Array.Empty<string>();
             _supported = isSupported;
             Manifest = manifest;
         }
@@ -59,9 +59,9 @@ namespace MediaBrowser.Common.Plugins
         public string Path { get; }
 
         /// <summary>
-        /// Gets the list of dll files for this plugin.
+        /// Gets or sets the list of dll files for this plugin.
         /// </summary>
-        public List<string> DllFiles { get; }
+        public IReadOnlyList<string> DllFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the instance of this plugin.

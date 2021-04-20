@@ -13,8 +13,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using Book = MediaBrowser.Controller.Entities.Book;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
+using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Emby.Server.Implementations.Library
 {

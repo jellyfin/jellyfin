@@ -26,7 +26,7 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class CollectionFolder : Folder, ICollectionFolder
     {
-        private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         public static IXmlSerializer XmlSerializer { get; set; }
 
         public static IServerApplicationHost ApplicationHost { get; set; }

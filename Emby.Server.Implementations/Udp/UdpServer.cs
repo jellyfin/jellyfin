@@ -53,12 +53,7 @@ namespace Emby.Server.Implementations.Udp
 
             if (!string.IsNullOrEmpty(localUrl))
             {
-                var response = new ServerDiscoveryInfo
-                {
-                    Address = localUrl,
-                    Id = _appHost.SystemId,
-                    Name = _appHost.FriendlyName
-                };
+                var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
 
                 try
                 {
@@ -79,7 +74,7 @@ namespace Emby.Server.Implementations.Udp
         /// Starts the specified port.
         /// </summary>
         /// <param name="port">The port.</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
         public void Start(int port, CancellationToken cancellationToken)
         {
             _endpoint = new IPEndPoint(IPAddress.Any, port);
