@@ -18,21 +18,6 @@ namespace Emby.Server.Implementations.Net
         private readonly int _localPort;
         private bool _disposed = false;
 
-        public Socket Socket => _socket;
-
-        private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
-        {
-            SocketFlags = SocketFlags.None
-        };
-
-        private readonly SocketAsyncEventArgs _sendSocketAsyncEventArgs = new SocketAsyncEventArgs()
-        {
-            SocketFlags = SocketFlags.None
-        };
-
-        private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
-        private TaskCompletionSource<int> _currentSendTaskCompletionSource;
-
         public UdpSocket(Socket socket, int localPort, IPAddress ip)
         {
             if (socket == null)
@@ -45,8 +30,6 @@ namespace Emby.Server.Implementations.Net
             LocalIPAddress = ip;
 
             _socket.Bind(new IPEndPoint(ip, _localPort));
-
-            InitReceiveSocketAsyncEventArgs();
         }
 
         public UdpSocket(Socket socket, IPEndPoint endPoint)
@@ -58,185 +41,29 @@ namespace Emby.Server.Implementations.Net
 
             _socket = socket;
             _socket.Connect(endPoint);
-
-            InitReceiveSocketAsyncEventArgs();
         }
 
         public IPAddress LocalIPAddress { get; }
 
-        private void InitReceiveSocketAsyncEventArgs()
-        {
-            var receiveBuffer = new byte[8192];
-            _receiveSocketAsyncEventArgs.SetBuffer(receiveBuffer, 0, receiveBuffer.Length);
-            _receiveSocketAsyncEventArgs.Completed += OnReceiveSocketAsyncEventArgsCompleted;
-
-            var sendBuffer = new byte[8192];
-            _sendSocketAsyncEventArgs.SetBuffer(sendBuffer, 0, sendBuffer.Length);
-            _sendSocketAsyncEventArgs.Completed += OnSendSocketAsyncEventArgsCompleted;
-        }
-
-        private void OnReceiveSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
-        {
-            var tcs = _currentReceiveTaskCompletionSource;
-            if (tcs != null)
-            {
-                _currentReceiveTaskCompletionSource = null;
-
-                if (e.SocketError == SocketError.Success)
-                {
-                    tcs.TrySetResult(new SocketReceiveResult
-                    {
-                        Buffer = e.Buffer,
-                        ReceivedBytes = e.BytesTransferred,
-                        RemoteEndPoint = e.RemoteEndPoint as IPEndPoint,
-                        LocalIPAddress = LocalIPAddress
-                    });
-                }
-                else
-                {
-                    tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
-                }
-            }
-        }
-
-        private void OnSendSocketAsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e)
-        {
-            var tcs = _currentSendTaskCompletionSource;
-            if (tcs != null)
-            {
-                _currentSendTaskCompletionSource = null;
-
-                if (e.SocketError == SocketError.Success)
-                {
-                    tcs.TrySetResult(e.BytesTransferred);
-                }
-                else
-                {
-                    tcs.TrySetException(new Exception("SocketError: " + e.SocketError));
-                }
-            }
-        }
-
-        public IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback)
+        public async Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            EndPoint receivedFromEndPoint = new IPEndPoint(IPAddress.Any, 0);
-
-            return _socket.BeginReceiveFrom(buffer, offset, count, SocketFlags.None, ref receivedFromEndPoint, callback, buffer);
-        }
-
-        public int Receive(byte[] buffer, int offset, int count)
-        {
-            ThrowIfDisposed();
-
-            return _socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
-        }
-
-        public SocketReceiveResult EndReceive(IAsyncResult result)
-        {
-            ThrowIfDisposed();
-
-            var sender = new IPEndPoint(IPAddress.Any, 0);
-            var remoteEndPoint = (EndPoint)sender;
-
-            var receivedBytes = _socket.EndReceiveFrom(result, ref remoteEndPoint);
-
-            var buffer = (byte[])result.AsyncState;
-
-            return new SocketReceiveResult
+            SocketReceiveFromResult r = await _socket.ReceiveFromAsync(new ArraySegment<byte>(buffer, offset, count), SocketFlags.None, new IPEndPoint(IPAddress.Any, 0)).ConfigureAwait(false);
+            return new SocketReceiveResult()
             {
-                ReceivedBytes = receivedBytes,
-                RemoteEndPoint = (IPEndPoint)remoteEndPoint,
+                ReceivedBytes = r.ReceivedBytes,
+                RemoteEndPoint = (IPEndPoint)r.RemoteEndPoint,
                 Buffer = buffer,
                 LocalIPAddress = LocalIPAddress
             };
         }
 
-        public Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public Task SendToAsync(byte[] buffer, int offset, int count, IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
-            var taskCompletion = new TaskCompletionSource<SocketReceiveResult>();
-            bool isResultSet = false;
-
-            Action<IAsyncResult> callback = callbackResult =>
-            {
-                try
-                {
-                    if (!isResultSet)
-                    {
-                        isResultSet = true;
-                        taskCompletion.TrySetResult(EndReceive(callbackResult));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    taskCompletion.TrySetException(ex);
-                }
-            };
-
-            var result = BeginReceive(buffer, offset, count, new AsyncCallback(callback));
-
-            if (result.CompletedSynchronously)
-            {
-                callback(result);
-                return taskCompletion.Task;
-            }
-
-            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
-
-            return taskCompletion.Task;
-        }
-
-        public Task SendToAsync(byte[] buffer, int offset, int size, IPEndPoint endPoint, CancellationToken cancellationToken)
-        {
-            ThrowIfDisposed();
-
-            var taskCompletion = new TaskCompletionSource<int>();
-            bool isResultSet = false;
-
-            Action<IAsyncResult> callback = callbackResult =>
-            {
-                try
-                {
-                    if (!isResultSet)
-                    {
-                        isResultSet = true;
-                        taskCompletion.TrySetResult(EndSendTo(callbackResult));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    taskCompletion.TrySetException(ex);
-                }
-            };
-
-            var result = BeginSendTo(buffer, offset, size, endPoint, new AsyncCallback(callback), null);
-
-            if (result.CompletedSynchronously)
-            {
-                callback(result);
-                return taskCompletion.Task;
-            }
-
-            cancellationToken.Register(() => taskCompletion.TrySetCanceled());
-
-            return taskCompletion.Task;
-        }
-
-        public IAsyncResult BeginSendTo(byte[] buffer, int offset, int size, IPEndPoint endPoint, AsyncCallback callback, object state)
-        {
-            ThrowIfDisposed();
-
-            return _socket.BeginSendTo(buffer, offset, size, SocketFlags.None, endPoint, callback, state);
-        }
-
-        public int EndSendTo(IAsyncResult result)
-        {
-            ThrowIfDisposed();
-
-            return _socket.EndSendTo(result);
+            return _socket.SendToAsync(new ArraySegment<byte>(buffer, offset, count), SocketFlags.None, endPoint);
         }
 
         private void ThrowIfDisposed()
@@ -256,14 +83,8 @@ namespace Emby.Server.Implementations.Net
             }
 
             _socket?.Dispose();
-            _receiveSocketAsyncEventArgs.Dispose();
-            _sendSocketAsyncEventArgs.Dispose();
-            _currentReceiveTaskCompletionSource?.TrySetCanceled();
-            _currentSendTaskCompletionSource?.TrySetCanceled();
 
             _socket = null;
-            _currentReceiveTaskCompletionSource = null;
-            _currentSendTaskCompletionSource = null;
 
             _disposed = true;
         }
