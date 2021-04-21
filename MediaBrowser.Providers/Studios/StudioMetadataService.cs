@@ -17,7 +17,8 @@ namespace MediaBrowser.Providers.Studios
             IServerConfigurationManager serverConfigurationManager,
             ILogger<StudioMetadataService> logger,
             IProviderManager providerManager,
-            IFileSystem fileSystem, ILibraryManager libraryManager)
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
         }

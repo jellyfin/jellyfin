@@ -1,6 +1,9 @@
 #pragma warning disable CS1591
 
+using System.Threading;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -18,9 +21,26 @@ namespace MediaBrowser.Providers.Movies
             ILogger<MovieMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
+            UserManager = userManager;
+            UserDataManager = userDataManager;
+        }
+
+        protected IUserManager UserManager { get; }
+
+        protected IUserDataManager UserDataManager { get; }
+
+        /// <inheritdoc />
+        protected override void ImportUserData(Movie item, List<UserItemData> userDataList, CancellationToken cancellationToken)
+        {
+            foreach (var userData in userDataList) {
+                var user = UserManager.GetUserById(userData.UserId);
+                UserDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, cancellationToken);
+            }
         }
 
         /// <inheritdoc />
