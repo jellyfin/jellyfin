@@ -271,7 +271,6 @@ namespace MediaBrowser.Controller.Entities
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
-                Path = path,
                 Parent = GetParent() as Folder,
                 CollectionType = CollectionType
             };
