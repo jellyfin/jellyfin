@@ -1021,26 +1021,26 @@ namespace MediaBrowser.Providers.Manager
             // TODO: Need to hunt down the conditions for this happening
             _activeRefreshes.AddOrUpdate(
                 id,
-                (_) => throw new Exception(
+                (_) => throw new InvalidOperationException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
                         item.GetType().Name,
                         item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, __) => progress);
+                (_, _) => progress);
 
             RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
 
         /// <inheritdoc/>
-        public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
+        public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
             if (_disposed)
             {
                 return;
             }
 
-            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options), (int)priority);
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(itemId, options), (int)priority);
 
             lock (_refreshQueueLock)
             {
