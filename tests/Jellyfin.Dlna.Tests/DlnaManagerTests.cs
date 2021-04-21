@@ -57,8 +57,6 @@ namespace Jellyfin.Dlna.Tests
                 }
             };
 
-            Assert.True(GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification));
-
             var profile2 = new DeviceProfile()
             {
                 Name = "Test Profile",
@@ -70,7 +68,10 @@ namespace Jellyfin.Dlna.Tests
             };
 
             var deviceMatch = GetManager().IsMatch(device.ToDeviceIdentification(), profile2.Identification);
+            var deviceMatch2 = GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification);
+
             Assert.True(deviceMatch);
+            Assert.True(deviceMatch2);
         }
 
         [Fact]
