@@ -25,7 +25,7 @@ namespace Jellyfin.Dlna.Tests
         }
 
         [Fact]
-        public void Test_Profile_Matches()
+        public void IsMatch_GivenMatchingName_ReturnsTrue()
         {
             var device = new DeviceInfo()
             {
