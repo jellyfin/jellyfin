@@ -21,7 +21,12 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<MetadataService<TItemType, TIdType>> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -784,9 +789,13 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            // ImportUserData(item, userDataList, cancellationToken);
+            ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
+        }
+
+        protected virtual void ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
+        {
         }
 
         protected virtual bool IsFullLocalMetadata(TItemType item)

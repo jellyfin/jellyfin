@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
@@ -395,6 +396,23 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 Logger.LogWarning("Invalid lastplayed value found: {Value}", val);
                             }
+                        }
+
+                        break;
+                    }
+
+                case "resume":
+                    {
+                        if (!reader.IsEmptyElement)
+                        {
+                            using (var subtree = reader.ReadSubtree())
+                            {
+                                FetchFromResumeNode(subtree, itemResult, userData);
+                            }
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
 
                         break;
@@ -873,6 +891,48 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         default:
                             reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
+        private void FetchFromResumeNode(XmlReader reader, MetadataResult<T> itemResult, UserItemData? userData)
+        {
+            var item = itemResult.Item;
+
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "position":
+                            {
+                                var val = reader.ReadElementContentAsString();
+                                if (!string.IsNullOrWhiteSpace(val))
+                                {
+                                    double value;
+                                    if (Double.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out value)
+                                            && userData != null)
+                                    {
+                                        userData.PlaybackPositionTicks = TimeSpan.FromSeconds(value).Ticks;
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            reader.Read();
                             break;
                     }
                 }
