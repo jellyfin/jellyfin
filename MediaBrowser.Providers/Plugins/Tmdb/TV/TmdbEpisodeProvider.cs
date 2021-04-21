@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 item.SetProviderId(MetadataProvider.Tvdb, externalIds.TvdbId);
             }
 
-            if (!string.IsNullOrWhiteSpace(externalIds?.ImdbId))
+            if (!string.IsNullOrEmpty(externalIds?.ImdbId))
             {
                 item.SetProviderId(MetadataProvider.Imdb, externalIds.ImdbId);
             }
