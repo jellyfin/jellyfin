@@ -53,12 +53,7 @@ namespace Emby.Server.Implementations.Udp
 
             if (!string.IsNullOrEmpty(localUrl))
             {
-                var response = new ServerDiscoveryInfo
-                {
-                    Address = localUrl,
-                    Id = _appHost.SystemId,
-                    Name = _appHost.FriendlyName
-                };
+                var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
 
                 try
                 {
