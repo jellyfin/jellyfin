@@ -73,7 +73,7 @@ namespace Jellyfin.Dlna.Tests
         }
 
         [Fact]
-        public void Test_Profile_NoMatch()
+        public void IsMatch_GivenNamesAndManufacturersDoNotMatch_ReturnsFalse()
         {
             var device = new DeviceInfo()
             {
