@@ -52,6 +52,11 @@
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.0.4" />
   </ItemGroup>
 
+  <!-- Required for handling symbolic links on Linux -->
+  <ItemGroup>
+    <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Emby.Drawing\Emby.Drawing.csproj" />
     <ProjectReference Include="..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />

@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
@@ -52,6 +53,14 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                services.AddSingleton<
+                    Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.PhysicalFileResult>,
+                    UnixPhysicalFileResultExecutor>();
+            }
+
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
 
             services.AddJellyfinApiSwagger();
