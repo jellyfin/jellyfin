@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
             if (episodeResult == null)
@@ -121,9 +121,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
             };
 
-            if (!string.IsNullOrEmpty(episodeResult.ExternalIds?.TvdbId))
+            var externalIds = episodeResult.ExternalIds;
+            if (!string.IsNullOrEmpty(externalIds?.TvdbId))
             {
-                item.SetProviderId(MetadataProvider.Tvdb, episodeResult.ExternalIds.TvdbId);
+                item.SetProviderId(MetadataProvider.Tvdb, externalIds.TvdbId);
+            }
+
+            if (!string.IsNullOrEmpty(externalIds?.ImdbId))
+            {
+                item.SetProviderId(MetadataProvider.Imdb, externalIds.ImdbId);
+            }
+
+            if (!string.IsNullOrEmpty(externalIds?.TvrageId))
+            {
+                item.SetProviderId(MetadataProvider.TvRage, externalIds.TvrageId);
             }
 
             if (episodeResult.Videos?.Results != null)

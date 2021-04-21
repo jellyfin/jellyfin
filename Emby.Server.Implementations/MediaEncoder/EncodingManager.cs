@@ -16,7 +16,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.MediaEncoder
