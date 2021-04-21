@@ -223,13 +223,13 @@ namespace MediaBrowser.Providers.Manager
                 var baseItem = result.Item;
 
                 LibraryManager.UpdatePeople(baseItem, result.People);
-                await SavePeopleMetadataAsync(result.People, libraryOptions, cancellationToken).ConfigureAwait(false);
+                await SavePeopleMetadataAsync(result.People, cancellationToken).ConfigureAwait(false);
             }
 
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task SavePeopleMetadataAsync(List<PersonInfo> people, LibraryOptions libraryOptions, CancellationToken cancellationToken)
+        private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
         {
             var personsToSave = new List<BaseItem>();
 
@@ -237,39 +237,44 @@ namespace MediaBrowser.Providers.Manager
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (person.ProviderIds.Count > 0 || !string.IsNullOrWhiteSpace(person.ImageUrl))
+                var itemUpdateType = ItemUpdateType.MetadataDownload;
+                var saveEntity = false;
+                var personEntity = LibraryManager.GetPerson(person.Name);
+
+                // if PresentationUniqueKey is empty it's likely a new item.
+                if (string.IsNullOrEmpty(personEntity.PresentationUniqueKey))
                 {
-                    var itemUpdateType = ItemUpdateType.MetadataDownload;
-                    var saveEntity = false;
-                    var personEntity = LibraryManager.GetPerson(person.Name);
-                    foreach (var id in person.ProviderIds)
-                    {
-                        if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            personEntity.SetProviderId(id.Key, id.Value);
-                            saveEntity = true;
-                        }
-                    }
+                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                    saveEntity = true;
+                }
 
-                    if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                foreach (var id in person.ProviderIds)
+                {
+                    if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
                     {
-                        personEntity.SetImage(
-                            new ItemImageInfo
-                            {
-                                Path = person.ImageUrl,
-                                Type = ImageType.Primary
-                            },
-                            0);
-
+                        personEntity.SetProviderId(id.Key, id.Value);
                         saveEntity = true;
-                        itemUpdateType = ItemUpdateType.ImageUpdate;
                     }
+                }
 
-                    if (saveEntity)
-                    {
-                        personsToSave.Add(personEntity);
-                        await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
-                    }
+                if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                {
+                    personEntity.SetImage(
+                        new ItemImageInfo
+                        {
+                            Path = person.ImageUrl,
+                            Type = ImageType.Primary
+                        },
+                        0);
+
+                    saveEntity = true;
+                    itemUpdateType = ItemUpdateType.ImageUpdate;
+                }
+
+                if (saveEntity)
+                {
+                    personsToSave.Add(personEntity);
+                    await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
                 }
             }
 

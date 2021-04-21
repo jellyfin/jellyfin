@@ -2,8 +2,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Text.RegularExpressions;
 using MediaBrowser.Common.Providers;
 
 namespace Emby.Server.Implementations.Library
