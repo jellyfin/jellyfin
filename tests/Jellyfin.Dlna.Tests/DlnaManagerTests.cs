@@ -46,7 +46,7 @@ namespace Jellyfin.Dlna.Tests
                 ModelDescription = "LG WebOSTV DMRplus",
                 ModelName = "LG TV",
                 ModelNumber = "1.0",
-                Identification = new DeviceIdentification()
+                Identification = new ()
                 {
                     FriendlyName = "My Device",
                     Manufacturer = "LG Electronics",
@@ -69,7 +69,8 @@ namespace Jellyfin.Dlna.Tests
                 }
             };
 
-            Assert.True(GetManager().IsMatch(device.ToDeviceIdentification(), profile2.Identification));
+            var deviceMatch = GetManager().IsMatch(device.ToDeviceIdentification(), profile2.Identification);
+            Assert.True(deviceMatch);
         }
 
         [Fact]
@@ -90,7 +91,7 @@ namespace Jellyfin.Dlna.Tests
                 ModelDescription = "LG WebOSTV DMRplus",
                 ModelName = "LG TV",
                 ModelNumber = "1.0",
-                Identification = new DeviceIdentification()
+                Identification = new ()
                 {
                     FriendlyName = "My Device",
                     Manufacturer = "LG Electronics",
@@ -101,7 +102,29 @@ namespace Jellyfin.Dlna.Tests
                 }
             };
 
-            Assert.False(GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification));
+            var deviceMatch = GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification);
+
+            Assert.False(deviceMatch);
+        }
+
+        [Fact]
+        public void IsMatch_GivenNamesAndRegExMatch_ReturnsTrue()
+        {
+            var device = new DeviceInfo()
+            {
+                Name = "My Device"
+            };
+
+            var profile = new DeviceProfile()
+            {
+                Name = "Test Profile",
+                FriendlyName = "My .*",
+                Identification = new ()
+            };
+
+            var deviceMatch = GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification);
+
+            Assert.True(deviceMatch);
         }
     }
 }

@@ -150,13 +150,13 @@ namespace Emby.Dlna
         public bool IsMatch(DeviceIdentification deviceInfo, DeviceIdentification profileInfo)
         {
             return IsRegexOrSubstringMatch(deviceInfo.FriendlyName, profileInfo.FriendlyName)
-               && IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer)
-               && IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl)
-               && IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription)
-               && IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName)
-               && IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber)
-               && IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl)
-               && IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber);
+                && IsRegexOrSubstringMatch(deviceInfo.Manufacturer, profileInfo.Manufacturer)
+                && IsRegexOrSubstringMatch(deviceInfo.ManufacturerUrl, profileInfo.ManufacturerUrl)
+                && IsRegexOrSubstringMatch(deviceInfo.ModelDescription, profileInfo.ModelDescription)
+                && IsRegexOrSubstringMatch(deviceInfo.ModelName, profileInfo.ModelName)
+                && IsRegexOrSubstringMatch(deviceInfo.ModelNumber, profileInfo.ModelNumber)
+                && IsRegexOrSubstringMatch(deviceInfo.ModelUrl, profileInfo.ModelUrl)
+                && IsRegexOrSubstringMatch(deviceInfo.SerialNumber, profileInfo.SerialNumber);
         }
 
         private bool IsRegexOrSubstringMatch(string input, string pattern)
