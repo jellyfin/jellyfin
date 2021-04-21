@@ -37,7 +37,6 @@ namespace MediaBrowser.Providers.Movies
         /// <inheritdoc />
         protected override void ImportUserData(Movie item, List<UserItemData> userDataList, CancellationToken cancellationToken)
         {
-            var logName = !item.IsFileProtocol ? item.Name ?? item.Path : item.Path ?? item.Name;
             foreach (var userData in userDataList) {
                 var user = UserManager.GetUserById(userData.UserId);
                 UserDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, cancellationToken);

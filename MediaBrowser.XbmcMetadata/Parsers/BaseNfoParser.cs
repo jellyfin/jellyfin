@@ -259,8 +259,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             UserItemData? userData = null;
             if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
             {
-                var user = _userManager.GetUserById(Guid.Parse(nfoConfiguration.UserId));
-                userData = _userDataManager.GetUserData(user, item);
+                userData = itemResult.GetOrAddUserData(nfoConfiguration.UserId);
             }
 
             switch (reader.Name)
