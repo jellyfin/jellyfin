@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Jellyfin.Dlna.Tests
 {
-    public class ProfileTester
+    public class DlnaManagerTests
     {
         private DlnaManager GetManager()
         {
