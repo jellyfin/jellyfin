@@ -62,8 +62,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         public TranscodingJobHelper(
             ILogger<TranscodingJobHelper> logger,
@@ -73,8 +72,7 @@ namespace Jellyfin.Api.Helpers
             IServerConfigurationManager serverConfigurationManager,
             ISessionManager sessionManager,
             IAuthorizationContext authorizationContext,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
+            EncodingHelper encodingHelper,
             ILoggerFactory loggerFactory)
         {
             _logger = logger;
@@ -84,8 +82,8 @@ namespace Jellyfin.Api.Helpers
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
             _authorizationContext = authorizationContext;
+            _encodingHelper = encodingHelper;
             _loggerFactory = loggerFactory;
-            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
 
             DeleteEncodedMediaCache();
 

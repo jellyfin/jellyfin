@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;

@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Jellyfin.Server.Migrations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
