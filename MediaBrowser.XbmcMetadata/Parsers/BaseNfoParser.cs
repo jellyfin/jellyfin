@@ -16,8 +16,8 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using Microsoft.Extensions.Logging;
@@ -257,24 +257,27 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-
         protected virtual XbmcMetadataOptions RetrieveNfoConfiguration()
         {
-            if (_nfoConfiguration == null) {
+            if (_nfoConfiguration == null)
+            {
                 _nfoConfiguration = _config.GetNfoConfiguration();
             }
+
             return _nfoConfiguration;
         }
 
         protected virtual UserItemData? RetrieveUserData(MetadataResult<T> itemResult)
         {
-            if (_userData == null) {
+            if (_userData == null)
+            {
                 var nfoConfiguration = RetrieveNfoConfiguration();
                 if (!string.IsNullOrWhiteSpace(nfoConfiguration.UserId))
                 {
                     _userData = itemResult.GetOrAddUserData(new Guid(nfoConfiguration.UserId));
                 }
             }
+
             return _userData;
         }
 
@@ -385,6 +388,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             break;
                         }
+
                         userData.Played = val;
                         break;
                     }

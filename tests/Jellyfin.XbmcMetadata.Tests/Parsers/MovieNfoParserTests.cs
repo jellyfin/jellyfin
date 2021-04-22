@@ -34,7 +34,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         private readonly User _testUser;
         private readonly FileSystemMetadata _localImageFileMetadata;
         private readonly MovieMetadataService _metadataService;
-        static UserItemData _testUserItemData = new UserItemData();
+        private UserItemData _testUserItemData = new UserItemData();
 
         public MovieNfoParserTests()
         {
@@ -111,7 +111,8 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         {
             var result = new MetadataResult<Video>()
             {
-                Item = new Movie() {
+                Item = new Movie()
+                {
                     Id = Guid.NewGuid()
                 }
             };
