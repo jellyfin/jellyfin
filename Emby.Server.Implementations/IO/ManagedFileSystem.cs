@@ -302,28 +302,27 @@ namespace Emby.Server.Implementations.IO
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
         public string GetValidFilename(string filename)
         {
+            var invalid = Path.GetInvalidFileNameChars();
+            var first = filename.IndexOfAny(invalid);
+            if (first == -1)
+            {
+                // Fast path for clean strings
+                return filename;
+            }
+
             return string.Create(
                 filename.Length,
-                filename,
+                (filename, invalid, first),
                 (chars, state) =>
                 {
-                    state.AsSpan().CopyTo(chars);
+                    state.filename.AsSpan().CopyTo(chars);
 
-                    var invalid = Path.GetInvalidFileNameChars();
-
-                    var first = state.AsSpan().IndexOfAny(invalid);
-                    if (first == -1)
-                    {
-                        // Fast path for clean strings
-                        return;
-                    }
-
-                    chars[first++] = ' ';
+                    chars[state.first++] = ' ';
 
                     var len = chars.Length;
-                    foreach (var c in invalid)
+                    foreach (var c in state.invalid)
                     {
-                        for (int i = first; i < len; i++)
+                        for (int i = state.first; i < len; i++)
                         {
                             if (chars[i] == c)
                             {
