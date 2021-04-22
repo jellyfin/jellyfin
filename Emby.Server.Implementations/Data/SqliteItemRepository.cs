@@ -2116,9 +2116,7 @@ namespace Emby.Server.Implementations.Data
                     || query.IsLiked.HasValue;
         }
 
-        private readonly ItemFields[] _allFields = Enum.GetNames(typeof(ItemFields))
-            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-            .ToArray();
+        private readonly ItemFields[] _allFields = Enum.GetValues<ItemFields>();
 
         private string[] GetColumnNamesFromField(ItemFields field)
         {
@@ -2721,87 +2719,22 @@ namespace Emby.Server.Implementations.Data
 
         private string FixUnicodeChars(string buffer)
         {
-            if (buffer.IndexOf('\u2013', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2013', '-'); // en dash
-            }
-
-            if (buffer.IndexOf('\u2014', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2014', '-'); // em dash
-            }
-
-            if (buffer.IndexOf('\u2015', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2015', '-'); // horizontal bar
-            }
-
-            if (buffer.IndexOf('\u2017', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2017', '_'); // double low line
-            }
-
-            if (buffer.IndexOf('\u2018', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2018', '\''); // left single quotation mark
-            }
-
-            if (buffer.IndexOf('\u2019', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2019', '\''); // right single quotation mark
-            }
-
-            if (buffer.IndexOf('\u201a', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u201a', ','); // single low-9 quotation mark
-            }
-
-            if (buffer.IndexOf('\u201b', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u201b', '\''); // single high-reversed-9 quotation mark
-            }
-
-            if (buffer.IndexOf('\u201c', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u201c', '\"'); // left double quotation mark
-            }
-
-            if (buffer.IndexOf('\u201d', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u201d', '\"'); // right double quotation mark
-            }
-
-            if (buffer.IndexOf('\u201e', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u201e', '\"'); // double low-9 quotation mark
-            }
-
-            if (buffer.IndexOf('\u2026', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace("\u2026", "...", StringComparison.Ordinal); // horizontal ellipsis
-            }
-
-            if (buffer.IndexOf('\u2032', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2032', '\''); // prime
-            }
-
-            if (buffer.IndexOf('\u2033', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u2033', '\"'); // double prime
-            }
-
-            if (buffer.IndexOf('\u0060', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u0060', '\''); // grave accent
-            }
-
-            if (buffer.IndexOf('\u00B4', StringComparison.Ordinal) > -1)
-            {
-                buffer = buffer.Replace('\u00B4', '\''); // acute accent
-            }
-
-            return buffer;
+            buffer = buffer.Replace('\u2013', '-'); // en dash
+            buffer = buffer.Replace('\u2014', '-'); // em dash
+            buffer = buffer.Replace('\u2015', '-'); // horizontal bar
+            buffer = buffer.Replace('\u2017', '_'); // double low line
+            buffer = buffer.Replace('\u2018', '\''); // left single quotation mark
+            buffer = buffer.Replace('\u2019', '\''); // right single quotation mark
+            buffer = buffer.Replace('\u201a', ','); // single low-9 quotation mark
+            buffer = buffer.Replace('\u201b', '\''); // single high-reversed-9 quotation mark
+            buffer = buffer.Replace('\u201c', '\"'); // left double quotation mark
+            buffer = buffer.Replace('\u201d', '\"'); // right double quotation mark
+            buffer = buffer.Replace('\u201e', '\"'); // double low-9 quotation mark
+            buffer = buffer.Replace("\u2026", "...", StringComparison.Ordinal); // horizontal ellipsis
+            buffer = buffer.Replace('\u2032', '\''); // prime
+            buffer = buffer.Replace('\u2033', '\"'); // double prime
+            buffer = buffer.Replace('\u0060', '\''); // grave accent
+            return buffer.Replace('\u00B4', '\''); // acute accent
         }
 
         private void AddItem(List<BaseItem> items, BaseItem newItem)
@@ -3584,11 +3517,11 @@ namespace Emby.Server.Implementations.Data
                 statement?.TryBind("@IsFolder", query.IsFolder);
             }
 
-            var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
+            var includeTypes = query.IncludeItemTypes.Select(MapIncludeItemTypes).Where(x => x != null).ToArray();
             // Only specify excluded types if no included types are specified
             if (includeTypes.Length == 0)
             {
-                var excludeTypes = query.ExcludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
+                var excludeTypes = query.ExcludeItemTypes.Select(MapIncludeItemTypes).Where(x => x != null).ToArray();
                 if (excludeTypes.Length == 1)
                 {
                     whereClauses.Add("type<>@type");
@@ -4532,7 +4465,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(GetProviderIdClause(query.HasTvdbId.Value, "tvdb"));
             }
 
-            var includedItemByNameTypes = GetItemByNameTypesInQuery(query).SelectMany(MapIncludeItemTypes).ToList();
+            var includedItemByNameTypes = GetItemByNameTypesInQuery(query);
             var enableItemsByName = (query.IncludeItemsByName ?? false) && includedItemByNameTypes.Count > 0;
 
             var queryTopParentIds = query.TopParentIds;
@@ -4790,27 +4723,27 @@ namespace Emby.Server.Implementations.Data
 
             if (IsTypeInQuery(nameof(Person), query))
             {
-                list.Add(nameof(Person));
+                list.Add(typeof(Person).FullName);
             }
 
             if (IsTypeInQuery(nameof(Genre), query))
             {
-                list.Add(nameof(Genre));
+                list.Add(typeof(Genre).FullName);
             }
 
             if (IsTypeInQuery(nameof(MusicGenre), query))
             {
-                list.Add(nameof(MusicGenre));
+                list.Add(typeof(MusicGenre).FullName);
             }
 
             if (IsTypeInQuery(nameof(MusicArtist), query))
             {
-                list.Add(nameof(MusicArtist));
+                list.Add(typeof(MusicArtist).FullName);
             }
 
             if (IsTypeInQuery(nameof(Studio), query))
             {
-                list.Add(nameof(Studio));
+                list.Add(typeof(Studio).FullName);
             }
 
             return list;
@@ -4915,15 +4848,10 @@ namespace Emby.Server.Implementations.Data
             typeof(AggregateFolder)
         };
 
-        public void UpdateInheritedValues(CancellationToken cancellationToken)
-        {
-            UpdateInheritedTags(cancellationToken);
-        }
-
-        private void UpdateInheritedTags(CancellationToken cancellationToken)
+        public void UpdateInheritedValues()
         {
             string sql = string.Join(
-                ";",
+                ';',
                 new string[]
                 {
                     "delete from itemvalues where type = 6",
@@ -4946,37 +4874,38 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
             }
         }
 
-        private static Dictionary<string, string[]> GetTypeMapDictionary()
+        private static Dictionary<string, string> GetTypeMapDictionary()
         {
-            var dict = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var t in _knownTypes)
             {
-                dict[t.Name] = new[] { t.FullName };
+                dict[t.Name] = t.FullName ;
             }
 
-            dict["Program"] = new[] { typeof(LiveTvProgram).FullName };
-            dict["TvChannel"] = new[] { typeof(LiveTvChannel).FullName };
+            dict["Program"] = typeof(LiveTvProgram).FullName;
+            dict["TvChannel"] = typeof(LiveTvChannel).FullName;
 
             return dict;
         }
 
         // Not crazy about having this all the way down here, but at least it's in one place
-        private readonly Dictionary<string, string[]> _types = GetTypeMapDictionary();
+        private readonly Dictionary<string, string> _types = GetTypeMapDictionary();
 
-        private string[] MapIncludeItemTypes(string value)
+        private string MapIncludeItemTypes(string value)
         {
-            if (_types.TryGetValue(value, out string[] result))
+            if (_types.TryGetValue(value, out string result))
             {
                 return result;
             }
 
             if (IsValidType(value))
             {
-                return new[] { value };
+                return value;
             }
 
-            return Array.Empty<string>();
+            Logger.LogWarning("Unknown item type: {ItemType}", value);
+            return null;
         }
 
         public void DeleteItem(Guid id)
@@ -5279,30 +5208,45 @@ AND Type = @InternalPersonType)");
 
         public List<string> GetStudioNames()
         {
-            return GetItemValueNames(new[] { 3 }, new List<string>(), new List<string>());
+            return GetItemValueNames(new[] { 3 }, Array.Empty<string>(), Array.Empty<string>());
         }
 
         public List<string> GetAllArtistNames()
         {
-            return GetItemValueNames(new[] { 0, 1 }, new List<string>(), new List<string>());
+            return GetItemValueNames(new[] { 0, 1 }, Array.Empty<string>(), Array.Empty<string>());
         }
 
         public List<string> GetMusicGenreNames()
         {
-            return GetItemValueNames(new[] { 2 }, new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist" }, new List<string>());
+            return GetItemValueNames(
+                new[] { 2 },
+                new string[]
+                {
+                    typeof(Audio).FullName,
+                    typeof(MusicVideo).FullName,
+                    typeof(MusicAlbum).FullName,
+                    typeof(MusicArtist).FullName
+                },
+                Array.Empty<string>());
         }
 
         public List<string> GetGenreNames()
         {
-            return GetItemValueNames(new[] { 2 }, new List<string>(), new List<string> { "Audio", "MusicVideo", "MusicAlbum", "MusicArtist" });
+            return GetItemValueNames(
+                new[] { 2 },
+                Array.Empty<string>(),
+                new string[]
+                {
+                    typeof(Audio).FullName,
+                    typeof(MusicVideo).FullName,
+                    typeof(MusicAlbum).FullName,
+                    typeof(MusicArtist).FullName
+                });
         }
 
-        private List<string> GetItemValueNames(int[] itemValueTypes, List<string> withItemTypes, List<string> excludeItemTypes)
+        private List<string> GetItemValueNames(int[] itemValueTypes, IReadOnlyList<string> withItemTypes, IReadOnlyList<string> excludeItemTypes)
         {
             CheckDisposed();
-
-            withItemTypes = withItemTypes.SelectMany(MapIncludeItemTypes).ToList();
-            excludeItemTypes = excludeItemTypes.SelectMany(MapIncludeItemTypes).ToList();
 
             var now = DateTime.UtcNow;
 
@@ -5809,7 +5753,10 @@ AND Type = @InternalPersonType)");
                 var endIndex = Math.Min(people.Count, startIndex + Limit);
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    insertText.AppendFormat("(@ItemId, @Name{0}, @Role{0}, @PersonType{0}, @SortOrder{0}, @ListOrder{0}),", i.ToString(CultureInfo.InvariantCulture));
+                    insertText.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        "(@ItemId, @Name{0}, @Role{0}, @PersonType{0}, @SortOrder{0}, @ListOrder{0}),",
+                        i.ToString(CultureInfo.InvariantCulture));
                 }
 
                 // Remove last comma
@@ -6261,7 +6208,7 @@ AND Type = @InternalPersonType)");
             CheckDisposed();
             if (id == Guid.Empty)
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException("Guid can't be empty.", nameof(id));
             }
 
             if (attachments == null)
