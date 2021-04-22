@@ -1485,7 +1485,7 @@ namespace Emby.Server.Implementations.Session
                 user = await _userManager.AuthenticateUser(
                     request.Username,
                     request.Password,
-                    request.PasswordSha1,
+                    null,
                     request.RemoteEndPoint,
                     true).ConfigureAwait(false);
             }
