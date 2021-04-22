@@ -2,11 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
@@ -24,7 +23,7 @@ namespace Emby.Server.Implementations.IO
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
-        private readonly bool _isEnvironmentCaseInsensitive;
+        private static readonly bool _isEnvironmentCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
@@ -32,8 +31,6 @@ namespace Emby.Server.Implementations.IO
         {
             Logger = logger;
             _tempPath = applicationPaths.TempDirectory;
-
-            _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -55,7 +52,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(filename);
-            return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
+            return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(filename);
-            var handler = _shortcutHandlers.FirstOrDefault(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
+            var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
             return handler?.Resolve(filename);
         }
@@ -303,16 +300,38 @@ namespace Emby.Server.Implementations.IO
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
-        public virtual string GetValidFilename(string filename)
+        public string GetValidFilename(string filename)
         {
-            var builder = new StringBuilder(filename);
+            return string.Create(
+                filename.Length,
+                filename,
+                (chars, state) =>
+                {
+                    state.AsSpan().CopyTo(chars);
 
-            foreach (var c in Path.GetInvalidFileNameChars())
-            {
-                builder = builder.Replace(c, ' ');
-            }
+                    var invalid = Path.GetInvalidFileNameChars();
 
-            return builder.ToString();
+                    var first = state.AsSpan().IndexOfAny(invalid);
+                    if (first == -1)
+                    {
+                        // Fast path for clean strings
+                        return;
+                    }
+
+                    chars[first++] = ' ';
+
+                    var len = chars.Length;
+                    foreach (var c in invalid)
+                    {
+                        for (int i = first; i < len; i++)
+                        {
+                            if (chars[i] == c)
+                            {
+                                chars[i] = ' ';
+                            }
+                        }
+                    }
+                });
         }
 
         /// <summary>
@@ -683,21 +702,6 @@ namespace Emby.Server.Implementations.IO
                 // Don't skip any files.
                 AttributesToSkip = 0
             };
-        }
-
-        private static void RunProcess(string path, string args, string workingDirectory)
-        {
-            using (var process = Process.Start(new ProcessStartInfo
-            {
-                Arguments = args,
-                FileName = path,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDirectory,
-                WindowStyle = ProcessWindowStyle.Normal
-            }))
-            {
-                process.WaitForExit();
-            }
         }
     }
 }
