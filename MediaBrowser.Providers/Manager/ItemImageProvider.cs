@@ -207,6 +207,8 @@ namespace MediaBrowser.Providers.Manager
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
         private bool ContainsImages(BaseItem item, IEnumerable<ImageType> imageTypes, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
         {
+            var backdropCount = item.GetImages(ImageType.Backdrop).Count();
+            var screenshotCount = item.GetImages(ImageType.Screenshot).Count();
             foreach (var imageType in imageTypes)
             {
                 var singularImageIndex = Array.IndexOf(_singularImages, imageType);
@@ -221,8 +223,8 @@ namespace MediaBrowser.Providers.Manager
 
                 switch (imageType)
                 {
-                    case ImageType.Backdrop when item.GetImages(ImageType.Backdrop).Count() < backdropLimit:
-                    case ImageType.Screenshot when item.GetImages(ImageType.Screenshot).Count() < screenshotLimit:
+                    case ImageType.Backdrop when backdropCount < backdropLimit:
+                    case ImageType.Screenshot when screenshotCount < screenshotLimit:
                         return false;
                 }
             }
