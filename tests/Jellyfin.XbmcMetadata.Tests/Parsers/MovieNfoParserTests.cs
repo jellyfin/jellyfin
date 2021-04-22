@@ -1,17 +1,23 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.System;
+using MediaBrowser.Providers.Movies;
 using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,9 +29,12 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
     public class MovieNfoParserTests
     {
         private readonly MovieNfoParser _parser;
+        private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly User _testUser;
         private readonly FileSystemMetadata _localImageFileMetadata;
+        private readonly MovieMetadataService _metadataService;
+        static UserItemData _testUserItemData = new UserItemData();
 
         public MovieNfoParserTests()
         {
@@ -41,19 +50,32 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             var nfoConfig = new XbmcMetadataOptions()
             {
-                UserId = "F38E6443-090B-4F7A-BD12-9CFF5020F7BC"
+                UserId = _testUser.Id.ToString("N", CultureInfo.InvariantCulture)
             };
-            var configManager = new Mock<IConfigurationManager>();
+            var configManager = new Mock<IServerConfigurationManager>();
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(nfoConfig);
 
-            var user = new Mock<IUserManager>();
-            user.Setup(x => x.GetUserById(It.IsAny<Guid>()))
+            var userManager = new Mock<IUserManager>();
+            userManager.Setup(x => x.GetUserById(It.IsAny<Guid>()))
                 .Returns(_testUser);
+            _userManager = userManager.Object;
 
             var userData = new Mock<IUserDataManager>();
+            userData.Setup(x => x.SaveUserData(
+                    It.IsAny<User>(),
+                    It.IsAny<BaseItem>(),
+                    It.IsAny<UserItemData>(),
+                    It.IsAny<UserDataSaveReason>(),
+                    It.IsAny<CancellationToken>())).Callback<
+                        User,
+                        BaseItem,
+                        UserItemData,
+                        UserDataSaveReason,
+                        CancellationToken>((u, i, d, r, t) => _testUserItemData = d);
             userData.Setup(x => x.GetUserData(_testUser, It.IsAny<BaseItem>()))
-                .Returns(new UserItemData());
+                .Returns(() => _testUserItemData);
+            _userDataManager = userData.Object;
 
             var directoryService = new Mock<IDirectoryService>();
             _localImageFileMetadata = new FileSystemMetadata()
@@ -66,13 +88,21 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             directoryService.Setup(x => x.GetFile(_localImageFileMetadata.FullName))
                 .Returns(_localImageFileMetadata);
 
-            _userDataManager = userData.Object;
+            _metadataService = new MovieMetadataService(
+                configManager.Object,
+                new NullLogger<MovieMetadataService>(),
+                providerManager.Object,
+                null,
+                null,
+                _userManager,
+                _userDataManager);
+
             _parser = new MovieNfoParser(
                 new NullLogger<MovieNfoParser>(),
                 configManager.Object,
                 providerManager.Object,
-                user.Object,
-                userData.Object,
+                _userManager,
+                _userDataManager,
                 directoryService.Object);
         }
 
@@ -81,11 +111,18 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
         {
             var result = new MetadataResult<Video>()
             {
-                Item = new Movie()
+                Item = new Movie() {
+                    Id = Guid.NewGuid()
+                }
             };
 
             _parser.Fetch(result, "Test Data/Justice League.nfo", CancellationToken.None);
             var item = (Movie)result.Item;
+
+            // Invoke protected method to update UserData as we don't want to test the whole
+            // MetadataService here. This would need too much infrastructure setup to make sense.
+            var method = typeof(MovieMetadataService).GetMethod("ImportUserData", BindingFlags.Instance | BindingFlags.NonPublic);
+            method?.Invoke(_metadataService, new object[] { item, result.UserDataList, CancellationToken.None });
 
             Assert.Equal("Justice League", item.OriginalTitle);
             Assert.Equal("Justice for all.", item.Tagline);
@@ -148,6 +185,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             // userData
             var userData = _userDataManager.GetUserData(_testUser, item);
             Assert.Equal(2, userData.PlayCount);
+            Assert.Equal(TimeSpan.FromSeconds(1500).Ticks, userData.PlaybackPositionTicks);
             Assert.True(userData.Played);
             Assert.Equal(new DateTime(2021, 02, 11, 07, 47, 23), userData.LastPlayedDate);
 

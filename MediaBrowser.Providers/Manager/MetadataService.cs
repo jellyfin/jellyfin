@@ -45,6 +45,10 @@ namespace MediaBrowser.Providers.Manager
 
         protected ILibraryManager LibraryManager { get; }
 
+        protected virtual IUserManager UserManager => null;
+
+        protected virtual IUserDataManager UserDataManager => null;
+
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
         protected virtual bool EnableUpdatingGenresFromChildren => false;
@@ -801,6 +805,16 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual void ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
         {
+            if (UserManager == null) {
+                return;
+            }
+            if (UserDataManager == null) {
+                return;
+            }
+            foreach (var userData in userDataList) {
+                var user = UserManager.GetUserById(userData.UserId);
+                UserDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, cancellationToken);
+            }
         }
 
         protected virtual bool IsFullLocalMetadata(TItemType item)

@@ -30,18 +30,13 @@ namespace MediaBrowser.Providers.Movies
             UserDataManager = userDataManager;
         }
 
-        protected IUserManager UserManager { get; }
+        // Provide UserManager to enable update of user data in base class.
+        // ImportUserData() depends on a valid UserManager.
+        protected override IUserManager UserManager { get; }
 
-        protected IUserDataManager UserDataManager { get; }
-
-        /// <inheritdoc />
-        protected override void ImportUserData(Movie item, List<UserItemData> userDataList, CancellationToken cancellationToken)
-        {
-            foreach (var userData in userDataList) {
-                var user = UserManager.GetUserById(userData.UserId);
-                UserDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, cancellationToken);
-            }
-        }
+        // Provide UserDataManager to enable update of user data in base class.
+        // ImportUserData() depends on a valid UserDataManager.
+        protected override IUserDataManager UserDataManager { get; }
 
         /// <inheritdoc />
         protected override bool IsFullLocalMetadata(Movie item)
