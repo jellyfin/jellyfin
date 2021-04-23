@@ -20,6 +20,7 @@ namespace MediaBrowser.Model.Dto
         /// <summary>
         /// Initializes a new instance of the <see cref="PublicUserDto"/> class from a <see cref="UserDto"/> object.
         /// </summary>
+        /// <param name="sourceUser">The <see cref="UserDto"/> object from which to construct this <see cref="PublicUserDto"/>.</param>
         public PublicUserDto(UserDto sourceUser)
         {
             this.Name = sourceUser.Name;
