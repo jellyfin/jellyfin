@@ -19,14 +19,9 @@ namespace MediaBrowser.Common.Net
         event EventHandler NetworkChanged;
 
         /// <summary>
-        /// Gets a value indicating whether iP6 is enabled.
+        /// Gets a value indicating the current IP status of the system.
         /// </summary>
-        bool IsIP6Enabled { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether iP4 is enabled.
-        /// </summary>
-        bool IsIP4Enabled { get; }
+        IpClassType IpClassType { get; }
 
         /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.

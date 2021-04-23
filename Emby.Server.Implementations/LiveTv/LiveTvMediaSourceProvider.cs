@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller;
@@ -103,7 +102,7 @@ namespace Emby.Server.Implementations.LiveTv
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
                 {
-                    source.Path = _appHost.GetSmartApiUrl(IPAddress.None);
+                    source.Path = _appHost.GetLoopbackHttpApiUrl();
                 }
             }
 

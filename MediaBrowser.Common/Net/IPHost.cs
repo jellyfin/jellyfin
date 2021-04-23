@@ -166,7 +166,7 @@ namespace MediaBrowser.Common.Net
             {
                 // Use regular expression as CheckHostName isn't RFC5892 compliant.
                 // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-                string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
+                string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:([0-9]){1,5}){0,1}$";
 
                 // Is hostname or hostname:port
                 if (Regex.IsMatch(hosts[0], pattern))

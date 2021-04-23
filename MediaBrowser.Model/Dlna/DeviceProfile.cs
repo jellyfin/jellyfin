@@ -31,7 +31,6 @@ namespace MediaBrowser.Model.Dlna
             MaxStreamingBitrate = 8000000;
             MaxStaticBitrate = 8000000;
             MusicStreamingTranscodingBitrate = 128000;
-            EncodeContextOnTransmission = false;
         }
 
         /// <summary>

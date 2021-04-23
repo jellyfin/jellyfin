@@ -106,6 +106,11 @@ namespace Emby.Server.Implementations
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
         /// <summary>
+        /// Address Override Configuration Key.
+        /// </summary>
+        private const string AddressOverrideConfigKey = "PublishedServerUrl";
+
+        /// <summary>
         /// The environment variable prefixes to log at server startup.
         /// </summary>
         private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
@@ -127,11 +132,6 @@ namespace Emby.Server.Implementations
         public bool CanSelfRestart => _startupOptions.RestartPath != null;
 
         public bool CoreStartupHasCompleted { get; private set; }
-
-        /// <summary>
-        /// Gets the configured published server url.
-        /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl;
 
         public virtual bool CanLaunchWebBrowser
         {
@@ -225,6 +225,11 @@ namespace Emby.Server.Implementations
         /// Gets the https port for the webhost.
         /// </summary>
         public int HttpsPort { get; private set; }
+
+        /// <summary>
+        /// Gets the value of the PublishedServerUrl setting.
+        /// </summary>
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[AddressOverrideConfigKey]?.Trim('/');
 
         /// <summary>
         /// Gets the server configuration manager.
@@ -1140,9 +1145,9 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress)
         {
-            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                return _startupOptions.PublishedServerUrl;
+                return PublishedServerUrl;
             }
 
             string smart = NetManager.GetBindInterface(new IPNetAddress(ipAddress), out int? port);
@@ -1158,10 +1163,9 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request)
         {
-            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl;
+                return PublishedServerUrl;
             }
 
             string smart = NetManager.GetBindInterface(request, out int? port);
@@ -1177,7 +1181,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
-            if (NetManager.IsIP6Enabled)
+            if (NetManager.IpClassType != IpClassType.Ip4Only)
             {
                 return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
             }
@@ -1188,11 +1192,6 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLocalApiUrl(string host, string scheme = null, int? port = null)
         {
-            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
-            {
-                return _startupOptions.PublishedServerUrl;
-            }
-
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder

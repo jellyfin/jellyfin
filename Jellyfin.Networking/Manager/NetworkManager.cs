@@ -53,8 +53,6 @@ namespace Jellyfin.Networking.Manager
         /// </summary>
         private readonly Dictionary<IPNetAddress, string> _publishedServerUrls;
 
-        private IpClassType _ipClassType;
-
         private IPNetAddress[] _remoteAddressFilter;
 
         /// <summary>
@@ -104,7 +102,7 @@ namespace Jellyfin.Networking.Manager
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
             _intLock = new ();
-            _ipClassType = IpClassType.IpBoth;
+            IpClassType = IpClassType.IpBoth;
             _interfaceAddresses = new Collection<IPNetAddress>();
             _macAddresses = new List<PhysicalAddress>();
             _interfaceNames = new Dictionary<string, int>();
@@ -132,14 +130,9 @@ namespace Jellyfin.Networking.Manager
         public static string MockNetworkSettings { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets a value indicating whether IP6 is enabled.
+        /// Gets a value indicating the current IP status of the system.
         /// </summary>
-        public bool IsIP6Enabled => _ipClassType != IpClassType.Ip4Only;
-
-        /// <summary>
-        /// Gets a value indicating whether IP4 is enabled.
-        /// </summary>
-        public bool IsIP4Enabled => _ipClassType != IpClassType.Ip6Only;
+        public IpClassType IpClassType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether is all IPv6 interfaces are trusted as internal.
@@ -222,12 +215,12 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public IPNetAddress[] GetLoopbacks()
         {
-            if (_ipClassType == IpClassType.IpBoth)
+            if (IpClassType == IpClassType.IpBoth)
             {
                 return new[] { IPNetAddress.IP4Loopback, IPNetAddress.IP6Loopback };
             }
 
-            if (_ipClassType == IpClassType.Ip6Only)
+            if (IpClassType == IpClassType.Ip6Only)
             {
                 return new[] { IPNetAddress.IP6Loopback };
             }
@@ -281,16 +274,16 @@ namespace Jellyfin.Networking.Manager
                 // No bind address and no exclusions, so listen on all interfaces.
                 var result = new Collection<IPNetAddress>();
 
-                if (IsIP6Enabled && IsIP4Enabled)
+                if (IpClassType == IpClassType.IpBoth)
                 {
                     // Kestrel source code shows it uses Sockets.DualMode - so this also covers IPAddress.Any
                     result.AddItem(new IPNetAddress(IPAddress.IPv6Any, 128), true);
                 }
-                else if (IsIP4Enabled)
+                else if (IpClassType == IpClassType.Ip4Only)
                 {
                     result.AddItem(new IPNetAddress(IPAddress.Any, 32), true);
                 }
-                else if (IsIP6Enabled)
+                else if (IpClassType == IpClassType.Ip6Only)
                 {
                     // Cannot use IPv6Any as Kestrel will bind to IPv4 addresses.
                     foreach (var iface in _interfaceAddresses)
@@ -312,7 +305,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public string GetBindInterface(string source, out int? port)
         {
-            _ = IPHost.TryParse(source, out IPHost? host, _ipClassType);
+            _ = IPHost.TryParse(source, out IPHost? host, IpClassType);
             return GetBindInterface(host, out port);
         }
 
@@ -327,7 +320,7 @@ namespace Jellyfin.Networking.Manager
         {
             string result;
 
-            if (IPHost.TryParse(source.Host.Host, out IPHost? host, _ipClassType))
+            if (IPHost.TryParse(source.Host.Host, out IPHost? host, IpClassType))
             {
                 result = GetBindInterface(host, out port);
                 port ??= source.Host.Port;
@@ -350,12 +343,12 @@ namespace Jellyfin.Networking.Manager
 
             if (source != null)
             {
-                if (!IsIP6Enabled && source.AddressFamily == AddressFamily.InterNetworkV6)
+                if (IpClassType == IpClassType.Ip4Only && source.AddressFamily == AddressFamily.InterNetworkV6)
                 {
                     _logger.LogWarning("IPv6 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
 
-                if (!IsIP4Enabled && source.AddressFamily == AddressFamily.InterNetwork)
+                if (IpClassType != IpClassType.Ip4Only && source.AddressFamily == AddressFamily.InterNetwork)
                 {
                     _logger.LogWarning("IPv4 is disabled in Jellyfin, but enabled in the OS. This may affect how the interface is selected.");
                 }
@@ -420,7 +413,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // There isn't any others, so we'll use the loopback.
-            result = IsIP6Enabled ? "::1" : "127.0.0.1";
+            result = IpClassType != IpClassType.Ip4Only ? "::1" : "127.0.0.1";
             _logger.LogWarning("{Source}: GetBindInterface: Loopback {Result} returned.", source, result);
             return result;
         }
@@ -464,7 +457,7 @@ namespace Jellyfin.Networking.Manager
         /// <inheritdoc/>
         public bool IsInLocalNetwork(string address)
         {
-            if (IPNetAddress.TryParse(address, out var ep, _ipClassType) || IPHost.TryParse(address, out ep, _ipClassType))
+            if (IPNetAddress.TryParse(address, out var ep, IpClassType) || IPHost.TryParse(address, out ep, IpClassType))
             {
                 return _lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep);
             }
@@ -527,8 +520,8 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (Math.Abs(iface.Tag) == index
-                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
-                            || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
+                        && ((IpClassType != IpClassType.Ip6Only && iface.Address.AddressFamily == AddressFamily.InterNetwork)
+                            || (IpClassType != IpClassType.Ip4Only && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         result.AddItem(iface, false);
                     }
@@ -575,16 +568,16 @@ namespace Jellyfin.Networking.Manager
             {
                 if (Socket.OSSupportsIPv6 && config.EnableIPV4)
                 {
-                    _ipClassType = IpClassType.IpBoth;
+                    IpClassType = IpClassType.IpBoth;
                 }
                 else
                 {
-                    _ipClassType = IpClassType.Ip6Only;
+                    IpClassType = IpClassType.Ip6Only;
                 }
             }
             else
             {
-                _ipClassType = IpClassType.Ip4Only;
+                IpClassType = IpClassType.Ip4Only;
             }
 
             TrustAllIP6Interfaces = config.TrustAllIP6Interfaces;
@@ -607,12 +600,12 @@ namespace Jellyfin.Networking.Manager
                     _interfaceNames[parts[2]] = Math.Abs(index);
                 }
 
-                if (IsIP4Enabled)
+                if (IpClassType != IpClassType.Ip6Only)
                 {
                     _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
                 }
 
-                if (IsIP6Enabled)
+                if (IpClassType != IpClassType.Ip4Only)
                 {
                     _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
                 }
@@ -654,13 +647,13 @@ namespace Jellyfin.Networking.Manager
             if (!string.IsNullOrEmpty(addr))
             {
                 // Is it an IP address
-                if (IPNetAddress.TryParse(addr, out IPNetAddress? nw, _ipClassType))
+                if (IPNetAddress.TryParse(addr, out IPNetAddress? nw, IpClassType))
                 {
                     result = nw;
                     return true;
                 }
 
-                if (IPHost.TryParse(addr, out IPHost? h, _ipClassType))
+                if (IPHost.TryParse(addr, out IPHost? h, IpClassType))
                 {
                     result = h;
                     return true;
@@ -759,8 +752,8 @@ namespace Jellyfin.Networking.Manager
                 foreach (IPNetAddress iface in _interfaceAddresses)
                 {
                     if (indices.Contains(Math.Abs(iface.Tag))
-                        && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
-                            || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
+                        && ((IpClassType != IpClassType.Ip6Only && iface.Address.AddressFamily == AddressFamily.InterNetwork)
+                            || (IpClassType != IpClassType.Ip4Only && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
                         col.AddItem(iface, itemIsNetwork);
                     }
@@ -772,7 +765,7 @@ namespace Jellyfin.Networking.Manager
             }
             else
             {
-                _logger.LogDebug("Invalid or unknown object {Token}.", token);
+                _logger.LogDebug("No interface match, or bad address {Token}.", token);
             }
         }
 
@@ -875,7 +868,7 @@ namespace Jellyfin.Networking.Manager
                                 _publishedServerUrls[na] = replacement;
                             }
                         }
-                        else if (IPNetAddress.TryParse(parts[0], out IPNetAddress? result, _ipClassType))
+                        else if (IPNetAddress.TryParse(parts[0], out IPNetAddress? result, IpClassType))
                         {
                             _publishedServerUrls[result] = replacement;
                         }
@@ -967,14 +960,14 @@ namespace Jellyfin.Networking.Manager
                         _interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
 
                     // We must listen on loopback for LiveTV to function regardless of the settings.
-                    if (IsIP6Enabled)
+                    if (IpClassType != IpClassType.Ip4Only)
                     {
                         _lanSubnets.AddItem(IPNetAddress.IP6Loopback, true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("fc00::/7"), true); // ULA
                         _lanSubnets.AddItem(IPNetAddress.Parse("fe80::/10"), true); // Site local
                     }
 
-                    if (IsIP4Enabled)
+                    if (IpClassType != IpClassType.Ip6Only)
                     {
                         _lanSubnets.AddItem(IPNetAddress.IP4Loopback, true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("10.0.0.0/8"), true);
@@ -985,12 +978,12 @@ namespace Jellyfin.Networking.Manager
                 else
                 {
                     // We must listen on loopback for LiveTV to function regardless of the settings.
-                    if (IsIP6Enabled)
+                    if (IpClassType != IpClassType.Ip4Only)
                     {
                         _lanSubnets.AddItem(IPNetAddress.IP6Loopback, true);
                     }
 
-                    if (IsIP4Enabled)
+                    if (IpClassType != IpClassType.Ip6Only)
                     {
                         _lanSubnets.AddItem(IPNetAddress.IP4Loopback, true);
                     }
@@ -1040,7 +1033,7 @@ namespace Jellyfin.Networking.Manager
                             // populate interface address list
                             foreach (UnicastIPAddressInformation info in ipProperties.UnicastAddresses)
                             {
-                                if (IsIP4Enabled && info.Address.AddressFamily == AddressFamily.InterNetwork)
+                                if (IpClassType != IpClassType.Ip6Only && info.Address.AddressFamily == AddressFamily.InterNetwork)
                                 {
                                     IPNetAddress nw = new (info.Address, IPNetAddress.MaskToCidr(info.IPv4Mask))
                                     {
@@ -1061,7 +1054,7 @@ namespace Jellyfin.Networking.Manager
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
                                     _interfaceNames["eth" + tag.ToString(CultureInfo.InvariantCulture)] = tag;
                                 }
-                                else if (IsIP6Enabled && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
+                                else if (IpClassType != IpClassType.Ip4Only && info.Address.AddressFamily == AddressFamily.InterNetworkV6)
                                 {
                                     IPNetAddress nw = new (info.Address, (byte)info.PrefixLength)
                                     {
@@ -1116,12 +1109,12 @@ namespace Jellyfin.Networking.Manager
                     }
                 }
 
-                if (IsIP4Enabled)
+                if (IpClassType != IpClassType.Ip6Only)
                 {
                     _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
                 }
 
-                if (IsIP6Enabled)
+                if (IpClassType != IpClassType.Ip4Only)
                 {
                     _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
                 }

@@ -89,7 +89,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            var udpClient = new UdpClient(localPort, _networkManager.IsIP6Enabled ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork);
+            var udpClient = new UdpClient(localPort, _networkManager.IpClassType == IpClassType.Ip4Only ? AddressFamily.InterNetwork : AddressFamily.InterNetworkV6);
             var hdHomerunManager = new HdHomerunManager();
 
             try
