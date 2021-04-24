@@ -13,7 +13,7 @@ namespace Jellyfin.Model.Tests.Entities
         {
             var mediaStream = new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Codec = codec };
 
-            Assert.Contains(codec, mediaStream.DisplayTitle, System.StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains(codec, mediaStream.DisplayTitle, System.StringComparison.Ordinal);
         }
 
         [Theory]
