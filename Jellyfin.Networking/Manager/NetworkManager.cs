@@ -990,6 +990,7 @@ namespace Jellyfin.Networking.Manager
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.
                 _bindAddresses = CreateIPCollection(lanAddresses).ThatAreContainedInNetworks(_interfaceAddresses);
                 _bindExclusions = CreateIPCollection(lanAddresses, true).ThatAreContainedInNetworks(_interfaceAddresses);
+
                 _logger.LogInformation("Using bind addresses: {0}", _bindAddresses.AsString());
                 _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
             }

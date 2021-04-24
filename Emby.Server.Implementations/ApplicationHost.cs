@@ -1203,12 +1203,8 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetLoopbackHttpApiUrl()
         {
-            if (NetManager.IsIP6Enabled)
-            {
-                return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
-            }
-
-            return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
+            // Passing an external address cause GetBindInterface to return an externally accessible interface (if possible).
+            return GetLocalApiUrl(NetManager.GetBindInterface("8.8.8.8", out var _), Uri.UriSchemeHttp, HttpPort);
         }
 
         /// <inheritdoc/>
