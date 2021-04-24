@@ -41,9 +41,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Initialized <see cref="TranscodingJobHelper"/>.</param>
@@ -59,16 +57,13 @@ namespace Jellyfin.Api.Helpers
             ILibraryManager libraryManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
+            EncodingHelper encodingHelper,
             IDlnaManager dlnaManager,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             TranscodingJobType transcodingJobType,
             CancellationToken cancellationToken)
         {
-            EncodingHelper encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
             // Parse the DLNA time seek header
             if (!streamingRequest.StartTimeTicks.HasValue)
             {
@@ -306,7 +301,8 @@ namespace Jellyfin.Api.Helpers
 
             if (!state.IsVideoRequest)
             {
-                responseHeaders.Add("contentFeatures.dlna.org", new ContentFeatureBuilder(profile).BuildAudioHeader(
+                responseHeaders.Add("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
+                    profile,
                     state.OutputContainer,
                     audioCodec,
                     state.OutputAudioBitrate,
@@ -323,7 +319,7 @@ namespace Jellyfin.Api.Helpers
 
                 responseHeaders.Add(
                     "contentFeatures.dlna.org",
-                    new ContentFeatureBuilder(profile).BuildVideoHeader(state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
+                    ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
             }
         }
 

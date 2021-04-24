@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
@@ -56,7 +57,15 @@ namespace MediaBrowser.Controller.Entities.TV
             var series = Series;
             if (series != null)
             {
-                list.InsertRange(0, series.GetUserDataKeys().Select(i => i + (IndexNumber ?? 0).ToString("000")));
+                var newList = series.GetUserDataKeys();
+                var suffix = (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
+                for (int i = 0; i < newList.Count; i++)
+                {
+                    newList[i] = newList[i] + suffix;
+                }
+
+                newList.AddRange(list);
+                list = newList;
             }
 
             return list;

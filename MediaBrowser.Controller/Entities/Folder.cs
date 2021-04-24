@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -1434,9 +1433,14 @@ namespace MediaBrowser.Controller.Entities
             var linkedChildren = LinkedChildren;
             foreach (var i in linkedChildren)
             {
-                if (i.ItemId.HasValue && i.ItemId.Value == itemId)
+                if (i.ItemId.HasValue)
                 {
-                    return true;
+                    if (i.ItemId.Value == itemId)
+                    {
+                        return true;
+                    }
+
+                    continue;
                 }
 
                 var child = GetLinkedChild(i);

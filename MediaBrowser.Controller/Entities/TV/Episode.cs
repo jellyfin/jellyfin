@@ -99,7 +99,15 @@ namespace MediaBrowser.Controller.Entities.TV
                     take--;
                 }
 
-                list.InsertRange(0, seriesUserDataKeys.Take(take).Select(i => i + ParentIndexNumber.Value.ToString("000") + IndexNumber.Value.ToString("000")));
+                var newList = seriesUserDataKeys.GetRange(0, take);
+                var suffix = ParentIndexNumber.Value.ToString("000", CultureInfo.InvariantCulture) + IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
+                for (int i = 0; i < take; i++)
+                {
+                    newList[i] = newList[i] + suffix;
+                }
+
+                newList.AddRange(list);
+                list = newList;
             }
 
             return list;
