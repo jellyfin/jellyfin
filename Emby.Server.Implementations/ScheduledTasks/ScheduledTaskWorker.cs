@@ -301,7 +301,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             get
             {
-                return _id ?? (_id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture));
+                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
         }
 
