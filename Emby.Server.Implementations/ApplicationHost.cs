@@ -55,6 +55,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
+using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -679,6 +680,8 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddScoped<MediaInfoHelper>();
             ServiceCollection.AddScoped<AudioHelper>();
             ServiceCollection.AddScoped<DynamicHlsHelper>();
+
+            ServiceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
 
             ServiceCollection.AddSingleton<IDirectoryService, DirectoryService>();
         }
