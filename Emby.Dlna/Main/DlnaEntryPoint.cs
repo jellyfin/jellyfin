@@ -316,7 +316,6 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
-
                 if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
                 {
                     // DLNA will only work over http, so we must reset to http:// : {port}.

@@ -134,9 +134,6 @@ namespace Emby.Server.Implementations
 
         public bool CoreStartupHasCompleted { get; private set; }
 
-        /// <inheritdoc />
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl;
-
         public virtual bool CanLaunchWebBrowser
         {
             get
@@ -233,7 +230,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the value of the PublishedServerUrl setting.
         /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey]?.Trim('/');
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -1146,10 +1143,10 @@ namespace Emby.Server.Implementations
         public string GetSmartApiUrl(IPAddress ipAddress)
         {
             // Published server ends with a /
-            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl;
+                return PublishedServerUrl;
             }
 
             string smart = NetManager.GetBindInterface(ipAddress, out int? port);
@@ -1166,10 +1163,10 @@ namespace Emby.Server.Implementations
         public string GetSmartApiUrl(HttpRequest request)
         {
             // Published server ends with a /
-            if (!string.IsNullOrEmpty(_startupOptions.PublishedServerUrl))
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
                 // Published server ends with a '/', so we need to remove it.
-                return _startupOptions.PublishedServerUrl;
+                return PublishedServerUrl;
             }
 
             string smart = NetManager.GetBindInterface(request, out int? port);
