@@ -1142,10 +1142,8 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress)
         {
-            // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
                 return PublishedServerUrl;
             }
 
@@ -1162,10 +1160,8 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request)
         {
-            // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
                 return PublishedServerUrl;
             }
 
