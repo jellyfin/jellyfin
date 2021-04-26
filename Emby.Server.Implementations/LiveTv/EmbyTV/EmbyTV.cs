@@ -2240,9 +2240,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             foreach (var timer in allTimers)
             {
                 var existingTimer = _timerProvider.GetTimer(timer.Id) 
-                                    ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
-                                        ? null
-                                        : _timerProvider.GetTimerByProgramId(timer.ProgramId));
+                    ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
+                        ? null
+                        : _timerProvider.GetTimerByProgramId(timer.ProgramId));
 
                 if (existingTimer == null)
                 {
