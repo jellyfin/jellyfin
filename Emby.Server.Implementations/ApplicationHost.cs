@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts.
         /// </summary>
-        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
+        private readonly List<IDisposable> _disposableParts = new ();
 
         /// <summary>
         /// Gets or sets the configuration manager.
@@ -241,7 +241,7 @@ namespace Emby.Server.Implementations
         /// <param name="startupConfig">The <see cref="IConfiguration" /> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
-        public ApplicationHost(
+        protected ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
@@ -467,6 +467,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
         /// <returns><see cref="Task" />.</returns>
         public async Task RunStartupTasksAsync(CancellationToken cancellationToken)
         {
@@ -1086,7 +1087,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(HttpRequest source)
         {
             return new SystemInfo
             {
@@ -1122,7 +1123,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(HttpRequest source)
         {
             return new PublicSystemInfo
             {
@@ -1233,6 +1234,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Shuts down.
         /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
         public async Task Shutdown()
         {
             if (IsShuttingDown)
@@ -1320,7 +1322,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        private bool _disposed = false;
+        private bool _disposed;
 
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.

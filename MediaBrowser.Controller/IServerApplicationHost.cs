@@ -59,9 +59,9 @@ namespace MediaBrowser.Controller
         /// </summary>
         /// <param name="source">The originator of the request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(IPAddress source);
+        SystemInfo GetSystemInfo(HttpRequest source);
 
-        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
+        PublicSystemInfo GetPublicSystemInfo(HttpRequest address);
 
         /// <summary>
         /// Gets a URL specific for the request.
