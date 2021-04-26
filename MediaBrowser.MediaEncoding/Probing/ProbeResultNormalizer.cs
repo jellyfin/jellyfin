@@ -1188,7 +1188,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // These support mulitple values, but for now we only store the first.
             var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"))
-                       ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
