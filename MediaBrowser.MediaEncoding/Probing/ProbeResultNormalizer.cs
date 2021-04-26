@@ -1203,7 +1203,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
             mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"))
-                   ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
