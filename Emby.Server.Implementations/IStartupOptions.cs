@@ -34,6 +34,6 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the value of the --published-server-url command line option.
         /// </summary>
-        Uri PublishedServerUrl { get; }
+        string PublishedServerUrl { get; }
     }
 }

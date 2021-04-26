@@ -77,7 +77,7 @@ namespace Jellyfin.Server
 
         /// <inheritdoc />
         [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
-        public Uri? PublishedServerUrl { get; set; }
+        public string? PublishedServerUrl { get; set; }
 
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
@@ -92,9 +92,9 @@ namespace Jellyfin.Server
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
             }
 
-            if (PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.ToString());
+                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.TrimEnd('/'));
             }
 
             if (FFmpegPath != null)

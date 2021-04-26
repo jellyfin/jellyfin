@@ -55,7 +55,7 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the configured published server url.
         /// </summary>
-        Uri PublishedServerUrl { get; }
+        string PublishedServerUrl { get; }
 
         /// <summary>
         /// Gets the system info.
@@ -70,25 +70,15 @@ namespace MediaBrowser.Controller
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="request">The <see cref="HttpRequest"/> instance.</param>
-        /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(HttpRequest request, int? port = null);
+        string GetSmartApiUrl(HttpRequest request);
 
         /// <summary>
         /// Gets a URL specific for the request.
         /// </summary>
         /// <param name="remoteAddr">The remote <see cref="IPAddress"/> of the connection.</param>
-        /// <param name="port">Optional port number.</param>
         /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(IPAddress remoteAddr, int? port = null);
-
-        /// <summary>
-        /// Gets a URL specific for the request.
-        /// </summary>
-        /// <param name="hostname">The hostname used in the connection.</param>
-        /// <param name="port">Optional port number.</param>
-        /// <returns>An accessible URL.</returns>
-        string GetSmartApiUrl(string hostname, int? port = null);
+        string GetSmartApiUrl(IPAddress remoteAddr);
 
         /// <summary>
         /// Gets a localhost URL that can be used to access the API using the loop-back IP address.
