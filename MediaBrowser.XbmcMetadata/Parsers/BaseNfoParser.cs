@@ -122,6 +122,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         protected virtual void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
+            // reset variables to deal with potential reuses of this parser instance
             _userData = null;
             _nfoConfiguration = null;
 
@@ -963,8 +964,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                         break;
                                     }
 
-                                    double value;
-                                    if (double.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                                    if (double.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                                     {
                                         userData.PlaybackPositionTicks = TimeSpan.FromSeconds(value).Ticks;
                                     }

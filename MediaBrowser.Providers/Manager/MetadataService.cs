@@ -805,13 +805,16 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual void ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
         {
-            if (UserManager == null) {
+            if (UserManager == null)
+            {
                 return;
             }
-            if (UserDataManager == null) {
+            if (UserDataManager == null)
+            {
                 return;
             }
-            foreach (var userData in userDataList) {
+            foreach (var userData in userDataList)
+            {
                 var user = UserManager.GetUserById(userData.UserId);
                 UserDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, cancellationToken);
             }
