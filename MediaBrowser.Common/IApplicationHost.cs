@@ -64,11 +64,6 @@ namespace MediaBrowser.Common
         IServiceProvider ServiceProvider { get; set; }
 
         /// <summary>
-        /// Gets the configured published server url.
-        /// </summary>
-        string PublishedServerUrl { get; }
-
-        /// <summary>
         /// Gets the application version.
         /// </summary>
         /// <value>The application version.</value>
