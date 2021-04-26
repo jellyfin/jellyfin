@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -13,7 +14,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Playlists
@@ -43,7 +43,8 @@ namespace MediaBrowser.Controller.Playlists
 
         public static bool IsPlaylistFile(string path)
         {
-            return System.IO.Path.HasExtension(path);
+            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
+            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
         }
 
         [JsonIgnore]
@@ -162,7 +163,7 @@ namespace MediaBrowser.Controller.Playlists
                     Recursive = true,
                     IncludeItemTypes = new[] { nameof(Audio) },
                     GenreIds = new[] { musicGenre.Id },
-                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
                 });
             }
@@ -174,7 +175,7 @@ namespace MediaBrowser.Controller.Playlists
                     Recursive = true,
                     IncludeItemTypes = new[] { nameof(Audio) },
                     ArtistIds = new[] { musicArtist.Id },
-                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
                 });
             }

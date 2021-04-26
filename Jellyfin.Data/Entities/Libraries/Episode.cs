@@ -1,6 +1,5 @@
 #pragma warning disable CA2227
 
-using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -14,28 +13,11 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Episode"/> class.
         /// </summary>
-        /// <param name="season">The season.</param>
-        public Episode(Season season)
+        /// <param name="library">The library.</param>
+        public Episode(Library library) : base(library)
         {
-            if (season == null)
-            {
-                throw new ArgumentNullException(nameof(season));
-            }
-
-            season.Episodes.Add(this);
-
             Releases = new HashSet<Release>();
             EpisodeMetadata = new HashSet<EpisodeMetadata>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Episode"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Episode()
-        {
         }
 
         /// <summary>

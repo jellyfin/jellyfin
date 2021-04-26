@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
 
 namespace Jellyfin.Data.Entities
@@ -15,7 +14,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Identity. Required.
         /// </remarks>
-        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; protected set; }
 

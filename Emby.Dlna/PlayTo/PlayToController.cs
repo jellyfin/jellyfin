@@ -132,7 +132,7 @@ namespace Emby.Dlna.PlayTo
 
         private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
         {
-            if (_disposed)
+            if (_disposed || string.IsNullOrEmpty(e.OldMediaInfo.Url))
             {
                 return;
             }
@@ -499,8 +499,8 @@ namespace Emby.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Audio)
             {
-                return new ContentFeatureBuilder(profile)
-                    .BuildAudioHeader(
+                return ContentFeatureBuilder.BuildAudioHeader(
+                        profile,
                         streamInfo.Container,
                         streamInfo.TargetAudioCodec.FirstOrDefault(),
                         streamInfo.TargetAudioBitrate,
@@ -514,8 +514,8 @@ namespace Emby.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
-                var list = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(
+                var list = ContentFeatureBuilder.BuildVideoHeader(
+                        profile,
                         streamInfo.Container,
                         streamInfo.TargetVideoCodec.FirstOrDefault(),
                         streamInfo.TargetAudioCodec.FirstOrDefault(),
@@ -943,11 +943,7 @@ namespace Emby.Dlna.PlayTo
                 request.DeviceId = values.GetValueOrDefault("DeviceId");
                 request.MediaSourceId = values.GetValueOrDefault("MediaSourceId");
                 request.LiveStreamId = values.GetValueOrDefault("LiveStreamId");
-
-                // Be careful, IsDirectStream==true by default (Static != false or not in query).
-                // See initialization of StreamingRequestDto in AudioController.GetAudioStream() method : Static = @static ?? true.
-                request.IsDirectStream = !string.Equals("false", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
-
+                request.IsDirectStream = string.Equals("true", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
                 request.AudioStreamIndex = GetIntValue(values, "AudioStreamIndex");
                 request.SubtitleStreamIndex = GetIntValue(values, "SubtitleStreamIndex");
                 request.StartPositionTicks = GetLongValue(values, "StartPositionTicks");

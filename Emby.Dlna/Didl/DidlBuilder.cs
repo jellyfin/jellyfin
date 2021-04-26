@@ -208,7 +208,8 @@ namespace Emby.Dlna.Didl
             var targetWidth = streamInfo.TargetWidth;
             var targetHeight = streamInfo.TargetHeight;
 
-            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(
+            var contentFeatureList = ContentFeatureBuilder.BuildVideoHeader(
+                _profile,
                 streamInfo.Container,
                 streamInfo.TargetVideoCodec.FirstOrDefault(),
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
@@ -599,7 +600,8 @@ namespace Emby.Dlna.Didl
                 ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(
+            var contentFeatures = ContentFeatureBuilder.BuildAudioHeader(
+                _profile,
                 streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetAudioBitrate,
@@ -1033,8 +1035,7 @@ namespace Emby.Dlna.Didl
             var width = albumartUrlInfo.width ?? maxWidth;
             var height = albumartUrlInfo.height ?? maxHeight;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile)
-                .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
+            var contentFeatures = ContentFeatureBuilder.BuildImageHeader(_profile, format, width, height, imageInfo.IsDirectStream, org_Pn);
 
             writer.WriteAttributeString(
                 "protocolInfo",

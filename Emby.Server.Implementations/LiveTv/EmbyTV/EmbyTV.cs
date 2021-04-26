@@ -17,7 +17,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -1856,7 +1855,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1920,7 +1920,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {

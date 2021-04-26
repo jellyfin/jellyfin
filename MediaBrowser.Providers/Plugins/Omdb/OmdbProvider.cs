@@ -6,9 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -39,7 +37,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             _configurationManager = configurationManager;
             _appHost = appHost;
 
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions());
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableInt32Converter());
         }

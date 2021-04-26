@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
@@ -35,8 +34,15 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var directoryService = new Mock<IDirectoryService>();
 
-            _parser = new BaseNfoParser<MusicArtist>(new NullLogger<BaseNfoParser<MusicArtist>>(), config.Object, providerManager.Object, user.Object, userData.Object);
+            _parser = new BaseNfoParser<MusicArtist>(
+                new NullLogger<BaseNfoParser<MusicArtist>>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]

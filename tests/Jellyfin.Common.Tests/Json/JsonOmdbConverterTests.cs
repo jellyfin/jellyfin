@@ -39,6 +39,15 @@ namespace Jellyfin.Common.Tests.Json
         }
 
         [Theory]
+        [InlineData("\"8\"", 8)]
+        [InlineData("8", 8)]
+        public void Deserialize_NullableInt_Success(string input, int? expected)
+        {
+            var result = JsonSerializer.Deserialize<int?>(input, _options);
+            Assert.Equal(result, expected);
+        }
+
+        [Theory]
         [InlineData("\"N/A\"")]
         [InlineData("null")]
         public void Deserialization_To_Nullable_String_Shoud_Be_Null(string input)
@@ -48,21 +57,11 @@ namespace Jellyfin.Common.Tests.Json
         }
 
         [Theory]
-        [InlineData("\"8\"", 8)]
-        [InlineData("8", 8)]
-        public void Deserialize_Int_Success(string input, int expected)
+        [InlineData("\"Jellyfin\"", "Jellyfin")]
+        public void Deserialize_Normal_String_Success(string input, string expected)
         {
-            var result = JsonSerializer.Deserialize<int>(input, _options);
-            Assert.Equal(result, expected);
-        }
-
-        [Fact]
-        public void Deserialize_Normal_String_Success()
-        {
-            const string Input = "\"Jellyfin\"";
-            const string Expected = "Jellyfin";
-            var result = JsonSerializer.Deserialize<string>(Input, _options);
-            Assert.Equal(Expected, result);
+            var result = JsonSerializer.Deserialize<string?>(input, _options);
+            Assert.Equal(expected, result);
         }
 
         [Fact]

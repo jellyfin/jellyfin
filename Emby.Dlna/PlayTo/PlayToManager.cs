@@ -178,12 +178,17 @@ namespace Emby.Dlna.PlayTo
             if (controller == null)
             {
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClientFactory, _logger, cancellationToken).ConfigureAwait(false);
+                if (device == null)
+                {
+                    _logger.LogError("Ignoring device as xml response is invalid.");
+                    return;
+                }
 
                 string deviceName = device.Properties.Name;
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
+                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIpAddress);
 
                 controller = new PlayToController(
                     sessionInfo,

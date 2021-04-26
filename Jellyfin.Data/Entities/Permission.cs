@@ -1,3 +1,5 @@
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
@@ -20,14 +22,6 @@ namespace Jellyfin.Data.Entities
         {
             Kind = kind;
             Value = value;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Permission"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Permission()
-        {
         }
 
         /// <summary>

@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Text;
 using Jellyfin.Networking.Configuration;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Jellyfin.Api.Tests
+namespace Jellyfin.Server.Tests
 {
     public class ParseNetworkTests
     {
