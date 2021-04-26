@@ -2,6 +2,7 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 using System;
 using System.Linq;
+using System.Net;
 using System.Xml.Serialization;
 using MediaBrowser.Model.MediaInfo;
 
@@ -43,6 +44,12 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         [XmlIgnore]
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last IP address the profile was matched to.
+        /// </summary>
+        [XmlIgnore]
+        public IPAddress Address { get; set; }
 
         /// <summary>
         /// Gets or sets the Identification.
@@ -103,6 +110,11 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets a value indicating whether EnableSingleSubtitleLimit.
         /// </summary>
         public bool EnableSingleSubtitleLimit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether didl should be encoded to this device.
+        /// </summary>
+        public bool EncodeContextOnTransmission { get; set; }
 
         /// <summary>
         /// Gets or sets the SupportedMediaTypes.
