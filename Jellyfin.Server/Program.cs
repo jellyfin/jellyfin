@@ -598,7 +598,7 @@ namespace Jellyfin.Server
                                 "ClientName",
                                 (clientName, wt)
                                     => wt.File(
-                                        Path.Combine(appPaths.LogDirectoryPath, $"log_{clientName}_.log"),
+                                        Path.Combine(appPaths.LogDirectoryPath, clientName + "_.log"),
                                         rollingInterval: RollingInterval.Day,
                                         outputTemplate: "{Message:l}{NewLine}{Exception}",
                                         encoding: Encoding.UTF8))
@@ -623,7 +623,7 @@ namespace Jellyfin.Server
                                 "ClientName",
                                 (clientName, wt)
                                     => wt.File(
-                                        Path.Combine(appPaths.LogDirectoryPath, $"log_{clientName}_.log"),
+                                        Path.Combine(appPaths.LogDirectoryPath, clientName + "_.log"),
                                         rollingInterval: RollingInterval.Day,
                                         outputTemplate: "{Message:l}{NewLine}{Exception}",
                                         encoding: Encoding.UTF8))
