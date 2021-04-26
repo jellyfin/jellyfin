@@ -319,12 +319,12 @@ namespace MediaBrowser.Controller.Entities.TV
                 cancellationToken.ThrowIfCancellationRequested();
 
                 bool skipItem = item is Episode episode
-                                && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
-                                && !refreshOptions.ReplaceAllMetadata
-                                && episode.IsMissingEpisode
-                                && episode.LocationType == LocationType.Virtual
-                                && episode.PremiereDate.HasValue
-                                && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
+                    && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
+                    && !refreshOptions.ReplaceAllMetadata
+                    && episode.IsMissingEpisode
+                    && episode.LocationType == LocationType.Virtual
+                    && episode.PremiereDate.HasValue
+                    && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
 
                 if (!skipItem)
                 {
