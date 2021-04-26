@@ -123,10 +123,10 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                return _themeVideoIds ?? (_themeVideoIds = GetExtras()
+                return _themeVideoIds ??= GetExtras()
                     .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeVideo)
                     .Select(song => song.Id)
-                    .ToArray());
+                    .ToArray();
             }
 
             private set
