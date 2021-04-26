@@ -1147,7 +1147,7 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl;
             }
 
-            string smart = NetManager.GetBindInterface(ipAddress, out int? port);
+            string smart = NetManager.GetBindInterface(new IPNetAddress(ipAddress), out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
