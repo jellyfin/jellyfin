@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -9,6 +15,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Providers.Movies;
+using MediaBrowser.Providers.TV;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -21,9 +28,16 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
     public class EpisodeNfoProviderTests
     {
         private readonly EpisodeNfoParser _parser;
+        private readonly IUserManager _userManager;
+        private readonly IUserDataManager _userDataManager;
+        private readonly User _testUser;
+        private readonly EpisodeMetadataService _metadataService;
+        private UserItemData _testUserItemData = new UserItemData();
 
         public EpisodeNfoProviderTests()
         {
+            _testUser = new User("Test User", "Auth provider", "Reset provider");
+
             var providerManager = new Mock<IProviderManager>();
 
             var imdbExternalId = new ImdbExternalId();
@@ -32,19 +46,52 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             providerManager.Setup(x => x.GetExternalIdInfos(It.IsAny<IHasProviderIds>()))
                 .Returns(new[] { externalIdInfo });
 
-            var config = new Mock<IConfigurationManager>();
-            config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
-                .Returns(new XbmcMetadataOptions());
-            var user = new Mock<IUserManager>();
+            var nfoConfig = new XbmcMetadataOptions()
+            {
+                UserId = _testUser.Id.ToString("N", CultureInfo.InvariantCulture)
+            };
+            var configManager = new Mock<IServerConfigurationManager>();
+            configManager.Setup(x => x.GetConfiguration(It.IsAny<string>()))
+                .Returns(nfoConfig);
+
+            var userManager = new Mock<IUserManager>();
+            userManager.Setup(x => x.GetUserById(It.IsAny<Guid>()))
+                .Returns(_testUser);
+            _userManager = userManager.Object;
+
             var userData = new Mock<IUserDataManager>();
+            userData.Setup(x => x.SaveUserData(
+                    It.IsAny<User>(),
+                    It.IsAny<BaseItem>(),
+                    It.IsAny<UserItemData>(),
+                    It.IsAny<UserDataSaveReason>(),
+                    It.IsAny<CancellationToken>())).Callback<
+                        User,
+                        BaseItem,
+                        UserItemData,
+                        UserDataSaveReason,
+                        CancellationToken>((u, i, d, r, t) => _testUserItemData = d);
+            userData.Setup(x => x.GetUserData(_testUser, It.IsAny<BaseItem>()))
+                .Returns(() => _testUserItemData);
+            _userDataManager = userData.Object;
+
             var directoryService = new Mock<IDirectoryService>();
+
+            _metadataService = new EpisodeMetadataService(
+                configManager.Object,
+                new NullLogger<EpisodeMetadataService>(),
+                providerManager.Object,
+                null,
+                null,
+                _userManager,
+                _userDataManager);
 
             _parser = new EpisodeNfoParser(
                 new NullLogger<EpisodeNfoParser>(),
-                config.Object,
+                configManager.Object,
                 providerManager.Object,
-                user.Object,
-                userData.Object,
+                _userManager,
+                _userDataManager,
                 directoryService.Object);
         }
 
@@ -57,8 +104,13 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             };
 
             _parser.Fetch(result, "Test Data/The Bone Orchard.nfo", CancellationToken.None);
-
             var item = result.Item;
+
+            // Invoke protected method to update UserData as we don't want to test the whole
+            // MetadataService here. This would need too much infrastructure setup to make sense.
+            var method = typeof(EpisodeMetadataService).GetMethod("ImportUserData", BindingFlags.Instance | BindingFlags.NonPublic);
+            method?.Invoke(_metadataService, new object[] { item, result.UserDataList, CancellationToken.None });
+
             Assert.Equal("The Bone Orchard", item.Name);
             Assert.Equal("American Gods", item.SeriesName);
             Assert.Equal(1, item.IndexNumber);
@@ -90,6 +142,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var directors = result.People.Where(x => x.Type == PersonType.Director).ToArray();
             Assert.Single(directors);
             Assert.Contains("David Slade", directors.Select(x => x.Name));
+
+            // userData
+            var userData = _userDataManager.GetUserData(_testUser, item);
+            Assert.Equal(TimeSpan.FromSeconds(1000).Ticks, userData.PlaybackPositionTicks);
 
             // Actors
             var actors = result.People.Where(x => x.Type == PersonType.Actor).ToArray();
