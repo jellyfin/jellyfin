@@ -10,12 +10,10 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace Jellyfin.Api.Helpers
 {
@@ -30,13 +28,11 @@ namespace Jellyfin.Api.Helpers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly EncodingHelper _encodingHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioHelper"/> class.
@@ -47,13 +43,11 @@ namespace Jellyfin.Api.Helpers
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
         /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public AudioHelper(
             IAuthorizationContext authContext,
             IUserManager userManager,
@@ -61,13 +55,11 @@ namespace Jellyfin.Api.Helpers
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             IHttpClientFactory httpClientFactory,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            EncodingHelper encodingHelper)
         {
             _authContext = authContext;
             _userManager = userManager;
@@ -75,13 +67,11 @@ namespace Jellyfin.Api.Helpers
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
+            _encodingHelper = encodingHelper;
         }
 
         /// <summary>
@@ -111,9 +101,7 @@ namespace Jellyfin.Api.Helpers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _deviceManager,
                     _transcodingJobHelper,
                     transcodingJobType,
@@ -208,8 +196,7 @@ namespace Jellyfin.Api.Helpers
 
             // Need to start ffmpeg (because media can't be returned directly)
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-            var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
-            var ffmpegCommandLineArguments = encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
+            var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveAudioFullCommandLine(state, encodingOptions, outputPath);
             return await FileStreamResponseHelpers.GetTranscodedFile(
                 state,
                 isHeadRequest,

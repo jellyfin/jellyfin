@@ -46,9 +46,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly ILogger<VideoHlsController> _logger;
@@ -58,9 +55,6 @@ namespace Jellyfin.Api.Controllers
         /// Initializes a new instance of the <see cref="VideoHlsController"/> class.
         /// </summary>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="userManger">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
@@ -69,11 +63,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{VideoHlsController}"/>.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public VideoHlsController(
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IUserManager userManger,
             IAuthorizationContext authorizationContext,
             ILibraryManager libraryManager,
@@ -81,22 +73,20 @@ namespace Jellyfin.Api.Controllers
             IServerConfigurationManager serverConfigurationManager,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            ILogger<VideoHlsController> logger)
+            ILogger<VideoHlsController> logger,
+            EncodingHelper encodingHelper)
         {
-            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
-
             _authContext = authorizationContext;
             _userManager = userManger;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _logger = logger;
+            _encodingHelper = encodingHelper;
+
             _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
 
@@ -280,9 +270,7 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,

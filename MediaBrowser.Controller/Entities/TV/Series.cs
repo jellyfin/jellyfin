@@ -169,14 +169,12 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             var list = base.GetUserDataKeys();
 
-            var key = this.GetProviderId(MetadataProvider.Imdb);
-            if (!string.IsNullOrEmpty(key))
+            if (this.TryGetProviderId(MetadataProvider.Imdb, out var key))
             {
                 list.Insert(0, key);
             }
 
-            key = this.GetProviderId(MetadataProvider.Tvdb);
-            if (!string.IsNullOrEmpty(key))
+            if (this.TryGetProviderId(MetadataProvider.Tvdb, out key))
             {
                 list.Insert(0, key);
             }
@@ -208,7 +206,7 @@ namespace MediaBrowser.Controller.Entities.TV
             query.AncestorWithPresentationUniqueKey = null;
             query.SeriesPresentationUniqueKey = seriesKey;
             query.IncludeItemTypes = new[] { nameof(Season) };
-            query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
+            query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
 
             if (user != null && !user.DisplayMissingEpisodes)
             {
@@ -228,7 +226,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 query.SeriesPresentationUniqueKey = seriesKey;
                 if (query.OrderBy.Count == 0)
                 {
-                    query.OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray();
+                    query.OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) };
                 }
 
                 if (query.IncludeItemTypes.Length == 0)
@@ -254,7 +252,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { nameof(Episode), nameof(Season) },
-                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
             };
 
@@ -365,7 +363,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 AncestorWithPresentationUniqueKey = queryFromSeries ? null : seriesKey,
                 SeriesPresentationUniqueKey = queryFromSeries ? seriesKey : null,
                 IncludeItemTypes = new[] { nameof(Episode) },
-                OrderBy = new[] { ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 DtoOptions = options
             };
             if (user != null)

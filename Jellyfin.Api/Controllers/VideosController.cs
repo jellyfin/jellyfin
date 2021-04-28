@@ -48,12 +48,11 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly EncodingHelper _encodingHelper;
+
         private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Progressive;
 
         /// <summary>
@@ -66,12 +65,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
         /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public VideosController(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -80,12 +77,10 @@ namespace Jellyfin.Api.Controllers
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            EncodingHelper encodingHelper)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -94,12 +89,10 @@ namespace Jellyfin.Api.Controllers
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _httpClientFactory = httpClientFactory;
+            _encodingHelper = encodingHelper;
         }
 
         /// <summary>
@@ -439,9 +432,7 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _deviceManager,
                     _transcodingJobHelper,
                     _transcodingJobType,
@@ -536,8 +527,7 @@ namespace Jellyfin.Api.Controllers
 
             // Need to start ffmpeg (because media can't be returned directly)
             var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
-            var encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
-            var ffmpegCommandLineArguments = encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, outputPath, "superfast");
+            var ffmpegCommandLineArguments = _encodingHelper.GetProgressiveVideoFullCommandLine(state, encodingOptions, outputPath, "superfast");
             return await FileStreamResponseHelpers.GetTranscodedFile(
                 state,
                 isHeadRequest,

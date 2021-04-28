@@ -50,8 +50,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly ILogger<DynamicHlsController> _logger;
@@ -69,12 +67,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsController}"/> interface.</param>
         /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public DynamicHlsController(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -83,15 +80,12 @@ namespace Jellyfin.Api.Controllers
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             ILogger<DynamicHlsController> logger,
-            DynamicHlsHelper dynamicHlsHelper)
+            DynamicHlsHelper dynamicHlsHelper,
+            EncodingHelper encodingHelper)
         {
-            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
-
             _libraryManager = libraryManager;
             _userManager = userManager;
             _authContext = authContext;
@@ -99,12 +93,12 @@ namespace Jellyfin.Api.Controllers
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _logger = logger;
             _dynamicHlsHelper = dynamicHlsHelper;
+            _encodingHelper = encodingHelper;
+
             _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
 
@@ -1121,9 +1115,7 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,
@@ -1205,9 +1197,7 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,

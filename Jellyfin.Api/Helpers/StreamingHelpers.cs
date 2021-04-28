@@ -44,9 +44,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Initialized <see cref="TranscodingJobHelper"/>.</param>
         /// <param name="transcodingJobType">The <see cref="TranscodingJobType"/>.</param>
@@ -61,16 +59,12 @@ namespace Jellyfin.Api.Helpers
             ILibraryManager libraryManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
+            EncodingHelper encodingHelper,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             TranscodingJobType transcodingJobType,
             CancellationToken cancellationToken)
         {
-            EncodingHelper encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
-
             StreamingHelpers.StreamEvent?.Invoke(null, new StreamEventArgs()
             {
                 Type = StreamEventType.OnHeaderProcessing,
