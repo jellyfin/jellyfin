@@ -74,7 +74,13 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the object's IP address.
         /// </summary>
-        public virtual IPAddress Address => _address;
+        public virtual IPAddress Address
+        {
+            get
+            {
+                return _address;
+            }
+        }
 
         /// <summary>
         /// Gets the object's IP address.
@@ -96,7 +102,13 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the AddressFamily of this object.
         /// </summary>
-        public AddressFamily AddressFamily => Address.Equals(IPAddress.None) ? AddressFamily.Unspecified : Address.AddressFamily;
+        public AddressFamily AddressFamily
+        {
+            get
+            {
+                return Address.Equals(IPAddress.None) ? AddressFamily.Unspecified : Address.AddressFamily;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the object is a network address.
