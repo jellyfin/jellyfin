@@ -87,7 +87,7 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
-            _sessionManager.SessionControllerConnected += OnSessionControllerConnected;
+            _sessionManager.SessionEnded += OnSessionEnded;
         }
 
         /// <inheritdoc />
@@ -352,18 +352,18 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            _sessionManager.SessionControllerConnected -= OnSessionControllerConnected;
+            _sessionManager.SessionEnded -= OnSessionEnded;
             _disposed = true;
         }
 
-        private void OnSessionControllerConnected(object sender, SessionEventArgs e)
+        private void OnSessionEnded(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
 
             if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
             {
-                var request = new JoinGroupRequest(group.GroupId);
-                JoinGroup(session, request, CancellationToken.None);
+                var leaveGroupRequest = new LeaveGroupRequest();
+                LeaveGroup(session, leaveGroupRequest, CancellationToken.None);
             }
         }
 
