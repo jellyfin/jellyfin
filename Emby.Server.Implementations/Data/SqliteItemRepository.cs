@@ -5469,7 +5469,9 @@ AND Type = @InternalPersonType)");
 
             commandText += whereText + " group by PresentationUniqueKey";
 
-            if (query.SimilarTo != null || !string.IsNullOrEmpty(query.SearchTerm))
+            if (query.OrderBy.Count != 0
+                || query.SimilarTo != null
+                || !string.IsNullOrEmpty(query.SearchTerm))
             {
                 commandText += GetOrderByText(query);
             }
