@@ -57,7 +57,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
-            info.MediaAttachments = internalStreams.Select(s => GetMediaAttachment(s))
+            info.MediaAttachments = internalStreams.Select(GetMediaAttachment)
                 .Where(i => i != null)
                 .ToList();
 

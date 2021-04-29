@@ -2324,7 +2324,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.IsLocalFile)
                 .Select(i => System.IO.Path.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .SelectMany(i => directoryService.GetFilePaths(i))
+                .SelectMany(directoryService.GetFilePaths)
                 .ToList();
 
             var deletedImages = ImageInfos

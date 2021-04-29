@@ -116,14 +116,14 @@ namespace Jellyfin.Api.Helpers
             if (!string.IsNullOrWhiteSpace(streamingRequest.AudioCodec))
             {
                 state.SupportedAudioCodecs = streamingRequest.AudioCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(mediaEncoder.CanEncodeToAudioCodec)
                                            ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(streamingRequest.SubtitleCodec))
             {
                 state.SupportedSubtitleCodecs = streamingRequest.SubtitleCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
+                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(mediaEncoder.CanEncodeToSubtitleCodec)
                                               ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
 
