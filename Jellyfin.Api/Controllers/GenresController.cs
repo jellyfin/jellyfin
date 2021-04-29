@@ -71,7 +71,6 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the queryresult of genres.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [AllowAnonymous]
         public ActionResult<QueryResult<BaseItemDto>> GetGenres(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
