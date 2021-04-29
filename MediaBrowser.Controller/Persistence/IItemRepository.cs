@@ -153,8 +153,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Updates the inherited values.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void UpdateInheritedValues(CancellationToken cancellationToken);
+        void UpdateInheritedValues();
 
         int GetCount(InternalItemsQuery query);
 
