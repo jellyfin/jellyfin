@@ -1012,7 +1012,7 @@ namespace Emby.Server.Implementations.Data
                 var providerDelimiterIndex = part.IndexOf('=');
                 if (providerDelimiterIndex != -1 && providerDelimiterIndex == part.LastIndexOf('='))
                 {
-                    item.SetProviderId(part.Slice(0, providerDelimiterIndex), part.Slice(providerDelimiterIndex + 1));
+                    item.SetProviderId(part.Slice(0, providerDelimiterIndex).ToString(), part.Slice(providerDelimiterIndex + 1).ToString());
                 }
             }
         }

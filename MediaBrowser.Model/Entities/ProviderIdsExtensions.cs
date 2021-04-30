@@ -136,36 +136,6 @@ namespace MediaBrowser.Model.Entities
         /// Sets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="value">The value.</param>
-        public static void SetProviderId(this IHasProviderIds instance, ReadOnlySpan<char> name, ReadOnlySpan<char> value)
-        {
-            if (instance == null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
-
-            // If it's null remove the key from the dictionary
-            if (value.IsEmpty)
-            {
-                instance.ProviderIds?.Remove(name.ToString());
-            }
-            else
-            {
-                // Ensure it exists
-                if (instance.ProviderIds == null)
-                {
-                    instance.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                }
-
-                instance.ProviderIds[name.ToString()] = value.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Sets a provider id.
-        /// </summary>
-        /// <param name="instance">The instance.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="value">The value.</param>
         public static void SetProviderId(this IHasProviderIds instance, MetadataProvider provider, string value)
