@@ -558,7 +558,6 @@ namespace Emby.Server.Implementations.Library
             var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService)
             {
                 Parent = parent,
-                Path = fullPath,
                 FileInfo = fileInfo,
                 CollectionType = collectionType,
                 LibraryOptions = libraryOptions
