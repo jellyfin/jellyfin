@@ -1205,7 +1205,7 @@ namespace Emby.Server.Implementations
         {
             // Passing an external address cause GetBindInterface to return the externally facing interface on a multi-adapter system.
             // LocalNetworkSubnets and LocalNetworkAddresses are used in conjunction with the ip address to help select the best interface.
-            return GetLocalApiUrl(NetManager.GetBindInterface("8.8.8.8", out var _), Uri.UriSchemeHttp, HttpPort);
+            return GetLocalApiUrl(NetManager.GetBindInterface("0.0.0.0", out var _), Uri.UriSchemeHttp, HttpPort);
         }
 
         /// <inheritdoc/>
