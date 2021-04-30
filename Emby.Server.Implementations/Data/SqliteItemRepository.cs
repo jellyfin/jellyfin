@@ -2621,21 +2621,10 @@ namespace Emby.Server.Implementations.Data
                 query.Limit = query.Limit.Value + 4;
             }
 
-            var commandText = "select ";
-            if (EnableGroupByPresentationUniqueKey(query))
-            {
-                commandText += "count (distinct PresentationUniqueKey)";
-            }
-            else if (query.GroupBySeriesPresentationUniqueKey)
-            {
-                commandText += "count (distinct SeriesPresentationUniqueKey)";
-            }
-            else
-            {
-                commandText += "count (guid)";
-            }
-
-            commandText += GetFromText() + GetJoinUserDataText(query);
+            var commandText = "select "
+                              + string.Join(',', GetFinalColumnsToSelect(query, new[] { "count(distinct PresentationUniqueKey)" }))
+                              + GetFromText()
+                              + GetJoinUserDataText(query);
 
             var whereClauses = GetWhereClauses(query, null);
             if (whereClauses.Count != 0)
