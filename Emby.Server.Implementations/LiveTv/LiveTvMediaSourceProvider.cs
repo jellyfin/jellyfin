@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.LiveTv
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
                 {
-                    source.Path = _appHost.GetLoopbackHttpApiUrl();
+                    source.Path = _appHost.GetExternalFacingHttpApiUrl();
                 }
             }
 
