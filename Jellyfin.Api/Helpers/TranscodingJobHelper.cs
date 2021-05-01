@@ -763,7 +763,7 @@ namespace Jellyfin.Api.Helpers
                     .ConfigureAwait(false);
                 var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
-                _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.RequestedUrl);
+                _encodingHelper.AttachMediaSourceInfo(state, encodingOptions, liveStreamResponse.MediaSource, state.Extension);
 
                 if (state.VideoRequest != null)
                 {

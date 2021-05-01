@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.MediaEncoding;
 
 namespace Jellyfin.Api.Models.StreamingDtos
 {
@@ -41,5 +41,10 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// Gets or sets the min segments.
         /// </summary>
         public int? MinSegments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original file extension.
+        /// </summary>
+        public string? OriginalExtension { get; set; }
     }
 }

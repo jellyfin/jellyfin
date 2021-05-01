@@ -83,7 +83,7 @@ namespace Jellyfin.Api.Helpers
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
-            var url = httpRequest.Path.Value.Split('.')[^1];
+            var url = streamingRequest.OriginalExtension ?? httpRequest.Path.Value.Split('.')[^1];
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {
@@ -96,9 +96,9 @@ namespace Jellyfin.Api.Helpers
             var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
             {
                 Request = streamingRequest,
-                RequestedUrl = url,
                 UserAgent = httpRequest.Headers[HeaderNames.UserAgent],
-                EnableDlnaHeaders = enableDlnaHeaders
+                EnableDlnaHeaders = enableDlnaHeaders,
+                Extension = url
             };
 
             var auth = authorizationContext.GetAuthorizationInfo(httpRequest);
@@ -166,9 +166,9 @@ namespace Jellyfin.Api.Helpers
 
             var encodingOptions = serverConfigurationManager.GetEncodingOptions();
 
-            encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, url);
+            encodingHelper.AttachMediaSourceInfo(state, encodingOptions, mediaSource, state.Extension);
 
-            string? containerInternal = Path.GetExtension(state.RequestedUrl);
+            string? containerInternal = state.Extension;
 
             if (!string.IsNullOrEmpty(streamingRequest.Container))
             {
@@ -419,11 +419,9 @@ namespace Jellyfin.Api.Helpers
         /// <returns>System.String.</returns>
         private static string? GetOutputFileExtension(StreamState state)
         {
-            var ext = Path.GetExtension(state.RequestedUrl);
-
-            if (!string.IsNullOrEmpty(ext))
+            if (!string.IsNullOrEmpty(state.Extension))
             {
-                return ext;
+                return state.Extension;
             }
 
             // Try to infer based on the desired video codec

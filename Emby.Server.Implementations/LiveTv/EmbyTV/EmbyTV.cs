@@ -1628,7 +1628,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private IRecorder GetRecorder(MediaSourceInfo mediaSource)
         {
-            if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
+            if (mediaSource.RequiresLooping || !mediaSource.Container.EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
                 return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
             }

@@ -315,6 +315,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
+        /// <param name="ext">Optional. The stream's original extension.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("{itemId}/stream")]
@@ -370,7 +371,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
-            [FromQuery] Dictionary<string, string> streamOptions)
+            [FromQuery] Dictionary<string, string> streamOptions,
+            [FromQuery] string? ext)
         {
             var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
             var cancellationTokenSource = new CancellationTokenSource();
@@ -424,7 +426,8 @@ namespace Jellyfin.Api.Controllers
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context ?? EncodingContext.Streaming,
-                StreamOptions = streamOptions
+                StreamOptions = streamOptions,
+                OriginalExtension = ext
             };
 
             using var state = await StreamingHelpers.GetStreamingState(
@@ -568,6 +571,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
+        /// <param name="ext">Optional. The stream's original extension.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("{itemId}/{stream=stream}.{container}")]
@@ -623,7 +627,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
-            [FromQuery] Dictionary<string, string> streamOptions)
+            [FromQuery] Dictionary<string, string> streamOptions,
+            [FromQuery] string? ext)
         {
             return GetVideoStream(
                 itemId,
@@ -674,7 +679,8 @@ namespace Jellyfin.Api.Controllers
                 audioStreamIndex,
                 videoStreamIndex,
                 context,
-                streamOptions);
+                streamOptions,
+                ext);
         }
     }
 }
