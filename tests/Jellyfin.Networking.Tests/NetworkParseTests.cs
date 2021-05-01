@@ -574,7 +574,7 @@ namespace Jellyfin.Networking.Tests
 
             var interfaceToUse = nm.GetBindInterface(source, out _);
 
-            Assert.Equal(interfaceToUse, result);
+            Assert.Equal(result, interfaceToUse);
         }
     }
 }
