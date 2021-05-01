@@ -1,6 +1,6 @@
-#nullable disable
 #pragma warning disable CS1591
 
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -8,14 +8,15 @@ namespace MediaBrowser.Model.Dlna
     public class DirectPlayProfile
     {
         [XmlAttribute("container")]
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
         [XmlAttribute("audioCodec")]
-        public string AudioCodec { get; set; }
+        public string? AudioCodec { get; set; }
 
         [XmlAttribute("videoCodec")]
-        public string VideoCodec { get; set; }
+        public string? VideoCodec { get; set; }
 
+        [Required]
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
@@ -31,7 +32,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool SupportsAudioCodec(string codec)
         {
-            return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
+            return (Type is DlnaProfileType.Audio or DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
         }
     }
 }
