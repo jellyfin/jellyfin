@@ -572,7 +572,7 @@ namespace Jellyfin.Networking.Tests
             NetworkManager.MockNetworkSettings = interfaces;
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            var interfaceToUse = nm.GetBindInterface(source, out var port);
+            var interfaceToUse = nm.GetBindInterface(source, out _);
 
             Assert.Equal(interfaceToUse, result);
         }
