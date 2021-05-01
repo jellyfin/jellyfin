@@ -1201,7 +1201,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetLoopbackHttpApiUrl()
+        public string GetExternalFacingHttpApiUrl()
         {
             // Passing an external address cause GetBindInterface to return the externally facing interface on a multi-adapter system.
             // LocalNetworkSubnets and LocalNetworkAddresses are used in conjunction with the ip address to help select the best interface.
