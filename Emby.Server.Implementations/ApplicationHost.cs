@@ -1201,11 +1201,25 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetExternalFacingHttpApiUrl()
+        public string GetInterfaceHttpApiUrl()
         {
-            // Passing an external address cause GetBindInterface to return the externally facing interface on a multi-adapter system.
-            // LocalNetworkSubnets and LocalNetworkAddresses are used in conjunction with the ip address to help select the best interface.
-            return GetLocalApiUrl(NetManager.GetBindInterface("0.0.0.0", out var _), Uri.UriSchemeHttp, HttpPort);
+            // Published server ends with a /
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
+            {
+                // Published server ends with a '/', so we need to remove it.
+                return PublishedServerUrl.Trim('/');
+            }
+
+            var bind = NetManager.GetInternalBindAddresses().FirstOrDefault() ?? new IPNetAddress(IPAddress.None);
+
+            string smart = NetManager.GetBindInterface(bind, out var port);
+            // If the smartAPI doesn't start with http then treat it as a host or ip.
+            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return smart.Trim('/');
+            }
+
+            return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
         /// <inheritdoc/>
