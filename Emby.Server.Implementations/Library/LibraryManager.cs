@@ -683,7 +683,7 @@ namespace Emby.Server.Implementations.Library
 
                         foreach (var item in items)
                         {
-                            ResolverHelper.SetInitialItemValues(item, parent, _fileSystem, this, directoryService);
+                            ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
                         }
 
                         items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions));
