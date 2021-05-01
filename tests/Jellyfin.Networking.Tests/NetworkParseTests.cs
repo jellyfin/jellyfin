@@ -550,7 +550,7 @@ namespace Jellyfin.Networking.Tests
 
             var interfaceToUse = nm.GetBindInterface(string.Empty, out var port);
 
-            Assert.Equal(interfaceToUse, result);
+            Assert.Equal(result, interfaceToUse);
         }
 
         [Theory]
