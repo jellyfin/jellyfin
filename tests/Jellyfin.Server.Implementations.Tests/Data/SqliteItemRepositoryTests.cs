@@ -168,5 +168,62 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         {
             Assert.Equal(expected, _sqliteItemRepository.SerializeImages(value));
         }
+
+        public static IEnumerable<object[]> DeserializeProviderIds_Valid_TestData()
+        {
+            yield return new object[]
+            {
+                "Imdb=tt0119567",
+                new Dictionary<string, string>()
+                {
+                    { "Imdb", "tt0119567" },
+                }
+            };
+
+            yield return new object[]
+            {
+                "Imdb=tt0119567|Tmdb=330|TmdbCollection=328",
+                new Dictionary<string, string>()
+                {
+                    { "Imdb", "tt0119567" },
+                    { "Tmdb", "330" },
+                    { "TmdbCollection", "328" },
+                }
+            };
+
+            yield return new object[]
+            {
+                "MusicBrainzAlbum=9d363e43-f24f-4b39-bc5a-7ef305c677c7|MusicBrainzReleaseGroup=63eba062-847c-3b73-8b0f-6baf27bba6fa|AudioDbArtist=111352|AudioDbAlbum=2116560|MusicBrainzAlbumArtist=20244d07-534f-4eff-b4d4-930878889970",
+                new Dictionary<string, string>()
+                {
+                    { "MusicBrainzAlbum", "9d363e43-f24f-4b39-bc5a-7ef305c677c7" },
+                    { "MusicBrainzReleaseGroup", "63eba062-847c-3b73-8b0f-6baf27bba6fa" },
+                    { "AudioDbArtist", "111352" },
+                    { "AudioDbAlbum", "2116560" },
+                    { "MusicBrainzAlbumArtist", "20244d07-534f-4eff-b4d4-930878889970" },
+                }
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(DeserializeProviderIds_Valid_TestData))]
+        public void DeserializeProviderIds_Valid_Success(string value, Dictionary<string, string> expected)
+        {
+            var result = new ProviderIdsExtensionsTestsObject();
+            SqliteItemRepository.DeserializeProviderIds(value, result);
+            Assert.Equal(expected, result.ProviderIds);
+        }
+
+        [Theory]
+        [MemberData(nameof(DeserializeProviderIds_Valid_TestData))]
+        public void SerializeProviderIds_Valid_Success(string expected, Dictionary<string, string> values)
+        {
+            Assert.Equal(expected, SqliteItemRepository.SerializeProviderIds(values));
+        }
+
+        private class ProviderIdsExtensionsTestsObject : IHasProviderIds
+        {
+            public Dictionary<string, string> ProviderIds { get; set; } = new Dictionary<string, string>();
+        }
     }
 }
