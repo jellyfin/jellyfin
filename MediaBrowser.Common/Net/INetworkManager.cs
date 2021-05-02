@@ -24,6 +24,11 @@ namespace MediaBrowser.Common.Net
         IpClassType IpClassType { get; }
 
         /// <summary>
+        /// Gets a value indicating whether iP4 is enabled.
+        /// </summary>
+        bool IsIP4Enabled { get; }
+
+        /// <summary>
         /// Calculates the list of interfaces to use for Kestrel.
         /// </summary>
         /// <returns>A Collection{IPNetAddress} object containing all the interfaces to bind.
