@@ -897,7 +897,7 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@ExternalSeriesId", item.ExternalSeriesId);
             saveItemStatement.TryBind("@Tagline", item.Tagline);
 
-            saveItemStatement.TryBind("@ProviderIds", SerializeProviderIds(item));
+            saveItemStatement.TryBind("@ProviderIds", SerializeProviderIds(item.ProviderIds));
             saveItemStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
 
             if (item.ProductionLocations.Length > 0)
@@ -968,10 +968,10 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.MoveNext();
         }
 
-        private static string SerializeProviderIds(BaseItem item)
+        internal static string SerializeProviderIds(Dictionary<string, string> providerIds)
         {
             StringBuilder str = new StringBuilder();
-            foreach (var i in item.ProviderIds)
+            foreach (var i in providerIds)
             {
                 // Ideally we shouldn't need this IsNullOrWhiteSpace check,
                 // but we're seeing some cases of bad data slip through
@@ -995,14 +995,9 @@ namespace Emby.Server.Implementations.Data
             return str.ToString();
         }
 
-        private static void DeserializeProviderIds(string value, BaseItem item)
+        internal static void DeserializeProviderIds(string value, IHasProviderIds item)
         {
             if (string.IsNullOrWhiteSpace(value))
-            {
-                return;
-            }
-
-            if (item.ProviderIds.Count > 0)
             {
                 return;
             }
@@ -1787,16 +1782,16 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (item.ProviderIds.Count == 0 && !reader.IsDBNull(index))
             {
                 DeserializeProviderIds(reader.GetString(index), item);
             }
 
             index++;
 
-            if (query.DtoOptions.EnableImages && item.ImageInfos.Length == 0)
+            if (query.DtoOptions.EnableImages)
             {
-                if (!reader.IsDBNull(index))
+                if (item.ImageInfos.Length == 0 && !reader.IsDBNull(index))
                 {
                     item.ImageInfos = DeserializeImages(reader.GetString(index));
                 }
