@@ -247,6 +247,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
+        /// <param name="ext">Optional. The original stream extension.</param>
         /// <response code="200">Audio stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("{itemId}/stream.{container}", Name = "GetAudioStreamByContainer")]
@@ -302,7 +303,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
-            [FromQuery] Dictionary<string, string>? streamOptions)
+            [FromQuery] Dictionary<string, string>? streamOptions,
+            [FromQuery] string? ext)
         {
             StreamingRequestDto streamingRequest = new StreamingRequestDto
             {
@@ -354,7 +356,8 @@ namespace Jellyfin.Api.Controllers
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context ?? EncodingContext.Static,
-                StreamOptions = streamOptions
+                StreamOptions = streamOptions,
+                OriginalExtension = ext
             };
 
             return await _audioHelper.GetAudioStream(_transcodingJobType, streamingRequest).ConfigureAwait(false);

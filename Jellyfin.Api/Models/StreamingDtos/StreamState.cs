@@ -30,11 +30,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         }
 
         /// <summary>
-        /// Gets or sets the requested url.
-        /// </summary>
-        public string? RequestedUrl { get; set; }
-
-        /// <summary>
         /// Gets or sets the request.
         /// </summary>
         public StreamingRequestDto Request
@@ -124,6 +119,11 @@ namespace Jellyfin.Api.Models.StreamingDtos
                 return SegmentLength >= 10 ? 2 : 3;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the stream's extension.
+        /// </summary>
+        public string? Extension { get; set; }
 
         /// <summary>
         /// Gets or sets the user agent.
