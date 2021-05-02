@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(remote.Address, HdHomerunManager.HdHomeRunPort, openCancellationToken).ConfigureAwait(false);
+                    await tcpClient.ConnectAsync(remote.Address, _config.HDHomeRunPort, openCancellationToken).ConfigureAwait(false);
                     localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address;
                     tcpClient.Close();
                 }
@@ -90,7 +90,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
 
             var udpClient = new UdpClient(localPort, _networkManager.IpClassType == IpClassType.Ip4Only ? AddressFamily.InterNetwork : AddressFamily.InterNetworkV6);
-            var hdHomerunManager = new HdHomerunManager();
+            var hdHomerunManager = new HdHomerunManager(_config.HDHomeRunPort);
 
             try
             {

@@ -123,6 +123,11 @@ namespace Jellyfin.Networking.Configuration
         public string HDHomerunPortRange { get; set; } = "49152-65535";
 
         /// <summary>
+        /// Gets or sets the port to use for HDHomeRun.
+        /// </summary>
+        public int HDHomeRunPort { get; set; } = 65001;
+
+        /// <summary>
         /// Gets or sets a value indicating whether HDHomerun should use IP6.
         /// </summary>
         public bool HDHomeRunIP6 { get; set; }

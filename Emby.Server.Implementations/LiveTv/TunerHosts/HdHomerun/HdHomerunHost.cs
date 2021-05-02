@@ -260,7 +260,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var uri = new Uri(GetApiUrl(info));
 
-            using (var manager = new HdHomerunManager())
+            using (var manager = new HdHomerunManager(_config.HDHomeRunPort))
             {
                 var ipInfo = IPHost.Parse(uri.Host, _config.HDHomeRunIP6 ? IpClassType.Ip6Only : IpClassType.Ip4Only);
 
@@ -659,8 +659,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<List<TunerHostInfo>> DiscoverDevices(int discoveryDurationMs, CancellationToken cancellationToken)
         {
-            const int HdHomeRunPort = 65001;
-
             lock (_modelCache)
             {
                 _modelCache.Clear();
@@ -686,7 +684,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     discBytes,
                     SocketFlags.None,
                     UdpHelper.GetMulticastEndPoint(
-                        HdHomeRunPort,
+                        configuration.HDHomeRunPort,
                         family)).ConfigureAwait(false);
 
                 try

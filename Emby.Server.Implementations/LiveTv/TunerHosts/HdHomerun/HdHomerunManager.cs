@@ -81,8 +81,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
     public sealed class HdHomerunManager : IDisposable
     {
-        public const int HdHomeRunPort = 65001;
-
         // Message constants
         private const byte GetSetName = 3;
         private const byte GetSetValue = 4;
@@ -95,6 +93,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private IPEndPoint _remoteEndPoint;
 
         private TcpClient _tcpClient;
+
+        private int _hdHomeRunPort;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HdHomerunManager"/> class.
+        /// </summary>
+        /// <param name="port">The port to use.</param>
+        public HdHomerunManager(int port)
+        {
+            _hdHomeRunPort = port;
+        }
 
         public void Dispose()
         {
@@ -114,7 +123,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
             using var client = new TcpClient();
-            client.Connect(remoteIp, HdHomeRunPort);
+            client.Connect(remoteIp, _hdHomeRunPort);
 
             using var stream = client.GetStream();
             return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
@@ -140,7 +149,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task StartStreaming(IPAddress remoteIp, IPAddress localIp, int localPort, IHdHomerunChannelCommands commands, int numTuners, CancellationToken cancellationToken)
         {
-            _remoteEndPoint = new IPEndPoint(remoteIp, HdHomeRunPort);
+            _remoteEndPoint = new IPEndPoint(remoteIp, _hdHomeRunPort);
 
             _tcpClient = new TcpClient();
             _tcpClient.Connect(_remoteEndPoint);
