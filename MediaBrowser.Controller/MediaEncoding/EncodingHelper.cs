@@ -393,7 +393,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Infers the video codec.
         /// </summary>
-        /// <param name="ext">The file extensive.</param>
+        /// <param name="ext">The file extension.</param>
         /// <returns>System.Nullable{VideoCodecs}.</returns>
         public string InferVideoCodec(string ext)
         {
