@@ -3319,7 +3319,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">The encoding job info.</param>
         /// <param name="encodingOptions">The encoding options.</param>
         /// <returns>The option string or null if none available.</returns>
-        protected string? GetHardwareAcceleratedVideoDecoder(EncodingJobInfo state, EncodingOptions encodingOptions)
+        protected string GetHardwareAcceleratedVideoDecoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var videoStream = state.VideoStream;
 
