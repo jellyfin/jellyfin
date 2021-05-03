@@ -297,7 +297,7 @@ namespace MediaBrowser.Model.Dlna
             int? inputAudioSampleRate = audioStream?.SampleRate;
             int? inputAudioBitDepth = audioStream?.BitDepth;
 
-            if (directPlayMethods.Count() > 0)
+            if (directPlayMethods.Any())
             {
                 string audioCodec = audioStream?.Codec;
 

@@ -60,10 +60,10 @@ namespace MediaBrowser.Controller.Library
         public FileSystemMetadata FileInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the path.
+        /// Gets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string Path => FileInfo.FullName;
 
         /// <summary>
         /// Gets a value indicating whether this instance is directory.
