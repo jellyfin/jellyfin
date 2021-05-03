@@ -166,9 +166,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         public void CreatePlugins()
         {
-            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance)
-                .Where(i => i != null)
-                .ToArray();
+            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance);
         }
 
         /// <summary>

@@ -238,48 +238,6 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a remote image.
-        /// </summary>
-        /// <param name="imageUrl">The image url.</param>
-        /// <param name="providerName">The provider name.</param>
-        /// <response code="200">Remote image retrieved.</response>
-        /// <returns>
-        /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
-        /// The task result contains an <see cref="FileStreamResult"/> containing the images file stream.
-        /// </returns>
-        [HttpGet("Items/RemoteSearch/Image")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesImageFile]
-        public async Task<ActionResult> GetRemoteSearchImage(
-            [FromQuery, Required] string imageUrl,
-            [FromQuery, Required] string providerName)
-        {
-            var urlHash = imageUrl.GetMD5();
-            var pointerCachePath = GetFullCachePath(urlHash.ToString());
-
-            try
-            {
-                var contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-                if (System.IO.File.Exists(contentPath))
-                {
-                    return PhysicalFile(contentPath, MimeTypes.GetMimeType(contentPath));
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                // Means the file isn't cached yet
-            }
-            catch (IOException)
-            {
-                // Means the file isn't cached yet
-            }
-
-            await DownloadImage(providerName, imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-            var updatedContentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-            return PhysicalFile(updatedContentPath, MimeTypes.GetMimeType(updatedContentPath));
-        }
-
-        /// <summary>
         /// Applies search criteria to an item and refreshes metadata.
         /// </summary>
         /// <param name="itemId">Item id.</param>
@@ -320,54 +278,5 @@ namespace Jellyfin.Api.Controllers
 
             return NoContent();
         }
-
-        /// <summary>
-        /// Downloads the image.
-        /// </summary>
-        /// <param name="providerName">Name of the provider.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="urlHash">The URL hash.</param>
-        /// <param name="pointerCachePath">The pointer cache path.</param>
-        /// <returns>Task.</returns>
-        private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
-        {
-            using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
-            if (result.Content.Headers.ContentType?.MediaType == null)
-            {
-                throw new ResourceNotFoundException(nameof(result.Content.Headers.ContentType));
-            }
-
-            var ext = result.Content.Headers.ContentType.MediaType.Split('/')[^1];
-            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
-
-            var directory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
-            Directory.CreateDirectory(directory);
-            using (var stream = result.Content)
-            {
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                await using var fileStream = new FileStream(
-                    fullCachePath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    IODefaults.FileStreamBufferSize,
-                    true);
-
-                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-            }
-
-            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));
-
-            Directory.CreateDirectory(pointerCacheDirectory);
-            await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Gets the full cache path.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.String.</returns>
-        private string GetFullCachePath(string filename)
-            => Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
     }
 }

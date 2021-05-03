@@ -502,7 +502,7 @@ namespace Emby.Server.Implementations.Data
                     using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
                         saveImagesStatement.TryBind("@Id", item.Id.ToByteArray());
-                        saveImagesStatement.TryBind("@Images", SerializeImages(item));
+                        saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
 
                         saveImagesStatement.MoveNext();
                     }
@@ -897,8 +897,8 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.TryBind("@ExternalSeriesId", item.ExternalSeriesId);
             saveItemStatement.TryBind("@Tagline", item.Tagline);
 
-            saveItemStatement.TryBind("@ProviderIds", SerializeProviderIds(item));
-            saveItemStatement.TryBind("@Images", SerializeImages(item));
+            saveItemStatement.TryBind("@ProviderIds", SerializeProviderIds(item.ProviderIds));
+            saveItemStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
 
             if (item.ProductionLocations.Length > 0)
             {
@@ -968,10 +968,10 @@ namespace Emby.Server.Implementations.Data
             saveItemStatement.MoveNext();
         }
 
-        private static string SerializeProviderIds(BaseItem item)
+        internal static string SerializeProviderIds(Dictionary<string, string> providerIds)
         {
             StringBuilder str = new StringBuilder();
-            foreach (var i in item.ProviderIds)
+            foreach (var i in providerIds)
             {
                 // Ideally we shouldn't need this IsNullOrWhiteSpace check,
                 // but we're seeing some cases of bad data slip through
@@ -995,14 +995,9 @@ namespace Emby.Server.Implementations.Data
             return str.ToString();
         }
 
-        private static void DeserializeProviderIds(string value, BaseItem item)
+        internal static void DeserializeProviderIds(string value, IHasProviderIds item)
         {
             if (string.IsNullOrWhiteSpace(value))
-            {
-                return;
-            }
-
-            if (item.ProviderIds.Count > 0)
             {
                 return;
             }
@@ -1017,10 +1012,8 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private string SerializeImages(BaseItem item)
+        internal string SerializeImages(ItemImageInfo[] images)
         {
-            var images = item.ImageInfos;
-
             if (images.Length == 0)
             {
                 return null;
@@ -1042,16 +1035,11 @@ namespace Emby.Server.Implementations.Data
             return str.ToString();
         }
 
-        private void DeserializeImages(string value, BaseItem item)
+        internal ItemImageInfo[] DeserializeImages(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                return;
-            }
-
-            if (item.ImageInfos.Length > 0)
-            {
-                return;
+                return Array.Empty<ItemImageInfo>();
             }
 
             var list = new List<ItemImageInfo>();
@@ -1065,15 +1053,14 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            item.ImageInfos = list.ToArray();
+            return list.ToArray();
         }
 
-        public void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
+        private void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)
         {
             const char Delimiter = '*';
 
             var path = image.Path ?? string.Empty;
-            var hash = image.BlurHash ?? string.Empty;
 
             bldr.Append(GetPathToSave(path))
                 .Append(Delimiter)
@@ -1083,11 +1070,16 @@ namespace Emby.Server.Implementations.Data
                 .Append(Delimiter)
                 .Append(image.Width)
                 .Append(Delimiter)
-                .Append(image.Height)
-                .Append(Delimiter)
-                // Replace delimiters with other characters.
-                // This can be removed when we migrate to a proper DB.
-                .Append(hash.Replace('*', '/').Replace('|', '\\'));
+                .Append(image.Height);
+
+            var hash = image.BlurHash;
+            if (!string.IsNullOrEmpty(hash))
+            {
+                bldr.Append(Delimiter)
+                    // Replace delimiters with other characters.
+                    // This can be removed when we migrate to a proper DB.
+                    .Append(hash.Replace('*', '/').Replace('|', '\\'));
+            }
         }
 
         private ItemImageInfo ItemImageInfoFromValueString(ReadOnlySpan<char> value)
@@ -1834,7 +1826,7 @@ namespace Emby.Server.Implementations.Data
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (item.ProviderIds.Count == 0 && !reader.IsDBNull(index))
             {
                 DeserializeProviderIds(reader.GetString(index), item);
             }
@@ -1843,9 +1835,9 @@ namespace Emby.Server.Implementations.Data
 
             if (query.DtoOptions.EnableImages)
             {
-                if (!reader.IsDBNull(index))
+                if (item.ImageInfos.Length == 0 && !reader.IsDBNull(index))
                 {
-                    DeserializeImages(reader.GetString(index), item);
+                    item.ImageInfos = DeserializeImages(reader.GetString(index));
                 }
 
                 index++;

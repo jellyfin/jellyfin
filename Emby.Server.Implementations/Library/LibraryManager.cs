@@ -558,7 +558,6 @@ namespace Emby.Server.Implementations.Library
             var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService)
             {
                 Parent = parent,
-                Path = fullPath,
                 FileInfo = fileInfo,
                 CollectionType = collectionType,
                 LibraryOptions = libraryOptions
@@ -684,7 +683,7 @@ namespace Emby.Server.Implementations.Library
 
                         foreach (var item in items)
                         {
-                            ResolverHelper.SetInitialItemValues(item, parent, _fileSystem, this, directoryService);
+                            ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
                         }
 
                         items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions));

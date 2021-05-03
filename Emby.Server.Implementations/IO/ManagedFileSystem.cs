@@ -260,8 +260,6 @@ namespace Emby.Server.Implementations.IO
                             result.Exists = false;
                         }
                     }
-
-                    result.DirectoryName = fileInfo.DirectoryName;
                 }
 
                 result.CreationTimeUtc = GetCreationTimeUtc(info);
