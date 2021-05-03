@@ -33,33 +33,33 @@ namespace MediaBrowser.Common.Extensions
     /// <summary>
     /// Extension class for splitting lines without unnecessary allocations.
     /// </summary>
-    public static class SplitLinesStringExtensions
+    public static class SplitStringExtensions
     {
         /// <summary>
-        /// Creates a new line split enumerator.
+        /// Creates a new string split enumerator.
         /// </summary>
         /// <param name="str">The string to split.</param>
         /// <param name="separator">The separator to split on.</param>
         /// <returns>The enumerator struct.</returns>
         [Pure]
-        public static LineSplitEnumerator SpanSplit(this string str, char separator) => new (str.AsSpan(), separator);
+        public static SplitEnumerator SpanSplit(this string str, char separator) => new (str.AsSpan(), separator);
 
         /// <summary>
-        /// Creates a new line split enumerator.
+        /// Creates a new span split enumerator.
         /// </summary>
         /// <param name="str">The span to split.</param>
         /// <param name="separator">The separator to split on.</param>
         /// <returns>The enumerator struct.</returns>
         [Pure]
-        public static LineSplitEnumerator Split(this ReadOnlySpan<char> str, char separator) => new (str, separator);
+        public static SplitEnumerator Split(this ReadOnlySpan<char> str, char separator) => new (str, separator);
 
         [StructLayout(LayoutKind.Auto)]
-        public ref struct LineSplitEnumerator
+        public ref struct SplitEnumerator
         {
             private readonly char _separator;
             private ReadOnlySpan<char> _str;
 
-            public LineSplitEnumerator(ReadOnlySpan<char> str, char separator)
+            public SplitEnumerator(ReadOnlySpan<char> str, char separator)
             {
                 _str = str;
                 _separator = separator;
@@ -68,7 +68,7 @@ namespace MediaBrowser.Common.Extensions
 
             public ReadOnlySpan<char> Current { get; private set; }
 
-            public readonly LineSplitEnumerator GetEnumerator() => this;
+            public readonly SplitEnumerator GetEnumerator() => this;
 
             public bool MoveNext()
             {

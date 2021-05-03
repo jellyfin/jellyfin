@@ -1082,7 +1082,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private ItemImageInfo ItemImageInfoFromValueString(ReadOnlySpan<char> value)
+        internal ItemImageInfo ItemImageInfoFromValueString(ReadOnlySpan<char> value)
         {
             var nextSegment = value.IndexOf('*');
             if (nextSegment == -1)
@@ -1103,7 +1103,7 @@ namespace Emby.Server.Implementations.Data
             nextSegment = value.IndexOf('*');
             if (nextSegment == -1)
             {
-                return null;
+                nextSegment = value.Length;
             }
 
             ReadOnlySpan<char> imageType = value[..nextSegment];
@@ -1128,13 +1128,18 @@ namespace Emby.Server.Implementations.Data
             {
                 value = value[(nextSegment + 1)..];
                 nextSegment = value.IndexOf('*');
+                if (nextSegment == -1 || nextSegment == value.Length)
+                {
+                    return image;
+                }
+
                 ReadOnlySpan<char> widthSpan = value[..nextSegment];
 
                 value = value[(nextSegment + 1)..];
                 nextSegment = value.IndexOf('*');
                 if (nextSegment == -1)
                 {
-                    return image;
+                    nextSegment = value.Length;
                 }
 
                 ReadOnlySpan<char> heightSpan = value[..nextSegment];
@@ -1146,10 +1151,9 @@ namespace Emby.Server.Implementations.Data
                     image.Height = height;
                 }
 
-                nextSegment += 1;
                 if (nextSegment < value.Length - 1)
                 {
-                    value = value[nextSegment..];
+                    value = value[(nextSegment + 1)..];
                     var length = value.Length;
 
                     Span<char> blurHashSpan = stackalloc char[length];
