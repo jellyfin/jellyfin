@@ -618,16 +618,6 @@ namespace Jellyfin.Networking.Manager
                     _interfaceAddresses.AddItem(address, false);
                     _interfaceNames[parts[2]] = Math.Abs(index);
                 }
-
-                if (IpClassType == IpClassType.Ip4Only)
-                {
-                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
-                }
-
-                if (IpClassType == IpClassType.Ip6Only)
-                {
-                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
-                }
             }
 
             InitialiseLan(config);
@@ -978,17 +968,14 @@ namespace Jellyfin.Networking.Manager
                     _internalInterfaces = CreateCollection(
                         _interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
 
-                    // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IpClassType == IpClassType.Ip6Only)
                     {
-                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback, true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("fc00::/7"), true); // ULA
                         _lanSubnets.AddItem(IPNetAddress.Parse("fe80::/10"), true); // Site local
                     }
 
                     if (IpClassType == IpClassType.Ip4Only)
                     {
-                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback, true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("10.0.0.0/8"), true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("172.16.0.0/12"), true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("192.168.0.0/16"), true);
@@ -996,17 +983,6 @@ namespace Jellyfin.Networking.Manager
                 }
                 else
                 {
-                    // We must listen on loopback for LiveTV to function regardless of the settings.
-                    if (IpClassType == IpClassType.Ip6Only)
-                    {
-                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback, true);
-                    }
-
-                    if (IpClassType == IpClassType.Ip4Only)
-                    {
-                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback, true);
-                    }
-
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
                     _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
