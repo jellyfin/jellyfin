@@ -1201,25 +1201,12 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetInterfaceHttpApiUrl()
+        public string GetUrlForUseByHttpApi()
         {
-            // Published server ends with a /
-            if (!string.IsNullOrEmpty(PublishedServerUrl))
-            {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
-            }
+            var bind = NetManager.GetInternalBindAddresses().FirstOrDefault() ??
+                NetManager.GetAllBindInterfaces(true).FirstOrDefault();
 
-            var bind = NetManager.GetInternalBindAddresses().FirstOrDefault() ?? new IPNetAddress(IPAddress.None);
-
-            string smart = NetManager.GetBindInterface(bind, out var port);
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(bind.Address.ToString(), Uri.UriSchemeHttp);
         }
 
         /// <inheritdoc/>
