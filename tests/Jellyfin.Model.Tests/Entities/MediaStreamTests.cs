@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -5,27 +7,22 @@ namespace Jellyfin.Model.Tests.Entities
 {
     public class MediaStreamTests
     {
-        [Theory]
-        [InlineData("ASS")]
-        [InlineData("SRT")]
-        [InlineData("")]
-        public void GetDisplayTitle_should_append_codec_for_subtitle(string codec)
+        public static IEnumerable<object[]> Get_DisplayTitle_TestData()
         {
-            var mediaStream = new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Codec = codec };
-
-            Assert.Contains(codec, mediaStream.DisplayTitle, System.StringComparison.InvariantCultureIgnoreCase);
+            return new List<object[]>
+            {
+                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = string.Empty, IsForced = false, IsDefault = false, Codec = "ASS" }, "English - Und - ASS" },
+                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = string.Empty, IsForced = false, IsDefault = false, Codec = string.Empty }, "English - Und" },
+                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = "EN", IsForced = false, IsDefault = false, Codec = string.Empty }, "English" },
+                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = "EN", IsForced = true,  IsDefault = true, Codec = "SRT" }, "English - Default - Forced - SRT" },
+                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = null, Language = null, IsForced = false, IsDefault = false, Codec = null }, "Und" }
+            };
         }
 
         [Theory]
-        [InlineData("English", "", false, false, "ASS", "English - Und - ASS")]
-        [InlineData("English", "", false, false, "", "English - Und")]
-        [InlineData("English", "EN", false, false, "", "English")]
-        [InlineData("English", "EN", true, true, "SRT", "English - Default - Forced - SRT")]
-        [InlineData(null, null, false, false, null, "Und")]
-        public void GetDisplayTitle_should_return_valid_for_subtitle(string title, string language, bool isForced, bool isDefault, string codec, string expected)
+        [MemberData(nameof(Get_DisplayTitle_TestData))]
+        public void Get_DisplayTitle_should_return_valid_title(MediaStream mediaStream, string expected)
         {
-            var mediaStream = new MediaStream { Type = MediaStreamType.Subtitle, Language = language, Title = title, IsForced = isForced, IsDefault = isDefault, Codec = codec };
-
             Assert.Equal(expected, mediaStream.DisplayTitle);
         }
     }
