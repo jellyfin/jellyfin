@@ -244,7 +244,7 @@ namespace MediaBrowser.Model.Entities
 
                         if (!string.IsNullOrEmpty(Codec))
                         {
-                                attributes.Add(Codec.ToUpperInvariant());
+                            attributes.Add(Codec.ToUpperInvariant());
                         }
 
                         if (!string.IsNullOrEmpty(Title))
