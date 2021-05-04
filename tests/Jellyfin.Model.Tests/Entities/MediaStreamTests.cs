@@ -11,11 +11,71 @@ namespace Jellyfin.Model.Tests.Entities
         {
             return new List<object[]>
             {
-                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = string.Empty, IsForced = false, IsDefault = false, Codec = "ASS" }, "English - Und - ASS" },
-                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = string.Empty, IsForced = false, IsDefault = false, Codec = string.Empty }, "English - Und" },
-                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = "EN", IsForced = false, IsDefault = false, Codec = string.Empty }, "English" },
-                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = "English", Language = "EN", IsForced = true,  IsDefault = true, Codec = "SRT" }, "English - Default - Forced - SRT" },
-                new object[] { new MediaStream { Type = MediaStreamType.Subtitle, Title = null, Language = null, IsForced = false, IsDefault = false, Codec = null }, "Und" }
+                new object[]
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Subtitle,
+                        Title = "English",
+                        Language = string.Empty,
+                        IsForced = false,
+                        IsDefault = false,
+                        Codec = "ASS"
+                    },
+                    "English - Und - ASS"
+                },
+                new object[]
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Subtitle,
+                        Title = "English",
+                        Language = string.Empty,
+                        IsForced = false,
+                        IsDefault = false,
+                        Codec = string.Empty
+                    },
+                    "English - Und"
+                },
+                new object[]
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Subtitle,
+                        Title = "English",
+                        Language = "EN",
+                        IsForced = false,
+                        IsDefault = false,
+                        Codec = string.Empty
+                    },
+                    "English"
+                },
+                new object[]
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Subtitle,
+                        Title = "English",
+                        Language = "EN",
+                        IsForced = true,
+                        IsDefault = true,
+                        Codec = "SRT"
+                    },
+                    "English - Default - Forced - SRT"
+                },
+                new object[]
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Subtitle,
+                        Title = null,
+                        Language = null,
+                        IsForced = false,
+                        IsDefault = false,
+                        Codec = null
+                    },
+                    "Und"
+                }
             };
         }
 
