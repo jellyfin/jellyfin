@@ -432,8 +432,8 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
         public ResponseProfile? GetVideoMediaProfile(
             string container,
-            string audioCodec,
-            string videoCodec,
+            string? audioCodec,
+            string? videoCodec,
             int? width,
             int? height,
             int? bitDepth,
