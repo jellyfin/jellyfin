@@ -1,6 +1,8 @@
-﻿using Jellyfin.Api.Models.ClientLogDtos;
+﻿using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Model.ClientLog;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +11,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Client log controller.
     /// </summary>
+    [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ClientLogController : BaseJellyfinApiController
     {
         private readonly IClientEventLogger _clientEventLogger;
