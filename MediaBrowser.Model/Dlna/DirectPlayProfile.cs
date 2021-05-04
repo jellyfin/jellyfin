@@ -32,7 +32,7 @@ namespace MediaBrowser.Model.Dlna
 
         public bool SupportsAudioCodec(string codec)
         {
-            return (Type is DlnaProfileType.Audio or DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
+            return (Type == DlnaProfileType.Audio || Type == DlnaProfileType.Video) && ContainerProfile.ContainsContainer(AudioCodec, codec);
         }
     }
 }
