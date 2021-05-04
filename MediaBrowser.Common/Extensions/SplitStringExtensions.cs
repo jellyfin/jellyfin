@@ -86,13 +86,6 @@ namespace MediaBrowser.Common.Extensions
                     return true;
                 }
 
-                if (index < span.Length - 1 && span[index] == _separator)
-                {
-                    Current = span.Slice(0, index);
-                    _str = span[(index + 1)..];
-                    return true;
-                }
-
                 Current = span.Slice(0, index);
                 _str = span[(index + 1)..];
                 return true;

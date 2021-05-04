@@ -96,7 +96,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         [MemberData(nameof(ItemImageInfoFromValueString_Valid_TestData))]
         public void ItemImageInfoFromValueString_Valid_Success(string value, ItemImageInfo expected)
         {
-            var result = _sqliteItemRepository.ItemImageInfoFromValueString(value.AsSpan());
+            var result = _sqliteItemRepository.ItemImageInfoFromValueString(value);
             Assert.Equal(expected.Path, result.Path);
             Assert.Equal(expected.Type, result.Type);
             Assert.Equal(expected.DateModified, result.DateModified);
@@ -111,7 +111,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         [InlineData("https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0")]
         public void ItemImageInfoFromValueString_Invalid_Null(string value)
         {
-            Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value.AsSpan()));
+            Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value));
         }
 
         public static IEnumerable<object[]> DeserializeImages_Valid_TestData()
