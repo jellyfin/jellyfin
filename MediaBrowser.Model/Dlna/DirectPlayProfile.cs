@@ -16,7 +16,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("videoCodec")]
         public string? VideoCodec { get; set; }
 
-        [Required]
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
