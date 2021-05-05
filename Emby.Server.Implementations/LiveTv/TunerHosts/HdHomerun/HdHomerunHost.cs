@@ -421,10 +421,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             string audioCodec = channelInfo.AudioCodec;
 
-            if (!videoBitrate.HasValue)
-            {
-                videoBitrate = isHd ? 15000000 : 2000000;
-            }
+            videoBitrate ??= isHd ? 15000000 : 2000000;
 
             int? audioBitrate = isHd ? 448000 : 192000;
 

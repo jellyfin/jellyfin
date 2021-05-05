@@ -176,10 +176,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     lock (_rootFolderSyncLock)
                     {
-                        if (_rootFolder == null)
-                        {
-                            _rootFolder = CreateRootFolder();
-                        }
+                        _rootFolder ??= CreateRootFolder();
                     }
                 }
 

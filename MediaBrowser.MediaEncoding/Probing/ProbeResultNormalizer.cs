@@ -1187,43 +1187,28 @@ namespace MediaBrowser.MediaEncoding.Probing
             FetchStudios(audio, tags, "label");
 
             // These support mulitple values, but for now we only store the first.
-            var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
-            }
+            var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
@@ -1290,15 +1275,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private IEnumerable<string> GetSplitWhitelist()
         {
-            if (_splitWhiteList == null)
-            {
-                _splitWhiteList = new List<string>
-                        {
-                            "AC/DC"
-                        };
-            }
-
-            return _splitWhiteList;
+            return _splitWhiteList ??= new List<string> { "AC/DC" };
         }
 
         /// <summary>
