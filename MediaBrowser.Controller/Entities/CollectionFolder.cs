@@ -354,9 +354,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (result.Count == 0)
             {
-                var folder = LibraryManager.FindByPath(path, true) as Folder;
-
-                if (folder != null)
+                if (LibraryManager.FindByPath(path, true) is Folder folder)
                 {
                     result.Add(folder);
                 }

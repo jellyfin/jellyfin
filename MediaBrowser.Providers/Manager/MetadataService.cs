@@ -281,8 +281,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
 
-                var folder = item as Folder;
-                if (folder != null)
+                if (item is Folder folder)
                 {
                     return folder.SupportsDateLastMediaAdded || folder.SupportsCumulativeRunTimeTicks;
                 }
@@ -336,8 +335,7 @@ namespace MediaBrowser.Providers.Manager
 
         private ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
         {
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsCumulativeRunTimeTicks)
+            if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
             {
                 long ticks = 0;
 
