@@ -1,6 +1,6 @@
+#nullable disable
 #pragma warning disable CA1819 // Properties should not return arrays
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Xml.Serialization;
 using MediaBrowser.Model.MediaInfo;
@@ -14,103 +14,120 @@ namespace MediaBrowser.Model.Dlna
     public class DeviceProfile
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceProfile"/> class.
+        /// </summary>
+        public DeviceProfile()
+        {
+            DirectPlayProfiles = Array.Empty<DirectPlayProfile>();
+            TranscodingProfiles = Array.Empty<TranscodingProfile>();
+            ResponseProfiles = Array.Empty<ResponseProfile>();
+            CodecProfiles = Array.Empty<CodecProfile>();
+            ContainerProfiles = Array.Empty<ContainerProfile>();
+            SubtitleProfiles = Array.Empty<SubtitleProfile>();
+
+            XmlRootAttributes = Array.Empty<XmlAttribute>();
+
+            SupportedMediaTypes = "Audio,Photo,Video";
+            MaxStreamingBitrate = 8000000;
+            MaxStaticBitrate = 8000000;
+            MusicStreamingTranscodingBitrate = 128000;
+        }
+
+        /// <summary>
         /// Gets or sets the Name.
         /// </summary>
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the Id.
         /// </summary>
         [XmlIgnore]
-        public string? Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the Identification.
         /// </summary>
-        public DeviceIdentification? Identification { get; set; }
+        public DeviceIdentification Identification { get; set; }
 
         /// <summary>
         /// Gets or sets the FriendlyName.
         /// </summary>
-        public string? FriendlyName { get; set; }
+        public string FriendlyName { get; set; }
 
         /// <summary>
         /// Gets or sets the Manufacturer.
         /// </summary>
-        public string? Manufacturer { get; set; }
+        public string Manufacturer { get; set; }
 
         /// <summary>
         /// Gets or sets the ManufacturerUrl.
         /// </summary>
-        public string? ManufacturerUrl { get; set; }
+        public string ManufacturerUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the ModelName.
         /// </summary>
-        public string? ModelName { get; set; }
+        public string ModelName { get; set; }
 
         /// <summary>
         /// Gets or sets the ModelDescription.
         /// </summary>
-        public string? ModelDescription { get; set; }
+        public string ModelDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the ModelNumber.
         /// </summary>
-        public string? ModelNumber { get; set; }
+        public string ModelNumber { get; set; }
 
         /// <summary>
         /// Gets or sets the ModelUrl.
         /// </summary>
-        public string? ModelUrl { get; set; }
+        public string ModelUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the SerialNumber.
         /// </summary>
-        public string? SerialNumber { get; set; }
+        public string SerialNumber { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether EnableAlbumArtInDidl.
         /// </summary>
-        [DefaultValue(false)]
         public bool EnableAlbumArtInDidl { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether EnableSingleAlbumArtLimit.
         /// </summary>
-        [DefaultValue(false)]
         public bool EnableSingleAlbumArtLimit { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether EnableSingleSubtitleLimit.
         /// </summary>
-        [DefaultValue(false)]
         public bool EnableSingleSubtitleLimit { get; set; }
 
         /// <summary>
         /// Gets or sets the SupportedMediaTypes.
         /// </summary>
-        public string SupportedMediaTypes { get; set; } = "Audio,Photo,Video";
+        public string SupportedMediaTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the UserId.
         /// </summary>
-        public string? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the AlbumArtPn.
         /// </summary>
-        public string? AlbumArtPn { get; set; }
+        public string AlbumArtPn { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxAlbumArtWidth.
         /// </summary>
-        public int? MaxAlbumArtWidth { get; set; }
+        public int MaxAlbumArtWidth { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxAlbumArtHeight.
         /// </summary>
-        public int? MaxAlbumArtHeight { get; set; }
+        public int MaxAlbumArtHeight { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxIconWidth.
@@ -125,97 +142,92 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets or sets the MaxStreamingBitrate.
         /// </summary>
-        public int? MaxStreamingBitrate { get; set; } = 8000000;
+        public int? MaxStreamingBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxStaticBitrate.
         /// </summary>
-        public int? MaxStaticBitrate { get; set; } = 8000000;
+        public int? MaxStaticBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the MusicStreamingTranscodingBitrate.
         /// </summary>
-        public int? MusicStreamingTranscodingBitrate { get; set; } = 128000;
+        public int? MusicStreamingTranscodingBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxStaticMusicBitrate.
         /// </summary>
-        public int? MaxStaticMusicBitrate { get; set; } = 8000000;
+        public int? MaxStaticMusicBitrate { get; set; }
 
         /// <summary>
         /// Gets or sets the content of the aggregationFlags element in the urn:schemas-sonycom:av namespace.
         /// </summary>
-        public string? SonyAggregationFlags { get; set; }
+        public string SonyAggregationFlags { get; set; }
 
         /// <summary>
         /// Gets or sets the ProtocolInfo.
         /// </summary>
-        public string? ProtocolInfo { get; set; }
+        public string ProtocolInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the TimelineOffsetSeconds.
         /// </summary>
-        [DefaultValue(0)]
         public int TimelineOffsetSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether RequiresPlainVideoItems.
         /// </summary>
-        [DefaultValue(false)]
         public bool RequiresPlainVideoItems { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether RequiresPlainFolders.
         /// </summary>
-        [DefaultValue(false)]
         public bool RequiresPlainFolders { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether EnableMSMediaReceiverRegistrar.
         /// </summary>
-        [DefaultValue(false)]
         public bool EnableMSMediaReceiverRegistrar { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether IgnoreTranscodeByteRangeRequests.
         /// </summary>
-        [DefaultValue(false)]
         public bool IgnoreTranscodeByteRangeRequests { get; set; }
 
         /// <summary>
         /// Gets or sets the XmlRootAttributes.
         /// </summary>
-        public XmlAttribute[] XmlRootAttributes { get; set; } = Array.Empty<XmlAttribute>();
+        public XmlAttribute[] XmlRootAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the direct play profiles.
         /// </summary>
-        public DirectPlayProfile[] DirectPlayProfiles { get; set; } = Array.Empty<DirectPlayProfile>();
+        public DirectPlayProfile[] DirectPlayProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the transcoding profiles.
         /// </summary>
-        public TranscodingProfile[] TranscodingProfiles { get; set; } = Array.Empty<TranscodingProfile>();
+        public TranscodingProfile[] TranscodingProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the ContainerProfiles.
         /// </summary>
-        public ContainerProfile[] ContainerProfiles { get; set; } = Array.Empty<ContainerProfile>();
+        public ContainerProfile[] ContainerProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the CodecProfiles.
         /// </summary>
-        public CodecProfile[] CodecProfiles { get; set; } = Array.Empty<CodecProfile>();
+        public CodecProfile[] CodecProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the ResponseProfiles.
         /// </summary>
-        public ResponseProfile[] ResponseProfiles { get; set; } = Array.Empty<ResponseProfile>();
+        public ResponseProfile[] ResponseProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the SubtitleProfiles.
         /// </summary>
-        public SubtitleProfile[] SubtitleProfiles { get; set; } = Array.Empty<SubtitleProfile>();
+        public SubtitleProfile[] SubtitleProfiles { get; set; }
 
         /// <summary>
         /// The GetSupportedMediaTypes.
@@ -232,13 +244,13 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="container">The container.</param>
         /// <param name="audioCodec">The audio Codec.</param>
         /// <returns>A <see cref="TranscodingProfile"/>.</returns>
-        public TranscodingProfile? GetAudioTranscodingProfile(string? container, string? audioCodec)
+        public TranscodingProfile GetAudioTranscodingProfile(string container, string audioCodec)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
             foreach (var i in TranscodingProfiles)
             {
-                if (i.Type != DlnaProfileType.Audio)
+                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Audio)
                 {
                     continue;
                 }
@@ -266,13 +278,13 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioCodec">The audio Codec.</param>
         /// <param name="videoCodec">The video Codec.</param>
         /// <returns>The <see cref="TranscodingProfile"/>.</returns>
-        public TranscodingProfile? GetVideoTranscodingProfile(string? container, string? audioCodec, string? videoCodec)
+        public TranscodingProfile GetVideoTranscodingProfile(string container, string audioCodec, string videoCodec)
         {
             container = (container ?? string.Empty).TrimStart('.');
 
             foreach (var i in TranscodingProfiles)
             {
-                if (i.Type != DlnaProfileType.Video)
+                if (i.Type != MediaBrowser.Model.Dlna.DlnaProfileType.Video)
                 {
                     continue;
                 }
@@ -287,7 +299,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                if (!string.Equals(videoCodec, i.VideoCodec, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(videoCodec, i.VideoCodec ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -308,7 +320,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioSampleRate">The audio sample rate.</param>
         /// <param name="audioBitDepth">The audio bit depth.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
-        public ResponseProfile? GetAudioMediaProfile(string container, string? audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
+        public ResponseProfile GetAudioMediaProfile(string container, string audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
         {
             foreach (var i in ResponseProfiles)
             {
@@ -372,7 +384,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
-        public ResponseProfile? GetImageMediaProfile(string container, int? width, int? height)
+        public ResponseProfile GetImageMediaProfile(string container, int? width, int? height)
         {
             foreach (var i in ResponseProfiles)
             {
@@ -430,10 +442,10 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="videoCodecTag">The video Codec tag.</param>
         /// <param name="isAvc">True if Avc.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
-        public ResponseProfile? GetVideoMediaProfile(
+        public ResponseProfile GetVideoMediaProfile(
             string container,
-            string? audioCodec,
-            string? videoCodec,
+            string audioCodec,
+            string videoCodec,
             int? width,
             int? height,
             int? bitDepth,

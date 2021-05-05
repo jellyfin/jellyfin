@@ -298,9 +298,9 @@ namespace Jellyfin.Api.Controllers
                 {
                     Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = transcodingContainer ?? "mp3",
-                    AudioCodec = audioCodec ?? "mp3",
-                    Protocol = transcodingProtocol ?? "http",
+                    Container = transcodingContainer,
+                    AudioCodec = audioCodec,
+                    Protocol = transcodingProtocol,
                     BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                     MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }

@@ -1,7 +1,7 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -12,12 +12,22 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
-        public ProfileCondition[]? Conditions { get; set; } = Array.Empty<ProfileCondition>();
+        public ProfileCondition[] Conditions { get; set; }
 
         [XmlAttribute("container")]
-        public string Container { get; set; } = string.Empty;
+        public string Container { get; set; }
 
-        public static string[] SplitValue(string? value)
+        public ContainerProfile()
+        {
+            Conditions = Array.Empty<ProfileCondition>();
+        }
+
+        public string[] GetContainers()
+        {
+            return SplitValue(Container);
+        }
+
+        public static string[] SplitValue(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -27,14 +37,14 @@ namespace MediaBrowser.Model.Dlna
             return value.Split(',', StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public bool ContainsContainer(string? container)
+        public bool ContainsContainer(string container)
         {
-            var containers = SplitValue(Container);
+            var containers = GetContainers();
 
             return ContainsContainer(containers, container);
         }
 
-        public static bool ContainsContainer(string? profileContainers, string? inputContainer)
+        public static bool ContainsContainer(string profileContainers, string inputContainer)
         {
             var isNegativeList = false;
             if (profileContainers != null && profileContainers.StartsWith('-'))
@@ -46,29 +56,46 @@ namespace MediaBrowser.Model.Dlna
             return ContainsContainer(SplitValue(profileContainers), isNegativeList, inputContainer);
         }
 
-        public static bool ContainsContainer(string[]? profileContainers, string? inputContainer)
+        public static bool ContainsContainer(string[] profileContainers, string inputContainer)
         {
             return ContainsContainer(profileContainers, false, inputContainer);
         }
 
-        public static bool ContainsContainer(string[]? profileContainers, bool isNegativeList, string? inputContainer)
+        public static bool ContainsContainer(string[] profileContainers, bool isNegativeList, string inputContainer)
         {
-            if (profileContainers == null || profileContainers.Length == 0)
+            if (profileContainers.Length == 0)
             {
-                return isNegativeList;
+                return true;
             }
 
-            var allInputContainers = SplitValue(inputContainer);
-
-            foreach (var container in allInputContainers)
+            if (isNegativeList)
             {
-                if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                var allInputContainers = SplitValue(inputContainer);
+
+                foreach (var container in allInputContainers)
                 {
-                    return !isNegativeList;
+                    if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
-            }
 
-            return isNegativeList;
+                return true;
+            }
+            else
+            {
+                var allInputContainers = SplitValue(inputContainer);
+
+                foreach (var container in allInputContainers)
+                {
+                    if (profileContainers.Contains(container, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
     }
 }

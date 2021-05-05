@@ -974,28 +974,15 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            // TODO: Remove these default values
-            var albumArtUrlInfo = GetImageUrl(
-                imageInfo,
-                _profile.MaxAlbumArtWidth ?? 10000,
-                _profile.MaxAlbumArtHeight ?? 10000,
-                "jpg");
+            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
 
             writer.WriteStartElement("upnp", "albumArtURI", NsUpnp);
-            if (!string.IsNullOrEmpty(_profile.AlbumArtPn))
-            {
-                writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
-            }
-
-            writer.WriteString(albumArtUrlInfo.url);
+            writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
+            writer.WriteString(albumartUrlInfo.url);
             writer.WriteFullEndElement();
 
-            // TODO: Remove these default values
-            var iconUrlInfo = GetImageUrl(
-                imageInfo,
-                _profile.MaxIconWidth ?? 48,
-                _profile.MaxIconHeight ?? 48,
-                "jpg");
+            // TOOD: Remove these default values
+            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
             writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
 
             if (!_profile.EnableAlbumArtInDidl)
@@ -1219,7 +1206,8 @@ namespace Emby.Dlna.Didl
 
             if (width.HasValue && height.HasValue)
             {
-                var newSize = DrawingUtils.Resize(new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
+                var newSize = DrawingUtils.Resize(
+                        new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
 
                 width = newSize.Width;
                 height = newSize.Height;
