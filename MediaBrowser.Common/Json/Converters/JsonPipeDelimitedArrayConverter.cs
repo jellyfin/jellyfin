@@ -24,10 +24,16 @@ namespace MediaBrowser.Common.Json.Converters
         /// <inheritdoc />
         public override T[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return Array.Empty<T>();
+            }
+
             if (reader.TokenType == JsonTokenType.String)
             {
-                var stringEntries = reader.GetString()?.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (stringEntries == null || stringEntries.Length == 0)
+                // GetString can't return null here because we already handled it above
+                var stringEntries = reader.GetString()!.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                if (stringEntries.Length == 0)
                 {
                     return Array.Empty<T>();
                 }
@@ -63,7 +69,8 @@ namespace MediaBrowser.Common.Json.Converters
                 return typedValues;
             }
 
-            return JsonSerializer.Deserialize<T[]>(ref reader, options);
+            // can't return null here because we already handled it above
+            return JsonSerializer.Deserialize<T[]>(ref reader, options)!;
         }
 
         /// <inheritdoc />

@@ -9,7 +9,7 @@ namespace MediaBrowser.Common.Json.Converters
     /// Convert comma delimited string to array of type.
     /// </summary>
     /// <typeparam name="T">Type to convert to.</typeparam>
-    public class JsonCommaDelimitedArrayConverter<T> : JsonConverter<T[]>
+    public class JsonCommaDelimitedArrayConverter<T> : JsonConverter<T[]?>
     {
         private readonly TypeConverter _typeConverter;
 
@@ -22,11 +22,17 @@ namespace MediaBrowser.Common.Json.Converters
         }
 
         /// <inheritdoc />
-        public override T[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
             if (reader.TokenType == JsonTokenType.String)
             {
-                var stringEntries = reader.GetString().Split(',', StringSplitOptions.RemoveEmptyEntries);
+                // GetString can't return null here because we already handled it above
+                var stringEntries = reader.GetString()!.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 if (stringEntries.Length == 0)
                 {
                     return Array.Empty<T>();
@@ -67,7 +73,7 @@ namespace MediaBrowser.Common.Json.Converters
         }
 
         /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, T[] value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, T[]? value, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
