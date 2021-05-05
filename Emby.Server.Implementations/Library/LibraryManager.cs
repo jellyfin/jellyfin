@@ -48,6 +48,7 @@ using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
@@ -2516,7 +2517,7 @@ namespace Emby.Server.Implementations.Library
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
         {
             var series = episode.Series;
-            bool? isAbsoluteNaming = series == null ? false : string.Equals(series.DisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase);
+            bool? isAbsoluteNaming = series != null && string.Equals(series.DisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase);
             if (!isAbsoluteNaming.Value)
             {
                 // In other words, no filter applied
@@ -2528,9 +2529,23 @@ namespace Emby.Server.Implementations.Library
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
             // TODO nullable - what are we trying to do there with empty episodeInfo?
-            var episodeInfo = episode.IsFileProtocol
-                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo(episode.Path)
-                : new Naming.TV.EpisodeInfo(episode.Path);
+            EpisodeInfo episodeInfo = null;
+            if (episode.IsFileProtocol)
+            {
+                episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming);
+                // Resolve from parent folder if it's not the Season folder
+                if (episodeInfo == null && episode.Parent.GetType() == typeof(Folder))
+                {
+                    episodeInfo = resolver.Resolve(episode.Parent.Path, true, null, null, isAbsoluteNaming);
+                    if (episodeInfo != null)
+                    {
+                        // add the container
+                        episodeInfo.Container = Path.GetExtension(episode.Path)?.TrimStart('.');
+                    }
+                }
+            }
+
+            episodeInfo ??= new EpisodeInfo(episode.Path);
 
             try
             {
