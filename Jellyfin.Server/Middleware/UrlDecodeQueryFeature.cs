@@ -35,14 +35,14 @@ namespace Jellyfin.Server.Middleware
 
             set
             {
-                // Only interested in where the querystring is encoded which shows up as one key with everything else in the value.
+                // Only interested in where the querystring is encoded which shows up as one key with nothing in the value.
                 if (value.Count != 1)
                 {
                     _store = value;
                     return;
                 }
 
-                // Encoded querystrings have no value, so don't process anything if a values is present.
+                // Encoded querystrings have no value, so don't process anything if a value is present.
                 var kvp = value.First();
                 if (!string.IsNullOrEmpty(kvp.Value))
                 {
@@ -55,6 +55,7 @@ namespace Jellyfin.Server.Middleware
 
                 if (string.Equals(unencodedKey, kvp.Key, System.StringComparison.Ordinal))
                 {
+                    // Don't do anything if it's not encoded.
                     _store = value;
                     return;
                 }
