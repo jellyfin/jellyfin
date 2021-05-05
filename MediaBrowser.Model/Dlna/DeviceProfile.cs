@@ -8,13 +8,18 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
-    /// Defines the <see cref="DeviceProfile" />.
+    /// A <see cref="DeviceProfile" /> represents a set of metadata which determines which content a certain device is able to play.
+    /// <br/>
+    /// Specifically, it defines the supported <see cref="ContainerProfiles">containers</see> and
+    /// <see cref="CodecProfiles">codecs</see> (video and/or audio, including codec profiles and levels)
+    /// the device is able to direct play (without transcoding or remuxing),
+    /// as well as which <see cref="TranscodingProfiles">containers/codecs to transcode to</see> in case it isn't.
     /// </summary>
     [XmlRoot("Profile")]
     public class DeviceProfile
     {
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of this device profile.
         /// </summary>
         public string? Name { get; set; }
 
@@ -30,32 +35,32 @@ namespace MediaBrowser.Model.Dlna
         public DeviceIdentification? Identification { get; set; }
 
         /// <summary>
-        /// Gets or sets the FriendlyName.
+        /// Gets or sets the friendly name of the device profile, which can be shown to users.
         /// </summary>
         public string? FriendlyName { get; set; }
 
         /// <summary>
-        /// Gets or sets the Manufacturer.
+        /// Gets or sets the manufacturer of the device which this profile represents.
         /// </summary>
         public string? Manufacturer { get; set; }
 
         /// <summary>
-        /// Gets or sets the ManufacturerUrl.
+        /// Gets or sets an url for the manufacturer of the device which this profile represents.
         /// </summary>
         public string? ManufacturerUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModelName.
+        /// Gets or sets the model name of the device which this profile represents.
         /// </summary>
         public string? ModelName { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModelDescription.
+        /// Gets or sets the model description of the device which this profile represents.
         /// </summary>
         public string? ModelDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModelNumber.
+        /// Gets or sets the model number of the device which this profile represents.
         /// </summary>
         public string? ModelNumber { get; set; }
 
@@ -65,7 +70,7 @@ namespace MediaBrowser.Model.Dlna
         public string? ModelUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the SerialNumber.
+        /// Gets or sets the serial number of the device which this profile represents.
         /// </summary>
         public string? SerialNumber { get; set; }
 
@@ -113,32 +118,32 @@ namespace MediaBrowser.Model.Dlna
         public int? MaxAlbumArtHeight { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxIconWidth.
+        /// Gets or sets the maximum allowed width of embedded icons.
         /// </summary>
         public int? MaxIconWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxIconHeight.
+        /// Gets or sets the maximum allowed height of embedded icons.
         /// </summary>
         public int? MaxIconHeight { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxStreamingBitrate.
+        /// Gets or sets the maximum allowed bitrate for all streamed content.
         /// </summary>
         public int? MaxStreamingBitrate { get; set; } = 8000000;
 
         /// <summary>
-        /// Gets or sets the MaxStaticBitrate.
+        /// Gets or sets the maximum allowed bitrate for statically streamed content (= direct played files).
         /// </summary>
         public int? MaxStaticBitrate { get; set; } = 8000000;
 
         /// <summary>
-        /// Gets or sets the MusicStreamingTranscodingBitrate.
+        /// Gets or sets the maximum allowed bitrate for transcoded music streams.
         /// </summary>
         public int? MusicStreamingTranscodingBitrate { get; set; } = 128000;
 
         /// <summary>
-        /// Gets or sets the MaxStaticMusicBitrate.
+        /// Gets or sets the maximum allowed bitrate for statically streamed (= direct played) music files.
         /// </summary>
         public int? MaxStaticMusicBitrate { get; set; } = 8000000;
 
@@ -198,12 +203,12 @@ namespace MediaBrowser.Model.Dlna
         public TranscodingProfile[] TranscodingProfiles { get; set; } = Array.Empty<TranscodingProfile>();
 
         /// <summary>
-        /// Gets or sets the ContainerProfiles.
+        /// Gets or sets the container profiles.
         /// </summary>
         public ContainerProfile[] ContainerProfiles { get; set; } = Array.Empty<ContainerProfile>();
 
         /// <summary>
-        /// Gets or sets the CodecProfiles.
+        /// Gets or sets the codec profiles.
         /// </summary>
         public CodecProfile[] CodecProfiles { get; set; } = Array.Empty<CodecProfile>();
 
@@ -213,7 +218,7 @@ namespace MediaBrowser.Model.Dlna
         public ResponseProfile[] ResponseProfiles { get; set; } = Array.Empty<ResponseProfile>();
 
         /// <summary>
-        /// Gets or sets the SubtitleProfiles.
+        /// Gets or sets the subtitle profiles.
         /// </summary>
         public SubtitleProfile[] SubtitleProfiles { get; set; } = Array.Empty<SubtitleProfile>();
 
