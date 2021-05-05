@@ -29,13 +29,15 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
-        private List<string> _splitWhiteList = null;
+        private string[] _splitWhiteList;
 
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
             _logger = logger;
             _localization = localization;
         }
+
+        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[] { "AC/DC" };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
         {
@@ -1254,7 +1256,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var artistsFound = new List<string>();
 
-            foreach (var whitelistArtist in GetSplitWhitelist())
+            foreach (var whitelistArtist in SplitWhitelist)
             {
                 var originalVal = val;
                 val = val.Replace(whitelistArtist, "|", StringComparison.OrdinalIgnoreCase);
@@ -1271,11 +1273,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             artistsFound.AddRange(artists);
             return artistsFound;
-        }
-
-        private IEnumerable<string> GetSplitWhitelist()
-        {
-            return _splitWhiteList ??= new List<string> { "AC/DC" };
         }
 
         /// <summary>

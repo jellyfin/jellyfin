@@ -61,7 +61,6 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) as LibraryOptions;
-
                 if (result == null)
                 {
                     return new LibraryOptions();
