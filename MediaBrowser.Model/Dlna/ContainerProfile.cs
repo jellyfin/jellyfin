@@ -55,7 +55,8 @@ namespace MediaBrowser.Model.Dlna
         {
             if (profileContainers == null || profileContainers.Length == 0)
             {
-                return isNegativeList;
+                // Empty profiles always support all containers/codecs
+                return true;
             }
 
             var allInputContainers = SplitValue(inputContainer);
