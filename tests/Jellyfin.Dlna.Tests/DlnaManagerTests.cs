@@ -19,9 +19,10 @@ namespace Jellyfin.Dlna.Tests
             var fileSystem = new Mock<IFileSystem>();
             var appPaths = new Mock<IApplicationPaths>();
             var loggerFactory = new Mock<ILoggerFactory>();
+            var jsonSerializer = new Mock<IJsonSerializer>();
             var appHost = new Mock<IServerApplicationHost>();
 
-            return new DlnaManager(xmlSerializer.Object, fileSystem.Object, appPaths.Object, loggerFactory.Object, appHost.Object);
+            return new DlnaManager(xmlSerializer.Object, fileSystem.Object, appPaths.Object, loggerFactory.Object, jsonSerializer.Object, appHost.Object);
         }
 
         [Fact]
