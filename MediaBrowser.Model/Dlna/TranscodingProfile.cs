@@ -8,23 +8,18 @@ namespace MediaBrowser.Model.Dlna
 {
     public class TranscodingProfile
     {
-        [Required]
         [XmlAttribute("container")]
         public string Container { get; set; } = string.Empty;
 
-        [Required]
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }
 
-        [Required]
         [XmlAttribute("videoCodec")]
         public string VideoCodec { get; set; } = string.Empty;
 
-        [Required]
         [XmlAttribute("audioCodec")]
         public string AudioCodec { get; set; } = string.Empty;
 
-        [Required]
         [XmlAttribute("protocol")]
         public string Protocol { get; set; } = string.Empty;
 
