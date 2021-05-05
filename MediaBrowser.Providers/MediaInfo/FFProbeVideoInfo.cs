@@ -111,6 +111,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
+                streamFileNames ??= Array.Empty<string>();
+
                 mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();

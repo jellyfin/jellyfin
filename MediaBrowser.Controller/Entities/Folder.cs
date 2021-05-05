@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -1434,9 +1433,14 @@ namespace MediaBrowser.Controller.Entities
             var linkedChildren = LinkedChildren;
             foreach (var i in linkedChildren)
             {
-                if (i.ItemId.HasValue && i.ItemId.Value == itemId)
+                if (i.ItemId.HasValue)
                 {
-                    return true;
+                    if (i.ItemId.Value == itemId)
+                    {
+                        return true;
+                    }
+
+                    continue;
                 }
 
                 var child = GetLinkedChild(i);
@@ -1764,20 +1768,15 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EnableImages = false
                     }
-                });
+                }).TotalRecordCount;
 
-                double unplayedCount = unplayedQueryResult.TotalRecordCount;
+                dto.UnplayedItemCount = unplayedQueryResult;
 
-                dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
-
-                if (itemDto != null && itemDto.RecursiveItemCount.HasValue)
+                if (itemDto?.RecursiveItemCount > 0)
                 {
-                    if (itemDto.RecursiveItemCount.Value > 0)
-                    {
-                        var unplayedPercentage = (unplayedCount / itemDto.RecursiveItemCount.Value) * 100;
-                        dto.PlayedPercentage = 100 - unplayedPercentage;
-                        dto.Played = dto.PlayedPercentage.Value >= 100;
-                    }
+                    var unplayedPercentage = ((double)unplayedQueryResult / itemDto.RecursiveItemCount.Value) * 100;
+                    dto.PlayedPercentage = 100 - unplayedPercentage;
+                    dto.Played = dto.PlayedPercentage.Value >= 100;
                 }
                 else
                 {

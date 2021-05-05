@@ -89,7 +89,7 @@ namespace Jellyfin.Api.Controllers
                     // nameof(LiveTvProgram)
                 },
                 // IsMovie = true
-                OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.Random, SortOrder.Descending) },
                 Limit = 7,
                 ParentId = parentIdGuid,
                 Recursive = true,
@@ -110,7 +110,7 @@ namespace Jellyfin.Api.Controllers
             {
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
-                OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
                 Limit = 10,
                 IsFavoriteOrLiked = true,
                 ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id).ToArray(),
@@ -120,7 +120,7 @@ namespace Jellyfin.Api.Controllers
                 DtoOptions = dtoOptions
             });
 
-            var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
+            var mostRecentMovies = recentlyPlayedMovies.GetRange(0, Math.Min(recentlyPlayedMovies.Count, 6));
             // Get recently played directors
             var recentDirectors = GetDirectors(mostRecentMovies)
                 .ToList();
@@ -191,7 +191,8 @@ namespace Jellyfin.Api.Controllers
 
             foreach (var name in names)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                var items = _libraryManager.GetItemList(
+                    new InternalItemsQuery(user)
                     {
                         Person = name,
                         // Account for duplicates by imdb id, since the database doesn't support this yet

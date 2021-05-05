@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Emby.Server.Implementations;
-using Jellyfin.Server;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Configuration;

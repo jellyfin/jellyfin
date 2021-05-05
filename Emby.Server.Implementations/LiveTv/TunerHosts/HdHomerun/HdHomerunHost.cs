@@ -8,10 +8,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
@@ -19,7 +17,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -424,10 +421,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             string audioCodec = channelInfo.AudioCodec;
 
-            if (!videoBitrate.HasValue)
-            {
-                videoBitrate = isHd ? 15000000 : 2000000;
-            }
+            videoBitrate ??= isHd ? 15000000 : 2000000;
 
             int? audioBitrate = isHd ? 448000 : 192000;
 
@@ -664,7 +658,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 _modelCache.Clear();
             }
 
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
+            using var timedCancellationToken = new CancellationTokenSource(discoveryDurationMs);
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timedCancellationToken.Token, cancellationToken);
+            cancellationToken = linkedCancellationTokenSource.Token;
             var list = new List<TunerHostInfo>();
 
             // Create udp broadcast discovery message

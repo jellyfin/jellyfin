@@ -16,7 +16,7 @@ jobs:
           label: stable backport
 
       - name: Remove from 'Current Release' project
-        uses: alex-page/github-project-automation-plus@v0.5.1
+        uses: alex-page/github-project-automation-plus@v0.7.1
         if: (github.event.pull_request || github.event.issue.pull_request) && !steps.checkLabel.outputs.hasLabel
         continue-on-error: true
         with:
@@ -25,7 +25,7 @@ jobs:
           repo-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add to 'Release Next' project
-        uses: alex-page/github-project-automation-plus@v0.5.1
+        uses: alex-page/github-project-automation-plus@v0.7.1
         if: (github.event.pull_request || github.event.issue.pull_request) && github.event.action == 'opened'
         continue-on-error: true
         with:
@@ -34,7 +34,7 @@ jobs:
           repo-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add to 'Current Release' project
-        uses: alex-page/github-project-automation-plus@v0.5.1
+        uses: alex-page/github-project-automation-plus@v0.7.1
         if: (github.event.pull_request || github.event.issue.pull_request) && steps.checkLabel.outputs.hasLabel
         continue-on-error: true
         with:
@@ -48,7 +48,7 @@ jobs:
         run: echo "::set-output name=number::$(curl -s ${{ github.event.issue.comments_url }} | jq '.[] | select(.author_association == "MEMBER") | .author_association' | wc -l)"
 
       - name: Move issue to needs triage
-        uses: alex-page/github-project-automation-plus@v0.5.1
+        uses: alex-page/github-project-automation-plus@v0.7.1
         if: github.event.issue.pull_request == '' && github.event.comment.author_association == 'MEMBER' && steps.member_comments.outputs.number <= 1
         continue-on-error: true
         with:
@@ -57,7 +57,7 @@ jobs:
           repo-token: ${{ secrets.GH_TOKEN }}
 
       - name: Add issue to triage project
-        uses: alex-page/github-project-automation-plus@v0.5.1
+        uses: alex-page/github-project-automation-plus@v0.7.1
         if: github.event.issue.pull_request == '' && github.event.action == 'opened'
         continue-on-error: true
         with:

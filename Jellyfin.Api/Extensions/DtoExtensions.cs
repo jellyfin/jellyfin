@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dto;

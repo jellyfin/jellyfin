@@ -11,7 +11,6 @@ using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Localization
@@ -316,10 +315,9 @@ namespace Emby.Server.Implementations.Localization
             }
 
             const string Prefix = "Core";
-            var key = Prefix + culture;
 
             return _dictionaries.GetOrAdd(
-                key,
+                culture,
                 f => GetDictionary(Prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
         }
 

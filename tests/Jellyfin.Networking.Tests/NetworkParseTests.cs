@@ -384,6 +384,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("jellyfin.org", "eth16", false, "eth16")]
         // User on external network, no binding - so result is the 1st external.
         [InlineData("jellyfin.org", "", false, "eth11")]
+        // Dns failure - should skip the test.
+        // https://en.wikipedia.org/wiki/.test
+        [InlineData("invalid.domain.test", "", false, "eth11")]
         // User assumed to be internal, no binding - so result is the 1st internal.
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
@@ -416,10 +419,13 @@ namespace Jellyfin.Networking.Tests
 
             _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
 
-            if (resultObj != null)
+            // Check to see if dns resolution is working. If not, skip test.
+            _ = IPHost.TryParse(source, out var host);
+
+            if (resultObj != null && host?.HasAddress == true)
             {
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
-                var intf = nm.GetBindInterface(source, out int? _);
+                var intf = nm.GetBindInterface(source, out _);
 
                 Assert.Equal(intf, result);
             }
