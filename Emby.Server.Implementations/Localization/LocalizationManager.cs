@@ -315,10 +315,9 @@ namespace Emby.Server.Implementations.Localization
             }
 
             const string Prefix = "Core";
-            var key = Prefix + culture;
 
             return _dictionaries.GetOrAdd(
-                key,
+                culture,
                 f => GetDictionary(Prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
         }
 

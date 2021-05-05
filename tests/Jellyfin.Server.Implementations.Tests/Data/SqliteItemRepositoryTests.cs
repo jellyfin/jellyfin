@@ -37,7 +37,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             yield return new object[]
             {
                 "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Primary*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN",
-                new ItemImageInfo()
+                new ItemImageInfo
                 {
                     Path = "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg",
                     Type = ImageType.Primary,
@@ -51,7 +51,27 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             yield return new object[]
             {
                 "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0*Primary*0*0",
-                new ItemImageInfo()
+                new ItemImageInfo
+                {
+                    Path = "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg",
+                    Type = ImageType.Primary,
+                }
+            };
+
+            yield return new object[]
+            {
+                "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0*Primary",
+                new ItemImageInfo
+                {
+                    Path = "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg",
+                    Type = ImageType.Primary,
+                }
+            };
+
+            yield return new object[]
+            {
+                "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0*Primary*600",
+                new ItemImageInfo
                 {
                     Path = "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg",
                     Type = ImageType.Primary,
@@ -61,7 +81,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             yield return new object[]
             {
                 "%MetadataPath%/library/68/68578562b96c80a7ebd530848801f645/poster.jpg*637264380567586027*Primary*600*336",
-                new ItemImageInfo()
+                new ItemImageInfo
                 {
                     Path = "/meta/data/path/library/68/68578562b96c80a7ebd530848801f645/poster.jpg",
                     Type = ImageType.Primary,
@@ -88,6 +108,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         [Theory]
         [InlineData("")]
         [InlineData("*")]
+        [InlineData("https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0")]
         public void ItemImageInfoFromValueString_Invalid_Null(string value)
         {
             Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value));

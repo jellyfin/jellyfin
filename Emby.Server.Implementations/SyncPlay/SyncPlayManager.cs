@@ -269,14 +269,17 @@ namespace Emby.Server.Implementations.SyncPlay
             var user = _userManager.GetUserById(session.UserId);
             List<GroupInfoDto> list = new List<GroupInfoDto>();
 
-            foreach (var group in _groups.Values)
+            lock (_groupsLock)
             {
-                // Locking required as group is not thread-safe.
-                lock (group)
+                foreach (var (_, group) in _groups)
                 {
-                    if (group.HasAccessToPlayQueue(user))
+                    // Locking required as group is not thread-safe.
+                    lock (group)
                     {
-                        list.Add(group.GetInfo());
+                        if (group.HasAccessToPlayQueue(user))
+                        {
+                            list.Add(group.GetInfo());
+                        }
                     }
                 }
             }

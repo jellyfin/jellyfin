@@ -590,18 +590,9 @@ namespace Emby.Server.Implementations.Library
 
         public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
         {
-            var info = _openStreams.Values.FirstOrDefault(i =>
-            {
-                var liveStream = i as ILiveStream;
-                if (liveStream != null)
-                {
-                    return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
-                }
+            var info = _openStreams.FirstOrDefault(i => i.Value != null && string.Equals(i.Value.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
 
-                return false;
-            });
-
-            return Task.FromResult(info as IDirectStreamProvider);
+            return Task.FromResult(info.Value as IDirectStreamProvider);
         }
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)

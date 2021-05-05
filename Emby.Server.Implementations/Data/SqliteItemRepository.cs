@@ -1002,15 +1002,12 @@ namespace Emby.Server.Implementations.Data
                 return;
             }
 
-            var parts = value.Split('|', StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var part in parts)
+            foreach (var part in value.SpanSplit('|'))
             {
-                var idParts = part.Split('=');
-
-                if (idParts.Length == 2)
+                var providerDelimiterIndex = part.IndexOf('=');
+                if (providerDelimiterIndex != -1 && providerDelimiterIndex == part.LastIndexOf('='))
                 {
-                    item.SetProviderId(idParts[0], idParts[1]);
+                    item.SetProviderId(part.Slice(0, providerDelimiterIndex).ToString(), part.Slice(providerDelimiterIndex + 1).ToString());
                 }
             }
         }
@@ -1045,9 +1042,8 @@ namespace Emby.Server.Implementations.Data
                 return Array.Empty<ItemImageInfo>();
             }
 
-            var parts = value.Split('|' , StringSplitOptions.RemoveEmptyEntries);
             var list = new List<ItemImageInfo>();
-            foreach (var part in parts)
+            foreach (var part in value.SpanSplit('|'))
             {
                 var image = ItemImageInfoFromValueString(part);
 
@@ -1086,41 +1082,93 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public ItemImageInfo ItemImageInfoFromValueString(string value)
+        internal ItemImageInfo ItemImageInfoFromValueString(ReadOnlySpan<char> value)
         {
-            var parts = value.Split('*', StringSplitOptions.None);
-
-            if (parts.Length < 3)
+            var nextSegment = value.IndexOf('*');
+            if (nextSegment == -1)
             {
                 return null;
             }
 
-            var image = new ItemImageInfo();
+            ReadOnlySpan<char> path = value[..nextSegment];
+            value = value[(nextSegment + 1)..];
+            nextSegment = value.IndexOf('*');
+            if (nextSegment == -1)
+            {
+                return null;
+            }
 
-            image.Path = RestorePath(parts[0]);
+            ReadOnlySpan<char> dateModified = value[..nextSegment];
+            value = value[(nextSegment + 1)..];
+            nextSegment = value.IndexOf('*');
+            if (nextSegment == -1)
+            {
+                nextSegment = value.Length;
+            }
 
-            if (long.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
+            ReadOnlySpan<char> imageType = value[..nextSegment];
+
+            var image = new ItemImageInfo
+            {
+                Path = RestorePath(path.ToString())
+            };
+
+            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
             }
 
-            if (Enum.TryParse(parts[2], true, out ImageType type))
+            if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
             {
                 image.Type = type;
             }
 
-            if (parts.Length >= 5)
+            // Optional parameters: width*height*blurhash
+            if (nextSegment + 1 < value.Length - 1)
             {
-                if (int.TryParse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var width)
-                    && int.TryParse(parts[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out var height))
+                value = value[(nextSegment + 1)..];
+                nextSegment = value.IndexOf('*');
+                if (nextSegment == -1 || nextSegment == value.Length)
+                {
+                    return image;
+                }
+
+                ReadOnlySpan<char> widthSpan = value[..nextSegment];
+
+                value = value[(nextSegment + 1)..];
+                nextSegment = value.IndexOf('*');
+                if (nextSegment == -1)
+                {
+                    nextSegment = value.Length;
+                }
+
+                ReadOnlySpan<char> heightSpan = value[..nextSegment];
+
+                if (int.TryParse(widthSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var width)
+                    && int.TryParse(heightSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var height))
                 {
                     image.Width = width;
                     image.Height = height;
                 }
 
-                if (parts.Length >= 6)
+                if (nextSegment < value.Length - 1)
                 {
-                    image.BlurHash = parts[5].Replace('/', '*').Replace('\\', '|');
+                    value = value[(nextSegment + 1)..];
+                    var length = value.Length;
+
+                    Span<char> blurHashSpan = stackalloc char[length];
+                    for (int i = 0; i < length; i++)
+                    {
+                        var c = value[i];
+                        blurHashSpan[i] = c switch
+                        {
+                            '/' => '*',
+                            '\\' => '|',
+                            _ => c
+                        };
+                    }
+
+                    image.BlurHash = new string(blurHashSpan);
                 }
             }
 
@@ -2110,27 +2158,6 @@ namespace Emby.Server.Implementations.Data
 
         private readonly ItemFields[] _allFields = Enum.GetValues<ItemFields>();
 
-        private string[] GetColumnNamesFromField(ItemFields field)
-        {
-            switch (field)
-            {
-                case ItemFields.Settings:
-                    return new[] { "IsLocked", "PreferredMetadataCountryCode", "PreferredMetadataLanguage", "LockedFields" };
-                case ItemFields.ServiceName:
-                    return new[] { "ExternalServiceId" };
-                case ItemFields.SortName:
-                    return new[] { "ForcedSortName" };
-                case ItemFields.Taglines:
-                    return new[] { "Tagline" };
-                case ItemFields.Tags:
-                    return new[] { "Tags" };
-                case ItemFields.IsHD:
-                    return Array.Empty<string>();
-                default:
-                    return new[] { field.ToString() };
-            }
-        }
-
         private bool HasField(InternalItemsQuery query, ItemFields name)
         {
             switch (name)
@@ -2319,9 +2346,32 @@ namespace Emby.Server.Implementations.Data
             {
                 if (!HasField(query, field))
                 {
-                    foreach (var fieldToRemove in GetColumnNamesFromField(field))
+                    switch (field)
                     {
-                        list.Remove(fieldToRemove);
+                        case ItemFields.Settings:
+                            list.Remove("IsLocked");
+                            list.Remove("PreferredMetadataCountryCode");
+                            list.Remove("PreferredMetadataLanguage");
+                            list.Remove("LockedFields");
+                            break;
+                        case ItemFields.ServiceName:
+                            list.Remove("ExternalServiceId");
+                            break;
+                        case ItemFields.SortName:
+                            list.Remove("ForcedSortName");
+                            break;
+                        case ItemFields.Taglines:
+                            list.Remove("Tagline");
+                            break;
+                        case ItemFields.Tags:
+                            list.Remove("Tags");
+                            break;
+                        case ItemFields.IsHD:
+                            // do nothing
+                            break;
+                        default:
+                            list.Remove(field.ToString());
+                            break;
                     }
                 }
             }
@@ -2568,9 +2618,9 @@ namespace Emby.Server.Implementations.Data
             }
 
             var commandText = "select "
-                            + string.Join(',', GetFinalColumnsToSelect(query, new[] { "count(distinct PresentationUniqueKey)" }))
-                            + GetFromText()
-                            + GetJoinUserDataText(query);
+                              + string.Join(',', GetFinalColumnsToSelect(query, new[] { "count(distinct PresentationUniqueKey)" }))
+                              + GetFromText()
+                              + GetJoinUserDataText(query);
 
             var whereClauses = GetWhereClauses(query, null);
             if (whereClauses.Count != 0)
