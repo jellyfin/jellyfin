@@ -12,19 +12,15 @@ namespace Jellyfin.Server.Middleware
     public class QueryStringDecodingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<QueryStringDecodingMiddleware> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryStringDecodingMiddleware"/> class.
         /// </summary>
         /// <param name="next">The next delegate in the pipeline.</param>
-        /// <param name="logger">The logger.</param>
         public QueryStringDecodingMiddleware(
-            RequestDelegate next,
-            ILogger<QueryStringDecodingMiddleware> logger)
+            RequestDelegate next)
         {
             _next = next;
-            _logger = logger;
         }
 
         /// <summary>
