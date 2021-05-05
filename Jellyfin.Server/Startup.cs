@@ -150,6 +150,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
 
