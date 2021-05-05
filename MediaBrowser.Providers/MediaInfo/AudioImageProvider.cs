@@ -137,7 +137,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            return item is Audio audio;
+            return item is Audio;
         }
     }
 }

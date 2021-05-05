@@ -228,10 +228,7 @@ namespace Jellyfin.Api.Controllers
                 itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
-            if (itemWithImage == null)
-            {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Thumb);
-            }
+            itemWithImage ??= GetParentWithImage<BaseItem>(item, ImageType.Thumb);
 
             if (itemWithImage != null)
             {

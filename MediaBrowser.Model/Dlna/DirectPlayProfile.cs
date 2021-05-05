@@ -1,6 +1,6 @@
-#nullable disable
 #pragma warning disable CS1591
 
+using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -8,13 +8,13 @@ namespace MediaBrowser.Model.Dlna
     public class DirectPlayProfile
     {
         [XmlAttribute("container")]
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
         [XmlAttribute("audioCodec")]
-        public string AudioCodec { get; set; }
+        public string? AudioCodec { get; set; }
 
         [XmlAttribute("videoCodec")]
-        public string VideoCodec { get; set; }
+        public string? VideoCodec { get; set; }
 
         [XmlAttribute("type")]
         public DlnaProfileType Type { get; set; }

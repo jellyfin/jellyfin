@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -51,8 +49,8 @@ namespace Jellyfin.Data.Entities.Libraries
         public string? Country { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the labels.
+        /// Gets a collection containing the labels.
         /// </summary>
-        public virtual ICollection<Company> Labels { get; protected set; }
+        public virtual ICollection<Company> Labels { get; private set; }
     }
 }

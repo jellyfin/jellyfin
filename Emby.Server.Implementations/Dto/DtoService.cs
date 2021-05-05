@@ -665,10 +665,7 @@ namespace Emby.Server.Implementations.Dto
             var tag = GetImageCacheTag(item, image);
             if (!string.IsNullOrEmpty(image.BlurHash))
             {
-                if (dto.ImageBlurHashes == null)
-                {
-                    dto.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
-                }
+                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
 
                 if (!dto.ImageBlurHashes.ContainsKey(image.Type))
                 {
@@ -702,10 +699,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (hashes.Count > 0)
             {
-                if (dto.ImageBlurHashes == null)
-                {
-                    dto.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
-                }
+                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
 
                 dto.ImageBlurHashes[imageType] = hashes;
             }
@@ -897,10 +891,7 @@ namespace Emby.Server.Implementations.Dto
                     dto.Taglines = new string[] { item.Tagline };
                 }
 
-                if (dto.Taglines == null)
-                {
-                    dto.Taglines = Array.Empty<string>();
-                }
+                dto.Taglines ??= Array.Empty<string>();
             }
 
             dto.Type = item.GetBaseItemKind();
