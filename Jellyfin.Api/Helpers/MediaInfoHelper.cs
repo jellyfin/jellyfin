@@ -348,9 +348,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         streamInfo.PlaySessionId = playSessionId;
                         streamInfo.StartPositionTicks = startTimeTicks;
-                        mediaSource.TranscodingUrl = streamInfo.ToUrl(null, auth.Token);
-                        mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        mediaSource.TranscodingUrl = streamInfo.ToUrl(null, auth.Token, "&allowVideoStreamCopy=false&allowAudioStreamCopy=false");
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
 

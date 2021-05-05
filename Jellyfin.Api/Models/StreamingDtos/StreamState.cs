@@ -141,11 +141,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to enable dlna headers.
-        /// </summary>
-        public bool EnableDlnaHeaders { get; set; }
-
-        /// <summary>
         /// Gets or sets the device profile.
         /// </summary>
         public DeviceProfile? DeviceProfile { get; set; }

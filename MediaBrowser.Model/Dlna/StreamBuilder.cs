@@ -261,15 +261,13 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
         {
-            StreamInfo playlistItem = new StreamInfo
-            {
-                ItemId = options.ItemId,
-                MediaType = DlnaProfileType.Audio,
-                MediaSource = item,
-                RunTimeTicks = item.RunTimeTicks,
-                Context = options.Context,
-                DeviceProfile = options.Profile
-            };
+            StreamInfo playlistItem = new StreamInfo(
+                options.ItemId,
+                DlnaProfileType.Audio,
+                options.Profile,
+                item,
+                item.RunTimeTicks,
+                options.Context);
 
             if (options.ForceDirectPlay)
             {
@@ -655,15 +653,13 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentNullException(nameof(item));
             }
 
-            StreamInfo playlistItem = new StreamInfo
-            {
-                ItemId = options.ItemId,
-                MediaType = DlnaProfileType.Video,
-                MediaSource = item,
-                RunTimeTicks = item.RunTimeTicks,
-                Context = options.Context,
-                DeviceProfile = options.Profile
-            };
+            StreamInfo playlistItem = new StreamInfo(
+                options.ItemId,
+                DlnaProfileType.Video,
+                options.Profile,
+                item,
+                item.RunTimeTicks,
+                options.Context);
 
             playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles);
             var subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;

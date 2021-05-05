@@ -596,8 +596,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="ext">Optional. The stream's original extension.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
-        [HttpGet("{itemId}/{stream=stream}.{container}")]
-        [HttpHead("{itemId}/{stream=stream}.{container}", Name = "HeadVideoStreamByContainer")]
+        [HttpGet("{itemId}/stream.{container}")]
+        [HttpHead("{itemId}/stream.{container}", Name = "HeadVideoStreamByContainer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesVideoFile]
         public Task<ActionResult> GetVideoStreamByContainer(

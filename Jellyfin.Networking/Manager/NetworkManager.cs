@@ -438,14 +438,14 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Length > 0)
                 {
                     // Return all the internal interfaces except the ones excluded.
-                    return _internalInterfaces.Where(p => !p.IsLoopback() && !_bindExclusions.ContainsAddress(p)).ToArray();
+                    return _internalInterfaces.Where(p => !_bindExclusions.ContainsAddress(p)).ToArray();
                 }
 
                 // No bind address, so return all internal interfaces.
-                return _internalInterfaces.Where(p => !p.IsLoopback()).ToArray();
+                return _internalInterfaces.ToArray();
             }
 
-            return _bindAddresses.ToArray();
+            return _bindAddresses.Where(IsInLocalNetwork).ToArray();
         }
 
         /// <inheritdoc/>
@@ -463,7 +463,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            return address.IsLoopback() || (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
         }
 
         /// <inheritdoc/>
@@ -471,7 +471,7 @@ namespace Jellyfin.Networking.Manager
         {
             if (IPNetAddress.TryParse(address, out var ep, _ipClassType) || IPHost.TryParse(address, out ep, _ipClassType))
             {
-                return _lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep);
+                return ep.IsLoopback() || (_lanSubnets.ContainsAddress(ep) && !_excludedSubnets.ContainsAddress(ep));
             }
 
             return false;
@@ -491,8 +491,15 @@ namespace Jellyfin.Networking.Manager
                 return true;
             }
 
+            if (address.IsIPv4MappedToIPv6)
+            {
+                address = address.MapToIPv4();
+            }
+
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            return address.Equals(IPAddress.Loopback) ||
+                address.Equals(IPAddress.IPv6Loopback) ||
+                (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
         }
 
         private bool IsPrivateAddressRange(IPNetAddress address)
@@ -971,17 +978,14 @@ namespace Jellyfin.Networking.Manager
                     _internalInterfaces = CreateCollection(
                         _interfaceAddresses.Where(i => IsPrivateAddressRange(i) && !_excludedSubnets.ContainsAddress(i)));
 
-                    // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IpClassType == IpClassType.Ip6Only)
                     {
-                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback, true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("fc00::/7"), true); // ULA
                         _lanSubnets.AddItem(IPNetAddress.Parse("fe80::/10"), true); // Site local
                     }
 
                     if (IpClassType == IpClassType.Ip4Only)
                     {
-                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback, true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("10.0.0.0/8"), true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("172.16.0.0/12"), true);
                         _lanSubnets.AddItem(IPNetAddress.Parse("192.168.0.0/16"), true);
@@ -989,17 +993,6 @@ namespace Jellyfin.Networking.Manager
                 }
                 else
                 {
-                    // We must listen on loopback for LiveTV to function regardless of the settings.
-                    if (IpClassType == IpClassType.Ip6Only)
-                    {
-                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback, true);
-                    }
-
-                    if (IpClassType == IpClassType.Ip4Only)
-                    {
-                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback, true);
-                    }
-
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
                     _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
@@ -1121,12 +1114,12 @@ namespace Jellyfin.Networking.Manager
                     }
                 }
 
-                if (IpClassType == IpClassType.Ip4Only)
+                if (IpClassType == IpClassType.Ip4Only && !_interfaceAddresses.ContainsAddress(IPNetAddress.IP4Loopback))
                 {
                     _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
                 }
 
-                if (IpClassType == IpClassType.Ip6Only)
+                if (IpClassType == IpClassType.Ip6Only && !_interfaceAddresses.ContainsAddress(IPNetAddress.IP6Loopback))
                 {
                     _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
                 }

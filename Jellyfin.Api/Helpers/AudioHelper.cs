@@ -127,8 +127,8 @@ namespace Jellyfin.Api.Helpers
                     }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, MimeTypes.GetMimeType("file.ts")!);
+                // (moved from MediaBrowser.Api): Don't hardcode contentType
+                return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, MimeTypes.GetMimeType("file." + (state.Extension ?? "ts"))!);
             }
 
             // Static remote stream
