@@ -52,6 +52,11 @@ namespace MediaBrowser.Model.Dlna
         public IPAddress Address { get; set; }
 
         /// <summary>
+        /// Gets or sets the userId to use with this profile. If null, the default dlna account will be used.
+        /// </summary>
+        public string UserId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the Identification.
         /// </summary>
         public DeviceIdentification Identification { get; set; }
