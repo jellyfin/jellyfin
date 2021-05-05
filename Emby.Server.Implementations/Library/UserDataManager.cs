@@ -13,8 +13,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using Book = MediaBrowser.Controller.Entities.Book;
 using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
+using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -248,15 +248,15 @@ namespace Emby.Server.Implementations.Library
             }
             else if (positionTicks > 0 && hasRuntime && item is AudioBook)
             {
-                var minIn = TimeSpan.FromTicks(positionTicks).TotalMinutes;
-                var minOut = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
+                var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
+                var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
 
-                if (minIn > _config.Configuration.MinAudiobookResume)
+                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
                 {
                     // ignore progress during the beginning
                     positionTicks = 0;
                 }
-                else if (minOut < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
                 {
                     // mark as completed close to the end
                     positionTicks = 0;

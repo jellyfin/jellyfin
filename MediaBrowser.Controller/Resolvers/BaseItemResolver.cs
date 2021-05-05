@@ -11,6 +11,12 @@ namespace MediaBrowser.Controller.Resolvers
         where T : BaseItem, new()
     {
         /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public virtual ResolverPriority Priority => ResolverPriority.First;
+
+        /// <summary>
         /// Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
@@ -19,12 +25,6 @@ namespace MediaBrowser.Controller.Resolvers
         {
             return null;
         }
-
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public virtual ResolverPriority Priority => ResolverPriority.First;
 
         /// <summary>
         /// Sets initial values on the newly resolved item.

@@ -1,8 +1,6 @@
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Branding;
 using Xunit;
 using Xunit.Abstractions;
 

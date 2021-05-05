@@ -33,6 +33,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("C:\\Users\\jeff\\myfile.mkv", "C:\\Users/jeff", "/home/jeff/", "/home/jeff/myfile.mkv")]
         [InlineData("C:\\Users\\jeff\\myfile.mkv", "C:\\Users/jeff/", "/home/jeff/", "/home/jeff/myfile.mkv")]
         [InlineData("C:\\Users\\jeff\\myfile.mkv", "C:\\Users/jeff/", "/", "/myfile.mkv")]
+        [InlineData("/o", "/o", "/s", "/s")] // regression test for #5977
         public void TryReplaceSubPath_ValidArgs_Correct(string path, string subPath, string newSubPath, string? expectedResult)
         {
             Assert.True(PathExtensions.TryReplaceSubPath(path, subPath, newSubPath, out var result));

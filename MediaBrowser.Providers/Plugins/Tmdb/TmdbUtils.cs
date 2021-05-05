@@ -63,19 +63,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The Jellyfin person type.</returns>
         public static string MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("director", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Director;
             }
 
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("producer", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Writer;
             }

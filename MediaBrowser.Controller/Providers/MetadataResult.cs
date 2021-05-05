@@ -37,10 +37,7 @@ namespace MediaBrowser.Controller.Providers
 
         public void AddPerson(PersonInfo p)
         {
-            if (People == null)
-            {
-                People = new List<PersonInfo>();
-            }
+            People ??= new List<PersonInfo>();
 
             PeopleHelper.AddPerson(People, p);
         }
@@ -54,16 +51,15 @@ namespace MediaBrowser.Controller.Providers
             {
                 People = new List<PersonInfo>();
             }
-
-            People.Clear();
+            else
+            {
+                People.Clear();
+            }
         }
 
         public UserItemData GetOrAddUserData(string userId)
         {
-            if (UserDataList == null)
-            {
-                UserDataList = new List<UserItemData>();
-            }
+            UserDataList ??= new List<UserItemData>();
 
             UserItemData userData = null;
 
