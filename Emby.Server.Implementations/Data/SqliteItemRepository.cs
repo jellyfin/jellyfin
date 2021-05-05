@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -1351,7 +1352,14 @@ namespace Emby.Server.Implementations.Data
 
             if (!reader.IsDBNull(index))
             {
-                item.ChannelId = new Guid(reader.GetString(index));
+                if (!Utf8Parser.TryParse(reader[index].ToBlob(), out Guid value, out _, standardFormat: 'N'))
+                {
+                    var str = reader.GetString(index);
+                    Logger.LogWarning("{ChannelId} isn't in the expected format", str);
+                    value = new Guid(str);
+                }
+
+                item.ChannelId = value;
             }
 
             index++;
