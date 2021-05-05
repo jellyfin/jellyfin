@@ -809,10 +809,12 @@ namespace MediaBrowser.Providers.Manager
             {
                 return;
             }
+
             if (UserDataManager == null)
             {
                 return;
             }
+
             foreach (var userData in userDataList)
             {
                 var user = UserManager.GetUserById(userData.UserId);
