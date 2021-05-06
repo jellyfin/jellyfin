@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Jellyfin.Server.Migrations.Legacy.V703
+namespace Jellyfin.Server.Migrations.Legacy.V10703
 {
     /// <summary>
     /// Defines the legacy <see cref="ServerConfiguration" />.
