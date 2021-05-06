@@ -24,8 +24,7 @@ namespace MediaBrowser.Controller.Entities
                 var parents = GetParents();
                 foreach (var parent in parents)
                 {
-                    var photoAlbum = parent as PhotoAlbum;
-                    if (photoAlbum != null)
+                    if (parent is PhotoAlbum photoAlbum)
                     {
                         return photoAlbum;
                     }

@@ -48,6 +48,7 @@ using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
 using VideoResolver = Emby.Naming.Video.VideoResolver;
@@ -175,10 +176,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     lock (_rootFolderSyncLock)
                     {
-                        if (_rootFolder == null)
-                        {
-                            _rootFolder = CreateRootFolder();
-                        }
+                        _rootFolder ??= CreateRootFolder();
                     }
                 }
 
@@ -558,7 +556,6 @@ namespace Emby.Server.Implementations.Library
             var args = new ItemResolveArgs(_configurationManager.ApplicationPaths, directoryService)
             {
                 Parent = parent,
-                Path = fullPath,
                 FileInfo = fileInfo,
                 CollectionType = collectionType,
                 LibraryOptions = libraryOptions
@@ -684,7 +681,7 @@ namespace Emby.Server.Implementations.Library
 
                         foreach (var item in items)
                         {
-                            ResolverHelper.SetInitialItemValues(item, parent, _fileSystem, this, directoryService);
+                            ResolverHelper.SetInitialItemValues(item, parent, this, directoryService);
                         }
 
                         items.AddRange(ResolveFileList(result.ExtraFiles, directoryService, parent, collectionType, resolvers, libraryOptions));
@@ -1163,7 +1160,7 @@ namespace Emby.Server.Implementations.Library
                 progress.Report(percent * 100);
             }
 
-            _itemRepository.UpdateInheritedValues(cancellationToken);
+            _itemRepository.UpdateInheritedValues();
 
             progress.Report(100);
         }
@@ -2517,7 +2514,7 @@ namespace Emby.Server.Implementations.Library
         public bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh)
         {
             var series = episode.Series;
-            bool? isAbsoluteNaming = series == null ? false : string.Equals(series.DisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase);
+            bool? isAbsoluteNaming = series != null && string.Equals(series.DisplayOrder, "absolute", StringComparison.OrdinalIgnoreCase);
             if (!isAbsoluteNaming.Value)
             {
                 // In other words, no filter applied
@@ -2529,9 +2526,23 @@ namespace Emby.Server.Implementations.Library
             var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd;
 
             // TODO nullable - what are we trying to do there with empty episodeInfo?
-            var episodeInfo = episode.IsFileProtocol
-                ? resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming) ?? new Naming.TV.EpisodeInfo(episode.Path)
-                : new Naming.TV.EpisodeInfo(episode.Path);
+            EpisodeInfo episodeInfo = null;
+            if (episode.IsFileProtocol)
+            {
+                episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming);
+                // Resolve from parent folder if it's not the Season folder
+                if (episodeInfo == null && episode.Parent.GetType() == typeof(Folder))
+                {
+                    episodeInfo = resolver.Resolve(episode.Parent.Path, true, null, null, isAbsoluteNaming);
+                    if (episodeInfo != null)
+                    {
+                        // add the container
+                        episodeInfo.Container = Path.GetExtension(episode.Path)?.TrimStart('.');
+                    }
+                }
+            }
+
+            episodeInfo ??= new EpisodeInfo(episode.Path);
 
             try
             {
@@ -2881,12 +2892,20 @@ namespace Emby.Server.Implementations.Library
 
         public void UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
+            UpdatePeopleAsync(item, people, CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        /// <inheritdoc />
+        public async Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken)
+        {
             if (!item.SupportsPeople)
             {
                 return;
             }
 
             _itemRepository.UpdatePeople(item.Id, people);
+
+            await SavePeopleMetadataAsync(people, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<ItemImageInfo> ConvertImageToLocal(BaseItem item, ItemImageInfo image, int imageIndex)
@@ -2988,6 +3007,58 @@ namespace Emby.Server.Implementations.Library
                     LibraryMonitor.Start();
                 }
             }
+        }
+
+        private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
+        {
+            var personsToSave = new List<BaseItem>();
+
+            foreach (var person in people)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var itemUpdateType = ItemUpdateType.MetadataDownload;
+                var saveEntity = false;
+                var personEntity = GetPerson(person.Name);
+
+                // if PresentationUniqueKey is empty it's likely a new item.
+                if (string.IsNullOrEmpty(personEntity.PresentationUniqueKey))
+                {
+                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
+                    saveEntity = true;
+                }
+
+                foreach (var id in person.ProviderIds)
+                {
+                    if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        personEntity.SetProviderId(id.Key, id.Value);
+                        saveEntity = true;
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
+                {
+                    personEntity.SetImage(
+                        new ItemImageInfo
+                        {
+                            Path = person.ImageUrl,
+                            Type = ImageType.Primary
+                        },
+                        0);
+
+                    saveEntity = true;
+                    itemUpdateType = ItemUpdateType.ImageUpdate;
+                }
+
+                if (saveEntity)
+                {
+                    personsToSave.Add(personEntity);
+                    await RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
+                }
+            }
+
+            CreateItems(personsToSave, null, CancellationToken.None);
         }
 
         private void StartScanInBackground()

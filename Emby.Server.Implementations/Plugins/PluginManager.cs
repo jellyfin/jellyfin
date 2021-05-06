@@ -44,12 +44,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             get
             {
-                if (_httpClientFactory == null)
-                {
-                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
-                }
-
-                return _httpClientFactory;
+                return _httpClientFactory ?? (_httpClientFactory = _appHost.Resolve<IHttpClientFactory>());
             }
         }
 
@@ -166,9 +161,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         public void CreatePlugins()
         {
-            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance)
-                .Where(i => i != null)
-                .ToArray();
+            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance);
         }
 
         /// <summary>
@@ -278,11 +271,7 @@ namespace Emby.Server.Implementations.Plugins
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null);
-                if (plugin == null)
-                {
-                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
-                }
+                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
             }
             else
             {

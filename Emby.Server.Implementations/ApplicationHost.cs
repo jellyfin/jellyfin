@@ -335,10 +335,7 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                if (_deviceId == null)
-                {
-                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
-                }
+                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
 
                 return _deviceId.Value;
             }
@@ -370,10 +367,7 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
-            if (_creatingInstances == null)
-            {
-                _creatingInstances = new List<Type>();
-            }
+            _creatingInstances ??= new List<Type>();
 
             if (_creatingInstances.IndexOf(type) != -1)
             {

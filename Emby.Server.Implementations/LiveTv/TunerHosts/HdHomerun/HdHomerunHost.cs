@@ -182,16 +182,16 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var sr = new StreamReader(stream, System.Text.Encoding.UTF8);
             var tuners = new List<LiveTvTunerInfo>();
-            while (!sr.EndOfStream)
+            await foreach (var line in sr.ReadAllLinesAsync().ConfigureAwait(false))
             {
-                string line = StripXML(sr.ReadLine());
-                if (line.Contains("Channel", StringComparison.Ordinal))
+                string stripedLine = StripXML(line);
+                if (stripedLine.Contains("Channel", StringComparison.Ordinal))
                 {
                     LiveTvTunerStatus status;
-                    var index = line.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
-                    var name = line.Substring(0, index - 1);
-                    var currentChannel = line.Substring(index + 7);
-                    if (currentChannel != "none")
+                    var index = stripedLine.IndexOf("Channel", StringComparison.OrdinalIgnoreCase);
+                    var name = stripedLine.Substring(0, index - 1);
+                    var currentChannel = stripedLine.Substring(index + 7);
+                    if (string.Equals(currentChannel, "none", StringComparison.Ordinal))
                     {
                         status = LiveTvTunerStatus.LiveTv;
                     }
@@ -421,10 +421,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             string audioCodec = channelInfo.AudioCodec;
 
-            if (!videoBitrate.HasValue)
-            {
-                videoBitrate = isHd ? 15000000 : 2000000;
-            }
+            videoBitrate ??= isHd ? 15000000 : 2000000;
 
             int? audioBitrate = isHd ? 448000 : 192000;
 
@@ -661,7 +658,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 _modelCache.Clear();
             }
 
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(discoveryDurationMs).Token, cancellationToken).Token;
+            using var timedCancellationToken = new CancellationTokenSource(discoveryDurationMs);
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timedCancellationToken.Token, cancellationToken);
+            cancellationToken = linkedCancellationTokenSource.Token;
             var list = new List<TunerHostInfo>();
 
             // Create udp broadcast discovery message

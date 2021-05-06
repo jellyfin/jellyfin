@@ -61,6 +61,3 @@ jobs:
 
 - ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
   - template: azure-pipelines-package.yml
-
-- ${{ if or(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'), startsWith(variables['Build.SourceBranch'], 'refs/heads/master')) }}:
-  - template: azure-pipelines-api-client.yml

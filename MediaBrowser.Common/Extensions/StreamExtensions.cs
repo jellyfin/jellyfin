@@ -35,14 +35,28 @@ namespace MediaBrowser.Common.Extensions
         }
 
         /// <summary>
-        /// Reads all lines in the <see cref="StreamReader" />.
+        /// Reads all lines in the <see cref="TextReader" />.
         /// </summary>
-        /// <param name="reader">The <see cref="StreamReader" /> to read from.</param>
+        /// <param name="reader">The <see cref="TextReader" /> to read from.</param>
         /// <returns>All lines in the stream.</returns>
-        public static IEnumerable<string> ReadAllLines(this StreamReader reader)
+        public static IEnumerable<string> ReadAllLines(this TextReader reader)
         {
             string? line;
             while ((line = reader.ReadLine()) != null)
+            {
+                yield return line;
+            }
+        }
+
+        /// <summary>
+        /// Reads all lines in the <see cref="TextReader" />.
+        /// </summary>
+        /// <param name="reader">The <see cref="TextReader" /> to read from.</param>
+        /// <returns>All lines in the stream.</returns>
+        public static async IAsyncEnumerable<string> ReadAllLinesAsync(this TextReader reader)
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
             {
                 yield return line;
             }

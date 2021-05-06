@@ -163,7 +163,7 @@ namespace MediaBrowser.Model.Entities
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }
@@ -202,7 +202,7 @@ namespace MediaBrowser.Model.Entities
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }
@@ -522,9 +522,9 @@ namespace MediaBrowser.Model.Entities
 
             // sub = external .sub file
 
-            return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   codec.IndexOf("dvbsub", StringComparison.OrdinalIgnoreCase) == -1 &&
+            return !codec.Contains("pgs", StringComparison.OrdinalIgnoreCase) &&
+                   !codec.Contains("dvd", StringComparison.OrdinalIgnoreCase) &&
+                   !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
         }

@@ -400,10 +400,7 @@ namespace MediaBrowser.Common.Net
         private bool ResolveHost()
         {
             // When was the last time we resolved?
-            if (_lastResolved == null)
-            {
-                _lastResolved = DateTime.UtcNow;
-            }
+            _lastResolved ??= DateTime.UtcNow;
 
             // If we haven't resolved before, or our timer has run out...
             if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
