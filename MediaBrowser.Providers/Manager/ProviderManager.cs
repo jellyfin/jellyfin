@@ -167,16 +167,20 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentType = response.Content.Headers.ContentType.MediaType;
+            var contentTypeHeader = response.Content.Headers.ContentType;
+            var contentType = string.Empty;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
-            if (string.IsNullOrEmpty(contentType))
+            if (contentTypeHeader == null || string.IsNullOrEmpty(contentTypeHeader.MediaType))
             {
                 if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     contentType = "image/png";
                 }
+            } else
+            {
+                contentType = contentTypeHeader.MediaType;
             }
 
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
