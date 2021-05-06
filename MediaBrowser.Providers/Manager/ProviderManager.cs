@@ -171,7 +171,7 @@ namespace MediaBrowser.Providers.Manager
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
-            if (contentTypeHeader == null || string.IsNullOrEmpty(contentTypeHeader.MediaType))
+            if (string.IsNullOrEmpty(contentType))
             {
                 if (url.IndexOf("/imagecache/", StringComparison.OrdinalIgnoreCase) != -1)
                 {
