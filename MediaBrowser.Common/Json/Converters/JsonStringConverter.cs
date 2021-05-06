@@ -9,10 +9,10 @@ namespace MediaBrowser.Common.Json.Converters
     /// <summary>
     /// Converter to allow the serializer to read strings.
     /// </summary>
-    public class JsonStringConverter : JsonConverter<string>
+    public class JsonStringConverter : JsonConverter<string?>
     {
         /// <inheritdoc />
-        public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             return reader.TokenType switch
             {
@@ -23,7 +23,7 @@ namespace MediaBrowser.Common.Json.Converters
         }
 
         /// <inheritdoc />
-        public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value);
         }
