@@ -167,8 +167,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentTypeHeader = response.Content.Headers.ContentType;
-            var contentType = string.Empty;
+            var contentType = response.Content.Headers?.ContentType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
