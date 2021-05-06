@@ -177,9 +177,6 @@ namespace MediaBrowser.Providers.Manager
                 {
                     contentType = "image/png";
                 }
-            } else
-            {
-                contentType = contentTypeHeader.MediaType;
             }
 
             // thetvdb will sometimes serve a rubbish 404 html page with a 200 OK code, because reasons...
