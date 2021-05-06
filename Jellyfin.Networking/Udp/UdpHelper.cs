@@ -51,7 +51,8 @@ namespace Jellyfin.Networking.Udp
         /// <summary>
         /// Gets or sets a value indicating whether multi-socket binding should be enabled. Default is enabled.
         /// </summary>
-        public static bool EnableMultiSocketBinding { get; set; } = true;
+        public static bool EnableMultiSocketBinding { get; set; } = OperatingSystem.Id == OperatingSystemId.Windows ||
+                                                                    OperatingSystem.Id == OperatingSystemId.Linux;;
 
         /// <summary>
         /// Returns an unused UDP port number in the range specified.
