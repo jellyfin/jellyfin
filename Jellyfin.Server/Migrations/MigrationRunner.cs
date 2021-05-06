@@ -96,8 +96,8 @@ namespace Jellyfin.Server.Migrations
             var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
             if (!File.Exists(destFile))
             {
-                // Migrate version 7.0.3 network configuration.
-                RunSettingMigration<Legacy.V703.ServerConfiguration, Legacy.V703.NetworkConfiguration>(logger, appPaths.SystemConfigurationFilePath, destFile);
+                // Migrate version 10.7.0.3 network configuration.
+                RunSettingMigration<Legacy.V71003.ServerConfiguration, Legacy.V10703.NetworkConfiguration>(logger, appPaths.SystemConfigurationFilePath, destFile);
                 logger.LogDebug("Migrated to network configuration 7.0.3");
             }
         }
