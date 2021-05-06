@@ -72,11 +72,17 @@ namespace Jellyfin.Server
             var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
             var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
             var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
-            Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
+            Func<IServiceProvider, HttpMessageHandler> eyeballsHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
             {
                 AutomaticDecompression = DecompressionMethods.All,
                 RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8,
                 ConnectCallback = HttpClientExtension.OnConnect
+            };
+
+            Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
             };
 
             services
@@ -87,7 +93,7 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
 
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
@@ -96,7 +102,7 @@ namespace Jellyfin.Server
                     c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
                     c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
+                .ConfigurePrimaryHttpMessageHandler(eyeballsHttpClientHandlerDelegate);
 
             services.AddHttpClient(NamedClient.DirectIp, c =>
                 {
