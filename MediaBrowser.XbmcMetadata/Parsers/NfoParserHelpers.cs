@@ -185,6 +185,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 "discart" => ImageType.Disc,
                 "landscape" => ImageType.Thumb,
                 "clearart" => ImageType.Art,
+                "fanart" => ImageType.Backdrop,
                 // unknown type (including "poster") --> primary
                 _ => ImageType.Primary,
             };

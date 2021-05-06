@@ -26,20 +26,20 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Gets or sets the id of this instance.
+        /// Gets the id of this instance.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [XmlIgnore]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the id of the associated user.
+        /// Gets the id of the associated user.
         /// </summary>
         [XmlIgnore]
-        public Guid UserId { get; protected set; }
+        public Guid UserId { get; private set; }
 
         /// <summary>
         /// Gets or sets the day of week.

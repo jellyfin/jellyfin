@@ -2,11 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
@@ -24,7 +23,7 @@ namespace Emby.Server.Implementations.IO
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
-        private readonly bool _isEnvironmentCaseInsensitive;
+        private static readonly bool _isEnvironmentCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
@@ -32,8 +31,6 @@ namespace Emby.Server.Implementations.IO
         {
             Logger = logger;
             _tempPath = applicationPaths.TempDirectory;
-
-            _isEnvironmentCaseInsensitive = OperatingSystem.Id == OperatingSystemId.Windows;
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -55,7 +52,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(filename);
-            return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
+            return _shortcutHandlers.Any(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(filename);
-            var handler = _shortcutHandlers.FirstOrDefault(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
+            var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
             return handler?.Resolve(filename);
         }
@@ -249,13 +246,20 @@ namespace Emby.Server.Implementations.IO
                     // Issue #2354 get the size of files behind symbolic links
                     if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
                     {
-                        using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                        try
                         {
-                            result.Length = thisFileStream.Length;
+                            using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                            {
+                                result.Length = thisFileStream.Length;
+                            }
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            // Dangling symlinks cannot be detected before opening the file unfortunately...
+                            Logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
+                            result.Exists = false;
                         }
                     }
-
-                    result.DirectoryName = fileInfo.DirectoryName;
                 }
 
                 result.CreationTimeUtc = GetCreationTimeUtc(info);
@@ -294,16 +298,37 @@ namespace Emby.Server.Implementations.IO
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">The filename is null.</exception>
-        public virtual string GetValidFilename(string filename)
+        public string GetValidFilename(string filename)
         {
-            var builder = new StringBuilder(filename);
-
-            foreach (var c in Path.GetInvalidFileNameChars())
+            var invalid = Path.GetInvalidFileNameChars();
+            var first = filename.IndexOfAny(invalid);
+            if (first == -1)
             {
-                builder = builder.Replace(c, ' ');
+                // Fast path for clean strings
+                return filename;
             }
 
-            return builder.ToString();
+            return string.Create(
+                filename.Length,
+                (filename, invalid, first),
+                (chars, state) =>
+                {
+                    state.filename.AsSpan().CopyTo(chars);
+
+                    chars[state.first++] = ' ';
+
+                    var len = chars.Length;
+                    foreach (var c in state.invalid)
+                    {
+                        for (int i = state.first; i < len; i++)
+                        {
+                            if (chars[i] == c)
+                            {
+                                chars[i] = ' ';
+                            }
+                        }
+                    }
+                });
         }
 
         /// <summary>
@@ -674,21 +699,6 @@ namespace Emby.Server.Implementations.IO
                 // Don't skip any files.
                 AttributesToSkip = 0
             };
-        }
-
-        private static void RunProcess(string path, string args, string workingDirectory)
-        {
-            using (var process = Process.Start(new ProcessStartInfo
-            {
-                Arguments = args,
-                FileName = path,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDirectory,
-                WindowStyle = ProcessWindowStyle.Normal
-            }))
-            {
-                process.WaitForExit();
-            }
         }
     }
 }

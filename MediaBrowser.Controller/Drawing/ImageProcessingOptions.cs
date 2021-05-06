@@ -24,8 +24,6 @@ namespace MediaBrowser.Controller.Drawing
 
         public int ImageIndex { get; set; }
 
-        public bool CropWhiteSpace { get; set; }
-
         public int? Width { get; set; }
 
         public int? Height { get; set; }
@@ -33,6 +31,10 @@ namespace MediaBrowser.Controller.Drawing
         public int? MaxWidth { get; set; }
 
         public int? MaxHeight { get; set; }
+
+        public int? FillWidth { get; set; }
+
+        public int? FillHeight { get; set; }
 
         public int Quality { get; set; }
 
@@ -95,6 +97,11 @@ namespace MediaBrowser.Controller.Drawing
                 return false;
             }
 
+            if (sizeValue.Width > FillWidth || sizeValue.Height > FillHeight)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -106,7 +113,6 @@ namespace MediaBrowser.Controller.Drawing
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
                 !Blur.HasValue &&
-                !CropWhiteSpace &&
                 string.IsNullOrEmpty(BackgroundColor) &&
                 string.IsNullOrEmpty(ForegroundLayer);
         }

@@ -177,11 +177,9 @@ namespace Jellyfin.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, "Only sha1 password is not allowed.");
             }
 
-            // Password should always be null
             AuthenticateUserByName request = new AuthenticateUserByName
             {
                 Username = user.Username,
-                Password = null,
                 Pw = pw
             };
             return await AuthenticateUserByName(request).ConfigureAwait(false);
@@ -208,7 +206,6 @@ namespace Jellyfin.Api.Controllers
                     DeviceId = auth.DeviceId,
                     DeviceName = auth.Device,
                     Password = request.Pw,
-                    PasswordSha1 = request.Password,
                     RemoteEndPoint = HttpContext.GetNormalizedRemoteIp().ToString(),
                     Username = request.Username
                 }).ConfigureAwait(false);

@@ -365,6 +365,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     item.CommunityRating = reader.ReadFloatFromNfo() ?? item.CommunityRating;
                     break;
 
+                case "ratings":
+                    NfoSubtreeParsers<T>.ReadRatingsNode(reader, item);
+                    break;
+
                 case "aired":
                 case "formed":
                 case "premiered":

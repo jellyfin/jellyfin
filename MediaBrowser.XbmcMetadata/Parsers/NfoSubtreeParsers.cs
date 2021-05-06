@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Xml;
 using MediaBrowser.Controller.Entities;
@@ -183,6 +184,54 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         subReader.Read();
                     }
+                }
+            }
+        }
+
+        internal static void ReadRatingsNode(XmlReader parentReader, BaseItem item)
+        {
+            if (parentReader.IsEmptyElement)
+            {
+                parentReader.Read();
+                return;
+            }
+
+            using var reader = parentReader.ReadSubtree();
+
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "rating":
+                        {
+                            if (reader.IsEmptyElement)
+                            {
+                                reader.Read();
+                                continue;
+                            }
+
+                            var ratingName = reader.GetAttribute("name");
+
+                            using var subtree = reader.ReadSubtree();
+                            ReadRatingNode(subtree, item, ratingName);
+
+                            break;
+                        }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
         }
@@ -438,6 +487,52 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 SortOrder = sortOrder,
                 ImageUrl = imageUrl
             };
+        }
+
+        private static void ReadRatingNode(XmlReader reader, BaseItem item, string? ratingName)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "value":
+                            var val = reader.ReadElementContentAsString();
+
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
+                                {
+                                    // if ratingName contains tomato --> assume critic rating
+                                    if (ratingName != null &&
+                                        ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
+                                        !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        item.CriticRating = ratingValue;
+                                    }
+                                    else
+                                    {
+                                        item.CommunityRating = ratingValue;
+                                    }
+                                }
+                            }
+
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
         }
     }
 }

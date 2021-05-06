@@ -78,5 +78,7 @@
     <Rule Id="CA1303" Action="None" />
     <!-- disable warning CA1308: Normalize strings to uppercase -->
     <Rule Id="CA1308" Action="None" />
+    <!-- disable warning CA2101: Specify marshaling for P/Invoke string arguments -->
+    <Rule Id="CA2101" Action="None" />
   </Rules>
 </RuleSet>
