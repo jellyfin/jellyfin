@@ -34,7 +34,7 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets the last IP address the profile was matched to.
         /// </summary>
         [XmlIgnore]
-        public IPAddress Address { get; set; }
+        public IPAddress? Address { get; set; }
 
         /// <summary>
         /// Gets or sets the userId to use with this profile. If null, the default dlna account will be used.
