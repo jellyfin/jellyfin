@@ -26,7 +26,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="params">Parameters to echo back in the response.</param>
         /// <returns>An <see cref="OkResult"/>.</returns>
         /// <response code="200">Information retrieved.</response>
-        [HttpGet("Decoding", Name = "TestUrlDecoding")]
+        [HttpGet("UrlDecode")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult TestUrlDecoding([FromQuery]Dictionary<string, string>? @params = null)
         {
