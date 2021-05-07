@@ -66,7 +66,14 @@ namespace Jellyfin.Server.Middleware
                 foreach (var pair in queryString)
                 {
                     var item = pair.Split('=', System.StringSplitOptions.RemoveEmptyEntries);
-                    pairs.Add(item[0], new StringValues(item.Length == 2 ? item[1] : string.Empty));
+                    if (item.Length > 0)
+                    {
+                        pairs.Add(item[0], new StringValues(item.Length == 2 ? item[1] : string.Empty));
+                    }
+                    else
+                    {
+                        pairs.Add(pair, string.Empty);
+                    }
                 }
 
                 _store = new QueryCollection(pairs);
