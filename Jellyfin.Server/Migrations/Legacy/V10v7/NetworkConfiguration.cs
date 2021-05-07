@@ -2,15 +2,15 @@
 
 using System;
 
-namespace Jellyfin.Server.Migrations.Legacy.V10703
+namespace Jellyfin.Server.Migrations.Legacy.V10v7
 {
     /// <summary>
-    /// Defines the legacy <see cref="ServerConfiguration" />.
+    /// Defines the <see cref="NetworkConfiguration" />.
     ///
     /// Snapshot of 7.03 server configuration.
     /// DO NOT CHANGE, OR USE ELSEWHERE. FOR MIGRATION PURPOSES ONLY.
     /// </summary>
-    public class ServerConfiguration
+    public class NetworkConfiguration
     {
         /// <summary>
         /// The default value for <see cref="HttpServerPortNumber"/>.

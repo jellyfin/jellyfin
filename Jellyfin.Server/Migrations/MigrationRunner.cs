@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
@@ -15,6 +18,8 @@ namespace Jellyfin.Server.Migrations
     /// </summary>
     public sealed class MigrationRunner
     {
+        private const string MigrationNamespace = "Jellyfin.Server.Migrations.Legacy.V";
+
         /// <summary>
         /// The list of known migrations, in order of applicability.
         /// </summary>
@@ -87,18 +92,62 @@ namespace Jellyfin.Server.Migrations
         }
 
         /// <summary>
-        /// Performs a network setting migration.
+        /// Performs the setting migrations.
+        ///
+        /// Namespaces with the prefix 'Jellyfin.Server.Migrations.Legacy.V{x}v{y}[r{y}] should contain a method called RunMigration.
+        /// This method is responsible for each individual migration.
+        /// Each migrations is applied in version order, starting with the earliest.
+        ///
         /// </summary>
         /// <param name="appPaths">The <see cref="IServerApplicationPaths"/>.</param>
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public static void RunSettingsMigration(IServerApplicationPaths appPaths, ILogger logger)
         {
-            var destFile = Path.Combine(appPaths.ConfigurationDirectoryPath, "network.xml");
-            if (!File.Exists(destFile))
+            var previous = Array.Empty<string>();
+            var migrationHistory = Path.Combine(appPaths.ProgramDataPath, "settingsMigrations");
+            if (File.Exists(migrationHistory))
             {
-                // Migrate version 10.7.0.3 network configuration.
-                RunSettingMigration<Legacy.V71003.ServerConfiguration, Legacy.V10703.NetworkConfiguration>(logger, appPaths.SystemConfigurationFilePath, destFile);
-                logger.LogDebug("Migrated to network configuration 7.0.3");
+                try
+                {
+                    previous = File.ReadAllLines(migrationHistory);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Unable to read migration history. Re-applying all.");
+                }
+            }
+
+            var completedMigrations = new List<string>(previous);
+
+            var migrations = GetMigrationClasses(MigrationNamespace);
+            bool changed = false;
+            foreach (string migration in migrations)
+            {
+                var method = migration + ".RunMigration";
+                if (!completedMigrations.Contains(migration))
+                {
+                    // Each migration namespace needs has a migrateSettings class.
+                    var migrationMethodType = Type.GetType(method);
+                    if (migrationMethodType != null)
+                    {
+                        // Execute migration.
+                        _ = Activator.CreateInstance(migrationMethodType, appPaths, logger);
+                        completedMigrations.Add(migration);
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed)
+            {
+                try
+                {
+                    File.WriteAllLines(migrationHistory, completedMigrations);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Unable to store migration history.");
+                }
             }
         }
 
@@ -110,7 +159,7 @@ namespace Jellyfin.Server.Migrations
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         /// <param name="sourceFile">Source filename.</param>
         /// <param name="destFile">Destination filename.</param>
-        private static void RunSettingMigration<T, TU>(ILogger logger, string sourceFile, string destFile)
+        public static void RunSettingMigration<T, TU>(ILogger logger, string sourceFile, string destFile)
             where TU : new()
         {
             try
@@ -144,6 +193,41 @@ namespace Jellyfin.Server.Migrations
                 // Catch everything, so we don't bomb out JF.
                 logger.LogDebug(ex, "Exception occurred migrating settings.");
             }
+        }
+
+        private static string GetNamespace(string ns)
+        {
+            var i = ns.LastIndexOf('.');
+            if (i != -1)
+            {
+                return ns.Substring(0, i);
+            }
+
+            return ns;
+        }
+
+        private static Version GetVersion(string ns)
+        {
+            // extrapolate version number from the namespace.
+            return Version.Parse(ns[MigrationNamespace.Length..]
+                .Replace("v", ".", StringComparison.Ordinal)
+                .Replace("r", ".", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Returns a list of namespace classes in the format 'Legacy.V{x}r{y}'.
+        /// </summary>
+        /// <param name="nameSpace">Namespace to enumerate.</param>
+        /// <returns>List of namespaces.</returns>
+        private static IEnumerable<string> GetMigrationClasses(string nameSpace)
+        {
+            var asm = Assembly.GetEntryAssembly();
+            return asm!.GetTypes()
+                .Where(type => type.Namespace != null
+                    && type.Namespace!.StartsWith(nameSpace, StringComparison.OrdinalIgnoreCase))
+                .Select(type => GetNamespace(type.FullName!))
+                .Distinct()
+                .OrderBy(fn => GetVersion(fn));
         }
     }
 }
