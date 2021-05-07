@@ -2,8 +2,6 @@ name: Automation
 
 on:
   pull_request:
-  issues:
-  issue_comment:
 
 jobs:
   main:
