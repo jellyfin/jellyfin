@@ -84,19 +84,13 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Pings the system.
         /// </summary>
-        /// <param name="params">Optional: Parameters to echo back in the response.</param>
         /// <response code="200">Information retrieved.</response>
         /// <returns>The server name.</returns>
         [HttpGet("Ping", Name = "GetPingSystem")]
         [HttpPost("Ping", Name = "PostPingSystem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<string> PingSystem([FromQuery]Dictionary<string, string>? @params = null)
+        public ActionResult<string> PingSystem()
         {
-            if (@params != null && @params.Count > 0)
-            {
-                Response.Headers.Add("querystring", string.Join("&", @params.Select(x => x.Key + "=" + x.Value)));
-            }
-
             return _appHost.Name;
         }
 

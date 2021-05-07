@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("system/ping?" + sourceUrl).ConfigureAwait(false);
+            var response = await client.GetAsync("Tests/Decoding?" + sourceUrl).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(unencodedUrl, response.Headers.GetValues("querystring").First());
         }
