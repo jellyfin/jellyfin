@@ -13,13 +13,6 @@ namespace Jellyfin.Api.Controllers
     public class TestsController : BaseJellyfinApiController
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestController"/> class.
-        /// </summary>
-        public TestController()
-        {
-        }
-
-        /// <summary>
         /// Tests the url decoding.
         /// </summary>
         /// <param name="params">Parameters to echo back in the response.</param>
