@@ -20,15 +20,6 @@ namespace Jellyfin.Api.Tests.Controllers
             _factory = factory;
         }
 
-        [Fact]
-        public async Task Ensure_Ping_Working()
-        {
-            var client = _factory.CreateClient();
-
-            var response = await client.GetAsync("system/ping").ConfigureAwait(false);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
         [Theory]
         [InlineData("a=1&b=2&c=3", "a=1&b=2&c=3")] // won't be processed as there is more than 1.
         [InlineData("a=1", "a=1")] // won't be processed as it has a value
