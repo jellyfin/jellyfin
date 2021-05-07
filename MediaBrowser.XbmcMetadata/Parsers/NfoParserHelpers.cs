@@ -124,7 +124,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
             // read id from content
             var contentId = reader.ReadElementContentAsString();
-            if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
+            if (string.IsNullOrEmpty(imdbId) && contentId.Contains("tt", StringComparison.Ordinal))
             {
                 imdbId = contentId;
             }
@@ -220,9 +220,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 ? new[] { ',' }
                 : new[] { '|', ';' };
 
-            value = value.Trim().Trim(separator);
-
-            return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            return value.Trim().Split(separator, StringSplitOptions.RemoveEmptyEntries);
         }
 
         internal static MetadataField[] ParseLockedFields(string lockedFields)
@@ -231,12 +229,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 return lockedFields.Split('|').Select(i =>
                 {
-                    if (Enum.TryParse(i, true, out MetadataField field))
-                    {
-                        return (MetadataField?)field;
-                    }
-
-                    return null;
+                    return Enum.TryParse(i, true, out MetadataField field) ? (MetadataField?)field : null;
                 }).OfType<MetadataField>().ToArray();
             }
 
