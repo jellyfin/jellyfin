@@ -20,14 +20,16 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         [HttpGet("UrlDecode")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult TestUrlDecoding([FromQuery]Dictionary<string, string>? @params = null)
+        public ContentResult TestUrlDecoding([FromQuery]Dictionary<string, string>? @params = null)
         {
-            if (@params != null && @params.Count > 0)
+            return new ContentResult()
             {
-                Response.Headers.Add("querystring", string.Join("&", @params.Select(x => x.Key + "=" + x.Value)));
-            }
-
-            return Ok();
+                Content = (@params != null && @params.Count > 0)
+                    ? string.Join("&", @params.Select(x => x.Key + "=" + x.Value))
+                    : string.Empty,
+                ContentType = "text/plain; charset=utf-8",
+                StatusCode = 200
+            };
         }
     }
 }

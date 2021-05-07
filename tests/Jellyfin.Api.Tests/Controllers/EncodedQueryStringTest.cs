@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -29,9 +30,10 @@ namespace Jellyfin.Api.Tests.Controllers
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("Tests/Decoding?" + sourceUrl).ConfigureAwait(false);
+            var response = await client.GetAsync("Tests/UrlDecode?" + sourceUrl).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(unencodedUrl, response.Headers.GetValues("querystring").First());
+            string reply = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Assert.Equal(unencodedUrl, reply);
         }
     }
 }
