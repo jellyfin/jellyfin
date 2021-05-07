@@ -339,9 +339,9 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 // if (IsOffline)
-                //{
+                // {
                 //    return LocationType.Offline;
-                //}
+                // }
 
                 var path = Path;
                 if (string.IsNullOrEmpty(path))
@@ -2769,11 +2769,11 @@ namespace MediaBrowser.Controller.Entities
 
             // var parentId = Id;
             // if (!video.IsOwnedItem || video.ParentId != parentId)
-            //{
+            // {
             //    video.IsOwnedItem = true;
             //    video.ParentId = parentId;
             //    newOptions.ForceSave = true;
-            //}
+            // }
 
             if (video == null)
             {

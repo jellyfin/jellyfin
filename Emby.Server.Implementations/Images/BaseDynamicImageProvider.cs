@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.Images
                 InputPaths = GetStripCollageImagePaths(primaryItem, items).ToArray()
             };
 
-            if (options.InputPaths.Length == 0)
+            if (options.InputPaths.Count == 0)
             {
                 return null;
             }

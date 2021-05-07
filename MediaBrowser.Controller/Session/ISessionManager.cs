@@ -346,21 +346,19 @@ namespace MediaBrowser.Controller.Session
         /// Logouts the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        /// <returns>Task.</returns>
         void Logout(string accessToken);
+
         void Logout(AuthenticationInfo accessToken);
 
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
-        /// <returns>Task.</returns>
         void RevokeUserTokens(Guid userId, string currentAccessToken);
 
         /// <summary>
         /// Revokes the token.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <returns>Task.</returns>
         void RevokeToken(string id);
 
         void CloseIfNeeded(SessionInfo session);

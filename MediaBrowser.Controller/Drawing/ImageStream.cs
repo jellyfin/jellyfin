@@ -22,9 +22,15 @@ namespace MediaBrowser.Controller.Drawing
 
         public void Dispose()
         {
-            if (Stream != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                Stream.Dispose();
+                Stream?.Dispose();
             }
         }
     }

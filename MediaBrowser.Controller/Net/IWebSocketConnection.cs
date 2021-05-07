@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Net
         DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the query string.
+        /// Gets the query string.
         /// </summary>
         /// <value>The query string.</value>
         IQueryCollection QueryString { get; }

@@ -11,21 +11,6 @@ namespace MediaBrowser.Controller.Providers
 {
     public class MetadataRefreshOptions : ImageRefreshOptions
     {
-        /// <summary>
-        /// When paired with MetadataRefreshMode=FullRefresh, all existing data will be overwritten with new data from the providers.
-        /// </summary>
-        public bool ReplaceAllMetadata { get; set; }
-
-        public MetadataRefreshMode MetadataRefreshMode { get; set; }
-
-        public RemoteSearchResult SearchResult { get; set; }
-
-        public string[] RefreshPaths { get; set; }
-
-        public bool ForceSave { get; set; }
-
-        public bool EnableRemoteContentProbe { get; set; }
-
         public MetadataRefreshOptions(IDirectoryService directoryService)
             : base(directoryService)
         {
@@ -52,6 +37,22 @@ namespace MediaBrowser.Controller.Providers
                 RefreshPaths = copy.RefreshPaths.ToArray();
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether all existing data should be overwritten with new data from providers
+        /// when paired with MetadataRefreshMode=FullRefresh
+        /// </summary>
+        public bool ReplaceAllMetadata { get; set; }
+
+        public MetadataRefreshMode MetadataRefreshMode { get; set; }
+
+        public RemoteSearchResult SearchResult { get; set; }
+
+        public string[] RefreshPaths { get; set; }
+
+        public bool ForceSave { get; set; }
+
+        public bool EnableRemoteContentProbe { get; set; }
 
         public bool RefreshItem(BaseItem item)
         {

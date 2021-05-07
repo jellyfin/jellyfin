@@ -191,11 +191,4 @@ namespace MediaBrowser.Controller.Providers
 
         double? GetRefreshProgress(Guid id);
     }
-
-    public enum RefreshPriority
-    {
-        High = 0,
-        Normal = 1,
-        Low = 2
-    }
 }

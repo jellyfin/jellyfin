@@ -86,6 +86,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         private bool _requiresRefresh;
+
         public override bool RequiresRefresh()
         {
             var changed = base.RequiresRefresh() || _requiresRefresh;

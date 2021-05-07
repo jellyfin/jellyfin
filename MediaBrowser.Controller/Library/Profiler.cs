@@ -15,12 +15,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// The name.
         /// </summary>
-        readonly string _name;
+        private readonly string _name;
 
         /// <summary>
         /// The stopwatch.
         /// </summary>
-        readonly Stopwatch _stopwatch;
+        private readonly Stopwatch _stopwatch;
 
         /// <summary>
         /// The _logger.

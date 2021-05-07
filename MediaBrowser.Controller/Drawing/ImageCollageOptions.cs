@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 #nullable disable
 
 #pragma warning disable CS1591
@@ -10,7 +12,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets or sets the input paths.
         /// </summary>
         /// <value>The input paths.</value>
-        public string[] InputPaths { get; set; }
+        public IReadOnlyList<string> InputPaths { get; set; }
 
         /// <summary>
         /// Gets or sets the output path.

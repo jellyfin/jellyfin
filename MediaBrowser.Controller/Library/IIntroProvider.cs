@@ -12,6 +12,12 @@ namespace MediaBrowser.Controller.Library
     public interface IIntroProvider
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
+
+        /// <summary>
         /// Gets the intros.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -24,11 +30,5 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <returns>IEnumerable{System.String}.</returns>
         IEnumerable<string> GetAllIntroFiles();
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        string Name { get; }
     }
 }
