@@ -10,8 +10,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Controller for testing.
     /// </summary>
-    [Route("Tests")]
-    public class TestController : BaseJellyfinApiController
+    public class TestsController : BaseJellyfinApiController
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TestController"/> class.
