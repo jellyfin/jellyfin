@@ -104,7 +104,7 @@ namespace Jellyfin.Server.Migrations
         public static void RunSettingsMigration(IServerApplicationPaths appPaths, ILogger logger)
         {
             var previous = Array.Empty<string>();
-            var migrationHistory = Path.Combine(appPaths.ProgramDataPath, "settingsMigrations");
+            var migrationHistory = Path.Combine(appPaths.ConfigurationDirectoryPath, "settingsMigrations");
             if (File.Exists(migrationHistory))
             {
                 try
