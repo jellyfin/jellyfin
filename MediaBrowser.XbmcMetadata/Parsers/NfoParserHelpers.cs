@@ -81,7 +81,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             if (providerIds.TryGetValue(tagName, out string? providerIdValue))
             {
                 var id = xmlReader.ReadElementContentAsString();
-                if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
+                if (!string.IsNullOrWhiteSpace(id))
                 {
                     _logger.LogDebug("Setting {Provider} id to {Id}", providerIdValue, id);
                     item.SetProviderId(providerIdValue, id);
