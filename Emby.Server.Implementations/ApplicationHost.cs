@@ -1167,14 +1167,13 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetLoopbackHttpApiUrl()
+        public string GetUrlForUseByHttpApi()
         {
-            if (NetManager.IpClassType != IpClassType.Ip4Only)
-            {
-                return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
-            }
+            // GetBindInterfaces will return an interface.
+            var bind = NetManager.GetInternalBindAddresses().FirstOrDefault() ??
+                NetManager.GetAllBindInterfaces(true).First();
 
-            return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
+            return GetLocalApiUrl(bind.Address.ToString(), Uri.UriSchemeHttp);
         }
 
         /// <inheritdoc/>

@@ -656,5 +656,51 @@ namespace Jellyfin.Networking.Tests
 
             Assert.NotEqual(denied, nm.HasRemoteAccess(IPAddress.Parse(remoteIp)));
         }
+
+        [Theory]
+        [InlineData("192.168.1.209/24,-16,eth16", "192.168.1.0/24", "", "192.168.1.209")] // Only 1 address so use it.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "192.168.1.208")] // LAN address is specified by default.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "10.0.0.1")] // return bind address
+
+        public void Get_Appropriate_Interface_NoSource(string interfaces, string lan, string bind, string result)
+        {
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV4 = true,
+                LocalNetworkSubnets = lan.Split(','),
+                LocalNetworkAddresses = bind.Split(',')
+            };
+
+            NetworkManager.MockNetworkSettings = interfaces;
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            var interfaceToUse = nm.GetBindInterface(string.Empty, out _);
+
+            Assert.Equal(result, interfaceToUse);
+        }
+
+        [Theory]
+        [InlineData("192.168.1.209/24,-16,eth16", "192.168.1.0/24", "", "192.168.1.210", "192.168.1.209")] // Source on LAN
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "192.168.1.209", "192.168.1.208")] // Source on LAN
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "8.8.8.8", "10.0.0.1")] // Source external.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "192.168.1.209", "10.0.0.1")] // LAN not bound, so return external.
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "8.8.8.8", "10.0.0.1")] // return external bind address
+        [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "192.168.1.210", "192.168.1.208")] // return LAN bind address
+        public void Get_Appropriate_Interface_ForSource(string interfaces, string lan, string bind, string source, string result)
+        {
+            var conf = new NetworkConfiguration()
+            {
+                EnableIPV4 = true,
+                LocalNetworkSubnets = lan.Split(','),
+                LocalNetworkAddresses = bind.Split(',')
+            };
+
+            NetworkManager.MockNetworkSettings = interfaces;
+            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
+
+            var interfaceToUse = nm.GetBindInterface(source, out _);
+
+            Assert.Equal(result, interfaceToUse);
+        }
     }
 }
