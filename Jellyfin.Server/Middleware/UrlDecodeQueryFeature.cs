@@ -66,19 +66,17 @@ namespace Jellyfin.Server.Middleware
 
                 foreach (var pair in queryString)
                 {
-                    var item = pair.Split('=');
-                    item.MoveNext();
+                    var section = pair.ToString();
+                    var i = section.IndexOf('=', System.StringComparison.Ordinal);
 
-                    var key = item.Current;
-                    var val = item.MoveNext() ? item.Current : string.Empty;
-                    if (key.Length == 0 && val.Length == 0)
+                    if (i == -1)
                     {
                         // encoded is an equals.
-                        pairs.Add(pair.ToString(), new StringValues(string.Empty));
+                        pairs.Add(section, new StringValues(string.Empty));
                         continue;
                     }
 
-                    pairs.Add(key.ToString(), new StringValues(val.ToString()));
+                    pairs.Add(section[0..i], new StringValues(section[(i + 1)..]));
                 }
 
                 _store = new QueryCollection(pairs);
