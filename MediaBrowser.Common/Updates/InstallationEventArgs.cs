@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using MediaBrowser.Model.Updates;
 

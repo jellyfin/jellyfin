@@ -1,4 +1,6 @@
+#nullable disable
 #pragma warning disable SA1649 // File name should match first type name
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
