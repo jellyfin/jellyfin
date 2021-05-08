@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using MediaBrowser.Common.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
@@ -61,19 +62,23 @@ namespace Jellyfin.Server.Middleware
                 }
 
                 var pairs = new Dictionary<string, StringValues>();
-                var queryString = unencodedKey.Split('&', System.StringSplitOptions.RemoveEmptyEntries);
+                var queryString = unencodedKey.SpanSplit('&');
 
                 foreach (var pair in queryString)
                 {
-                    var item = pair.Split('=', System.StringSplitOptions.RemoveEmptyEntries);
-                    if (item.Length > 0)
+                    var item = pair.Split('=');
+                    item.MoveNext();
+
+                    var key = item.Current;
+                    var val = item.MoveNext() ? item.Current : string.Empty;
+                    if (key.Length == 0 && val.Length == 0)
                     {
-                        pairs.Add(item[0], new StringValues(item.Length == 2 ? item[1] : string.Empty));
+                        // encoded is an equals.
+                        pairs.Add(pair.ToString(), new StringValues(string.Empty));
+                        continue;
                     }
-                    else
-                    {
-                        pairs.Add(pair, string.Empty);
-                    }
+
+                    pairs.Add(key.ToString(), new StringValues(val.ToString()));
                 }
 
                 _store = new QueryCollection(pairs);

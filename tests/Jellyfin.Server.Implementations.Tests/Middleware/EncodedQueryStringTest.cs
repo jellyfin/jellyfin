@@ -5,9 +5,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Server.Integration.Tests;
 using Xunit;
 
-namespace Jellyfin.Api.Tests.Controllers
+namespace Jellyfin.Server.Implementations.Tests.Middleware
 {
     /// <summary>
     /// Defines the test for encoded querystrings in the url.
