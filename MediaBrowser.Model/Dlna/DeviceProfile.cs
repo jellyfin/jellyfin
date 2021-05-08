@@ -25,10 +25,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlIgnore]
         public IPAddress? Address { get; set; }
 
-        /// <summary>
-        /// Gets or sets the userId to use with this profile. If null, the default dlna account will be used.
-        /// </summary>
-        public string? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether DIDL should be encoded or left clear.
@@ -113,6 +109,11 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets the SupportedMediaTypes.
         /// </summary>
         public string SupportedMediaTypes { get; set; } = "Audio,Photo,Video";
+
+        /// <summary>
+        /// Gets or sets the UserId.
+        /// </summary>
+        public string? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the AlbumArtPn.

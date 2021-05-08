@@ -662,6 +662,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "ratings":
+                    {
+                        if (!reader.IsEmptyElement)
+                        {
+                            using var subtree = reader.ReadSubtree();
+                            FetchFromRatingsNode(subtree, item);
+                        }
+                        else
+                        {
+                            reader.Read();
+                        }
+
+                        break;
+                    }
+
                 case "aired":
                 case "formed":
                 case "premiered":
@@ -1080,6 +1095,92 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        private void FetchFromRatingsNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "rating":
+                        {
+                            if (reader.IsEmptyElement)
+                            {
+                                reader.Read();
+                                continue;
+                            }
+
+                            var ratingName = reader.GetAttribute("name");
+
+                            using var subtree = reader.ReadSubtree();
+                            FetchFromRatingNode(subtree, item, ratingName);
+
+                            break;
+                        }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
+        private void FetchFromRatingNode(XmlReader reader, T item, string? ratingName)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "value":
+                            var val = reader.ReadElementContentAsString();
+
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
+                                {
+                                    // if ratingName contains tomato --> assume critic rating
+                                    if (ratingName != null &&
+                                        ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
+                                        !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        item.CriticRating = ratingValue;
+                                    }
+                                    else
+                                    {
+                                        item.CommunityRating = ratingValue;
+                                    }
+                                }
+                            }
+
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the persons from XML node.
         /// </summary>
@@ -1232,6 +1333,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 "discart" => ImageType.Disc,
                 "landscape" => ImageType.Thumb,
                 "clearart" => ImageType.Art,
+                "fanart" => ImageType.Backdrop,
                 // unknown type (including "poster") --> primary
                 _ => ImageType.Primary,
             };

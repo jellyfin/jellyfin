@@ -42,6 +42,10 @@ namespace MediaBrowser.LocalMetadata.Images
         public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var parentPath = Path.GetDirectoryName(item.Path);
+            if (parentPath == null)
+            {
+                return Enumerable.Empty<LocalImageInfo>();
+            }
 
             var parentPathFiles = directoryService.GetFiles(parentPath);
 

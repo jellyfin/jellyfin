@@ -1475,10 +1475,7 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserById(request.UserId);
             }
 
-            if (user == null)
-            {
-                user = _userManager.GetUserByName(request.Username);
-            }
+            user ??= _userManager.GetUserByName(request.Username);
 
             if (enforcePassword)
             {
