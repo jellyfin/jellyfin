@@ -273,7 +273,7 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public IPNetAddress[] GetAllBindInterfaces()
+        public IPNetAddress[] GetAllBindInterfaces(bool individualInterfaces = false)
         {
             if (_bindAddresses.Length == 0)
             {
@@ -285,6 +285,16 @@ namespace Jellyfin.Networking.Manager
 
                 // No bind address and no exclusions, so listen on all interfaces.
                 var result = new Collection<IPNetAddress>();
+
+                if (individualInterfaces)
+                {
+                    foreach (var iface in _interfaceAddresses)
+                    {
+                        result.AddItem(iface, true);
+                    }
+
+                    return result.ToArray();
+                }
 
                 if (IpClassType == IpClassType.IpBoth)
                 {
