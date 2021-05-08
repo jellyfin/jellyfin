@@ -583,19 +583,17 @@ namespace Jellyfin.Networking.Manager
         {
             NetworkConfiguration config = (NetworkConfiguration)configuration ?? throw new ArgumentNullException(nameof(configuration));
 
-            if (Socket.OSSupportsIPv4 && config.EnableIPV6)
+            _ipClassType = config.ClassType();
+
+            if (!Socket.OSSupportsIPv4 && _ipClassType != IpClassType.Ip4Only)
             {
-                if (Socket.OSSupportsIPv6 && config.EnableIPV4)
-                {
-                    _ipClassType = IpClassType.IpBoth;
-                }
-                else
-                {
-                    _ipClassType = IpClassType.Ip6Only;
-                }
+                // IP4 not available - so use only IP6.
+                _ipClassType = IpClassType.Ip6Only;
             }
-            else
+
+            if (!Socket.OSSupportsIPv6 && _ipClassType != IpClassType.Ip6Only)
             {
+                // IP6 not available - so use only IP4
                 _ipClassType = IpClassType.Ip4Only;
             }
 

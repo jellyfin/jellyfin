@@ -158,11 +158,6 @@ namespace Jellyfin.Networking.Configuration
         public bool IsRemoteIPFilterBlacklist { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to enable automatic port forwarding.
-        /// </summary>
-        public bool EnableUPnP { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether access outside of the LAN is permitted.
         /// </summary>
         public bool EnableRemoteAccess { get; set; } = true;
