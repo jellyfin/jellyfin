@@ -16,5 +16,7 @@ namespace MediaBrowser.Model.Dlna
         public IPAddress LocalIpAddress { get; set; }
 
         public int LocalPort { get; set; }
+
+        public IPAddress RemoteIpAddress { get; set; }
     }
 }

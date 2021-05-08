@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -5,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
@@ -128,7 +129,8 @@ namespace Emby.Dlna.Main
 
             _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
             _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
-            if (_disabled)
+
+            if (_disabled && _config.GetDlnaConfiguration().EnableServer)
             {
                 _logger.LogError("The DLNA specification does not support HTTPS.");
             }
@@ -316,7 +318,7 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
-                if (_appHost.PublishedServerUrl == null)
+                if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
                 {
                     // DLNA will only work over http, so we must reset to http:// : {port}.
                     uri.Scheme = "http";

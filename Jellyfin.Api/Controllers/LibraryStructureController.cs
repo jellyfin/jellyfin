@@ -241,23 +241,20 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a media path.
         /// </summary>
-        /// <param name="name">The name of the library.</param>
-        /// <param name="pathInfo">The path info.</param>
+        /// <param name="mediaPathRequestDto">The name of the library and path infos.</param>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         /// <response code="204">Media path updated.</response>
         /// <exception cref="ArgumentNullException">The name of the library may not be empty.</exception>
         [HttpPost("Paths/Update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateMediaPath(
-            [FromQuery] string? name,
-            [FromBody] MediaPathInfo? pathInfo)
+        public ActionResult UpdateMediaPath([FromBody, Required] UpdateMediaPathRequestDto mediaPathRequestDto)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(mediaPathRequestDto.Name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(mediaPathRequestDto), "Name must not be null or empty");
             }
 
-            _libraryManager.UpdateMediaPath(name, pathInfo);
+            _libraryManager.UpdateMediaPath(mediaPathRequestDto.Name, mediaPathRequestDto.PathInfo);
             return NoContent();
         }
 

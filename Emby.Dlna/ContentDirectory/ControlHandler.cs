@@ -1,5 +1,6 @@
+#nullable disable
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -7,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
-using Emby.Dlna.Configuration;
 using Emby.Dlna.Didl;
 using Emby.Dlna.Service;
 using Jellyfin.Data.Entities;
@@ -121,7 +121,7 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <inheritdoc />
-        protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
+        protected override void WriteResult(string methodName, IReadOnlyDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
             if (xmlWriter == null)
             {
@@ -201,8 +201,8 @@ namespace Emby.Dlna.ContentDirectory
         /// <summary>
         /// Adds a "XSetBookmark" element to the xml document.
         /// </summary>
-        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
-        private void HandleXSetBookmark(IDictionary<string, string> sparams)
+        /// <param name="sparams">The method parameters.</param>
+        private void HandleXSetBookmark(IReadOnlyDictionary<string, string> sparams)
         {
             var id = sparams["ObjectID"];
 
@@ -306,34 +306,17 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the value in the key of the dictionary, or defaultValue if it doesn't exist.
-        /// </summary>
-        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="defaultValue">The defaultValue.</param>
-        /// <returns>The <see cref="string"/>.</returns>
-        public static string GetValueOrDefault(IDictionary<string, string> sparams, string key, string defaultValue)
-        {
-            if (sparams != null && sparams.TryGetValue(key, out string val))
-            {
-                return val;
-            }
-
-            return defaultValue;
-        }
-
-        /// <summary>
         /// Builds the "Browse" xml response.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
-        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
+        /// <param name="sparams">The method parameters.</param>
         /// <param name="deviceId">The device Id to use.</param>
-        private void HandleBrowse(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
+        private void HandleBrowse(XmlWriter xmlWriter, IReadOnlyDictionary<string, string> sparams, string deviceId)
         {
             var id = sparams["ObjectID"];
             var flag = sparams["BrowseFlag"];
-            var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
+            var filter = new Filter(sparams.GetValueOrDefault("Filter", "*"));
+            var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", string.Empty));
 
             var provided = 0;
 
@@ -435,9 +418,9 @@ namespace Emby.Dlna.ContentDirectory
         /// Builds the response to the "X_BrowseByLetter request.
         /// </summary>
         /// <param name="xmlWriter">The <see cref="XmlWriter"/>.</param>
-        /// <param name="sparams">The <see cref="IDictionary"/>.</param>
+        /// <param name="sparams">The method parameters.</param>
         /// <param name="deviceId">The device id.</param>
-        private void HandleXBrowseByLetter(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
+        private void HandleXBrowseByLetter(XmlWriter xmlWriter, IReadOnlyDictionary<string, string> sparams, string deviceId)
         {
             // TODO: Implement this method
             HandleSearch(xmlWriter, sparams, deviceId);
@@ -447,13 +430,13 @@ namespace Emby.Dlna.ContentDirectory
         /// Builds a response to the "Search" request.
         /// </summary>
         /// <param name="xmlWriter">The xmlWriter<see cref="XmlWriter"/>.</param>
-        /// <param name="sparams">The sparams<see cref="IDictionary"/>.</param>
+        /// <param name="sparams">The method parameters.</param>
         /// <param name="deviceId">The deviceId<see cref="string"/>.</param>
-        private void HandleSearch(XmlWriter xmlWriter, IDictionary<string, string> sparams, string deviceId)
+        private void HandleSearch(XmlWriter xmlWriter, IReadOnlyDictionary<string, string> sparams, string deviceId)
         {
-            var searchCriteria = new SearchCriteria(GetValueOrDefault(sparams, "SearchCriteria", string.Empty));
-            var sortCriteria = new SortCriteria(GetValueOrDefault(sparams, "SortCriteria", string.Empty));
-            var filter = new Filter(GetValueOrDefault(sparams, "Filter", "*"));
+            var searchCriteria = new SearchCriteria(sparams.GetValueOrDefault("SearchCriteria", string.Empty));
+            var sortCriteria = new SortCriteria(sparams.GetValueOrDefault("SortCriteria", string.Empty));
+            var filter = new Filter(sparams.GetValueOrDefault("Filter", "*"));
 
             // sort example: dc:title, dc:date
 

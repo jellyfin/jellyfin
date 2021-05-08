@@ -630,10 +630,8 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                // Be careful, IsDirectStream==true by default (Static != false or not in query).
-                // See initialization of StreamingRequestDto in AudioController.GetAudioStream() method : Static = @static ?? true.
                 if (string.Equals(pair.Name, "Static", StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(pair.Value, "true", StringComparison.OrdinalIgnoreCase))
+                    string.Equals(pair.Value, "false", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Text.Json;
@@ -25,7 +26,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IMediaEncoder _mediaEncoder;
 
-        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
@@ -94,6 +95,11 @@ namespace Jellyfin.Api.Controllers
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
+            if (configuration == null)
+            {
+                throw new ArgumentException("Body doesn't contain a valid configuration");
+            }
+
             _configurationManager.SaveConfiguration(key, configuration);
             return NoContent();
         }

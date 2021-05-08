@@ -1,9 +1,8 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +16,7 @@ namespace MediaBrowser.Common.Plugins
         /// <summary>
         /// Gets the Plugins.
         /// </summary>
-        IList<LocalPlugin> Plugins { get; }
+        IReadOnlyList<LocalPlugin> Plugins { get; }
 
         /// <summary>
         /// Creates the plugins.
@@ -51,8 +50,9 @@ namespace MediaBrowser.Common.Plugins
         /// <param name="packageInfo">The <see cref="PackageInfo"/> used to generate a manifest.</param>
         /// <param name="version">Version to be installed.</param>
         /// <param name="path">The path where to save the manifest.</param>
+        /// <param name="status">Initial status of the plugin.</param>
         /// <returns>True if successful.</returns>
-        Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path);
+        Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status);
 
         /// <summary>
         /// Imports plugin details from a folder.

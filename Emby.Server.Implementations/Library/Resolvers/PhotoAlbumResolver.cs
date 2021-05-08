@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public class PhotoAlbumResolver : FolderResolver<PhotoAlbum>
     {
         private readonly IImageProcessor _imageProcessor;
-        private ILibraryManager _libraryManager;
+        private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PhotoAlbumResolver"/> class.
@@ -25,6 +25,9 @@ namespace Emby.Server.Implementations.Library.Resolvers
             _imageProcessor = imageProcessor;
             _libraryManager = libraryManager;
         }
+
+        /// <inheritdoc />
+        public override ResolverPriority Priority => ResolverPriority.Second;
 
         /// <summary>
         /// Resolves the specified args.
@@ -39,8 +42,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 // Must be an image file within a photo collection
                 var collectionType = args.GetCollectionType();
 
-                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase) ||
-                    (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
+                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase)
+                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.LibraryOptions.EnablePhotos))
                 {
                     if (HasPhotos(args))
                     {
@@ -84,8 +87,5 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
             return false;
         }
-
-        /// <inheritdoc />
-        public override ResolverPriority Priority => ResolverPriority.Second;
     }
 }

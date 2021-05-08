@@ -10,13 +10,40 @@ namespace MediaBrowser.Model.Entities
     public static class ProviderIdsExtensions
     {
         /// <summary>
+        /// Checks if this instance has an id for the given provider.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The of the provider name.</param>
+        /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
+        public static bool HasProviderId(this IHasProviderIds instance, string name)
+        {
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
+            return instance.TryGetProviderId(name, out _);
+        }
+
+        /// <summary>
+        /// Checks if this instance has an id for the given provider.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="provider">The provider.</param>
+        /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
+        public static bool HasProviderId(this IHasProviderIds instance, MetadataProvider provider)
+        {
+            return instance.HasProviderId(provider.ToString());
+        }
+
+        /// <summary>
         /// Gets a provider id.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="name">The name.</param>
         /// <param name="id">The provider id.</param>
         /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
-        public static bool TryGetProviderId(this IHasProviderIds instance, string name, [MaybeNullWhen(false)] out string id)
+        public static bool TryGetProviderId(this IHasProviderIds instance, string name, [NotNullWhen(true)] out string? id)
         {
             if (instance == null)
             {
@@ -29,7 +56,15 @@ namespace MediaBrowser.Model.Entities
                 return false;
             }
 
-            return instance.ProviderIds.TryGetValue(name, out id);
+            var foundProviderId = instance.ProviderIds.TryGetValue(name, out id);
+            // This occurs when searching with Identify (and possibly in other places)
+            if (string.IsNullOrEmpty(id))
+            {
+                id = null;
+                foundProviderId = false;
+            }
+
+            return foundProviderId;
         }
 
         /// <summary>
@@ -39,7 +74,7 @@ namespace MediaBrowser.Model.Entities
         /// <param name="provider">The provider.</param>
         /// <param name="id">The provider id.</param>
         /// <returns><c>true</c> if a provider id with the given name was found; otherwise <c>false</c>.</returns>
-        public static bool TryGetProviderId(this IHasProviderIds instance, MetadataProvider provider, [MaybeNullWhen(false)] out string id)
+        public static bool TryGetProviderId(this IHasProviderIds instance, MetadataProvider provider, [NotNullWhen(true)] out string? id)
         {
             return instance.TryGetProviderId(provider.ToString(), out id);
         }
@@ -88,10 +123,7 @@ namespace MediaBrowser.Model.Entities
             else
             {
                 // Ensure it exists
-                if (instance.ProviderIds == null)
-                {
-                    instance.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                }
+                instance.ProviderIds ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 instance.ProviderIds[name] = value;
             }

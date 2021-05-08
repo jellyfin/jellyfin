@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,8 +15,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="language">ISO-639-3 3-character language codes.</param>
         /// <param name="startTime">The start time for this chapter.</param>
-        /// <param name="release">The release.</param>
-        public Chapter(string language, long startTime, Release release)
+        public Chapter(string language, long startTime)
         {
             if (string.IsNullOrEmpty(language))
             {
@@ -27,33 +24,16 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Language = language;
             StartTime = startTime;
-
-            if (release == null)
-            {
-                throw new ArgumentNullException(nameof(release));
-            }
-
-            release.Chapters.Add(this);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Chapter"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Chapter()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -63,7 +43,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the language.
@@ -72,7 +52,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Required, Min length = 3, Max length = 3
         /// ISO-639-3 3-character language codes.
         /// </remarks>
-        [Required]
         [MinLength(3)]
         [MaxLength(3)]
         [StringLength(3)]
@@ -93,7 +72,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; protected set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 #nullable enable
 
@@ -61,7 +63,7 @@ namespace MediaBrowser.Controller.Drawing
 
         string GetImageCacheTag(BaseItem item, ChapterInfo info);
 
-        string GetImageCacheTag(User user);
+        string? GetImageCacheTag(User user);
 
         /// <summary>
         /// Processes the image.

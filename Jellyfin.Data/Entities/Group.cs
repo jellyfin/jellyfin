@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -33,22 +31,12 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Group"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Group()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id of this group.
+        /// Gets the id of this group.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        public Guid Id { get; protected set; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the group's name.
@@ -56,24 +44,23 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the group's permissions.
+        /// Gets a collection containing the group's permissions.
         /// </summary>
-        public virtual ICollection<Permission> Permissions { get; protected set; }
+        public virtual ICollection<Permission> Permissions { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the group's preferences.
+        /// Gets a collection containing the group's preferences.
         /// </summary>
-        public virtual ICollection<Preference> Preferences { get; protected set; }
+        public virtual ICollection<Preference> Preferences { get; private set; }
 
         /// <inheritdoc/>
         public bool HasPermission(PermissionKind kind)

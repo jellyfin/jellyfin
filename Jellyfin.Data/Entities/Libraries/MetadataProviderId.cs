@@ -14,8 +14,8 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="MetadataProviderId"/> class.
         /// </summary>
         /// <param name="providerId">The provider id.</param>
-        /// <param name="itemMetadata">The metadata entity.</param>
-        public MetadataProviderId(string providerId, ItemMetadata itemMetadata)
+        /// <param name="metadataProvider">The metadata provider.</param>
+        public MetadataProviderId(string providerId, MetadataProvider metadataProvider)
         {
             if (string.IsNullOrEmpty(providerId))
             {
@@ -23,33 +23,17 @@ namespace Jellyfin.Data.Entities.Libraries
             }
 
             ProviderId = providerId;
-
-            if (itemMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(itemMetadata));
-            }
-
-            itemMetadata.Sources.Add(this);
+            MetadataProvider = metadataProvider;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetadataProviderId"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MetadataProviderId()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the provider id.
@@ -57,14 +41,13 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string ProviderId { get; set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the metadata provider.

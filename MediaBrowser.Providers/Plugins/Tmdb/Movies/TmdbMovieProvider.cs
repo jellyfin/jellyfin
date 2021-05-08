@@ -7,8 +7,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using TMDbLib.Objects.Find;
-using TMDbLib.Objects.Search;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -16,6 +14,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using TMDbLib.Objects.Find;
+using TMDbLib.Objects.Search;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
@@ -140,11 +140,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 // ParseName is required here.
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
-                var searchResults = await _tmdbClientManager.SearchMovieAsync(parsedName.Name, parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
+                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName,  info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
                     tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                }
+            }
+
+            if (string.IsNullOrEmpty(tmdbId) && !string.IsNullOrEmpty(imdbId))
+            {
+                var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (movieResultFromImdbId?.MovieResults.Count > 0)
+                {
+                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString();
                 }
             }
 
@@ -165,6 +175,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
             var movie = new Movie
             {
                 Name = movieResult.Title ?? movieResult.OriginalTitle,
+                OriginalTitle = movieResult.OriginalTitle,
                 Overview = movieResult.Overview?.Replace("\n\n", "\n", StringComparison.InvariantCulture),
                 Tagline = movieResult.Tagline,
                 ProductionLocations = movieResult.ProductionCountries.Select(pc => pc.Name).ToArray()

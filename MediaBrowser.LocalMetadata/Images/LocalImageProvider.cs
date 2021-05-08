@@ -108,7 +108,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             if (!item.IsFileProtocol)
             {
-                return new List<FileSystemMetadata>();
+                return Enumerable.Empty<FileSystemMetadata>();
             }
 
             var path = item.ContainingFolderPath;
@@ -116,7 +116,7 @@ namespace MediaBrowser.LocalMetadata.Images
             // Exit if the cache dir does not exist, alternative solution is to create it, but that's a lot of empty dirs...
             if (!Directory.Exists(path))
             {
-                return Array.Empty<FileSystemMetadata>();
+                return Enumerable.Empty<FileSystemMetadata>();
             }
 
             if (includeDirectories)
@@ -133,7 +133,7 @@ namespace MediaBrowser.LocalMetadata.Images
         }
 
         /// <inheritdoc />
-        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var files = GetFiles(item, true, directoryService).ToList();
 
@@ -151,7 +151,7 @@ namespace MediaBrowser.LocalMetadata.Images
         /// <param name="path">The images path.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <returns>The local image info.</returns>
-        public List<LocalImageInfo> GetImages(BaseItem item, string path, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, string path, IDirectoryService directoryService)
         {
             return GetImages(item, new[] { path }, directoryService);
         }
@@ -163,7 +163,7 @@ namespace MediaBrowser.LocalMetadata.Images
         /// <param name="paths">The image paths.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <returns>The local image info.</returns>
-        public List<LocalImageInfo> GetImages(BaseItem item, IEnumerable<string> paths, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IEnumerable<string> paths, IDirectoryService directoryService)
         {
             IEnumerable<FileSystemMetadata> files = paths.SelectMany(i => _fileSystem.GetFiles(i, BaseItem.SupportedImageExtensions, true, false));
 
@@ -181,9 +181,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             if (supportParentSeriesFiles)
             {
-                var season = item as Season;
-
-                if (season != null)
+                if (item is Season season)
                 {
                     PopulateSeasonImagesFromSeriesFolder(season, images, directoryService);
                 }

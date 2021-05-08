@@ -29,13 +29,15 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
-        private List<string> _splitWhiteList = null;
+        private string[] _splitWhiteList;
 
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
             _logger = logger;
             _localization = localization;
         }
+
+        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[] { "AC/DC" };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
         {
@@ -57,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
-            info.MediaAttachments = internalStreams.Select(s => GetMediaAttachment(s))
+            info.MediaAttachments = internalStreams.Select(GetMediaAttachment)
                 .Where(i => i != null)
                 .ToList();
 
@@ -131,6 +133,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             info.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date_released") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date");
 
             if (isAudio)
@@ -640,7 +643,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
 
             // Filter out junk
-            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && streamInfo.CodecTagString.IndexOf("[0]", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && !streamInfo.CodecTagString.Contains("[0]", StringComparison.OrdinalIgnoreCase))
             {
                 stream.CodecTag = streamInfo.CodecTagString;
             }
@@ -1186,43 +1189,28 @@ namespace MediaBrowser.MediaEncoding.Probing
             FetchStudios(audio, tags, "label");
 
             // These support mulitple values, but for now we only store the first.
-            var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
-            }
+            var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
@@ -1268,7 +1256,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var artistsFound = new List<string>();
 
-            foreach (var whitelistArtist in GetSplitWhitelist())
+            foreach (var whitelistArtist in SplitWhitelist)
             {
                 var originalVal = val;
                 val = val.Replace(whitelistArtist, "|", StringComparison.OrdinalIgnoreCase);
@@ -1285,19 +1273,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             artistsFound.AddRange(artists);
             return artistsFound;
-        }
-
-        private IEnumerable<string> GetSplitWhitelist()
-        {
-            if (_splitWhiteList == null)
-            {
-                _splitWhiteList = new List<string>
-                        {
-                            "AC/DC"
-                        };
-            }
-
-            return _splitWhiteList;
         }
 
         /// <summary>
@@ -1500,11 +1475,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                         }
                         else
                         {
-                            throw new Exception(); // Switch to default parsing
+                            // Switch to default parsing
+                            if (subtitle.Contains('.', StringComparison.Ordinal))
+                            {
+                                // skip the comment, keep the subtitle
+                                description = string.Join('.', subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            }
+                            else
+                            {
+                                description = subtitle.Trim(); // Clean up whitespaces and save it
+                            }
                         }
                     }
-                    catch // Default parsing
+                    catch (Exception ex)
                     {
+                        _logger.LogError(ex, "Error while parsing subtitle field");
+
+                        // Default parsing
                         if (subtitle.Contains('.', StringComparison.Ordinal))
                         {
                             // skip the comment, keep the subtitle

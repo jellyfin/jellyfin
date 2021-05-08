@@ -205,18 +205,36 @@ namespace MediaBrowser.Providers.Subtitles
 
                 if (saveInMediaFolder)
                 {
-                    savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
+                    var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
+                    // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                    if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
+                    {
+                        savePaths.Add(mediaFolderPath);
+                    }
                 }
 
-                savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
+                var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
 
-                await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
+                if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
+                {
+                    savePaths.Add(internalPath);
+                }
+
+                if (savePaths.Count > 0)
+                {
+                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
+                }
             }
         }
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
         {
-            Exception exceptionToThrow = null;
+            List<Exception> exs = null;
 
             foreach (var savePath in savePaths)
             {
@@ -228,7 +246,8 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
-                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.Read, FileStreamBufferSize, true))
+                    // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true))
                     {
                         await stream.CopyToAsync(fs).ConfigureAwait(false);
                     }
@@ -237,10 +256,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    if (exceptionToThrow == null)
-                    {
-                        exceptionToThrow = ex;
-                    }
+                    (exs ??= new List<Exception>()).Add(ex);
                 }
                 finally
                 {
@@ -250,9 +266,9 @@ namespace MediaBrowser.Providers.Subtitles
                 stream.Position = 0;
             }
 
-            if (exceptionToThrow != null)
+            if (exs != null)
             {
-                throw exceptionToThrow;
+                throw new AggregateException(exs);
             }
         }
 

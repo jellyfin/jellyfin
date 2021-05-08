@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -34,7 +35,7 @@ namespace Emby.Server.Implementations.Plugins
         private readonly ILogger<PluginManager> _logger;
         private readonly IApplicationHost _appHost;
         private readonly ServerConfiguration _config;
-        private readonly IList<LocalPlugin> _plugins;
+        private readonly List<LocalPlugin> _plugins;
         private readonly Version _minimumVersion;
 
         private IHttpClientFactory? _httpClientFactory;
@@ -43,12 +44,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             get
             {
-                if (_httpClientFactory == null)
-                {
-                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
-                }
-
-                return _httpClientFactory;
+                return _httpClientFactory ?? (_httpClientFactory = _appHost.Resolve<IHttpClientFactory>());
             }
         }
 
@@ -70,7 +66,7 @@ namespace Emby.Server.Implementations.Plugins
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pluginsPath = pluginsPath;
             _appVersion = appVersion ?? throw new ArgumentNullException(nameof(appVersion));
-            _jsonOptions = new JsonSerializerOptions(JsonDefaults.GetOptions())
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options)
             {
                 WriteIndented = true
             };
@@ -94,7 +90,7 @@ namespace Emby.Server.Implementations.Plugins
         /// <summary>
         /// Gets the Plugins.
         /// </summary>
-        public IList<LocalPlugin> Plugins => _plugins;
+        public IReadOnlyList<LocalPlugin> Plugins => _plugins;
 
         /// <summary>
         /// Returns all the assemblies.
@@ -165,9 +161,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         public void CreatePlugins()
         {
-            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance)
-                .Where(i => i != null)
-                .ToArray();
+            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance);
         }
 
         /// <summary>
@@ -277,11 +271,7 @@ namespace Emby.Server.Implementations.Plugins
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null);
-                if (plugin == null)
-                {
-                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
-                }
+                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
             }
             else
             {
@@ -368,7 +358,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <inheritdoc/>
-        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path)
+        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
             if (packageInfo == null)
             {
@@ -411,9 +401,9 @@ namespace Emby.Server.Implementations.Plugins
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,
                 TargetAbi = versionInfo.TargetAbi ?? string.Empty,
-                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp),
+                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp, CultureInfo.InvariantCulture),
                 Version = versionInfo.Version,
-                Status = PluginStatus.Active,
+                Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active, // Keep disabled state.
                 AutoUpdate = true,
                 ImagePath = imagePath
             };
@@ -678,7 +668,7 @@ namespace Emby.Server.Implementations.Plugins
                 var entry = versions[x];
                 if (!string.Equals(lastName, entry.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    entry.DllFiles.AddRange(Directory.EnumerateFiles(entry.Path, "*.dll", SearchOption.AllDirectories));
+                    entry.DllFiles = Directory.GetFiles(entry.Path, "*.dll", SearchOption.AllDirectories);
                     if (entry.IsEnabledAndSupported)
                     {
                         lastName = entry.Name;

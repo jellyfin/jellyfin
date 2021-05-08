@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,7 +12,7 @@ namespace MediaBrowser.Common
     /// </summary>
     /// <param name="type">Type to create.</param>
     /// <returns>New instance of type <param>type</param>.</returns>
-    public delegate object CreationDelegate(Type type);
+    public delegate object CreationDelegateFactory(Type type);
 
     /// <summary>
     /// An interface to be implemented by the applications hosting a kernel.
@@ -112,7 +114,7 @@ namespace MediaBrowser.Common
         /// <param name="defaultFunc">Delegate function that gets called to create the object.</param>
         /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
         /// <returns><see cref="IReadOnlyCollection{T}" />.</returns>
-        IReadOnlyCollection<T> GetExports<T>(CreationDelegate defaultFunc, bool manageLifetime = true);
+        IReadOnlyCollection<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true);
 
         /// <summary>
         /// Gets the export types.

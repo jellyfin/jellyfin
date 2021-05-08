@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ICryptoProvider _cryptoProvider;
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private DateTime _lastErrorResponse;
 
         public SchedulesDirect(
@@ -787,14 +787,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase));
-                if (station == null)
-                {
-                    station = new ScheduleDirect.Station
+                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase)) 
+                    ?? new ScheduleDirect.Station
                     {
                         stationID = channel.stationID
                     };
-                }
 
                 var channelInfo = new ChannelInfo
                 {

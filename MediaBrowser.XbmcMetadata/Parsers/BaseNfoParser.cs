@@ -6,11 +6,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -27,6 +28,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         private readonly IConfigurationManager _config;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IDirectoryService _directoryService;
         private Dictionary<string, string> _validProviderIds;
 
         /// <summary>
@@ -37,12 +39,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public BaseNfoParser(
             ILogger logger,
             IConfigurationManager config,
             IProviderManager providerManager,
             IUserManager userManager,
-            IUserDataManager userDataManager)
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
         {
             Logger = logger;
             _config = config;
@@ -50,6 +54,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _validProviderIds = new Dictionary<string, string>();
             _userManager = userManager;
             _userDataManager = userDataManager;
+            _directoryService = directoryService;
         }
 
         protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
@@ -62,8 +67,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected IProviderManager ProviderManager { get; }
 
         protected virtual bool SupportsUrlAfterClosingXmlTag => false;
-
-        protected virtual string MovieDbParserSearchString => "themoviedb.org/movie/";
 
         /// <summary>
         /// Fetches metadata for an item from one xml file.
@@ -181,8 +184,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 }
                 else
                 {
-                    // If the file is just an Imdb url, handle that
-
+                    // If the file is just provider urls, handle that
                     ParseProviderLinks(item.Item, xml);
 
                     return;
@@ -221,50 +223,29 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
         protected void ParseProviderLinks(T item, string xml)
         {
-            // Look for a match for the Regex pattern "tt" followed by 7 or 8 digits
-            var m = Regex.Match(xml, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
-            if (m.Success)
+            if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
             {
-                item.SetProviderId(MetadataProvider.Imdb, m.Value);
+                item.SetProviderId(MetadataProvider.Imdb, imdbId.ToString());
             }
 
-            // Support Tmdb
-            // https://www.themoviedb.org/movie/30287-fallo
-            var srch = MovieDbParserSearchString;
-            var index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-
-            if (index != -1)
+            if (item is Movie)
             {
-                var tmdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
-                index = tmdbId.IndexOf('-');
-                if (index != -1)
+                if (ProviderIdParsers.TryFindTmdbMovieId(xml, out var tmdbId))
                 {
-                    tmdbId = tmdbId.Slice(0, index);
-                }
-
-                if (!tmdbId.IsEmpty
-                    && !tmdbId.IsWhiteSpace()
-                    && int.TryParse(tmdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                {
-                    item.SetProviderId(MetadataProvider.Tmdb, value.ToString(UsCulture));
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
                 }
             }
 
             if (item is Series)
             {
-                srch = "thetvdb.com/?tab=series&id=";
-
-                index = xml.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-
-                if (index != -1)
+                if (ProviderIdParsers.TryFindTmdbSeriesId(xml, out var tmdbId))
                 {
-                    var tvdbId = xml.AsSpan().Slice(index + srch.Length).TrimEnd('/');
-                    if (!tvdbId.IsEmpty
-                        && !tvdbId.IsWhiteSpace()
-                        && int.TryParse(tvdbId, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
-                    {
-                        item.SetProviderId(MetadataProvider.Tvdb, value.ToString(UsCulture));
-                    }
+                    item.SetProviderId(MetadataProvider.Tmdb, tmdbId.ToString());
+                }
+
+                if (ProviderIdParsers.TryFindTvdbId(xml, out var tvdbId))
+                {
+                    item.SetProviderId(MetadataProvider.Tvdb, tvdbId.ToString());
                 }
             }
         }
@@ -681,6 +662,21 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "ratings":
+                    {
+                        if (!reader.IsEmptyElement)
+                        {
+                            using var subtree = reader.ReadSubtree();
+                            FetchFromRatingsNode(subtree, item);
+                        }
+                        else
+                        {
+                            reader.Read();
+                        }
+
+                        break;
+                    }
+
                 case "aired":
                 case "formed":
                 case "premiered":
@@ -780,6 +776,64 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
                         {
                             item.SetProviderId(provider, id);
+                        }
+
+                        break;
+                    }
+
+                case "thumb":
+                    {
+                        var artType = reader.GetAttribute("aspect");
+                        var val = reader.ReadElementContentAsString();
+
+                        // skip:
+                        // - empty aspect tag
+                        // - empty uri
+                        // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
+                        if (string.IsNullOrEmpty(artType) || string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
+                        {
+                            break;
+                        }
+
+                        ImageType imageType = GetImageType(artType);
+
+                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
+                        {
+                            Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
+                            break;
+                        }
+
+                        if (uri.IsFile)
+                        {
+                            // only allow one item of each type
+                            if (itemResult.Images.Any(x => x.Type == imageType))
+                            {
+                                break;
+                            }
+
+                            var fileSystemMetadata = _directoryService.GetFile(val);
+                            // non existing file returns null
+                            if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                            {
+                                Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, item.Name);
+                                break;
+                            }
+
+                            itemResult.Images.Add(new LocalImageInfo()
+                            {
+                                FileInfo = fileSystemMetadata,
+                                Type = imageType
+                            });
+                        }
+                        else
+                        {
+                            // only allow one item of each type
+                            if (itemResult.RemoteImages.Any(x => x.type == imageType))
+                            {
+                                break;
+                            }
+
+                            itemResult.RemoteImages.Add((uri.ToString(), imageType));
                         }
 
                         break;
@@ -1041,6 +1095,92 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
+        private void FetchFromRatingsNode(XmlReader reader, T item)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "rating":
+                        {
+                            if (reader.IsEmptyElement)
+                            {
+                                reader.Read();
+                                continue;
+                            }
+
+                            var ratingName = reader.GetAttribute("name");
+
+                            using var subtree = reader.ReadSubtree();
+                            FetchFromRatingNode(subtree, item, ratingName);
+
+                            break;
+                        }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
+        private void FetchFromRatingNode(XmlReader reader, T item, string? ratingName)
+        {
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "value":
+                            var val = reader.ReadElementContentAsString();
+
+                            if (!string.IsNullOrWhiteSpace(val))
+                            {
+                                if (float.TryParse(val, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var ratingValue))
+                                {
+                                    // if ratingName contains tomato --> assume critic rating
+                                    if (ratingName != null &&
+                                        ratingName.Contains("tomato", StringComparison.OrdinalIgnoreCase) &&
+                                        !ratingName.Contains("audience", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        item.CriticRating = ratingValue;
+                                    }
+                                    else
+                                    {
+                                        item.CommunityRating = ratingValue;
+                                    }
+                                }
+                            }
+
+                            break;
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the persons from XML node.
         /// </summary>
@@ -1168,17 +1308,35 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> SplitNames(string value)
         {
-            value = value ?? string.Empty;
-
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
-            var separator = value.IndexOf('|', StringComparison.Ordinal) == -1 && value.IndexOf(';', StringComparison.Ordinal) == -1
+            var separator = !value.Contains('|', StringComparison.Ordinal) && !value.Contains(';', StringComparison.Ordinal)
                 ? new[] { ',' }
                 : new[] { '|', ';' };
 
             value = value.Trim().Trim(separator);
 
             return string.IsNullOrWhiteSpace(value) ? Array.Empty<string>() : value.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <summary>
+        /// Parses the ImageType from the nfo aspect property.
+        /// </summary>
+        /// <param name="aspect">The nfo aspect property.</param>
+        /// <returns>The image type.</returns>
+        private static ImageType GetImageType(string aspect)
+        {
+            return aspect switch
+            {
+                "banner" => ImageType.Banner,
+                "clearlogo" => ImageType.Logo,
+                "discart" => ImageType.Disc,
+                "landscape" => ImageType.Thumb,
+                "clearart" => ImageType.Art,
+                "fanart" => ImageType.Backdrop,
+                // unknown type (including "poster") --> primary
+                _ => ImageType.Primary,
+            };
         }
     }
 }
