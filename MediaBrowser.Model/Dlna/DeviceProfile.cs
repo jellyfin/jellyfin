@@ -25,7 +25,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlIgnore]
         public IPAddress? Address { get; set; }
 
-
         /// <summary>
         /// Gets or sets a value indicating whether DIDL should be encoded or left clear.
         /// </summary>
