@@ -1,14 +1,8 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Jellyfin.Server.Integration.Tests;
 using Xunit;
 
-namespace Jellyfin.Server.Implementations.Tests.Middleware
+namespace Jellyfin.Server.Integration.Tests
 {
     /// <summary>
     /// Defines the test for encoded querystrings in the url.
