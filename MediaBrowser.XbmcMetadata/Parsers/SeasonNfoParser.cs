@@ -12,6 +12,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class SeasonNfoParser : BaseNfoParser<Season>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonNfoParser"/> class.
         /// </summary>
@@ -30,6 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -37,10 +40,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "seasonnumber":
-                    item.IndexNumber = reader.ReadIntFromNfo() ?? item.IndexNumber;
+                    item.IndexNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.IndexNumber;
                     break;
 
                 default:

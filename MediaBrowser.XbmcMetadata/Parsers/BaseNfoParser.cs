@@ -93,6 +93,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         protected virtual void Fetch(MetadataResult<T> metadataResult, string nfoPath, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting nfo parsing for file {Path}", nfoPath);
+
             if (!SupportsUrlAfterClosingXmlTag)
             {
                 using (var fileStream = File.OpenRead(nfoPath))
@@ -208,48 +210,50 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 userData = _userDataManager.GetUserData(user, item);
             }
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "dateadded":
-                    item.DateCreated = reader.ReadDateFromNfo() ?? item.DateCreated;
+                    item.DateCreated = parserHelpers.ReadDateFromNfo(reader) ?? item.DateCreated;
                     break;
 
                 case "originaltitle":
-                    item.OriginalTitle = reader.ReadStringFromNfo() ?? item.OriginalTitle;
+                    item.OriginalTitle = parserHelpers.ReadStringFromNfo(reader) ?? item.OriginalTitle;
                     break;
 
                 case "name":
                 case "title":
                 case "localtitle":
-                    item.Name = reader.ReadStringFromNfo() ?? item.Name;
+                    item.Name = parserHelpers.ReadStringFromNfo(reader) ?? item.Name;
                     break;
 
                 case "sortname":
-                    item.SortName = reader.ReadStringFromNfo() ?? item.SortName;
+                    item.SortName = parserHelpers.ReadStringFromNfo(reader) ?? item.SortName;
                     break;
 
                 case "criticrating":
-                    item.CriticRating = reader.ReadFloatFromNfo() ?? item.CriticRating;
+                    item.CriticRating = parserHelpers.ReadFloatFromNfo(reader) ?? item.CriticRating;
                     break;
 
                 case "sorttitle":
-                    item.SortName = reader.ReadStringFromNfo() ?? item.SortName;
+                    item.SortName = parserHelpers.ReadStringFromNfo(reader) ?? item.SortName;
                     break;
 
                 case "biography":
                 case "plot":
                 case "review":
-                    item.Overview = reader.ReadStringFromNfo() ?? item.Overview;
+                    item.Overview = parserHelpers.ReadStringFromNfo(reader) ?? item.Overview;
                     break;
 
                 case "language":
-                    item.PreferredMetadataLanguage = reader.ReadStringFromNfo() ?? item.PreferredMetadataLanguage;
+                    item.PreferredMetadataLanguage = parserHelpers.ReadStringFromNfo(reader) ?? item.PreferredMetadataLanguage;
                     break;
 
                 case "watched":
                     if (userData != null)
                     {
-                        userData.Played = reader.ReadBoolFromNfo() ?? userData.Played;
+                        userData.Played = parserHelpers.ReadBoolFromNfo(reader) ?? userData.Played;
                     }
 
                     reader.Read();
@@ -258,7 +262,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "playcount":
                     if (userData != null)
                     {
-                        userData.PlayCount = reader.ReadIntFromNfo() ?? userData.PlayCount;
+                        userData.PlayCount = parserHelpers.ReadIntFromNfo(reader) ?? userData.PlayCount;
                     }
 
                     reader.Read();
@@ -267,55 +271,55 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "lastplayed":
                     if (userData != null)
                     {
-                        userData.LastPlayedDate = reader.ReadDateFromNfo() ?? userData.LastPlayedDate;
+                        userData.LastPlayedDate = parserHelpers.ReadDateFromNfo(reader) ?? userData.LastPlayedDate;
                     }
 
                     reader.Read();
                     break;
 
                 case "countrycode":
-                    item.PreferredMetadataCountryCode = reader.ReadStringFromNfo() ?? item.PreferredMetadataCountryCode;
+                    item.PreferredMetadataCountryCode = parserHelpers.ReadStringFromNfo(reader) ?? item.PreferredMetadataCountryCode;
                     break;
 
                 case "lockedfields":
-                    var locked = reader.ReadStringFromNfo() ?? string.Empty;
+                    var locked = parserHelpers.ReadStringFromNfo(reader) ?? string.Empty;
                     item.LockedFields = NfoParserHelpers.ParseLockedFields(locked);
                     break;
 
                 case "tagline":
-                    item.Tagline = reader.ReadStringFromNfo() ?? item.Tagline;
+                    item.Tagline = parserHelpers.ReadStringFromNfo(reader) ?? item.Tagline;
                     break;
 
                 case "country":
-                    item.ProductionLocations = item.ProductionLocations.Concat(reader.ReadStringArrayFromNfo()).ToArray();
+                    item.ProductionLocations = item.ProductionLocations.Concat(parserHelpers.ReadStringArrayFromNfo(reader)).ToArray();
                     break;
 
                 case "mpaa":
-                    item.OfficialRating = reader.ReadStringFromNfo() ?? item.OfficialRating;
+                    item.OfficialRating = parserHelpers.ReadStringFromNfo(reader) ?? item.OfficialRating;
                     break;
 
                 case "customrating":
-                    item.CustomRating = reader.ReadStringFromNfo() ?? item.CustomRating;
+                    item.CustomRating = parserHelpers.ReadStringFromNfo(reader) ?? item.CustomRating;
                     break;
 
                 case "runtime":
-                    item.RunTimeTicks = TimeSpan.FromMinutes(reader.ReadIntFromNfo() ?? 0.0).Ticks;
+                    item.RunTimeTicks = TimeSpan.FromMinutes(parserHelpers.ReadIntFromNfo(reader) ?? 0.0).Ticks;
                     break;
 
                 case "aspectratio":
                     if (item is IHasAspectRatio hasAspectRatio)
                     {
-                        hasAspectRatio.AspectRatio = reader.ReadStringFromNfo() ?? hasAspectRatio.AspectRatio;
+                        hasAspectRatio.AspectRatio = parserHelpers.ReadStringFromNfo(reader) ?? hasAspectRatio.AspectRatio;
                     }
 
                     break;
 
                 case "lockdata":
-                    item.IsLocked = reader.ReadBoolFromNfo() ?? item.IsLocked;
+                    item.IsLocked = parserHelpers.ReadBoolFromNfo(reader) ?? item.IsLocked;
                     break;
 
                 case "studio":
-                    var studio = reader.ReadStringFromNfo();
+                    var studio = parserHelpers.ReadStringFromNfo(reader);
                     if (!string.IsNullOrWhiteSpace(studio))
                     {
                         item.AddStudio(studio);
@@ -336,11 +340,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "actor":
-                    NfoSubtreeParsers<T>.ReadActorNode(reader, itemResult);
+                    // passing a logger here is no the best way to handle that
+                    NfoSubtreeParsers<T>.ReadActorNode(reader, itemResult, _logger);
                     break;
 
                 case "trailer":
-                    var parsed = reader.ReadTrailerUrlFromNfo();
+                    var parsed = parserHelpers.ReadTrailerUrlFromNfo(reader);
                     if (string.IsNullOrWhiteSpace(parsed))
                     {
                         break;
@@ -352,17 +357,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "displayorder":
                     if (item is IHasDisplayOrder hasDisplayOrder)
                     {
-                        hasDisplayOrder.DisplayOrder = reader.ReadStringFromNfo() ?? hasDisplayOrder.DisplayOrder;
+                        hasDisplayOrder.DisplayOrder = parserHelpers.ReadStringFromNfo(reader) ?? hasDisplayOrder.DisplayOrder;
                     }
 
                     break;
 
                 case "year":
-                    item.ProductionYear = reader.ReadIntFromNfo() ?? item.ProductionYear;
+                    item.ProductionYear = parserHelpers.ReadIntFromNfo(reader) ?? item.ProductionYear;
                     break;
 
                 case "rating":
-                    item.CommunityRating = reader.ReadFloatFromNfo() ?? item.CommunityRating;
+                    item.CommunityRating = parserHelpers.ReadFloatFromNfo(reader) ?? item.CommunityRating;
                     break;
 
                 case "ratings":
@@ -373,16 +378,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 case "formed":
                 case "premiered":
                 case "releasedate":
-                    item.PremiereDate = reader.ReadDateFromNfo() ?? item.PremiereDate;
+                    item.PremiereDate = parserHelpers.ReadDateFromNfo(reader) ?? item.PremiereDate;
                     item.ProductionYear = item.PremiereDate?.Year ?? item.ProductionYear;
                     break;
 
                 case "enddate":
-                    item.EndDate = reader.ReadDateFromNfo() ?? item.EndDate;
+                    item.EndDate = parserHelpers.ReadDateFromNfo(reader) ?? item.EndDate;
                     break;
 
                 case "genre":
-                    var genres = reader.ReadStringArrayFromNfo();
+                    var genres = parserHelpers.ReadStringArrayFromNfo(reader);
                     foreach (var genre in genres)
                     {
                         item.AddGenre(genre);
@@ -392,7 +397,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "style":
                 case "tag":
-                    var tag = reader.ReadStringFromNfo();
+                    var tag = parserHelpers.ReadStringFromNfo(reader);
                     if (!string.IsNullOrWhiteSpace(tag))
                     {
                         item.AddTag(tag);
@@ -405,7 +410,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "uniqueid":
-                    reader.ReadUniqueIdFromNfo(item);
+                    parserHelpers.ReadUniqueIdFromNfo(reader, item);
                     break;
 
                 case "thumb":
@@ -414,7 +419,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 // Read Provider Ids
                 default:
-                    reader.ReadProviderIdFromNfo(item, _validProviderIds);
+                    parserHelpers.ReadProviderIdFromNfo(reader, item, _validProviderIds);
                     break;
             }
         }

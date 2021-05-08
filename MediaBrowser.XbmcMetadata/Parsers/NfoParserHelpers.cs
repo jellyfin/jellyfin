@@ -6,64 +6,84 @@ using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.XbmcMetadata.Savers;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
-    internal static class NfoParserHelpers
+    internal class NfoParserHelpers
     {
-        internal static string? ReadStringFromNfo(this XmlReader xmlReader)
+        private readonly ILogger _logger;
+
+        public NfoParserHelpers(ILogger logger)
         {
+            _logger = logger;
+        }
+
+        internal string? ReadStringFromNfo(XmlReader xmlReader)
+        {
+            var tagName = xmlReader.Name;
             var value = xmlReader.ReadElementContentAsString();
+            _logger.LogDebug("Reading string {Value} from {TagName}", value, tagName);
             return value;
         }
 
-        internal static int? ReadIntFromNfo(this XmlReader xmlReader)
+        internal int? ReadIntFromNfo(XmlReader xmlReader)
         {
+            var tagName = xmlReader.Name;
             var str = xmlReader.ReadElementContentAsString();
             if (int.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
             {
+                _logger.LogDebug("Reading int {Value} from {TagName}", value, tagName);
                 return value;
             }
 
             return default;
         }
 
-        internal static float? ReadFloatFromNfo(this XmlReader xmlReader)
+        internal float? ReadFloatFromNfo(XmlReader xmlReader)
         {
+            var tagName = xmlReader.Name;
             var str = xmlReader.ReadElementContentAsString();
             if (float.TryParse(str, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value))
             {
+                _logger.LogDebug("Reading float {Value} from {TagName}", value, tagName);
                 return value;
             }
 
             return default;
         }
 
-        internal static DateTime? ReadDateFromNfo(this XmlReader xmlReader)
+        internal DateTime? ReadDateFromNfo(XmlReader xmlReader)
         {
+            var tagName = xmlReader.Name;
             var str = xmlReader.ReadElementContentAsString();
-            if (DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var value))
+            if (DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed))
             {
-                return value.ToUniversalTime();
+                var value = parsed.ToUniversalTime();
+                _logger.LogDebug("Reading date {Value} from {TagName}", value, tagName);
+                return value;
             }
 
             return default;
         }
 
-        internal static bool? ReadBoolFromNfo(this XmlReader xmlReader)
+        internal bool? ReadBoolFromNfo(XmlReader xmlReader)
         {
+            var tagName = xmlReader.Name;
             var value = xmlReader.ReadElementContentAsBoolean();
+            _logger.LogDebug("Reading bool {Value} from {TagName}", value, tagName);
             return value;
         }
 
-        internal static void ReadProviderIdFromNfo(this XmlReader xmlReader, IHasProviderIds item, Dictionary<string, string> providerIds)
+        internal void ReadProviderIdFromNfo(XmlReader xmlReader, IHasProviderIds item, Dictionary<string, string> providerIds)
         {
-            string readerName = xmlReader.Name;
-            if (providerIds.TryGetValue(readerName, out string? providerIdValue))
+            string tagName = xmlReader.Name;
+            if (providerIds.TryGetValue(tagName, out string? providerIdValue))
             {
                 var id = xmlReader.ReadElementContentAsString();
                 if (!string.IsNullOrWhiteSpace(providerIdValue) && !string.IsNullOrWhiteSpace(id))
                 {
+                    _logger.LogDebug("Setting {Provider} id to {Id}", providerIdValue, id);
                     item.SetProviderId(providerIdValue, id);
                 }
             }
@@ -73,57 +93,63 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        internal static string? ReadTrailerUrlFromNfo(this XmlReader reader)
+        internal string? ReadTrailerUrlFromNfo(XmlReader xmlReader)
         {
-            var val = reader.ReadStringFromNfo();
+            var val = this.ReadStringFromNfo(xmlReader);
 
             if (!string.IsNullOrWhiteSpace(val))
             {
-                return val.Replace(BaseNfoSaver.KodiYouTubeWatchUrl, BaseNfoSaver.YouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
+                var trailerUrl = val.Replace(BaseNfoSaver.KodiYouTubeWatchUrl, BaseNfoSaver.YouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
+                _logger.LogDebug("Setting trailer url to {TrailerUrl}", trailerUrl);
+                return trailerUrl;
             }
 
             return default;
         }
 
-        internal static string[] ReadStringArrayFromNfo(this XmlReader reader)
+        internal string[] ReadStringArrayFromNfo(XmlReader xmlReader)
         {
-            var val = reader.ReadElementContentAsString();
+            string tagName = xmlReader.Name;
+            var val = xmlReader.ReadElementContentAsString();
 
             if (!string.IsNullOrWhiteSpace(val))
             {
-                return val.Split('/')
+                var array = val.Split('/')
                     .Select(i => i.Trim())
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .ToArray();
+                _logger.LogDebug("Setting {TagName} to {Array}", tagName, array);
+                return array;
             }
 
             return Array.Empty<string>();
         }
 
-        internal static void ReadUniqueIdFromNfo(this XmlReader reader, BaseItem item)
+        internal void ReadUniqueIdFromNfo(XmlReader xmlReader, BaseItem item)
         {
-            if (reader.IsEmptyElement)
+            if (xmlReader.IsEmptyElement)
             {
-                reader.Read();
+                xmlReader.Read();
                 return;
             }
 
-            var provider = reader.GetAttribute("type");
-            var id = reader.ReadElementContentAsString();
+            var provider = xmlReader.GetAttribute("type");
+            var id = xmlReader.ReadElementContentAsString();
             if (!string.IsNullOrWhiteSpace(provider) && !string.IsNullOrWhiteSpace(id))
             {
                 item.SetProviderId(provider, id);
+                _logger.LogDebug("Setting {Provider} id to {Id}", provider, id);
             }
         }
 
-        internal static void SetMovieids(XmlReader reader, BaseItem item)
+        internal void SetMovieids(XmlReader xmlReader, BaseItem item)
         {
             // get ids from attributes
-            string? imdbId = reader.GetAttribute("IMDB");
-            string? tmdbId = reader.GetAttribute("TMDB");
+            string? imdbId = xmlReader.GetAttribute("IMDB");
+            string? tmdbId = xmlReader.GetAttribute("TMDB");
 
             // read id from content
-            var contentId = reader.ReadElementContentAsString();
+            var contentId = xmlReader.ReadElementContentAsString();
             if (string.IsNullOrEmpty(imdbId) && contentId.Contains("tt", StringComparison.Ordinal))
             {
                 imdbId = contentId;
@@ -136,38 +162,43 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             if (!string.IsNullOrWhiteSpace(imdbId))
             {
                 item.SetProviderId(MetadataProvider.Imdb, imdbId);
+                _logger.LogDebug("Setting Imdb id to {Id}", imdbId);
             }
 
             if (!string.IsNullOrWhiteSpace(tmdbId))
             {
                 item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+                _logger.LogDebug("Setting Tmdb id to {Id}", tmdbId);
             }
         }
 
-        internal static void SetSeriesIds(XmlReader reader, BaseItem item)
+        internal void SetSeriesIds(XmlReader xmlReader, BaseItem item)
         {
-            string? imdbId = reader.GetAttribute("IMDB");
-            string? tmdbId = reader.GetAttribute("TMDB");
-            string? tvdbId = reader.GetAttribute("TVDB");
+            string? imdbId = xmlReader.GetAttribute("IMDB");
+            string? tmdbId = xmlReader.GetAttribute("TMDB");
+            string? tvdbId = xmlReader.GetAttribute("TVDB");
 
             if (string.IsNullOrWhiteSpace(tvdbId))
             {
-                tvdbId = reader.ReadElementContentAsString();
+                tvdbId = xmlReader.ReadElementContentAsString();
             }
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {
                 item.SetProviderId(MetadataProvider.Imdb, imdbId);
+                _logger.LogDebug("Setting Imdb id to {Id}", imdbId);
             }
 
             if (!string.IsNullOrWhiteSpace(tmdbId))
             {
                 item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+                _logger.LogDebug("Setting Tmdb id to {Id}", tmdbId);
             }
 
             if (!string.IsNullOrWhiteSpace(tvdbId))
             {
                 item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
+                _logger.LogDebug("Setting Tvdb id to {Id}", tvdbId);
             }
         }
 

@@ -57,12 +57,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        internal static void ReadActorNode(XmlReader reader, MetadataResult<T> metadataResult)
+        internal static void ReadActorNode(XmlReader reader, MetadataResult<T> metadataResult, ILogger logger)
         {
             if (!reader.IsEmptyElement)
             {
                 using var subtree = reader.ReadSubtree();
-                var person = ReadActorSubtree(subtree);
+                var person = ReadActorSubtree(subtree, logger);
 
                 if (!string.IsNullOrWhiteSpace(person.Name))
                 {
@@ -429,7 +429,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        private static PersonInfo ReadActorSubtree(XmlReader reader)
+        private static PersonInfo ReadActorSubtree(XmlReader reader, ILogger logger)
         {
             var name = string.Empty;
             var type = PersonType.Actor;  // If type is not specified assume actor
@@ -440,6 +440,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             reader.MoveToContent();
             reader.Read();
 
+            var parserHelpers = new NfoParserHelpers(logger);
+
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
@@ -448,24 +450,24 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "name":
-                            name = reader.ReadStringFromNfo() ?? name;
+                            name = parserHelpers.ReadStringFromNfo(reader) ?? name;
                             break;
 
                         case "role":
-                            role = reader.ReadStringFromNfo() ?? role;
+                            role = parserHelpers.ReadStringFromNfo(reader) ?? role;
                             break;
 
                         case "type":
-                            type = NfoParserHelpers.GetPersonType(reader.ReadStringFromNfo() ?? type);
+                            type = NfoParserHelpers.GetPersonType(parserHelpers.ReadStringFromNfo(reader) ?? type);
                             break;
 
                         case "order":
                         case "sortorder":
-                            sortOrder = reader.ReadIntFromNfo() ?? sortOrder;
+                            sortOrder = parserHelpers.ReadIntFromNfo(reader) ?? sortOrder;
                             break;
 
                         case "thumb":
-                            imageUrl = reader.ReadStringFromNfo() ?? imageUrl;
+                            imageUrl = parserHelpers.ReadStringFromNfo(reader) ?? imageUrl;
                             break;
 
                         default:

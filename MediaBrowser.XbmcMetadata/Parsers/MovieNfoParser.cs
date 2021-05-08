@@ -13,6 +13,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class MovieNfoParser : BaseNfoParser<Video>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieNfoParser"/> class.
         /// </summary>
@@ -31,6 +33,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -41,10 +44,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "id":
-                    NfoParserHelpers.SetMovieids(reader, item);
+                    parserHelpers.SetMovieids(reader, item);
                     break;
 
                 case "set":
@@ -52,7 +57,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "artist":
-                    var artist = reader.ReadStringFromNfo();
+                    var artist = parserHelpers.ReadStringFromNfo(reader);
                     if (!string.IsNullOrWhiteSpace(artist) && item is MusicVideo musicVideo)
                     {
                         musicVideo.Artists = new string[] { artist };
@@ -61,7 +66,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "album":
-                    var album = reader.ReadStringFromNfo();
+                    var album = parserHelpers.ReadStringFromNfo(reader);
                     if (!string.IsNullOrWhiteSpace(album) && item is MusicVideo)
                     {
                         item.Album = album;

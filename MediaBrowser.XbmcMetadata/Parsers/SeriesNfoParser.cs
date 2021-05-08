@@ -14,6 +14,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesNfoParser"/> class.
         /// </summary>
@@ -32,6 +34,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -42,10 +45,12 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "id":
-                    NfoParserHelpers.SetSeriesIds(reader, item);
+                    parserHelpers.SetSeriesIds(reader, item);
                     break;
 
                 case "airs_dayofweek":
@@ -53,11 +58,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     break;
 
                 case "airs_time":
-                    item.AirTime = reader.ReadStringFromNfo() ?? item.AirTime;
+                    item.AirTime = parserHelpers.ReadStringFromNfo(reader) ?? item.AirTime;
                     break;
 
                 case "status":
-                    var status = reader.ReadStringFromNfo();
+                    var status = parserHelpers.ReadStringFromNfo(reader);
                     if (Enum.TryParse(status, true, out SeriesStatus parsedStatus))
                     {
                         item.Status = parsedStatus;

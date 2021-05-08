@@ -16,6 +16,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class EpisodeNfoParser : BaseNfoParser<Episode>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodeNfoParser"/> class.
         /// </summary>
@@ -34,6 +36,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -113,36 +116,38 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "showtitle":
-                    item.SeriesName = reader.ReadStringFromNfo() ?? item.SeriesName;
+                    item.SeriesName = parserHelpers.ReadStringFromNfo(reader) ?? item.SeriesName;
                     break;
 
                 case "season":
-                    item.ParentIndexNumber = reader.ReadIntFromNfo() ?? item.ParentIndexNumber;
+                    item.ParentIndexNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.ParentIndexNumber;
                     break;
 
                 case "episode":
-                    item.IndexNumber = reader.ReadIntFromNfo() ?? item.IndexNumber;
+                    item.IndexNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.IndexNumber;
                     break;
 
                 case "episodenumberend":
-                    item.IndexNumberEnd = reader.ReadIntFromNfo() ?? item.IndexNumberEnd;
+                    item.IndexNumberEnd = parserHelpers.ReadIntFromNfo(reader) ?? item.IndexNumberEnd;
                     break;
 
                 case "airsbefore_episode":
                 case "displayepisode":
-                    item.AirsBeforeEpisodeNumber = reader.ReadIntFromNfo() ?? item.AirsBeforeEpisodeNumber;
+                    item.AirsBeforeEpisodeNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.AirsBeforeEpisodeNumber;
                     break;
 
                 case "airsbefore_season":
                 case "displayseason":
-                    item.AirsBeforeSeasonNumber = reader.ReadIntFromNfo() ?? item.AirsBeforeSeasonNumber;
+                    item.AirsBeforeSeasonNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.AirsBeforeSeasonNumber;
                     break;
 
                 case "airsafter_season":
-                    item.AirsAfterSeasonNumber = reader.ReadIntFromNfo() ?? item.AirsAfterSeasonNumber;
+                    item.AirsAfterSeasonNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.AirsAfterSeasonNumber;
                     break;
 
                 default:
