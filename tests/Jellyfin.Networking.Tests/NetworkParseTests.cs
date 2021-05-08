@@ -540,7 +540,7 @@ namespace Jellyfin.Networking.Tests
             _ = nm.TryParseInterface(result, out var resultObj);
 
             // Check to see if dns resolution is working. If not, skip test.
-            _ = IPHost.TryParse(source, out var host);
+            _ = IPHost.TryParse(source, out var host, IpClassType.IpBoth);
 
             if (resultObj != null && host?.HasAddress == true)
             {
