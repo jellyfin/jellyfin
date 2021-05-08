@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -106,15 +108,10 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (_themeSongIds == null)
-                {
-                    _themeSongIds = GetExtras()
-                        .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeSong)
-                        .Select(song => song.Id)
-                        .ToArray();
-                }
-
-                return _themeSongIds;
+                return _themeSongIds ??= GetExtras()
+                    .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeSong)
+                    .Select(song => song.Id)
+                    .ToArray();
             }
 
             private set
@@ -128,15 +125,10 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (_themeVideoIds == null)
-                {
-                    _themeVideoIds = GetExtras()
-                        .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeVideo)
-                        .Select(song => song.Id)
-                        .ToArray();
-                }
-
-                return _themeVideoIds;
+                return _themeVideoIds ??= GetExtras()
+                    .Where(extra => extra.ExtraType == Model.Entities.ExtraType.ThemeVideo)
+                    .Select(song => song.Id)
+                    .ToArray();
             }
 
             private set

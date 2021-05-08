@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Extensions
         {
             return (context.Connection.LocalIpAddress == null
                     && context.Connection.RemoteIpAddress == null)
-                   || context.Connection.LocalIpAddress.Equals(context.Connection.RemoteIpAddress);
+                   || Equals(context.Connection.LocalIpAddress, context.Connection.RemoteIpAddress);
         }
 
         /// <summary>

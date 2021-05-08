@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -1768,20 +1770,15 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EnableImages = false
                     }
-                });
+                }).TotalRecordCount;
 
-                double unplayedCount = unplayedQueryResult.TotalRecordCount;
+                dto.UnplayedItemCount = unplayedQueryResult;
 
-                dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
-
-                if (itemDto != null && itemDto.RecursiveItemCount.HasValue)
+                if (itemDto?.RecursiveItemCount > 0)
                 {
-                    if (itemDto.RecursiveItemCount.Value > 0)
-                    {
-                        var unplayedPercentage = (unplayedCount / itemDto.RecursiveItemCount.Value) * 100;
-                        dto.PlayedPercentage = 100 - unplayedPercentage;
-                        dto.Played = dto.PlayedPercentage.Value >= 100;
-                    }
+                    var unplayedPercentage = ((double)unplayedQueryResult / itemDto.RecursiveItemCount.Value) * 100;
+                    dto.PlayedPercentage = 100 - unplayedPercentage;
+                    dto.Played = dto.PlayedPercentage.Value >= 100;
                 }
                 else
                 {
