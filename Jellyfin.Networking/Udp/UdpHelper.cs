@@ -34,17 +34,37 @@ namespace Jellyfin.Networking.Udp
     public static class UdpHelper
     {
         /// <summary>
+        /// Represents a random UDP port.
+        /// </summary>
+        public const int UDPAnyPort = 0;
+
+        /// <summary>
+        /// Defines the bottom of the user port range, defined as (UDPLowerUserPort .. <seealso cref="UDPMaxPort"/>).
+        /// </summary>
+        public const int UDPLowerUserPort = 49152;
+
+        /// <summary>
+        /// Minimum UDP port.
+        /// </summary>
+        public const int UDPMinPort = 1;
+
+        /// <summary>
+        /// Maximum UDP port.
+        /// </summary>
+        public const int UDPMaxPort = 65535;
+
+        /// <summary>
         /// IPv4 multicast address.
         /// </summary>
         public static readonly IPAddress SSDPMulticastIPv4 = IPAddress.Parse("239.255.255.250");
 
         /// <summary>
-        /// IPv6 local link multicast address.
+        /// IPv6 local link multicast address. (Equivalent of IPv4 broadcast address on the local link range).
         /// </summary>
         public static readonly IPAddress SSDPMulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
 
         /// <summary>
-        /// IPv6 site local multicast address.
+        /// IPv6 site local multicast address. (Equivalent of IPv4 broadcast address on the site range).
         /// </summary>
         public static readonly IPAddress SSDPMulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
 
@@ -64,8 +84,8 @@ namespace Jellyfin.Networking.Udp
 
             // Get active UDP listeners.
             var udpListenerPorts = properties.GetActiveUdpListeners()
-                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
-                        .Select(n => n.Port);
+                .Where(n => n.Port >= range.Min && n.Port <= range.Max)
+                .Select(n => n.Port);
 
             return Enumerable.Range(range.Min, range.Max)
                 .FirstOrDefault(i => !udpListenerPorts.Contains(i));
@@ -74,11 +94,12 @@ namespace Jellyfin.Networking.Udp
         /// <summary>
         /// Gets a random port number that is currently available.
         /// </summary>
-        /// <returns>A random available port number between 49152 and 65535, or 0 if all are in use.</returns>
+        /// <returns>A random available port number between <seealso cref="UDPLowerUserPort"/> and <seealso cref="UDPMaxPort"/>,
+        /// or <see cref="UDPAnyPort"/> if all are in use.</returns>
         public static int GetRandomUnusedUdpPort()
         {
             // Get a port from the dynamic range.
-            return GetUdpPortFromRange((49152, 65535));
+            return GetUdpPortFromRange((UDPLowerUserPort, UDPMaxPort));
         }
 
         /// <summary>
@@ -95,9 +116,12 @@ namespace Jellyfin.Networking.Udp
             }
 
             return new IPEndPoint(
-                localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    SSDPMulticastIPv4 : IPNetAddress.IsIPv6LinkLocal(localIpAddress) ?
-                        SSDPMulticastIPv6LinkLocal : SSDPMulticastIPv6SiteLocal, port);
+                localIpAddress.AddressFamily == AddressFamily.InterNetwork
+                    ? SSDPMulticastIPv4
+                    : IPNetAddress.IsIPv6LinkLocal(localIpAddress)
+                        ? SSDPMulticastIPv6LinkLocal
+                        : SSDPMulticastIPv6SiteLocal,
+                port);
         }
 
         /// <summary>
@@ -111,9 +135,12 @@ namespace Jellyfin.Networking.Udp
             var localIpAddress = family == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any;
 
             return new IPEndPoint(
-                localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
-                    SSDPMulticastIPv4 : IPNetAddress.IsIPv6LinkLocal(localIpAddress) ?
-                        SSDPMulticastIPv6LinkLocal : SSDPMulticastIPv6SiteLocal, port);
+                localIpAddress.AddressFamily == AddressFamily.InterNetwork
+                ? SSDPMulticastIPv4
+                    : IPNetAddress.IsIPv6LinkLocal(localIpAddress)
+                    ? SSDPMulticastIPv6LinkLocal
+                        : SSDPMulticastIPv6SiteLocal,
+                port);
         }
 
         /// <summary>
@@ -123,20 +150,21 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A UDP port in the range specified. If the range is invalid, a port number in the range 49152 and 65535 is returned.</returns>
         public static int GetPort(string portStr)
         {
-            int port = 0;
+            int port = UDPLowerUserPort;
+
             if (portStr.TryParseRange(out (int Min, int Max) range))
             {
                 port = GetUdpPortFromRange(range);
             }
 
-            if (port < 0 || port > 65535)
-            {
-                throw new ArgumentOutOfRangeException(nameof(portStr), $"UDP port in the range {portStr} cannot be allocated.");
-            }
-
-            if (port == 0)
+            if (port == UDPAnyPort)
             {
                 port = GetRandomUnusedUdpPort();
+            }
+
+            if (port < UDPMinPort || port > UDPMaxPort)
+            {
+                throw new ArgumentOutOfRangeException(nameof(portStr), $"UDP port in the range {portStr} cannot be allocated.");
             }
 
             return port;
@@ -151,7 +179,7 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Socket"/> instance.</returns>
         public static Socket CreateUdpBroadcastSocket(int port, AddressFamily family, ILogger? logger = null)
         {
-            if (port < 0 || port > 65535)
+            if (((port < UDPMinPort) || (port > UDPMaxPort)) && port != UDPAnyPort)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
@@ -185,7 +213,7 @@ namespace Jellyfin.Networking.Udp
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (port < 0 || port > 65535)
+            if (((port < UDPMinPort) || (port > UDPMaxPort)) && port != UDPAnyPort)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
