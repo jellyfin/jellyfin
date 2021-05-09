@@ -31,9 +31,11 @@ namespace Jellyfin.Networking.Udp
             : base(localIpAddress.AddressFamily)
         {
             LocalEndPoint = new IPEndPoint(
-                UdpHelper.EnableMultiSocketBinding ? localIpAddress :
-                    localIpAddress.AddressFamily == AddressFamily.InterNetwork ?
-                        IPAddress.Any : IPAddress.IPv6Any,
+                UdpHelper.EnableMultiSocketBinding
+                    ? localIpAddress
+                    : localIpAddress.AddressFamily == AddressFamily.InterNetwork
+                        ? IPAddress.Any
+                        : IPAddress.IPv6Any,
                 portNumber);
             Processor = processor;
             Logger = logger;
@@ -46,7 +48,7 @@ namespace Jellyfin.Networking.Udp
         /// <param name="localIpAddress">IP Address to assign.</param>
         private UdpProcess(IPAddress localIpAddress)
         {
-            LocalEndPoint = new IPEndPoint(localIpAddress, 0);
+            LocalEndPoint = new IPEndPoint(localIpAddress, UdpHelper.UDPAnyPort);
         }
 
         /// <summary>
