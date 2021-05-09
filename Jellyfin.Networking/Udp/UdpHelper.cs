@@ -577,7 +577,15 @@ namespace Jellyfin.Networking.Udp
             if (client.Processor == null)
             {
                 IPEndPoint? remote = null;
-                client.EndReceive(result, ref remote);
+                try
+                {
+                    client.EndReceive(result, ref remote);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return;
+                }
+
                 // If we are not interesting in inbound data, then ignore it.
                 client.BeginReceive(OnReceive, client);
                 return;
