@@ -36,37 +36,37 @@ namespace Jellyfin.Networking.Udp
         /// <summary>
         /// Represents a random UDP port.
         /// </summary>
-        public const int UDPAnyPort = 0;
+        public const int UdpAnyPort = 0;
 
         /// <summary>
-        /// Defines the bottom of the user port range, defined as (UDPLowerUserPort .. <seealso cref="UDPMaxPort"/>).
+        /// Defines the bottom of the user port range, defined as (UDPLowerUserPort .. <seealso cref="UdpMaxPort"/>).
         /// </summary>
-        public const int UDPLowerUserPort = 49152;
+        public const int UdpLowerUserPort = 49152;
 
         /// <summary>
         /// Minimum UDP port.
         /// </summary>
-        public const int UDPMinPort = 1;
+        public const int UdpMinPort = 1;
 
         /// <summary>
         /// Maximum UDP port.
         /// </summary>
-        public const int UDPMaxPort = 65535;
+        public const int UdpMaxPort = 65535;
 
         /// <summary>
         /// IPv4 multicast address.
         /// </summary>
-        public static readonly IPAddress SSDPMulticastIPv4 = IPAddress.Parse("239.255.255.250");
+        public static readonly IPAddress SsdpMulticastIPv4 = IPAddress.Parse("239.255.255.250");
 
         /// <summary>
         /// IPv6 local link multicast address. (Equivalent of IPv4 broadcast address on the local link range).
         /// </summary>
-        public static readonly IPAddress SSDPMulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
+        public static readonly IPAddress SsdpMulticastIPv6LinkLocal = IPAddress.Parse("ff02::C");
 
         /// <summary>
         /// IPv6 site local multicast address. (Equivalent of IPv4 broadcast address on the site range).
         /// </summary>
-        public static readonly IPAddress SSDPMulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
+        public static readonly IPAddress SsdpMulticastIPv6SiteLocal = IPAddress.Parse("ff05::C");
 
         /// <summary>
         /// Gets or sets a value indicating whether multi-socket binding should be enabled. Default is enabled.
@@ -94,12 +94,12 @@ namespace Jellyfin.Networking.Udp
         /// <summary>
         /// Gets a random port number that is currently available.
         /// </summary>
-        /// <returns>A random available port number between <seealso cref="UDPLowerUserPort"/> and <seealso cref="UDPMaxPort"/>,
-        /// or <see cref="UDPAnyPort"/> if all are in use.</returns>
+        /// <returns>A random available port number between <seealso cref="UdpLowerUserPort"/> and <seealso cref="UdpMaxPort"/>,
+        /// or <see cref="UdpAnyPort"/> if all are in use.</returns>
         public static int GetRandomUnusedUdpPort()
         {
             // Get a port from the dynamic range.
-            return GetUdpPortFromRange((UDPLowerUserPort, UDPMaxPort));
+            return GetUdpPortFromRange((UdpLowerUserPort, UdpMaxPort));
         }
 
         /// <summary>
@@ -117,10 +117,10 @@ namespace Jellyfin.Networking.Udp
 
             return new IPEndPoint(
                 localIpAddress.AddressFamily == AddressFamily.InterNetwork
-                    ? SSDPMulticastIPv4
+                    ? SsdpMulticastIPv4
                     : IPNetAddress.IsIPv6LinkLocal(localIpAddress)
-                        ? SSDPMulticastIPv6LinkLocal
-                        : SSDPMulticastIPv6SiteLocal,
+                        ? SsdpMulticastIPv6LinkLocal
+                        : SsdpMulticastIPv6SiteLocal,
                 port);
         }
 
@@ -136,10 +136,10 @@ namespace Jellyfin.Networking.Udp
 
             return new IPEndPoint(
                 localIpAddress.AddressFamily == AddressFamily.InterNetwork
-                ? SSDPMulticastIPv4
+                ? SsdpMulticastIPv4
                     : IPNetAddress.IsIPv6LinkLocal(localIpAddress)
-                    ? SSDPMulticastIPv6LinkLocal
-                        : SSDPMulticastIPv6SiteLocal,
+                    ? SsdpMulticastIPv6LinkLocal
+                        : SsdpMulticastIPv6SiteLocal,
                 port);
         }
 
@@ -150,19 +150,19 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A UDP port in the range specified. If the range is invalid, a port number in the range 49152 and 65535 is returned.</returns>
         public static int GetPort(string portStr)
         {
-            int port = UDPLowerUserPort;
+            int port = UdpLowerUserPort;
 
             if (portStr.TryParseRange(out (int Min, int Max) range))
             {
                 port = GetUdpPortFromRange(range);
             }
 
-            if (port == UDPAnyPort)
+            if (port == UdpAnyPort)
             {
                 port = GetRandomUnusedUdpPort();
             }
 
-            if (port < UDPMinPort || port > UDPMaxPort)
+            if (port < UdpMinPort || port > UdpMaxPort)
             {
                 throw new ArgumentOutOfRangeException(nameof(portStr), $"UDP port in the range {portStr} cannot be allocated.");
             }
@@ -179,7 +179,7 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Socket"/> instance.</returns>
         public static Socket CreateUdpBroadcastSocket(int port, AddressFamily family, ILogger? logger = null)
         {
-            if (((port < UDPMinPort) || (port > UDPMaxPort)) && port != UDPAnyPort)
+            if (((port < UdpMinPort) || (port > UdpMaxPort)) && port != UdpAnyPort)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
@@ -213,7 +213,7 @@ namespace Jellyfin.Networking.Udp
                 throw new ArgumentNullException(nameof(address));
             }
 
-            if (((port < UDPMinPort) || (port > UDPMaxPort)) && port != UDPAnyPort)
+            if (((port < UdpMinPort) || (port > UdpMaxPort)) && port != UdpAnyPort)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), $"UDP port in the range {port} cannot be allocated.");
             }
@@ -310,18 +310,24 @@ namespace Jellyfin.Networking.Udp
             FailureFunction? failure = null,
             bool enableTracing = false)
         {
+            if (addresses == null)
+            {
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
             var clients = new Collection<UdpProcess>();
 
             foreach (var ip in addresses)
             {
-#pragma warning disable CA1508 // Avoid dead conditional code: Suppress incorrect compiler reporting.
                 var client = CreateMulticastClient(ip.Address, port, processor, logger, failure);
-                if (client != null)
-#pragma warning restore CA1508 // Avoid dead conditional code
+#pragma warning disable CA1508 // Avoid dead conditional code: Suppress incorrect compiler reporting.
+                if (client == null)
                 {
-                    client.Tracing = enableTracing;
-                    clients.Add(client);
+                    continue;
                 }
+#pragma warning restore CA1508 // Avoid dead conditional code
+                client.Tracing = enableTracing;
+                clients.Add(client);
             }
 
             return clients.ToArray();
@@ -343,6 +349,11 @@ namespace Jellyfin.Networking.Udp
             ILogger? logger = null,
             FailureFunction? failure = null)
         {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
             if (address.AddressFamily == AddressFamily.InterNetworkV6 && address.ScopeId == 0)
             {
                 logger?.LogError("Cannot create multicast client on {Address}. ScopeId: {ScopeId}", address, address.ScopeId);
@@ -376,13 +387,13 @@ namespace Jellyfin.Networking.Udp
 
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    udp.JoinMulticastGroup(SSDPMulticastIPv4, address);
+                    udp.JoinMulticastGroup(SsdpMulticastIPv4, address);
                 }
                 else
                 {
                     udp.JoinMulticastGroup(
                         (int)address.ScopeId,
-                        IPNetAddress.IsIPv6LinkLocal(address) ? SSDPMulticastIPv6LinkLocal : SSDPMulticastIPv6SiteLocal);
+                        IPNetAddress.IsIPv6LinkLocal(address) ? SsdpMulticastIPv6LinkLocal : SsdpMulticastIPv6SiteLocal);
                 }
 
                 udp.IsMulticast = true;
@@ -409,6 +420,16 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendUnicast(this UdpProcess client, string packet, IPEndPoint remote, int sendCount = 1)
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
+            if (remote == null)
+            {
+                throw new ArgumentNullException(nameof(remote));
+            }
+
             if (client.LocalEndPoint.AddressFamily != remote.AddressFamily)
             {
                 throw new ArgumentException($"Address families don't match. {client.LocalEndPoint} {remote}");
@@ -444,6 +465,11 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticasts(this IEnumerable<UdpProcess> clients, int port, string packet, int sendCount = 1)
         {
+            if (clients == null)
+            {
+                throw new ArgumentNullException(nameof(clients));
+            }
+
             foreach (var client in clients)
             {
                 await SendMulticast(client, port, packet, sendCount).ConfigureAwait(false);
@@ -460,22 +486,21 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticast(this UdpProcess client, int port, string packet, int sendCount = 1)
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
             if (!client.IsMulticast)
             {
                 throw new ArgumentException("Client is not a multicast client.");
             }
 
             var intf = client.LocalEndPoint.Address;
-            IPEndPoint? mcast;
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
-            if (intf.AddressFamily == AddressFamily.InterNetwork)
-            {
-                mcast = new IPEndPoint(SSDPMulticastIPv4, port);
-            }
-            else
-            {
-                mcast = new IPEndPoint(IPNetAddress.IsIPv6LinkLocal(intf) ? SSDPMulticastIPv6LinkLocal : SSDPMulticastIPv6SiteLocal, port);
-            }
+            var mcast = intf.AddressFamily == AddressFamily.InterNetwork
+                ? new IPEndPoint(SsdpMulticastIPv4, port)
+                : new IPEndPoint(IPNetAddress.IsIPv6LinkLocal(intf) ? SsdpMulticastIPv6LinkLocal : SsdpMulticastIPv6SiteLocal, port);
 
             if (client.Tracing)
             {
@@ -529,17 +554,9 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Socket"/> instance.</returns>
         private static Socket PrepareSocket(IPAddress address, ILogger? logger)
         {
-            Socket retVal;
-
-            if (address.AddressFamily == AddressFamily.InterNetwork)
-            {
-                retVal = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            }
-            else
-            {
-                retVal = new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
-            }
-
+            var retVal = address.AddressFamily == AddressFamily.InterNetwork
+                ? new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp)
+                : new Socket(AddressFamily.InterNetworkV6, SocketType.Dgram, ProtocolType.Udp);
             try
             {
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);

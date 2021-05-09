@@ -28,7 +28,7 @@ namespace Jellyfin.Networking.Udp
         /// <param name="logger">Logger instance to use.</param>
         /// <param name="failure">Failure function.</param>
         public UdpProcess(IPAddress localIpAddress, int portNumber, UdpProcessor? processor = null, ILogger? logger = null, FailureFunction? failure = null)
-            : base(localIpAddress.AddressFamily)
+            : base(localIpAddress?.AddressFamily ?? throw new ArgumentNullException(nameof(localIpAddress)))
         {
             LocalEndPoint = new IPEndPoint(
                 UdpHelper.EnableMultiSocketBinding
@@ -48,7 +48,7 @@ namespace Jellyfin.Networking.Udp
         /// <param name="localIpAddress">IP Address to assign.</param>
         private UdpProcess(IPAddress localIpAddress)
         {
-            LocalEndPoint = new IPEndPoint(localIpAddress, UdpHelper.UDPAnyPort);
+            LocalEndPoint = new IPEndPoint(localIpAddress, UdpHelper.UdpAnyPort);
         }
 
         /// <summary>
@@ -118,33 +118,45 @@ namespace Jellyfin.Networking.Udp
         /// <param name="parameters">Optional parameters to include in the message.</param>
         public void Track(string msg, IPEndPoint localIpAddress, IPEndPoint remote, params object[] parameters)
         {
+            if (remote == null)
+            {
+                throw new ArgumentNullException(nameof(remote));
+            }
+
+            if (localIpAddress == null)
+            {
+                throw new ArgumentNullException(nameof(localIpAddress));
+            }
+
             bool log = TracingFilter == null
                        || TracingFilter.Equals(localIpAddress.Address)
                        || TracingFilter.Equals(remote.Address)
                        || (IPAddress.Any.Equals(localIpAddress.Address) || IPAddress.IPv6Any.Equals(localIpAddress.Address));
 
-            if (log)
+            if (!log)
             {
-                switch (parameters.Length)
-                {
-                    case 0:
-                        Logger.LogDebug(msg, localIpAddress, remote);
-                        break;
-                    case 1:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0]);
-                        break;
-                    case 2:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1]);
-                        break;
-                    case 3:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2]);
-                        break;
-                    case 4:
-                        Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2], parameters[3]);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(parameters), "Tracing only supports up to 4 parameters");
-                }
+                return;
+            }
+
+            switch (parameters.Length)
+            {
+                case 0:
+                    Logger.LogDebug(msg, localIpAddress, remote);
+                    break;
+                case 1:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0]);
+                    break;
+                case 2:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1]);
+                    break;
+                case 3:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2]);
+                    break;
+                case 4:
+                    Logger.LogDebug(msg, localIpAddress, remote, parameters[0], parameters[1], parameters[2], parameters[3]);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(parameters), "Tracing only supports up to 4 parameters");
             }
         }
     }
