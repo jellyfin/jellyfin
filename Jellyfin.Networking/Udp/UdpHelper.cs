@@ -310,6 +310,11 @@ namespace Jellyfin.Networking.Udp
             FailureFunction? failure = null,
             bool enableTracing = false)
         {
+            if (addresses == null)
+            {
+                throw new ArgumentNullException(nameof(addresses));
+            }
+
             var clients = new Collection<UdpProcess>();
 
             foreach (var ip in addresses)
@@ -343,6 +348,11 @@ namespace Jellyfin.Networking.Udp
             ILogger? logger = null,
             FailureFunction? failure = null)
         {
+            if (address == null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
             if (address.AddressFamily == AddressFamily.InterNetworkV6 && address.ScopeId == 0)
             {
                 logger?.LogError("Cannot create multicast client on {Address}. ScopeId: {ScopeId}", address, address.ScopeId);
@@ -409,6 +419,16 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendUnicast(this UdpProcess client, string packet, IPEndPoint remote, int sendCount = 1)
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
+            if (remote == null)
+            {
+                throw new ArgumentNullException(nameof(remote));
+            }
+
             if (client.LocalEndPoint.AddressFamily != remote.AddressFamily)
             {
                 throw new ArgumentException($"Address families don't match. {client.LocalEndPoint} {remote}");
@@ -444,6 +464,11 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticasts(this IEnumerable<UdpProcess> clients, int port, string packet, int sendCount = 1)
         {
+            if (clients == null)
+            {
+                throw new ArgumentNullException(nameof(clients));
+            }
+
             foreach (var client in clients)
             {
                 await SendMulticast(client, port, packet, sendCount).ConfigureAwait(false);
@@ -460,6 +485,11 @@ namespace Jellyfin.Networking.Udp
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public static async Task SendMulticast(this UdpProcess client, int port, string packet, int sendCount = 1)
         {
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
             if (!client.IsMulticast)
             {
                 throw new ArgumentException("Client is not a multicast client.");

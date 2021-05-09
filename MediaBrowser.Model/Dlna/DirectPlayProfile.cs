@@ -8,7 +8,7 @@ namespace MediaBrowser.Model.Dlna
     public class DirectPlayProfile
     {
         [XmlAttribute("container")]
-        public string? Container { get; set; }
+        public string Container { get; set; } = string.Empty;
 
         [XmlAttribute("audioCodec")]
         public string? AudioCodec { get; set; }

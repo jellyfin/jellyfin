@@ -11,18 +11,17 @@ namespace Jellyfin.Networking.Tests
         /// <summary>
         /// Checks the parsing of ranges.
         /// </summary>
-		[Theory]
+        /// <param name="rangeStr">The test string to parse.</param>
+        [Theory]
         [InlineData("65536")]
         [InlineData("-1-65536")]
         [InlineData("-1--2")]
         [InlineData("Rodger")]
         [InlineData("65535-1")]
-        /// <param name="rangeStr">The test string to parse.</param>
         public void Invalid_Ranges(string rangeStr)
         {
-            Assert.False(rangeStr.TryParseRange(out var range));
+            Assert.False(rangeStr.TryParseRange(out var _));
         }
-
 
         [Theory]
         [InlineData("-1", UdpHelper.UDPMinPort, UdpHelper.UDPMinPort)]

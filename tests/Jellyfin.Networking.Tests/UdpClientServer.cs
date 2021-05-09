@@ -1,4 +1,3 @@
-
 using System;
 using System.Linq;
 using System.Net;
@@ -16,7 +15,7 @@ namespace Jellyfin.Networking.Tests
     public static class UdpClientServer
     {
         private const string Message = "This is a messages to send to ourselves.";
-        private static bool _received = false;
+        private static bool _received;
 
         [Fact]
         public static async Task SendMessage()
@@ -37,7 +36,6 @@ namespace Jellyfin.Networking.Tests
 
             // select a port to transmit from.
             var udpPortToUse = UdpHelper.GetUdpPortFromRange((UdpHelper.UDPLowerUserPort, UdpHelper.UDPMaxPort));
-
 
             // create the client
             using var client = UdpHelper.CreateUnicastClient(IPAddress.Loopback, udpPortToUse, failure: OnFailure);
@@ -75,7 +73,6 @@ namespace Jellyfin.Networking.Tests
 
             return Task.CompletedTask;
         }
-
 
         private static void OnFailure(UdpProcess client, Exception? ex = null, string? msg = null)
         {
