@@ -1,3 +1,4 @@
+
 using System;
 using System.Linq;
 using System.Net;
@@ -15,16 +16,20 @@ namespace Jellyfin.Networking.Tests
     public static class UdpClientServer
     {
         private const string Message = "This is a messages to send to ourselves.";
-        private static bool received = false;
+        private static bool _received = false;
 
         [Fact]
         public static async Task SendMessage()
         {
             // select a port to listen to.
-            int ListeningPort = UdpHelper.GetRandomUnusedUdpPort();
+            int listeningPort = UdpHelper.GetRandomUnusedUdpPort();
+
+#pragma warning disable CA1508 // Go home compiler - you are drunk. CreateUnicastClient CAN return null!
+
+#pragma warning disable CA2201 // Don't see why i can't use NullReferenceException in tests.
 
             // Create the server
-            var server = UdpHelper.CreateUnicastClient(IPAddress.Loopback, ListeningPort, ProcessMessage, failure: OnFailure);
+            using var server = UdpHelper.CreateUnicastClient(IPAddress.Loopback, listeningPort, ProcessMessage, failure: OnFailure);
             if (server == null)
             {
                 throw new NullReferenceException("Unable to create server.");
@@ -33,21 +38,24 @@ namespace Jellyfin.Networking.Tests
             // select a port to transmit from.
             var udpPortToUse = UdpHelper.GetUdpPortFromRange((UdpHelper.UDPLowerUserPort, UdpHelper.UDPMaxPort));
 
+
             // create the client
-            var client = UdpHelper.CreateUnicastClient(IPAddress.Loopback, udpPortToUse, failure: OnFailure);
+            using var client = UdpHelper.CreateUnicastClient(IPAddress.Loopback, udpPortToUse, failure: OnFailure);
             if (client == null)
             {
-                throw new NullReferenceException("Unable to create client.");
+                throw new Exception("Unable to create client.");
             }
 
+#pragma warning restore CA2201
+#pragma warning restore CA1508
             // send ourselves a message.
-            var destination = new IPEndPoint(IPAddress.Loopback, ListeningPort);
-            await UdpHelper.SendUnicast(client, Message, destination).ConfigureAwait(false);
+            var destination = new IPEndPoint(IPAddress.Loopback, listeningPort);
+            await client.SendUnicast(Message, destination).ConfigureAwait(false);
 
             // give ourselves time to receive it.
             await Task.Delay(1000);
 
-            Assert.True(received);
+            Assert.True(_received);
         }
 
         /// <summary>
@@ -62,7 +70,7 @@ namespace Jellyfin.Networking.Tests
             if (!string.IsNullOrEmpty(data))
             {
                 Assert.True(string.Equals(data, Message, StringComparison.Ordinal));
-                received = true;
+                _received = true;
             }
 
             return Task.CompletedTask;

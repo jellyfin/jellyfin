@@ -407,7 +407,7 @@ namespace Jellyfin.Networking.Udp
         /// <param name="remote">The destination <see cref="IPEndPoint"/>.</param>
         /// <param name="sendCount">Optional number of times to transmit <paramref name="packet"/>. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task SendUnicast(UdpProcess client, string packet, IPEndPoint remote, int sendCount = 1)
+        public static async Task SendUnicast(this UdpProcess client, string packet, IPEndPoint remote, int sendCount = 1)
         {
             if (client.LocalEndPoint.AddressFamily != remote.AddressFamily)
             {
@@ -442,7 +442,7 @@ namespace Jellyfin.Networking.Udp
         /// <param name="packet">Packet to send.</param>
         /// <param name="sendCount">Optional. The number of times to transmit <paramref name="packet" />. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task SendMulticasts(IEnumerable<UdpProcess> clients, int port, string packet, int sendCount = 1)
+        public static async Task SendMulticasts(this IEnumerable<UdpProcess> clients, int port, string packet, int sendCount = 1)
         {
             foreach (var client in clients)
             {
@@ -458,7 +458,7 @@ namespace Jellyfin.Networking.Udp
         /// <param name="packet">Packet to send.</param>
         /// <param name="sendCount">Optional. The number of times to transmit <paramref name="packet" />. Default is 1.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task SendMulticast(UdpProcess client, int port, string packet, int sendCount = 1)
+        public static async Task SendMulticast(this UdpProcess client, int port, string packet, int sendCount = 1)
         {
             if (!client.IsMulticast)
             {
@@ -499,7 +499,7 @@ namespace Jellyfin.Networking.Udp
         /// Disposes an UDP client.
         /// </summary>
         /// <param name="client">A <see cref="UdpProcess"/>.</param>
-        public static void DisposeClient(UdpProcess? client)
+        public static void DisposeClient(this UdpProcess? client)
         {
             client?.Dispose();
         }
@@ -508,7 +508,7 @@ namespace Jellyfin.Networking.Udp
         /// Disposes multiple of UDP clients.
         /// </summary>
         /// <param name="clients">A <see cref="List{UdpProcess}"/>.</param>
-        public static void DisposeClients(IEnumerable<UdpProcess>? clients)
+        public static void DisposeClients(this IEnumerable<UdpProcess>? clients)
         {
             if (clients == null)
             {
