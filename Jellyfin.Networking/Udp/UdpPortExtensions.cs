@@ -25,7 +25,7 @@ namespace Jellyfin.Networking.Udp
             }
 
             // Remove all white space.
-            rangeStr = Regex.Replace(rangeStr, @"\s+", string.Empty);
+            rangeStr = string.Join(string.Empty, rangeStr.Split(default(string[]), StringSplitOptions.RemoveEmptyEntries));
 
             var parts = rangeStr.Split('-');
             if (parts.Length == 2)
