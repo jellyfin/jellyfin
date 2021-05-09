@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 
 namespace Jellyfin.Networking.Udp
 {
@@ -19,8 +18,8 @@ namespace Jellyfin.Networking.Udp
             if (string.IsNullOrEmpty(rangeStr))
             {
                 // Random Port.
-                range.Min = UdpHelper.UDPLowerUserPort;
-                range.Max = UdpHelper.UDPMaxPort;
+                range.Min = UdpHelper.UdpLowerUserPort;
+                range.Max = UdpHelper.UdpMaxPort;
                 return false;
             }
 
@@ -31,24 +30,22 @@ namespace Jellyfin.Networking.Udp
             if (parts.Length == 2)
             {
                 int minVal;
-                int maxVal;
-
-                if (string.IsNullOrEmpty(parts[1]))
-                {
-                    maxVal = UdpHelper.UDPMaxPort;
-                }
-                else
-                {
-                    maxVal = Math.Clamp(int.TryParse(parts[1], out int max) ? max : UdpHelper.UDPMaxPort, UdpHelper.UDPMinPort, UdpHelper.UDPMaxPort);
-                }
+                int maxVal = string.IsNullOrEmpty(parts[1])
+                    ? UdpHelper.UdpMaxPort
+                    : Math.Clamp(
+                        int.TryParse(parts[1], out int max)
+                            ? max
+                            : UdpHelper.UdpMaxPort,
+                        UdpHelper.UdpMinPort,
+                        UdpHelper.UdpMaxPort);
 
                 if (string.IsNullOrEmpty(parts[0]))
                 {
-                    minVal = maxVal <= UdpHelper.UDPLowerUserPort ? UdpHelper.UDPMinPort : UdpHelper.UDPLowerUserPort;
+                    minVal = maxVal <= UdpHelper.UdpLowerUserPort ? UdpHelper.UdpMinPort : UdpHelper.UdpLowerUserPort;
                 }
                 else
                 {
-                    minVal = Math.Clamp(int.TryParse(parts[0], out int min) ? min : UdpHelper.UDPLowerUserPort, UdpHelper.UDPMinPort, UdpHelper.UDPMaxPort);
+                    minVal = Math.Clamp(int.TryParse(parts[0], out int min) ? min : UdpHelper.UdpLowerUserPort, UdpHelper.UdpMinPort, UdpHelper.UdpMaxPort);
                 }
 
                 range.Max = maxVal;
@@ -58,9 +55,9 @@ namespace Jellyfin.Networking.Udp
 
             if (int.TryParse(rangeStr, out int start))
             {
-                if (start < UdpHelper.UDPMinPort || start > UdpHelper.UDPMaxPort)
+                if (start < UdpHelper.UdpMinPort || start > UdpHelper.UdpMaxPort)
                 {
-                    range.Min = range.Max = UdpHelper.UDPAnyPort;
+                    range.Min = range.Max = UdpHelper.UdpAnyPort;
                     return false;
                 }
 
@@ -69,8 +66,8 @@ namespace Jellyfin.Networking.Udp
             }
 
             // Random Port in user range.
-            range.Min = UdpHelper.UDPLowerUserPort;
-            range.Max = UdpHelper.UDPMaxPort;
+            range.Min = UdpHelper.UdpLowerUserPort;
+            range.Max = UdpHelper.UdpMaxPort;
             return false;
         }
     }

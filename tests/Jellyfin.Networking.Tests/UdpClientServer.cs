@@ -35,7 +35,7 @@ namespace Jellyfin.Networking.Tests
             }
 
             // select a port to transmit from.
-            var udpPortToUse = UdpHelper.GetUdpPortFromRange((UdpHelper.UDPLowerUserPort, UdpHelper.UDPMaxPort));
+            var udpPortToUse = UdpHelper.GetUdpPortFromRange((UdpHelper.UdpLowerUserPort, UdpHelper.UdpMaxPort));
 
             // create the client
             using var client = UdpHelper.CreateUnicastClient(IPAddress.Loopback, udpPortToUse, failure: OnFailure);

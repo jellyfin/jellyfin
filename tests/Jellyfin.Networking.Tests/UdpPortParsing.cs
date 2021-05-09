@@ -24,14 +24,14 @@ namespace Jellyfin.Networking.Tests
         }
 
         [Theory]
-        [InlineData("-1", UdpHelper.UDPMinPort, UdpHelper.UDPMinPort)]
-        [InlineData("-65535", UdpHelper.UDPLowerUserPort, UdpHelper.UDPMaxPort)]
-        [InlineData("1-", UdpHelper.UDPMinPort, UdpHelper.UDPMaxPort)]
-        [InlineData("1-65535", 1, UdpHelper.UDPMaxPort)]
-        [InlineData("10-65535", 10, UdpHelper.UDPMaxPort)]
+        [InlineData("-1", UdpHelper.UdpMinPort, UdpHelper.UdpMinPort)]
+        [InlineData("-65535", UdpHelper.UdpLowerUserPort, UdpHelper.UdpMaxPort)]
+        [InlineData("1-", UdpHelper.UdpMinPort, UdpHelper.UdpMaxPort)]
+        [InlineData("1-65535", 1, UdpHelper.UdpMaxPort)]
+        [InlineData("10-65535", 10, UdpHelper.UdpMaxPort)]
         [InlineData("1-655", 1, 655)]
-        [InlineData("-", UdpHelper.UDPLowerUserPort, UdpHelper.UDPMaxPort)]
-        [InlineData("65535", UdpHelper.UDPMaxPort, UdpHelper.UDPMaxPort)]
+        [InlineData("-", UdpHelper.UdpLowerUserPort, UdpHelper.UdpMaxPort)]
+        [InlineData("65535", UdpHelper.UdpMaxPort, UdpHelper.UdpMaxPort)]
         /// <param name="rangeStr">The test string to parse.</param>
         /// <param name="min">The min port returned.</param>
         /// <param name="max">The max port returned.</param>
