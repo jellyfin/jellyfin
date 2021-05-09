@@ -20,25 +20,33 @@ namespace Jellyfin.Networking.Tests
         [Fact]
         public static async Task SendMessage()
         {
+            // select a port to listen to.
             int ListeningPort = UdpHelper.GetRandomUnusedUdpPort();
 
-            // Create a client for each bound interface.
-            var _udpProcess = UdpHelper.CreateUnicastClient(IPAddress.Loopback, ListeningPort, ProcessMessage, failure: OnFailure);
+            // Create the server
+            var server = UdpHelper.CreateUnicastClient(IPAddress.Loopback, ListeningPort, ProcessMessage, failure: OnFailure);
+            if (server == null)
+            {
+                throw new NullReferenceException("Unable to create server.");
+            }
 
-            // create the client
+            // select a port to transmit from.
             var udpPortToUse = UdpHelper.GetUdpPortFromRange((UdpHelper.UDPLowerUserPort, UdpHelper.UDPMaxPort));
 
+            // create the client
             var client = UdpHelper.CreateUnicastClient(IPAddress.Loopback, udpPortToUse, failure: OnFailure);
             if (client == null)
             {
                 throw new NullReferenceException("Unable to create client.");
             }
 
-            // destination is what we're listening to.
+            // send ourselves a message.
             var destination = new IPEndPoint(IPAddress.Loopback, ListeningPort);
             await UdpHelper.SendUnicast(client, Message, destination).ConfigureAwait(false);
 
+            // give ourselves time to receive it.
             await Task.Delay(1000);
+
             Assert.True(received);
         }
 
