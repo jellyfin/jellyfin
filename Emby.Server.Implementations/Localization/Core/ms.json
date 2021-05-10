@@ -72,7 +72,7 @@
     "ServerNameNeedsToBeRestarted": "{0} needs to be restarted",
     "Shows": "Series",
     "Songs": "Lagu-lagu",
-    "StartupEmbyServerIsLoading": "Jellyfin Server sedang dimuatkan. Sila cuba sebentar lagi.",
+    "StartupEmbyServerIsLoading": "Pelayan Jellyfin sedang dimuatkan. Sila cuba sebentar lagi.",
     "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
     "SubtitleDownloadFailureFromForItem": "Muat turun sarikata gagal dari {0} untuk {1}",
     "Sync": "Sync",
