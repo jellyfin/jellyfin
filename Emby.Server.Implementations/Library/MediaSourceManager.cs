@@ -200,11 +200,6 @@ namespace Emby.Server.Implementations.Library
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
-                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
-                    {
-                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding);
-                        source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
-                    }
                 }
             }
 
