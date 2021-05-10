@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Configuration;
 
 namespace MediaBrowser.Model.Entities
@@ -35,6 +36,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the type of the collection.
         /// </summary>
         /// <value>The type of the collection.</value>
+        [JsonConverter(typeof(JsonLowerCaseConverter<CollectionTypeOptions?>))]
         public CollectionTypeOptions? CollectionType { get; set; }
 
         public LibraryOptions LibraryOptions { get; set; }

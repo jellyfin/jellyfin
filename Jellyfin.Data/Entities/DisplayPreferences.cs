@@ -1,6 +1,4 @@
-﻿#pragma warning disable CA2227
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,27 +28,18 @@ namespace Jellyfin.Data.Entities
             SkipBackwardLength = 10000;
             ScrollDirection = ScrollDirection.Horizontal;
             ChromecastVersion = ChromecastVersion.Stable;
-            DashboardTheme = string.Empty;
-            TvHome = string.Empty;
 
             HomeSections = new HashSet<HomeSection>();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DisplayPreferences"/> class.
-        /// </summary>
-        protected DisplayPreferences()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the Id.
+        /// Gets the Id.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the user Id.
@@ -74,7 +63,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required. Max Length = 32.
         /// </remarks>
-        [Required]
         [MaxLength(32)]
         [StringLength(32)]
         public string Client { get; set; }
@@ -145,18 +133,18 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         [MaxLength(32)]
         [StringLength(32)]
-        public string DashboardTheme { get; set; }
+        public string? DashboardTheme { get; set; }
 
         /// <summary>
         /// Gets or sets the tv home screen.
         /// </summary>
         [MaxLength(32)]
         [StringLength(32)]
-        public string TvHome { get; set; }
+        public string? TvHome { get; set; }
 
         /// <summary>
-        /// Gets or sets the home sections.
+        /// Gets the home sections.
         /// </summary>
-        public virtual ICollection<HomeSection> HomeSections { get; protected set; }
+        public virtual ICollection<HomeSection> HomeSections { get; private set; }
     }
 }

@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {
@@ -22,7 +21,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
     {
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public AudioDbArtistImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory)
         {

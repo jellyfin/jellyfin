@@ -19,7 +19,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
@@ -29,7 +28,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         public static AudioDbAlbumProvider Current;
 
@@ -171,7 +170,8 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, true);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 

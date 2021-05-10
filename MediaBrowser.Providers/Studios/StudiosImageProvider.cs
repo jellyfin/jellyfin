@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -171,18 +172,21 @@ namespace MediaBrowser.Providers.Studios
 
         public IEnumerable<string> GetAvailableImages(string file)
         {
-            using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-            using var reader = new StreamReader(fileStream);
+            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read));
+            using (var reader = new StreamReader(fileStream));
             var lines = new List<string>();
 
-            while (!reader.EndOfStream)
+            foreach (var line in reader.ReadAllLines())
             {
-                var text = reader.ReadLine();
-
-                if (!string.IsNullOrWhiteSpace(text))
+                if (!string.IsNullOrWhiteSpace(line))
                 {
-                    lines.Add(text);
+                    lines.Add(line);
                 }
+            }
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                lines.Add(text);
             }
 
             return lines;

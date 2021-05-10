@@ -21,29 +21,22 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryItem"/> class.
-        /// </summary>
-        protected LibraryItem()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the date this library item was added.
+        /// Gets the date this library item was added.
         /// </summary>
-        public DateTime DateAdded { get; protected set; }
+        public DateTime DateAdded { get; private set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; protected set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the library of this item.
@@ -51,7 +44,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public virtual Library Library { get; set; }
 
         /// <inheritdoc />

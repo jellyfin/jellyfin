@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,7 +180,7 @@ namespace Jellyfin.Api.Helpers
             bool enableTranscoding,
             bool allowVideoStreamCopy,
             bool allowAudioStreamCopy,
-            string ipAddress)
+            IPAddress ipAddress)
         {
             var streamBuilder = new StreamBuilder(_mediaEncoder, _logger);
 
@@ -282,6 +283,7 @@ namespace Jellyfin.Api.Helpers
                     if (streamInfo != null)
                     {
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
             }
@@ -307,7 +309,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
                             && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                            && user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectStream = true;
                         }
@@ -326,6 +328,7 @@ namespace Jellyfin.Api.Helpers
                     if (streamInfo != null)
                     {
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
             }
@@ -353,6 +356,7 @@ namespace Jellyfin.Api.Helpers
 
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
                 else
@@ -390,6 +394,7 @@ namespace Jellyfin.Api.Helpers
 
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
             }
@@ -551,7 +556,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private int? GetMaxBitrate(int? clientMaxBitrate, User user, string ipAddress)
+        private int? GetMaxBitrate(int? clientMaxBitrate, User user, IPAddress ipAddress)
         {
             var maxBitrate = clientMaxBitrate;
             var remoteClientMaxBitrate = user.RemoteClientBitrateLimit ?? 0;

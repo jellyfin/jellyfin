@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +48,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.

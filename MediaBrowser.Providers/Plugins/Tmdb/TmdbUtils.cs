@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
 
@@ -12,6 +13,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public static class TmdbUtils
     {
+        private static readonly Regex _nonWords = new (@"[\W_]+", RegexOptions.Compiled);
+
         /// <summary>
         /// URL of the TMDB instance to use.
         /// </summary>
@@ -43,25 +46,36 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         };
 
         /// <summary>
+        /// Cleans the name according to TMDb requirements.
+        /// </summary>
+        /// <param name="name">The name of the entity.</param>
+        /// <returns>The cleaned name.</returns>
+        public static string CleanName(string name)
+        {
+            // TMDb expects a space separated list of words make sure that is the case
+            return _nonWords.Replace(name, " ");
+        }
+
+        /// <summary>
         /// Maps the TMDB provided roles for crew members to Jellyfin roles.
         /// </summary>
         /// <param name="crew">Crew member to map against the Jellyfin person types.</param>
         /// <returns>The Jellyfin person type.</returns>
         public static string MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("director", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Director;
             }
 
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("producer", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Writer;
             }

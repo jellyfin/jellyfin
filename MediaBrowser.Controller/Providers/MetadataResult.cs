@@ -1,23 +1,29 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class MetadataResult<T>
     {
-        public List<LocalImageInfo> Images { get; set; }
-
-        public List<UserItemData> UserDataList { get; set; }
-
         public MetadataResult()
         {
             Images = new List<LocalImageInfo>();
+            RemoteImages = new List<(string url, ImageType type)>();
             ResultLanguage = "en";
         }
+
+        public List<LocalImageInfo> Images { get; set; }
+
+        public List<(string url, ImageType type)> RemoteImages { get; set; }
+
+        public List<UserItemData> UserDataList { get; set; }
 
         public List<PersonInfo> People { get; set; }
 
@@ -33,10 +39,7 @@ namespace MediaBrowser.Controller.Providers
 
         public void AddPerson(PersonInfo p)
         {
-            if (People == null)
-            {
-                People = new List<PersonInfo>();
-            }
+            People ??= new List<PersonInfo>();
 
             PeopleHelper.AddPerson(People, p);
         }
@@ -50,16 +53,15 @@ namespace MediaBrowser.Controller.Providers
             {
                 People = new List<PersonInfo>();
             }
-
-            People.Clear();
+            else
+            {
+                People.Clear();
+            }
         }
 
         public UserItemData GetOrAddUserData(string userId)
         {
-            if (UserDataList == null)
-            {
-                UserDataList = new List<UserItemData>();
-            }
+            UserDataList ??= new List<UserItemData>();
 
             UserItemData userData = null;
 

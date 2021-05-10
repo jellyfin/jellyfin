@@ -1475,17 +1475,14 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserById(request.UserId);
             }
 
-            if (user == null)
-            {
-                user = _userManager.GetUserByName(request.Username);
-            }
+            user ??= _userManager.GetUserByName(request.Username);
 
             if (enforcePassword)
             {
                 user = await _userManager.AuthenticateUser(
                     request.Username,
                     request.Password,
-                    request.PasswordSha1,
+                    null,
                     request.RemoteEndPoint,
                     true).ConfigureAwait(false);
             }

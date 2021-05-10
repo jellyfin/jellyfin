@@ -23,7 +23,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         }
 
         /// <inheritdoc />
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> itemResult)
         {
             switch (reader.Name)
             {
@@ -33,7 +33,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         using (var subReader = reader.ReadSubtree())
                         {
-                            FetchFromCollectionItemsNode(subReader, item);
+                            FetchFromCollectionItemsNode(subReader, itemResult);
                         }
                     }
                     else
@@ -44,7 +44,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }

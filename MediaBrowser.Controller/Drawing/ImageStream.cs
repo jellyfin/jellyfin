@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets or sets the stream.
         /// </summary>
         /// <value>The stream.</value>
-        public Stream Stream { get; set; }
+        public Stream? Stream { get; set; }
 
         /// <summary>
         /// Gets or sets the format.

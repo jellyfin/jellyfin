@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -120,8 +122,7 @@ namespace MediaBrowser.Controller.Entities
 
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
-                FileInfo = FileSystem.GetDirectoryInfo(path),
-                Path = path
+                FileInfo = FileSystem.GetDirectoryInfo(path)
             };
 
             // Gather child folder and files

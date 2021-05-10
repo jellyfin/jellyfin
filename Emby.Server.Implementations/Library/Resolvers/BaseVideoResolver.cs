@@ -30,7 +30,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>`0.</returns>
-        protected override T Resolve(ItemResolveArgs args)
+        public override T Resolve(ItemResolveArgs args)
         {
             return ResolveVideo<T>(args, false);
         }
@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <param name="args">The args.</param>
         /// <param name="parseName">if set to <c>true</c> [parse name].</param>
         /// <returns>``0.</returns>
-        protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
+        protected virtual TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();

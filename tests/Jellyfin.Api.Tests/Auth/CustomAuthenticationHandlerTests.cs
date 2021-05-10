@@ -128,6 +128,8 @@ namespace Jellyfin.Api.Tests.Auth
         {
             var authorizationInfo = _fixture.Create<AuthorizationInfo>();
             authorizationInfo.User = _fixture.Create<User>();
+            authorizationInfo.User.AddDefaultPermissions();
+            authorizationInfo.User.AddDefaultPreferences();
             authorizationInfo.User.SetPermission(PermissionKind.IsAdministrator, isAdmin);
             authorizationInfo.IsApiKey = false;
 

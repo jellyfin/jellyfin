@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -12,6 +14,7 @@ namespace MediaBrowser.Controller.Session
 
         public string Password { get; set; }
 
+        [Obsolete("Send full password in Password field")]
         public string PasswordSha1 { get; set; }
 
         public string App { get; set; }

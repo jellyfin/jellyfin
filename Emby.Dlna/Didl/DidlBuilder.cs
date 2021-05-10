@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -208,7 +210,8 @@ namespace Emby.Dlna.Didl
             var targetWidth = streamInfo.TargetWidth;
             var targetHeight = streamInfo.TargetHeight;
 
-            var contentFeatureList = new ContentFeatureBuilder(_profile).BuildVideoHeader(
+            var contentFeatureList = ContentFeatureBuilder.BuildVideoHeader(
+                _profile,
                 streamInfo.Container,
                 streamInfo.TargetVideoCodec.FirstOrDefault(),
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
@@ -599,7 +602,8 @@ namespace Emby.Dlna.Didl
                 ? MimeTypes.GetMimeType(filename)
                 : mediaProfile.MimeType;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile).BuildAudioHeader(
+            var contentFeatures = ContentFeatureBuilder.BuildAudioHeader(
+                _profile,
                 streamInfo.Container,
                 streamInfo.TargetAudioCodec.FirstOrDefault(),
                 targetAudioBitrate,
@@ -974,15 +978,28 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
+            // TODO: Remove these default values
+            var albumArtUrlInfo = GetImageUrl(
+                imageInfo,
+                _profile.MaxAlbumArtWidth ?? 10000,
+                _profile.MaxAlbumArtHeight ?? 10000,
+                "jpg");
 
             writer.WriteStartElement("upnp", "albumArtURI", NsUpnp);
-            writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
-            writer.WriteString(albumartUrlInfo.url);
+            if (!string.IsNullOrEmpty(_profile.AlbumArtPn))
+            {
+                writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
+            }
+
+            writer.WriteString(albumArtUrlInfo.url);
             writer.WriteFullEndElement();
 
-            // TOOD: Remove these default values
-            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
+            // TODO: Remove these default values
+            var iconUrlInfo = GetImageUrl(
+                imageInfo,
+                _profile.MaxIconWidth ?? 48,
+                _profile.MaxIconHeight ?? 48,
+                "jpg");
             writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
 
             if (!_profile.EnableAlbumArtInDidl)
@@ -1033,8 +1050,7 @@ namespace Emby.Dlna.Didl
             var width = albumartUrlInfo.width ?? maxWidth;
             var height = albumartUrlInfo.height ?? maxHeight;
 
-            var contentFeatures = new ContentFeatureBuilder(_profile)
-                .BuildImageHeader(format, width, height, imageInfo.IsDirectStream, org_Pn);
+            var contentFeatures = ContentFeatureBuilder.BuildImageHeader(_profile, format, width, height, imageInfo.IsDirectStream, org_Pn);
 
             writer.WriteAttributeString(
                 "protocolInfo",
@@ -1206,8 +1222,7 @@ namespace Emby.Dlna.Didl
 
             if (width.HasValue && height.HasValue)
             {
-                var newSize = DrawingUtils.Resize(
-                        new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
+                var newSize = DrawingUtils.Resize(new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
 
                 width = newSize.Width;
                 height = newSize.Height;

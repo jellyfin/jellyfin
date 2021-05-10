@@ -94,5 +94,5 @@ jobs:
         displayName: 'Publish OpenAPI Artifact'
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
         inputs:
-          targetPath: "tests/Jellyfin.Api.Tests/bin/Release/net5.0/openapi.json"
+          targetPath: "tests/Jellyfin.Server.Integration.Tests/bin/Release/net5.0/openapi.json"
           artifactName: 'OpenAPI Spec'

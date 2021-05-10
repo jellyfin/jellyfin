@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -13,18 +11,19 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Movie"/> class.
         /// </summary>
-        public Movie()
+        /// <param name="library">The library.</param>
+        public Movie(Library library) : base(library)
         {
             Releases = new HashSet<Release>();
             MovieMetadata = new HashSet<MovieMetadata>();
         }
 
         /// <inheritdoc />
-        public virtual ICollection<Release> Releases { get; protected set; }
+        public virtual ICollection<Release> Releases { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the metadata for this movie.
+        /// Gets a collection containing the metadata for this movie.
         /// </summary>
-        public virtual ICollection<MovieMetadata> MovieMetadata { get; protected set; }
+        public virtual ICollection<MovieMetadata> MovieMetadata { get; private set; }
     }
 }

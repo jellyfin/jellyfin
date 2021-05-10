@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -28,7 +29,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly IServerApplicationPaths _appPaths;
         private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
         private readonly IServerConfigurationManager _serverConfigurationManager;
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
@@ -307,13 +308,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }

@@ -112,7 +112,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxAudioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
             [FromQuery] bool? enableRemoteMedia,
-            [FromQuery] bool breakOnNonKeyFrames,
+            [FromQuery] bool breakOnNonKeyFrames = false,
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
@@ -219,10 +219,10 @@ namespace Jellyfin.Api.Controllers
                     AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                     StartTimeTicks = startTimeTicks,
                     SubtitleMethod = SubtitleDeliveryMethod.Hls,
-                    RequireAvc = true,
-                    DeInterlace = true,
-                    RequireNonAnamorphic = true,
-                    EnableMpegtsM2TsMode = true,
+                    RequireAvc = false,
+                    DeInterlace = false,
+                    RequireNonAnamorphic = false,
+                    EnableMpegtsM2TsMode = false,
                     TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(',', mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
                     Context = EncodingContext.Static,
                     StreamOptions = new Dictionary<string, string>(),
@@ -298,9 +298,9 @@ namespace Jellyfin.Api.Controllers
                 {
                     Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = transcodingContainer,
-                    AudioCodec = audioCodec,
-                    Protocol = transcodingProtocol,
+                    Container = transcodingContainer ?? "mp3",
+                    AudioCodec = audioCodec ?? "mp3",
+                    Protocol = transcodingProtocol ?? "http",
                     BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                     MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }

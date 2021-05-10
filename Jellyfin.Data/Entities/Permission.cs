@@ -1,3 +1,6 @@
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
@@ -23,29 +26,26 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Permission"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Permission()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id of this permission.
+        /// Gets the id of this permission.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the type of this permission.
+        /// Gets or sets the id of the associated user.
+        /// </summary>
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets the type of this permission.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        public PermissionKind Kind { get; protected set; }
+        public PermissionKind Kind { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the associated user has this permission.
@@ -57,7 +57,7 @@ namespace Jellyfin.Data.Entities
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()
