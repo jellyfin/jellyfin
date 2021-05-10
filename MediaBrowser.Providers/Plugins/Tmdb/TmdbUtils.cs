@@ -173,5 +173,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             return imageLanguage;
         }
+
+        /// <summary>
+        /// Combines the metadata country code and the parental rating from the Api into the value we store in our database.
+        /// </summary>
+        /// <param name="countryCode">The Iso 3166-1 country code of the rating country.</param>
+        /// <param name="ratingValue">The rating value returned by the Tmdb Api.</param>
+        /// <returns>The combined parental rating of country code+rating value.</returns>
+        public static string BuildParentalRating(string countryCode, string ratingValue)
+        {
+            // exclude US because we store us values as TV-14 without the country code.
+            var ratingPrefix = string.Equals(countryCode, "US", StringComparison.OrdinalIgnoreCase) ? string.Empty : countryCode + "-";
+            var newRating = ratingPrefix + ratingValue;
+
+            return newRating.Replace("DE-", "FSK-", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
