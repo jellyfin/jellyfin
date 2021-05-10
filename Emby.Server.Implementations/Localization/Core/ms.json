@@ -61,7 +61,7 @@
     "NotificationOptionVideoPlayback": "Video playback started",
     "NotificationOptionVideoPlaybackStopped": "Video playback stopped",
     "Photos": "Gambar-gambar",
-    "Playlists": "Senarai ulangmain",
+    "Playlists": "Senarai main",
     "Plugin": "Plugin",
     "PluginInstalledWithName": "{0} was installed",
     "PluginUninstalledWithName": "{0} was uninstalled",
@@ -99,5 +99,7 @@
     "TasksMaintenanceCategory": "Penyelenggaraan",
     "Undefined": "Tidak ditentukan",
     "Forced": "Paksa",
-    "Default": "Asal"
+    "Default": "Asal",
+    "TaskCleanCache": "Bersihkan Direktori Cache",
+    "TaskCleanActivityLogDescription": "Padamkan entri log aktiviti yang lebih tua daripada usia yang dikonfigurasi."
 }
