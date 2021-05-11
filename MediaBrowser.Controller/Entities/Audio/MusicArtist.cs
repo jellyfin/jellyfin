@@ -114,7 +114,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// Returns the folder containing the item.
+        /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
