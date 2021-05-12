@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +47,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
+            var language = item.GetPreferredMetadataLanguage();
             var person = (Person)item;
 
             if (!person.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
@@ -55,14 +55,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
             if (personResult?.Images?.Profiles == null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var remoteImages = new RemoteImageInfo[personResult.Images.Profiles.Count];
-            var language = item.GetPreferredMetadataLanguage();
 
             for (var i = 0; i < personResult.Images.Profiles.Count; i++)
             {
