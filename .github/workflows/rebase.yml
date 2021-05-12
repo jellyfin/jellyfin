@@ -11,17 +11,17 @@ jobs:
       - name: Notify as seen
         uses: peter-evans/create-or-update-comment@v1.4.5
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reactions: '+1'
 
       - name: Checkout the latest code
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
 
       - name: Automatic Rebase
         uses: cirrus-actions/rebase@1.4
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.JF_BOT_TOKEN }}
