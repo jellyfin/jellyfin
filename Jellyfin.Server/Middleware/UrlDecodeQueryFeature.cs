@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -66,17 +67,16 @@ namespace Jellyfin.Server.Middleware
 
                 foreach (var pair in queryString)
                 {
-                    var section = pair.ToString();
-                    var i = section.IndexOf('=', System.StringComparison.Ordinal);
+                    var i = pair.IndexOf('=');
 
                     if (i == -1)
                     {
                         // encoded is an equals.
-                        pairs.Add(section, new StringValues(string.Empty));
+                        pairs.Add(pair[0..i].ToString(), new StringValues(string.Empty));
                         continue;
                     }
 
-                    pairs.Add(section[0..i], new StringValues(section[(i + 1)..]));
+                    pairs.Add(pair[0..i].ToString(), new StringValues(pair[(i + 1)..].ToString()));
                 }
 
                 _store = new QueryCollection(pairs);
