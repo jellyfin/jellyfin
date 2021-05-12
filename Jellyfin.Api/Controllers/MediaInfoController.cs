@@ -2,12 +2,14 @@ using System;
 using System.Buffers;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
+using Jellyfin.Profiles;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -35,6 +37,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IAuthorizationContext _authContext;
         private readonly ILogger<MediaInfoController> _logger;
         private readonly MediaInfoHelper _mediaInfoHelper;
+        private readonly IProfileManager _profileManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
@@ -45,13 +48,15 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
         /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
+        /// <param name="profileManager">Instance of the <see cref="IProfileManager"/>.</param>
         public MediaInfoController(
             IMediaSourceManager mediaSourceManager,
             IDeviceManager deviceManager,
             ILibraryManager libraryManager,
             IAuthorizationContext authContext,
             ILogger<MediaInfoController> logger,
-            MediaInfoHelper mediaInfoHelper)
+            MediaInfoHelper mediaInfoHelper,
+            IProfileManager profileManager)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
@@ -59,6 +64,7 @@ namespace Jellyfin.Api.Controllers
             _authContext = authContext;
             _logger = logger;
             _mediaInfoHelper = mediaInfoHelper;
+            _profileManager = profileManager;
         }
 
         /// <summary>
@@ -125,17 +131,11 @@ namespace Jellyfin.Api.Controllers
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
-            var profile = playbackInfoDto?.DeviceProfile;
-            _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
+            var profile = _profileManager.GetProfile(
+                playbackInfoDto?.DeviceProfile ?? _deviceManager.GetCapabilities(authInfo.DeviceId).DeviceProfile,
+                Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
 
-            if (profile == null)
-            {
-                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
-                if (caps != null)
-                {
-                    profile = caps.DeviceProfile;
-                }
-            }
+            _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
 
             // Copy params from posted body
             // TODO clean up when breaking API compatibility.
@@ -203,7 +203,7 @@ namespace Jellyfin.Api.Controllers
                         new LiveStreamRequest
                         {
                             AudioStreamIndex = audioStreamIndex,
-                            DeviceProfile = playbackInfoDto?.DeviceProfile,
+                            DeviceProfile = profile,
                             EnableDirectPlay = enableDirectPlay.Value,
                             EnableDirectStream = enableDirectStream.Value,
                             ItemId = itemId,
@@ -264,6 +264,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableDirectPlay,
             [FromQuery] bool? enableDirectStream)
         {
+            var profile = _profileManager.GetProfile(
+                openLiveStreamDto?.DeviceProfile ?? _profileManager.DefaultProfile(),
+                Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+
             var request = new LiveStreamRequest
             {
                 OpenToken = openToken ?? openLiveStreamDto?.OpenToken,
@@ -275,7 +279,7 @@ namespace Jellyfin.Api.Controllers
                 SubtitleStreamIndex = subtitleStreamIndex ?? openLiveStreamDto?.SubtitleStreamIndex,
                 MaxAudioChannels = maxAudioChannels ?? openLiveStreamDto?.MaxAudioChannels,
                 ItemId = itemId ?? openLiveStreamDto?.ItemId ?? Guid.Empty,
-                DeviceProfile = openLiveStreamDto?.DeviceProfile,
+                DeviceProfile = profile,
                 EnableDirectPlay = enableDirectPlay ?? openLiveStreamDto?.EnableDirectPlay ?? true,
                 EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
                 DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }

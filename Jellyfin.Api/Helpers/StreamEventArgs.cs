@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Profiles;
 using MediaBrowser.Controller.Devices;
 using Microsoft.AspNetCore.Http;
 
@@ -71,7 +72,7 @@ namespace Jellyfin.Api.Helpers
         public StreamingRequestDto? StreamingRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the device manager.
+        /// Gets or sets a value device manager.
         /// </summary>
         public IDeviceManager? DeviceManager { get; set; }
 

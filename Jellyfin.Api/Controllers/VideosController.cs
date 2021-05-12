@@ -452,7 +452,7 @@ namespace Jellyfin.Api.Controllers
                     IsStaticallyStreamed = true,
                     StartTimeTicks = startTimeTicks,
                     Request = Request,
-                    StreamingRequest = streamingRequest,
+                    StreamingRequest = streamingRequest
                 });
 
                 await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)

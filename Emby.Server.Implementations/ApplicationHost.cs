@@ -42,6 +42,7 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Networking.AutoDiscovery;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
+using Jellyfin.Profiles;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -593,7 +594,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
-
             ServiceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             ServiceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
@@ -675,6 +675,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddScoped<DynamicHlsHelper>();
 
             ServiceCollection.AddSingleton<IDirectoryService, DirectoryService>();
+            ServiceCollection.AddSingleton<IProfileManager, ProfileManager>();
         }
 
         /// <summary>

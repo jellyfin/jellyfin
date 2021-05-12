@@ -1,9 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <!-- ProjectGuid is only included as a requirement for SonarQube analysis -->
-  <PropertyGroup>
-    <ProjectGuid>{2E3A1B4B-4225-4AAA-8B29-0181A84E7AEE}</ProjectGuid>
-  </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -12,23 +7,13 @@
     <Nullable>enable</Nullable>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
-    <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Test Data\**\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AutoFixture" Version="4.17.0" />
-    <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
-    <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
     <PackageReference Include="coverlet.collector" Version="3.0.3" />
   </ItemGroup>
 
@@ -40,9 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
-    <ProjectReference Include="..\..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
-    <ProjectReference Include="..\Jellyfin.Profiles.Tests\Jellyfin.Profiles.Tests.csproj" />
+    <ProjectReference Include="../../Emby.Dlna/Emby.Dlna.csproj" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,8 @@ namespace MediaBrowser.Model.Dlna
     /// </summary>
     public class StreamInfo
     {
+        private Dictionary<string, string>? _streamOptions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamInfo"/> class.
         /// </summary>
@@ -23,6 +25,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="mediaType">The <see cref="DlnaProfileType"/>.</param>
         /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         public StreamInfo(Guid itemId, DlnaProfileType mediaType, DeviceProfile profile)
+            : base()
         {
             ItemId = itemId;
             MediaType = mediaType;
@@ -31,7 +34,6 @@ namespace MediaBrowser.Model.Dlna
             VideoCodecs = Array.Empty<string>();
             SubtitleCodecs = Array.Empty<string>();
             TranscodeReasons = Array.Empty<TranscodeReason>();
-            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -43,7 +45,13 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="mediaSource">The <see cref="MediaSourceInfo"/>.</param>
         /// <param name="runtimeTicks">Optional runtime ticks.</param>
         /// <param name="context">The <see cref="EncodingContext"/>.</param>
-        public StreamInfo(Guid itemId, DlnaProfileType mediaType, DeviceProfile profile, MediaSourceInfo mediaSource, long? runtimeTicks, EncodingContext context)
+        public StreamInfo(
+            Guid itemId,
+            DlnaProfileType mediaType,
+            DeviceProfile profile,
+            MediaSourceInfo mediaSource,
+            long? runtimeTicks,
+            EncodingContext context)
         {
             ItemId = itemId;
             MediaType = mediaType;
@@ -55,7 +63,6 @@ namespace MediaBrowser.Model.Dlna
             VideoCodecs = Array.Empty<string>();
             SubtitleCodecs = Array.Empty<string>();
             TranscodeReasons = Array.Empty<TranscodeReason>();
-            StreamOptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -256,7 +263,18 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets the stream options.
         /// </summary>
-        public Dictionary<string, string> StreamOptions { get; private set; }
+        public Dictionary<string, string> StreamOptions
+        {
+            get
+            {
+                if (_streamOptions == null)
+                {
+                    _streamOptions = new ();
+                }
+
+                return _streamOptions;
+            }
+        }
 
         /// <summary>
         /// Gets the media sourceId.
@@ -266,9 +284,7 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Gets a value indicating whether the stream is a direct stream.
         /// </summary>
-        public bool IsDirectStream =>
-            PlayMethod == PlayMethod.DirectStream ||
-            PlayMethod == PlayMethod.DirectPlay;
+        public bool IsDirectStream => PlayMethod == PlayMethod.DirectStream || PlayMethod == PlayMethod.DirectPlay;
 
         /// <summary>
         /// Gets the audio stream that will be used.
@@ -805,7 +821,7 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>The option's value, or null if not found.</returns>
         public string? GetOption(string name)
         {
-            if (StreamOptions.TryGetValue(name, out var value))
+            if (_streamOptions != null && _streamOptions.TryGetValue(name, out var value))
             {
                 return value;
             }
@@ -1065,11 +1081,6 @@ namespace MediaBrowser.Model.Dlna
                 return MediaSource?.Path ?? string.Empty;
             }
 
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
-
             var sb = new StringBuilder(2000);
 
             if (!string.IsNullOrEmpty(baseUrl))
@@ -1080,42 +1091,29 @@ namespace MediaBrowser.Model.Dlna
             if (MediaType == DlnaProfileType.Audio)
             {
                 sb.Append("/audio/");
-                sb.Append(ItemId);
-
-                if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
-                {
-                    sb.Append("/master.m3u8?");
-                }
-                else
-                {
-                    sb.Append("/stream.ts?");
-
-                    if (!string.IsNullOrEmpty(Container))
-                    {
-                        sb.Append("ext=.");
-                        sb.Append(Container);
-                    }
-                }
             }
             else
             {
                 sb.Append("/videos/");
-                sb.Append(ItemId);
+            }
 
-                if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
-                {
-                    sb.Append("/master.m3u8?");
-                }
-                else
-                {
-                    sb.Append("/stream.ts?");
+            sb.Append(ItemId);
 
-                    if (!string.IsNullOrEmpty(Container))
-                    {
-                        sb.Append("ext=.");
-                        sb.Append(Container);
-                    }
+            if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            {
+                sb.Append("/master.m3u8?");
+            }
+            else
+            {
+                sb.Append("/stream");
+
+                if (!string.IsNullOrEmpty(Container))
+                {
+                    sb.Append('.');
+                    sb.Append(Container);
                 }
+
+                sb.Append('?');
             }
 
             if (!string.IsNullOrEmpty(DeviceProfileId))
@@ -1316,31 +1314,30 @@ namespace MediaBrowser.Model.Dlna
                 sb.Append(string.Join(",", SubtitleCodecs));
             }
 
-            foreach (var pair in StreamOptions)
+            if (_streamOptions != null)
             {
-                if (string.IsNullOrEmpty(pair.Value))
+                foreach (var pair in _streamOptions)
                 {
-                    continue;
-                }
+                    if (string.IsNullOrEmpty(pair.Value))
+                    {
+                        continue;
+                    }
 
-                // strip spaces to avoid having to encode h264 profile names
-                sb.Append('&');
-                sb.Append(pair.Key);
-                sb.Append('=');
-                sb.Append(pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal));
+                    // strip spaces to avoid having to encode h264 profile names
+                    sb.Append('&');
+                    sb.Append(pair.Key);
+                    sb.Append('=');
+                    sb.Append(pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal));
+                }
             }
 
-            if (!IsDirectStream)
+            if (!IsDirectStream && TranscodeReasons.Length > 0)
             {
                 sb.Append("&TranscodeReasons=");
-                sb.Append(string.Join(
-                    ",",
-                    TranscodeReasons.Distinct()
-                        .Select(i => i.ToString()))
-                    .Replace(" ", "%20", StringComparison.Ordinal));
+                sb.Append(string.Join(",", TranscodeReasons.Distinct().Select(i => i.ToString())));
             }
 
-            if (query != null)
+            if (!string.IsNullOrEmpty(query))
             {
                 sb.Append(query);
             }

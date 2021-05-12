@@ -459,5 +459,16 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
         /// </summary>
         public bool RemoveOldPlugins { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether unknown profiles should be created for devices that are unidentified. (Useful for device building).
+        /// </summary>
+        public bool SaveUnknownDeviceProfilesToDisk { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the disk based user template profiles should be monitored for changes.
+        /// Permits changes to profiles to be possible outside of JF. (Default pre 10.8).
+        /// </summary>
+        public bool MonitorUserTemplates { get; set; } = true;
     }
 }

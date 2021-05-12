@@ -142,7 +142,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
         /// <param name="ipType"><see cref="IpClassType"/> to filter on.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParse(string host, [NotNullWhen(true)] out IPHost? hostObj, IpClassType ipType)
+        public static bool TryParse(string? host, [NotNullWhen(true)] out IPHost? hostObj, IpClassType ipType)
         {
             if (string.IsNullOrWhiteSpace(host))
             {
@@ -217,7 +217,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="host">Host name to parse.</param>
         /// <param name="type">A <see cref="IpClassType"/> to filter on.</param>
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
-        public static new IPHost Parse(string host, IpClassType type = IpClassType.IpBoth)
+        public static new IPHost Parse(string? host, IpClassType type = IpClassType.IpBoth)
         {
             if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost? res, type))
             {

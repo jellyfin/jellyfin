@@ -154,40 +154,6 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <summary>
-        /// Returns true if the IPAddress contains an IP6 Local link address.
-        /// </summary>
-        /// <param name="address">IPAddress object to check.</param>
-        /// <returns>True if it is a local link address.</returns>
-        /// <remarks>
-        /// See https://stackoverflow.com/questions/6459928/explain-the-instance-properties-of-system-net-ipaddress
-        /// it appears that the IPAddress.IsIPv6LinkLocal is out of date.
-        /// </remarks>
-        public static bool IsIPv6LinkLocal(IPAddress address)
-        {
-            if (address == null)
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (address.IsIPv4MappedToIPv6)
-            {
-                address = address.MapToIPv4();
-            }
-
-            if (address.AddressFamily != AddressFamily.InterNetworkV6)
-            {
-                return false;
-            }
-
-            // GetAddressBytes
-            Span<byte> octet = stackalloc byte[16];
-            address.TryWriteBytes(octet, out _);
-            uint word = (uint)(octet[0] << 8) + octet[1];
-
-            return word >= 0xfe80 && word <= 0xfebf; // fe80::/10 :Local link.
-        }
-
-        /// <summary>
         /// Returns the network address of an object.
         /// </summary>
         /// <param name="address">IP Address to convert.</param>

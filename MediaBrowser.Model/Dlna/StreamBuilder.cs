@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
@@ -56,7 +57,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (StreamInfo stream in streams)
             {
                 stream.DeviceId = options.DeviceId;
-                stream.DeviceProfileId = options.Profile.Id;
+                stream.DeviceProfileId = options.Profile.Id.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return GetOptimalStream(streams, options.GetMaxBitrate(true) ?? 0);
@@ -89,7 +90,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (StreamInfo stream in streams)
             {
                 stream.DeviceId = options.DeviceId;
-                stream.DeviceProfileId = options.Profile.Id;
+                stream.DeviceProfileId = options.Profile.Id.ToString("N", CultureInfo.InvariantCulture);
             }
 
             return GetOptimalStream(streams, options.GetMaxBitrate(false) ?? 0);
@@ -234,29 +235,28 @@ namespace MediaBrowser.Model.Dlna
                 return null;
             }
 
-            var formats = ContainerProfile.SplitValue(inputContainer);
-
-            if (formats.Length == 1)
+            if (!inputContainer.Contains(',') || profile == null)
             {
-                return formats[0];
+                return inputContainer;
             }
 
-            if (profile != null)
+            var formats = inputContainer.SpanSplit(',');
+            foreach (var format in formats)
             {
-                foreach (var format in formats)
+                foreach (var directPlayProfile in profile.DirectPlayProfiles)
                 {
-                    foreach (var directPlayProfile in profile.DirectPlayProfiles)
+                    if (directPlayProfile.Type == type)
                     {
-                        if (directPlayProfile.Type == type
-                            && directPlayProfile.SupportsContainer(format))
+                        var formatStr = format.ToString();
+                        if (directPlayProfile.SupportsContainer(formatStr))
                         {
-                            return format;
+                            return formatStr;
                         }
                     }
                 }
             }
 
-            return formats[0];
+            return inputContainer;
         }
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
@@ -790,12 +790,12 @@ namespace MediaBrowser.Model.Dlna
 
                         if (applyConditions)
                         {
-                            var transcodingVideoCodecs = ContainerProfile.SplitValue(transcodingProfile.VideoCodec);
+                            var transcodingVideoCodecs = transcodingProfile.VideoCodec.SpanSplit(',');
                             foreach (var transcodingVideoCodec in transcodingVideoCodecs)
                             {
                                 if (i.ContainsAnyCodec(transcodingVideoCodec, transcodingProfile.Container))
                                 {
-                                    ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingVideoCodec, true, isFirstAppliedCodecProfile);
+                                    ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingVideoCodec.ToString(), true, isFirstAppliedCodecProfile);
                                     isFirstAppliedCodecProfile = false;
                                 }
                             }
@@ -834,12 +834,12 @@ namespace MediaBrowser.Model.Dlna
 
                         if (applyConditions)
                         {
-                            var transcodingAudioCodecs = ContainerProfile.SplitValue(transcodingProfile.AudioCodec);
+                            var transcodingAudioCodecs = transcodingProfile.AudioCodec.SpanSplit(',');
                             foreach (var transcodingAudioCodec in transcodingAudioCodecs)
                             {
                                 if (i.ContainsAnyCodec(transcodingAudioCodec, transcodingProfile.Container))
                                 {
-                                    ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingAudioCodec, true, isFirstAppliedCodecProfile);
+                                    ApplyTranscodingConditions(playlistItem, i.Conditions, transcodingAudioCodec.ToString(), true, isFirstAppliedCodecProfile);
                                     isFirstAppliedCodecProfile = false;
                                 }
                             }
@@ -1042,14 +1042,17 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var conditions = new List<ProfileCondition>();
-            foreach (var p in profile.ContainerProfiles)
+            if (profile.ContainerProfiles != null)
             {
-                if (p.Type == DlnaProfileType.Video
-                    && p.ContainsContainer(container))
+                foreach (var p in profile.ContainerProfiles)
                 {
-                    foreach (var c in p.Conditions)
+                    if (p.Type == DlnaProfileType.Video
+                        && p.ContainsContainer(container.AsSpan()))
                     {
-                        conditions.Add(c);
+                        foreach (var c in p.Conditions)
+                        {
+                            conditions.Add(c);
+                        }
                     }
                 }
             }
@@ -1253,7 +1256,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (!ContainerProfile.ContainsContainer(profile.Container, outputContainer))
+                    if (!profile.Container.ContainsContainer(outputContainer))
                     {
                         continue;
                     }
@@ -1282,7 +1285,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (!ContainerProfile.ContainsContainer(profile.Container, outputContainer))
+                    if (!profile.Container.ContainsContainer(outputContainer))
                     {
                         continue;
                     }
@@ -1313,16 +1316,11 @@ namespace MediaBrowser.Model.Dlna
         {
             if (!string.IsNullOrEmpty(transcodingContainer))
             {
-                string[] normalizedContainers = ContainerProfile.SplitValue(transcodingContainer);
-
-                if (ContainerProfile.ContainsContainer(normalizedContainers, "ts")
-                    || ContainerProfile.ContainsContainer(normalizedContainers, "mpegts")
-                    || ContainerProfile.ContainsContainer(normalizedContainers, "mp4"))
+                if (transcodingContainer.ContainsContainer("ts,mpegts,mp4"))
                 {
                     return false;
                 }
-                else if (ContainerProfile.ContainsContainer(normalizedContainers, "mkv")
-                    || ContainerProfile.ContainsContainer(normalizedContainers, "matroska"))
+                else if (transcodingContainer.ContainsContainer("mkv,matroska"))
                 {
                     return true;
                 }

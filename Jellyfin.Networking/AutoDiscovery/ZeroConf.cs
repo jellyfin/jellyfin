@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -56,8 +55,7 @@ namespace Jellyfin.Networking.AutoDiscovery
         /// </summary>
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -67,21 +65,23 @@ namespace Jellyfin.Networking.AutoDiscovery
         /// <param name="disposing"><c>True</c> if disposing.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_disposedValue)
             {
-                if (disposing)
-                {
-                    _configuration.NamedConfigurationUpdated -= ConfigurationUpdated;
-                    _logger.LogWarning("Shutting down auto discovery...");
-                    UdpHelper.DisposeClients(_udpProcess);
-                }
-
-                _disposedValue = true;
+                return;
             }
+
+            if (disposing)
+            {
+                _configuration.NamedConfigurationUpdated -= ConfigurationUpdated;
+                _logger.LogWarning("Shutting down auto discovery...");
+                _udpProcess.DisposeClients();
+            }
+
+            _disposedValue = true;
         }
 
         /// <summary>
-        /// Updates the zero config state.
+        /// Updates the zero configuration state.
         /// </summary>
         /// <param name="config">The <see cref="NetworkConfiguration"/>.</param>
         private void UpdateSettings(NetworkConfiguration config)
@@ -94,7 +94,7 @@ namespace Jellyfin.Networking.AutoDiscovery
                 }
 
                 _logger.LogWarning("Shutting down auto discovery...");
-                UdpHelper.DisposeClients(_udpProcess);
+                _udpProcess.DisposeClients();
                 return;
             }
 
@@ -148,7 +148,7 @@ namespace Jellyfin.Networking.AutoDiscovery
 
                 try
                 {
-                    await UdpHelper.SendUnicast(client, reply, receivedFrom).ConfigureAwait(false);
+                    await client.SendUnicast(reply, receivedFrom).ConfigureAwait(false);
                 }
                 catch (SocketException ex)
                 {

@@ -1,9 +1,10 @@
-#pragma warning disable CA1819 // Properties should not return arrays
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Net;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
@@ -17,83 +18,65 @@ namespace MediaBrowser.Model.Dlna
     /// as well as which <see cref="TranscodingProfiles">containers/codecs to transcode to</see> in case it isn't.
     /// </summary>
     [XmlRoot("Profile")]
-    public class DeviceProfile
+    public class DeviceProfile : DeviceIdentification
     {
         /// <summary>
-        /// Gets or sets the last IP address the profile was matched to.
+        /// String constants for the media types.
         /// </summary>
-        [XmlIgnore]
-        public IPAddress? Address { get; set; }
+        private const string AllMedia = "Audio,Video,Photo";
 
         /// <summary>
-        /// Gets or sets a value indicating whether DIDL should be encoded or left clear.
+        /// Holds the default profile lazy created by <see cref="DefaultProfile"/>.
         /// </summary>
-        public bool EncodeContextOnTransmission { get; set; }
+        private static DeviceProfile? _defaultProfile;
 
         /// <summary>
-        /// Gets or sets the name of this device profile.
+        /// Contains the parsed representation of <see cref="_supportedMediaTypeString"/>.
         /// </summary>
-        public string? Name { get; set; }
+        private DlnaProfileType[] _supportedMediaTypes = new[]
+        {
+            DlnaProfileType.Audio,
+            DlnaProfileType.Video,
+            DlnaProfileType.Photo
+        };
 
         /// <summary>
-        /// Gets or sets the Id.
+        /// Contains the string representation of <see cref="_supportedMediaTypes"/>.
         /// </summary>
-        [XmlIgnore]
-        public string? Id { get; set; }
+        private string _supportedMediaTypeString = AllMedia;
 
         /// <summary>
-        /// Gets or sets the Identification.
+        /// Gets or sets the identification information that is used to detect this device.
         /// </summary>
         public DeviceIdentification? Identification { get; set; }
 
         /// <summary>
-        /// Gets or sets the friendly name of the device profile, which can be shown to users.
+        /// Gets or sets the name of this device profile. User profiles must have a unique name.
         /// </summary>
-        public string? FriendlyName { get; set; }
+        public string Name { get; set; } = "Generic Device";
 
         /// <summary>
-        /// Gets or sets the manufacturer of the device which this profile represents.
+        /// Gets or sets a value indicating whether DIDL should be html encoded or left clear.
         /// </summary>
-        public string? Manufacturer { get; set; }
+        [DefaultValue(true)]
+        public bool EncodeContextOnTransmission { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets an url for the manufacturer of the device which this profile represents.
+        /// Gets or sets the unique internal identifier.
         /// </summary>
-        public string? ManufacturerUrl { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Gets or sets the model name of the device which this profile represents.
-        /// </summary>
-        public string? ModelName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the model description of the device which this profile represents.
-        /// </summary>
-        public string? ModelDescription { get; set; }
-
-        /// <summary>
-        /// Gets or sets the model number of the device which this profile represents.
-        /// </summary>
-        public string? ModelNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ModelUrl.
-        /// </summary>
-        public string? ModelUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the serial number of the device which this profile represents.
-        /// </summary>
-        public string? SerialNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether EnableAlbumArtInDidl.
+        /// Gets or sets a value indicating whether Album art should be included in the Didl response.
+        /// <seealso cref=" EnableSingleAlbumArtLimit"/>.
+        /// Only works with Audio and Video.
         /// </summary>
         [DefaultValue(false)]
         public bool EnableAlbumArtInDidl { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether EnableSingleAlbumArtLimit.
+        /// Gets or sets a value indicating whether only one image should be included in the Didl, or if multiple should.
+        /// Only applicable with audio and video.
         /// </summary>
         [DefaultValue(false)]
         public bool EnableSingleAlbumArtLimit { get; set; }
@@ -105,37 +88,51 @@ namespace MediaBrowser.Model.Dlna
         public bool EnableSingleSubtitleLimit { get; set; }
 
         /// <summary>
-        /// Gets or sets the SupportedMediaTypes.
+        /// Gets or sets the supported media types.
         /// </summary>
-        public string SupportedMediaTypes { get; set; } = "Audio,Photo,Video";
+        [DefaultValue(AllMedia)]
+        public string SupportedMediaTypes
+        {
+            get => _supportedMediaTypeString;
+            set
+            {
+                _supportedMediaTypeString = value ?? AllMedia;
+                _supportedMediaTypes = _supportedMediaTypeString
+                    .Split(',')
+                    .Select(i => Enum.Parse<DlnaProfileType>(i, true))
+                    .ToArray();
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the UserId.
+        /// Gets or sets the UserId that this device should use.
         /// </summary>
         public string? UserId { get; set; }
 
         /// <summary>
-        /// Gets or sets the AlbumArtPn.
+        /// Gets or sets the profileID attribute for the AlbumArtURI response.
         /// </summary>
         public string? AlbumArtPn { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxAlbumArtWidth.
+        /// Gets or sets the maximum album art width.
+        /// See also <seealso cref="MaxAlbumArtHeight"/>, <see cref="EnableSingleAlbumArtLimit"/>, <seealso cref="EnableAlbumArtInDidl"/>.
         /// </summary>
         public int? MaxAlbumArtWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxAlbumArtHeight.
+        /// Gets or sets the maximum album art height.
+        /// See also <seealso cref="MaxAlbumArtWidth"/>, <see cref="EnableSingleAlbumArtLimit"/>, <seealso cref="EnableAlbumArtInDidl"/>.
         /// </summary>
         public int? MaxAlbumArtHeight { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum allowed width of embedded icons.
+        /// Gets or sets the maximum allowed width of embedded icons. See also <seealso cref="MaxIconHeight"/>.
         /// </summary>
         public int? MaxIconWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum allowed height of embedded icons.
+        /// Gets or sets the maximum allowed height of embedded icons. See also <seealso cref="MaxIconWidth"/>.
         /// </summary>
         public int? MaxIconHeight { get; set; }
 
@@ -165,7 +162,7 @@ namespace MediaBrowser.Model.Dlna
         public string? SonyAggregationFlags { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProtocolInfo.
+        /// Gets or sets the ProtocolInfo settings reported by the device.
         /// </summary>
         public string? ProtocolInfo { get; set; }
 
@@ -173,22 +170,24 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets the TimelineOffsetSeconds.
         /// </summary>
         [DefaultValue(0)]
-        public int TimelineOffsetSeconds { get; set; }
+        public int TimelineOffsetSeconds { get; set; } // TODO: Not used anywhere but set in profiles.
 
         /// <summary>
-        /// Gets or sets a value indicating whether RequiresPlainVideoItems.
+        /// Gets or sets a value indicating whether all movie media types should be reported as
+        /// 'object.item.videoItem', or if appropriate, as 'object.item.videoItem.movie' or 'object.item.videoItem.musicVideoClip'.
         /// </summary>
         [DefaultValue(false)]
         public bool RequiresPlainVideoItems { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether RequiresPlainFolders.
+        /// Gets or sets a value indicating whether genre should be reported as 'object.container.storageFolder',
+        /// or if appropriate as 'object.container.genre.musicGenre' / 'object.container.genre'.
         /// </summary>
         [DefaultValue(false)]
         public bool RequiresPlainFolders { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether EnableMSMediaReceiverRegistrar.
+        /// Gets or sets a value indicating whether the MSMediaReceiverRegistrar service should be activated.
         /// </summary>
         [DefaultValue(false)]
         public bool EnableMSMediaReceiverRegistrar { get; set; }
@@ -197,25 +196,25 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets a value indicating whether IgnoreTranscodeByteRangeRequests.
         /// </summary>
         [DefaultValue(false)]
-        public bool IgnoreTranscodeByteRangeRequests { get; set; }
+        public bool IgnoreTranscodeByteRangeRequests { get; set; } // TODO: Not used anywhere but set in profiles.
 
         /// <summary>
-        /// Gets or sets the XmlRootAttributes.
+        /// Gets or sets the optional root attributes that will be included in the Didl response.
         /// </summary>
-        public XmlAttribute[] XmlRootAttributes { get; set; } = Array.Empty<XmlAttribute>();
+        public XmlAttribute[]? XmlRootAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the direct play profiles.
         /// </summary>
-        public DirectPlayProfile[] DirectPlayProfiles { get; set; } = Array.Empty<DirectPlayProfile>();
+        public DirectPlayProfile[]? DirectPlayProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the transcoding profiles.
         /// </summary>
-        public TranscodingProfile[] TranscodingProfiles { get; set; } = Array.Empty<TranscodingProfile>();
+        public TranscodingProfile[]? TranscodingProfiles { get; set; }
 
         /// <summary>
-        /// Gets or sets the container profiles.
+        /// Gets or sets the container profiles. Failing to meet these optional conditions causes transcoding to occur.
         /// </summary>
         public ContainerProfile[] ContainerProfiles { get; set; } = Array.Empty<ContainerProfile>();
 
@@ -225,9 +224,9 @@ namespace MediaBrowser.Model.Dlna
         public CodecProfile[] CodecProfiles { get; set; } = Array.Empty<CodecProfile>();
 
         /// <summary>
-        /// Gets or sets the ResponseProfiles.
+        /// Gets or sets the response profiles.
         /// </summary>
-        public ResponseProfile[] ResponseProfiles { get; set; } = Array.Empty<ResponseProfile>();
+        public ResponseProfile[]? ResponseProfiles { get; set; }
 
         /// <summary>
         /// Gets or sets the subtitle profiles.
@@ -235,12 +234,183 @@ namespace MediaBrowser.Model.Dlna
         public SubtitleProfile[] SubtitleProfiles { get; set; } = Array.Empty<SubtitleProfile>();
 
         /// <summary>
-        /// The GetSupportedMediaTypes.
+        /// Gets or sets the profile type.
         /// </summary>
-        /// <returns>The .</returns>
-        public string[] GetSupportedMediaTypes()
+        [XmlIgnore]
+        [JsonIgnore]
+        public DeviceProfileType ProfileType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional profile file path.
+        /// </summary>
+        [XmlIgnore]
+        [JsonIgnore]
+        public string? Path { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the default <see cref="DeviceProfile"/> class.
+        /// </summary>
+        /// <returns>A <see cref="DeviceProfile"/> set to the default profile.</returns>
+        public static DeviceProfile DefaultProfile()
         {
-            return ContainerProfile.SplitValue(SupportedMediaTypes);
+            const string Url = "https://github.com/jellyfin/jellyfin";
+
+            if (_defaultProfile == null)
+            {
+                _defaultProfile = new DeviceProfile()
+                {
+                    AlbumArtPn = "JPEG_SM",
+                    EnableAlbumArtInDidl = false,
+                    EncodeContextOnTransmission = true,
+                    Id = Guid.Empty,
+                    Manufacturer = "Jellyfin",
+                    ManufacturerUrl = Url,
+                    MaxAlbumArtHeight = 480,
+                    MaxAlbumArtWidth = 480,
+                    MaxIconHeight = 48,
+                    MaxIconWidth = 48,
+                    MaxStreamingBitrate = 140000000,
+                    ModelDescription = "UPnP/AV 1.0 Compliant Media Server",
+                    ModelName = "Jellyfin Server",
+                    ModelNumber = "01",
+                    ModelUrl = Url,
+                    MusicStreamingTranscodingBitrate = 192000,
+                    Name = "Default Profile",
+                    ProfileType = DeviceProfileType.SystemTemplate,
+                    ProtocolInfo = "http-get:*:video/mpeg:*,http-get:*:video/mp4:*,http-get:*:video/vnd.dlna.mpeg-tts:*,http-get:*:video/avi:*,http-get:*:video/x-matroska:*,http-get:*:video/x-ms-wmv:*,http-get:*:video/wtv:*,http-get:*:audio/mpeg:*,http-get:*:audio/mp3:*,http-get:*:audio/mp4:*,http-get:*:audio/x-ms-wma:*,http-get:*:audio/wav:*,http-get:*:audio/L16:*,http-get:*:image/jpeg:*,http-get:*:image/png:*,http-get:*:image/gif:*,http-get:*:image/tiff:*",
+                    TranscodingProfiles = new[]
+                    {
+                        new TranscodingProfile
+                        {
+                            Container = "mp3",
+                            AudioCodec = "mp3",
+                            Type = DlnaProfileType.Audio
+                        },
+                        new TranscodingProfile
+                        {
+                            Container = "ts",
+                            Type = DlnaProfileType.Video,
+                            AudioCodec = "aac",
+                            VideoCodec = "h264"
+                        },
+                        new TranscodingProfile
+                        {
+                            Container = "jpeg",
+                            Type = DlnaProfileType.Photo
+                        }
+                    },
+                    DirectPlayProfiles = new[]
+                    {
+                        new DirectPlayProfile
+                        {
+                            // play all
+                            Container = string.Empty,
+                            Type = DlnaProfileType.Video
+                        },
+
+                        new DirectPlayProfile
+                        {
+                            // play all
+                            Container = string.Empty,
+                            Type = DlnaProfileType.Audio
+                        }
+                    },
+                    SubtitleProfiles = new[]
+                    {
+                        new SubtitleProfile
+                        {
+                            Format = "srt",
+                            Method = SubtitleDeliveryMethod.External
+                        },
+
+                        new SubtitleProfile
+                        {
+                            Format = "sub",
+                            Method = SubtitleDeliveryMethod.External
+                        },
+                        new SubtitleProfile
+                        {
+                            Format = "srt",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+                        new SubtitleProfile
+                        {
+                            Format = "ass",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+                        new SubtitleProfile
+                        {
+                            Format = "ssa",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+
+                        new SubtitleProfile
+                        {
+                            Format = "smi",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+                        new SubtitleProfile
+                        {
+                            Format = "dvdsub",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+
+                        new SubtitleProfile
+                        {
+                            Format = "pgs",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+
+                        new SubtitleProfile
+                        {
+                            Format = "pgssub",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+
+                        new SubtitleProfile
+                        {
+                            Format = "sub",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+                        new SubtitleProfile
+                        {
+                            Format = "subrip",
+                            Method = SubtitleDeliveryMethod.Embed
+                        },
+                        new SubtitleProfile
+                        {
+                            Format = "vtt",
+                            Method = SubtitleDeliveryMethod.Embed
+                        }
+                    },
+                    ResponseProfiles = new[]
+                    {
+                        new ResponseProfile
+                        {
+                            Container = "m4v",
+                            Type = DlnaProfileType.Video,
+                            MimeType = "video/mp4"
+                        }
+                    }
+                };
+            }
+
+            return _defaultProfile;
+        }
+
+        /// <summary>
+        /// Verifies that the device supports this type of media.
+        /// </summary>
+        /// <param name="type">Media type.</param>
+        /// <returns>True if the profile supports the media type.</returns>
+        public bool IsMediaTypeSupported(string type)
+        {
+            if (!Enum.TryParse<DlnaProfileType>(type, true, out var mediaType))
+            {
+                return false;
+            }
+
+            return _supportedMediaTypes.Contains(mediaType);
         }
 
         /// <summary>
@@ -251,26 +421,23 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>A <see cref="TranscodingProfile"/>.</returns>
         public TranscodingProfile? GetAudioTranscodingProfile(string? container, string? audioCodec)
         {
-            container = (container ?? string.Empty).TrimStart('.');
-
-            foreach (var i in TranscodingProfiles)
+            if (TranscodingProfiles == null)
             {
-                if (i.Type != DlnaProfileType.Audio)
-                {
-                    continue;
-                }
+                return null;
+            }
 
-                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
+            container = container?.TrimStart('.');
 
-                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
+            for (int i = 0; i < TranscodingProfiles.Length; i++)
+            {
+                var profile = TranscodingProfiles[i];
 
-                return i;
+                if ((profile.Type == DlnaProfileType.Audio)
+                    && string.Equals(container, profile.Container, StringComparison.OrdinalIgnoreCase)
+                    && (profile.AudioCodec?.ContainsContainer(audioCodec) ?? true))
+                {
+                    return profile;
+                }
             }
 
             return null;
@@ -285,31 +452,23 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>The <see cref="TranscodingProfile"/>.</returns>
         public TranscodingProfile? GetVideoTranscodingProfile(string? container, string? audioCodec, string? videoCodec)
         {
-            container = (container ?? string.Empty).TrimStart('.');
-
-            foreach (var i in TranscodingProfiles)
+            if (TranscodingProfiles == null)
             {
-                if (i.Type != DlnaProfileType.Video)
-                {
-                    continue;
-                }
+                return null;
+            }
 
-                if (!string.Equals(container, i.Container, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
+            container = container?.TrimStart('.');
 
-                if (!i.GetAudioCodecs().Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            for (int i = 0; i < TranscodingProfiles.Length; i++)
+            {
+                var profile = TranscodingProfiles[i];
+                if ((profile.Type == DlnaProfileType.Video)
+                    && string.Equals(container, profile.Container, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(videoCodec, profile.VideoCodec, StringComparison.OrdinalIgnoreCase)
+                    && (profile.AudioCodec?.ContainsContainer(audioCodec) ?? true))
                 {
-                    continue;
+                    return profile;
                 }
-
-                if (!string.Equals(videoCodec, i.VideoCodec, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                return i;
             }
 
             return null;
@@ -325,61 +484,52 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="audioSampleRate">The audio sample rate.</param>
         /// <param name="audioBitDepth">The audio bit depth.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
-        public ResponseProfile? GetAudioMediaProfile(string container, string? audioCodec, int? audioChannels, int? audioBitrate, int? audioSampleRate, int? audioBitDepth)
+        public ResponseProfile? GetAudioMediaProfile(
+            string container,
+            string? audioCodec,
+            int? audioChannels,
+            int? audioBitrate,
+            int? audioSampleRate,
+            int? audioBitDepth)
         {
-            foreach (var i in ResponseProfiles)
+            if (ResponseProfiles == null)
             {
-                if (i.Type != DlnaProfileType.Audio)
-                {
-                    continue;
-                }
+                return null;
+            }
 
-                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
-                {
-                    continue;
-                }
+            for (int i = 0; i < ResponseProfiles.Length; i++)
+            {
+                var profile = ResponseProfiles[i];
 
-                var audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if ((profile.Type == DlnaProfileType.Audio)
+                    && profile.Container.ContainsContainer(container)
+                    && (profile.AudioCodec?.ContainsContainer(audioCodec) ?? true))
                 {
-                    continue;
-                }
-
-                var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
-                {
-                    if (!ConditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
+                    bool anyOf = false;
+                    for (int j = 0; j < profile.Conditions.Length; j++)
                     {
-                        anyOff = true;
-                        break;
+                        if (ConditionProcessor.IsAudioConditionSatisfied(
+                            profile.Conditions[j],
+                            audioChannels,
+                            audioBitrate,
+                            audioSampleRate,
+                            audioBitDepth))
+                        {
+                            anyOf = true;
+                            break;
+                        }
                     }
-                }
 
-                if (anyOff)
-                {
-                    continue;
-                }
+                    if (anyOf)
+                    {
+                        continue;
+                    }
 
-                return i;
+                    return profile;
+                }
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the model profile condition.
-        /// </summary>
-        /// <param name="c">The c<see cref="ProfileCondition"/>.</param>
-        /// <returns>The <see cref="ProfileCondition"/>.</returns>
-        private ProfileCondition GetModelProfileCondition(ProfileCondition c)
-        {
-            return new ProfileCondition
-            {
-                Condition = c.Condition,
-                IsRequired = c.IsRequired,
-                Property = c.Property,
-                Value = c.Value
-            };
         }
 
         /// <summary>
@@ -391,34 +541,33 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
         public ResponseProfile? GetImageMediaProfile(string container, int? width, int? height)
         {
-            foreach (var i in ResponseProfiles)
+            if (ResponseProfiles == null)
             {
-                if (i.Type != DlnaProfileType.Photo)
-                {
-                    continue;
-                }
+                return null;
+            }
 
-                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
+            for (int i = 0; i < ResponseProfiles.Length; i++)
+            {
+                var profile = ResponseProfiles[i];
+                if ((profile.Type == DlnaProfileType.Photo) && profile.Container.ContainsContainer(container))
                 {
-                    continue;
-                }
-
-                var anyOff = false;
-                foreach (var c in i.Conditions)
-                {
-                    if (!ConditionProcessor.IsImageConditionSatisfied(GetModelProfileCondition(c), width, height))
+                    var anyOf = false;
+                    for (int j = 0; j < profile.Conditions.Length; j++)
                     {
-                        anyOff = true;
-                        break;
+                        if (ConditionProcessor.IsImageConditionSatisfied(profile.Conditions[j], width, height))
+                        {
+                            anyOf = true;
+                            break;
+                        }
                     }
-                }
 
-                if (anyOff)
-                {
-                    continue;
-                }
+                    if (anyOf)
+                    {
+                        continue;
+                    }
 
-                return i;
+                    return profile;
+                }
             }
 
             return null;
@@ -438,7 +587,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="videoLevel">The video level.</param>
         /// <param name="videoFramerate">The video framerate.</param>
         /// <param name="packetLength">The packet length.</param>
-        /// <param name="timestamp">The timestamp<see cref="TransportStreamTimestamp"/>.</param>
+        /// <param name="timestamp">The <see cref="TransportStreamTimestamp"/>.</param>
         /// <param name="isAnamorphic">True if anamorphic.</param>
         /// <param name="isInterlaced">True if interlaced.</param>
         /// <param name="refFrames">The ref frames.</param>
@@ -468,46 +617,53 @@ namespace MediaBrowser.Model.Dlna
             string? videoCodecTag,
             bool? isAvc)
         {
-            foreach (var i in ResponseProfiles)
+            if (ResponseProfiles == null)
             {
-                if (i.Type != DlnaProfileType.Video)
-                {
-                    continue;
-                }
+                return null;
+            }
 
-                if (!ContainerProfile.ContainsContainer(i.GetContainers(), container))
+            for (int i = 0; i < ResponseProfiles.Length; i++)
+            {
+                var profile = ResponseProfiles[i];
+                if ((profile.Type == DlnaProfileType.Video)
+                    && profile.Container.ContainsContainer(container)
+                    && (profile.AudioCodec?.ContainsContainer(audioCodec) ?? true)
+                    && (profile.VideoCodec?.ContainsContainer(videoCodec) ?? true))
                 {
-                    continue;
-                }
-
-                var audioCodecs = i.GetAudioCodecs();
-                if (audioCodecs.Length > 0 && !audioCodecs.Contains(audioCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var videoCodecs = i.GetVideoCodecs();
-                if (videoCodecs.Length > 0 && !videoCodecs.Contains(videoCodec ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var anyOff = false;
-                foreach (ProfileCondition c in i.Conditions)
-                {
-                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                    var anyOf = false;
+                    for (int j = 0; j < profile.Conditions.Length; j++)
                     {
-                        anyOff = true;
-                        break;
+                        if (ConditionProcessor.IsVideoConditionSatisfied(
+                            profile.Conditions[j],
+                            width,
+                            height,
+                            bitDepth,
+                            videoBitrate,
+                            videoProfile,
+                            videoLevel,
+                            videoFramerate,
+                            packetLength,
+                            timestamp,
+                            isAnamorphic,
+                            isInterlaced,
+                            refFrames,
+                            numVideoStreams,
+                            numAudioStreams,
+                            videoCodecTag,
+                            isAvc))
+                        {
+                            anyOf = true;
+                            break;
+                        }
                     }
-                }
 
-                if (anyOff)
-                {
-                    continue;
-                }
+                    if (anyOf)
+                    {
+                        continue;
+                    }
 
-                return i;
+                    return profile;
+                }
             }
 
             return null;

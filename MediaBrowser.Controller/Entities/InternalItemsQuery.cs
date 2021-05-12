@@ -267,6 +267,11 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsDeadPerson { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether album sub-folders should be returned if they exist.
+        /// </summary>
+        public bool? DisplayAlbumFolders { get; set; }
+
         public InternalItemsQuery()
         {
             AlbumArtistIds = Array.Empty<Guid>();
