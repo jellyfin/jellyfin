@@ -172,8 +172,8 @@ namespace MediaBrowser.Providers.Studios
 
         public IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read));
-            using (var reader = new StreamReader(fileStream));
+            using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new StreamReader(fileStream);
             var lines = new List<string>();
 
             foreach (var line in reader.ReadAllLines())
@@ -182,11 +182,6 @@ namespace MediaBrowser.Providers.Studios
                 {
                     lines.Add(line);
                 }
-            }
-
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                lines.Add(text);
             }
 
             return lines;
