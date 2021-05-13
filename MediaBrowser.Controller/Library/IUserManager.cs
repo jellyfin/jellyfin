@@ -76,6 +76,16 @@ namespace MediaBrowser.Controller.Library
         Task UpdateUserAsync(User user);
 
         /// <summary>
+        /// Creates a user with the specified name and ID.
+        /// </summary>
+        /// <param name="name">The name of the new user.</param>
+        /// <param name="id">Optional: The id of the new user. May be empty.</param>
+        /// <returns>The created user.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="name"/> already exists.</exception>
+        Task<User> CreateUserAsync(string name, Guid id);
+
+        /// <summary>
         /// Creates a user with the specified name.
         /// </summary>
         /// <param name="name">The name of the new user.</param>
