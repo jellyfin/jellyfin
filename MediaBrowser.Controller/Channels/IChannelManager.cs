@@ -51,32 +51,47 @@ namespace MediaBrowser.Controller.Channels
         /// Gets the channels internal.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <returns>The <see cref="QueryResult{T}"/> of <see cref="Channel"/>.</returns>
         QueryResult<Channel> GetChannelsInternal(ChannelQuery query);
 
         /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <returns>The <see cref="QueryResult{T}"/> of <see cref="BaseItemDto"/>.</returns>
         QueryResult<BaseItemDto> GetChannels(ChannelQuery query);
 
         /// <summary>
-        /// Gets the latest media.
+        /// Gets the latest channel items.
         /// </summary>
+        /// <param name="query">The item query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> containing the <see cref="QueryResult{T}"/> of <see cref="BaseItemDto"/>.</returns>
         Task<QueryResult<BaseItemDto>> GetLatestChannelItems(InternalItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the latest media.
+        /// Gets the latest channel items.
         /// </summary>
+        /// <param name="query">The item query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> containing the <see cref="QueryResult{T}"/> of <see cref="BaseItem"/>.</returns>
         Task<QueryResult<BaseItem>> GetLatestChannelItemsInternal(InternalItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel items.
         /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> containing the <see cref="QueryResult{T}"/> of <see cref="BaseItemDto"/>.</returns>
         Task<QueryResult<BaseItemDto>> GetChannelItems(InternalItemsQuery query, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the channel items internal.
+        /// Gets the channel items.
         /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="progress">The progress to report to.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> containing the <see cref="QueryResult{T}"/> of <see cref="BaseItem"/>.</returns>
         Task<QueryResult<BaseItem>> GetChannelItemsInternal(InternalItemsQuery query, IProgress<double> progress, CancellationToken cancellationToken);
 
         /// <summary>
@@ -87,6 +102,11 @@ namespace MediaBrowser.Controller.Channels
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
         IEnumerable<MediaSourceInfo> GetStaticMediaSources(BaseItem item, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Whether the item supports media probe.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>Whether media probe should be enabled.</returns>
         bool EnableMediaProbe(BaseItem item);
     }
 }

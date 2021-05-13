@@ -43,6 +43,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
         /// </summary>
+        /// <param name="files">The list of tiles.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        /// <param name="parent">The parent folder.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="collectionType">The collection type.</param>
+        /// <returns>The list of <see cref="BaseItem"/>.</returns>
         IEnumerable<BaseItem> ResolvePaths(
             IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,

@@ -22,7 +22,8 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static string[] SupportedExtensions =
+        public static readonly IReadOnlyList<string> SupportedExtensions =
+            new[]
             {
                 ".m3u",
                 ".m3u8",

@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers
 
         /// <summary>
         /// Gets or sets a value indicating whether all existing data should be overwritten with new data from providers
-        /// when paired with MetadataRefreshMode=FullRefresh
+        /// when paired with MetadataRefreshMode=FullRefresh.
         /// </summary>
         public bool ReplaceAllMetadata { get; set; }
 

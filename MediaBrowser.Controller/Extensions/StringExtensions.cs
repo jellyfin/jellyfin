@@ -33,7 +33,7 @@ namespace MediaBrowser.Controller.Extensions
                 {
                     // will throw if input contains invalid unicode chars
                     // https://mnaoumov.wordpress.com/2014/06/14/stripping-invalid-characters-from-utf-16-strings/
-                    text = Regex.Replace(text, "([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])", "");
+                    text = Regex.Replace(text, "([\ud800-\udbff](?![\udc00-\udfff]))|((?<![\ud800-\udbff])[\udc00-\udfff])", string.Empty);
                     return Normalize(text, form, false);
                 }
             }

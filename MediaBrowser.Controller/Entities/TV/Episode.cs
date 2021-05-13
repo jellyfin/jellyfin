@@ -34,7 +34,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
-        /// Gets the season in which it aired.
+        /// Gets or sets the season in which it aired.
         /// </summary>
         /// <value>The aired season.</value>
         public int? AirsBeforeSeasonNumber { get; set; }
@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public int? AirsBeforeEpisodeNumber { get; set; }
 
         /// <summary>
-        /// This is the ending episode number for double episodes.
+        /// Gets or sets the ending episode number for double episodes.
         /// </summary>
         /// <value>The index number.</value>
         public int? IndexNumberEnd { get; set; }
@@ -116,7 +116,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This Episode's Series Instance.
+        /// Gets the Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -261,6 +261,7 @@ namespace MediaBrowser.Controller.Entities.TV
 
         [JsonIgnore]
         public Guid SeasonId { get; set; }
+
         [JsonIgnore]
         public Guid SeriesId { get; set; }
 
@@ -318,9 +319,9 @@ namespace MediaBrowser.Controller.Entities.TV
             return id;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!IsLocked)
             {
@@ -328,7 +329,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     try
                     {
-                        if (LibraryManager.FillMissingEpisodeNumbersFromPath(this, replaceAllMetdata))
+                        if (LibraryManager.FillMissingEpisodeNumbersFromPath(this, replaceAllMetadata))
                         {
                             hasChanges = true;
                         }

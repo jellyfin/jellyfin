@@ -23,6 +23,7 @@ namespace MediaBrowser.Controller.Entities
     {
         private List<Guid> _childrenIds = null;
         private readonly object _childIdsLock = new object();
+
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
@@ -87,10 +88,10 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             ClearCache();
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
             {

@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 
 #pragma warning disable CS1591
 
@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Channels
 {
-    public interface ISearchableChannel
+    public interface ISupportsLatestMedia
     {
         /// <summary>
-        /// Searches the specified search term.
+        /// Gets the latest media.
         /// </summary>
-        /// <param name="searchInfo">The search information.</param>
+        /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{ChannelItemInfo}}.</returns>
-        Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, CancellationToken cancellationToken);
+        Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken);
     }
 }
