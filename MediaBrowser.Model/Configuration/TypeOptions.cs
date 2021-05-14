@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Configuration
 {

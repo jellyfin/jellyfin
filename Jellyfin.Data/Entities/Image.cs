@@ -9,14 +9,14 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity representing artwork.
     /// </summary>
-    public class Artwork : IHasConcurrencyToken
+    public class Image : IHasConcurrencyToken
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Artwork"/> class.
+        /// Initializes a new instance of the <see cref="Image"/> class.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="kind">The kind of art.</param>
-        public Artwork(string path, ArtKind kind)
+        /// <param name="type">The image type.</param>
+        public Image(string path, ImageType type)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -24,7 +24,7 @@ namespace Jellyfin.Data.Entities.Libraries
             }
 
             Path = path;
-            Kind = kind;
+            Type = type;
         }
 
         /// <summary>
@@ -37,6 +37,11 @@ namespace Jellyfin.Data.Entities.Libraries
         public int Id { get; private set; }
 
         /// <summary>
+        /// Gets the user id.
+        /// </summary>
+        public Guid? UserId { get; private set; }
+
+        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <remarks>
@@ -47,12 +52,13 @@ namespace Jellyfin.Data.Entities.Libraries
         public string Path { get; set; }
 
         /// <summary>
-        /// Gets or sets the kind of artwork.
+        /// Gets or sets the image type.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        public ArtKind Kind { get; set; }
+        [Required]
+        public ImageType Type { get; set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]

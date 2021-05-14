@@ -1,4 +1,4 @@
-namespace MediaBrowser.Model.Entities
+namespace Jellyfin.Data.Enums
 {
     /// <summary>
     /// Enum ImageType.

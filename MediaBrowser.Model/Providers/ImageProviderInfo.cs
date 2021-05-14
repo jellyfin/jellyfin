@@ -1,4 +1,4 @@
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Providers
 {

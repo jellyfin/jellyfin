@@ -2,7 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Channels
