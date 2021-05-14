@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Models.DisplayPreferencesDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -84,8 +85,8 @@ namespace Jellyfin.Api.Controllers
             dto.CustomPrefs["skipForwardLength"] = displayPreferences.SkipForwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
-            dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
-            dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
+            dto.CustomPrefs["tvhome"] = displayPreferences.TvHome ?? string.Empty;
+            dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme ?? string.Empty;
 
             // Load all custom display preferences
             var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
@@ -196,7 +197,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, itemId, existingDisplayPreferences.Client);
-            itemPrefs.SortBy = displayPreferences.SortBy;
+            itemPrefs.SortBy = displayPreferences.SortBy ?? string.Empty;
             itemPrefs.SortOrder = displayPreferences.SortOrder;
             itemPrefs.RememberIndexing = displayPreferences.RememberIndexing;
             itemPrefs.RememberSorting = displayPreferences.RememberSorting;
