@@ -20,7 +20,7 @@ namespace Jellyfin.Data.Entities.Libraries
         {
             Type = type;
             Person = person;
-            Artwork = new HashSet<Artwork>();
+            Artwork = new HashSet<Image>();
             Sources = new HashSet<MetadataProviderId>();
         }
 
@@ -64,7 +64,7 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual Person Person { get; set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Artwork> Artwork { get; private set; }
+        public virtual ICollection<Image> Artwork { get; private set; }
 
         /// <summary>
         /// Gets a collection containing the metadata sources for this person role.

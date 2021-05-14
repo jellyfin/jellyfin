@@ -1,7 +1,7 @@
 #nullable disable
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.Dto
 {
