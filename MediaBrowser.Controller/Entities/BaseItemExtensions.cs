@@ -2,7 +2,7 @@
 
 using System;
 using System.Linq;
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.Entities

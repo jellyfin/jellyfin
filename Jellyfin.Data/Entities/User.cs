@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Interfaces;
 
@@ -297,7 +298,7 @@ namespace Jellyfin.Data.Entities
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
         // [ForeignKey("UserId")]
-        public virtual ImageInfo? ProfileImage { get; set; }
+        public virtual Image? ProfileImage { get; set; }
 
         /// <summary>
         /// Gets the user's display preferences.
