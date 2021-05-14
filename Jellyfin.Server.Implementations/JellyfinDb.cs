@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,8 +39,6 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
 
-        public virtual DbSet<ImageInfo> ImageInfos { get; set; }
-
         public virtual DbSet<ItemDisplayPreferences> ItemDisplayPreferences { get; set; }
 
         public virtual DbSet<CustomItemDisplayPreferences> CustomItemDisplayPreferences { get; set; }
@@ -50,9 +49,9 @@ namespace Jellyfin.Server.Implementations
 
         public virtual DbSet<User> Users { get; set; }
 
-        /*public virtual DbSet<Artwork> Artwork { get; set; }
+        public virtual DbSet<Image> Images { get; set; }
 
-        public virtual DbSet<Book> Books { get; set; }
+        /*public virtual DbSet<Book> Books { get; set; }
 
         public virtual DbSet<BookMetadata> BookMetadata { get; set; }
 
@@ -193,6 +192,11 @@ namespace Jellyfin.Server.Implementations
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.ItemDisplayPreferences)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.ProfileImage)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
 

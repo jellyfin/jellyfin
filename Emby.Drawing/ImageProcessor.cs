@@ -434,7 +434,7 @@ namespace Emby.Drawing
                 return null;
             }
 
-            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+            return (user.ProfileImage.Path + user.ProfileImage.LastModifiedDate.Ticks).GetMD5()
                 .ToString("N", CultureInfo.InvariantCulture);
         }
 
