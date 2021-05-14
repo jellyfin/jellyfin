@@ -10,8 +10,6 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 

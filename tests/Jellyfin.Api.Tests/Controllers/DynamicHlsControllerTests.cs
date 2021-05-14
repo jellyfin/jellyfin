@@ -1,13 +1,6 @@
 using System;
 using System.Collections.Generic;
-using AutoFixture;
-using AutoFixture.AutoMoq;
 using Jellyfin.Api.Controllers;
-using Jellyfin.Api.Helpers;
-using Jellyfin.Api.Models.StreamingDtos;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.Api.Tests.Controllers
