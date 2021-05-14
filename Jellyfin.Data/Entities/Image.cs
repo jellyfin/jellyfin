@@ -25,6 +25,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Path = path;
             Type = type;
+            LastModified = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -42,25 +43,37 @@ namespace Jellyfin.Data.Entities.Libraries
         public Guid? UserId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the path.
+        /// Gets the path.
         /// </summary>
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         /// <summary>
-        /// Gets or sets the image type.
+        /// Gets the image type.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
-        public ImageType Type { get; set; }
+        public ImageType Type { get; private set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets the blurhash string.
+        /// </summary>
+        public string? Blurhash { get; private set; }
+
+        /// <summary>
+        /// Gets the date last modified.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public DateTime LastModified { get; private set; }
+
+        /// <inheritdoc/>
         [ConcurrencyCheck]
         public uint RowVersion { get; private set; }
 

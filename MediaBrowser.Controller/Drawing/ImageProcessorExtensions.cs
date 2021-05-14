@@ -2,8 +2,8 @@
 
 #pragma warning disable CS1591
 
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Drawing
 {

@@ -4,7 +4,7 @@
 
 using System;
 using System.Linq;
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Controller.Providers
 {
