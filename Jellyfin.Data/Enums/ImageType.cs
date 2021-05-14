@@ -8,66 +8,66 @@ namespace Jellyfin.Data.Enums
         /// <summary>
         /// The primary.
         /// </summary>
-        Primary = 0,
+        Primary,
 
         /// <summary>
         /// The art.
         /// </summary>
-        Art = 1,
+        Art,
 
         /// <summary>
         /// The backdrop.
         /// </summary>
-        Backdrop = 2,
+        Backdrop,
 
         /// <summary>
         /// The banner.
         /// </summary>
-        Banner = 3,
+        Banner,
 
         /// <summary>
         /// The logo.
         /// </summary>
-        Logo = 4,
+        Logo,
 
         /// <summary>
         /// The thumb.
         /// </summary>
-        Thumb = 5,
+        Thumb,
 
         /// <summary>
         /// The disc.
         /// </summary>
-        Disc = 6,
+        Disc,
 
         /// <summary>
         /// The box.
         /// </summary>
-        Box = 7,
+        Box,
 
         /// <summary>
         /// The screenshot.
         /// </summary>
-        Screenshot = 8,
+        Screenshot,
 
         /// <summary>
         /// The menu.
         /// </summary>
-        Menu = 9,
+        Menu,
 
         /// <summary>
         /// The chapter image.
         /// </summary>
-        Chapter = 10,
+        Chapter,
 
         /// <summary>
         /// The box rear.
         /// </summary>
-        BoxRear = 11,
+        BoxRear,
 
         /// <summary>
         /// The user profile image.
         /// </summary>
-        Profile = 12
+        Profile
     }
 }

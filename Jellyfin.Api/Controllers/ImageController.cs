@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
@@ -113,7 +114,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+            user.ProfileImage = new Image(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -160,7 +161,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
+            user.ProfileImage = new Image(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -1552,7 +1553,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Path = user.ProfileImage.Path,
                 Type = ImageType.Profile,
-                DateModified = user.ProfileImage.LastModified
+                DateModified = user.ProfileImage.LastModifiedDate
             };
 
             if (width.HasValue)
@@ -1654,7 +1655,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Path = user.ProfileImage.Path,
                 Type = ImageType.Profile,
-                DateModified = user.ProfileImage.LastModified
+                DateModified = user.ProfileImage.LastModifiedDate
             };
 
             if (width.HasValue)

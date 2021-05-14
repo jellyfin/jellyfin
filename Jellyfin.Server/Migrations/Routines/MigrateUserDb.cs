@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
@@ -135,10 +136,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         ItemImageInfo info = mockup.ImageInfos[0];
 
-                        user.ProfileImage = new ImageInfo(info.Path)
-                        {
-                            LastModified = info.DateModified
-                        };
+                        user.ProfileImage = new Image(info.Path, info.DateModified);
                     }
 
                     user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);

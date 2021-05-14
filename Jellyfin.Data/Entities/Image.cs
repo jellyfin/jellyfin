@@ -7,16 +7,16 @@ using Jellyfin.Data.Interfaces;
 namespace Jellyfin.Data.Entities.Libraries
 {
     /// <summary>
-    /// An entity representing artwork.
+    /// An entity representing a single image.
     /// </summary>
     public class Image : IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Image"/> class.
         /// </summary>
-        /// <param name="path">The path.</param>
+        /// <param name="path">The path of the image.</param>
         /// <param name="type">The image type.</param>
-        public Image(string path, ImageType type)
+        public Image(string path, ImageType type = ImageType.Primary)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -25,7 +25,18 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Path = path;
             Type = type;
-            LastModified = DateTime.UtcNow;
+            AddedDate = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Image"/> class.
+        /// </summary>
+        /// <param name="path">The path of the image.</param>
+        /// <param name="type">The image type.</param>
+        /// <param name="lastModifiedDate">The last modification date.</param>
+        public Image(string path, DateTime lastModifiedDate, ImageType type = ImageType.Primary) : this(path, type)
+        {
+            LastModifiedDate = lastModifiedDate;
         }
 
         /// <summary>
@@ -36,11 +47,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets the user id.
-        /// </summary>
-        public Guid? UserId { get; private set; }
 
         /// <summary>
         /// Gets the path.
@@ -71,7 +77,22 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        public DateTime LastModified { get; private set; }
+        public DateTime LastModifiedDate { get; private set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Gets the date when the image was added to the database.
+        /// </summary>
+        public DateTime AddedDate { get; private set; }
+
+        /// <summary>
+        /// Gets the creation date of the file.
+        /// </summary>
+        public DateTime? FileCreationDate { get; private set; }
+
+        /// <summary>
+        /// Gets the modification date of the file.
+        /// </summary>
+        public DateTime? FileModificationDate { get; private set; }
 
         /// <inheritdoc/>
         [ConcurrencyCheck]
@@ -80,6 +101,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <inheritdoc />
         public void OnSavingChanges()
         {
+            LastModifiedDate = DateTime.UtcNow;
             RowVersion++;
         }
     }
