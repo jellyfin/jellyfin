@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using Jellyfin.Data.Entities.Libraries;
+using Jellyfin.Data.Entities;
 
 namespace Jellyfin.Data.Interfaces
 {
     /// <summary>
     /// An interface abstracting an entity that has artwork.
     /// </summary>
-    public interface IHasArtwork
+    public interface IHasImage
     {
         /// <summary>
         /// Gets a collection containing this entity's artwork.
         /// </summary>
-        ICollection<Image> Artwork { get; }
+        ICollection<Image> Image { get; }
     }
 }

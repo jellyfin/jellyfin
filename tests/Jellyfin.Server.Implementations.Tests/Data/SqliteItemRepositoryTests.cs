@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Server.Implementations.Data;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;

@@ -9,7 +9,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An entity representing a person's role in media.
     /// </summary>
-    public class PersonRole : IHasArtwork, IHasConcurrencyToken
+    public class PersonRole : IHasImage, IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonRole"/> class.
@@ -20,7 +20,7 @@ namespace Jellyfin.Data.Entities.Libraries
         {
             Type = type;
             Person = person;
-            Artwork = new HashSet<Image>();
+            Image = new HashSet<Image>();
             Sources = new HashSet<MetadataProviderId>();
         }
 
@@ -64,7 +64,7 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual Person Person { get; set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Image> Artwork { get; private set; }
+        public virtual ICollection<Image> Image { get; private set; }
 
         /// <summary>
         /// Gets a collection containing the metadata sources for this person role.
