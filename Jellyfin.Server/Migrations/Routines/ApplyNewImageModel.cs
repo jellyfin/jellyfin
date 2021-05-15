@@ -4,6 +4,7 @@ using System.Linq;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities.Libraries;
+using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using Microsoft.EntityFrameworkCore;
@@ -74,7 +75,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 {
                     var userId = new Guid(row[3].ToString());
                     var user = dbContext.Users.Single(u => u.Id == userId);
-                    user.ProfileImage = new Image(row[2].ToString(), row[1].ReadDateTime());
+                    user.ProfileImage = new Image(row[2].ToString(), row[1].ReadDateTime(), ImageType.Profile);
                     _logger.LogInformation("User '" + user.Username + "' migrated to new image model successfully");
                 }
             }
