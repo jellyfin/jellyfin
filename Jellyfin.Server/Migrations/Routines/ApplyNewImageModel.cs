@@ -6,6 +6,7 @@ using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -16,12 +17,13 @@ namespace Jellyfin.Server.Migrations.Routines
     /// </summary>
     public class ApplyNewImageModel : IMigrationRoutine
     {
+        private const string DbFilename = "jellyfin.db";
+
         private readonly ILogger<ApplyNewImageModel> _logger;
         private readonly IServerApplicationPaths _paths;
         private readonly JellyfinDbProvider _provider;
         private readonly MyXmlSerializer _xmlSerializer;
 
-        private const string DbFilename = "jellyfin.db";
         private string dataPath;
 
         /// <summary>
@@ -55,16 +57,15 @@ namespace Jellyfin.Server.Migrations.Routines
 
         private void DropTable()
         {
+            using var dbContext = _provider.CreateContext();
             _logger.LogInformation("Dropping ImageInfos table...");
-            using (var connection = SQLite3.Open(Path.Combine(dataPath, DbFilename), ConnectionFlags.ReadWrite, null))
-            {
-                connection.Execute("DROP TABLE ImageInfos");
-            }
+            dbContext.Database.ExecuteSqlRaw("DROP TABLE ImageInfos");
+            dbContext.SaveChanges();
         }
 
         private void MoveToNewTable()
         {
-            var dbContext = _provider.CreateContext();
+            using var dbContext = _provider.CreateContext();
             using (var connection = SQLite3.Open(Path.Combine(dataPath, DbFilename), ConnectionFlags.ReadOnly, null))
             {
                 var queryResult = connection.Query("SELECT * FROM ImageInfos");
