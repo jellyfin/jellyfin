@@ -136,7 +136,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         ItemImageInfo info = mockup.ImageInfos[0];
 
-                        user.ProfileImage = new Image(info.Path, info.DateModified);
+                        user.ProfileImage = new Image(info.Path, info.DateModified, ImageType.Profile);
                     }
 
                     user.SetPermission(PermissionKind.IsAdministrator, policy.IsAdministrator);
