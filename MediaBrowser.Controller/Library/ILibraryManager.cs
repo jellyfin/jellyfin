@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent folder.</param>
         /// <param name="libraryOptions">The library options.</param>
         /// <param name="collectionType">The collection type.</param>
-        /// <returns>The list of <see cref="BaseItem"/>.</returns>
+        /// <returns>The items resolved from the paths.</returns>
         IEnumerable<BaseItem> ResolvePaths(
             IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,

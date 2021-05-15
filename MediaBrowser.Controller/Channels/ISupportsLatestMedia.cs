@@ -15,7 +15,7 @@ namespace MediaBrowser.Controller.Channels
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{ChannelItemInfo}}.</returns>
+        /// <returns>The latest media.</returns>
         Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken);
     }
 }

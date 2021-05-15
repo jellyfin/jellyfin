@@ -22,15 +22,14 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static readonly IReadOnlyList<string> SupportedExtensions =
-            new[]
-            {
-                ".m3u",
-                ".m3u8",
-                ".pls",
-                ".wpl",
-                ".zpl"
-            };
+        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
+        {
+            ".m3u",
+            ".m3u8",
+            ".pls",
+            ".wpl",
+            ".zpl"
+        };
 
         public Guid OwnerUserId { get; set; }
 

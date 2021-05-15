@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.Dto
         /// <param name="options">The dto options.</param>
         /// <param name="taggedItems">The list of tagged items.</param>
         /// <param name="user">The user.</param>
-        /// <returns>The <see cref="BaseItemDto"/>.</returns>
+        /// <returns>The item dto.</returns>
         BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null);
     }
 }

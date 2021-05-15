@@ -16,7 +16,7 @@ namespace MediaBrowser.Controller.TV
         /// </summary>
         /// <param name="query">The next up query.</param>
         /// <param name="options">The dto options.</param>
-        /// <returns>The query result of <see cref="BaseItem"/>.</returns>
+        /// <returns>The next up items.</returns>
         QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options);
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace MediaBrowser.Controller.TV
         /// <param name="request">The next up request.</param>
         /// <param name="parentsFolders">The list of parent folders.</param>
         /// <param name="options">The dto options.</param>
-        /// <returns>The query result of <see cref="BaseItem"/>.</returns>
+        /// <returns>The next up items.</returns>
         QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options);
     }
 }
