@@ -36,8 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Jellyfin.Api/Jellyfin.Api.csproj" />
-    <ProjectReference Include="../../Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />
-    <ProjectReference Include="..\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj" />
+    <ProjectReference Include="../../Jellyfin.Server.Implementations/Jellyfin.Server.Implementations.csproj" />    
   </ItemGroup>
 
 </Project>

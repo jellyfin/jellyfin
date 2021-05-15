@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Microsoft.AspNetCore.Authorization;
@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Jellyfin.Api.Controllers
 {
     /// <summary>
-    /// Controller for testing.
+    /// Controller for testing the encoded url.
     /// </summary>
-    public class TestsController : BaseJellyfinApiController
+    public class EncoderController : BaseJellyfinApiController
     {
         /// <summary>
         /// Tests the url decoding.

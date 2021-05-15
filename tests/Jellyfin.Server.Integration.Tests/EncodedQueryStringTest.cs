@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Integration.Tests
         {
             var client = _factory.CreateClient();
 
-            var response = await client.GetAsync("Tests/UrlDecode?" + sourceUrl).ConfigureAwait(false);
+            var response = await client.GetAsync("Encoder/UrlDecode?" + sourceUrl).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             string reply = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             Assert.Equal(unencodedUrl, reply);
