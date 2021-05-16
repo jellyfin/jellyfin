@@ -258,7 +258,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             var name = authorizationHeader[..firstSpace];
 
             if (!name.Equals("MediaBrowser", StringComparison.OrdinalIgnoreCase)
-                && name.Equals("Emby", StringComparison.OrdinalIgnoreCase))
+                && !name.Equals("Emby", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
