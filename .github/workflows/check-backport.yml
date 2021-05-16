@@ -42,7 +42,6 @@ jobs:
 
       - name: Notify with result
         uses: peter-evans/create-or-update-comment@v1.4.5
-        if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
