@@ -596,7 +596,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
                     && isNvdecDecoder)
                 {
-                    arg.Append("-hwaccel_output_format cuda -autorotate 0 ");
+                    // Fix for 'No decoder surfaces left' error. https://trac.ffmpeg.org/ticket/7562
+                    arg.Append("-hwaccel_output_format cuda -extra_hw_frames 3 -autorotate 0 ");
                 }
 
                 if (state.IsVideoRequest
@@ -1070,7 +1071,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                      || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)) // hevc (hevc_nvenc)
             {
-                // following preset will be deprecated in ffmpeg 4.4, use p1~p7 instead.
                 switch (encodingOptions.EncoderPreset)
                 {
                     case "veryslow":
@@ -1251,7 +1251,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
-                && profile.Contains("constrainedbaseline", StringComparison.OrdinalIgnoreCase))
+                && profile.Contains("baseline", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "constrained_baseline";
             }
