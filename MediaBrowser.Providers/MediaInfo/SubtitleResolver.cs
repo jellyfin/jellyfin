@@ -108,7 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = fullName
                     };
                 }
-                else if (fileNameWithoutExtension.Length >= videoFileNameWithoutExtension.Length
+                else if (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
                          && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
                          && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
                 {
