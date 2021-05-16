@@ -171,7 +171,7 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        public static bool TryGetInt(this IReadOnlyList<IResultSetValue> reader, int index, out int? result)
+        public static bool TryGetInt32(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out int? result)
         {
             result = null;
             var item = reader[index];
@@ -189,7 +189,7 @@ namespace Emby.Server.Implementations.Data
             return result[index].ToInt64();
         }
 
-        public static bool TryGetLong(this IReadOnlyList<IResultSetValue> reader, int index, out long? result)
+        public static bool TryGetInt64(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out long? result)
         {
             result = null;
             var item = reader[index];
@@ -202,7 +202,7 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        public static bool TryGetFloat(this IReadOnlyList<IResultSetValue> reader, int index, out float? result)
+        public static bool TryGetSingle(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out float? result)
         {
             result = null;
             var item = reader[index];
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        public static bool TryGetDouble(this IReadOnlyList<IResultSetValue> reader, int index, out double? result)
+        public static bool TryGetDouble(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out double? result)
         {
             result = null;
             var item = reader[index];

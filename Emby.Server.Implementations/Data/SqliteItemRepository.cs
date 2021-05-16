@@ -1390,7 +1390,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (reader.TryGetFloat(index++, out var communityRating))
+            if (reader.TryGetSingle(index++, out var communityRating))
             {
                 item.CommunityRating = communityRating;
             }
@@ -1403,7 +1403,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (reader.TryGetInt(index++, out var indexNumber))
+            if (reader.TryGetInt32(index++, out var indexNumber))
             {
                 item.IndexNumber = indexNumber;
             }
@@ -1428,7 +1428,7 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.Width))
             {
-                if (reader.TryGetInt(index++, out var width))
+                if (reader.TryGetInt32(index++, out var width))
                 {
                     item.Width = width.Value;
                 }
@@ -1436,7 +1436,7 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.Height))
             {
-                if (reader.TryGetInt(index++, out var height))
+                if (reader.TryGetInt32(index++, out var height))
                 {
                     item.Height = height.Value;
                 }
@@ -1473,12 +1473,12 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (reader.TryGetInt(index++, out var parentIndexNumber))
+            if (reader.TryGetInt32(index++, out var parentIndexNumber))
             {
                 item.ParentIndexNumber = parentIndexNumber;
             }
 
-            if (reader.TryGetInt(index++, out var productionYear))
+            if (reader.TryGetInt32(index++, out var productionYear))
             {
                 item.ProductionYear = productionYear;
             }
@@ -1496,12 +1496,12 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (reader.TryGetLong(index++, out var runTimeTicks))
+            if (reader.TryGetInt64(index++, out var runTimeTicks))
             {
                 item.RunTimeTicks = runTimeTicks;
             }
 
-            if (reader.TryGetLong(index++, out var size))
+            if (reader.TryGetInt64(index++, out var size))
             {
                 item.Size = size;
             }
@@ -1662,7 +1662,7 @@ namespace Emby.Server.Implementations.Data
                 item.Album = album;
             }
 
-            if (reader.TryGetFloat(index++, out var criticRating))
+            if (reader.TryGetSingle(index++, out var criticRating))
             {
                 item.CriticRating = criticRating;
             }
@@ -1729,7 +1729,7 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.InheritedParentalRatingValue))
             {
-                if (reader.TryGetInt(index++, out var parentalRating))
+                if (reader.TryGetInt32(index++, out var parentalRating))
                 {
                     item.InheritedParentalRatingValue = parentalRating.Value;
                 }
@@ -1784,7 +1784,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (reader.TryGetInt(index++, out var totalBitrate))
+            if (reader.TryGetInt32(index++, out var totalBitrate))
             {
                 item.TotalBitrate = totalBitrate;
             }
@@ -5749,7 +5749,7 @@ AND Type = @InternalPersonType)");
                 item.Type = type;
             }
 
-            if (reader.TryGetInt(4, out var sortOrder))
+            if (reader.TryGetInt32(4, out var sortOrder))
             {
                 item.SortOrder = sortOrder;
             }
@@ -5979,17 +5979,17 @@ AND Type = @InternalPersonType)");
 
             item.IsInterlaced = reader.GetBoolean(9);
 
-            if (reader.TryGetInt(10, out var bitrate))
+            if (reader.TryGetInt32(10, out var bitrate))
             {
                 item.BitRate = bitrate;
             }
 
-            if (reader.TryGetInt(11, out var channels))
+            if (reader.TryGetInt32(11, out var channels))
             {
                 item.Channels = channels;
             }
 
-            if (reader.TryGetInt(12, out var sampleRate))
+            if (reader.TryGetInt32(12, out var sampleRate))
             {
                 item.SampleRate = sampleRate;
             }
@@ -5998,27 +5998,27 @@ AND Type = @InternalPersonType)");
             item.IsForced = reader.GetBoolean(14);
             item.IsExternal = reader.GetBoolean(15);
 
-            if (reader.TryGetInt(16, out var width))
+            if (reader.TryGetInt32(16, out var width))
             {
                 item.Width = width;
             }
 
-            if (reader.TryGetInt(17, out var height))
+            if (reader.TryGetInt32(17, out var height))
             {
                 item.Height = height;
             }
 
-            if (reader.TryGetFloat(18, out var averageFrameRate))
+            if (reader.TryGetSingle(18, out var averageFrameRate))
             {
                 item.AverageFrameRate = averageFrameRate;
             }
 
-            if (reader.TryGetFloat(19, out var realFrameRate))
+            if (reader.TryGetSingle(19, out var realFrameRate))
             {
                 item.RealFrameRate = realFrameRate;
             }
 
-            if (reader.TryGetFloat(20, out var level))
+            if (reader.TryGetSingle(20, out var level))
             {
                 item.Level = level;
             }
@@ -6028,7 +6028,7 @@ AND Type = @InternalPersonType)");
                 item.PixelFormat = pixelFormat;
             }
 
-            if (reader.TryGetInt(22, out var bitDepth))
+            if (reader.TryGetInt32(22, out var bitDepth))
             {
                 item.BitDepth = bitDepth;
             }
@@ -6038,7 +6038,7 @@ AND Type = @InternalPersonType)");
                 item.IsAnamorphic = isAnamorphic;
             }
 
-            if (reader.TryGetInt(24, out var refFrames))
+            if (reader.TryGetInt32(24, out var refFrames))
             {
                 item.RefFrames = refFrames;
             }

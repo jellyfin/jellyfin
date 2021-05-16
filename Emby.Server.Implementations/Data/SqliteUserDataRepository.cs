@@ -370,12 +370,12 @@ namespace Emby.Server.Implementations.Data
                 userData.LastPlayedDate = lastPlayedDate;
             }
 
-            if (reader.TryGetInt(8, out var audioStreamIndex))
+            if (reader.TryGetInt32(8, out var audioStreamIndex))
             {
                 userData.AudioStreamIndex = audioStreamIndex;
             }
 
-            if (reader.TryGetInt(9, out var subtitleStreamIndex))
+            if (reader.TryGetInt32(9, out var subtitleStreamIndex))
             {
                 userData.SubtitleStreamIndex = subtitleStreamIndex;
             }
