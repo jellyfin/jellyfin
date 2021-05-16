@@ -355,9 +355,9 @@ namespace Emby.Server.Implementations.Data
             userData.Key = reader[0].ToString();
             // userData.UserId = reader[1].ReadGuidFromBlob();
 
-            if (reader[2].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetDouble(2, out var rating))
             {
-                userData.Rating = reader[2].ToDouble();
+                userData.Rating = rating;
             }
 
             userData.Played = reader[3].ToBool();
@@ -365,19 +365,19 @@ namespace Emby.Server.Implementations.Data
             userData.IsFavorite = reader[5].ToBool();
             userData.PlaybackPositionTicks = reader[6].ToInt64();
 
-            if (reader[7].SQLiteType != SQLiteType.Null)
+            if (reader.TryReadDateTime(7, out var lastPlayedDate))
             {
-                userData.LastPlayedDate = reader[7].TryReadDateTime();
+                userData.LastPlayedDate = lastPlayedDate;
             }
 
-            if (reader[8].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt(8, out var audioStreamIndex))
             {
-                userData.AudioStreamIndex = reader[8].ToInt();
+                userData.AudioStreamIndex = audioStreamIndex;
             }
 
-            if (reader[9].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt(9, out var subtitleStreamIndex))
             {
-                userData.SubtitleStreamIndex = reader[9].ToInt();
+                userData.SubtitleStreamIndex = subtitleStreamIndex;
             }
 
             return userData;

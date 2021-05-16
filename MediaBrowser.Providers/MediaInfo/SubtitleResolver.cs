@@ -15,17 +15,6 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly ILocalizationManager _localization;
 
-        private static readonly HashSet<string> SubtitleExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ".srt",
-            ".ssa",
-            ".ass",
-            ".sub",
-            ".smi",
-            ".sami",
-            ".vtt"
-        };
-
         public SubtitleResolver(ILocalizationManager localization)
         {
             _localization = localization;
@@ -88,6 +77,115 @@ namespace MediaBrowser.Providers.MediaInfo
             return list;
         }
 
+        public void AddExternalSubtitleStreams(
+            List<MediaStream> streams,
+            string videoPath,
+            int startIndex,
+            string[] files)
+        {
+            var videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoPath);
+
+            foreach (var fullName in files)
+            {
+                var extension = Path.GetExtension(fullName.AsSpan());
+                if (!IsSubtitleExtension(extension))
+                {
+                    continue;
+                }
+
+                var fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fullName);
+
+                MediaStream mediaStream;
+
+                // The subtitle filename must either be equal to the video filename or start with the video filename followed by a dot
+                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    mediaStream = new MediaStream
+                    {
+                        Index = startIndex++,
+                        Type = MediaStreamType.Subtitle,
+                        IsExternal = true,
+                        Path = fullName
+                    };
+                }
+                else if (fileNameWithoutExtension.Length >= videoFileNameWithoutExtension.Length
+                         && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
+                         && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    var isForced = fullName.Contains(".forced.", StringComparison.OrdinalIgnoreCase)
+                                   || fullName.Contains(".foreign.", StringComparison.OrdinalIgnoreCase);
+
+                    var isDefault = fullName.Contains(".default.", StringComparison.OrdinalIgnoreCase);
+
+                    // Support xbmc naming conventions - 300.spanish.srt
+                    var languageSpan = fileNameWithoutExtension;
+                    while (languageSpan.Length > 0)
+                    {
+                        var lastDot = languageSpan.LastIndexOf('.');
+                        var currentSlice = languageSpan[lastDot..];
+                        if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
+                            || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
+                            || currentSlice.Equals(".foreign", StringComparison.OrdinalIgnoreCase))
+                        {
+                            languageSpan = languageSpan[..lastDot];
+                            continue;
+                        }
+
+                        languageSpan = languageSpan[(lastDot + 1)..];
+                        break;
+                    }
+
+                    var language = languageSpan.ToString();
+                    // Try to translate to three character code
+                    // Be flexible and check against both the full and three character versions
+                    var culture = _localization.FindLanguageInfo(language);
+
+                    if (culture != null)
+                    {
+                        language = culture.ThreeLetterISOLanguageName;
+                    }
+
+                    mediaStream = new MediaStream
+                    {
+                        Index = startIndex++,
+                        Type = MediaStreamType.Subtitle,
+                        IsExternal = true,
+                        Path = fullName,
+                        Language = language,
+                        IsForced = isForced,
+                        IsDefault = isDefault
+                    };
+                }
+                else
+                {
+                    continue;
+                }
+
+                mediaStream.Codec = extension.TrimStart('.').ToString().ToLowerInvariant();
+
+                streams.Add(mediaStream);
+            }
+        }
+
+        private static bool IsSubtitleExtension(ReadOnlySpan<char> extension)
+        {
+            return extension.Equals(".srt", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".ssa", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".ass", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".sub", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".vtt", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".smi", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".sami", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static ReadOnlySpan<char> NormalizeFilenameForSubtitleComparison(string filename)
+        {
+            // Try to account for sloppy file naming
+            filename = filename.Replace("_", string.Empty, StringComparison.Ordinal);
+            filename = filename.Replace(" ", string.Empty, StringComparison.Ordinal);
+            return Path.GetFileNameWithoutExtension(filename.AsSpan());
+        }
+
         private void AddExternalSubtitleStreams(
             List<MediaStream> streams,
             string folder,
@@ -99,105 +197,6 @@ namespace MediaBrowser.Providers.MediaInfo
             var files = directoryService.GetFilePaths(folder, clearCache).OrderBy(i => i).ToArray();
 
             AddExternalSubtitleStreams(streams, videoPath, startIndex, files);
-        }
-
-        public void AddExternalSubtitleStreams(
-            List<MediaStream> streams,
-            string videoPath,
-            int startIndex,
-            string[] files)
-        {
-            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(videoPath);
-            videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoFileNameWithoutExtension);
-
-            foreach (var fullName in files)
-            {
-                var extension = Path.GetExtension(fullName);
-
-                if (!SubtitleExtensions.Contains(extension))
-                {
-                    continue;
-                }
-
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName);
-                fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fileNameWithoutExtension);
-
-                if (!string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) &&
-                    !fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var codec = Path.GetExtension(fullName).ToLowerInvariant().TrimStart('.');
-
-                if (string.Equals(codec, "txt", StringComparison.OrdinalIgnoreCase))
-                {
-                    codec = "srt";
-                }
-
-                // If the subtitle file matches the video file name
-                if (string.Equals(videoFileNameWithoutExtension, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    streams.Add(new MediaStream
-                    {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName,
-                        Codec = codec
-                    });
-                }
-                else if (fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension + ".", StringComparison.OrdinalIgnoreCase))
-                {
-                    var isForced = fullName.IndexOf(".forced.", StringComparison.OrdinalIgnoreCase) != -1 ||
-                        fullName.IndexOf(".foreign.", StringComparison.OrdinalIgnoreCase) != -1;
-
-                    var isDefault = fullName.IndexOf(".default.", StringComparison.OrdinalIgnoreCase) != -1;
-
-                    // Support xbmc naming conventions - 300.spanish.srt
-                    var language = fileNameWithoutExtension
-                        .Replace(".forced", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .Replace(".foreign", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .Replace(".default", string.Empty, StringComparison.OrdinalIgnoreCase)
-                        .Split('.')
-                        .LastOrDefault();
-
-                    // Try to translate to three character code
-                    // Be flexible and check against both the full and three character versions
-                    var culture = _localization.FindLanguageInfo(language);
-
-                    if (culture != null)
-                    {
-                        language = culture.ThreeLetterISOLanguageName;
-                    }
-
-                    streams.Add(new MediaStream
-                    {
-                        Index = startIndex++,
-                        Type = MediaStreamType.Subtitle,
-                        IsExternal = true,
-                        Path = fullName,
-                        Codec = codec,
-                        Language = language,
-                        IsForced = isForced,
-                        IsDefault = isDefault
-                    });
-                }
-            }
-        }
-
-        private string NormalizeFilenameForSubtitleComparison(string filename)
-        {
-            // Try to account for sloppy file naming
-            filename = filename.Replace("_", string.Empty, StringComparison.Ordinal);
-            filename = filename.Replace(" ", string.Empty, StringComparison.Ordinal);
-
-            // can't normalize this due to languages such as pt-br
-            // filename = filename.Replace("-", string.Empty);
-
-            // filename = filename.Replace(".", string.Empty);
-
-            return filename;
         }
     }
 }
