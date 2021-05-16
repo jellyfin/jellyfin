@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -15,8 +16,6 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
 {
     public class HdHomerunHostTests
     {
-        private const string TestIp = "http://192.168.1.182";
-
         private readonly Fixture _fixture;
         private readonly HdHomerunHost _hdHomerunHost;
 
@@ -30,7 +29,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                     {
                         return Task.FromResult(new HttpResponseMessage()
                         {
-                            Content = new StreamContent(File.OpenRead("Test Data/LiveTv/" + m.RequestUri?.Segments[^1]))
+                            Content = new StreamContent(File.OpenRead(Path.Combine("Test Data/LiveTv", m.RequestUri!.Host, m.RequestUri.Segments[^1])))
                         });
                     });
 
@@ -50,7 +49,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         {
             var host = new TunerHostInfo()
             {
-                Url = TestIp
+                Url = "192.168.1.182"
             };
 
             var modelInfo = await _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None).ConfigureAwait(false);
@@ -63,6 +62,26 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
             Assert.Equal(3, modelInfo.TunerCount);
             Assert.Equal("http://192.168.1.182:80", modelInfo.BaseURL);
             Assert.Equal("http://192.168.1.182:80/lineup.json", modelInfo.LineupURL);
+        }
+
+        [Fact]
+        public async Task GetModelInfo_Legacy_Success()
+        {
+            var host = new TunerHostInfo()
+            {
+                Url = "10.10.10.100"
+            };
+
+            var modelInfo = await _hdHomerunHost.GetModelInfo(host, true, CancellationToken.None).ConfigureAwait(false);
+            Assert.Equal("HDHomeRun DUAL", modelInfo.FriendlyName);
+            Assert.Equal("HDHR3-US", modelInfo.ModelNumber);
+            Assert.Equal("hdhomerun3_atsc", modelInfo.FirmwareName);
+            Assert.Equal("20200225", modelInfo.FirmwareVersion);
+            Assert.Equal("10xxxxx5", modelInfo.DeviceID);
+            Assert.Null(modelInfo.DeviceAuth);
+            Assert.Equal(2, modelInfo.TunerCount);
+            Assert.Equal("http://10.10.10.100:80", modelInfo.BaseURL);
+            Assert.Null(modelInfo.LineupURL);
         }
 
         [Fact]
@@ -81,7 +100,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         {
             var host = new TunerHostInfo()
             {
-                Url = TestIp
+                Url = "192.168.1.182"
             };
 
             var channels = await _hdHomerunHost.GetLineup(host, CancellationToken.None).ConfigureAwait(false);
@@ -94,11 +113,23 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         }
 
         [Fact]
+        public async Task GetLineup_Legacy_Success()
+        {
+            var host = new TunerHostInfo()
+            {
+                Url = "10.10.10.100"
+            };
+
+            // Placeholder json is invalid, just need to make sure we can reach it
+            await Assert.ThrowsAsync<JsonException>(() => _hdHomerunHost.GetLineup(host, CancellationToken.None));
+        }
+
+        [Fact]
         public async Task GetLineup_ImportFavoritesOnly_Success()
         {
             var host = new TunerHostInfo()
             {
-                Url = TestIp,
+                Url = "192.168.1.182",
                 ImportFavoritesOnly = true
             };
 
@@ -114,9 +145,9 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
         [Fact]
         public async Task TryGetTunerHostInfo_Valid_Success()
         {
-            var host = await _hdHomerunHost.TryGetTunerHostInfo(TestIp, CancellationToken.None).ConfigureAwait(false);
+            var host = await _hdHomerunHost.TryGetTunerHostInfo("192.168.1.182", CancellationToken.None).ConfigureAwait(false);
             Assert.Equal(_hdHomerunHost.Type, host.Type);
-            Assert.Equal(TestIp, host.Url);
+            Assert.Equal("192.168.1.182", host.Url);
             Assert.Equal("HDHomeRun PRIME", host.FriendlyName);
             Assert.Equal("FFFFFFFF", host.DeviceId);
             Assert.Equal(3, host.TunerCount);
