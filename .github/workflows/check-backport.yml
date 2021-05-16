@@ -1,0 +1,37 @@
+name: Stable Backport Check
+on:
+  issue_comment:
+  pull_request_target:
+    types:
+      - labeled
+
+jobs:
+  check-backport:
+    name: Check Backport
+    if: ( github.event.issue.pull_request != '' && contains(github.event.comment.body, '@jellyfin-bot check backport') && github.event.comment.author_association == 'MEMBER' ) || github.event.label.name == 'stable backport'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify as seen
+        uses: peter-evans/create-or-update-comment@v1.4.5
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          reactions: '+1'
+
+      - name: Checkout the latest code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Perform test backport
+        run: |
+          git config --global user.name "Jellyfin Bot"
+          git config --global user.email "team@jellyfin.org"
+          CURRENT_BRANCH=$( git symbolic-ref --short HEAD )
+          git checkout -b nmaster origin/master
+          git merge --no-ff ${CURRENT_BRANCH}
+          MERGE_COMMIT_HASH=$( git log -q | head -1 | awk '{ print $2 }' )
+          CURRENT_STABLE=$( git branch | grep release | sort -rV | head -1 )
+          git checkout -b n${CURRENT_STABLE} origin/${CURRENT_STABLE}
+          git cherry-pick -sx -m1 ${MERGE_COMMIT_HASH}
