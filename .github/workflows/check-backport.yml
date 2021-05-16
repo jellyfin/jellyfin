@@ -8,11 +8,12 @@ on:
 jobs:
   check-backport:
     name: Check Backport
-    if: ( github.event.issue.pull_request != '' && contains(github.event.comment.body, '@jellyfin-bot check backport') && github.event.comment.author_association == 'MEMBER' ) || github.event.label.name == 'stable backport'
+    if: ${{ ( github.event.issue.pull_request != '' && contains(github.event.comment.body, '@jellyfin-bot check backport') && github.event.comment.author_association == 'MEMBER' ) || github.event.label.name == 'stable backport' }}
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
         uses: peter-evans/create-or-update-comment@v1.4.5
+        if: ${{ github.event.comment != null }}
         with:
           token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
