@@ -1,4 +1,4 @@
-﻿namespace Jellyfin.Data.Enums
+namespace Jellyfin.Data.Enums
 {
     /// <summary>
     /// The base item kind.
@@ -117,6 +117,11 @@
         /// Item is playlist.
         /// </summary>
         Playlist,
+
+        /// <summary>
+        /// Item is a playlistFolder
+        /// </summary>
+        PlayListsFolder,
 
         /// <summary>
         /// Item is program
