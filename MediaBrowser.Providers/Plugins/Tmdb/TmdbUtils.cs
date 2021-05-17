@@ -149,7 +149,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             if (parts.Length == 2)
             {
                 // TMDB doesn't support Switzerland (de-CH, it-CH or fr-CH) so use the language (de, it or fr) without country code
-                if (string.Equals(parts[1], "ch", StringComparison.Ordinal))
+                if (string.Equals(parts[1], "CH", StringComparison.OrdinalIgnoreCase))
                 {
                     return parts[0];
                 }

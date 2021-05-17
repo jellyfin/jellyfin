@@ -47,8 +47,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
-            var language = item.GetPreferredMetadataLanguage();
             var person = (Person)item;
+            var language = item.GetPreferredMetadataLanguage();
 
             if (!person.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
