@@ -15,7 +15,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1.4.5
         if: ${{ github.event.comment != null }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
           reactions: eyes
 
@@ -30,7 +30,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1.4.5
         if: ${{ github.event.comment != null }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.JF_BOT_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
             Running backport tests...
@@ -65,7 +65,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1.4.5
         if: ${{ github.event.comment != null && success() }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ steps.comment_running.outputs.comment-id }}
           body: |
             ${{ steps.run_tests.outputs.branch }}
@@ -80,7 +80,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1.4.5
         if: ${{ github.event.comment != null && failure() }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.JF_BOT_TOKEN }}
           comment-id: ${{ steps.comment_running.outputs.comment-id }}
           body: |
             ${{ steps.run_tests.outputs.branch }}
