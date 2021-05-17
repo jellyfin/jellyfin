@@ -89,6 +89,11 @@ namespace MediaBrowser.Common.Plugins
         public EventHandler<BasePluginConfiguration> ConfigurationChanged { get; set; }
 
         /// <summary>
+        /// Gets or sets the event handler that is triggered just before this configuration changes.
+        /// </summary>
+        public EventHandler<BasePluginConfiguration> ConfigurationChanging { get; set; }
+
+        /// <summary>
         /// Gets the name the assembly file.
         /// </summary>
         /// <value>The name of the assembly file.</value>
@@ -173,6 +178,8 @@ namespace MediaBrowser.Common.Plugins
             }
 
             Configuration = (TConfigurationType)configuration;
+
+            ConfigurationChanging?.Invoke(this, configuration);
 
             SaveConfiguration(Configuration);
 
