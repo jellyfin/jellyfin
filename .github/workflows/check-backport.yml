@@ -15,9 +15,9 @@ jobs:
         uses: peter-evans/create-or-update-comment@v1.4.5
         if: ${{ github.event.comment != null }}
         with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           comment-id: ${{ github.event.comment.id }}
-          reactions: '+1'
+          reactions: eyes
 
       - name: Checkout the latest code
         uses: actions/checkout@v2
@@ -25,8 +25,20 @@ jobs:
           token: ${{ secrets.JF_BOT_TOKEN }}
           fetch-depth: 0
 
+      - name: Notify as running
+        id: comment_running
+        uses: peter-evans/create-or-update-comment@v1.4.5
+        if: ${{ github.event.comment != null }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            Running backport tests...
+
       - name: Perform test backport
+        id: run_tests
         run: |
+          set +o errexit
           git config --global user.name "Jellyfin Bot"
           git config --global user.email "team@jellyfin.org"
           CURRENT_BRANCH=$( git symbolic-ref --short HEAD )
@@ -35,16 +47,46 @@ jobs:
           MERGE_COMMIT_HASH=$( git log -q -1 | head -1 | awk '{ print $2 }' )
           git fetch --all
           CURRENT_STABLE=$( git branch -r | grep 'origin/release' | sort -rV | head -1 | awk -F '/' '{ print $NF }' )
-          echo "Current stable branch: ${CURRENT_STABLE}"
+          stable_branch="Current stable release branch: ${CURRENT_STABLE}"
+          echo ${stable_branch}
+          echo ::set-output name=branch::${stable_branch}
           git checkout -t origin/${CURRENT_STABLE} -b ${CURRENT_STABLE}
-          git pull --rebase
-          git cherry-pick -sx -m1 ${MERGE_COMMIT_HASH} 
+          git cherry-pick -sx -m1 ${MERGE_COMMIT_HASH} &>output.txt
+          retcode=$?
+          cat output.txt | grep -v 'hint:'
+          output="$( grep -v 'hint:'  output.txt )"
+          output="${output//'%'/'%25'}"
+          output="${output//$'\n'/'%0A'}"
+          output="${output//$'\r'/'%0D'}" 
+          echo ::set-output name=output::$output
+          exit ${retcode}
 
-      - name: Notify with result
+      - name: Notify with result success
         uses: peter-evans/create-or-update-comment@v1.4.5
+        if: ${{ github.event.comment != null && success() }}
         with:
-          token: ${{ secrets.JF_BOT_TOKEN }}
-          issue-number: ${{ github.event.pull_request.number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.comment_running.outputs.comment-id }}
           body: |
-            Check build log:
-            ${{ steps.build.outputs.build-log }}
+            ${{ steps.run_tests.outputs.branch }}
+            Output from `git cherry-pick`:
+
+            ---
+
+            ${{ steps.run_tests.outputs.output }}
+          reactions: hooray
+
+      - name: Notify with result failure
+        uses: peter-evans/create-or-update-comment@v1.4.5
+        if: ${{ github.event.comment != null && failure() }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.comment_running.outputs.comment-id }}
+          body: |
+            ${{ steps.run_tests.outputs.branch }}
+            Output from `git cherry-pick`:
+
+            ---
+
+            ${{ steps.run_tests.outputs.output }}
+          reactions: confused
