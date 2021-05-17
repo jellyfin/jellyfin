@@ -111,6 +111,14 @@ namespace Jellyfin.Server.Implementations.Migrations
                 newName: "Images",
                 newSchema: "jellyfin");
 
+            migrationBuilder.AddColumn<Guid>(
+                name: "UUID",
+                schema: "jellyfin",
+                table: "Images",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Images",
                 schema: "jellyfin",

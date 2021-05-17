@@ -266,7 +266,6 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasMaxLength(65535)
                         .HasColumnType("TEXT");
 
                     b.Property<uint>("RowVersion")
@@ -275,6 +274,9 @@ namespace Jellyfin.Server.Implementations.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UUID")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
