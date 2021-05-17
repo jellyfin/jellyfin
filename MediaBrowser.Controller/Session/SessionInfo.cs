@@ -221,6 +221,8 @@ namespace MediaBrowser.Controller.Session
 
         public QueueItem[] NowPlayingQueue { get; set; }
 
+        public BaseItemDto[] NowPlayingQueueFullItems { get; set; }
+
         public bool HasCustomDeviceName { get; set; }
 
         public string PlaylistItemId { get; set; }
