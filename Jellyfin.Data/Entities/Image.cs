@@ -23,6 +23,7 @@ namespace Jellyfin.Data.Entities.Libraries
                 throw new ArgumentNullException(nameof(path));
             }
 
+            UUID = Guid.NewGuid();
             Path = path;
             Type = type;
             AddedDate = DateTime.UtcNow;
@@ -47,6 +48,14 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; private set; }
+
+        /// <summary>
+        /// Gets the UUID.
+        /// </summary>
+        /// <remarks>
+        /// Required.
+        /// </remarks>
+        public Guid UUID { get; private set; }
 
         /// <summary>
         /// Gets the path.
