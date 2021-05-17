@@ -80,7 +80,6 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.SyncPlay;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
-using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
@@ -591,8 +590,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
             ServiceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
-
-            ServiceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
             ServiceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
             ServiceCollection.AddSingleton<IUserDataManager, UserDataManager>();
