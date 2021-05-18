@@ -9,7 +9,7 @@ namespace Jellyfin.Data.Entities.Libraries
     /// <summary>
     /// An abstract class that holds metadata.
     /// </summary>
-    public abstract class ItemMetadata : IHasImage, IHasConcurrencyToken
+    public abstract class ItemMetadata : IHasImages, IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemMetadata"/> class.
@@ -35,7 +35,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
             PersonRoles = new HashSet<PersonRole>();
             Genres = new HashSet<Genre>();
-            Image = new HashSet<Image>();
+            Images = new HashSet<Image>();
             Ratings = new HashSet<Rating>();
             Sources = new HashSet<MetadataProviderId>();
         }
@@ -127,7 +127,7 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual ICollection<Genre> Genres { get; private set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Image> Image { get; private set; }
+        public virtual ICollection<Image> Images { get; private set; }
 
         /// <summary>
         /// Gets a collection containing the ratings for this item.

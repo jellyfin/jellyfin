@@ -4,13 +4,13 @@ using Jellyfin.Data.Entities.Libraries;
 namespace Jellyfin.Data.Interfaces
 {
     /// <summary>
-    /// An interface abstracting an entity that has artwork.
+    /// An interface abstracting an entity that has images.
     /// </summary>
-    public interface IHasImage
+    public interface IHasImages
     {
         /// <summary>
-        /// Gets a collection containing this entity's artwork.
+        /// Gets a collection containing this entity's images.
         /// </summary>
-        ICollection<Image> Image { get; }
+        ICollection<Image> Images { get; }
     }
 }
