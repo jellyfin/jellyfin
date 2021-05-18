@@ -48,13 +48,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
-            var language = item.GetPreferredMetadataLanguage();
 
             if (!person.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
+            var language = item.GetPreferredMetadataLanguage();
             var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
             if (personResult?.Images?.Profiles == null)
             {
