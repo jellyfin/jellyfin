@@ -13,7 +13,7 @@ namespace Jellyfin.MediaEncoding.Tests
         [ClassData(typeof(GetFFmpegVersionTestData))]
         public void GetFFmpegVersionTest(string versionOutput, Version? version)
         {
-            var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
+            var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>(), null);
             Assert.Equal(version, val.GetFFmpegVersion(versionOutput));
         }
 
@@ -28,7 +28,7 @@ namespace Jellyfin.MediaEncoding.Tests
         [InlineData(EncoderValidatorTestsData.FFmpegGitUnknownOutput, false)]
         public void ValidateVersionInternalTest(string versionOutput, bool valid)
         {
-            var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>());
+            var val = new EncoderValidator(new NullLogger<EncoderValidatorTests>(), null);
             Assert.Equal(valid, val.ValidateVersionInternal(versionOutput));
         }
 

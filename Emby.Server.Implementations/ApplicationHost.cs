@@ -1105,7 +1105,6 @@ namespace Emby.Server.Implementations
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
                 SupportsLibraryMonitor = true,
-                EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
                 PackageName = _startupOptions.PackageName
             };
