@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -61,7 +63,6 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) as LibraryOptions;
-
                 if (result == null)
                 {
                     return new LibraryOptions();
@@ -271,7 +272,6 @@ namespace MediaBrowser.Controller.Entities
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
-                Path = path,
                 Parent = GetParent() as Folder,
                 CollectionType = CollectionType
             };
@@ -355,9 +355,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (result.Count == 0)
             {
-                var folder = LibraryManager.FindByPath(path, true) as Folder;
-
-                if (folder != null)
+                if (LibraryManager.FindByPath(path, true) is Folder folder)
                 {
                     result.Add(folder);
                 }

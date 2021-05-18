@@ -38,9 +38,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 
         /// <inheritdoc />
-        protected override string MovieDbParserSearchString => "themoviedb.org/tv/";
-
-        /// <inheritdoc />
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
         {
             var item = itemResult.Item;

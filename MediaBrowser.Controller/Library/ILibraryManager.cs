@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -465,6 +467,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="people">The people.</param>
         void UpdatePeople(BaseItem item, List<PersonInfo> people);
+
+        /// <summary>
+        /// Asynchronously updates the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="people">The people.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.

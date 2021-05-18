@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -10,8 +12,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -27,9 +27,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
         private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
 
         private static readonly string[] _videoProfiles = new[]
         {
@@ -44,14 +42,10 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public EncodingHelper(
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration)
+            ISubtitleEncoder subtitleEncoder)
         {
             _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
             _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
         }
 
         public string GetH264Encoder(EncodingJobInfo state, EncodingOptions encodingOptions)

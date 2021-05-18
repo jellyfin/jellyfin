@@ -17,7 +17,7 @@ namespace MediaBrowser.Common.Extensions
         {
             return (context.Connection.LocalIpAddress == null
                     && context.Connection.RemoteIpAddress == null)
-                   || context.Connection.LocalIpAddress.Equals(context.Connection.RemoteIpAddress);
+                   || Equals(context.Connection.LocalIpAddress, context.Connection.RemoteIpAddress);
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Extensions
         /// </summary>
         /// <param name="context">The HTTP context.</param>
         /// <returns>The remote caller IP address.</returns>
-        public static string GetNormalizedRemoteIp(this HttpContext context)
+        public static IPAddress GetNormalizedRemoteIp(this HttpContext context)
         {
             // Default to the loopback address if no RemoteIpAddress is specified (i.e. during integration tests)
             var ip = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
@@ -35,7 +35,7 @@ namespace MediaBrowser.Common.Extensions
                 ip = ip.MapToIPv4();
             }
 
-            return ip.ToString();
+            return ip;
         }
     }
 }

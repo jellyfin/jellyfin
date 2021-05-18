@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;
@@ -48,7 +50,7 @@ namespace MediaBrowser.Controller
         /// <param name="itemId">The item id.</param>
         /// <param name="client">The client string.</param>
         /// <returns>The dictionary of custom item display preferences.</returns>
-        IDictionary<string, string> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client);
+        Dictionary<string, string> ListCustomItemDisplayPreferences(Guid userId, Guid itemId, string client);
 
         /// <summary>
         /// Sets the custom item display preference for the user and client.

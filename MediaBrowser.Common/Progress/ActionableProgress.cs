@@ -14,9 +14,9 @@ namespace MediaBrowser.Common.Progress
         /// <summary>
         /// The _actions.
         /// </summary>
-        private Action<T> _action;
+        private Action<T>? _action;
 
-        public event EventHandler<T> ProgressChanged;
+        public event EventHandler<T>? ProgressChanged;
 
         /// <summary>
         /// Registers the action.

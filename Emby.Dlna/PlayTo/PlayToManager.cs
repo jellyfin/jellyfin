@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -190,7 +192,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
+                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIpAddress);
 
                 controller = new PlayToController(
                     sessionInfo,

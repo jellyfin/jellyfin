@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -75,10 +77,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                query = new InternalItemsQuery(user);
-            }
+            query ??= new InternalItemsQuery(user);
 
             query.EnableTotalRecordCount = false;
             var result = GetItemList(query);

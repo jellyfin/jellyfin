@@ -156,7 +156,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("Justice League Collection", item.CollectionName);
 
             // Images
-            Assert.Equal(6, result.RemoteImages.Count);
+            Assert.Equal(7, result.RemoteImages.Count);
 
             var posters = result.RemoteImages.Where(x => x.type == ImageType.Primary).ToList();
             Assert.Single(posters);
@@ -182,6 +182,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Single(discArt);
             Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a3af26360617.png", discArt[0].url);
 
+            var backdrop = result.RemoteImages.Where(x => x.type == ImageType.Backdrop).ToList();
+            Assert.Single(backdrop);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5793f518c6d6e.jpg", backdrop[0].url);
+
             // Local Image - contains only one item depending on operating system
             Assert.Single(result.Images);
             Assert.Equal(_localImageFileMetadata.Name, result.Images[0].FileInfo.Name);
@@ -201,6 +205,21 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var item = (Movie)result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
+        }
+
+        [Fact]
+        public void Parse_RadarrUrlFile_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Radarr.nfo", CancellationToken.None);
+            var item = (Movie)result.Item;
+
+            Assert.Equal("583689", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
+            Assert.Equal("tt4154796", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
         }
 
         [Fact]

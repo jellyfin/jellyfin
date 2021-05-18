@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -11,14 +13,14 @@ namespace MediaBrowser.Controller.Entities
 {
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
-        /// <inheritdoc />
-        [JsonIgnore]
-        public IReadOnlyList<string> Artists { get; set; }
-
         public MusicVideo()
         {
             Artists = Array.Empty<string>();
         }
+
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> Artists { get; set; }
 
         public override UnratedItem GetBlockUnratedType()
         {

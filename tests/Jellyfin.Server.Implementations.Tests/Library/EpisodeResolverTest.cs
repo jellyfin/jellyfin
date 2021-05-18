@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,10 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             {
                 Parent = parent,
                 CollectionType = CollectionType.TvShows,
-                Path = "All My Children/Season 01/Extras/All My Children S01E01 - Behind The Scenes.mkv"
+                FileInfo = new FileSystemMetadata()
+                {
+                    FullName = "All My Children/Season 01/Extras/All My Children S01E01 - Behind The Scenes.mkv"
+                }
             };
 
             Assert.Null(episodeResolver.Resolve(itemResolveArgs));
@@ -48,7 +52,10 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             {
                 Parent = series,
                 CollectionType = CollectionType.TvShows,
-                Path = "Extras/Extras S01E01.mkv"
+                FileInfo = new FileSystemMetadata()
+                {
+                    FullName = "Extras/Extras S01E01.mkv"
+                }
             };
             Assert.NotNull(episodeResolver.Resolve(itemResolveArgs));
         }

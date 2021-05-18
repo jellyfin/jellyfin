@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.Serialization;
 
 namespace Emby.Server.Implementations.AppBase

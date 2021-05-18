@@ -85,7 +85,7 @@ namespace Jellyfin.Api.Helpers
                 authorization.Version,
                 authorization.DeviceId,
                 authorization.Device,
-                request.HttpContext.GetNormalizedRemoteIp(),
+                request.HttpContext.GetNormalizedRemoteIp().ToString(),
                 user).ConfigureAwait(false);
 
             if (session == null)
