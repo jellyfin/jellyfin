@@ -104,6 +104,19 @@ namespace MediaBrowser.Model.Entities
                     return "HDR";
                 }
 
+                // For some Dolby Vision files, no color transfer is provided, so check the codec
+
+                var codecTag = CodecTag;
+
+                if (string.Equals(codecTag, "dva1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvav", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "HDR";
+                }
+
                 return "SDR";
             }
         }
