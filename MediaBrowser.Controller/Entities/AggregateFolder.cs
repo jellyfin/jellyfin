@@ -22,6 +22,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class AggregateFolder : Folder
     {
+        private bool _requiresRefresh;
+
         public AggregateFolder()
         {
             PhysicalLocationsList = Array.Empty<string>();
@@ -85,8 +87,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private bool _requiresRefresh;
-
         public override bool RequiresRefresh()
         {
             var changed = base.RequiresRefresh() || _requiresRefresh;
@@ -106,11 +106,11 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             ClearCache();
 
-            var changed = base.BeforeMetadataRefresh(replaceAllMetdata) || _requiresRefresh;
+            var changed = base.BeforeMetadataRefresh(replaceAllMetadata) || _requiresRefresh;
             _requiresRefresh = false;
             return changed;
         }

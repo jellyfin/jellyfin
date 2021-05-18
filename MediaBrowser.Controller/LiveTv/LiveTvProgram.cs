@@ -71,7 +71,7 @@ namespace MediaBrowser.Controller.LiveTv
         public override SourceType SourceType => SourceType.LiveTV;
 
         /// <summary>
-        /// The start date of the program, in UTC.
+        /// Gets or sets start date of the program, in UTC.
         /// </summary>
         [JsonIgnore]
         public DateTime StartDate { get; set; }
