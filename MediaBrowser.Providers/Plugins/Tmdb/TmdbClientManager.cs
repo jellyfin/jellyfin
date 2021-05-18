@@ -281,7 +281,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The TMDb person information or null if not found.</returns>
         public async Task<Person> GetPersonAsync(int personTmdbId, string language, CancellationToken cancellationToken)
         {
-            var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}";
+            var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out Person person))
             {
                 return person;
