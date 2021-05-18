@@ -4427,7 +4427,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(string.Join(" AND ", excludeIds));
             }
 
-            if (query.ExcludeProviderIds.Count > 0)
+            if (query.ExcludeProviderIds != null && query.ExcludeProviderIds.Count > 0)
             {
                 var excludeIds = new List<string>();
 
@@ -4457,7 +4457,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.HasAnyProviderId.Count > 0)
+            if (query.HasAnyProviderId != null && query.HasAnyProviderId.Count > 0)
             {
                 var hasProviderIds = new List<string>();
 

@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -20,9 +18,9 @@ namespace MediaBrowser.Controller.Entities
 
         public int? Limit { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
-        public BaseItem SimilarTo { get; set; }
+        public BaseItem? SimilarTo { get; set; }
 
         public bool? IsFolder { get; set; }
 
@@ -58,23 +56,23 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? CollapseBoxSetItems { get; set; }
 
-        public string NameStartsWithOrGreater { get; set; }
+        public string? NameStartsWithOrGreater { get; set; }
 
-        public string NameStartsWith { get; set; }
+        public string? NameStartsWith { get; set; }
 
-        public string NameLessThan { get; set; }
+        public string? NameLessThan { get; set; }
 
-        public string NameContains { get; set; }
+        public string? NameContains { get; set; }
 
-        public string MinSortName { get; set; }
+        public string? MinSortName { get; set; }
 
-        public string PresentationUniqueKey { get; set; }
+        public string? PresentationUniqueKey { get; set; }
 
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string Person { get; set; }
+        public string? Person { get; set; }
 
         public Guid[] PersonIds { get; set; }
 
@@ -82,7 +80,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] ExcludeItemIds { get; set; }
 
-        public string AdjacentTo { get; set; }
+        public string? AdjacentTo { get; set; }
 
         public string[] PersonTypes { get; set; }
 
@@ -182,13 +180,13 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid ParentId { get; set; }
 
-        public string ParentType { get; set; }
+        public string? ParentType { get; set; }
 
         public Guid[] AncestorIds { get; set; }
 
         public Guid[] TopParentIds { get; set; }
 
-        public BaseItem Parent
+        public BaseItem? Parent
         {
             set
             {
@@ -213,9 +211,9 @@ namespace MediaBrowser.Controller.Entities
 
         public SeriesStatus[] SeriesStatuses { get; set; }
 
-        public string ExternalSeriesId { get; set; }
+        public string? ExternalSeriesId { get; set; }
 
-        public string ExternalId { get; set; }
+        public string? ExternalId { get; set; }
 
         public Guid[] AlbumIds { get; set; }
 
@@ -223,9 +221,9 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] ExcludeArtistIds { get; set; }
 
-        public string AncestorWithPresentationUniqueKey { get; set; }
+        public string? AncestorWithPresentationUniqueKey { get; set; }
 
-        public string SeriesPresentationUniqueKey { get; set; }
+        public string? SeriesPresentationUniqueKey { get; set; }
 
         public bool GroupByPresentationUniqueKey { get; set; }
 
@@ -235,7 +233,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool ForceDirect { get; set; }
 
-        public Dictionary<string, string> ExcludeProviderIds { get; set; }
+        public Dictionary<string, string>? ExcludeProviderIds { get; set; }
 
         public bool EnableGroupByMetadataKey { get; set; }
 
@@ -253,13 +251,13 @@ namespace MediaBrowser.Controller.Entities
 
         public int MinSimilarityScore { get; set; }
 
-        public string HasNoAudioTrackWithLanguage { get; set; }
+        public string? HasNoAudioTrackWithLanguage { get; set; }
 
-        public string HasNoInternalSubtitleTrackWithLanguage { get; set; }
+        public string? HasNoInternalSubtitleTrackWithLanguage { get; set; }
 
-        public string HasNoExternalSubtitleTrackWithLanguage { get; set; }
+        public string? HasNoExternalSubtitleTrackWithLanguage { get; set; }
 
-        public string HasNoSubtitleTrackWithLanguage { get; set; }
+        public string? HasNoSubtitleTrackWithLanguage { get; set; }
 
         public bool? IsDeadArtist { get; set; }
 
@@ -283,12 +281,10 @@ namespace MediaBrowser.Controller.Entities
             ExcludeInheritedTags = Array.Empty<string>();
             ExcludeItemIds = Array.Empty<Guid>();
             ExcludeItemTypes = Array.Empty<string>();
-            ExcludeProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ExcludeTags = Array.Empty<string>();
             GenreIds = Array.Empty<Guid>();
             Genres = Array.Empty<string>();
             GroupByPresentationUniqueKey = true;
-            HasAnyProviderId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             ImageTypes = Array.Empty<ImageType>();
             IncludeItemTypes = Array.Empty<string>();
             ItemIds = Array.Empty<Guid>();
@@ -309,32 +305,33 @@ namespace MediaBrowser.Controller.Entities
             Years = Array.Empty<int>();
         }
 
-        public InternalItemsQuery(User user)
+        public InternalItemsQuery(User? user)
             : this()
         {
-            SetUser(user);
+            if (user != null)
+            {
+                SetUser(user);
+            }
         }
 
         public void SetUser(User user)
         {
-            if (user != null)
+            MaxParentalRating = user.MaxParentalAgeRating;
+
+            if (MaxParentalRating.HasValue)
             {
-                MaxParentalRating = user.MaxParentalAgeRating;
-
-                if (MaxParentalRating.HasValue)
-                {
-                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
-                        .Where(i => i != UnratedItem.Other.ToString())
-                        .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
-                }
-
-                ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
-
-                User = user;
+                string other = UnratedItem.Other.ToString();
+                BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
+                    .Where(i => i != other)
+                    .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
             }
+
+            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
+
+            User = user;
         }
 
-        public Dictionary<string, string> HasAnyProviderId { get; set; }
+        public Dictionary<string, string>? HasAnyProviderId { get; set; }
 
         public Guid[] AlbumArtistIds { get; set; }
 
@@ -356,8 +353,8 @@ namespace MediaBrowser.Controller.Entities
 
         public int? MinWidth { get; set; }
 
-        public string SearchTerm { get; set; }
+        public string? SearchTerm { get; set; }
 
-        public string SeriesTimerId { get; set; }
+        public string? SeriesTimerId { get; set; }
     }
 }
