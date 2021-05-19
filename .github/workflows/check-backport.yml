@@ -4,11 +4,12 @@ on:
   pull_request_target:
     types:
       - labeled
+      - synchronize
 
 jobs:
   check-backport:
     name: Check Backport
-    if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' }}
+    if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' || contains(github.event.pull_request.labels.*.name, 'stable backport' ) }}
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
@@ -41,7 +42,7 @@ jobs:
           set +o errexit
           git config --global user.name "Jellyfin Bot"
           git config --global user.email "team@jellyfin.org"
-          CURRENT_BRANCH=$( git symbolic-ref --short HEAD )
+          CURRENT_BRANCH="origin/${GITHUB_HEAD_REF}"
           git checkout master
           git merge --no-ff ${CURRENT_BRANCH}
           MERGE_COMMIT_HASH=$( git log -q -1 | head -1 | awk '{ print $2 }' )
