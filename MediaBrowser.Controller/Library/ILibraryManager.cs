@@ -352,6 +352,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="uniqueId">The unique identifier.</param>
+        /// <returns>The named view.</returns>
         UserView GetNamedView(
             string name,
             Guid parentId,
@@ -365,10 +366,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
+        /// <returns>The shadow view.</returns>
         UserView GetShadowView(
             BaseItem parent,
-          string viewType,
-          string sortName);
+            string viewType,
+            string sortName);
 
         /// <summary>
         /// Determines whether [is video file] [the specified path].

@@ -69,6 +69,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         private TranscodeReason[] _transcodeReasons = null;
+
         public TranscodeReason[] TranscodeReasons
         {
             get

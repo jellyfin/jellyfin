@@ -121,7 +121,8 @@ namespace MediaBrowser.Controller.Sorting
                         return result;
                     }
                 }
-            } while (pos1 < len1 && pos2 < len2);
+            }
+            while (pos1 < len1 && pos2 < len2);
 
             return len1 - len2;
         }

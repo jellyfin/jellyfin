@@ -107,7 +107,11 @@ namespace MediaBrowser.Controller.Entities
             return base.RequiresRefresh();
         }
 
-        /// <inheridoc />
+        /// <summary>
+        /// This is called before any metadata refresh and returns true if changes were made.
+        /// </summary>
+        /// <param name="replaceAllMetadata">Whether to replace all metadata.</param>
+        /// <returns>true if the item has change, else false.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);

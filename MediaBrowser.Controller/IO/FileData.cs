@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="flattenFolderDepth">The flatten folder depth.</param>
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException">The path is null or empty.</exception>
         public static FileSystemMetadata[] GetFilteredFileSystemEntries(
             IDirectoryService directoryService,
             string path,
