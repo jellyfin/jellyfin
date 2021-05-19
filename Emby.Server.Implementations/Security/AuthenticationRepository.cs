@@ -326,7 +326,7 @@ namespace Emby.Server.Implementations.Security
 
             if (reader.TryReadDateTime(9, out var dateLastActivity))
             {
-                info.DateLastActivity = dateLastActivity.Value;
+                info.DateLastActivity = dateLastActivity;
             }
             else
             {

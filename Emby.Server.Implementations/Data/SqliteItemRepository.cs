@@ -1334,7 +1334,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is IHasStartDate hasStartDate && reader.TryReadDateTime(index, out var startDate))
                 {
-                    hasStartDate.StartDate = startDate.Value;
+                    hasStartDate.StartDate = startDate;
                 }
 
                 index++;
@@ -1446,7 +1446,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryReadDateTime(index++, out var dateLastRefreshed))
                 {
-                    item.DateLastRefreshed = dateLastRefreshed.Value;
+                    item.DateLastRefreshed = dateLastRefreshed;
                 }
             }
 
@@ -1510,13 +1510,13 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryReadDateTime(index++, out var dateCreated))
                 {
-                    item.DateCreated = dateCreated.Value;
+                    item.DateCreated = dateCreated;
                 }
             }
 
             if (reader.TryReadDateTime(index++, out var dateModified))
             {
-                item.DateModified = dateModified.Value;
+                item.DateModified = dateModified;
             }
 
             item.Id = reader.GetGuid(index++);
@@ -1531,7 +1531,7 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetGuid(index++, out var parentId))
             {
-                item.ParentId = parentId.Value;
+                item.ParentId = parentId;
             }
 
             if (reader.TryGetString(index++, out var audioString))
@@ -1567,7 +1567,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryReadDateTime(index++, out var dateLastSaved))
                 {
-                    item.DateLastSaved = dateLastSaved.Value;
+                    item.DateLastSaved = dateLastSaved;
                 }
             }
 
@@ -1695,7 +1695,7 @@ namespace Emby.Server.Implementations.Data
                     index++;
                     if (reader.TryGetGuid(index, out var seasonId))
                     {
-                        episode.SeasonId = seasonId.Value;
+                        episode.SeasonId = seasonId;
                     }
                 }
                 else
@@ -1713,7 +1713,7 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (reader.TryGetGuid(index, out var seriesId))
                     {
-                        hasSeries.SeriesId = seriesId.Value;
+                        hasSeries.SeriesId = seriesId;
                     }
                 }
 
@@ -1845,7 +1845,7 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetGuid(index, out var ownerId))
             {
-                item.OwnerId = ownerId.Value;
+                item.OwnerId = ownerId;
             }
 
             return item;
@@ -1958,7 +1958,7 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryReadDateTime(3, out var imageDateModified))
             {
-                chapter.ImageDateModified = imageDateModified.Value;
+                chapter.ImageDateModified = imageDateModified;
             }
 
             return chapter;
