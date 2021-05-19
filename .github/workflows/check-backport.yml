@@ -8,7 +8,7 @@ on:
 jobs:
   check-backport:
     name: Check Backport
-    if: ${{ ( github.event.issue.pull_request != '' && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' }}
+    if: ${{ ( github.event.issue.pull_request && contains(github.event.comment.body, '@jellyfin-bot check backport') ) || github.event.label.name == 'stable backport' }}
     runs-on: ubuntu-latest
     steps:
       - name: Notify as seen
