@@ -38,7 +38,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     "/video/My.Video.With.Additional.Garbage.en.srt",
                     "/video/My.Video With Additional Garbage.srt"
                 },
-                new List<MediaStream>
+                new[]
                 {
                     CreateMediaStream("/video/My.Video.srt", "srt", null, index++),
                     CreateMediaStream("/video/My.Video.vtt", "vtt", null, index++),
@@ -58,12 +58,12 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
         [Theory]
         [MemberData(nameof(AddExternalSubtitleStreams_GivenMixedFilenames_ReturnsValidSubtitles_TestData))]
-        public void AddExternalSubtitleStreams_GivenMixedFilenames_ReturnsValidSubtitles(List<MediaStream> streams, string videoPath, int startIndex, string[] files, List<MediaStream> expectedResult)
+        public void AddExternalSubtitleStreams_GivenMixedFilenames_ReturnsValidSubtitles(List<MediaStream> streams, string videoPath, int startIndex, string[] files, MediaStream[] expectedResult)
         {
             new SubtitleResolver(Mock.Of<ILocalizationManager>()).AddExternalSubtitleStreams(streams, videoPath, startIndex, files);
 
-            Assert.Equal(expectedResult.Count, streams.Count);
-            for (var i = 0; i < expectedResult.Count; i++)
+            Assert.Equal(expectedResult.Length, streams.Count);
+            for (var i = 0; i < expectedResult.Length; i++)
             {
                 var expected = expectedResult[i];
                 var actual = streams[i];

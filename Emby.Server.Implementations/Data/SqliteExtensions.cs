@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        private static bool IsDbNull(this IResultSetValue result)
+        public static bool IsDbNull(this IResultSetValue result)
         {
             return result.SQLiteType == SQLiteType.Null;
         }
@@ -158,12 +158,12 @@ namespace Emby.Server.Implementations.Data
             return result[index].ToBool();
         }
 
-        public static bool TryGetBoolean(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out bool? result)
+        public static bool TryGetBoolean(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out bool result)
         {
-            result = null;
             var item = reader[index];
             if (item.IsDbNull())
             {
+                result = default;
                 return false;
             }
 
@@ -171,12 +171,12 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        public static bool TryGetInt32(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out int? result)
+        public static bool TryGetInt32(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out int result)
         {
-            result = null;
             var item = reader[index];
             if (item.IsDbNull())
             {
+                result = default;
                 return false;
             }
 
@@ -189,12 +189,12 @@ namespace Emby.Server.Implementations.Data
             return result[index].ToInt64();
         }
 
-        public static bool TryGetInt64(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out long? result)
+        public static bool TryGetInt64(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out long result)
         {
-            result = null;
             var item = reader[index];
             if (item.IsDbNull())
             {
+                result = default;
                 return false;
             }
 
@@ -202,12 +202,12 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        public static bool TryGetSingle(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out float? result)
+        public static bool TryGetSingle(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out float result)
         {
-            result = null;
             var item = reader[index];
             if (item.IsDbNull())
             {
+                result = default;
                 return false;
             }
 
@@ -215,12 +215,12 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        public static bool TryGetDouble(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out double? result)
+        public static bool TryGetDouble(this IReadOnlyList<IResultSetValue> reader, int index, [NotNullWhen(true)] out double result)
         {
-            result = null;
             var item = reader[index];
             if (item.IsDbNull())
             {
+                result = default;
                 return false;
             }
 

@@ -1346,7 +1346,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             var channelId = reader[index];
-            if (channelId.SQLiteType != SQLiteType.Null)
+            if (!channelId.IsDbNull())
             {
                 if (!Utf8Parser.TryParse(channelId.ToBlob(), out Guid value, out _, standardFormat: 'N'))
                 {
@@ -1366,12 +1366,12 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (reader.TryGetBoolean(index++, out var isMovie))
                     {
-                        hasProgramAttributes.IsMovie = isMovie.Value;
+                        hasProgramAttributes.IsMovie = isMovie;
                     }
 
                     if (reader.TryGetBoolean(index++, out var isSeries))
                     {
-                        hasProgramAttributes.IsSeries = isSeries.Value;
+                        hasProgramAttributes.IsSeries = isSeries;
                     }
 
                     if (reader.TryGetString(index++, out var episodeTitle))
@@ -1381,7 +1381,7 @@ namespace Emby.Server.Implementations.Data
 
                     if (reader.TryGetBoolean(index++, out var isRepeat))
                     {
-                        hasProgramAttributes.IsRepeat = isRepeat.Value;
+                        hasProgramAttributes.IsRepeat = isRepeat;
                     }
                 }
                 else
@@ -1412,7 +1412,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetBoolean(index++, out var isLocked))
                 {
-                    item.IsLocked = isLocked.Value;
+                    item.IsLocked = isLocked;
                 }
 
                 if (reader.TryGetString(index++, out var preferredMetadataLanguage))
@@ -1430,7 +1430,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetInt32(index++, out var width))
                 {
-                    item.Width = width.Value;
+                    item.Width = width;
                 }
             }
 
@@ -1438,7 +1438,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetInt32(index++, out var height))
                 {
-                    item.Height = height.Value;
+                    item.Height = height;
                 }
             }
 
@@ -1536,6 +1536,7 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetString(index++, out var audioString))
             {
+                // TODO Span overload coming in the future https://github.com/dotnet/runtime/issues/1916
                 if (Enum.TryParse(audioString, true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
@@ -1559,7 +1560,7 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetBoolean(index++, out var isInMixedFolder))
             {
-                item.IsInMixedFolder = isInMixedFolder.Value;
+                item.IsInMixedFolder = isInMixedFolder;
             }
 
             if (HasField(query, ItemFields.DateLastSaved))
@@ -1669,7 +1670,7 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetBoolean(index++, out var isVirtualItem))
             {
-                item.IsVirtualItem = isVirtualItem.Value;
+                item.IsVirtualItem = isVirtualItem;
             }
 
             if (item is IHasSeries hasSeriesName)
@@ -1731,7 +1732,7 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetInt32(index++, out var parentalRating))
                 {
-                    item.InheritedParentalRatingValue = parentalRating.Value;
+                    item.InheritedParentalRatingValue = parentalRating;
                 }
             }
 

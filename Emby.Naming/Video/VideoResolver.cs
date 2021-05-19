@@ -59,7 +59,7 @@ namespace Emby.Naming.Video
             }
 
             bool isStub = false;
-            ReadOnlySpan<char> container = null;
+            ReadOnlySpan<char> container = ReadOnlySpan<char>.Empty;
             string? stubType = null;
 
             if (!isDirectory)
@@ -105,7 +105,7 @@ namespace Emby.Naming.Video
 
             return new VideoFileInfo(
                 path: path,
-                container: container.ToString(),
+                container: container.IsEmpty ? null : container.ToString(),
                 isStub: isStub,
                 name: name,
                 year: year,
