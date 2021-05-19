@@ -6066,6 +6066,13 @@ AND Type = @InternalPersonType)");
             if (reader[4].SQLiteType != SQLiteType.Null)
             {
                 item.Language = reader[4].ToString();
+
+                string i18nKey = "Language" + item.Language;
+                item.localizedLanguage = _localization.GetLocalizedString(i18nKey);
+                if (item.localizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
+                {
+                    item.localizedLanguage = null;
+                }
             }
 
             if (reader[5].SQLiteType != SQLiteType.Null)
