@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -35,7 +34,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
-        private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
         private readonly IEncodingManager _encodingManager;
         private readonly IServerConfigurationManager _config;
@@ -51,7 +49,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
@@ -62,7 +59,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
-            _blurayExaminer = blurayExaminer;
             _localization = localization;
             _encodingManager = encodingManager;
             _config = config;
@@ -84,35 +80,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!item.IsShortcut || options.EnableRemoteContentProbe)
             {
-                string[] streamFileNames = null;
-
-                if (item.VideoType == VideoType.Dvd)
-                {
-                    streamFileNames = FetchFromDvdLib(item);
-
-                    if (streamFileNames.Length == 0)
-                    {
-                        _logger.LogError("No playable vobs found in dvd structure, skipping ffprobe.");
-                        return ItemUpdateType.MetadataImport;
-                    }
-                }
-                else if (item.VideoType == VideoType.BluRay)
-                {
-                    var inputPath = item.Path;
-
-                    blurayDiscInfo = GetBDInfo(inputPath);
-
-                    streamFileNames = blurayDiscInfo.Files;
-
-                    if (streamFileNames.Length == 0)
-                    {
-                        _logger.LogError("No playable vobs found in bluray structure, skipping ffprobe.");
-                        return ItemUpdateType.MetadataImport;
-                    }
-                }
-
-                streamFileNames ??= Array.Empty<string>();
-
                 mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -333,29 +300,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private bool IsEmpty(int? num)
         {
             return !num.HasValue || num.Value == 0;
-        }
-
-        /// <summary>
-        /// Gets information about the longest playlist on a bdrom.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns>VideoStream.</returns>
-        private BlurayDiscInfo GetBDInfo(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            try
-            {
-                return _blurayExaminer.GetDiscInfo(path);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting BDInfo");
-                return null;
-            }
         }
 
         private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions refreshOptions, LibraryOptions libraryOptions)
@@ -599,34 +543,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             return chapters;
-        }
-
-        private string[] FetchFromDvdLib(Video item)
-        {
-            var path = item.Path;
-            var dvd = new Dvd(path);
-
-            var primaryTitle = dvd.Titles.OrderByDescending(GetRuntime).FirstOrDefault();
-
-            byte? titleNumber = null;
-
-            if (primaryTitle != null)
-            {
-                titleNumber = primaryTitle.VideoTitleSetNumber;
-                item.RunTimeTicks = GetRuntime(primaryTitle);
-            }
-
-            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber)
-                .Select(Path.GetFileName)
-                .ToArray();
-        }
-
-        private long GetRuntime(Title title)
-        {
-            return title.ProgramChains
-                    .Select(i => (TimeSpan)i.PlaybackTime)
-                    .Select(i => i.Ticks)
-                    .Sum();
         }
     }
 }

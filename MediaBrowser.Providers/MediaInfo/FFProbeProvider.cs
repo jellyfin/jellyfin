@@ -38,7 +38,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILogger<FFProbeProvider> _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IItemRepository _itemRepo;
-        private readonly IBlurayExaminer _blurayExaminer;
         private readonly ILocalizationManager _localization;
         private readonly IEncodingManager _encodingManager;
         private readonly IServerConfigurationManager _config;
@@ -55,7 +54,6 @@ namespace MediaBrowser.Providers.MediaInfo
             IMediaSourceManager mediaSourceManager,
             IMediaEncoder mediaEncoder,
             IItemRepository itemRepo,
-            IBlurayExaminer blurayExaminer,
             ILocalizationManager localization,
             IEncodingManager encodingManager,
             IServerConfigurationManager config,
@@ -66,7 +64,6 @@ namespace MediaBrowser.Providers.MediaInfo
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
-            _blurayExaminer = blurayExaminer;
             _localization = localization;
             _encodingManager = encodingManager;
             _config = config;
@@ -180,7 +177,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 _mediaSourceManager,
                 _mediaEncoder,
                 _itemRepo,
-                _blurayExaminer,
                 _localization,
                 _encodingManager,
                 _config,
