@@ -1332,27 +1332,23 @@ namespace Emby.Server.Implementations.Data
 
             if (queryHasStartDate)
             {
-                if (!reader.IsDBNull(index))
+                if (item is IHasStartDate hasStartDate && reader.TryReadDateTime(index, out var startDate))
                 {
-                    if (item is IHasStartDate hasStartDate)
-                    {
-                        hasStartDate.StartDate = reader[index].ReadDateTime();
-                    }
+                    hasStartDate.StartDate = startDate;
                 }
 
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryReadDateTime(index++, out var endDate))
             {
-                item.EndDate = reader[index].TryReadDateTime();
+                item.EndDate = endDate;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            var channelId = reader[index];
+            if (!channelId.IsDbNull())
             {
-                if (!Utf8Parser.TryParse(reader[index].ToBlob(), out Guid value, out _, standardFormat: 'N'))
+                if (!Utf8Parser.TryParse(channelId.ToBlob(), out Guid value, out _, standardFormat: 'N'))
                 {
                     var str = reader.GetString(index);
                     Logger.LogWarning("{ChannelId} isn't in the expected format", str);
@@ -1368,33 +1364,25 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is IHasProgramAttributes hasProgramAttributes)
                 {
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetBoolean(index++, out var isMovie))
                     {
-                        hasProgramAttributes.IsMovie = reader.GetBoolean(index);
+                        hasProgramAttributes.IsMovie = isMovie;
                     }
 
-                    index++;
-
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetBoolean(index++, out var isSeries))
                     {
-                        hasProgramAttributes.IsSeries = reader.GetBoolean(index);
+                        hasProgramAttributes.IsSeries = isSeries;
                     }
 
-                    index++;
-
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetString(index++, out var episodeTitle))
                     {
-                        hasProgramAttributes.EpisodeTitle = reader.GetString(index);
+                        hasProgramAttributes.EpisodeTitle = episodeTitle;
                     }
 
-                    index++;
-
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetBoolean(index++, out var isRepeat))
                     {
-                        hasProgramAttributes.IsRepeat = reader.GetBoolean(index);
+                        hasProgramAttributes.IsRepeat = isRepeat;
                     }
-
-                    index++;
                 }
                 else
                 {
@@ -1402,206 +1390,158 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetSingle(index++, out var communityRating))
             {
-                item.CommunityRating = reader.GetFloat(index);
+                item.CommunityRating = communityRating;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.CustomRating))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var customRating))
                 {
-                    item.CustomRating = reader.GetString(index);
+                    item.CustomRating = customRating;
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetInt32(index++, out var indexNumber))
             {
-                item.IndexNumber = reader.GetInt32(index);
+                item.IndexNumber = indexNumber;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.Settings))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetBoolean(index++, out var isLocked))
                 {
-                    item.IsLocked = reader.GetBoolean(index);
+                    item.IsLocked = isLocked;
                 }
 
-                index++;
-
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var preferredMetadataLanguage))
                 {
-                    item.PreferredMetadataLanguage = reader.GetString(index);
+                    item.PreferredMetadataLanguage = preferredMetadataLanguage;
                 }
 
-                index++;
-
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var preferredMetadataCountryCode))
                 {
-                    item.PreferredMetadataCountryCode = reader.GetString(index);
+                    item.PreferredMetadataCountryCode = preferredMetadataCountryCode;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.Width))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetInt32(index++, out var width))
                 {
-                    item.Width = reader.GetInt32(index);
+                    item.Width = width;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.Height))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetInt32(index++, out var height))
                 {
-                    item.Height = reader.GetInt32(index);
+                    item.Height = height;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.DateLastRefreshed))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryReadDateTime(index++, out var dateLastRefreshed))
                 {
-                    item.DateLastRefreshed = reader[index].ReadDateTime();
+                    item.DateLastRefreshed = dateLastRefreshed;
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var name))
             {
-                item.Name = reader.GetString(index);
+                item.Name = name;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var restorePath))
             {
-                item.Path = RestorePath(reader.GetString(index));
+                item.Path = RestorePath(restorePath);
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryReadDateTime(index++, out var premiereDate))
             {
-                item.PremiereDate = reader[index].TryReadDateTime();
+                item.PremiereDate = premiereDate;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.Overview))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var overview))
                 {
-                    item.Overview = reader.GetString(index);
+                    item.Overview = overview;
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetInt32(index++, out var parentIndexNumber))
             {
-                item.ParentIndexNumber = reader.GetInt32(index);
+                item.ParentIndexNumber = parentIndexNumber;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetInt32(index++, out var productionYear))
             {
-                item.ProductionYear = reader.GetInt32(index);
+                item.ProductionYear = productionYear;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var officialRating))
             {
-                item.OfficialRating = reader.GetString(index);
+                item.OfficialRating = officialRating;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.SortName))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var forcedSortName))
                 {
-                    item.ForcedSortName = reader.GetString(index);
+                    item.ForcedSortName = forcedSortName;
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetInt64(index++, out var runTimeTicks))
             {
-                item.RunTimeTicks = reader.GetInt64(index);
+                item.RunTimeTicks = runTimeTicks;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetInt64(index++, out var size))
             {
-                item.Size = reader.GetInt64(index);
+                item.Size = size;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.DateCreated))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryReadDateTime(index++, out var dateCreated))
                 {
-                    item.DateCreated = reader[index].ReadDateTime();
+                    item.DateCreated = dateCreated;
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryReadDateTime(index++, out var dateModified))
             {
-                item.DateModified = reader[index].ReadDateTime();
+                item.DateModified = dateModified;
             }
 
-            index++;
-
-            item.Id = reader.GetGuid(index);
-            index++;
+            item.Id = reader.GetGuid(index++);
 
             if (HasField(query, ItemFields.Genres))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var genres))
                 {
-                    item.Genres = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    item.Genres = genres.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetGuid(index++, out var parentId))
             {
-                item.ParentId = reader.GetGuid(index);
+                item.ParentId = parentId;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var audioString))
             {
-                if (Enum.TryParse(reader.GetString(index), true, out ProgramAudio audio))
+                // TODO Span overload coming in the future https://github.com/dotnet/runtime/issues/1916
+                if (Enum.TryParse(audioString, true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
                 }
             }
-
-            index++;
 
             // TODO: Even if not needed by apps, the server needs it internally
             // But get this excluded from contexts where it is not needed
@@ -1609,35 +1549,31 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is LiveTvChannel liveTvChannel)
                 {
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetString(index, out var serviceName))
                     {
-                        liveTvChannel.ServiceName = reader.GetString(index);
+                        liveTvChannel.ServiceName = serviceName;
                     }
                 }
 
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetBoolean(index++, out var isInMixedFolder))
             {
-                item.IsInMixedFolder = reader.GetBoolean(index);
+                item.IsInMixedFolder = isInMixedFolder;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.DateLastSaved))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryReadDateTime(index++, out var dateLastSaved))
                 {
-                    item.DateLastSaved = reader[index].ReadDateTime();
+                    item.DateLastSaved = dateLastSaved;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.Settings))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var lockedFields))
                 {
                     IEnumerable<MetadataField> GetLockedFields(string s)
                     {
@@ -1650,37 +1586,31 @@ namespace Emby.Server.Implementations.Data
                         }
                     }
 
-                    item.LockedFields = GetLockedFields(reader.GetString(index)).ToArray();
+                    item.LockedFields = GetLockedFields(lockedFields).ToArray();
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.Studios))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var studios))
                 {
-                    item.Studios = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    item.Studios = studios.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.Tags))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var tags))
                 {
-                    item.Tags = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    item.Tags = tags.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
-
-                index++;
             }
 
             if (hasTrailerTypes)
             {
                 if (item is Trailer trailer)
                 {
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetString(index, out var trailerTypes))
                     {
                         IEnumerable<TrailerType> GetTrailerTypes(string s)
                         {
@@ -1693,7 +1623,7 @@ namespace Emby.Server.Implementations.Data
                             }
                         }
 
-                        trailer.TrailerTypes = GetTrailerTypes(reader.GetString(index)).ToArray();
+                        trailer.TrailerTypes = GetTrailerTypes(trailerTypes).ToArray();
                     }
                 }
 
@@ -1702,19 +1632,17 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.OriginalTitle))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var originalTitle))
                 {
-                    item.OriginalTitle = reader.GetString(index);
+                    item.OriginalTitle = originalTitle;
                 }
-
-                index++;
             }
 
             if (item is Video video)
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index, out var primaryVersionId))
                 {
-                    video.PrimaryVersionId = reader.GetString(index);
+                    video.PrimaryVersionId = primaryVersionId;
                 }
             }
 
@@ -1722,40 +1650,34 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.DateLastMediaAdded))
             {
-                if (item is Folder folder && !reader.IsDBNull(index))
+                if (item is Folder folder && reader.TryReadDateTime(index, out var dateLastMediaAdded))
                 {
-                    folder.DateLastMediaAdded = reader[index].TryReadDateTime();
+                    folder.DateLastMediaAdded = dateLastMediaAdded;
                 }
 
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var album))
             {
-                item.Album = reader.GetString(index);
+                item.Album = album;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetSingle(index++, out var criticRating))
             {
-                item.CriticRating = reader.GetFloat(index);
+                item.CriticRating = criticRating;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetBoolean(index++, out var isVirtualItem))
             {
-                item.IsVirtualItem = reader.GetBoolean(index);
+                item.IsVirtualItem = isVirtualItem;
             }
-
-            index++;
 
             if (item is IHasSeries hasSeriesName)
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index, out var seriesName))
                 {
-                    hasSeriesName.SeriesName = reader.GetString(index);
+                    hasSeriesName.SeriesName = seriesName;
                 }
             }
 
@@ -1765,15 +1687,15 @@ namespace Emby.Server.Implementations.Data
             {
                 if (item is Episode episode)
                 {
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetString(index, out var seasonName))
                     {
-                        episode.SeasonName = reader.GetString(index);
+                        episode.SeasonName = seasonName;
                     }
 
                     index++;
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetGuid(index, out var seasonId))
                     {
-                        episode.SeasonId = reader.GetGuid(index);
+                        episode.SeasonId = seasonId;
                     }
                 }
                 else
@@ -1789,9 +1711,9 @@ namespace Emby.Server.Implementations.Data
             {
                 if (hasSeries != null)
                 {
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetGuid(index, out var seriesId))
                     {
-                        hasSeries.SeriesId = reader.GetGuid(index);
+                        hasSeries.SeriesId = seriesId;
                     }
                 }
 
@@ -1800,56 +1722,48 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.PresentationUniqueKey))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var presentationUniqueKey))
                 {
-                    item.PresentationUniqueKey = reader.GetString(index);
+                    item.PresentationUniqueKey = presentationUniqueKey;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.InheritedParentalRatingValue))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetInt32(index++, out var parentalRating))
                 {
-                    item.InheritedParentalRatingValue = reader.GetInt32(index);
+                    item.InheritedParentalRatingValue = parentalRating;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.ExternalSeriesId))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var externalSeriesId))
                 {
-                    item.ExternalSeriesId = reader.GetString(index);
+                    item.ExternalSeriesId = externalSeriesId;
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.Taglines))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var tagLine))
                 {
-                    item.Tagline = reader.GetString(index);
+                    item.Tagline = tagLine;
                 }
-
-                index++;
             }
 
-            if (item.ProviderIds.Count == 0 && !reader.IsDBNull(index))
+            if (item.ProviderIds.Count == 0 && reader.TryGetString(index, out var providerIds))
             {
-                DeserializeProviderIds(reader.GetString(index), item);
+                DeserializeProviderIds(providerIds, item);
             }
 
             index++;
 
             if (query.DtoOptions.EnableImages)
             {
-                if (item.ImageInfos.Length == 0 && !reader.IsDBNull(index))
+                if (item.ImageInfos.Length == 0 && reader.TryGetString(index, out var imageInfos))
                 {
-                    item.ImageInfos = DeserializeImages(reader.GetString(index));
+                    item.ImageInfos = DeserializeImages(imageInfos);
                 }
 
                 index++;
@@ -1857,72 +1771,62 @@ namespace Emby.Server.Implementations.Data
 
             if (HasField(query, ItemFields.ProductionLocations))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var productionLocations))
                 {
-                    item.ProductionLocations = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries).ToArray();
+                    item.ProductionLocations = productionLocations.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
-
-                index++;
             }
 
             if (HasField(query, ItemFields.ExtraIds))
             {
-                if (!reader.IsDBNull(index))
+                if (reader.TryGetString(index++, out var extraIds))
                 {
-                    item.ExtraIds = SplitToGuids(reader.GetString(index));
+                    item.ExtraIds = SplitToGuids(extraIds);
                 }
-
-                index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetInt32(index++, out var totalBitrate))
             {
-                item.TotalBitrate = reader.GetInt32(index);
+                item.TotalBitrate = totalBitrate;
             }
 
-            index++;
-
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var extraTypeString))
             {
-                if (Enum.TryParse(reader.GetString(index), true, out ExtraType extraType))
+                if (Enum.TryParse(extraTypeString, true, out ExtraType extraType))
                 {
                     item.ExtraType = extraType;
                 }
             }
 
-            index++;
-
             if (hasArtistFields)
             {
-                if (item is IHasArtist hasArtists && !reader.IsDBNull(index))
+                if (item is IHasArtist hasArtists && reader.TryGetString(index, out var artists))
                 {
-                    hasArtists.Artists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    hasArtists.Artists = artists.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
 
-                if (item is IHasAlbumArtist hasAlbumArtists && !reader.IsDBNull(index))
+                if (item is IHasAlbumArtist hasAlbumArtists && reader.TryGetString(index, out var albumArtists))
                 {
-                    hasAlbumArtists.AlbumArtists = reader.GetString(index).Split('|', StringSplitOptions.RemoveEmptyEntries);
+                    hasAlbumArtists.AlbumArtists = albumArtists.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 }
 
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetString(index++, out var externalId))
             {
-                item.ExternalId = reader.GetString(index);
+                item.ExternalId = externalId;
             }
-
-            index++;
 
             if (HasField(query, ItemFields.SeriesPresentationUniqueKey))
             {
                 if (hasSeries != null)
                 {
-                    if (!reader.IsDBNull(index))
+                    if (reader.TryGetString(index, out var seriesPresentationUniqueKey))
                     {
-                        hasSeries.SeriesPresentationUniqueKey = reader.GetString(index);
+                        hasSeries.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
                     }
                 }
 
@@ -1931,20 +1835,18 @@ namespace Emby.Server.Implementations.Data
 
             if (enableProgramAttributes)
             {
-                if (item is LiveTvProgram program && !reader.IsDBNull(index))
+                if (item is LiveTvProgram program && reader.TryGetString(index, out var showId))
                 {
-                    program.ShowId = reader.GetString(index);
+                    program.ShowId = showId;
                 }
 
                 index++;
             }
 
-            if (!reader.IsDBNull(index))
+            if (reader.TryGetGuid(index, out var ownerId))
             {
-                item.OwnerId = reader.GetGuid(index);
+                item.OwnerId = ownerId;
             }
-
-            index++;
 
             return item;
         }
@@ -2032,14 +1934,14 @@ namespace Emby.Server.Implementations.Data
                 StartPositionTicks = reader.GetInt64(0)
             };
 
-            if (!reader.IsDBNull(1))
+            if (reader.TryGetString(1, out var chapterName))
             {
-                chapter.Name = reader.GetString(1);
+                chapter.Name = chapterName;
             }
 
-            if (!reader.IsDBNull(2))
+            if (reader.TryGetString(2, out var imagePath))
             {
-                chapter.ImagePath = reader.GetString(2);
+                chapter.ImagePath = imagePath;
 
                 if (!string.IsNullOrEmpty(chapter.ImagePath))
                 {
@@ -2054,9 +1956,9 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (!reader.IsDBNull(3))
+            if (reader.TryReadDateTime(3, out var imageDateModified))
             {
-                chapter.ImageDateModified = reader[3].ReadDateTime();
+                chapter.ImageDateModified = imageDateModified;
             }
 
             return chapter;
@@ -3228,12 +3130,8 @@ namespace Emby.Server.Implementations.Data
                     foreach (var row in statement.ExecuteQuery())
                     {
                         var id = row.GetGuid(0);
-                        string path = null;
 
-                        if (!row.IsDBNull(1))
-                        {
-                            path = row.GetString(1);
-                        }
+                        row.TryGetString(1, out var path);
 
                         list.Add(new Tuple<Guid, string>(id, path));
                     }
@@ -4427,7 +4325,7 @@ namespace Emby.Server.Implementations.Data
                 whereClauses.Add(string.Join(" AND ", excludeIds));
             }
 
-            if (query.ExcludeProviderIds.Count > 0)
+            if (query.ExcludeProviderIds != null && query.ExcludeProviderIds.Count > 0)
             {
                 var excludeIds = new List<string>();
 
@@ -4457,7 +4355,7 @@ namespace Emby.Server.Implementations.Data
                 }
             }
 
-            if (query.HasAnyProviderId.Count > 0)
+            if (query.HasAnyProviderId != null && query.HasAnyProviderId.Count > 0)
             {
                 var hasProviderIds = new List<string>();
 
@@ -5327,9 +5225,9 @@ AND Type = @InternalPersonType)");
                 {
                     foreach (var row in statement.ExecuteQuery())
                     {
-                        if (!row.IsDBNull(0))
+                        if (row.TryGetString(0, out var result))
                         {
-                            list.Add(row.GetString(0));
+                            list.Add(result);
                         }
                     }
                 }
@@ -5463,7 +5361,9 @@ AND Type = @InternalPersonType)");
 
             commandText += whereText + " group by PresentationUniqueKey";
 
-            if (query.SimilarTo != null || !string.IsNullOrEmpty(query.SearchTerm))
+            if (query.OrderBy.Count != 0
+                || query.SimilarTo != null
+                || !string.IsNullOrEmpty(query.SearchTerm))
             {
                 commandText += GetOrderByText(query);
             }
@@ -5601,7 +5501,7 @@ AND Type = @InternalPersonType)");
             return result;
         }
 
-        private ItemCounts GetItemCounts(IReadOnlyList<IResultSetValue> reader, int countStartColumn, string[] typesToCount)
+        private static ItemCounts GetItemCounts(IReadOnlyList<IResultSetValue> reader, int countStartColumn, string[] typesToCount)
         {
             var counts = new ItemCounts();
 
@@ -5610,51 +5510,43 @@ AND Type = @InternalPersonType)");
                 return counts;
             }
 
-            var typeString = reader.IsDBNull(countStartColumn) ? null : reader.GetString(countStartColumn);
-
-            if (string.IsNullOrWhiteSpace(typeString))
+            if (!reader.TryGetString(countStartColumn, out var typeString))
             {
                 return counts;
             }
 
-            var allTypes = typeString.Split('|', StringSplitOptions.RemoveEmptyEntries)
-                .ToLookup(x => x);
-
-            foreach (var type in allTypes)
+            foreach (var typeName in typeString.AsSpan().Split('|'))
             {
-                var value = type.Count();
-                var typeName = type.Key;
-
-                if (string.Equals(typeName, typeof(Series).FullName, StringComparison.OrdinalIgnoreCase))
+                if (typeName.Equals(typeof(Series).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.SeriesCount = value;
+                    counts.SeriesCount++;
                 }
-                else if (string.Equals(typeName, typeof(Episode).FullName, StringComparison.OrdinalIgnoreCase))
+                else if (typeName.Equals(typeof(Episode).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.EpisodeCount = value;
+                    counts.EpisodeCount++;
                 }
-                else if (string.Equals(typeName, typeof(Movie).FullName, StringComparison.OrdinalIgnoreCase))
+                else if (typeName.Equals(typeof(Movie).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.MovieCount = value;
+                    counts.MovieCount++;
                 }
-                else if (string.Equals(typeName, typeof(MusicAlbum).FullName, StringComparison.OrdinalIgnoreCase))
+                else if (typeName.Equals(typeof(MusicAlbum).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.AlbumCount = value;
+                    counts.AlbumCount++;
                 }
-                else if (string.Equals(typeName, typeof(MusicArtist).FullName, StringComparison.OrdinalIgnoreCase))
+                else if (typeName.Equals(typeof(MusicArtist).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.ArtistCount = value;
+                    counts.ArtistCount++;
                 }
-                else if (string.Equals(typeName, typeof(Audio).FullName, StringComparison.OrdinalIgnoreCase))
+                else if (typeName.Equals(typeof(Audio).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.SongCount = value;
+                    counts.SongCount++;
                 }
-                else if (string.Equals(typeName, typeof(Trailer).FullName, StringComparison.OrdinalIgnoreCase))
+                else if (typeName.Equals(typeof(Trailer).FullName, StringComparison.OrdinalIgnoreCase))
                 {
-                    counts.TrailerCount = value;
+                    counts.TrailerCount++;
                 }
 
-                counts.ItemCount += value;
+                counts.ItemCount++;
             }
 
             return counts;
@@ -5848,19 +5740,19 @@ AND Type = @InternalPersonType)");
                 Name = reader.GetString(1)
             };
 
-            if (!reader.IsDBNull(2))
+            if (reader.TryGetString(2, out var role))
             {
-                item.Role = reader.GetString(2);
+                item.Role = role;
             }
 
-            if (!reader.IsDBNull(3))
+            if (reader.TryGetString(3, out var type))
             {
-                item.Type = reader.GetString(3);
+                item.Type = type;
             }
 
-            if (!reader.IsDBNull(4))
+            if (reader.TryGetInt32(4, out var sortOrder))
             {
-                item.SortOrder = reader.GetInt32(4);
+                item.SortOrder = sortOrder;
             }
 
             return item;
@@ -6056,150 +5948,150 @@ AND Type = @InternalPersonType)");
 
             item.Type = Enum.Parse<MediaStreamType>(reader[2].ToString(), true);
 
-            if (reader[3].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(3, out var codec))
             {
-                item.Codec = reader[3].ToString();
+                item.Codec = codec;
             }
 
-            if (reader[4].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(4, out var language))
             {
-                item.Language = reader[4].ToString();
+                item.Language = language;
             }
 
-            if (reader[5].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(5, out var channelLayout))
             {
-                item.ChannelLayout = reader[5].ToString();
+                item.ChannelLayout = channelLayout;
             }
 
-            if (reader[6].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(6, out var profile))
             {
-                item.Profile = reader[6].ToString();
+                item.Profile = profile;
             }
 
-            if (reader[7].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(7, out var aspectRatio))
             {
-                item.AspectRatio = reader[7].ToString();
+                item.AspectRatio = aspectRatio;
             }
 
-            if (reader[8].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(8, out var path))
             {
-                item.Path = RestorePath(reader[8].ToString());
+                item.Path = RestorePath(path);
             }
 
             item.IsInterlaced = reader.GetBoolean(9);
 
-            if (reader[10].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(10, out var bitrate))
             {
-                item.BitRate = reader.GetInt32(10);
+                item.BitRate = bitrate;
             }
 
-            if (reader[11].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(11, out var channels))
             {
-                item.Channels = reader.GetInt32(11);
+                item.Channels = channels;
             }
 
-            if (reader[12].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(12, out var sampleRate))
             {
-                item.SampleRate = reader.GetInt32(12);
+                item.SampleRate = sampleRate;
             }
 
             item.IsDefault = reader.GetBoolean(13);
             item.IsForced = reader.GetBoolean(14);
             item.IsExternal = reader.GetBoolean(15);
 
-            if (reader[16].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(16, out var width))
             {
-                item.Width = reader.GetInt32(16);
+                item.Width = width;
             }
 
-            if (reader[17].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(17, out var height))
             {
-                item.Height = reader.GetInt32(17);
+                item.Height = height;
             }
 
-            if (reader[18].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetSingle(18, out var averageFrameRate))
             {
-                item.AverageFrameRate = reader.GetFloat(18);
+                item.AverageFrameRate = averageFrameRate;
             }
 
-            if (reader[19].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetSingle(19, out var realFrameRate))
             {
-                item.RealFrameRate = reader.GetFloat(19);
+                item.RealFrameRate = realFrameRate;
             }
 
-            if (reader[20].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetSingle(20, out var level))
             {
-                item.Level = reader.GetFloat(20);
+                item.Level = level;
             }
 
-            if (reader[21].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(21, out var pixelFormat))
             {
-                item.PixelFormat = reader[21].ToString();
+                item.PixelFormat = pixelFormat;
             }
 
-            if (reader[22].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(22, out var bitDepth))
             {
-                item.BitDepth = reader.GetInt32(22);
+                item.BitDepth = bitDepth;
             }
 
-            if (reader[23].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetBoolean(23, out var isAnamorphic))
             {
-                item.IsAnamorphic = reader.GetBoolean(23);
+                item.IsAnamorphic = isAnamorphic;
             }
 
-            if (reader[24].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(24, out var refFrames))
             {
-                item.RefFrames = reader.GetInt32(24);
+                item.RefFrames = refFrames;
             }
 
-            if (reader[25].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(25, out var codecTag))
             {
-                item.CodecTag = reader.GetString(25);
+                item.CodecTag = codecTag;
             }
 
-            if (reader[26].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(26, out var comment))
             {
-                item.Comment = reader.GetString(26);
+                item.Comment = comment;
             }
 
-            if (reader[27].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(27, out var nalLengthSize))
             {
-                item.NalLengthSize = reader.GetString(27);
+                item.NalLengthSize = nalLengthSize;
             }
 
-            if (reader[28].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetBoolean(28, out var isAVC))
             {
-                item.IsAVC = reader[28].ToBool();
+                item.IsAVC = isAVC;
             }
 
-            if (reader[29].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(29, out var title))
             {
-                item.Title = reader[29].ToString();
+                item.Title = title;
             }
 
-            if (reader[30].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(30, out var timeBase))
             {
-                item.TimeBase = reader[30].ToString();
+                item.TimeBase = timeBase;
             }
 
-            if (reader[31].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(31, out var codecTimeBase))
             {
-                item.CodecTimeBase = reader[31].ToString();
+                item.CodecTimeBase = codecTimeBase;
             }
 
-            if (reader[32].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(32, out var colorPrimaries))
             {
-                item.ColorPrimaries = reader[32].ToString();
+                item.ColorPrimaries = colorPrimaries;
             }
 
-            if (reader[33].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(33, out var colorSpace))
             {
-                item.ColorSpace = reader[33].ToString();
+                item.ColorSpace = colorSpace;
             }
 
-            if (reader[34].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(34, out var colorTransfer))
             {
-                item.ColorTransfer = reader[34].ToString();
+                item.ColorTransfer = colorTransfer;
             }
 
             if (item.Type == MediaStreamType.Subtitle)
@@ -6355,29 +6247,29 @@ AND Type = @InternalPersonType)");
                 Index = reader[1].ToInt()
             };
 
-            if (reader[2].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(2, out var codec))
             {
-                item.Codec = reader[2].ToString();
+                item.Codec = codec;
             }
 
-            if (reader[2].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(3, out var codecTag))
             {
-                item.CodecTag = reader[3].ToString();
+                item.CodecTag = codecTag;
             }
 
-            if (reader[4].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(4, out var comment))
             {
-                item.Comment = reader[4].ToString();
+                item.Comment = comment;
             }
 
-            if (reader[6].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(5, out var fileName))
             {
-                item.FileName = reader[5].ToString();
+                item.FileName = fileName;
             }
 
-            if (reader[6].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(6, out var mimeType))
             {
-                item.MimeType = reader[6].ToString();
+                item.MimeType = mimeType;
             }
 
             return item;
