@@ -87,8 +87,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name of the new user.</param>
         /// <returns>The created user.</returns>
-        /// <exception cref="ArgumentNullException">If the name is null or empty.</exception>
-        /// <exception cref="ArgumentException">If the name already exists.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="name"/> already exists.</exception>
         Task<User> CreateUserAsync(string name);
 
         /// <summary>
