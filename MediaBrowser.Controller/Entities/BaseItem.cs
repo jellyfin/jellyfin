@@ -1921,7 +1921,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">If user is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="user" /> is <c>null</c>.</exception>
         public virtual bool IsVisible(User user)
         {
             if (user == null)
@@ -2893,7 +2893,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Updates the official rating based on content and returns true or false indicating if it changed.
         /// </summary>
-        /// <returns>true if the rating was updated, else false.</returns>
+        /// <returns><c>true</c> if the rating was updated; otherwise <c>false</c>.</returns>
         public bool UpdateRatingToItems(IList<BaseItem> children)
         {
             var currentOfficialRating = OfficialRating;
