@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached))
             {
-                return (AuthorizationInfo)cached;
+                return (AuthorizationInfo)cached!; // Cache should never contain null
             }
 
             return GetAuthorization(requestContext);
@@ -55,15 +55,15 @@ namespace Emby.Server.Implementations.HttpServer.Security
         }
 
         private AuthorizationInfo GetAuthorizationInfoFromDictionary(
-            in Dictionary<string, string> auth,
+            in Dictionary<string, string>? auth,
             in IHeaderDictionary headers,
             in IQueryCollection queryString)
         {
-            string deviceId = null;
-            string device = null;
-            string client = null;
-            string version = null;
-            string token = null;
+            string? deviceId = null;
+            string? device = null;
+            string? client = null;
+            string? version = null;
+            string? token = null;
 
             if (auth != null)
             {
@@ -206,7 +206,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(HttpContext httpReq)
+        private Dictionary<string, string>? GetAuthorizationDictionary(HttpContext httpReq)
         {
             var auth = httpReq.Request.Headers["X-Emby-Authorization"];
 
@@ -223,7 +223,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(HttpRequest httpReq)
+        private Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
         {
             var auth = httpReq.Headers["X-Emby-Authorization"];
 
@@ -240,7 +240,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorization(ReadOnlySpan<char> authorizationHeader)
+        private Dictionary<string, string>? GetAuthorization(ReadOnlySpan<char> authorizationHeader)
         {
             if (authorizationHeader == null)
             {

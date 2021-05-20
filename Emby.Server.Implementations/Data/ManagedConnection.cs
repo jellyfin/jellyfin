@@ -9,7 +9,7 @@ namespace Emby.Server.Implementations.Data
 {
     public class ManagedConnection : IDisposable
     {
-        private SQLiteDatabaseConnection _db;
+        private SQLiteDatabaseConnection? _db;
         private readonly SemaphoreSlim _writeLock;
         private bool _disposed = false;
 
