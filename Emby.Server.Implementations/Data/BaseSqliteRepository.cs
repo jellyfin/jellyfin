@@ -181,11 +181,9 @@ namespace Emby.Server.Implementations.Data
 
             foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
             {
-                if (row[1].SQLiteType != SQLiteType.Null)
+                if (row.TryGetString(1, out var columnName))
                 {
-                    var name = row[1].ToString();
-
-                    columnNames.Add(name);
+                    columnNames.Add(columnName);
                 }
             }
 

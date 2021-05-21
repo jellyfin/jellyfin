@@ -69,58 +69,52 @@ namespace MediaBrowser.Providers.Music
 
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings()
             {
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
-                using (var reader = XmlReader.Create(oReader, settings))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
+            using var reader = XmlReader.Create(oReader, settings);
+            reader.MoveToContent();
+            reader.Read();
 
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        case "artist-list":
                         {
-                            switch (reader.Name)
+                            if (reader.IsEmptyElement)
                             {
-                                case "artist-list":
-                                    {
-                                        if (reader.IsEmptyElement)
-                                        {
-                                            reader.Read();
-                                            continue;
-                                        }
-
-                                        using (var subReader = reader.ReadSubtree())
-                                        {
-                                            return ParseArtistList(subReader).ToList();
-                                        }
-                                    }
-
-                                default:
-                                    {
-                                        reader.Skip();
-                                        break;
-                                    }
+                                reader.Read();
+                                continue;
                             }
+
+                            using var subReader = reader.ReadSubtree();
+                            return ParseArtistList(subReader).ToList();
                         }
-                        else
+
+                        default:
                         {
-                            reader.Read();
+                            reader.Skip();
+                            break;
                         }
                     }
-
-                    return Enumerable.Empty<RemoteSearchResult>();
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
+
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
         private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
@@ -145,13 +139,11 @@ namespace MediaBrowser.Providers.Music
 
                                 var mbzId = reader.GetAttribute("id");
 
-                                using (var subReader = reader.ReadSubtree())
+                                using var subReader = reader.ReadSubtree();
+                                var artist = ParseArtist(subReader, mbzId);
+                                if (artist != null)
                                 {
-                                    var artist = ParseArtist(subReader, mbzId);
-                                    if (artist != null)
-                                    {
-                                        yield return artist;
-                                    }
+                                    yield return artist;
                                 }
 
                                 break;

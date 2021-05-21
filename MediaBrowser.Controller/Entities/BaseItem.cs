@@ -92,7 +92,8 @@ namespace MediaBrowser.Controller.Entities
         public const string ShortsFolderName = "shorts";
         public const string FeaturettesFolderName = "featurettes";
 
-        public static readonly string[] AllExtrasTypesFolderNames = {
+        public static readonly string[] AllExtrasTypesFolderNames =
+        {
             ExtrasFolderName,
             BehindTheScenesFolderName,
             DeletedScenesFolderName,
@@ -177,7 +178,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool AlwaysScanInternalMetadataPath => false;
 
         /// <summary>
-        /// Gets a value indicating whether this instance is in mixed folder.
+        /// Gets or sets a value indicating whether this instance is in mixed folder.
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         [JsonIgnore]
@@ -244,7 +245,7 @@ namespace MediaBrowser.Controller.Entities
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
-        /// Return the id that should be used to key display prefs for this item.
+        /// Gets the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
         /// <value>The display prefs id.</value>
@@ -280,7 +281,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Returns the folder containing the item.
+        /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
         /// </summary>
         [JsonIgnore]
@@ -305,8 +306,11 @@ namespace MediaBrowser.Controller.Entities
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// If this content came from an external service, the id of the content on that service.
+        /// Gets or sets the external id.
         /// </summary>
+        /// <remarks>
+        /// If this content came from an external service, the id of the content on that service.
+        /// </remarks>
         [JsonIgnore]
         public string ExternalId { get; set; }
 
@@ -330,7 +334,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets or sets the type of the location.
+        /// Gets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>
         [JsonIgnore]
@@ -449,8 +453,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is just a helper for convenience.
+        /// Gets the primary image path.
         /// </summary>
+        /// <remarks>
+        /// This is just a helper for convenience.
+        /// </remarks>
         /// <value>The primary image path.</value>
         [JsonIgnore]
         public string PrimaryImagePath => this.GetImagePath(ImageType.Primary);
@@ -541,7 +548,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateLastRefreshed { get; set; }
 
         /// <summary>
-        /// The logger.
+        /// Gets or sets the logger.
         /// </summary>
         public static ILogger<BaseItem> Logger { get; set; }
 
@@ -621,7 +628,7 @@ namespace MediaBrowser.Controller.Entities
         private Guid[] _themeVideoIds;
 
         /// <summary>
-        /// Gets the name of the sort.
+        /// Gets or sets the name of the sort.
         /// </summary>
         /// <value>The name of the sort.</value>
         [JsonIgnore]
@@ -848,7 +855,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
+        /// Gets or sets the date that the item first debuted. For movies this could be premiere date, episodes would be first aired.
         /// </summary>
         /// <value>The premiere date.</value>
         [JsonIgnore]
@@ -945,7 +952,7 @@ namespace MediaBrowser.Controller.Entities
         public int? ProductionYear { get; set; }
 
         /// <summary>
-        /// If the item is part of a series, this is it's number in the series.
+        /// Gets or sets the index number. If the item is part of a series, this is it's number in the series.
         /// This could be episode number, album track number, etc.
         /// </summary>
         /// <value>The index number.</value>
@@ -953,7 +960,7 @@ namespace MediaBrowser.Controller.Entities
         public int? IndexNumber { get; set; }
 
         /// <summary>
-        /// For an episode this could be the season number, or for a song this could be the disc number.
+        /// Gets or sets the parent index number. For an episode this could be the season number, or for a song this could be the disc number.
         /// </summary>
         /// <value>The parent index number.</value>
         [JsonIgnore]
@@ -1017,9 +1024,9 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // if (!user.IsParentalScheduleAllowed())
-            //{
+            // {
             //    return PlayAccess.None;
-            //}
+            // }
 
             return PlayAccess.Full;
         }
@@ -2645,7 +2652,9 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// This is called before any metadata refresh and returns true if changes were made.
         /// </summary>
-        public virtual bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <param name="replaceAllMetadata">Whether to replace all metadata.</param>
+        /// <returns>true if the item has change, else false.</returns>
+        public virtual bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             _sortName = null;
 

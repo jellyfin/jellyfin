@@ -187,48 +187,46 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            using (var stream = response.Stream)
-            using (var memoryStream = new MemoryStream())
+            using var stream = response.Stream;
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+            memoryStream.Position = 0;
+
+            var savePaths = new List<string>();
+            var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+
+            if (response.IsForced)
             {
-                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                memoryStream.Position = 0;
+                saveFileName += ".forced";
+            }
 
-                var savePaths = new List<string>();
-                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+            saveFileName += "." + response.Format.ToLowerInvariant();
 
-                if (response.IsForced)
+            if (saveInMediaFolder)
+            {
+                var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
+                // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
                 {
-                    saveFileName += ".forced";
+                    savePaths.Add(mediaFolderPath);
                 }
+            }
 
-                saveFileName += "." + response.Format.ToLowerInvariant();
+            var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
 
-                if (saveInMediaFolder)
-                {
-                    var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
-                    // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
-                    if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
-                    {
-                        savePaths.Add(mediaFolderPath);
-                    }
-                }
+            // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
+            if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
+            {
+                savePaths.Add(internalPath);
+            }
 
-                var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
-
-                // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
-                if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
-                {
-                    savePaths.Add(internalPath);
-                }
-
-                if (savePaths.Count > 0)
-                {
-                    await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
-                }
-                else
-                {
-                    _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
-                }
+            if (savePaths.Count > 0)
+            {
+                await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+            }
+            else
+            {
+                _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
             }
         }
 
@@ -247,10 +245,8 @@ namespace MediaBrowser.Providers.Subtitles
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
                     // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
+                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true);
+                    await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;
                 }
