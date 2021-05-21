@@ -5,18 +5,8 @@ namespace Jellyfin.Data.Queries
     /// <summary>
     /// A class representing a query to the activity logs.
     /// </summary>
-    public class ActivityLogQuery
+    public class ActivityLogQuery : PaginatedQuery
     {
-        /// <summary>
-        /// Gets or sets the index to start at.
-        /// </summary>
-        public int? StartIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximum number of items to include.
-        /// </summary>
-        public int? Limit { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether to take entries with a user id.
         /// </summary>
