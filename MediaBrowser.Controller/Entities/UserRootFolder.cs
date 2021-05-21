@@ -21,6 +21,15 @@ namespace MediaBrowser.Controller.Entities
     {
         private List<Guid> _childrenIds = null;
         private readonly object _childIdsLock = new object();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
+        /// </summary>
+        public UserRootFolder()
+        {
+            IsRoot = true;
+        }
+
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
