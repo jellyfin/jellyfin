@@ -291,7 +291,7 @@ namespace Emby.Server.Implementations.Security
             return result;
         }
 
-        private static AuthenticationInfo Get(IReadOnlyList<IResultSetValue> reader)
+        private static AuthenticationInfo Get(IReadOnlyList<ResultSetValue> reader)
         {
             var info = new AuthenticationInfo
             {
