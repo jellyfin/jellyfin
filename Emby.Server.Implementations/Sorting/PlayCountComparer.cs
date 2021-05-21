@@ -1,3 +1,5 @@
+#nullable disable
+
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;

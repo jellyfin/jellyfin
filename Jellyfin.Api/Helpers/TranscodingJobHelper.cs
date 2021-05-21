@@ -379,7 +379,9 @@ namespace Jellyfin.Api.Helpers
         /// <param name="outputFilePath">The output file path.</param>
         private void DeleteHlsPartialStreamFiles(string outputFilePath)
         {
-            var directory = Path.GetDirectoryName(outputFilePath);
+            var directory = Path.GetDirectoryName(outputFilePath)
+                ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
+
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
             var filesToDelete = _fileSystem.GetFilePaths(directory)

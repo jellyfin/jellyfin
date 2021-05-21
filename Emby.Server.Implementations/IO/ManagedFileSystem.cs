@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">filename</exception>
-        public virtual string ResolveShortcut(string filename)
+        public virtual string? ResolveShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -601,7 +601,7 @@ namespace Emby.Server.Implementations.IO
             return GetFiles(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -655,7 +655,7 @@ namespace Emby.Server.Implementations.IO
             return GetFilePaths(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<string> GetFilePaths(string path, string[]? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 

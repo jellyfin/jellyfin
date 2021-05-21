@@ -1760,9 +1760,9 @@ namespace Jellyfin.Api.Controllers
 
         private static FileSystemMetadata? GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
-            var folder = Path.GetDirectoryName(playlist);
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException("Path can't be a root directory.", nameof(playlist));
 
-            var filePrefix = Path.GetFileNameWithoutExtension(playlist) ?? string.Empty;
+            var filePrefix = Path.GetFileNameWithoutExtension(playlist);
 
             try
             {
