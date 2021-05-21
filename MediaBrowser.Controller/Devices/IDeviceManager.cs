@@ -41,9 +41,10 @@ namespace MediaBrowser.Controller.Devices
         /// <summary>
         /// Gets the devices.
         /// </summary>
-        /// <param name="query">The query.</param>
+        /// <param name="userId">The user's id, or <c>null</c>.</param>
+        /// <param name="supportsSync">A value indicating whether the device supports sync, or <c>null</c>.</param>
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
-        Task<QueryResult<DeviceInfo>> GetDevices(DeviceQuery query);
+        Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync);
 
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.

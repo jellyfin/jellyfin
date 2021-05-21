@@ -51,8 +51,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
-            var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
-            return await _deviceManager.GetDevices(deviceQuery);
+            return await _deviceManager.GetDevicesForUser(userId, supportsSync);
         }
 
         /// <summary>

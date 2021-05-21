@@ -91,7 +91,7 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public async Task<QueryResult<DeviceInfo>> GetDevices(DeviceQuery query)
+        public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync)
         {
             await using var dbContext = _dbProvider.CreateContext();
             var sessions = dbContext.Devices
@@ -100,17 +100,14 @@ namespace Jellyfin.Server.Implementations.Devices
                 .ThenByDescending(d => d.DateLastActivity)
                 .AsAsyncEnumerable();
 
-            // TODO: DeviceQuery doesn't seem to be used from client. Not even Swagger.
-            if (query.SupportsSync.HasValue)
+            if (supportsSync.HasValue)
             {
-                var val = query.SupportsSync.Value;
-
-                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == val);
+                sessions = sessions.Where(i => GetCapabilities(i.DeviceId).SupportsSync == supportsSync.Value);
             }
 
-            if (!query.UserId.Equals(Guid.Empty))
+            if (userId.HasValue)
             {
-                var user = _userManager.GetUserById(query.UserId);
+                var user = _userManager.GetUserById(userId.Value);
 
                 sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
             }
