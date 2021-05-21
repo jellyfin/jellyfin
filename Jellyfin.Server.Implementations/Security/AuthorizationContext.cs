@@ -199,7 +199,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string>? GetAuthorizationDictionary(HttpContext httpReq)
+        private static Dictionary<string, string>? GetAuthorizationDictionary(HttpContext httpReq)
         {
             var auth = httpReq.Request.Headers["X-Emby-Authorization"];
 
@@ -216,7 +216,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
+        private static Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
         {
             var auth = httpReq.Headers["X-Emby-Authorization"];
 
@@ -233,7 +233,7 @@ namespace Jellyfin.Server.Implementations.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string>? GetAuthorization(ReadOnlySpan<char> authorizationHeader)
+        private static Dictionary<string, string>? GetAuthorization(ReadOnlySpan<char> authorizationHeader)
         {
             var firstSpace = authorizationHeader.IndexOf(' ');
 
