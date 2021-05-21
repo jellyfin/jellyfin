@@ -1284,12 +1284,12 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        private BaseItem GetItem(IReadOnlyList<IResultSetValue> reader, InternalItemsQuery query)
+        private BaseItem GetItem(IReadOnlyList<ResultSetValue> reader, InternalItemsQuery query)
         {
             return GetItem(reader, query, HasProgramAttributes(query), HasEpisodeAttributes(query), HasServiceName(query), HasStartDate(query), HasTrailerTypes(query), HasArtistFields(query), HasSeriesFields(query));
         }
 
-        private BaseItem GetItem(IReadOnlyList<IResultSetValue> reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields)
+        private BaseItem GetItem(IReadOnlyList<ResultSetValue> reader, InternalItemsQuery query, bool enableProgramAttributes, bool hasEpisodeAttributes, bool hasServiceName, bool queryHasStartDate, bool hasTrailerTypes, bool hasArtistFields, bool hasSeriesFields)
         {
             var typeString = reader.GetString(0);
 
@@ -1929,7 +1929,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
         /// <returns>ChapterInfo.</returns>
-        private ChapterInfo GetChapter(IReadOnlyList<IResultSetValue> reader, BaseItem item)
+        private ChapterInfo GetChapter(IReadOnlyList<ResultSetValue> reader, BaseItem item)
         {
             var chapter = new ChapterInfo
             {
@@ -5503,7 +5503,7 @@ AND Type = @InternalPersonType)");
             return result;
         }
 
-        private static ItemCounts GetItemCounts(IReadOnlyList<IResultSetValue> reader, int countStartColumn, string[] typesToCount)
+        private static ItemCounts GetItemCounts(IReadOnlyList<ResultSetValue> reader, int countStartColumn, string[] typesToCount)
         {
             var counts = new ItemCounts();
 
@@ -5734,7 +5734,7 @@ AND Type = @InternalPersonType)");
             }
         }
 
-        private PersonInfo GetPerson(IReadOnlyList<IResultSetValue> reader)
+        private PersonInfo GetPerson(IReadOnlyList<ResultSetValue> reader)
         {
             var item = new PersonInfo
             {
@@ -5941,7 +5941,7 @@ AND Type = @InternalPersonType)");
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns>ChapterInfo.</returns>
-        private MediaStream GetMediaStream(IReadOnlyList<IResultSetValue> reader)
+        private MediaStream GetMediaStream(IReadOnlyList<ResultSetValue> reader)
         {
             var item = new MediaStream
             {
@@ -6242,7 +6242,7 @@ AND Type = @InternalPersonType)");
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <returns>MediaAttachment.</returns>
-        private MediaAttachment GetMediaAttachment(IReadOnlyList<IResultSetValue> reader)
+        private MediaAttachment GetMediaAttachment(IReadOnlyList<ResultSetValue> reader)
         {
             var item = new MediaAttachment
             {
