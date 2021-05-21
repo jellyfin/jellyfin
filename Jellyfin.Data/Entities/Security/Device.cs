@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 
 namespace Jellyfin.Data.Entities.Security
 {
@@ -13,20 +14,19 @@ namespace Jellyfin.Data.Entities.Security
         /// Initializes a new instance of the <see cref="Device"/> class.
         /// </summary>
         /// <param name="userId">The user id.</param>
-        /// <param name="accessToken">The access token.</param>
         /// <param name="appName">The app name.</param>
         /// <param name="appVersion">The app version.</param>
         /// <param name="deviceName">The device name.</param>
         /// <param name="deviceId">The device id.</param>
-        public Device(Guid userId, string accessToken, string appName, string appVersion, string deviceName, string deviceId)
+        public Device(Guid userId, string appName, string appVersion, string deviceName, string deviceId)
         {
             UserId = userId;
-            AccessToken = accessToken;
             AppName = appName;
             AppVersion = appVersion;
             DeviceName = deviceName;
             DeviceId = deviceId;
 
+            AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             DateCreated = DateTime.UtcNow;
             DateLastActivity = DateCreated;
 
