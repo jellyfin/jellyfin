@@ -36,7 +36,6 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
-using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
@@ -57,7 +56,6 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -73,7 +71,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
@@ -599,8 +596,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
-            ServiceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
-
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
             ServiceCollection.AddSingleton<EncodingHelper>();
 
@@ -657,8 +652,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            ServiceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
-            ServiceCollection.AddSingleton<ISessionContext, SessionContext>();
+            ServiceCollection.AddScoped<ISessionContext, SessionContext>();
 
             ServiceCollection.AddSingleton<IAuthService, AuthService>();
             ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
@@ -686,8 +680,6 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-
-            ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
             SetStaticProperties();
 

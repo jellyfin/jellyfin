@@ -171,7 +171,8 @@ namespace Jellyfin.Api.Controllers
             _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
             {
-                await _transcodingJobHelper.KillTranscodingJobs(_authContext.GetAuthorizationInfo(Request).DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
+                var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+                await _transcodingJobHelper.KillTranscodingJobs(authInfo.DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
             }
 
             playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
@@ -320,7 +321,8 @@ namespace Jellyfin.Api.Controllers
             _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
             {
-                await _transcodingJobHelper.KillTranscodingJobs(_authContext.GetAuthorizationInfo(Request).DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
+                var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+                await _transcodingJobHelper.KillTranscodingJobs(authInfo.DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
             }
 
             playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);

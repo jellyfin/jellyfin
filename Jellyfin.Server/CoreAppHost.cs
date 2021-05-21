@@ -11,6 +11,7 @@ using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
 using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
+using Jellyfin.Server.Implementations.Security;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
@@ -93,6 +94,8 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
+
+            ServiceCollection.AddScoped<IAuthorizationContext, AuthorizationContext>();
 
             base.RegisterServices();
         }

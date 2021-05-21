@@ -24,12 +24,18 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _sessionManager = sessionManager;
         }
 
-        public Task<SessionInfo> GetSession(HttpContext requestContext)
+        public async Task<SessionInfo> GetSession(HttpContext requestContext)
         {
-            var authorization = _authContext.GetAuthorizationInfo(requestContext);
+            var authorization = await _authContext.GetAuthorizationInfo(requestContext).ConfigureAwait(false);
 
             var user = authorization.User;
-            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.GetNormalizedRemoteIp().ToString(), user);
+            return await _sessionManager.LogSessionActivity(
+                authorization.Client,
+                authorization.Version,
+                authorization.DeviceId,
+                authorization.Device,
+                requestContext.GetNormalizedRemoteIp().ToString(),
+                user).ConfigureAwait(false);
         }
 
         public Task<SessionInfo> GetSession(object requestContext)

@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
+using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -325,26 +327,23 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <param name="appVersion">The application version.</param>
         /// <returns>Task&lt;SessionInfo&gt;.</returns>
-        Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion);
+        Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
         /// Logouts the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        void Logout(string accessToken);
+        /// <returns>A <see cref="Task"/> representing the log out process.</returns>
+        Task Logout(string accessToken);
 
-        void Logout(AuthenticationInfo accessToken);
+        Task Logout(Device accessToken);
 
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
-        void RevokeUserTokens(Guid userId, string currentAccessToken);
-
-        /// <summary>
-        /// Revokes the token.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        void RevokeToken(string id);
+        /// <param name="userId">The user's id.</param>
+        /// <param name="currentAccessToken">The current access token.</param>
+        Task RevokeUserTokens(Guid userId, string currentAccessToken);
 
         void CloseIfNeeded(SessionInfo session);
     }

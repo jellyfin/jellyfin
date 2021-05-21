@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.UserViewDtos;
@@ -64,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the user views.</returns>
         [HttpGet("Users/{userId}/Views")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetUserViews(
+        public async Task<ActionResult<QueryResult<BaseItemDto>>> GetUserViews(
             [FromRoute, Required] Guid userId,
             [FromQuery] bool? includeExternalContent,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] presetViews,
@@ -86,7 +87,7 @@ namespace Jellyfin.Api.Controllers
                 query.PresetViews = presetViews;
             }
 
-            var app = _authContext.GetAuthorizationInfo(Request).Client ?? string.Empty;
+            var app = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Client ?? string.Empty;
             if (app.IndexOf("emby rt", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 query.PresetViews = new[] { CollectionType.Movies, CollectionType.TvShows };

@@ -489,7 +489,7 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                var auth = _authorizationContext.GetAuthorizationInfo(request);
+                var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
                 if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);

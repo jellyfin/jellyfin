@@ -471,11 +471,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/Logout")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult ReportSessionEnded()
+        public async Task<ActionResult> ReportSessionEnded()
         {
-            AuthorizationInfo auth = _authContext.GetAuthorizationInfo(Request);
+            AuthorizationInfo auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
-            _sessionManager.Logout(auth.Token);
+            await _sessionManager.Logout(auth.Token).ConfigureAwait(false);
             return NoContent();
         }
 

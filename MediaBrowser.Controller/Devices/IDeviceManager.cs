@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -16,6 +17,13 @@ namespace MediaBrowser.Controller.Devices
     public interface IDeviceManager
     {
         event EventHandler<GenericEventArgs<Tuple<string, DeviceOptions>>> DeviceOptionsUpdated;
+
+        /// <summary>
+        /// Creates a new device.
+        /// </summary>
+        /// <param name="device">The device to create.</param>
+        /// <returns>A <see cref="Task{Device}"/> representing the creation of the device.</returns>
+        Task<Device> CreateDevice(Device device);
 
         /// <summary>
         /// Saves the capabilities.
@@ -39,12 +47,23 @@ namespace MediaBrowser.Controller.Devices
         Task<DeviceInfo> GetDevice(string id);
 
         /// <summary>
+        /// Gets devices based on the provided query.
+        /// </summary>
+        /// <param name="query">The device query.</param>
+        /// <returns>A <see cref="Task{QueryResult}"/> representing the retrieval of the devices.</returns>
+        Task<QueryResult<Device>> GetDevices(DeviceQuery query);
+
+        Task<QueryResult<DeviceInfo>> GetDeviceInfos(DeviceQuery query);
+
+        /// <summary>
         /// Gets the devices.
         /// </summary>
         /// <param name="userId">The user's id, or <c>null</c>.</param>
         /// <param name="supportsSync">A value indicating whether the device supports sync, or <c>null</c>.</param>
         /// <returns>IEnumerable&lt;DeviceInfo&gt;.</returns>
         Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync);
+
+        Task DeleteDevice(Device device);
 
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.

@@ -6,6 +6,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
@@ -56,6 +57,17 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
+        public async Task<Device> CreateDevice(Device device)
+        {
+            await using var dbContext = _dbProvider.CreateContext();
+
+            dbContext.Devices.Add(device);
+
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            return device;
+        }
+
+        /// <inheritdoc />
         public async Task<DeviceOptions?> GetDeviceOptions(string deviceId)
         {
             await using var dbContext = _dbProvider.CreateContext();
@@ -91,6 +103,61 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
+        public async Task<QueryResult<Device>> GetDevices(DeviceQuery query)
+        {
+            await using var dbContext = _dbProvider.CreateContext();
+
+            var devices = dbContext.Devices.AsQueryable();
+
+            if (query.UserId.HasValue)
+            {
+                devices = devices.Where(device => device.UserId == query.UserId.Value);
+            }
+
+            if (query.DeviceId != null)
+            {
+                devices = devices.Where(device => device.DeviceId == query.DeviceId);
+            }
+
+            if (query.AccessToken != null)
+            {
+                devices = devices.Where(device => device.AccessToken == query.AccessToken);
+            }
+
+            if (query.Skip.HasValue)
+            {
+                devices = devices.Skip(query.Skip.Value);
+            }
+
+            var count = await devices.CountAsync().ConfigureAwait(false);
+
+            if (query.Limit.HasValue)
+            {
+                devices = devices.Take(query.Limit.Value);
+            }
+
+            return new QueryResult<Device>
+            {
+                Items = await devices.ToListAsync().ConfigureAwait(false),
+                StartIndex = query.Skip ?? 0,
+                TotalRecordCount = count
+            };
+        }
+
+        /// <inheritdoc />
+        public async Task<QueryResult<DeviceInfo>> GetDeviceInfos(DeviceQuery query)
+        {
+            var devices = await GetDevices(query).ConfigureAwait(false);
+
+            return new QueryResult<DeviceInfo>
+            {
+                Items = devices.Items.Select(ToDeviceInfo).ToList(),
+                StartIndex = devices.StartIndex,
+                TotalRecordCount = devices.TotalRecordCount
+            };
+        }
+
+        /// <inheritdoc />
         public async Task<QueryResult<DeviceInfo>> GetDevicesForUser(Guid? userId, bool? supportsSync)
         {
             await using var dbContext = _dbProvider.CreateContext();
@@ -115,6 +182,12 @@ namespace Jellyfin.Server.Implementations.Devices
             var array = await sessions.Select(ToDeviceInfo).ToArrayAsync().ConfigureAwait(false);
 
             return new QueryResult<DeviceInfo>(array);
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteDevice(Device device)
+        {
+            await using var dbContext = _dbProvider.CreateContext();
         }
 
         /// <inheritdoc />

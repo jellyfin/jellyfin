@@ -11,6 +11,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -23,7 +24,6 @@ using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Session;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -52,7 +52,6 @@ namespace Emby.Server.Implementations.Session
         private readonly IImageProcessor _imageProcessor;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerApplicationHost _appHost;
-        private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
 
         /// <summary>
@@ -75,7 +74,6 @@ namespace Emby.Server.Implementations.Session
             IDtoService dtoService,
             IImageProcessor imageProcessor,
             IServerApplicationHost appHost,
-            IAuthenticationRepository authRepo,
             IDeviceManager deviceManager,
             IMediaSourceManager mediaSourceManager)
         {
@@ -88,7 +86,6 @@ namespace Emby.Server.Implementations.Session
             _dtoService = dtoService;
             _imageProcessor = imageProcessor;
             _appHost = appHost;
-            _authRepo = authRepo;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
 
@@ -1486,7 +1483,7 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("User is at their maximum number of sessions.");
             }
 
-            var token = GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName);
+            var token = await GetAuthorizationToken(user, request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
 
             var session = await LogSessionActivity(
                 request.App,
@@ -1509,21 +1506,21 @@ namespace Emby.Server.Implementations.Session
             return returnResult;
         }
 
-        private string GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
+        private async Task<string> GetAuthorizationToken(User user, string deviceId, string app, string appVersion, string deviceName)
         {
-            var existing = _authRepo.Get(
-                new AuthenticationInfoQuery
+            var existing = (await _deviceManager.GetDevices(
+                new DeviceQuery
                 {
                     DeviceId = deviceId,
                     UserId = user.Id,
                     Limit = 1
-                }).Items.FirstOrDefault();
+                }).ConfigureAwait(false)).Items.FirstOrDefault();
 
-            var allExistingForDevice = _authRepo.Get(
-                new AuthenticationInfoQuery
+            var allExistingForDevice = (await _deviceManager.GetDevices(
+                new DeviceQuery
                 {
                     DeviceId = deviceId
-                }).Items;
+                }).ConfigureAwait(false)).Items;
 
             foreach (var auth in allExistingForDevice)
             {
@@ -1531,7 +1528,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     try
                     {
-                        Logout(auth);
+                        await Logout(auth).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -1546,29 +1543,14 @@ namespace Emby.Server.Implementations.Session
                 return existing.AccessToken;
             }
 
-            var now = DateTime.UtcNow;
-
-            var newToken = new AuthenticationInfo
-            {
-                AppName = app,
-                AppVersion = appVersion,
-                DateCreated = now,
-                DateLastActivity = now,
-                DeviceId = deviceId,
-                DeviceName = deviceName,
-                UserId = user.Id,
-                AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-                UserName = user.Username
-            };
-
             _logger.LogInformation("Creating new access token for user {0}", user.Id);
-            _authRepo.Create(newToken);
+            var device = await _deviceManager.CreateDevice(new Device(user.Id, app, appVersion, deviceName, deviceId)).ConfigureAwait(false);
 
-            return newToken.AccessToken;
+            return device.AccessToken;
         }
 
         /// <inheritdoc />
-        public void Logout(string accessToken)
+        public async Task Logout(string accessToken)
         {
             CheckDisposed();
 
@@ -1577,27 +1559,27 @@ namespace Emby.Server.Implementations.Session
                 throw new ArgumentNullException(nameof(accessToken));
             }
 
-            var existing = _authRepo.Get(
-                new AuthenticationInfoQuery
+            var existing = (await _deviceManager.GetDevices(
+                new DeviceQuery
                 {
                     Limit = 1,
                     AccessToken = accessToken
-                }).Items;
+                }).ConfigureAwait(false)).Items;
 
             if (existing.Count > 0)
             {
-                Logout(existing[0]);
+                await Logout(existing[0]).ConfigureAwait(false);
             }
         }
 
         /// <inheritdoc />
-        public void Logout(AuthenticationInfo existing)
+        public async Task Logout(Device existing)
         {
             CheckDisposed();
 
             _logger.LogInformation("Logging out access token {0}", existing.AccessToken);
 
-            _authRepo.Delete(existing);
+            await _deviceManager.DeleteDevice(existing).ConfigureAwait(false);
 
             var sessions = Sessions
                 .Where(i => string.Equals(i.DeviceId, existing.DeviceId, StringComparison.OrdinalIgnoreCase))
@@ -1617,28 +1599,22 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void RevokeUserTokens(Guid userId, string currentAccessToken)
+        public async Task RevokeUserTokens(Guid userId, string currentAccessToken)
         {
             CheckDisposed();
 
-            var existing = _authRepo.Get(new AuthenticationInfoQuery
+            var existing = await _deviceManager.GetDevices(new DeviceQuery
             {
                 UserId = userId
-            });
+            }).ConfigureAwait(false);
 
             foreach (var info in existing.Items)
             {
                 if (!string.Equals(currentAccessToken, info.AccessToken, StringComparison.OrdinalIgnoreCase))
                 {
-                    Logout(info);
+                    await Logout(info).ConfigureAwait(false);
                 }
             }
-        }
-
-        /// <inheritdoc />
-        public void RevokeToken(string token)
-        {
-            Logout(token);
         }
 
         /// <summary>
@@ -1792,7 +1768,7 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task<SessionInfo> GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion)
+        public Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion)
         {
             if (info == null)
             {
@@ -1825,20 +1801,20 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
+        public async Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)
         {
-            var items = _authRepo.Get(new AuthenticationInfoQuery
+            var items = (await _deviceManager.GetDevices(new DeviceQuery
             {
                 AccessToken = token,
                 Limit = 1
-            }).Items;
+            }).ConfigureAwait(false)).Items;
 
             if (items.Count == 0)
             {
                 return null;
             }
 
-            return GetSessionByAuthenticationToken(items[0], deviceId, remoteEndpoint, null);
+            return await GetSessionByAuthenticationToken(items[0], deviceId, remoteEndpoint, null).ConfigureAwait(false);
         }
 
         /// <inheritdoc />

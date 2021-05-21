@@ -136,7 +136,7 @@ namespace Jellyfin.Api.Tests.Auth
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>()))
-                .Returns(authorizationInfo);
+                .Returns(Task.FromResult(authorizationInfo));
 
             return authorizationInfo;
         }

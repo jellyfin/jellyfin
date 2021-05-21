@@ -60,9 +60,9 @@ namespace Jellyfin.Api.Helpers
         /// <param name="userId">The user id.</param>
         /// <param name="restrictUserPreferences">Whether to restrict the user preferences.</param>
         /// <returns>A <see cref="bool"/> whether the user can update the entry.</returns>
-        internal static bool AssertCanUpdateUser(IAuthorizationContext authContext, HttpRequest requestContext, Guid userId, bool restrictUserPreferences)
+        internal static async Task<bool> AssertCanUpdateUser(IAuthorizationContext authContext, HttpRequest requestContext, Guid userId, bool restrictUserPreferences)
         {
-            var auth = authContext.GetAuthorizationInfo(requestContext);
+            var auth = await authContext.GetAuthorizationInfo(requestContext).ConfigureAwait(false);
 
             var authenticatedUser = auth.User;
 
@@ -78,7 +78,7 @@ namespace Jellyfin.Api.Helpers
 
         internal static async Task<SessionInfo> GetSession(ISessionManager sessionManager, IAuthorizationContext authContext, HttpRequest request)
         {
-            var authorization = authContext.GetAuthorizationInfo(request);
+            var authorization = await authContext.GetAuthorizationInfo(request).ConfigureAwait(false);
             var user = authorization.User;
             var session = await sessionManager.LogSessionActivity(
                 authorization.Client,

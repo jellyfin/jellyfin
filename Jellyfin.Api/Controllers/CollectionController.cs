@@ -58,7 +58,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? parentId,
             [FromQuery] bool isLocked = false)
         {
-            var userId = _authContext.GetAuthorizationInfo(Request).UserId;
+            var userId = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).UserId;
 
             var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
             {

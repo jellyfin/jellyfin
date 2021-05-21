@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 
 namespace Jellyfin.Server.Implementations.Users
@@ -15,14 +15,12 @@ namespace Jellyfin.Server.Implementations.Users
     public sealed class DeviceAccessEntryPoint : IServerEntryPoint
     {
         private readonly IUserManager _userManager;
-        private readonly IAuthenticationRepository _authRepo;
         private readonly IDeviceManager _deviceManager;
         private readonly ISessionManager _sessionManager;
 
-        public DeviceAccessEntryPoint(IUserManager userManager, IAuthenticationRepository authRepo, IDeviceManager deviceManager, ISessionManager sessionManager)
+        public DeviceAccessEntryPoint(IUserManager userManager, IDeviceManager deviceManager, ISessionManager sessionManager)
         {
             _userManager = userManager;
-            _authRepo = authRepo;
             _deviceManager = deviceManager;
             _sessionManager = sessionManager;
         }
@@ -38,27 +36,27 @@ namespace Jellyfin.Server.Implementations.Users
         {
         }
 
-        private void OnUserUpdated(object? sender, GenericEventArgs<User> e)
+        private async void OnUserUpdated(object? sender, GenericEventArgs<User> e)
         {
             var user = e.Argument;
             if (!user.HasPermission(PermissionKind.EnableAllDevices))
             {
-                UpdateDeviceAccess(user);
+                await UpdateDeviceAccess(user).ConfigureAwait(false);
             }
         }
 
-        private void UpdateDeviceAccess(User user)
+        private async Task UpdateDeviceAccess(User user)
         {
-            var existing = _authRepo.Get(new AuthenticationInfoQuery
+            var existing = (await _deviceManager.GetDevices(new DeviceQuery
             {
                 UserId = user.Id
-            }).Items;
+            }).ConfigureAwait(false)).Items;
 
-            foreach (var authInfo in existing)
+            foreach (var device in existing)
             {
-                if (!string.IsNullOrEmpty(authInfo.DeviceId) && !_deviceManager.CanAccessDevice(user, authInfo.DeviceId))
+                if (!string.IsNullOrEmpty(device.DeviceId) && !_deviceManager.CanAccessDevice(user, device.DeviceId))
                 {
-                    _sessionManager.Logout(authInfo);
+                    await _sessionManager.Logout(device).ConfigureAwait(false);
                 }
             }
         }

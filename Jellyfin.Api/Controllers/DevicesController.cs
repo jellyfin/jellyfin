@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Data.Entities.Security;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
@@ -21,22 +21,18 @@ namespace Jellyfin.Api.Controllers
     public class DevicesController : BaseJellyfinApiController
     {
         private readonly IDeviceManager _deviceManager;
-        private readonly IAuthenticationRepository _authenticationRepository;
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DevicesController"/> class.
         /// </summary>
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
-        /// <param name="authenticationRepository">Instance of <see cref="IAuthenticationRepository"/> interface.</param>
         /// <param name="sessionManager">Instance of <see cref="ISessionManager"/> interface.</param>
         public DevicesController(
             IDeviceManager deviceManager,
-            IAuthenticationRepository authenticationRepository,
             ISessionManager sessionManager)
         {
             _deviceManager = deviceManager;
-            _authenticationRepository = authenticationRepository;
             _sessionManager = sessionManager;
         }
 
@@ -111,7 +107,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string id,
             [FromBody, Required] DeviceOptions deviceOptions)
         {
-            var existingDeviceOptions = _deviceManager.GetDeviceOptions(id);
+            var existingDeviceOptions = await _deviceManager.GetDeviceOptions(id).ConfigureAwait(false);
             if (existingDeviceOptions == null)
             {
                 return NotFound();
@@ -131,19 +127,19 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteDevice([FromQuery, Required] string id)
+        public async Task<ActionResult> DeleteDevice([FromQuery, Required] string id)
         {
-            var existingDevice = _deviceManager.GetDevice(id);
+            var existingDevice = await _deviceManager.GetDevice(id).ConfigureAwait(false);
             if (existingDevice == null)
             {
                 return NotFound();
             }
 
-            var sessions = _authenticationRepository.Get(new AuthenticationInfoQuery { DeviceId = id }).Items;
+            var sessions = await _deviceManager.GetDevices(new DeviceQuery { DeviceId = id }).ConfigureAwait(false);
 
-            foreach (var session in sessions)
+            foreach (var session in sessions.Items)
             {
-                _sessionManager.Logout(session);
+                await _sessionManager.Logout(session).ConfigureAwait(false);
             }
 
             return NoContent();
