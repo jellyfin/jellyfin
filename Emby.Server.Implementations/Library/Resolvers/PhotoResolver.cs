@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -47,7 +49,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 var collectionType = args.CollectionType;
 
                 if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase)
-                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
+                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.LibraryOptions.EnablePhotos))
                 {
                     if (IsImageFile(args.Path, _imageProcessor))
                     {

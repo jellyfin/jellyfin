@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -376,7 +378,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         {
             var multiDiscFolders = new List<FileSystemMetadata>();
 
-            var libraryOptions = args.GetLibraryOptions();
+            var libraryOptions = args.LibraryOptions;
             var supportPhotos = string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && libraryOptions.EnablePhotos;
             var photos = new List<FileSystemMetadata>();
 

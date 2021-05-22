@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -787,14 +789,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase));
-                if (station == null)
-                {
-                    station = new ScheduleDirect.Station
+                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase)) 
+                    ?? new ScheduleDirect.Station
                     {
                         stationID = channel.stationID
                     };
-                }
 
                 var channelInfo = new ChannelInfo
                 {

@@ -137,9 +137,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            var audio = item as Audio;
-
-            return audio != null;
+            return item is Audio;
         }
     }
 }

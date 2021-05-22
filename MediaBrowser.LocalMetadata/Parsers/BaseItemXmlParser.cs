@@ -468,8 +468,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var val = reader.ReadElementContentAsString();
 
-                    var hasDisplayOrder = item as IHasDisplayOrder;
-                    if (hasDisplayOrder != null)
+                    if (item is IHasDisplayOrder hasDisplayOrder)
                     {
                         if (!string.IsNullOrWhiteSpace(val))
                         {

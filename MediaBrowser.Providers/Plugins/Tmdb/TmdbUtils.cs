@@ -63,19 +63,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The Jellyfin person type.</returns>
         public static string MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("director", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Director;
             }
 
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("producer", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Writer;
             }
@@ -148,6 +148,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (parts.Length == 2)
             {
+                // TMDB doesn't support Switzerland (de-CH, it-CH or fr-CH) so use the language (de, it or fr) without country code
+                if (string.Equals(parts[1], "CH", StringComparison.OrdinalIgnoreCase))
+                {
+                    return parts[0];
+                }
+
                 language = parts[0] + "-" + parts[1].ToUpperInvariant();
             }
 
@@ -172,6 +178,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return imageLanguage;
+        }
+
+        /// <summary>
+        /// Combines the metadata country code and the parental rating from the Api into the value we store in our database.
+        /// </summary>
+        /// <param name="countryCode">The Iso 3166-1 country code of the rating country.</param>
+        /// <param name="ratingValue">The rating value returned by the Tmdb Api.</param>
+        /// <returns>The combined parental rating of country code+rating value.</returns>
+        public static string BuildParentalRating(string countryCode, string ratingValue)
+        {
+            // exclude US because we store us values as TV-14 without the country code.
+            var ratingPrefix = string.Equals(countryCode, "US", StringComparison.OrdinalIgnoreCase) ? string.Empty : countryCode + "-";
+            var newRating = ratingPrefix + ratingValue;
+
+            return newRating.Replace("DE-", "FSK-", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -35,16 +37,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             // Read the file and display it line by line.
             using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
             {
-                return GetChannels(reader, channelIdPrefix, info.Id);
-            }
-        }
-
-        public List<ChannelInfo> ParseString(string text, string channelIdPrefix, string tunerHostId)
-        {
-            // Read the file and display it line by line.
-            using (var reader = new StringReader(text))
-            {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
+                return await GetChannelsAsync(reader, channelIdPrefix, info.Id).ConfigureAwait(false);
             }
         }
 
@@ -70,43 +63,42 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private const string ExtInfPrefix = "#EXTINF:";
 
-        private List<ChannelInfo> GetChannels(TextReader reader, string channelIdPrefix, string tunerHostId)
+        private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<ChannelInfo>();
-            string line;
             string extInf = string.Empty;
 
-            while ((line = reader.ReadLine()) != null)
+            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
             {
-                line = line.Trim();
-                if (string.IsNullOrWhiteSpace(line))
+                var trimmedLine = line.Trim();
+                if (string.IsNullOrWhiteSpace(trimmedLine))
                 {
                     continue;
                 }
 
-                if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
+                if (trimmedLine.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                if (line.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
+                if (trimmedLine.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    extInf = line.Substring(ExtInfPrefix.Length).Trim();
+                    extInf = trimmedLine.Substring(ExtInfPrefix.Length).Trim();
                     _logger.LogInformation("Found m3u channel: {0}", extInf);
                 }
-                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith('#'))
+                else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
-                    var channel = GetChannelnfo(extInf, tunerHostId, line);
+                    var channel = GetChannelnfo(extInf, tunerHostId, trimmedLine);
                     if (string.IsNullOrWhiteSpace(channel.Id))
                     {
-                        channel.Id = channelIdPrefix + line.GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                        channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                     }
                     else
                     {
                         channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                     }
 
-                    channel.Path = line;
+                    channel.Path = trimmedLine;
                     channels.Add(channel);
                     extInf = string.Empty;
                 }

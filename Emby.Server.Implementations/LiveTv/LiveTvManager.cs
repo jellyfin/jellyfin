@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -987,10 +989,7 @@ namespace Emby.Server.Implementations.LiveTv
                 var externalProgramId = programTuple.Item2;
                 string externalSeriesId = programTuple.Item3;
 
-                if (timerList == null)
-                {
-                    timerList = (await GetTimersInternal(new TimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
-                }
+                timerList ??= (await GetTimersInternal(new TimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
 
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
                 var foundSeriesTimer = false;
@@ -1018,10 +1017,7 @@ namespace Emby.Server.Implementations.LiveTv
                     continue;
                 }
 
-                if (seriesTimerList == null)
-                {
-                    seriesTimerList = (await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
-                }
+                seriesTimerList ??= (await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
 
                 var seriesTimer = seriesTimerList.FirstOrDefault(i => string.Equals(i.SeriesId, externalSeriesId, StringComparison.OrdinalIgnoreCase));
 
@@ -1974,10 +1970,7 @@ namespace Emby.Server.Implementations.LiveTv
                 };
             }
 
-            if (service == null)
-            {
-                service = _services[0];
-            }
+            service ??= _services[0];
 
             var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
 

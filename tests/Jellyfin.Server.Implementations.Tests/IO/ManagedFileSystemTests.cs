@@ -42,6 +42,16 @@ namespace Jellyfin.Server.Implementations.Tests.IO
             }
         }
 
+        [Theory]
+        [InlineData("ValidFileName", "ValidFileName")]
+        [InlineData("AC/DC", "AC DC")]
+        [InlineData("Invalid\0", "Invalid ")]
+        [InlineData("AC/DC\0KD/A", "AC DC KD A")]
+        public void GetValidFilename_ReturnsValidFilename(string filename, string expectedFileName)
+        {
+            Assert.Equal(expectedFileName, _sut.GetValidFilename(filename));
+        }
+
         [SkippableFact]
         public void GetFileInfo_DanglingSymlink_ExistsFalse()
         {

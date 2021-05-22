@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -20,14 +22,14 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static string[] SupportedExtensions =
-            {
-                ".m3u",
-                ".m3u8",
-                ".pls",
-                ".wpl",
-                ".zpl"
-            };
+        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
+        {
+            ".m3u",
+            ".m3u8",
+            ".pls",
+            ".wpl",
+            ".zpl"
+        };
 
         public Guid OwnerUserId { get; set; }
 
@@ -126,10 +128,7 @@ namespace MediaBrowser.Controller.Playlists
 
         private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                query = new InternalItemsQuery(user);
-            }
+            query ??= new InternalItemsQuery(user);
 
             query.IsFolder = false;
 

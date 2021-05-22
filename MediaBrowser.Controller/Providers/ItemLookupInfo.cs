@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,6 +10,12 @@ namespace MediaBrowser.Controller.Providers
 {
     public class ItemLookupInfo : IHasProviderIds
     {
+        public ItemLookupInfo()
+        {
+            IsAutomated = true;
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -51,11 +59,5 @@ namespace MediaBrowser.Controller.Providers
         public DateTime? PremiereDate { get; set; }
 
         public bool IsAutomated { get; set; }
-
-        public ItemLookupInfo()
-        {
-            IsAutomated = true;
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }
