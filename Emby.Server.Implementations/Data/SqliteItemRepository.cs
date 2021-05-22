@@ -1150,7 +1150,7 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
+            if (Enum.TryParse(imageType, true, out ImageType type))
             {
                 image.Type = type;
             }
@@ -1571,7 +1571,6 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetString(index++, out var audioString))
             {
-                // TODO Span overload coming in the future https://github.com/dotnet/runtime/issues/1916
                 if (Enum.TryParse(audioString, true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
@@ -1610,18 +1609,16 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetString(index++, out var lockedFields))
                 {
-                    IEnumerable<MetadataField> GetLockedFields(string s)
+                    List<MetadataField> fields = null;
+                    foreach (var i in lockedFields.Split('|'))
                     {
-                        foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                        if (Enum.TryParse(i, true, out MetadataField parsedValue))
                         {
-                            if (Enum.TryParse(i, true, out MetadataField parsedValue))
-                            {
-                                yield return parsedValue;
-                            }
+                            (fields ??= new List<MetadataField>()).Add(parsedValue);
                         }
                     }
 
-                    item.LockedFields = GetLockedFields(lockedFields).ToArray();
+                    item.LockedFields = fields?.ToArray() ?? Array.Empty<MetadataField>();
                 }
             }
 
@@ -1647,18 +1644,16 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (reader.TryGetString(index, out var trailerTypes))
                     {
-                        IEnumerable<TrailerType> GetTrailerTypes(string s)
+                        List<TrailerType> types = null;
+                        foreach (var i in trailerTypes.Split('|'))
                         {
-                            foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                            if (Enum.TryParse(i, true, out TrailerType parsedValue))
                             {
-                                if (Enum.TryParse(i, true, out TrailerType parsedValue))
-                                {
-                                    yield return parsedValue;
-                                }
+                                (types ??= new List<TrailerType>()).Add(parsedValue);
                             }
                         }
 
-                        trailer.TrailerTypes = GetTrailerTypes(trailerTypes).ToArray();
+                        trailer.TrailerTypes = types.ToArray() ?? Array.Empty<TrailerType>();
                     }
                 }
 
