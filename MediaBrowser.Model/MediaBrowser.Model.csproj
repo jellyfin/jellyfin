@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
     <PackageReference Include="System.Globalization" Version="4.3.0" />
     <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="TMDbLib" Version="1.8.1" />
   </ItemGroup>
 
   <ItemGroup>

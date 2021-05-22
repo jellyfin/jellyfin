@@ -214,6 +214,7 @@ namespace MediaBrowser.Providers.Manager
             lookupInfo.ProviderIds = result.ProviderIds;
             lookupInfo.Name = result.Name;
             lookupInfo.Year = result.ProductionYear;
+            lookupInfo.TmdbEpisodeGroupId = result.EpisodeGroupId;
         }
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)

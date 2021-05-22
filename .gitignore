@@ -277,3 +277,4 @@ web/
 web-src.*
 MediaBrowser.WebDashboard/jellyfin-web
 apiclient/generated
+.vscode/launch.json

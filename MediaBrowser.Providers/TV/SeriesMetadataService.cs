@@ -80,6 +80,13 @@ namespace MediaBrowser.Providers.TV
             {
                 targetItem.AirDays = sourceItem.AirDays;
             }
+
+            if (!string.IsNullOrEmpty(source.Item.EpisodeGroupId))
+            {
+                target.Item.EpisodeGroupId = source.Item.EpisodeGroupId;
+            }
+
+
         }
 
         private void RemoveObsoleteSeasons(Series series)

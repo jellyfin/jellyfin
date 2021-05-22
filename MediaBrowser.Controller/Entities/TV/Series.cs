@@ -66,6 +66,8 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </remarks>
         public string DisplayOrder { get; set; }
 
+        public string EpisodeGroupId { get; set; }
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
@@ -344,6 +346,10 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
+            if (string.IsNullOrEmpty(refreshOptions.SearchResult.EpisodeGroupId))
+            {
+                this.EpisodeGroupId = null;
+            }
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 

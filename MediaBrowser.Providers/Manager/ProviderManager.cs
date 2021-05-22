@@ -848,6 +848,11 @@ namespace MediaBrowser.Providers.Manager
                     {
                         var existingMatch = resultList.FirstOrDefault(i => i.ProviderIds.Any(p => string.Equals(result.GetProviderId(p.Key), p.Value, StringComparison.OrdinalIgnoreCase)));
 
+                        if (result.SearchProviderName == "TheMovieDb" && !string.IsNullOrEmpty(result.EpisodeGroupId))
+                        {
+                            existingMatch = resultList.FirstOrDefault(i => string.Equals(result.EpisodeGroupId, i.EpisodeGroupId, StringComparison.OrdinalIgnoreCase));
+                        }
+
                         if (existingMatch == null)
                         {
                             resultList.Add(result);
