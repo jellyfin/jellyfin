@@ -1250,10 +1250,8 @@ namespace Emby.Server.Implementations.Library
         private CollectionTypeOptions? GetCollectionType(string path)
         {
             var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
-            foreach (var file in files)
+            foreach (ReadOnlySpan<char> file in files)
             {
-                // TODO: @bond use a ReadOnlySpan<char> here when Enum.TryParse supports it
-                // https://github.com/dotnet/runtime/issues/20008
                 if (Enum.TryParse<CollectionTypeOptions>(Path.GetFileNameWithoutExtension(file), true, out var res))
                 {
                     return res;
