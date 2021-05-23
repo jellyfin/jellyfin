@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#nullable enable
 
 namespace Emby.Server.Implementations
 {

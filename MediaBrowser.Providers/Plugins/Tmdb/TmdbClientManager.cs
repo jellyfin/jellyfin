@@ -250,11 +250,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Gets a person eg. cast or crew member from the TMDb API based on its TMDb id.
         /// </summary>
         /// <param name="personTmdbId">The person's TMDb id.</param>
+        /// <param name="language">The episode's language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb person information or null if not found.</returns>
-        public async Task<Person> GetPersonAsync(int personTmdbId, CancellationToken cancellationToken)
+        public async Task<Person> GetPersonAsync(int personTmdbId, string language, CancellationToken cancellationToken)
         {
-            var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}";
+            var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out Person person))
             {
                 return person;
@@ -264,6 +265,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
+                TmdbUtils.NormalizeLanguage(language),
                 PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
