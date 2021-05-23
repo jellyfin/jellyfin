@@ -666,14 +666,12 @@ namespace MediaBrowser.Controller.Entities
         {
             if (SourceType == SourceType.Channel)
             {
-                return System.IO.Path.Combine(basePath, "channels", ChannelId.ToString("N", CultureInfo.InvariantCulture), Id.ToString("N", CultureInfo.InvariantCulture));
+                return System.IO.Path.Join(basePath, "channels", ChannelId.ToString("N", CultureInfo.InvariantCulture), Id.ToString("N", CultureInfo.InvariantCulture));
             }
 
             ReadOnlySpan<char> idString = Id.ToString("N", CultureInfo.InvariantCulture);
 
-            basePath = System.IO.Path.Combine(basePath, "library");
-
-            return System.IO.Path.Join(basePath, idString.Slice(0, 2), idString);
+            return System.IO.Path.Join(basePath, "library", idString.Slice(0, 2), idString);
         }
 
         /// <summary>
@@ -1258,7 +1256,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren
-                .Where(i => !i.IsDirectory && string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase)));
+                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFilename, StringComparison.OrdinalIgnoreCase)));
 
             return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
                 .OfType<Audio.Audio>()
@@ -1319,14 +1317,16 @@ namespace MediaBrowser.Controller.Entities
         {
             var extras = new List<Video>();
 
-            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToArray();
+            var libraryOptions = new LibraryOptions();
+            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToList();
             foreach (var extraFolderName in AllExtrasTypesFolderNames)
             {
                 var files = folders
                     .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
                     .SelectMany(i => FileSystem.GetFiles(i.FullName));
 
-                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
+                // Re-using the same instance of LibraryOptions since it looks like it's never being altered.
+                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, libraryOptions)
                     .OfType<Video>()
                     .Select(item =>
                     {
@@ -2323,7 +2323,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.IsLocalFile)
                 .Select(i => System.IO.Path.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .SelectMany(directoryService.GetFilePaths)
+                .SelectMany(path => directoryService.GetFilePaths(path))
                 .ToList();
 
             var deletedImages = ImageInfos
@@ -2433,7 +2433,15 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("No image info for chapter images");
             }
 
-            return ImageInfos.Where(i => i.Type == imageType);
+            // Yield return is more performant than LINQ Where on an Array
+            for (var i = 0; i < ImageInfos.Length; i++)
+            {
+                var imageInfo = ImageInfos[i];
+                if (imageInfo.Type == imageType)
+                {
+                    yield return imageInfo;
+                }
+            }
         }
 
         /// <summary>
@@ -2465,7 +2473,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var existing = existingImages
-                    .FirstOrDefault(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
+                    .Find(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
 
                 if (existing == null)
                 {
@@ -2496,8 +2504,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-                    .Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
-                    .ToList();
+                    .FindAll(i => i.IsLocalFile && !newImagePaths.Contains(i.Path.AsSpan(), StringComparison.OrdinalIgnoreCase) && !File.Exists(i.Path));
 
                 if (deleted.Count > 0)
                 {

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -593,5 +594,11 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetParentItem(string parentId, Guid? userId);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        /// <summary>
+        /// Gets or creates a static instance of <see cref="NamingOptions"/>.
+        /// </summary>
+        /// <returns>An instance of the <see cref="NamingOptions"/> class.</returns>
+        NamingOptions GetNamingOptions();
     }
 }

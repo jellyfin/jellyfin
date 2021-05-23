@@ -25,15 +25,16 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, p => _fileSystem.GetFileSystemEntries(p).ToArray());
+            return _cache.GetOrAdd(path, (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
         }
 
         public List<FileSystemMetadata> GetFiles(string path)
         {
             var list = new List<FileSystemMetadata>();
             var items = GetFileSystemEntries(path);
-            foreach (var item in items)
+            for (var i = 0; i < items.Length; i++)
             {
+                var item = items[i];
                 if (!item.IsDirectory)
                 {
                     list.Add(item);
@@ -48,10 +49,9 @@ namespace MediaBrowser.Controller.Providers
             if (!_fileCache.TryGetValue(path, out var result))
             {
                 var file = _fileSystem.GetFileInfo(path);
-                var res = file != null && file.Exists ? file : null;
-                if (res != null)
+                if (file.Exists)
                 {
-                    result = res;
+                    result = file;
                     _fileCache.TryAdd(path, result);
                 }
             }
@@ -60,16 +60,26 @@ namespace MediaBrowser.Controller.Providers
         }
 
         public IReadOnlyList<string> GetFilePaths(string path)
-            => GetFilePaths(path, false);
+            => GetFilePaths(path, false, false);
 
-        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
+        public IReadOnlyList<string> GetSortedFilePaths(string path, bool clearCache)
+            => GetFilePaths(path, clearCache, true);
+
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
         {
             if (clearCache)
             {
                 _filePathCache.TryRemove(path, out _);
             }
 
-            return _filePathCache.GetOrAdd(path, p => _fileSystem.GetFilePaths(p).ToList());
+            var filePaths = _filePathCache.GetOrAdd(path, (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+
+            if (sort)
+            {
+                filePaths.Sort();
+            }
+
+            return filePaths;
         }
     }
 }

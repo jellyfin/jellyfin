@@ -44,7 +44,7 @@ namespace Emby.Naming.Video
                 }
                 else if (rule.MediaType == MediaType.Video)
                 {
-                    if (!new VideoResolver(_options).IsVideoFile(path))
+                    if (!VideoResolver.IsVideoFile(path, _options))
                     {
                         continue;
                     }
