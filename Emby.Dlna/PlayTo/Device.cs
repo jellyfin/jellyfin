@@ -378,9 +378,9 @@ namespace Emby.Dlna.PlayTo
 
             url = url.Replace("&", "&amp;", StringComparison.Ordinal);
 
-            _logger.LogDebug("{0} - SetNextAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
+            _logger.LogDebug("{PropertyName} - SetNextAvTransport Uri: {Url} DlnaHeaders: {Header}", Properties.Name, url, header);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetNextAVTransportURI");
+            var command = avCommands.ServiceActions.FirstOrDefault(c => string.Equals(c.Name, "SetNextAVTransportURI", StringComparison.OrdinalIgnoreCase);
             if (command == null)
             {
                 return;

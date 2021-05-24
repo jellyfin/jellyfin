@@ -654,7 +654,7 @@ namespace Emby.Dlna.PlayTo
             await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl, cancellationToken).ConfigureAwait(false);
 
             // Send a message to the DLNA device to notify what is the next track in the play list.
-            await SendNextTrackMessage(index, CancellationToken.None);
+            await SendNextTrackMessage(index, cancellationToken);
 
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
