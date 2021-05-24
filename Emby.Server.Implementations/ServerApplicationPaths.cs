@@ -25,11 +25,11 @@ namespace Emby.Server.Implementations
                 cacheDirectoryPath,
                 webDirectoryPath)
         {
-            InternalMetadataPath = DefaultInternalMetadataPath;
             // ProgramDataPath cannot change when the server is running, so cache these to avoid allocations.
             RootFolderPath = Path.Join(ProgramDataPath, "root");
             DefaultUserViewsPath = Path.Combine(RootFolderPath, "default");
             DefaultInternalMetadataPath = Path.Combine(ProgramDataPath, "metadata");
+            InternalMetadataPath = DefaultInternalMetadataPath;
         }
 
         /// <summary>
