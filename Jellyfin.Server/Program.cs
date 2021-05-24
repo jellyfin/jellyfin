@@ -222,15 +222,15 @@ namespace Jellyfin.Server
             }
             finally
             {
-                appHost.Dispose();
                 _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
-
-                // Run after disposing the application
+                // Run before disposing the application
                 using var context = new JellyfinDbProvider(appHost.ServiceProvider, appPaths).CreateContext();
                 if (context.Database.IsSqlite())
                 {
                     context.Database.ExecuteSqlRaw("PRAGMA optimize");
                 }
+
+                appHost.Dispose();
             }
 
             if (_restartOnShutdown)
