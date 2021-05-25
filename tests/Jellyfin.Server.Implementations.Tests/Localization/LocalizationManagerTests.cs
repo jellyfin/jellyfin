@@ -11,18 +11,14 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 {
     public class LocalizationManagerTests
     {
-        private LocalizationManager _localizationManager = null!;
-
-        public LocalizationManagerTests()
-        {
-            var config = new ServerConfiguration() { UICulture = "de-DE" };
-            Setup(config);
-        }
-
         [Fact]
         public void GetCountries_All_Success()
         {
-            var countries = _localizationManager.GetCountries();
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de-DE"
+            });
+            var countries = localizationManager.GetCountries();
             var countryInfos = countries.ToList();
 
             Assert.Equal(139, countryInfos.Count);
@@ -37,8 +33,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [Fact]
         public async Task GetCultures_All_Success()
         {
-            await _localizationManager.LoadAll();
-            var cultures = _localizationManager.GetCultures().ToList();
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de-DE"
+            });
+            await localizationManager.LoadAll();
+            var cultures = localizationManager.GetCultures().ToList();
 
             Assert.Equal(189, cultures.Count);
 
@@ -57,9 +57,13 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("german")]
         public async Task FindLanguage_Valid_Success(string identifier)
         {
-            await _localizationManager.LoadAll();
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de-DE"
+            });
+            await localizationManager.LoadAll();
 
-            var germany = _localizationManager.FindLanguageInfo(identifier);
+            var germany = localizationManager.FindLanguageInfo(identifier);
             Assert.NotNull(germany);
 
             Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
@@ -72,8 +76,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [Fact]
         public async Task ParentalRatings_Default_Success()
         {
-            await _localizationManager.LoadAll();
-            var ratings = _localizationManager.GetParentalRatings().ToList();
+            var localizationManager = Setup(new ServerConfiguration
+            {
+                UICulture = "de-DE"
+            });
+            await localizationManager.LoadAll();
+            var ratings = localizationManager.GetParentalRatings().ToList();
 
             Assert.Equal(23, ratings.Count);
 
@@ -85,12 +93,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [Fact]
         public async Task ParentalRatings_ConfiguredCountryCode_Success()
         {
-            Setup(new ServerConfiguration()
+            var localizationManager = Setup(new ServerConfiguration()
             {
                 MetadataCountryCode = "DE"
             });
-            await _localizationManager.LoadAll();
-            var ratings = _localizationManager.GetParentalRatings().ToList();
+            await localizationManager.LoadAll();
+            var ratings = localizationManager.GetParentalRatings().ToList();
 
             Assert.Equal(10, ratings.Count);
 
@@ -109,12 +117,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("Germany: FSK-18", "DE", 9)]
         public async Task GetRatingLevelFromString_Valid_Success(string value, string countryCode, int expectedLevel)
         {
-            Setup(new ServerConfiguration()
+            var localizationManager = Setup(new ServerConfiguration()
             {
                 MetadataCountryCode = countryCode
             });
-            await _localizationManager.LoadAll();
-            var level = _localizationManager.GetRatingLevel(value);
+            await localizationManager.LoadAll();
+            var level = localizationManager.GetRatingLevel(value);
             Assert.NotNull(level);
             Assert.Equal(expectedLevel, level!);
         }
@@ -122,8 +130,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [Fact]
         public async Task GetRatingLevelFromString_Unrated_Success()
         {
-            await _localizationManager.LoadAll();
-            Assert.Null(_localizationManager.GetRatingLevel("n/a"));
+            var localizationManager = Setup(new ServerConfiguration()
+            {
+                UICulture = "de-DE"
+            });
+            await localizationManager.LoadAll();
+            Assert.Null(localizationManager.GetRatingLevel("n/a"));
         }
 
         [Theory]
@@ -131,12 +143,12 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("HeaderLiveTV", "Live TV")]
         public void GetLocalizedString_Valid_Success(string key, string expected)
         {
-            Setup(new ServerConfiguration()
+            var localizationManager = Setup(new ServerConfiguration()
             {
                 UICulture = "en-US"
             });
 
-            var translated = _localizationManager.GetLocalizedString(key);
+            var translated = localizationManager.GetLocalizedString(key);
             Assert.NotNull(translated);
             Assert.Equal(expected, translated);
         }
@@ -144,24 +156,24 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [Fact]
         public void GetLocalizedString_Invalid_Success()
         {
-            Setup(new ServerConfiguration()
+            var localizationManager = Setup(new ServerConfiguration()
             {
                 UICulture = "en-US"
             });
 
             var key = "SuperInvalidTranslationKeyThatWillNeverBeAdded";
 
-            var translated = _localizationManager.GetLocalizedString(key);
+            var translated = localizationManager.GetLocalizedString(key);
             Assert.NotNull(translated);
             Assert.Equal(key, translated);
         }
 
-        private void Setup(ServerConfiguration config)
+        private LocalizationManager Setup(ServerConfiguration config)
         {
             var mockConfiguration = new Mock<IServerConfigurationManager>();
             mockConfiguration.SetupGet(x => x.Configuration).Returns(config);
 
-            _localizationManager = new LocalizationManager(mockConfiguration.Object, new NullLogger<LocalizationManager>());
+            return new LocalizationManager(mockConfiguration.Object, new NullLogger<LocalizationManager>());
         }
     }
 }
