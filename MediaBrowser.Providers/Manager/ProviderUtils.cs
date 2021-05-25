@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || !target.CommunityRating.HasValue || (source.CommunityRating.HasValue && string.Equals(sourceResult.Provider, "The Open Movie Database", StringComparison.OrdinalIgnoreCase)))
+            if (replaceData || !target.CommunityRating.HasValue)
             {
                 target.CommunityRating = source.CommunityRating;
             }
