@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Common.Providers;

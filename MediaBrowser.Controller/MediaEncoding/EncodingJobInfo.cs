@@ -275,6 +275,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetRequestedAudioChannels(string codec)
         {
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "audiochannels");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
             if (BaseRequest.MaxAudioChannels.HasValue)
             {
                 return BaseRequest.MaxAudioChannels;
@@ -288,16 +298,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (BaseRequest.TranscodingMaxAudioChannels.HasValue)
             {
                 return BaseRequest.TranscodingMaxAudioChannels;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "audiochannels");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
             }
 
             return null;
