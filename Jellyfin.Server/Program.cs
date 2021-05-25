@@ -134,7 +134,7 @@ namespace Jellyfin.Server
 
                 e.Cancel = true;
                 _logger.LogInformation("Ctrl+C, shutting down");
-                Environment.ExitCode = 128 + 2;
+                Environment.ExitCode = 130;
                 Shutdown();
             };
 
@@ -147,7 +147,7 @@ namespace Jellyfin.Server
                 }
 
                 _logger.LogInformation("Received a SIGTERM signal, shutting down");
-                Environment.ExitCode = 128 + 15;
+                Environment.ExitCode = 143;
                 Shutdown();
             };
 
