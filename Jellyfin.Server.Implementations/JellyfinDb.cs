@@ -157,11 +157,6 @@ namespace Jellyfin.Server.Implementations
             // Delete behavior
 
             modelBuilder.Entity<User>()
-                .HasOne(u => u.ProfileImage)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
                 .HasMany(u => u.Permissions)
                 .WithOne()
                 .HasForeignKey(p => p.UserId)
