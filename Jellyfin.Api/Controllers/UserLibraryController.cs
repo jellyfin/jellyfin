@@ -325,6 +325,26 @@ namespace Jellyfin.Api.Controllers
             return Ok(dtos);
         }
 
+        /// <summary>
+        /// Delete user playback position.
+        /// </summary>
+        /// <param name="userId">Which user to delete resume position for.</param>
+        /// <param name="itemId">Item uuid from user's library to reset.</param>
+        /// <returns>penis3.</returns>
+        [HttpDelete("Users/{userId}/Items/{itemId}/PlaybackPosition")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public ActionResult DeleteResumeStatus([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        {
+            var user = _userManager.GetUserById(userId);
+            var item = itemId.Equals(Guid.Empty) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(itemId);
+            var data = _userDataRepository.GetUserData(user, item);
+
+            data.PlaybackPositionTicks = 0;
+
+            _userDataRepository.SaveUserData(user, item, data, UserDataSaveReason.PlaybackFinished, CancellationToken.None);
+            return NoContent();
+        }
+
         private async Task RefreshItemOnDemandIfNeeded(BaseItem item)
         {
             if (item is Person)
