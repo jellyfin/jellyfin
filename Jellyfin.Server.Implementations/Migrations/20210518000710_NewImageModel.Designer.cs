@@ -244,7 +244,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("ItemDisplayPreferences");
                 });
 
-            modelBuilder.Entity("Jellyfin.Data.Entities.Libraries.Image", b =>
+            modelBuilder.Entity("Jellyfin.Data.Entities.Image", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -521,7 +521,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 
             modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>
                 {
-                    b.HasOne("Jellyfin.Data.Entities.Libraries.Image", "ProfileImage")
+                    b.HasOne("Jellyfin.Data.Entities.Image", "ProfileImage")
                         .WithOne()
                         .HasForeignKey("Jellyfin.Data.Entities.User", "ImageId")
                         .OnDelete(DeleteBehavior.Cascade);

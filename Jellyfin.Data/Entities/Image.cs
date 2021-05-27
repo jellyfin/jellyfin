@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Interfaces;
 
-namespace Jellyfin.Data.Entities.Libraries
+namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a single image.
