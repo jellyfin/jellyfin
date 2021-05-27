@@ -391,6 +391,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (video is MusicVideo musicVideo)
+            {
+                musicVideo.Album = data.Album;
+                musicVideo.Artists = data.Artists;
+            }
+
             if (data.ProductionYear.HasValue)
             {
                 if (!video.ProductionYear.HasValue || isFullRefresh)
@@ -432,6 +438,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         video.Name = data.Name;
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(data.ForcedSortName))
+                {
+                    video.ForcedSortName = data.ForcedSortName;
                 }
             }
 
