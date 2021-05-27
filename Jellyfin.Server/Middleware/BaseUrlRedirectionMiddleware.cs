@@ -50,18 +50,15 @@ namespace Jellyfin.Server.Middleware
                 var startsWithBaseUrl = localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase);
 
                 if (!startsWithBaseUrl
-                    && localPath.EndsWith("/health", StringComparison.OrdinalIgnoreCase))
+                    && (localPath.Equals("/health", StringComparison.OrdinalIgnoreCase)
+                        || localPath.Equals("/health/", StringComparison.OrdinalIgnoreCase)))
                 {
                     _logger.LogDebug("Redirecting /health check");
                     httpContext.Response.Redirect(baseUrlPrefix + "/health");
                     return;
                 }
 
-                if (string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
-                    || string.IsNullOrEmpty(localPath)
-                    || !startsWithBaseUrl)
+                if (!startsWithBaseUrl)
                 {
                     // Always redirect back to the default path if the base prefix is invalid or missing
                     _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
