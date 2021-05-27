@@ -25,6 +25,7 @@
  - [cryptobank](https://github.com/cryptobank)
  - [cvium](https://github.com/cvium)
  - [dannymichel](https://github.com/dannymichel)
+ - [DanWillman](https://github.com/DanWillman)
  - [DaveChild](https://github.com/DaveChild)
  - [Delgan](https://github.com/Delgan)
  - [dcrdev](https://github.com/dcrdev)
