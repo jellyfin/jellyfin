@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

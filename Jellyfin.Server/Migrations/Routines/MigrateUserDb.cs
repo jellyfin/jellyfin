@@ -3,7 +3,6 @@ using System.IO;
 using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities;
-using Jellyfin.Data.Entities.Libraries;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
