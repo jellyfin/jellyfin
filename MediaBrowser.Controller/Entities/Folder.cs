@@ -1,8 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -36,6 +37,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Folder : BaseItem
     {
+        public Folder()
+        {
+            LinkedChildren = Array.Empty<LinkedChild>();
+        }
+
         public static IUserViewManager UserViewManager { get; set; }
 
         /// <summary>
@@ -48,11 +54,6 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public DateTime? DateLastMediaAdded { get; set; }
-
-        public Folder()
-        {
-            LinkedChildren = Array.Empty<LinkedChild>();
-        }
 
         [JsonIgnore]
         public override bool SupportsThemeMedia => true;
@@ -85,6 +86,85 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual bool SupportsDateLastMediaAdded => false;
 
+        [JsonIgnore]
+        public override string FileNameWithoutExtension
+        {
+            get
+            {
+                if (IsFileProtocol)
+                {
+                    return System.IO.Path.GetFileName(Path);
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the actual children.
+        /// </summary>
+        /// <value>The actual children.</value>
+        [JsonIgnore]
+        public virtual IEnumerable<BaseItem> Children => LoadChildren();
+
+        /// <summary>
+        /// Gets thread-safe access to all recursive children of this folder - without regard to user.
+        /// </summary>
+        /// <value>The recursive children.</value>
+        [JsonIgnore]
+        public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
+
+        [JsonIgnore]
+        protected virtual bool SupportsShortcutChildren => false;
+
+        protected virtual bool FilterLinkedChildrenPerUser => false;
+
+        [JsonIgnore]
+        protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
+
+        [JsonIgnore]
+        public virtual bool SupportsUserDataFromChildren
+        {
+            get
+            {
+                // These are just far too slow.
+                if (this is ICollectionFolder)
+                {
+                    return false;
+                }
+
+                if (this is UserView)
+                {
+                    return false;
+                }
+
+                if (this is UserRootFolder)
+                {
+                    return false;
+                }
+
+                if (this is Channel)
+                {
+                    return false;
+                }
+
+                if (SourceType != SourceType.Library)
+                {
+                    return false;
+                }
+
+                if (this is IItemByName)
+                {
+                    if (this is not IHasDualAccess hasDualAccess || hasDualAccess.IsAccessedByName)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
         public override bool CanDelete()
         {
             if (IsRoot)
@@ -107,20 +187,6 @@ namespace MediaBrowser.Controller.Entities
             return baseResult;
         }
 
-        [JsonIgnore]
-        public override string FileNameWithoutExtension
-        {
-            get
-            {
-                if (IsFileProtocol)
-                {
-                    return System.IO.Path.GetFileName(Path);
-                }
-
-                return null;
-            }
-        }
-
         protected override bool IsAllowTagFilterEnforced()
         {
             if (this is ICollectionFolder)
@@ -135,9 +201,6 @@ namespace MediaBrowser.Controller.Entities
 
             return true;
         }
-
-        [JsonIgnore]
-        protected virtual bool SupportsShortcutChildren => false;
 
         /// <summary>
         /// Adds the child.
@@ -167,20 +230,6 @@ namespace MediaBrowser.Controller.Entities
 
             LibraryManager.CreateItem(item, this);
         }
-
-        /// <summary>
-        /// Gets the actual children.
-        /// </summary>
-        /// <value>The actual children.</value>
-        [JsonIgnore]
-        public virtual IEnumerable<BaseItem> Children => LoadChildren();
-
-        /// <summary>
-        /// thread-safe access to all recursive children of this folder - without regard to user.
-        /// </summary>
-        /// <value>The recursive children.</value>
-        [JsonIgnore]
-        public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
 
         public override bool IsVisible(User user)
         {
@@ -1427,16 +1476,19 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        protected virtual bool FilterLinkedChildrenPerUser => false;
-
         public bool ContainsLinkedChildByItemId(Guid itemId)
         {
             var linkedChildren = LinkedChildren;
             foreach (var i in linkedChildren)
             {
-                if (i.ItemId.HasValue && i.ItemId.Value == itemId)
+                if (i.ItemId.HasValue)
                 {
-                    return true;
+                    if (i.ItemId.Value == itemId)
+                    {
+                        return true;
+                    }
+
+                    continue;
                 }
 
                 var child = GetLinkedChild(i);
@@ -1523,9 +1575,6 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => new Tuple<LinkedChild, BaseItem>(i, GetLinkedChild(i)))
                 .Where(i => i.Item2 != null);
         }
-
-        [JsonIgnore]
-        protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
@@ -1690,51 +1739,6 @@ namespace MediaBrowser.Controller.Entities
             return !IsPlayed(user);
         }
 
-        [JsonIgnore]
-        public virtual bool SupportsUserDataFromChildren
-        {
-            get
-            {
-                // These are just far too slow.
-                if (this is ICollectionFolder)
-                {
-                    return false;
-                }
-
-                if (this is UserView)
-                {
-                    return false;
-                }
-
-                if (this is UserRootFolder)
-                {
-                    return false;
-                }
-
-                if (this is Channel)
-                {
-                    return false;
-                }
-
-                if (SourceType != SourceType.Library)
-                {
-                    return false;
-                }
-
-                var iItemByName = this as IItemByName;
-                if (iItemByName != null)
-                {
-                    var hasDualAccess = this as IHasDualAccess;
-                    if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-        }
-
         public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
         {
             if (!SupportsUserDataFromChildren)
@@ -1764,20 +1768,15 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EnableImages = false
                     }
-                });
+                }).TotalRecordCount;
 
-                double unplayedCount = unplayedQueryResult.TotalRecordCount;
+                dto.UnplayedItemCount = unplayedQueryResult;
 
-                dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
-
-                if (itemDto != null && itemDto.RecursiveItemCount.HasValue)
+                if (itemDto?.RecursiveItemCount > 0)
                 {
-                    if (itemDto.RecursiveItemCount.Value > 0)
-                    {
-                        var unplayedPercentage = (unplayedCount / itemDto.RecursiveItemCount.Value) * 100;
-                        dto.PlayedPercentage = 100 - unplayedPercentage;
-                        dto.Played = dto.PlayedPercentage.Value >= 100;
-                    }
+                    var unplayedPercentage = ((double)unplayedQueryResult / itemDto.RecursiveItemCount.Value) * 100;
+                    dto.PlayedPercentage = 100 - unplayedPercentage;
+                    dto.Played = dto.PlayedPercentage.Value >= 100;
                 }
                 else
                 {

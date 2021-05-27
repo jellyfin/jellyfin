@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -188,12 +190,5 @@ namespace MediaBrowser.Controller.Providers
         void OnRefreshComplete(BaseItem item);
 
         double? GetRefreshProgress(Guid id);
-    }
-
-    public enum RefreshPriority
-    {
-        High = 0,
-        Normal = 1,
-        Low = 2
     }
 }

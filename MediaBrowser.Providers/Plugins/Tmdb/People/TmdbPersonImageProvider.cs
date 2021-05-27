@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -49,37 +48,36 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
-            var personTmdbId = Convert.ToInt32(person.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
 
-            if (personTmdbId > 0)
+            if (!person.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(personTmdbId, cancellationToken).ConfigureAwait(false);
-                if (personResult?.Images?.Profiles == null)
-                {
-                    return Enumerable.Empty<RemoteImageInfo>();
-                }
-
-                var remoteImages = new List<RemoteImageInfo>();
-                var language = item.GetPreferredMetadataLanguage();
-
-                for (var i = 0; i < personResult.Images.Profiles.Count; i++)
-                {
-                    var image = personResult.Images.Profiles[i];
-                    remoteImages.Add(new RemoteImageInfo
-                    {
-                        ProviderName = Name,
-                        Type = ImageType.Primary,
-                        Width = image.Width,
-                        Height = image.Height,
-                        Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
-                        Url = _tmdbClientManager.GetProfileUrl(image.FilePath)
-                    });
-                }
-
-                return remoteImages.OrderByLanguageDescending(language);
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            return Enumerable.Empty<RemoteImageInfo>();
+            var language = item.GetPreferredMetadataLanguage();
+            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
+            if (personResult?.Images?.Profiles == null)
+            {
+                return Enumerable.Empty<RemoteImageInfo>();
+            }
+
+            var remoteImages = new RemoteImageInfo[personResult.Images.Profiles.Count];
+
+            for (var i = 0; i < personResult.Images.Profiles.Count; i++)
+            {
+                var image = personResult.Images.Profiles[i];
+                remoteImages[i] = new RemoteImageInfo
+                {
+                    ProviderName = Name,
+                    Type = ImageType.Primary,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
+                    Url = _tmdbClientManager.GetProfileUrl(image.FilePath)
+                };
+            }
+
+            return remoteImages.OrderByLanguageDescending(language);
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

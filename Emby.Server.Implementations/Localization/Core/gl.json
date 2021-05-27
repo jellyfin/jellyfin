@@ -79,5 +79,14 @@
     "PluginUninstalledWithName": "{0} foi desinstalado",
     "PluginInstalledWithName": "{0} foi instalado",
     "Playlists": "Listas de reproducción",
-    "Photos": "Fotos"
+    "Photos": "Fotos",
+    "UserLockedOutWithName": "O usuario {0} foi bloqueado",
+    "UserDownloadingItemWithValues": "{0} está a ser transferido {1}",
+    "UserDeletedWithName": "O usuario {0} foi borrado",
+    "UserCreatedWithName": "O usuario {0} foi creado",
+    "Plugin": "Plugin",
+    "NotificationOptionVideoPlaybackStopped": "Reproducción de vídeo parada",
+    "NotificationOptionVideoPlayback": "Reproducción de vídeo iniciada",
+    "NotificationOptionUserLockedOut": "Usuario bloqueado",
+    "NotificationOptionTaskFailed": "Falla na tarefa axendada"
 }

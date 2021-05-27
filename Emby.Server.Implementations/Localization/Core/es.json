@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Limpiar registro de actividad",
     "Undefined": "Indefinido",
     "Forced": "Forzado",
-    "Default": "Predeterminado"
+    "Default": "Predeterminado",
+    "TaskOptimizeDatabase": "Optimizar la base de datos",
+    "TaskOptimizeDatabaseDescription": "Compacta y libera el espacio libre en la base de datos. Ejecutar esta tarea tras escanear la biblioteca o hacer cambios que impliquen modificaciones en la base de datos puede mejorar el rendimiento."
 }

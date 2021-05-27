@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.AppBase
             CachePath = cacheDirectoryPath;
             WebPath = webDirectoryPath;
 
-            DataPath = Path.Combine(ProgramDataPath, "data");
+            _dataPath = Directory.CreateDirectory(Path.Combine(ProgramDataPath, "data")).FullName;
         }
 
         /// <summary>
@@ -55,11 +55,7 @@ namespace Emby.Server.Implementations.AppBase
         /// Gets the folder path to the data directory.
         /// </summary>
         /// <value>The data directory.</value>
-        public string DataPath
-        {
-            get => _dataPath;
-            private set => _dataPath = Directory.CreateDirectory(value).FullName;
-        }
+        public string DataPath => _dataPath;
 
         /// <inheritdoc />
         public string VirtualDataPath => "%AppDataPath%";

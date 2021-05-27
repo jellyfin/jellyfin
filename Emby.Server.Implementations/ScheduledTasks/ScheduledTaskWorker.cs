@@ -1,10 +1,11 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -302,12 +303,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             get
             {
-                if (_id == null)
-                {
-                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                }
-
-                return _id;
+                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
         }
 
@@ -349,9 +345,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var trigger = (ITaskTrigger)sender;
 
-            var configurableTask = ScheduledTask as IConfigurableScheduledTask;
-
-            if (configurableTask != null && !configurableTask.IsEnabled)
+            if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
             {
                 return;
             }

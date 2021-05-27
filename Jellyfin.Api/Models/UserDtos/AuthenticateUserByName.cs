@@ -1,4 +1,6 @@
-﻿namespace Jellyfin.Api.Models.UserDtos
+﻿using System;
+
+namespace Jellyfin.Api.Models.UserDtos
 {
     /// <summary>
     /// The authenticate user by name request body.
@@ -18,6 +20,7 @@
         /// <summary>
         /// Gets or sets the sha1-hashed password.
         /// </summary>
+        [Obsolete("Send password using pw field")]
         public string? Password { get; set; }
     }
 }

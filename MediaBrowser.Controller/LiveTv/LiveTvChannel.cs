@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -146,7 +148,7 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsNews { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is kids.
+        /// Gets a value indicating whether this instance is kids.
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [JsonIgnore]
