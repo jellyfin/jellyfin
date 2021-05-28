@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using MediaBrowser.Model.MediaInfo;
 
@@ -20,6 +21,17 @@ namespace MediaBrowser.Model.Dlna
     public class DeviceProfile
     {
         /// <summary>
+        /// Gets or sets the address that the profile refers to.
+        /// In the case of a temporary profile, this is the address of the device that last used the profile.
+        /// </summary>
+        public IPAddress? Address { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether DIDL should be encoded or left clear.
+        /// </summary>
+        public bool EncodeContextOnTransmission { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of this device profile.
         /// </summary>
         public string? Name { get; set; }
@@ -29,17 +41,6 @@ namespace MediaBrowser.Model.Dlna
         /// </summary>
         [XmlIgnore]
         public string? Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the last IP address the profile was matched to.
-        /// </summary>
-        [XmlIgnore]
-        public IPAddress? Address { get; set; }
-
-        /// <summary>
-        /// Gets or sets the userId to use with this profile. If null, the default dlna account will be used.
-        /// </summary>
-        public string? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the Identification.
@@ -77,7 +78,7 @@ namespace MediaBrowser.Model.Dlna
         public string? ModelNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the ModelUrl.
+        /// Gets or sets the Model Url of the device which this profile represents.
         /// </summary>
         public string? ModelUrl { get; set; }
 
@@ -87,13 +88,16 @@ namespace MediaBrowser.Model.Dlna
         public string? SerialNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether EnableAlbumArtInDidl.
+        /// Gets or sets a value indicating whether Album art should be included in the Didl response.
+        /// <seealso cref=" EnableSingleAlbumArtLimit"/>.
+        /// Only works with Audio and Video.
         /// </summary>
         [DefaultValue(false)]
         public bool EnableAlbumArtInDidl { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether EnableSingleAlbumArtLimit.
+        /// Gets or sets a value indicating whether only one image should be included in the Didl, or if multiple should.
+        /// Only works with audio and video.
         /// </summary>
         [DefaultValue(false)]
         public bool EnableSingleAlbumArtLimit { get; set; }
@@ -105,27 +109,29 @@ namespace MediaBrowser.Model.Dlna
         public bool EnableSingleSubtitleLimit { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether didl should be encoded to this device.
-        /// </summary>
-        public bool EncodeContextOnTransmission { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SupportedMediaTypes.
+        /// Gets or sets the supported media types.
         /// </summary>
         public string SupportedMediaTypes { get; set; } = "Audio,Photo,Video";
 
         /// <summary>
-        /// Gets or sets the AlbumArtPn.
+        /// Gets or sets the UserId that this device should use.
+        /// </summary>
+        public string? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the profileID attribute for the AlbumArtURI response.
         /// </summary>
         public string? AlbumArtPn { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxAlbumArtWidth.
+        /// Gets or sets the maximum album art width.
+        /// See also <seealso cref="MaxAlbumArtHeight"/>, <see cref="EnableSingleAlbumArtLimit"/>, <seealso cref="EnableAlbumArtInDidl"/>.
         /// </summary>
         public int? MaxAlbumArtWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the MaxAlbumArtHeight.
+        /// Gets or sets the maximum album art height.
+        /// See also <seealso cref="MaxAlbumArtWidth"/>, <see cref="EnableSingleAlbumArtLimit"/>, <seealso cref="EnableAlbumArtInDidl"/>.
         /// </summary>
         public int? MaxAlbumArtHeight { get; set; }
 
@@ -165,7 +171,7 @@ namespace MediaBrowser.Model.Dlna
         public string? SonyAggregationFlags { get; set; }
 
         /// <summary>
-        /// Gets or sets the ProtocolInfo.
+        /// Gets or sets the ProtocolInfo settings reported by the device.
         /// </summary>
         public string? ProtocolInfo { get; set; }
 
@@ -176,19 +182,21 @@ namespace MediaBrowser.Model.Dlna
         public int TimelineOffsetSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether RequiresPlainVideoItems.
+        /// Gets or sets a value indicating whether all movie media types should be reported as
+        /// 'object.item.videoItem', or if appropriate, as 'object.item.videoItem.movie' or 'object.item.videoItem.musicVideoClip'.
         /// </summary>
         [DefaultValue(false)]
         public bool RequiresPlainVideoItems { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether RequiresPlainFolders.
+        /// Gets or sets a value indicating whether genre should be reported as 'object.container.storageFolder',
+        /// or if appropriate as 'object.container.genre.musicGenre' / 'object.container.genre'.
         /// </summary>
         [DefaultValue(false)]
         public bool RequiresPlainFolders { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether EnableMSMediaReceiverRegistrar.
+        /// Gets or sets a value indicating whether the MSMediaReceiverRegistrar service should be activated.
         /// </summary>
         [DefaultValue(false)]
         public bool EnableMSMediaReceiverRegistrar { get; set; }
@@ -200,7 +208,7 @@ namespace MediaBrowser.Model.Dlna
         public bool IgnoreTranscodeByteRangeRequests { get; set; }
 
         /// <summary>
-        /// Gets or sets the XmlRootAttributes.
+        /// Gets or sets the optional root attributes that will be included in the Didl response.
         /// </summary>
         public XmlAttribute[] XmlRootAttributes { get; set; } = Array.Empty<XmlAttribute>();
 
@@ -225,7 +233,7 @@ namespace MediaBrowser.Model.Dlna
         public CodecProfile[] CodecProfiles { get; set; } = Array.Empty<CodecProfile>();
 
         /// <summary>
-        /// Gets or sets the ResponseProfiles.
+        /// Gets or sets the response profiles.
         /// </summary>
         public ResponseProfile[] ResponseProfiles { get; set; } = Array.Empty<ResponseProfile>();
 
@@ -235,7 +243,7 @@ namespace MediaBrowser.Model.Dlna
         public SubtitleProfile[] SubtitleProfiles { get; set; } = Array.Empty<SubtitleProfile>();
 
         /// <summary>
-        /// The GetSupportedMediaTypes.
+        /// Gets the supported media types.
         /// </summary>
         /// <returns>The .</returns>
         public string[] GetSupportedMediaTypes()
@@ -348,7 +356,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!ConditionProcessor.IsAudioConditionSatisfied(GetModelProfileCondition(c), audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
+                    if (!ConditionProcessor.IsAudioConditionSatisfied(c, audioChannels, audioBitrate, audioSampleRate, audioBitDepth))
                     {
                         anyOff = true;
                         break;
@@ -364,22 +372,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Gets the model profile condition.
-        /// </summary>
-        /// <param name="c">The c<see cref="ProfileCondition"/>.</param>
-        /// <returns>The <see cref="ProfileCondition"/>.</returns>
-        private ProfileCondition GetModelProfileCondition(ProfileCondition c)
-        {
-            return new ProfileCondition
-            {
-                Condition = c.Condition,
-                IsRequired = c.IsRequired,
-                Property = c.Property,
-                Value = c.Value
-            };
         }
 
         /// <summary>
@@ -406,7 +398,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (var c in i.Conditions)
                 {
-                    if (!ConditionProcessor.IsImageConditionSatisfied(GetModelProfileCondition(c), width, height))
+                    if (!ConditionProcessor.IsImageConditionSatisfied(c, width, height))
                     {
                         anyOff = true;
                         break;
@@ -448,14 +440,14 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="isAvc">True if Avc.</param>
         /// <returns>The <see cref="ResponseProfile"/>.</returns>
         public ResponseProfile? GetVideoMediaProfile(
-            string container,
+            string? container,
             string? audioCodec,
             string? videoCodec,
             int? width,
             int? height,
             int? bitDepth,
             int? videoBitrate,
-            string videoProfile,
+            string? videoProfile,
             double? videoLevel,
             float? videoFramerate,
             int? packetLength,
@@ -465,7 +457,7 @@ namespace MediaBrowser.Model.Dlna
             int? refFrames,
             int? numVideoStreams,
             int? numAudioStreams,
-            string videoCodecTag,
+            string? videoCodecTag,
             bool? isAvc)
         {
             foreach (var i in ResponseProfiles)
@@ -495,7 +487,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!ConditionProcessor.IsVideoConditionSatisfied(GetModelProfileCondition(c), width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
+                    if (!ConditionProcessor.IsVideoConditionSatisfied(c, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isInterlaced, refFrames, numVideoStreams, numAudioStreams, videoCodecTag, isAvc))
                     {
                         anyOff = true;
                         break;
@@ -511,6 +503,15 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Creates a shallow copy of this device.
+        /// </summary>
+        /// <returns>A <see cref="DeviceProfile"/>.</returns>
+        public DeviceProfile Clone()
+        {
+            return (DeviceProfile)MemberwiseClone();
         }
     }
 }
