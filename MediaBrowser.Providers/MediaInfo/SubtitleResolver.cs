@@ -136,7 +136,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     var language = languageSpan.ToString();
                     var culture = _localization.FindLanguageInfo(language);
 
-                    language = culture != null ? culture.ThreeLetterISOLanguageName : language;
+                    language = culture == null ? language : culture.ThreeLetterISOLanguageName;
 
                     mediaStream = new MediaStream
                     {
