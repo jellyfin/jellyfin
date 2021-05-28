@@ -91,8 +91,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
 
-            var now = DateTime.UtcNow;
-
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
             // OpenedMediaSource.Protocol = MediaProtocol.File;
@@ -120,7 +118,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (!taskCompletionSource.Task.Result)
             {
                 Logger.LogWarning("Zero bytes copied from stream {0} to {1} but no exception raised", GetType().Name, TempFilePath);
-                throw new EndOfStreamException(String.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
+                throw new EndOfStreamException(string.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
             }
         }
 

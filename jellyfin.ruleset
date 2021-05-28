@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- disable warning CA1040: Avoid empty interfaces -->
+    <Rule Id="CA1040" Action="Info" />
+
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
     <!-- disable warning SA1011: Closing square bracket should be followed by a space. -->
