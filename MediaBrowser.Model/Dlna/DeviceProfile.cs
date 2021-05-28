@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
         /// Gets or sets the address that the profile refers to.
         /// In the case of a temporary profile, this is the address of the device that last used the profile.
         /// </summary>
-        public IPAddress? Address { get; set; }
+        public string? Address { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether DIDL should be encoded or left clear.
