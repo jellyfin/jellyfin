@@ -281,8 +281,7 @@ namespace Emby.Naming.Video
             var trimmedSecondBaseName = TrimFilenameDelimiters(secondBaseName, videoFlagDelimiters);
 
             var result = new List<VideoFileInfo>();
-            var pos = remainingFiles.Count - 1;
-            for (; pos >= 0; pos--)
+            for (var pos = remainingFiles.Count - 1; pos >= 0; pos--)
             {
                 var file = remainingFiles[pos];
                 if (file.ExtraType == null)
