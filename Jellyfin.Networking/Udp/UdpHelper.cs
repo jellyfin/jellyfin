@@ -118,7 +118,7 @@ namespace Jellyfin.Networking.Udp
             return new IPEndPoint(
                 localIpAddress.AddressFamily == AddressFamily.InterNetwork
                     ? SsdpMulticastIPv4
-                    : IPNetAddress.IsIPv6LinkLocal(localIpAddress)
+                    : localIpAddress.IsIPv6LinkLocal
                         ? SsdpMulticastIPv6LinkLocal
                         : SsdpMulticastIPv6SiteLocal,
                 port);
@@ -137,7 +137,7 @@ namespace Jellyfin.Networking.Udp
             return new IPEndPoint(
                 localIpAddress.AddressFamily == AddressFamily.InterNetwork
                 ? SsdpMulticastIPv4
-                    : IPNetAddress.IsIPv6LinkLocal(localIpAddress)
+                    : localIpAddress.IsIPv6LinkLocal
                     ? SsdpMulticastIPv6LinkLocal
                         : SsdpMulticastIPv6SiteLocal,
                 port);
@@ -383,7 +383,7 @@ namespace Jellyfin.Networking.Udp
                 }
 
                 udp.EnableBroadcast = true;
-                udp.Client.MulticastLoopback = true;
+                // udp.MulticastLoopback = true;
 
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
@@ -393,7 +393,7 @@ namespace Jellyfin.Networking.Udp
                 {
                     udp.JoinMulticastGroup(
                         (int)address.ScopeId,
-                        IPNetAddress.IsIPv6LinkLocal(address) ? SsdpMulticastIPv6LinkLocal : SsdpMulticastIPv6SiteLocal);
+                        address.IsIPv6LinkLocal ? SsdpMulticastIPv6LinkLocal : SsdpMulticastIPv6SiteLocal);
                 }
 
                 udp.IsMulticast = true;
@@ -500,7 +500,7 @@ namespace Jellyfin.Networking.Udp
             byte[] buffer = Encoding.UTF8.GetBytes(packet);
             var mcast = intf.AddressFamily == AddressFamily.InterNetwork
                 ? new IPEndPoint(SsdpMulticastIPv4, port)
-                : new IPEndPoint(IPNetAddress.IsIPv6LinkLocal(intf) ? SsdpMulticastIPv6LinkLocal : SsdpMulticastIPv6SiteLocal, port);
+                : new IPEndPoint(intf.IsIPv6LinkLocal ? SsdpMulticastIPv6LinkLocal : SsdpMulticastIPv6SiteLocal, port);
 
             if (client.Tracing)
             {
