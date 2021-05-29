@@ -478,7 +478,7 @@ namespace Emby.Server.Implementations
 
             Logger.LogInformation("ServerId: {0}", SystemId);
 
-            var entryPoints = GetExports<IServerEntryPoint>();
+            var entryPoints = GetExports<IServerEntryPoint>(CreateUninstantiatedClasses);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1363,6 +1363,19 @@ namespace Emby.Server.Implementations
             }
 
             _disposed = true;
+        }
+
+        private IServerEntryPoint CreateUninstantiatedClasses(Type type)
+        {
+            var pluginInstance = _pluginManager.Plugins.FirstOrDefault(p => p.Instance.GetType() == type);
+            if (pluginInstance != null)
+            {
+                return (IServerEntryPoint)pluginInstance.Instance;
+            }
+            else
+            {
+                return (IServerEntryPoint)CreateInstanceSafe(type);
+            }
         }
     }
 
