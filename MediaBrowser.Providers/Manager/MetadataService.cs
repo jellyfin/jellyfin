@@ -211,9 +211,22 @@ namespace MediaBrowser.Providers.Manager
 
         private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
         {
-            lookupInfo.ProviderIds = result.ProviderIds;
-            lookupInfo.Name = result.Name;
-            lookupInfo.Year = result.ProductionYear;
+            switch (lookupInfo)
+            {
+                case EpisodeInfo episodeInfo:
+                    episodeInfo.SeriesProviderIds = result.ProviderIds;
+                    episodeInfo.ProviderIds.Clear();
+                    break;
+                case SeasonInfo seasonInfo:
+                    seasonInfo.SeriesProviderIds = result.ProviderIds;
+                    seasonInfo.ProviderIds.Clear();
+                    break;
+                default:
+                    lookupInfo.ProviderIds = result.ProviderIds;
+                    lookupInfo.Name = result.Name;
+                    lookupInfo.Year = result.ProductionYear;
+                    break;
+            }
         }
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
