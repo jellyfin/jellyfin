@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -18,7 +20,7 @@ namespace MediaBrowser.Controller.MediaEncoding
     public interface IMediaEncoder : ITranscoderSupport
     {
         /// <summary>
-        /// The location of the discovered FFmpeg tool.
+        /// Gets location of the discovered FFmpeg tool.
         /// </summary>
         FFmpegLocation EncoderLocation { get; }
 

@@ -36,14 +36,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return GetSession((HttpContext)requestContext);
         }
 
-        public User GetUser(HttpContext requestContext)
+        public User? GetUser(HttpContext requestContext)
         {
             var session = GetSession(requestContext);
 
             return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
         }
 
-        public User GetUser(object requestContext)
+        public User? GetUser(object requestContext)
         {
             return GetUser(((HttpRequest)requestContext).HttpContext);
         }

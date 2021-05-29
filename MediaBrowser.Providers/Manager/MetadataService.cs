@@ -201,7 +201,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 // Save to database
-                await SaveItemAsync(metadataResult, libraryOptions, updateType, cancellationToken).ConfigureAwait(false);
+                await SaveItemAsync(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
             }
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -216,69 +216,16 @@ namespace MediaBrowser.Providers.Manager
             lookupInfo.Year = result.ProductionYear;
         }
 
-        protected async Task SaveItemAsync(MetadataResult<TItemType> result, LibraryOptions libraryOptions, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
             if (result.Item.SupportsPeople && result.People != null)
             {
                 var baseItem = result.Item;
 
-                LibraryManager.UpdatePeople(baseItem, result.People);
-                await SavePeopleMetadataAsync(result.People, cancellationToken).ConfigureAwait(false);
+                await LibraryManager.UpdatePeopleAsync(baseItem, result.People, cancellationToken).ConfigureAwait(false);
             }
 
             await result.Item.UpdateToRepositoryAsync(reason, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task SavePeopleMetadataAsync(IEnumerable<PersonInfo> people, CancellationToken cancellationToken)
-        {
-            var personsToSave = new List<BaseItem>();
-
-            foreach (var person in people)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var itemUpdateType = ItemUpdateType.MetadataDownload;
-                var saveEntity = false;
-                var personEntity = LibraryManager.GetPerson(person.Name);
-
-                // if PresentationUniqueKey is empty it's likely a new item.
-                if (string.IsNullOrEmpty(personEntity.PresentationUniqueKey))
-                {
-                    personEntity.PresentationUniqueKey = personEntity.CreatePresentationUniqueKey();
-                    saveEntity = true;
-                }
-
-                foreach (var id in person.ProviderIds)
-                {
-                    if (!string.Equals(personEntity.GetProviderId(id.Key), id.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        personEntity.SetProviderId(id.Key, id.Value);
-                        saveEntity = true;
-                    }
-                }
-
-                if (!string.IsNullOrWhiteSpace(person.ImageUrl) && !personEntity.HasImage(ImageType.Primary))
-                {
-                    personEntity.SetImage(
-                        new ItemImageInfo
-                        {
-                            Path = person.ImageUrl,
-                            Type = ImageType.Primary
-                        },
-                        0);
-
-                    saveEntity = true;
-                    itemUpdateType = ItemUpdateType.ImageUpdate;
-                }
-
-                if (saveEntity)
-                {
-                    personsToSave.Add(personEntity);
-                    await LibraryManager.RunMetadataSavers(personEntity, itemUpdateType).ConfigureAwait(false);
-                }
-            }
-
-            LibraryManager.CreateItems(personsToSave, null, CancellationToken.None);
         }
 
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
@@ -334,8 +281,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
 
-                var folder = item as Folder;
-                if (folder != null)
+                if (item is Folder folder)
                 {
                     return folder.SupportsDateLastMediaAdded || folder.SupportsCumulativeRunTimeTicks;
                 }
@@ -389,8 +335,7 @@ namespace MediaBrowser.Providers.Manager
 
         private ItemUpdateType UpdateCumulativeRunTimeTicks(TItemType item, IList<BaseItem> children)
         {
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsCumulativeRunTimeTicks)
+            if (item is Folder folder && folder.SupportsCumulativeRunTimeTicks)
             {
                 long ticks = 0;
 

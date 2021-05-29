@@ -19,10 +19,10 @@ namespace MediaBrowser.Common.Json.Converters
         }
 
         /// <inheritdoc />
-        public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
             var structType = typeToConvert.GetElementType() ?? typeToConvert.GenericTypeArguments[0];
-            return (JsonConverter)Activator.CreateInstance(typeof(JsonCommaDelimitedArrayConverter<>).MakeGenericType(structType));
+            return (JsonConverter?)Activator.CreateInstance(typeof(JsonCommaDelimitedArrayConverter<>).MakeGenericType(structType));
         }
     }
 }

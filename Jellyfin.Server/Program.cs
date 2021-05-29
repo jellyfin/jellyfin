@@ -13,10 +13,12 @@ using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Jellyfin.Server.Migrations;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -224,6 +226,14 @@ namespace Jellyfin.Server
             }
             finally
             {
+                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                // Run before disposing the application
+                using var context = new JellyfinDbProvider(appHost.ServiceProvider, appPaths).CreateContext();
+                if (context.Database.IsSqlite())
+                {
+                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                }
+
                 appHost.Dispose();
             }
 

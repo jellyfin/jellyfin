@@ -34,7 +34,7 @@
     "Latest": "جدیدترین‌ها",
     "MessageApplicationUpdated": "سرور Jellyfin بروزرسانی شد",
     "MessageApplicationUpdatedTo": "سرور Jellyfin به نسخه {0} بروزرسانی شد",
-    "MessageNamedServerConfigurationUpdatedWithValue": "پکربندی بخش {0} سرور  بروزرسانی شد",
+    "MessageNamedServerConfigurationUpdatedWithValue": "پکربندی بخش {0} سرور بروزرسانی شد",
     "MessageServerConfigurationUpdated": "پیکربندی سرور بروزرسانی شد",
     "MixedContent": "محتوای مخلوط",
     "Movies": "فیلم‌ها",

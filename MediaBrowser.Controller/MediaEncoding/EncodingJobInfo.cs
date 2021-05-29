@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -272,6 +274,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetRequestedAudioChannels(string codec)
         {
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "audiochannels");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
             if (BaseRequest.MaxAudioChannels.HasValue)
             {
                 return BaseRequest.MaxAudioChannels;
@@ -285,16 +297,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (BaseRequest.TranscodingMaxAudioChannels.HasValue)
             {
                 return BaseRequest.TranscodingMaxAudioChannels;
-            }
-
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "audiochannels");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
             }
 
             return null;
@@ -428,7 +430,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        /// Gets the target video level.
         /// </summary>
         public double? TargetVideoLevel
         {
@@ -451,7 +453,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        /// Gets the target video bit depth.
         /// </summary>
         public int? TargetVideoBitDepth
         {
@@ -486,7 +488,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        /// Gets the target framerate.
         /// </summary>
         public float? TargetFramerate
         {
@@ -518,7 +520,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        /// Gets the target packet length.
         /// </summary>
         public int? TargetPacketLength
         {
@@ -534,7 +536,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
+        /// Gets the target video profile.
         /// </summary>
         public string TargetVideoProfile
         {
@@ -697,26 +699,5 @@ namespace MediaBrowser.Controller.MediaEncoding
         {
             Progress.Report(percentComplete.Value);
         }
-    }
-
-    /// <summary>
-    /// Enum TranscodingJobType.
-    /// </summary>
-    public enum TranscodingJobType
-    {
-        /// <summary>
-        /// The progressive.
-        /// </summary>
-        Progressive,
-
-        /// <summary>
-        /// The HLS.
-        /// </summary>
-        Hls,
-
-        /// <summary>
-        /// The dash.
-        /// </summary>
-        Dash
     }
 }

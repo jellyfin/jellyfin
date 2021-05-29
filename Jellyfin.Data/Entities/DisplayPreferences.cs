@@ -1,6 +1,4 @@
-﻿#pragma warning disable CA2227
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -35,13 +33,13 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Gets or sets the Id.
+        /// Gets the Id.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the user Id.
@@ -145,8 +143,8 @@ namespace Jellyfin.Data.Entities
         public string? TvHome { get; set; }
 
         /// <summary>
-        /// Gets or sets the home sections.
+        /// Gets the home sections.
         /// </summary>
-        public virtual ICollection<HomeSection> HomeSections { get; protected set; }
+        public virtual ICollection<HomeSection> HomeSections { get; private set; }
     }
 }

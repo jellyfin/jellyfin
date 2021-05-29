@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -94,7 +96,7 @@ namespace MediaBrowser.Controller.Entities
         public const double MinLikeValue = 6.5;
 
         /// <summary>
-        /// This is an interpreted property to indicate likes or dislikes
+        /// Gets or sets a value indicating whether the item is liked or not.
         /// This should never be serialized.
         /// </summary>
         /// <value><c>null</c> if [likes] contains no value, <c>true</c> if [likes]; otherwise, <c>false</c>.</value>

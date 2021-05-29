@@ -148,7 +148,7 @@ namespace Jellyfin.Naming.Tests.Video
             yield return new object[]
             {
                 new VideoFileInfo(
-                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem.mp4",
+                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF.mp4",
                     container: "mp4",
                     name: "Rain Man",
                     year: 1988)
@@ -200,6 +200,10 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.NotNull(results[0]);
             Assert.NotNull(results[1]);
             Assert.Null(results[2]);
+            foreach (var result in results)
+            {
+                Assert.Null(result?.Container);
+            }
         }
     }
 }

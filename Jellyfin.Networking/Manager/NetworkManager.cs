@@ -1067,7 +1067,7 @@ namespace Jellyfin.Networking.Manager
                     }
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());

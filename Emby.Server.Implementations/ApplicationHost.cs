@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -319,10 +321,7 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                if (_deviceId == null)
-                {
-                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
-                }
+                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
 
                 return _deviceId.Value;
             }
@@ -354,10 +353,7 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
-            if (_creatingInstances == null)
-            {
-                _creatingInstances = new List<Type>();
-            }
+            _creatingInstances ??= new List<Type>();
 
             if (_creatingInstances.IndexOf(type) != -1)
             {
@@ -589,9 +585,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
-
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
             ServiceCollection.AddSingleton<EncodingHelper>();
 
@@ -657,8 +650,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
-
-            ServiceCollection.AddSingleton<EncodingHelper>();
 
             ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
