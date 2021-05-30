@@ -1,5 +1,5 @@
 comment:
-  header: Hello @{{ issue.user.login }}
+  header: Hello!
   footer: "\
     ---\n\n
     > This is an automated comment created by the [peaceiris/actions-label-commenter]. \

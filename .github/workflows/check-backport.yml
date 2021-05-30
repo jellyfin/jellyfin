@@ -1,7 +1,10 @@
 name: Stable Backport Check
 on:
   issue_comment:
-  pull_request:
+    types:
+      - created
+      - edited
+  pull_request_target:
     types:
       - labeled
       - synchronize
