@@ -33,7 +33,8 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception)
             {
-                configuration = Activator.CreateInstance(type) ?? throw new ArgumentException($"Provided path ({type}) is not valid.", nameof(type));
+                // Note: CreateInstance returns null for Nullable<T>, e.g. CreateInstance(typeof(int?)) returns null.
+                configuration = Activator.CreateInstance(type)!;
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);

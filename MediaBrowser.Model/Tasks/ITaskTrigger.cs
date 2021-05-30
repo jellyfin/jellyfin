@@ -14,9 +14,9 @@ namespace MediaBrowser.Model.Tasks
         event EventHandler<EventArgs>? Triggered;
 
         /// <summary>
-        /// Gets or sets the options of this task.
+        /// Gets the options of this task.
         /// </summary>
-        TaskOptions TaskOptions { get; set; }
+        TaskOptions TaskOptions { get; }
 
         /// <summary>
         /// Stars waiting for the trigger action.
