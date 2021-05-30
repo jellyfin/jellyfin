@@ -1,6 +1,9 @@
 name: Automatic Rebase
 on:
   issue_comment:
+    types:
+      - created
+      - edited
 
 jobs:
   rebase:
