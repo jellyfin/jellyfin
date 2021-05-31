@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IDirectoryService directoryService,
             bool clearCache)
         {
-            var files = directoryService.GetSortedFilePaths(folder, clearCache);
+            var files = directoryService.GetFilePaths(folder, clearCache, true);
 
             AddExternalSubtitleStreams(streams, videoPath, startIndex, files);
         }

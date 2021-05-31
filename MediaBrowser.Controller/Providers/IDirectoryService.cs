@@ -15,8 +15,6 @@ namespace MediaBrowser.Controller.Providers
 
         IReadOnlyList<string> GetFilePaths(string path);
 
-        IReadOnlyList<string> GetSortedFilePaths(string path, bool clearCache);
-
         IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false);
     }
 }
