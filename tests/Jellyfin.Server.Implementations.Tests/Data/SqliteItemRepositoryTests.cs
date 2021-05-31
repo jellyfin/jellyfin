@@ -164,7 +164,10 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                     }
                 }
             };
+        }
 
+        public static IEnumerable<object[]> DeserializeImages_ValidAndInvalid_TestData()
+        {
             yield return new object[]
             {
                 string.Empty,
@@ -198,6 +201,23 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         [Theory]
         [MemberData(nameof(DeserializeImages_Valid_TestData))]
         public void DeserializeImages_Valid_Success(string value, ItemImageInfo[] expected)
+        {
+            var result = _sqliteItemRepository.DeserializeImages(value);
+            Assert.Equal(expected.Length, result.Length);
+            for (int i = 0; i < expected.Length; i++)
+            {
+                Assert.Equal(expected[i].Path, result[i].Path);
+                Assert.Equal(expected[i].Type, result[i].Type);
+                Assert.Equal(expected[i].DateModified, result[i].DateModified);
+                Assert.Equal(expected[i].Width, result[i].Width);
+                Assert.Equal(expected[i].Height, result[i].Height);
+                Assert.Equal(expected[i].BlurHash, result[i].BlurHash);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DeserializeImages_ValidAndInvalid_TestData))]
+        public void DeserializeImages_ValidAndInvalid_Success(string value, ItemImageInfo[] expected)
         {
             var result = _sqliteItemRepository.DeserializeImages(value);
             Assert.Equal(expected.Length, result.Length);
