@@ -269,7 +269,7 @@ namespace Jellyfin.Api.Helpers
             {
                 _activeTranscodingJobs.Remove(job);
 
-                if (!job.CancellationTokenSource!.IsCancellationRequested)
+                if (job.CancellationTokenSource?.IsCancellationRequested == true)
                 {
                     job.CancellationTokenSource.Cancel();
                 }
@@ -751,7 +751,7 @@ namespace Jellyfin.Api.Helpers
                 _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
             }
 
-            process.Dispose();
+            job.Dispose();
         }
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)
