@@ -269,7 +269,7 @@ namespace Jellyfin.Api.Helpers
             {
                 _activeTranscodingJobs.Remove(job);
 
-                if (job.CancellationTokenSource?.IsCancellationRequested == true)
+                if (job.CancellationTokenSource?.IsCancellationRequested == false)
                 {
                     job.CancellationTokenSource.Cancel();
                 }
