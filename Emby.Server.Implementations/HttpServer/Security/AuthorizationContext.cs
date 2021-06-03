@@ -271,7 +271,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// <summary>
         /// Get the authorization header components.
         /// </summary>
-        /// <param name="authtorizationHeader">The authorization header.</param>
+        /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>string</returns>
         public static Dictionary<string, string> GetParts(string authtorizationHeader)
         {
