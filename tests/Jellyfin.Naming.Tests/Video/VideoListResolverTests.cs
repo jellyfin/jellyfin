@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
@@ -8,11 +9,10 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class VideoListResolverTests
     {
-        private readonly NamingOptions _namingOptions = new NamingOptions();
+        private readonly VideoListResolver _videoListResolver = new VideoListResolver(new NamingOptions());
 
-        // FIXME
-        // [Fact]
-        private void TestStackAndExtras()
+        [Fact]
+        public void TestStackAndExtras()
         {
             // No stacking here because there is no part/disc/etc
             var files = new[]
@@ -40,23 +40,22 @@ namespace Jellyfin.Naming.Tests.Video
                 "WillyWonka-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
             }).ToList()).ToList();
 
             Assert.Equal(5, result.Count);
+            var batman = result.FirstOrDefault(x => string.Equals(x.Name, "Batman", StringComparison.Ordinal));
+            Assert.NotNull(batman);
+            Assert.Equal(3, batman!.Files.Count);
+            Assert.Equal(3, batman!.Extras.Count);
 
-            Assert.Equal(3, result[1].Files.Count);
-            Assert.Equal(3, result[1].Extras.Count);
-            Assert.Equal("Batman", result[1].Name);
-
-            Assert.Equal(4, result[2].Files.Count);
-            Assert.Equal(2, result[2].Extras.Count);
-            Assert.Equal("Harry Potter and the Deathly Hallows", result[2].Name);
+            var harry = result.FirstOrDefault(x => string.Equals(x.Name, "Harry Potter and the Deathly Hallows", StringComparison.Ordinal));
+            Assert.NotNull(harry);
+            Assert.Equal(4, harry!.Files.Count);
+            Assert.Equal(2, harry!.Extras.Count);
         }
 
         [Fact]
@@ -68,9 +67,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300.nfo"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -88,9 +85,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -108,9 +103,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "X-Men Days of Future Past-trailer.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -129,9 +122,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "X-Men Days of Future Past-trailer2.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -149,9 +140,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Looper.2012.bluray.720p.x264.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -173,9 +162,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "My video 5.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -193,9 +180,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"M:/Movies (DVD)/Movies (Musical)/Sound of Music (1965)/Sound of Music Disc 2"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = true,
                 FullName = i
@@ -214,9 +199,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"My movie #2.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = true,
                 FullName = i
@@ -235,9 +218,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"No (2012) part1-trailer.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -256,9 +237,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"No (2012)-trailer.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -278,9 +257,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"trailer.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -300,9 +277,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/MCFAMILY-PC/Private3$/Heterosexual/Breast In Class 2 Counterfeit Racks (2011)/Breast In Class 2 Disc 2 cd2.avi"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -319,9 +294,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/nas-markrobbo78/Videos/INDEX HTPC/Movies/Watched/3 - ACTION/Argo (2012)/movie.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -338,9 +311,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"The Colony.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -358,9 +329,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"Four Sisters and a Wedding - B.avi"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -378,9 +347,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"Four Rooms - A.mp4"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -398,9 +365,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/Server/Despicable Me/movie-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -420,9 +385,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/Server/Despicable Me/Baywatch (2017) - Trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -440,9 +403,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"/Movies/Despicable Me/trailers/trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files.Select(i => new FileSystemMetadata
+            var result = _videoListResolver.Resolve(files.Select(i => new FileSystemMetadata
             {
                 IsDirectory = false,
                 FullName = i
@@ -456,11 +417,6 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var stack = new FileStack();
             Assert.False(stack.ContainsFile("XX", true));
-        }
-
-        private VideoListResolver GetResolver()
-        {
-            return new VideoListResolver(_namingOptions);
         }
     }
 }

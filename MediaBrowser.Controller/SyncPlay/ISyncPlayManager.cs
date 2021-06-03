@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -51,5 +53,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         void HandleRequest(SessionInfo session, IGroupPlaybackRequest request, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Checks whether a user has an active session using SyncPlay.
+        /// </summary>
+        /// <param name="userId">The user identifier to check.</param>
+        /// <returns><c>true</c> if the user is using SyncPlay; <c>false</c> otherwise.</returns>
+        bool IsUserActive(Guid userId);
     }
 }

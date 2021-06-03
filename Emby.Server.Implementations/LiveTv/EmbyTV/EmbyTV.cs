@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -17,7 +19,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -36,7 +37,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -51,7 +51,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILogger<EmbyTV> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerConfigurationManager _config;
-        private readonly IJsonSerializer _jsonSerializer;
 
         private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerProvider;
         private readonly TimerManager _timerProvider;
@@ -81,7 +80,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             IStreamHelper streamHelper,
             IMediaSourceManager mediaSourceManager,
             ILogger<EmbyTV> logger,
-            IJsonSerializer jsonSerializer,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
             ILiveTvManager liveTvManager,
@@ -103,12 +101,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _providerManager = providerManager;
             _mediaEncoder = mediaEncoder;
             _liveTvManager = (LiveTvManager)liveTvManager;
-            _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
             _streamHelper = streamHelper;
 
-            _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers.json"));
-            _timerProvider = new TimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "timers.json"));
+            _seriesTimerProvider = new SeriesTimerManager(_logger, Path.Combine(DataPath, "seriestimers.json"));
+            _timerProvider = new TimerManager(_logger, Path.Combine(DataPath, "timers.json"));
             _timerProvider.TimerFired += OnTimerProviderTimerFired;
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
@@ -806,22 +803,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public ActiveRecordingInfo GetActiveRecordingInfo(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path) || _activeRecordings.IsEmpty)
             {
                 return null;
             }
 
-            foreach (var recording in _activeRecordings.Values)
+            foreach (var (_, recordingInfo) in _activeRecordings)
             {
-                if (string.Equals(recording.Path, path, StringComparison.Ordinal) && !recording.CancellationTokenSource.IsCancellationRequested)
+                if (string.Equals(recordingInfo.Path, path, StringComparison.Ordinal) && !recordingInfo.CancellationTokenSource.IsCancellationRequested)
                 {
-                    var timer = recording.Timer;
+                    var timer = recordingInfo.Timer;
                     if (timer.Status != RecordingStatus.InProgress)
                     {
                         return null;
                     }
 
-                    return recording;
+                    return recordingInfo;
                 }
             }
 
@@ -1052,7 +1049,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 IgnoreIndex = true
             };
 
-            await new LiveStreamHelper(_mediaEncoder, _logger, _jsonSerializer, _config.CommonApplicationPaths)
+            await new LiveStreamHelper(_mediaEncoder, _logger, _config.CommonApplicationPaths)
                 .AddMediaInfoWithProbe(stream, false, false, cancellationToken).ConfigureAwait(false);
 
             return new List<MediaSourceInfo>
@@ -1626,16 +1623,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return _activeRecordings
-                .Values
-                .ToList()
-                .Any(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
+                .Any(i => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
         }
 
         private IRecorder GetRecorder(MediaSourceInfo mediaSource)
         {
             if (mediaSource.RequiresLooping || !(mediaSource.Container ?? string.Empty).EndsWith("ts", StringComparison.OrdinalIgnoreCase) || (mediaSource.Protocol != MediaProtocol.File && mediaSource.Protocol != MediaProtocol.Http))
             {
-                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _jsonSerializer, _config);
+                return new EncodedRecorder(_logger, _mediaEncoder, _config.ApplicationPaths, _config);
             }
 
             return new DirectRecorder(_logger, _httpClientFactory, _streamHelper);
@@ -1860,7 +1855,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -1924,7 +1920,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
@@ -2242,14 +2239,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var enabledTimersForSeries = new List<TimerInfo>();
             foreach (var timer in allTimers)
             {
-                var existingTimer = _timerProvider.GetTimer(timer.Id);
-
-                if (existingTimer == null)
-                {
-                    existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId)
+                var existingTimer = _timerProvider.GetTimer(timer.Id) 
+                    ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
                         ? null
-                        : _timerProvider.GetTimerByProgramId(timer.ProgramId);
-                }
+                        : _timerProvider.GetTimerByProgramId(timer.ProgramId));
 
                 if (existingTimer == null)
                 {
@@ -2608,7 +2601,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     Locations = new string[] { customPath },
                     Name = "Recorded Movies",
-                    CollectionType = CollectionType.Movies
+                    CollectionType = CollectionTypeOptions.Movies
                 };
             }
 
@@ -2619,7 +2612,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     Locations = new string[] { customPath },
                     Name = "Recorded Shows",
-                    CollectionType = CollectionType.TvShows
+                    CollectionType = CollectionTypeOptions.TvShows
                 };
             }
         }

@@ -112,5 +112,10 @@
     "TaskRefreshLibraryDescription": "Skandeer u media versameling vir nuwe lêers en verfris metadata.",
     "TaskRefreshLibrary": "Skandeer Media Versameling",
     "TaskRefreshChapterImagesDescription": "Maak kleinkiekeis (fotos) vir films wat hoofstukke het.",
-    "TaskRefreshChapterImages": "Verkry Hoofstuk Beelde"
+    "TaskRefreshChapterImages": "Verkry Hoofstuk Beelde",
+    "Undefined": "Ongedefineerd",
+    "Forced": "Geforseer",
+    "Default": "Oorspronklik",
+    "TaskCleanActivityLogDescription": "Verwyder aktiwiteitsaantekeninge ouer as die opgestelde ouderdom.",
+    "TaskCleanActivityLog": "Maak Aktiwiteitsaantekeninge Skoon"
 }

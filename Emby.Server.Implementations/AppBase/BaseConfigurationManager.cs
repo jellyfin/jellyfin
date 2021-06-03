@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,6 +25,11 @@ namespace Emby.Server.Implementations.AppBase
 
         private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();
 
+        /// <summary>
+        /// The _configuration sync lock.
+        /// </summary>
+        private readonly object _configurationSyncLock = new object();
+
         private ConfigurationStore[] _configurationStores = Array.Empty<ConfigurationStore>();
         private IConfigurationFactory[] _configurationFactories = Array.Empty<IConfigurationFactory>();
 
@@ -30,11 +37,6 @@ namespace Emby.Server.Implementations.AppBase
         /// The _configuration loaded.
         /// </summary>
         private bool _configurationLoaded;
-
-        /// <summary>
-        /// The _configuration sync lock.
-        /// </summary>
-        private readonly object _configurationSyncLock = new object();
 
         /// <summary>
         /// The _configuration.

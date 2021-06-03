@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata
             return Task.CompletedTask;
         }
 
-        private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
+        private void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackFinished || e.SaveReason == UserDataSaveReason.TogglePlayed || e.SaveReason == UserDataSaveReason.UpdateUserRating)
             {
@@ -60,17 +60,7 @@ namespace MediaBrowser.XbmcMetadata
 
         private void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)
         {
-            if (!item.IsFileProtocol)
-            {
-                return;
-            }
-
-            if (!item.SupportsLocalMetadata)
-            {
-                return;
-            }
-
-            if (!item.IsSaveLocalMetadataEnabled())
+            if (!item.IsFileProtocol || !item.SupportsLocalMetadata)
             {
                 return;
             }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,9 +8,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -22,6 +22,12 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public interface IProviderManager
     {
+        event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+
+        event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+
+        event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
+
         /// <summary>
         /// Queues the refresh.
         /// </summary>
@@ -87,8 +93,11 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
-            IEnumerable<IMetadataSaver> savers,
+        void AddParts(
+            IEnumerable<IImageProvider> imageProviders,
+            IEnumerable<IMetadataService> metadataServices,
+            IEnumerable<IMetadataProvider> metadataProviders,
+            IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds);
 
         /// <summary>
@@ -132,12 +141,14 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
-        /// <returns>Task.</returns>
         void SaveMetadata(BaseItem item, ItemUpdateType updateType);
 
         /// <summary>
         /// Saves the metadata.
         /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <param name="savers">The metadata savers.</param>
         void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers);
 
         /// <summary>
@@ -179,18 +190,5 @@ namespace MediaBrowser.Controller.Providers
         void OnRefreshComplete(BaseItem item);
 
         double? GetRefreshProgress(Guid id);
-
-        event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
-
-        event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
-
-        event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
-    }
-
-    public enum RefreshPriority
-    {
-        High = 0,
-        Normal = 1,
-        Low = 2
     }
 }

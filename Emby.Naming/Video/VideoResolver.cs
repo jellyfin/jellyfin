@@ -1,7 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
+using MediaBrowser.Common.Extensions;
 
 namespace Emby.Naming.Video
 {
@@ -58,15 +59,15 @@ namespace Emby.Naming.Video
             }
 
             bool isStub = false;
-            string? container = null;
+            ReadOnlySpan<char> container = ReadOnlySpan<char>.Empty;
             string? stubType = null;
 
             if (!isDirectory)
             {
-                var extension = Path.GetExtension(path);
+                var extension = Path.GetExtension(path.AsSpan());
 
                 // Check supported extensions
-                if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!_options.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     // It's not supported. Check stub extensions
                     if (!StubResolver.TryResolveFile(path, _options, out stubType))
@@ -85,9 +86,7 @@ namespace Emby.Naming.Video
 
             var extraResult = new ExtraResolver(_options).GetExtraInfo(path);
 
-            var name = isDirectory
-                ? Path.GetFileName(path)
-                : Path.GetFileNameWithoutExtension(path);
+            var name = Path.GetFileNameWithoutExtension(path);
 
             int? year = null;
 
@@ -106,7 +105,7 @@ namespace Emby.Naming.Video
 
             return new VideoFileInfo(
                 path: path,
-                container: container,
+                container: container.IsEmpty ? null : container.ToString(),
                 isStub: isStub,
                 name: name,
                 year: year,
@@ -125,8 +124,8 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file.</returns>
         public bool IsVideoFile(string path)
         {
-            var extension = Path.GetExtension(path) ?? string.Empty;
-            return _options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path.AsSpan());
+            return _options.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -136,8 +135,8 @@ namespace Emby.Naming.Video
         /// <returns>True if is video file stub.</returns>
         public bool IsStubFile(string path)
         {
-            var extension = Path.GetExtension(path) ?? string.Empty;
-            return _options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path.AsSpan());
+            return _options.StubFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -146,7 +145,7 @@ namespace Emby.Naming.Video
         /// <param name="name">Raw name.</param>
         /// <param name="newName">Clean name.</param>
         /// <returns>True if cleaning of name was successful.</returns>
-        public bool TryCleanString(string name, out ReadOnlySpan<char> newName)
+        public bool TryCleanString([NotNullWhen(true)] string? name, out ReadOnlySpan<char> newName)
         {
             return CleanStringParser.TryClean(name, _options.CleanStringRegexes, out newName);
         }

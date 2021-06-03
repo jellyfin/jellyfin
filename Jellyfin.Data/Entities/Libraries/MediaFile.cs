@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -19,8 +17,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="path">The path relative to the LibraryRoot.</param>
         /// <param name="kind">The file kind.</param>
-        /// <param name="release">The release.</param>
-        public MediaFile(string path, MediaFileKind kind, Release release)
+        public MediaFile(string path, MediaFileKind kind)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -30,34 +27,17 @@ namespace Jellyfin.Data.Entities.Libraries
             Path = path;
             Kind = kind;
 
-            if (release == null)
-            {
-                throw new ArgumentNullException(nameof(release));
-            }
-
-            release.MediaFiles.Add(this);
-
             MediaFileStreams = new HashSet<MediaFileStream>();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MediaFile"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected MediaFile()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the path relative to the library root.
@@ -65,7 +45,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
-        [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Path { get; set; }
@@ -80,12 +59,12 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the streams in this file.
+        /// Gets a collection containing the streams in this file.
         /// </summary>
-        public virtual ICollection<MediaFileStream> MediaFileStreams { get; protected set; }
+        public virtual ICollection<MediaFileStream> MediaFileStreams { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

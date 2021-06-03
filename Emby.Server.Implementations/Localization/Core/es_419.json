@@ -112,5 +112,10 @@
     "CameraImageUploadedFrom": "Una nueva imagen de cámara ha sido subida desde {0}",
     "AuthenticationSucceededWithUserName": "{0} autenticado con éxito",
     "Application": "Aplicación",
-    "AppDeviceValues": "App: {0}, Dispositivo: {1}"
+    "AppDeviceValues": "App: {0}, Dispositivo: {1}",
+    "TaskCleanActivityLogDescription": "Elimina las entradas del registro de actividad anteriores al periodo configurado.",
+    "TaskCleanActivityLog": "Limpiar Registro de Actividades",
+    "Undefined": "Sin definir",
+    "Forced": "Forzado",
+    "Default": "Por Defecto"
 }

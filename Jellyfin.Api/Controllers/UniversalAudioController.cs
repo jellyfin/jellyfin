@@ -112,7 +112,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxAudioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
             [FromQuery] bool? enableRemoteMedia,
-            [FromQuery] bool breakOnNonKeyFrames,
+            [FromQuery] bool breakOnNonKeyFrames = false,
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
@@ -219,11 +219,11 @@ namespace Jellyfin.Api.Controllers
                     AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                     StartTimeTicks = startTimeTicks,
                     SubtitleMethod = SubtitleDeliveryMethod.Hls,
-                    RequireAvc = true,
-                    DeInterlace = true,
-                    RequireNonAnamorphic = true,
-                    EnableMpegtsM2TsMode = true,
-                    TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
+                    RequireAvc = false,
+                    DeInterlace = false,
+                    RequireNonAnamorphic = false,
+                    EnableMpegtsM2TsMode = false,
+                    TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(',', mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
                     Context = EncodingContext.Static,
                     StreamOptions = new Dictionary<string, string>(),
                     EnableAdaptiveBitrateStreaming = true
@@ -254,7 +254,7 @@ namespace Jellyfin.Api.Controllers
                 CopyTimestamps = true,
                 StartTimeTicks = startTimeTicks,
                 SubtitleMethod = SubtitleDeliveryMethod.Embed,
-                TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(",", mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
+                TranscodeReasons = mediaSource.TranscodeReasons == null ? null : string.Join(',', mediaSource.TranscodeReasons.Select(i => i.ToString()).ToArray()),
                 Context = EncodingContext.Static
             };
 
@@ -278,7 +278,7 @@ namespace Jellyfin.Api.Controllers
             var directPlayProfiles = new DirectPlayProfile[len];
             for (int i = 0; i < len; i++)
             {
-                var parts = RequestHelpers.Split(containers[i], '|', true);
+                var parts = containers[i].Split('|', StringSplitOptions.RemoveEmptyEntries);
 
                 var audioCodecs = parts.Length == 1 ? null : string.Join(',', parts.Skip(1));
 
@@ -298,9 +298,9 @@ namespace Jellyfin.Api.Controllers
                 {
                     Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = transcodingContainer,
-                    AudioCodec = audioCodec,
-                    Protocol = transcodingProtocol,
+                    Container = transcodingContainer ?? "mp3",
+                    AudioCodec = audioCodec ?? "mp3",
+                    Protocol = transcodingProtocol ?? "http",
                     BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                     MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }
@@ -312,25 +312,52 @@ namespace Jellyfin.Api.Controllers
             if (maxAudioSampleRate.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioSampleRate, Value = maxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition
+                    {
+                        Condition = ProfileConditionType.LessThanEqual,
+                        IsRequired = false,
+                        Property = ProfileConditionValue.AudioSampleRate,
+                        Value = maxAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture)
+                    });
             }
 
             if (maxAudioBitDepth.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioBitDepth, Value = maxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition
+                    {
+                        Condition = ProfileConditionType.LessThanEqual,
+                        IsRequired = false,
+                        Property = ProfileConditionValue.AudioBitDepth,
+                        Value = maxAudioBitDepth.Value.ToString(CultureInfo.InvariantCulture)
+                    });
             }
 
             if (maxAudioChannels.HasValue)
             {
                 // codec profile
-                conditions.Add(new ProfileCondition { Condition = ProfileConditionType.LessThanEqual, IsRequired = false, Property = ProfileConditionValue.AudioChannels, Value = maxAudioChannels.Value.ToString(CultureInfo.InvariantCulture) });
+                conditions.Add(
+                    new ProfileCondition
+                    {
+                        Condition = ProfileConditionType.LessThanEqual,
+                        IsRequired = false,
+                        Property = ProfileConditionValue.AudioChannels,
+                        Value = maxAudioChannels.Value.ToString(CultureInfo.InvariantCulture)
+                    });
             }
 
             if (conditions.Count > 0)
             {
                 // codec profile
-                codecProfiles.Add(new CodecProfile { Type = CodecType.Audio, Container = string.Join(',', containers), Conditions = conditions.ToArray() });
+                codecProfiles.Add(
+                    new CodecProfile
+                    {
+                        Type = CodecType.Audio,
+                        Container = string.Join(',', containers),
+                        Conditions = conditions.ToArray()
+                    });
             }
 
             deviceProfile.CodecProfiles = codecProfiles.ToArray();

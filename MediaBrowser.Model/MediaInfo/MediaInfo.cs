@@ -10,6 +10,17 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public class MediaInfo : MediaSourceInfo, IHasProviderIds
     {
+        public MediaInfo()
+        {
+            Chapters = Array.Empty<ChapterInfo>();
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
+            Studios = Array.Empty<string>();
+            Genres = Array.Empty<string>();
+            People = Array.Empty<BaseItemPerson>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         public ChapterInfo[] Chapters { get; set; }
 
         /// <summary>
@@ -40,6 +51,8 @@ namespace MediaBrowser.Model.MediaInfo
 
         public string ShowName { get; set; }
 
+        public string ForcedSortName { get; set; }
+
         public int? IndexNumber { get; set; }
 
         public int? ParentIndexNumber { get; set; }
@@ -69,16 +82,5 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
-
-        public MediaInfo()
-        {
-            Chapters = Array.Empty<ChapterInfo>();
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-            Studios = Array.Empty<string>();
-            Genres = Array.Empty<string>();
-            People = Array.Empty<BaseItemPerson>();
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }

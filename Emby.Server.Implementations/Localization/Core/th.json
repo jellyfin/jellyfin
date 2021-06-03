@@ -50,7 +50,7 @@
     "HeaderFavoriteArtists": "ศิลปินที่ชื่นชอบ",
     "HeaderFavoriteAlbums": "อัมบั้มที่ชื่นชอบ",
     "HeaderContinueWatching": "ดูต่อ",
-    "HeaderAlbumArtists": "อัลบั้มศิลปิน",
+    "HeaderAlbumArtists": "ศิลปินอัลบั้ม",
     "Genres": "ประเภท",
     "Folders": "โฟลเดอร์",
     "Favorites": "รายการโปรด",
@@ -112,5 +112,10 @@
     "System": "ระบบ",
     "Sync": "ซิงค์",
     "SubtitleDownloadFailureFromForItem": "ไม่สามารถดาวน์โหลดคำบรรยายจาก {0} สำหรับ {1} ได้",
-    "StartupEmbyServerIsLoading": "กำลังโหลดเซิร์ฟเวอร์ Jellyfin โปรดลองอีกครั้งในอีกสักครู่"
+    "StartupEmbyServerIsLoading": "กำลังโหลดเซิร์ฟเวอร์ Jellyfin โปรดลองอีกครั้งในอีกสักครู่",
+    "Default": "ค่าเริ่มต้น",
+    "TaskCleanActivityLogDescription": "ลบบันทึกกิจกรรมที่เก่ากว่าค่าที่กำหนดไว้",
+    "TaskCleanActivityLog": "ล้างบันทึกกิจกรรม",
+    "Undefined": "ไม่ได้กำหนด",
+    "Forced": "บังคับใช้"
 }

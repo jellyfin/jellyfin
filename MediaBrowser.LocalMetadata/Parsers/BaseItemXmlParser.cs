@@ -344,8 +344,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var val = reader.ReadElementContentAsString();
 
-                    var hasAspectRatio = item as IHasAspectRatio;
-                    if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
+                    if (!string.IsNullOrWhiteSpace(val) && item is IHasAspectRatio hasAspectRatio)
                     {
                         hasAspectRatio.AspectRatio = val;
                     }
@@ -469,8 +468,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var val = reader.ReadElementContentAsString();
 
-                    var hasDisplayOrder = item as IHasDisplayOrder;
-                    if (hasDisplayOrder != null)
+                    if (item is IHasDisplayOrder hasDisplayOrder)
                     {
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -1276,8 +1274,8 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
-            var separator = value.IndexOf('|', StringComparison.Ordinal) == -1
-                            && value.IndexOf(';', StringComparison.Ordinal) == -1 ? new[] { ',' } : new[] { '|', ';' };
+            var separator = !value.Contains('|', StringComparison.Ordinal)
+                            && !value.Contains(';', StringComparison.Ordinal) ? new[] { ',' } : new[] { '|', ';' };
 
             value = value.Trim().Trim(separator);
 

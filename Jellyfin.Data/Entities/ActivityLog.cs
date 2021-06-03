@@ -34,23 +34,14 @@ namespace Jellyfin.Data.Entities
             Type = type;
             UserId = userId;
             DateCreated = DateTime.UtcNow;
-            LogSeverity = LogLevel.Trace;
+            LogSeverity = LogLevel.Information;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityLog"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected ActivityLog()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the identity of this instance.
-        /// This is the key in the backing database.
+        /// Gets the identity of this instance.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -58,7 +49,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 512.
         /// </remarks>
-        [Required]
         [MaxLength(512)]
         [StringLength(512)]
         public string Name { get; set; }
@@ -71,7 +61,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(512)]
         [StringLength(512)]
-        public string Overview { get; set; }
+        public string? Overview { get; set; }
 
         /// <summary>
         /// Gets or sets the short overview.
@@ -81,7 +71,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(512)]
         [StringLength(512)]
-        public string ShortOverview { get; set; }
+        public string? ShortOverview { get; set; }
 
         /// <summary>
         /// Gets or sets the type.
@@ -89,7 +79,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 256.
         /// </remarks>
-        [Required]
         [MaxLength(256)]
         [StringLength(256)]
         public string Type { get; set; }
@@ -110,7 +99,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(256)]
         [StringLength(256)]
-        public string ItemId { get; set; }
+        public string? ItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the date created. This should be in UTC.
@@ -130,7 +119,7 @@ namespace Jellyfin.Data.Entities
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

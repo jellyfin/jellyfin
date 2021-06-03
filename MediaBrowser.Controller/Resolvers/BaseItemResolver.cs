@@ -1,3 +1,5 @@
+#nullable disable
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 
@@ -11,20 +13,20 @@ namespace MediaBrowser.Controller.Resolvers
         where T : BaseItem, new()
     {
         /// <summary>
-        /// Resolves the specified args.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns>`0.</returns>
-        protected virtual T Resolve(ItemResolveArgs args)
-        {
-            return null;
-        }
-
-        /// <summary>
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
         public virtual ResolverPriority Priority => ResolverPriority.First;
+
+        /// <summary>
+        /// Resolves the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>`0.</returns>
+        public virtual T Resolve(ItemResolveArgs args)
+        {
+            return null;
+        }
 
         /// <summary>
         /// Sets initial values on the newly resolved item.

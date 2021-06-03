@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -30,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>`0.</returns>
-        protected override T Resolve(ItemResolveArgs args)
+        public override T Resolve(ItemResolveArgs args)
         {
             return ResolveVideo<T>(args, false);
         }
@@ -42,7 +44,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <param name="args">The args.</param>
         /// <param name="parseName">if set to <c>true</c> [parse name].</param>
         /// <returns>``0.</returns>
-        protected TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
+        protected virtual TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
@@ -165,13 +167,13 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         protected void SetVideoType(Video video, VideoFileInfo videoInfo)
         {
-            var extension = Path.GetExtension(video.Path);
-            video.VideoType = string.Equals(extension, ".iso", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(extension, ".img", StringComparison.OrdinalIgnoreCase) ?
-              VideoType.Iso :
-              VideoType.VideoFile;
+            var extension = Path.GetExtension(video.Path.AsSpan());
+            video.VideoType = extension.Equals(".iso", StringComparison.OrdinalIgnoreCase)
+                              || extension.Equals(".img", StringComparison.OrdinalIgnoreCase)
+                ? VideoType.Iso
+                : VideoType.VideoFile;
 
-            video.IsShortcut = string.Equals(extension, ".strm", StringComparison.OrdinalIgnoreCase);
+            video.IsShortcut = extension.Equals(".strm", StringComparison.OrdinalIgnoreCase);
             video.IsPlaceHolder = videoInfo.IsStub;
 
             if (videoInfo.IsStub)
@@ -193,11 +195,11 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             if (video.VideoType == VideoType.Iso)
             {
-                if (video.Path.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) != -1)
+                if (video.Path.Contains("dvd", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.Dvd;
                 }
-                else if (video.Path.IndexOf("bluray", StringComparison.OrdinalIgnoreCase) != -1)
+                else if (video.Path.Contains("bluray", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.BluRay;
                 }

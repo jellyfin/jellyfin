@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
@@ -20,7 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// The sync play controller.
     /// </summary>
-    [Authorize(Policy = Policies.SyncPlayAccess)]
+    [Authorize(Policy = Policies.SyncPlayHasAccess)]
     public class SyncPlayController : BaseJellyfinApiController
     {
         private readonly ISessionManager _sessionManager;
@@ -51,7 +50,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("New")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [Authorize(Policy = Policies.SyncPlayCreateGroupAccess)]
+        [Authorize(Policy = Policies.SyncPlayCreateGroup)]
         public ActionResult SyncPlayCreateGroup(
             [FromBody, Required] NewGroupRequestDto requestData)
         {
@@ -69,7 +68,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Join")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [Authorize(Policy = Policies.SyncPlayAccess)]
+        [Authorize(Policy = Policies.SyncPlayJoinGroup)]
         public ActionResult SyncPlayJoinGroup(
             [FromBody, Required] JoinGroupRequestDto requestData)
         {
@@ -86,6 +85,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Leave")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayLeaveGroup()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -101,7 +101,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{GroupInfoView}"/> containing the available SyncPlay groups.</returns>
         [HttpGet("List")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Authorize(Policy = Policies.SyncPlayAccess)]
+        [Authorize(Policy = Policies.SyncPlayJoinGroup)]
         public ActionResult<IEnumerable<GroupInfoDto>> SyncPlayGetGroups()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -117,6 +117,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetNewQueue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetNewQueue(
             [FromBody, Required] PlayRequestDto requestData)
         {
@@ -137,6 +138,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetPlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetPlaylistItem(
             [FromBody, Required] SetPlaylistItemRequestDto requestData)
         {
@@ -154,6 +156,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("RemoveFromPlaylist")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayRemoveFromPlaylist(
             [FromBody, Required] RemoveFromPlaylistRequestDto requestData)
         {
@@ -171,6 +174,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("MovePlaylistItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayMovePlaylistItem(
             [FromBody, Required] MovePlaylistItemRequestDto requestData)
         {
@@ -188,6 +192,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Queue")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayQueue(
             [FromBody, Required] QueueRequestDto requestData)
         {
@@ -204,6 +209,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Unpause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayUnpause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -219,6 +225,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Pause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayPause()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -234,6 +241,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Stop")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayStop()
         {
             var currentSession = RequestHelpers.GetSession(_sessionManager, _authorizationContext, Request);
@@ -250,6 +258,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Seek")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySeek(
             [FromBody, Required] SeekRequestDto requestData)
         {
@@ -267,6 +276,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Buffering")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayBuffering(
             [FromBody, Required] BufferRequestDto requestData)
         {
@@ -288,6 +298,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("Ready")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayReady(
             [FromBody, Required] ReadyRequestDto requestData)
         {
@@ -309,6 +320,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetIgnoreWait")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetIgnoreWait(
             [FromBody, Required] IgnoreWaitRequestDto requestData)
         {
@@ -326,6 +338,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("NextItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayNextItem(
             [FromBody, Required] NextItemRequestDto requestData)
         {
@@ -343,6 +356,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("PreviousItem")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlayPreviousItem(
             [FromBody, Required] PreviousItemRequestDto requestData)
         {
@@ -360,6 +374,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetRepeatMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetRepeatMode(
             [FromBody, Required] SetRepeatModeRequestDto requestData)
         {
@@ -377,6 +392,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
         [HttpPost("SetShuffleMode")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [Authorize(Policy = Policies.SyncPlayIsInGroup)]
         public ActionResult SyncPlaySetShuffleMode(
             [FromBody, Required] SetShuffleModeRequestDto requestData)
         {

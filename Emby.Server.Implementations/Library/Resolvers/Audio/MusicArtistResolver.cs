@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,11 +79,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             if (args.ContainsFileSystemEntryByName("artist.nfo"))
             {
                 return new MusicArtist();
-            }
-
-            if (_config.Configuration.EnableSimpleArtistDetection)
-            {
-                return null;
             }
 
             // Avoid mis-identifying top folders

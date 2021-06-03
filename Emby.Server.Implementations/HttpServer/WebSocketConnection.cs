@@ -1,10 +1,9 @@
-﻿#nullable enable
-
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +54,7 @@ namespace Emby.Server.Implementations.HttpServer
             RemoteEndPoint = remoteEndPoint;
             QueryString = query;
 
-            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions = JsonDefaults.Options;
             LastActivityDate = DateTime.Now;
         }
 
@@ -138,7 +137,7 @@ namespace Emby.Server.Implementations.HttpServer
                 writer.Advance(bytesRead);
 
                 // Make the data available to the PipeReader
-                FlushResult flushResult = await writer.FlushAsync().ConfigureAwait(false);
+                FlushResult flushResult = await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
                 if (flushResult.IsCompleted)
                 {
                     // The PipeReader stopped reading
@@ -181,32 +180,16 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             WebSocketMessage<object>? stub;
+            long bytesConsumed = 0;
             try
             {
-
-                if (buffer.IsSingleSegment)
-                {
-                    stub = JsonSerializer.Deserialize<WebSocketMessage<object>>(buffer.FirstSpan, _jsonOptions);
-                }
-                else
-                {
-                    var buf = ArrayPool<byte>.Shared.Rent(Convert.ToInt32(buffer.Length));
-                    try
-                    {
-                        buffer.CopyTo(buf);
-                        stub = JsonSerializer.Deserialize<WebSocketMessage<object>>(buf, _jsonOptions);
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(buf);
-                    }
-                }
+                stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);
             }
             catch (JsonException ex)
             {
                 // Tell the PipeReader how much of the buffer we have consumed
                 reader.AdvanceTo(buffer.End);
-                _logger.LogError(ex, "Error processing web socket message");
+                _logger.LogError(ex, "Error processing web socket message: {Data}", Encoding.UTF8.GetString(buffer));
                 return;
             }
 
@@ -217,25 +200,32 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             // Tell the PipeReader how much of the buffer we have consumed
-            reader.AdvanceTo(buffer.End);
+            reader.AdvanceTo(buffer.GetPosition(bytesConsumed));
 
             _logger.LogDebug("WS {IP} received message: {@Message}", RemoteEndPoint, stub);
 
-            var info = new WebSocketMessageInfo
-            {
-                MessageType = stub.MessageType,
-                Data = stub.Data?.ToString(), // Data can be null
-                Connection = this
-            };
-
-            if (info.MessageType == SessionMessageType.KeepAlive)
+            if (stub.MessageType == SessionMessageType.KeepAlive)
             {
                 await SendKeepAliveResponse().ConfigureAwait(false);
             }
             else
             {
-                await OnReceive(info).ConfigureAwait(false);
+                await OnReceive(
+                    new WebSocketMessageInfo
+                    {
+                        MessageType = stub.MessageType,
+                        Data = stub.Data?.ToString(), // Data can be null
+                        Connection = this
+                    }).ConfigureAwait(false);
             }
+        }
+
+        internal WebSocketMessage<object>? DeserializeWebSocketMessage(ReadOnlySequence<byte> bytes, out long bytesConsumed)
+        {
+            var jsonReader = new Utf8JsonReader(bytes);
+            var ret = JsonSerializer.Deserialize<WebSocketMessage<object>>(ref jsonReader, _jsonOptions);
+            bytesConsumed = jsonReader.BytesConsumed;
+            return ret;
         }
 
         private Task SendKeepAliveResponse()

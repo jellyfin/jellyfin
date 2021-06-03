@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -5,10 +7,10 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
@@ -52,6 +54,8 @@ namespace Emby.Dlna.Main
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
+        private readonly NetworkConfiguration _netConfig;
+        private readonly bool _disabled;
 
         private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
@@ -122,9 +126,22 @@ namespace Emby.Dlna.Main
                 httpClientFactory,
                 config);
             Current = this;
+
+            _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
+            _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
+
+            if (_disabled && _config.GetDlnaConfiguration().EnableServer)
+            {
+                _logger.LogError("The DLNA specification does not support HTTPS.");
+            }
         }
 
         public static DlnaEntryPoint Current { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the dlna server is enabled.
+        /// </summary>
+        public static bool Enabled { get; private set; }
 
         public IContentDirectory ContentDirectory { get; private set; }
 
@@ -135,6 +152,12 @@ namespace Emby.Dlna.Main
         public async Task RunAsync()
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
+
+            if (_disabled)
+            {
+                // No use starting as dlna won't work, as we're running purely on HTTPS.
+                return;
+            }
 
             ReloadComponents();
 
@@ -152,6 +175,7 @@ namespace Emby.Dlna.Main
         private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
+            Enabled = options.EnableServer;
 
             StartSsdpHandler();
 
@@ -206,7 +230,10 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                if (communicationsServer != null)
+                {
+                    ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                }
             }
             catch (Exception ex)
             {
@@ -290,12 +317,18 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var uri = new Uri(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
+                var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
+                if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
+                {
+                    // DLNA will only work over http, so we must reset to http:// : {port}.
+                    uri.Scheme = "http";
+                    uri.Port = _netConfig.HttpServerPortNumber;
+                }
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
-                    Location = uri, // Must point to the URL that serves your devices UPnP description document.
+                    Location = uri.Uri, // Must point to the URL that serves your devices UPnP description document.
                     Address = address.Address,
                     PrefixLength = address.PrefixLength,
                     FriendlyName = "Jellyfin",

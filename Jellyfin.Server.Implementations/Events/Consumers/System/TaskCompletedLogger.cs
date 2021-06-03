@@ -33,10 +33,10 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(TaskCompletionEventArgs e)
+        public async Task OnEvent(TaskCompletionEventArgs eventArgs)
         {
-            var result = e.Result;
-            var task = e.Task;
+            var result = eventArgs.Result;
+            var task = eventArgs.Task;
 
             if (task.ScheduledTask is IConfigurableScheduledTask activityTask
                 && !activityTask.IsLogged)
@@ -54,14 +54,14 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
             {
                 var vals = new List<string>();
 
-                if (!string.IsNullOrEmpty(e.Result.ErrorMessage))
+                if (!string.IsNullOrEmpty(eventArgs.Result.ErrorMessage))
                 {
-                    vals.Add(e.Result.ErrorMessage);
+                    vals.Add(eventArgs.Result.ErrorMessage);
                 }
 
-                if (!string.IsNullOrEmpty(e.Result.LongErrorMessage))
+                if (!string.IsNullOrEmpty(eventArgs.Result.LongErrorMessage))
                 {
-                    vals.Add(e.Result.LongErrorMessage);
+                    vals.Add(eventArgs.Result.LongErrorMessage);
                 }
 
                 await _activityManager.CreateAsync(new ActivityLog(

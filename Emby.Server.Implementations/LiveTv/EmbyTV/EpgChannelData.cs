@@ -6,58 +6,46 @@ using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-
     internal class EpgChannelData
     {
+
+        private readonly Dictionary<string, ChannelInfo> _channelsById;
+
+        private readonly Dictionary<string, ChannelInfo> _channelsByNumber;
+
+        private readonly Dictionary<string, ChannelInfo> _channelsByName;
+
         public EpgChannelData(IEnumerable<ChannelInfo> channels)
         {
-            ChannelsById = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
-            ChannelsByNumber = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
-            ChannelsByName = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
+            _channelsById = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
+            _channelsByNumber = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
+            _channelsByName = new Dictionary<string, ChannelInfo>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var channel in channels)
             {
-                ChannelsById[channel.Id] = channel;
+                _channelsById[channel.Id] = channel;
 
                 if (!string.IsNullOrEmpty(channel.Number))
                 {
-                    ChannelsByNumber[channel.Number] = channel;
+                    _channelsByNumber[channel.Number] = channel;
                 }
 
                 var normalizedName = NormalizeName(channel.Name ?? string.Empty);
                 if (!string.IsNullOrWhiteSpace(normalizedName))
                 {
-                    ChannelsByName[normalizedName] = channel;
+                    _channelsByName[normalizedName] = channel;
                 }
             }
         }
 
-        private Dictionary<string, ChannelInfo> ChannelsById { get; set; }
+        public ChannelInfo? GetChannelById(string id)
+            => _channelsById.GetValueOrDefault(id);
 
-        private Dictionary<string, ChannelInfo> ChannelsByNumber { get; set; }
+        public ChannelInfo? GetChannelByNumber(string number)
+            => _channelsByNumber.GetValueOrDefault(number);
 
-        private Dictionary<string, ChannelInfo> ChannelsByName { get; set; }
-
-        public ChannelInfo GetChannelById(string id)
-        {
-            ChannelsById.TryGetValue(id, out var result);
-
-            return result;
-        }
-
-        public ChannelInfo GetChannelByNumber(string number)
-        {
-            ChannelsByNumber.TryGetValue(number, out var result);
-
-            return result;
-        }
-
-        public ChannelInfo GetChannelByName(string name)
-        {
-            ChannelsByName.TryGetValue(name, out var result);
-
-            return result;
-        }
+        public ChannelInfo? GetChannelByName(string name)
+            => _channelsByName.GetValueOrDefault(name);
 
         public static string NormalizeName(string value)
         {

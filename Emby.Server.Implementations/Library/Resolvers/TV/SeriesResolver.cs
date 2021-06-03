@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -19,19 +21,16 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class SeriesResolver : FolderResolver<Series>
     {
-        private readonly IFileSystem _fileSystem;
         private readonly ILogger<SeriesResolver> _logger;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesResolver"/> class.
         /// </summary>
-        /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SeriesResolver(IFileSystem fileSystem, ILogger<SeriesResolver> logger, ILibraryManager libraryManager)
+        public SeriesResolver(ILogger<SeriesResolver> logger, ILibraryManager libraryManager)
         {
-            _fileSystem = fileSystem;
             _logger = logger;
             _libraryManager = libraryManager;
         }
@@ -59,15 +58,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    // if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
-                    //{
-                    //    return new Series
-                    //    {
-                    //        Path = args.Path,
-                    //        Name = Path.GetFileName(args.Path)
-                    //    };
-                    //}
-
                     var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
                     if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
@@ -100,7 +90,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return null;
                     }
 
-                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, false))
+                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, _logger, _libraryManager, false))
                     {
                         return new Series
                         {
@@ -117,8 +107,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         public static bool IsSeriesFolder(
             string path,
             IEnumerable<FileSystemMetadata> fileSystemChildren,
-            IDirectoryService directoryService,
-            IFileSystem fileSystem,
             ILogger<SeriesResolver> logger,
             ILibraryManager libraryManager,
             bool isTvContentType)
@@ -127,7 +115,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             {
                 if (child.IsDirectory)
                 {
-                    if (IsSeasonFolder(child.FullName, isTvContentType, libraryManager))
+                    if (IsSeasonFolder(child.FullName, isTvContentType))
                     {
                         logger.LogDebug("{Path} is a series because of season folder {Dir}.", path, child.FullName);
                         return true;
@@ -161,31 +149,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         }
 
         /// <summary>
-        /// Determines whether [is place holder] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is place holder] [the specified path]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
-        private static bool IsVideoPlaceHolder(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var extension = Path.GetExtension(path);
-
-            return string.Equals(extension, ".disc", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
         /// Determines whether [is season folder] [the specified path].
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="isTvContentType">if set to <c>true</c> [is tv content type].</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <returns><c>true</c> if [is season folder] [the specified path]; otherwise, <c>false</c>.</returns>
-        private static bool IsSeasonFolder(string path, bool isTvContentType, ILibraryManager libraryManager)
+        private static bool IsSeasonFolder(string path, bool isTvContentType)
         {
             var seasonNumber = SeasonPathParser.Parse(path, isTvContentType, isTvContentType).SeasonNumber;
 

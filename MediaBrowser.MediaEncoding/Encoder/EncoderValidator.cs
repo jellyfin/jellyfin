@@ -121,11 +121,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         // When changing this, also change the minimum library versions in _ffmpegMinimumLibraryVersions
         public static Version MinVersion { get; } = new Version(4, 0);
 
-        public static Version MaxVersion { get; } = null;
+        public static Version? MaxVersion { get; } = null;
 
         public bool ValidateVersion()
         {
-            string output = null;
+            string output;
             try
             {
                 output = GetProcessOutput(_encoderPath, "-version");
@@ -133,6 +133,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error validating encoder");
+                return false;
             }
 
             if (string.IsNullOrWhiteSpace(output))
@@ -207,7 +208,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output">The output from "ffmpeg -version".</param>
         /// <returns>The FFmpeg version.</returns>
-        internal Version GetFFmpegVersion(string output)
+        internal Version? GetFFmpegVersion(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
             var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");
@@ -275,7 +276,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private IEnumerable<string> GetHwaccelTypes()
         {
-            string output = null;
+            string? output = null;
             try
             {
                 output = GetProcessOutput(_encoderPath, "-hwaccels");
@@ -296,10 +297,43 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return found;
         }
 
+        public bool CheckFilter(string filter, string option)
+        {
+            if (string.IsNullOrEmpty(filter))
+            {
+                return false;
+            }
+
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-h filter=" + filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting the given filter");
+                return false;
+            }
+
+            if (output.Contains("Filter " + filter, StringComparison.Ordinal))
+            {
+                if (string.IsNullOrEmpty(option))
+                {
+                    return true;
+                }
+
+                return output.Contains(option, StringComparison.Ordinal);
+            }
+
+            _logger.LogWarning("Filter: {Name} with option {Option} is not available", filter, option);
+
+            return false;
+        }
+
         private IEnumerable<string> GetCodecs(Codec codec)
         {
             string codecstr = codec == Codec.Encoder ? "encoders" : "decoders";
-            string output = null;
+            string output;
             try
             {
                 output = GetProcessOutput(_encoderPath, "-" + codecstr);
@@ -307,6 +341,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting available {Codec}", codecstr);
+                return Enumerable.Empty<string>();
             }
 
             if (string.IsNullOrWhiteSpace(output))

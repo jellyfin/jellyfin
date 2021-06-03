@@ -17,6 +17,7 @@ using MediaBrowser.Model.MediaInfo;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
@@ -82,6 +83,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <remarks>
         /// For backwards compatibility parameters can be sent via Query or Body, with Query having higher precedence.
+        /// Query parameters are obsolete.
         /// </remarks>
         /// <param name="itemId">The item id.</param>
         /// <param name="userId">The user id.</param>
@@ -105,21 +107,21 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PlaybackInfoResponse>> GetPostedPlaybackInfo(
             [FromRoute, Required] Guid itemId,
-            [FromQuery] Guid? userId,
-            [FromQuery] int? maxStreamingBitrate,
-            [FromQuery] long? startTimeTicks,
-            [FromQuery] int? audioStreamIndex,
-            [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] int? maxAudioChannels,
-            [FromQuery] string? mediaSourceId,
-            [FromQuery] string? liveStreamId,
-            [FromQuery] bool? autoOpenLiveStream,
-            [FromQuery] bool? enableDirectPlay,
-            [FromQuery] bool? enableDirectStream,
-            [FromQuery] bool? enableTranscoding,
-            [FromQuery] bool? allowVideoStreamCopy,
-            [FromQuery] bool? allowAudioStreamCopy,
-            [FromBody] PlaybackInfoDto? playbackInfoDto)
+            [FromQuery, ParameterObsolete] Guid? userId,
+            [FromQuery, ParameterObsolete] int? maxStreamingBitrate,
+            [FromQuery, ParameterObsolete] long? startTimeTicks,
+            [FromQuery, ParameterObsolete] int? audioStreamIndex,
+            [FromQuery, ParameterObsolete] int? subtitleStreamIndex,
+            [FromQuery, ParameterObsolete] int? maxAudioChannels,
+            [FromQuery, ParameterObsolete] string? mediaSourceId,
+            [FromQuery, ParameterObsolete] string? liveStreamId,
+            [FromQuery, ParameterObsolete] bool? autoOpenLiveStream,
+            [FromQuery, ParameterObsolete] bool? enableDirectPlay,
+            [FromQuery, ParameterObsolete] bool? enableDirectStream,
+            [FromQuery, ParameterObsolete] bool? enableTranscoding,
+            [FromQuery, ParameterObsolete] bool? allowVideoStreamCopy,
+            [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
+            [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
@@ -258,24 +260,24 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? maxAudioChannels,
             [FromQuery] Guid? itemId,
-            [FromBody] OpenLiveStreamDto openLiveStreamDto,
-            [FromQuery] bool enableDirectPlay = true,
-            [FromQuery] bool enableDirectStream = true)
+            [FromBody] OpenLiveStreamDto? openLiveStreamDto,
+            [FromQuery] bool? enableDirectPlay,
+            [FromQuery] bool? enableDirectStream)
         {
             var request = new LiveStreamRequest
             {
-                OpenToken = openToken,
-                UserId = userId ?? Guid.Empty,
-                PlaySessionId = playSessionId,
-                MaxStreamingBitrate = maxStreamingBitrate,
-                StartTimeTicks = startTimeTicks,
-                AudioStreamIndex = audioStreamIndex,
-                SubtitleStreamIndex = subtitleStreamIndex,
-                MaxAudioChannels = maxAudioChannels,
-                ItemId = itemId ?? Guid.Empty,
+                OpenToken = openToken ?? openLiveStreamDto?.OpenToken,
+                UserId = userId ?? openLiveStreamDto?.UserId ?? Guid.Empty,
+                PlaySessionId = playSessionId ?? openLiveStreamDto?.PlaySessionId,
+                MaxStreamingBitrate = maxStreamingBitrate ?? openLiveStreamDto?.MaxStreamingBitrate,
+                StartTimeTicks = startTimeTicks ?? openLiveStreamDto?.StartTimeTicks,
+                AudioStreamIndex = audioStreamIndex ?? openLiveStreamDto?.AudioStreamIndex,
+                SubtitleStreamIndex = subtitleStreamIndex ?? openLiveStreamDto?.SubtitleStreamIndex,
+                MaxAudioChannels = maxAudioChannels ?? openLiveStreamDto?.MaxAudioChannels,
+                ItemId = itemId ?? openLiveStreamDto?.ItemId ?? Guid.Empty,
                 DeviceProfile = openLiveStreamDto?.DeviceProfile,
-                EnableDirectPlay = enableDirectPlay,
-                EnableDirectStream = enableDirectStream,
+                EnableDirectPlay = enableDirectPlay ?? openLiveStreamDto?.EnableDirectPlay ?? true,
+                EnableDirectStream = enableDirectStream ?? openLiveStreamDto?.EnableDirectStream ?? true,
                 DirectPlayProtocols = openLiveStreamDto?.DirectPlayProtocols ?? new[] { MediaProtocol.Http }
             };
             return await _mediaInfoHelper.OpenMediaSource(Request, request).ConfigureAwait(false);

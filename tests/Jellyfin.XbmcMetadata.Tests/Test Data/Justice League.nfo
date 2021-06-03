@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<movie>
+    <title>Justice League</title>
+    <originaltitle>Justice League</originaltitle>
+    <ratings>
+        <rating name="imdb" max="10" default="true">
+            <value>6.400000</value>
+            <votes>335583</votes>
+        </rating>
+        <rating name="metacritic" max="10">
+            <value>4.500000</value>
+            <votes>52</votes>
+        </rating>
+        <rating name="themoviedb" max="10">
+            <value>6.200000</value>
+            <votes>7788</votes>
+        </rating>
+		<rating name="tomatometerallcritics" max="10">
+			<value>7.6</value>
+			<votes>71</votes>
+		</rating>
+		<rating name="tomatometerallaudience" max="10">
+			<value>6.2</value>
+			<votes>119873</votes>
+		</rating>
+    </ratings>
+    <criticrating>7.6</criticrating>
+    <language>en</language>
+    <countrycode>us</countrycode>
+    <customrating>8.7</customrating>
+    <aspectratio>1.777778</aspectratio>
+    <userrating>0</userrating>
+    <top250>0</top250>
+    <outline>Fueled by his restored faith in humanity and inspired by Superman&apos;s selfless act, Bruce Wayne enlists the help of his new-found ally, Diana Prince, to face an even greater enemy.</outline>
+    <plot>Fueled by his restored faith in humanity and inspired by Superman&apos;s selfless act, Bruce Wayne enlists the help of his newfound ally, Diana Prince, to face an even greater enemy. Together, Batman and Wonder Woman work quickly to find and recruit a team of meta-humans to stand against this newly awakened threat. But despite the formation of this unprecedented league of heroes-Batman, Wonder Woman, Aquaman, Cyborg and The Flash-it may already be too late to save the planet from an assault of catastrophic proportions.</plot>
+    <tagline>Justice for all.</tagline>
+    <runtime>120</runtime>
+    <playcount>2</playcount>
+    <watched>true</watched>
+    <lastplayed>2021-02-11 07:47:23</lastplayed>
+    <tmdbId>141052</tmdbId>
+    <thumb aspect="set.poster" preview="https://assets.fanart.tv/preview/movies/468551/movieposter/justice-league-collection-5c24ea65591d3.jpg">https://assets.fanart.tv/fanart/movies/468551/movieposter/justice-league-collection-5c24ea65591d3.jpg</thumb>
+    <thumb aspect="set.poster" preview="https://assets.fanart.tv/preview/movies/468551/movieposter/justice-league-collection-5c24ea65591d3.jpg">https://assets.fanart.tv/fanart/movies/468551/movieposter/justice-league-collection-5c24ea65591d3.jpg</thumb>
+    <thumb aspect="set.clearlogo" preview="https://assets.fanart.tv/preview/movies/468551/hdmovielogo/justice-league-collection-5ba855ed4239a.png">https://assets.fanart.tv/fanart/movies/468551/hdmovielogo/justice-league-collection-5ba855ed4239a.png</thumb>
+    <thumb aspect="set.clearart" preview="https://assets.fanart.tv/preview/movies/468551/hdmovieclearart/justice-league-collection-5c24eae8d4d71.png">https://assets.fanart.tv/fanart/movies/468551/hdmovieclearart/justice-league-collection-5c24eae8d4d71.png</thumb>
+    <thumb aspect="set.landscape" preview="https://assets.fanart.tv/preview/movies/468551/moviethumb/justice-league-collection-5c24ebc7d0d2b.jpg">https://assets.fanart.tv/fanart/movies/468551/moviethumb/justice-league-collection-5c24ebc7d0d2b.jpg</thumb>
+    <thumb aspect="set.poster" preview="http://image.tmdb.org/t/p/w500/cigoYpXWgYYgsIsEPwMneVYpuwo.jpg">http://image.tmdb.org/t/p/original/cigoYpXWgYYgsIsEPwMneVYpuwo.jpg</thumb>
+    <thumb aspect="set.poster" preview="http://image.tmdb.org/t/p/w500/2ZOCiOdAOVSKsFjC1Vl2ZlANrPj.jpg">http://image.tmdb.org/t/p/original/2ZOCiOdAOVSKsFjC1Vl2ZlANrPj.jpg</thumb>
+    <thumb aspect="set.poster" preview="http://image.tmdb.org/t/p/w500/cigoYpXWgYYgsIsEPwMneVYpuwo.jpg">http://image.tmdb.org/t/p/original/cigoYpXWgYYgsIsEPwMneVYpuwo.jpg</thumb>
+    <thumb aspect="set.poster" preview="http://image.tmdb.org/t/p/w500/2ZOCiOdAOVSKsFjC1Vl2ZlANrPj.jpg">http://image.tmdb.org/t/p/original/2ZOCiOdAOVSKsFjC1Vl2ZlANrPj.jpg</thumb>
+    <thumb aspect="set.poster" preview="http://image.tmdb.org/t/p/w500/7iO1C4c5igXsB6AyxnqsCPv6fiq.jpg">http://image.tmdb.org/t/p/original/7iO1C4c5igXsB6AyxnqsCPv6fiq.jpg</thumb>
+    <thumb aspect="set.fanart" preview="http://image.tmdb.org/t/p/w500/vyxOJuk6cxrRcGzuMRbDTpwji1w.jpg">http://image.tmdb.org/t/p/original/vyxOJuk6cxrRcGzuMRbDTpwji1w.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/9rtrRGeRnL0JKtu9IMBWsmlmmZz.jpg">http://image.tmdb.org/t/p/original/9rtrRGeRnL0JKtu9IMBWsmlmmZz.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/eRoXqOzciHkSPs1Z8pGnJMZo0Zb.jpg">http://image.tmdb.org/t/p/original/eRoXqOzciHkSPs1Z8pGnJMZo0Zb.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/aQkEdqaXVxYObMLeoBSAUcgkxLs.jpg">http://image.tmdb.org/t/p/original/aQkEdqaXVxYObMLeoBSAUcgkxLs.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/4lo1fTexk2eNIeQx3Tp74kN7ASE.jpg">http://image.tmdb.org/t/p/original/4lo1fTexk2eNIeQx3Tp74kN7ASE.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/fF94rvT1kJpVzIE2aSYgYj9B3pc.jpg">http://image.tmdb.org/t/p/original/fF94rvT1kJpVzIE2aSYgYj9B3pc.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/uwegp70cWe16EtwsSjbL6ShPenG.jpg">http://image.tmdb.org/t/p/original/uwegp70cWe16EtwsSjbL6ShPenG.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/exLtrlI7JjKcfQVTccI7XdQRFMz.jpg">http://image.tmdb.org/t/p/original/exLtrlI7JjKcfQVTccI7XdQRFMz.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/paLcue01KpfQftorfjKqqD4qvlL.jpg">http://image.tmdb.org/t/p/original/paLcue01KpfQftorfjKqqD4qvlL.jpg</thumb>
+    <thumb aspect="poster" preview="http://image.tmdb.org/t/p/w500/yVDIfiKIsCbdFcgLXW34bAsnQvy.jpg">http://image.tmdb.org/t/p/original/yVDIfiKIsCbdFcgLXW34bAsnQvy.jpg</thumb>
+    <thumb aspect="poster">C:\media\movies\Justice League (2017).jpg</thumb>
+    <thumb aspect="poster">/media/movies/Justice League (2017).jpg</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-5865bf95cbadb.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-5865bf95cbadb.png</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-585e9ca3bcf6a.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-585e9ca3bcf6a.png</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-57b476a831d74.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-57b476a831d74.png</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-57947e28cf10b.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-57947e28cf10b.png</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-5863d5c0cf0c9.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-5863d5c0cf0c9.png</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-5a801747e5545.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-5a801747e5545.png</thumb>
+    <thumb aspect="clearlogo" preview="https://assets.fanart.tv/preview/movies/141052/hdmovielogo/justice-league-5cd75683df92b.png">https://assets.fanart.tv/fanart/movies/141052/hdmovielogo/justice-league-5cd75683df92b.png</thumb>
+    <thumb aspect="banner" preview="https://assets.fanart.tv/preview/movies/141052/moviebanner/justice-league-586017e95adbd.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebanner/justice-league-586017e95adbd.jpg</thumb>
+    <thumb aspect="banner" preview="https://assets.fanart.tv/preview/movies/141052/moviebanner/justice-league-5934d45bc6592.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebanner/justice-league-5934d45bc6592.jpg</thumb>
+    <thumb aspect="banner" preview="https://assets.fanart.tv/preview/movies/141052/moviebanner/justice-league-5aa9289a379fa.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebanner/justice-league-5aa9289a379fa.jpg</thumb>
+    <thumb aspect="landscape" preview="https://assets.fanart.tv/preview/movies/141052/moviethumb/justice-league-585fb155c3743.jpg">https://assets.fanart.tv/fanart/movies/141052/moviethumb/justice-league-585fb155c3743.jpg</thumb>
+    <thumb aspect="landscape" preview="https://assets.fanart.tv/preview/movies/141052/moviethumb/justice-league-585edbda91d82.jpg">https://assets.fanart.tv/fanart/movies/141052/moviethumb/justice-league-585edbda91d82.jpg</thumb>
+    <thumb aspect="landscape" preview="https://assets.fanart.tv/preview/movies/141052/moviethumb/justice-league-5b86588882c12.jpg">https://assets.fanart.tv/fanart/movies/141052/moviethumb/justice-league-5b86588882c12.jpg</thumb>
+    <thumb aspect="landscape" preview="https://assets.fanart.tv/preview/movies/141052/moviethumb/justice-league-5bbb9babe600c.jpg">https://assets.fanart.tv/fanart/movies/141052/moviethumb/justice-league-5bbb9babe600c.jpg</thumb>
+    <thumb aspect="clearart" preview="https://assets.fanart.tv/preview/movies/141052/hdmovieclearart/justice-league-5865c23193041.png">https://assets.fanart.tv/fanart/movies/141052/hdmovieclearart/justice-league-5865c23193041.png</thumb>
+    <thumb aspect="discart" preview="https://assets.fanart.tv/preview/movies/141052/moviedisc/justice-league-5a3af26360617.png">https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a3af26360617.png</thumb>
+    <thumb aspect="discart" preview="https://assets.fanart.tv/preview/movies/141052/moviedisc/justice-league-58690967b9765.png">https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-58690967b9765.png</thumb>
+    <thumb aspect="discart" preview="https://assets.fanart.tv/preview/movies/141052/moviedisc/justice-league-5a953ca4db6a6.png">https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a953ca4db6a6.png</thumb>
+    <thumb aspect="discart" preview="https://assets.fanart.tv/preview/movies/141052/moviedisc/justice-league-5a0b913c233be.png">https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a0b913c233be.png</thumb>
+    <thumb aspect="discart" preview="https://assets.fanart.tv/preview/movies/141052/moviedisc/justice-league-5a87e0cdb1209.png">https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a87e0cdb1209.png</thumb>
+    <thumb aspect="discart" preview="https://assets.fanart.tv/preview/movies/141052/moviedisc/justice-league-59dc595362ef1.png">https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-59dc595362ef1.png</thumb>
+    <thumb aspect="fanart">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5793f518c6d6e.jpg</thumb>
+    <fanart>
+        <thumb preview="https://assets.fanart.tv/preview/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg</thumb>
+        <thumb preview="https://assets.fanart.tv/preview/movies/141052/moviebackground/justice-league-5a53cf2dac1c8.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a53cf2dac1c8.jpg</thumb>
+        <thumb preview="https://assets.fanart.tv/preview/movies/141052/moviebackground/justice-league-5976ba93eb5d3.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5976ba93eb5d3.jpg</thumb>
+        <thumb preview="https://assets.fanart.tv/preview/movies/141052/moviebackground/justice-league-58fa1f1932897.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-58fa1f1932897.jpg</thumb>
+        <thumb preview="https://assets.fanart.tv/preview/movies/141052/moviebackground/justice-league-5a14f5fd8dd16.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a14f5fd8dd16.jpg</thumb>
+        <thumb preview="https://assets.fanart.tv/preview/movies/141052/moviebackground/justice-league-5a119394ea362.jpg">https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a119394ea362.jpg</thumb>
+    </fanart>
+    <mpaa>Australia:M</mpaa>
+    <id>tt0974015</id>
+    <uniqueid type="imdb">tt0974015</uniqueid>
+    <uniqueid type="tmdb">141052</uniqueid>
+    <genre>Action</genre>
+    <genre>Adventure</genre>
+    <genre>Fantasy</genre>
+    <genre>Sci-Fi</genre>
+    <country>USA</country>
+    <country>Canada</country>
+    <country>UK</country>
+    <set tmdbcolid="702342">
+        <name>Justice League Collection</name>
+        <overview>Based on the DC Comics superhero team</overview>
+    </set>
+    <credits>Jerry Siegel</credits>
+    <credits>Joe Shuster</credits>
+    <director>Zack Snyder,</director>
+    <writer>Test</writer>
+    <premiered>2017-11-15</premiered>
+    <enddate>2017-11-16</enddate>
+    <year>2017</year>
+    <status></status>
+    <code></code>
+    <aired></aired>
+    <studio>DC Comics</studio>
+    <trailer>plugin://plugin.video.youtube/?action=play_video&amp;videoid=dQw4w9WgXcQ</trailer>
+    <fileinfo>
+        <streamdetails>
+            <video>
+                <codec>h264</codec>
+                <aspect>1.777778</aspect>
+                <width>1920</width>
+                <height>1080</height>
+                <durationinseconds>6268</durationinseconds>
+                <stereomode></stereomode>
+                <format3d>HSBS</format3d>
+            </video>
+            <audio>
+                <codec>truehd</codec>
+                <language>eng</language>
+                <channels>8</channels>
+            </audio>
+            <audio>
+                <codec>ac3</codec>
+                <language></language>
+                <channels>6</channels>
+            </audio>
+            <subtitle>
+                <language>eng</language>
+            </subtitle>
+        </streamdetails>
+    </fileinfo>
+    <actor>
+        <name>Ben Affleck</name>
+        <role>Batman</role>
+        <order>0</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTI4MzIxMTk0Nl5BMl5BanBnXkFtZTcwOTU5NjA0Mg@@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Henry Cavill</name>
+        <role>Superman</role>
+        <order>1</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTUxNTExMzUzOF5BMl5BanBnXkFtZTgwOTI1MjA3OTE@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Amy Adams</name>
+        <role>Lois Lane</role>
+        <order>2</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTg2NTk2MTgxMV5BMl5BanBnXkFtZTgwNjcxMjAzMTI@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Gal Gadot</name>
+        <role>Wonder Woman</role>
+        <order>3</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMjUzZTJmZDItODRjYS00ZGRhLTg2NWQtOGE0YjJhNWVlMjNjXkEyXkFqcGdeQXVyMTg4NDI0NDM@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Ezra Miller</name>
+        <role>The Flash</role>
+        <order>4</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMjEwMjQ3ODgxOV5BMl5BanBnXkFtZTgwNzc4NjE4NTE@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Jason Momoa</name>
+        <role>Aquaman</role>
+        <order>5</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTI5MTU5NjM1MV5BMl5BanBnXkFtZTcwODc4MDk0Mw@@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Ray Fisher</name>
+        <role>Cyborg</role>
+        <order>6</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BYzdhMzkyYTgtMjQzMC00ODhmLWExZmItNTU4MDVlMzY2NzgwXkEyXkFqcGdeQXVyNzA5NjQ5MDk@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Jeremy Irons</name>
+        <role>Alfred</role>
+        <order>7</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTY5Mzg2NDY5OV5BMl5BanBnXkFtZTcwMDQwNzA0Mg@@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Diane Lane</name>
+        <role>Martha Kent</role>
+        <order>8</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMzM5ODM1ZWMtZjcyYy00MzgzLWJmMGQtZWY5OGQyNTRiODIxXkEyXkFqcGdeQXVyOTE0NjgwMjY@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Connie Nielsen</name>
+        <role>Queen Hippolyta</role>
+        <order>9</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BYzZiYTQ4YTAtMzRkMi00ZDZlLWFkZWItNGI2ZTIyODRiYTc4XkEyXkFqcGdeQXVyMjUzMjc2MjE@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>J.K. Simmons</name>
+        <role>Commissioner Gordon</role>
+        <order>10</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMzg2NTI5NzQ1MV5BMl5BanBnXkFtZTgwNjI1NDEwMDI@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Ciarán Hinds</name>
+        <role>Steppenwolf</role>
+        <order>11</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTIyNjM0MzU0NF5BMl5BanBnXkFtZTcwOTIxMzg1MQ@@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Amber Heard</name>
+        <role>Mera</role>
+        <order>12</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMjA4NDkyODA3M15BMl5BanBnXkFtZTgwMzUzMjYzNzM@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Joe Morton</name>
+        <role>Silas Stone</role>
+        <order>13</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BMTQ1MjYwMTQ2MF5BMl5BanBnXkFtZTgwNzI4MTA0NDE@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Lisa Loven Kongsli</name>
+        <role>Menalippe</role>
+        <order>14</order>
+        <thumb>https://m.media-amazon.com/images/M/MV5BOTFjOTFhNTgtZjk3Ny00MTNjLWE3MWUtMWI3ZWM5NDljZjQwXkEyXkFqcGdeQXVyMjQwMDg0Ng@@._V1_SX1024_SY1024_.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Test Lyricist</name>
+        <type>Lyricist</type>
+        <order>15</order>
+    </actor>
+    <resume>
+        <position>0.000000</position>
+        <total>0.000000</total>
+    </resume>
+	<showlink>Justice League</showlink>
+    <dateadded>2019-08-06 09:01:18</dateadded>
+</movie>

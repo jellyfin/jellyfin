@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Sorting;
 using Xunit;
 
@@ -8,8 +7,6 @@ namespace Jellyfin.Controller.Tests
 {
     public class AlphanumComparatorTests
     {
-        private readonly Random _rng = new Random(42);
-
         // InlineData is pre-sorted
         [Theory]
         [InlineData(null, "", "1", "9", "10", "a", "z")]
@@ -25,18 +22,7 @@ namespace Jellyfin.Controller.Tests
         [InlineData("12345678912345678912345678913234567891a", "12345678912345678912345678913234567891b")]
         public void AlphanumComparatorTest(params string?[] strings)
         {
-            var copy = (string?[])strings.Clone();
-            if (strings.Length == 2)
-            {
-                var tmp = copy[0];
-                copy[0] = copy[1];
-                copy[1] = tmp;
-            }
-            else
-            {
-                copy.Shuffle(_rng);
-            }
-
+            var copy = strings.Reverse().ToArray();
             Array.Sort(copy, new AlphanumComparator());
             Assert.True(strings.SequenceEqual(copy));
         }

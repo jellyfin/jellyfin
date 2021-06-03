@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -289,7 +291,7 @@ namespace Emby.Server.Implementations.Security
             return result;
         }
 
-        private static AuthenticationInfo Get(IReadOnlyList<IResultSetValue> reader)
+        private static AuthenticationInfo Get(IReadOnlyList<ResultSetValue> reader)
         {
             var info = new AuthenticationInfo
             {
@@ -297,50 +299,49 @@ namespace Emby.Server.Implementations.Security
                 AccessToken = reader[1].ToString()
             };
 
-            if (reader[2].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(2, out var deviceId))
             {
-                info.DeviceId = reader[2].ToString();
+                info.DeviceId = deviceId;
             }
 
-            if (reader[3].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(3, out var appName))
             {
-                info.AppName = reader[3].ToString();
+                info.AppName = appName;
             }
 
-            if (reader[4].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(4, out var appVersion))
             {
-                info.AppVersion = reader[4].ToString();
+                info.AppVersion = appVersion;
             }
 
-            if (reader[5].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(6, out var userId))
             {
-                info.DeviceName = reader[5].ToString();
+                info.UserId = new Guid(userId);
             }
 
-            if (reader[6].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(7, out var userName))
             {
-                info.UserId = new Guid(reader[6].ToString());
-            }
-
-            if (reader[7].SQLiteType != SQLiteType.Null)
-            {
-                info.UserName = reader[7].ToString();
+                info.UserName = userName;
             }
 
             info.DateCreated = reader[8].ReadDateTime();
 
-            if (reader[9].SQLiteType != SQLiteType.Null)
+            if (reader.TryReadDateTime(9, out var dateLastActivity))
             {
-                info.DateLastActivity = reader[9].ReadDateTime();
+                info.DateLastActivity = dateLastActivity;
             }
             else
             {
                 info.DateLastActivity = info.DateCreated;
             }
 
-            if (reader[10].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetString(10, out var customName))
             {
-                info.DeviceName = reader[10].ToString();
+                info.DeviceName = customName;
+            }
+            else if (reader.TryGetString(5, out var deviceName))
+            {
+                info.DeviceName = deviceName;
             }
 
             return info;
@@ -361,9 +362,9 @@ namespace Emby.Server.Implementations.Security
 
                         foreach (var row in statement.ExecuteQuery())
                         {
-                            if (row[0].SQLiteType != SQLiteType.Null)
+                            if (row.TryGetString(0, out var customName))
                             {
-                                result.CustomName = row[0].ToString();
+                                result.CustomName = customName;
                             }
                         }
 

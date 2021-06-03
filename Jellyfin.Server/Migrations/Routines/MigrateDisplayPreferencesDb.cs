@@ -8,7 +8,6 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -81,7 +80,8 @@ namespace Jellyfin.Server.Migrations.Routines
                 { "unstable", ChromecastVersion.Unstable }
             };
 
-            var customDisplayPrefs = new HashSet<string>();
+            var displayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var customDisplayPrefs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var dbFilePath = Path.Combine(_paths.DataPath, DbFilename);
             using (var connection = SQLite3.Open(dbFilePath, ConnectionFlags.ReadOnly, null))
             {
@@ -90,7 +90,7 @@ namespace Jellyfin.Server.Migrations.Routines
                 var results = connection.Query("SELECT * FROM userdisplaypreferences");
                 foreach (var result in results)
                 {
-                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToString(), _jsonOptions);
+                    var dto = JsonSerializer.Deserialize<DisplayPreferencesDto>(result[3].ToBlob(), _jsonOptions);
                     if (dto == null)
                     {
                         continue;
@@ -98,6 +98,15 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     var itemId = new Guid(result[1].ToBlob());
                     var dtoUserId = new Guid(result[1].ToBlob());
+                    var client = result[2].ToString();
+                    var displayPreferencesKey = $"{dtoUserId}|{itemId}|{client}";
+                    if (displayPrefs.Contains(displayPreferencesKey))
+                    {
+                        // Duplicate display preference.
+                        continue;
+                    }
+
+                    displayPrefs.Add(displayPreferencesKey);
                     var existingUser = _userManager.GetUserById(dtoUserId);
                     if (existingUser == null)
                     {
@@ -110,20 +119,20 @@ namespace Jellyfin.Server.Migrations.Routines
                         : ChromecastVersion.Stable;
                     dto.CustomPrefs.Remove("chromecastVersion");
 
-                    var displayPreferences = new DisplayPreferences(dtoUserId, itemId, result[2].ToString())
+                    var displayPreferences = new DisplayPreferences(dtoUserId, itemId, client)
                     {
                         IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
                         ShowBackdrop = dto.ShowBackdrop,
                         ShowSidebar = dto.ShowSidebar,
                         ScrollDirection = dto.ScrollDirection,
                         ChromecastVersion = chromecastVersion,
-                        SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length)
-                            ? int.Parse(length, CultureInfo.InvariantCulture)
+                        SkipForwardLength = dto.CustomPrefs.TryGetValue("skipForwardLength", out var length) && int.TryParse(length, out var skipForwardLength)
+                            ? skipForwardLength
                             : 30000,
-                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length)
-                            ? int.Parse(length, CultureInfo.InvariantCulture)
+                        SkipBackwardLength = dto.CustomPrefs.TryGetValue("skipBackLength", out length) && !string.IsNullOrEmpty(length) && int.TryParse(length, out var skipBackwardLength)
+                            ? skipBackwardLength
                             : 10000,
-                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled)
+                        EnableNextVideoInfoOverlay = dto.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enabled) && !string.IsNullOrEmpty(enabled)
                             ? bool.Parse(enabled)
                             : true,
                         DashboardTheme = dto.CustomPrefs.TryGetValue("dashboardtheme", out var theme) ? theme : string.Empty,

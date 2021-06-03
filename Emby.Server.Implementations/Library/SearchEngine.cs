@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -12,7 +14,6 @@ using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
-using Microsoft.Extensions.Logging;
 using Genre = MediaBrowser.Controller.Entities.Genre;
 using Person = MediaBrowser.Controller.Entities.Person;
 
@@ -47,7 +48,7 @@ namespace Emby.Server.Implementations.Library
 
             if (query.Limit.HasValue)
             {
-                results = results.GetRange(0, query.Limit.Value);
+                results = results.GetRange(0, Math.Min(query.Limit.Value, results.Count));
             }
 
             return new QueryResult<SearchHintInfo>

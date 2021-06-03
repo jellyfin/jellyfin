@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -120,7 +122,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         protected override bool GetBlockUnratedValue(User user)
         {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music);
         }
 
         public override UnratedItem GetBlockUnratedType()

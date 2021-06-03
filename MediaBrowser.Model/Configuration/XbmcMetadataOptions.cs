@@ -5,6 +5,14 @@ namespace MediaBrowser.Model.Configuration
 {
     public class XbmcMetadataOptions
     {
+        public XbmcMetadataOptions()
+        {
+            ReleaseDateFormat = "yyyy-MM-dd";
+
+            SaveImagePathsInNfo = true;
+            EnablePathSubstitution = true;
+        }
+
         public string UserId { get; set; }
 
         public string ReleaseDateFormat { get; set; }
@@ -14,13 +22,5 @@ namespace MediaBrowser.Model.Configuration
         public bool EnablePathSubstitution { get; set; }
 
         public bool EnableExtraThumbsDuplication { get; set; }
-
-        public XbmcMetadataOptions()
-        {
-            ReleaseDateFormat = "yyyy-MM-dd";
-
-            SaveImagePathsInNfo = true;
-            EnablePathSubstitution = true;
-        }
     }
 }

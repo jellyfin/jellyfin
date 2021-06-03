@@ -1,16 +1,19 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Progress;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -21,11 +24,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
-        /// <summary>
-        /// Gets or sets the json serializer.
-        /// </summary>
-        /// <value>The json serializer.</value>
-        private readonly IJsonSerializer _jsonSerializer;
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -70,12 +68,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
         private string _id;
 
         /// <summary>
+        /// The options for the json Serializer.
+        /// </summary>
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
         /// </summary>
         /// <param name="scheduledTask">The scheduled task.</param>
         /// <param name="applicationPaths">The application paths.</param>
         /// <param name="taskManager">The task manager.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
         /// <param name="logger">The logger.</param>
         /// <exception cref="ArgumentNullException">
         /// scheduledTask
@@ -88,7 +90,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// or
         /// logger.
         /// </exception>
-        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, IJsonSerializer jsonSerializer, ILogger logger)
+        public ScheduledTaskWorker(IScheduledTask scheduledTask, IApplicationPaths applicationPaths, ITaskManager taskManager, ILogger logger)
         {
             if (scheduledTask == null)
             {
@@ -105,11 +107,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 throw new ArgumentNullException(nameof(taskManager));
             }
 
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException(nameof(jsonSerializer));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -118,7 +115,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTask = scheduledTask;
             _applicationPaths = applicationPaths;
             _taskManager = taskManager;
-            _jsonSerializer = jsonSerializer;
             _logger = logger;
 
             InitTriggerEvents();
@@ -148,13 +144,21 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     {
                         if (File.Exists(path))
                         {
-                            try
+                            var bytes = File.ReadAllBytes(path);
+                            if (bytes.Length > 0)
                             {
-                                _lastExecutionResult = _jsonSerializer.DeserializeFromFile<TaskResult>(path);
+                                try
+                                {
+                                    _lastExecutionResult = JsonSerializer.Deserialize<TaskResult>(bytes, _jsonOptions);
+                                }
+                                catch (JsonException ex)
+                                {
+                                    _logger.LogError(ex, "Error deserializing {File}", path);
+                                }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                _logger.LogError(ex, "Error deserializing {File}", path);
+                                _logger.LogDebug("Scheduled Task history file {Path} is empty. Skipping deserialization.", path);
                             }
                         }
 
@@ -174,7 +178,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 lock (_lastExecutionResultSyncLock)
                 {
-                    _jsonSerializer.SerializeToFile(value, path);
+                    using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+                    using Utf8JsonWriter jsonStream = new Utf8JsonWriter(createStream);
+                    JsonSerializer.Serialize(jsonStream, value, _jsonOptions);
                 }
             }
         }
@@ -297,12 +303,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             get
             {
-                if (_id == null)
-                {
-                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                }
-
-                return _id;
+                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
         }
 
@@ -344,9 +345,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var trigger = (ITaskTrigger)sender;
 
-            var configurableTask = ScheduledTask as IConfigurableScheduledTask;
-
-            if (configurableTask != null && !configurableTask.IsEnabled)
+            if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
             {
                 return;
             }
@@ -537,7 +536,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
             TaskTriggerInfo[] list = null;
             if (File.Exists(path))
             {
-                list = _jsonSerializer.DeserializeFromFile<TaskTriggerInfo[]>(path);
+                var bytes = File.ReadAllBytes(path);
+                list = JsonSerializer.Deserialize<TaskTriggerInfo[]>(bytes, _jsonOptions);
             }
 
             // Return defaults if file doesn't exist.
@@ -572,8 +572,9 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var path = GetConfigurationFilePath();
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            _jsonSerializer.SerializeToFile(triggers, path);
+            using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(createStream);
+            JsonSerializer.Serialize(jsonWriter, triggers, _jsonOptions);
         }
 
         /// <summary>
@@ -710,11 +711,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
-                return new DailyTrigger
-                {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    TaskOptions = options
-                };
+                return new DailyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), options);
             }
 
             if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
@@ -729,12 +726,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
                 }
 
-                return new WeeklyTrigger
-                {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    DayOfWeek = info.DayOfWeek.Value,
-                    TaskOptions = options
-                };
+                return new WeeklyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), info.DayOfWeek.Value, options);
             }
 
             if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
@@ -744,16 +736,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
                 }
 
-                return new IntervalTrigger
-                {
-                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value),
-                    TaskOptions = options
-                };
+                return new IntervalTrigger(TimeSpan.FromTicks(info.IntervalTicks.Value), options);
             }
 
             if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
             {
-                return new StartupTrigger();
+                return new StartupTrigger(options);
             }
 
             throw new ArgumentException("Unrecognized trigger type: " + info.Type);

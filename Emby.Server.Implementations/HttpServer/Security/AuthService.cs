@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 
-using System;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;

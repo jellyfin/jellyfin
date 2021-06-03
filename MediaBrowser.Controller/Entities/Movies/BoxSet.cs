@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -49,7 +51,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         protected override bool GetBlockUnratedValue(User user)
         {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie.ToString());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie);
         }
 
         public override double GetDefaultPrimaryImageAspectRatio()
@@ -217,8 +219,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         private IEnumerable<BaseItem> FlattenItems(BaseItem item, List<Guid> expandedFolders)
         {
-            var boxset = item as BoxSet;
-            if (boxset != null)
+            if (item is BoxSet boxset)
             {
                 if (!expandedFolders.Contains(item.Id))
                 {

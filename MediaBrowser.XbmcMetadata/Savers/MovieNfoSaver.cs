@@ -41,7 +41,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-            => GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault();
+            => GetMovieSavePaths(new ItemInfo(item)).FirstOrDefault() ?? Path.ChangeExtension(item.Path, ".nfo");
 
         internal static IEnumerable<string> GetMovieSavePaths(ItemInfo item)
         {
@@ -123,18 +123,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override List<string> GetTagsUsed(BaseItem item)
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "album",
-                "artist",
-                "set",
-                "id"
-            });
+                yield return tag;
+            }
 
-            return list;
+            yield return "album";
+            yield return "artist";
+            yield return "set";
+            yield return "id";
         }
     }
 }

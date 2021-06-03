@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -41,6 +43,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
         /// </summary>
+        /// <param name="files">The list of tiles.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        /// <param name="parent">The parent folder.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="collectionType">The collection type.</param>
+        /// <returns>The items resolved from the paths.</returns>
         IEnumerable<BaseItem> ResolvePaths(
             IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,
@@ -467,6 +475,15 @@ namespace MediaBrowser.Controller.Library
         void UpdatePeople(BaseItem item, List<PersonInfo> people);
 
         /// <summary>
+        /// Asynchronously updates the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="people">The people.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Gets the item ids.
         /// </summary>
         /// <param name="query">The query.</param>
@@ -542,7 +559,7 @@ namespace MediaBrowser.Controller.Library
 
         Guid GetMusicGenreId(string name);
 
-        Task AddVirtualFolder(string name, string collectionType, LibraryOptions options, bool refreshLibrary);
+        Task AddVirtualFolder(string name, CollectionTypeOptions? collectionType, LibraryOptions options, bool refreshLibrary);
 
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
 

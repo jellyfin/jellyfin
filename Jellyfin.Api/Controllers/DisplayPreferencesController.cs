@@ -12,6 +12,7 @@ using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -22,14 +23,17 @@ namespace Jellyfin.Api.Controllers
     public class DisplayPreferencesController : BaseJellyfinApiController
     {
         private readonly IDisplayPreferencesManager _displayPreferencesManager;
+        private readonly ILogger<DisplayPreferencesController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisplayPreferencesController"/> class.
         /// </summary>
         /// <param name="displayPreferencesManager">Instance of <see cref="IDisplayPreferencesManager"/> interface.</param>
-        public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager)
+        /// <param name="logger">Instance of <see cref="ILogger{DisplayPreferencesController}"/> interface.</param>
+        public DisplayPreferencesController(IDisplayPreferencesManager displayPreferencesManager, ILogger<DisplayPreferencesController> logger)
         {
             _displayPreferencesManager = displayPreferencesManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -61,7 +65,6 @@ namespace Jellyfin.Api.Controllers
             {
                 Client = displayPreferences.Client,
                 Id = displayPreferences.ItemId.ToString(),
-                ViewType = itemPreferences.ViewType.ToString(),
                 SortBy = itemPreferences.SortBy,
                 SortOrder = itemPreferences.SortOrder,
                 IndexBy = displayPreferences.IndexBy?.ToString(),
@@ -77,16 +80,12 @@ namespace Jellyfin.Api.Controllers
                 dto.CustomPrefs["homesection" + homeSection.Order] = homeSection.Type.ToString().ToLowerInvariant();
             }
 
-            foreach (var itemDisplayPreferences in _displayPreferencesManager.ListItemDisplayPreferences(displayPreferences.UserId, displayPreferences.Client))
-            {
-                dto.CustomPrefs["landing-" + itemDisplayPreferences.ItemId] = itemDisplayPreferences.ViewType.ToString().ToLowerInvariant();
-            }
-
             dto.CustomPrefs["chromecastVersion"] = displayPreferences.ChromecastVersion.ToString().ToLowerInvariant();
             dto.CustomPrefs["skipForwardLength"] = displayPreferences.SkipForwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["skipBackLength"] = displayPreferences.SkipBackwardLength.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["enableNextVideoInfoOverlay"] = displayPreferences.EnableNextVideoInfoOverlay.ToString(CultureInfo.InvariantCulture);
             dto.CustomPrefs["tvhome"] = displayPreferences.TvHome;
+            dto.CustomPrefs["dashboardTheme"] = displayPreferences.DashboardTheme;
 
             // Load all custom display preferences
             var customDisplayPreferences = _displayPreferencesManager.ListCustomItemDisplayPreferences(displayPreferences.UserId, itemId, displayPreferences.Client);
@@ -189,10 +188,9 @@ namespace Jellyfin.Api.Controllers
 
             foreach (var key in displayPreferences.CustomPrefs.Keys.Where(key => key.StartsWith("landing-", StringComparison.OrdinalIgnoreCase)))
             {
-                if (Guid.TryParse(key.AsSpan().Slice("landing-".Length), out var preferenceId))
+                if (!Enum.TryParse<ViewType>(displayPreferences.CustomPrefs[key], true, out var type))
                 {
-                    var itemPreferences = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, preferenceId, existingDisplayPreferences.Client);
-                    itemPreferences.ViewType = Enum.Parse<ViewType>(displayPreferences.ViewType);
+                    _logger.LogError("Invalid ViewType: {LandingScreenOption}", displayPreferences.CustomPrefs[key]);
                     displayPreferences.CustomPrefs.Remove(key);
                 }
             }
@@ -203,11 +201,6 @@ namespace Jellyfin.Api.Controllers
             itemPrefs.RememberIndexing = displayPreferences.RememberIndexing;
             itemPrefs.RememberSorting = displayPreferences.RememberSorting;
             itemPrefs.ItemId = itemId;
-
-            if (Enum.TryParse<ViewType>(displayPreferences.ViewType, true, out var viewType))
-            {
-                itemPrefs.ViewType = viewType;
-            }
 
             // Set all remaining custom preferences.
             _displayPreferencesManager.SetCustomItemDisplayPreferences(userId, itemId, existingDisplayPreferences.Client, displayPreferences.CustomPrefs);

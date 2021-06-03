@@ -20,12 +20,12 @@ namespace MediaBrowser.Model.Net
         public int ReceivedBytes { get; set; }
 
         /// <summary>
-        /// The <see cref="IPEndPoint"/> the data was received from.
+        /// Gets or sets the <see cref="IPEndPoint"/> the data was received from.
         /// </summary>
         public IPEndPoint RemoteEndPoint { get; set; }
 
         /// <summary>
-        /// The local <see cref="IPAddress"/>.
+        /// Gets or sets the local <see cref="IPAddress"/>.
         /// </summary>
         public IPAddress LocalIPAddress { get; set; }
     }

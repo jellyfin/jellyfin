@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -66,7 +65,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
+        /// <param name="nextUpDateCutoff">Optional. Starting date of shows to show in Next Up section.</param>
         /// <param name="enableTotalRecordCount">Whether to enable the total records count. Defaults to true.</param>
+        /// <param name="disableFirstEpisode">Whether to disable sending the first episode in a series as next up.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
         [HttpGet("NextUp")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -81,7 +82,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
-            [FromQuery] bool enableTotalRecordCount = true)
+            [FromQuery] DateTime? nextUpDateCutoff,
+            [FromQuery] bool enableTotalRecordCount = true,
+            [FromQuery] bool disableFirstEpisode = false)
         {
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
@@ -95,7 +98,9 @@ namespace Jellyfin.Api.Controllers
                     SeriesId = seriesId,
                     StartIndex = startIndex,
                     UserId = userId ?? Guid.Empty,
-                    EnableTotalRecordCount = enableTotalRecordCount
+                    EnableTotalRecordCount = enableTotalRecordCount,
+                    DisableFirstEpisode = disableFirstEpisode,
+                    NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue
                 },
                 options);
 
@@ -153,7 +158,7 @@ namespace Jellyfin.Api.Controllers
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { nameof(Episode) },
-                OrderBy = new[] { ItemSortBy.PremiereDate, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.PremiereDate, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                 MinPremiereDate = minPremiereDate,
                 StartIndex = startIndex,
                 Limit = limit,
@@ -267,7 +272,7 @@ namespace Jellyfin.Api.Controllers
             if (startItemId.HasValue)
             {
                 episodes = episodes
-                    .SkipWhile(i => startItemId.Value.Equals(i.Id))
+                    .SkipWhile(i => !startItemId.Value.Equals(i.Id))
                     .ToList();
             }
 

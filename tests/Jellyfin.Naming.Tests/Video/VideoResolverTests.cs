@@ -9,9 +9,9 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class VideoResolverTests
     {
-        private readonly NamingOptions _namingOptions = new NamingOptions();
+        private readonly VideoResolver _videoResolver = new VideoResolver(new NamingOptions());
 
-        public static IEnumerable<object[]> GetResolveFileTestData()
+        public static IEnumerable<object[]> ResolveFile_ValidFileNameTestData()
         {
             yield return new object[]
             {
@@ -148,7 +148,7 @@ namespace Jellyfin.Naming.Tests.Video
             yield return new object[]
             {
                 new VideoFileInfo(
-                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem.mp4",
+                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF.mp4",
                     container: "mp4",
                     name: "Rain Man",
                     year: 1988)
@@ -156,10 +156,10 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Theory]
-        [MemberData(nameof(GetResolveFileTestData))]
+        [MemberData(nameof(ResolveFile_ValidFileNameTestData))]
         public void ResolveFile_ValidFileName_Success(VideoFileInfo expectedResult)
         {
-            var result = new VideoResolver(_namingOptions).ResolveFile(expectedResult.Path);
+            var result = _videoResolver.ResolveFile(expectedResult.Path);
 
             Assert.NotNull(result);
             Assert.Equal(result?.Path, expectedResult.Path);
@@ -179,7 +179,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void ResolveFile_EmptyPath()
         {
-            var result = new VideoResolver(_namingOptions).ResolveFile(string.Empty);
+            var result = _videoResolver.ResolveFile(string.Empty);
 
             Assert.Null(result);
         }
@@ -194,13 +194,16 @@ namespace Jellyfin.Naming.Tests.Video
                 string.Empty
             };
 
-            var resolver = new VideoResolver(_namingOptions);
-            var results = paths.Select(path => resolver.ResolveDirectory(path)).ToList();
+            var results = paths.Select(path => _videoResolver.ResolveDirectory(path)).ToList();
 
             Assert.Equal(3, results.Count);
             Assert.NotNull(results[0]);
             Assert.NotNull(results[1]);
             Assert.Null(results[2]);
+            foreach (var result in results)
+            {
+                Assert.Null(result?.Container);
+            }
         }
     }
 }

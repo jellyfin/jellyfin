@@ -6,36 +6,40 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Json;
+using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class OmdbProvider
     {
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IApplicationHost _appHost;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        public OmdbProvider(IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
         {
-            _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
+
+            _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
+            _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
+            _jsonOptions.Converters.Add(new JsonOmdbNotAvailableInt32Converter());
         }
 
         public async Task Fetch<T>(MetadataResult<T> itemResult, string imdbId, string language, string country, CancellationToken cancellationToken)
@@ -208,39 +212,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
-
-            string resultString;
-
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
-                }
-            }
-
-            var result = _jsonSerializer.DeserializeFromString<RootObject>(resultString);
-            return result;
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken);
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
-
-            string resultString;
-
-            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var reader = new StreamReader(stream, new UTF8Encoding(false)))
-                {
-                    resultString = reader.ReadToEnd();
-                    resultString = resultString.Replace("\"N/A\"", "\"\"");
-                }
-            }
-
-            var result = _jsonSerializer.DeserializeFromString<SeasonRootObject>(resultString);
-            return result;
+            await using var stream = File.OpenRead(path);
+            return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken);
         }
 
         internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
@@ -290,6 +270,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     return path;
                 }
             }
+            else
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
 
             var url = GetOmdbUrl(
                 string.Format(
@@ -297,11 +281,9 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     "i={0}&plot=short&tomatoes=true&r=json",
                     imdbParam));
 
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<RootObject>(stream).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            _jsonSerializer.SerializeToFile(rootObject, path);
+            var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
         }
@@ -327,6 +309,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     return path;
                 }
             }
+            else
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+            }
 
             var url = GetOmdbUrl(
                 string.Format(
@@ -335,13 +321,19 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam,
                     seasonId));
 
-            using var response = await GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var rootObject = await _jsonSerializer.DeserializeFromStreamAsync<SeasonRootObject>(stream).ConfigureAwait(false);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            _jsonSerializer.SerializeToFile(rootObject, path);
+            var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
+        }
+
+        public async Task<T> GetDeserializedOmdbResponse<T>(HttpClient httpClient, string url, CancellationToken cancellationToken)
+        {
+            using var response = await GetOmdbResponse(httpClient, url, cancellationToken).ConfigureAwait(false);
+            await using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+
+            return await JsonSerializer.DeserializeAsync<T>(content, _jsonOptions, cancellationToken).ConfigureAwait(false);
         }
 
         public static Task<HttpResponseMessage> GetOmdbResponse(HttpClient httpClient, string url, CancellationToken cancellationToken)
@@ -465,7 +457,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             public string seriesID { get; set; }
 
-            public int Season { get; set; }
+            public int? Season { get; set; }
 
             public int? totalSeasons { get; set; }
 
@@ -526,7 +518,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             public string Response { get; set; }
 
-            public int Episode { get; set; }
+            public int? Episode { get; set; }
 
             public float? GetRottenTomatoScore()
             {

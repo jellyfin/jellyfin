@@ -29,9 +29,6 @@
 <a href="https://features.jellyfin.org">
 <img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
 </a>
-<a href="https://forum.jellyfin.org">
-<img alt="Discuss on our Forum" src="https://img.shields.io/discourse/https/forum.jellyfin.org/users.svg"/>
-</a>
 <a href="https://matrix.to/#/+jellyfin:matrix.org">
 <img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
 </a>
@@ -85,6 +82,8 @@ Before the project can be built, you must first install the [.NET 5.0 SDK](https
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
 
+[ffmpeg](https://github.com/jellyfin/jellyfin-ffmpeg) will also need to be installed.
+
 ### Cloning the Repository
 
 After dependencies are installed you will need to clone a local copy of this repository. If you just want to run the server from source you can clone this repository directly, but if you are intending to contribute code changes to the project, you should [set up your own fork](https://jellyfin.org/docs/general/contributing/development.html#set-up-your-copy-of-the-repo) of the repository. The following example shows how you can clone the repository directly over HTTPS.
@@ -104,12 +103,6 @@ There are three options to get the files for the web client.
 1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
-
-Once you have a copy of the built web client files, you need to copy them into a specific directory.
-
-> `<repository root>/Mediabrowser.WebDashboard/jellyfin-web`
-
-As part of the build process, this folder will be copied to the build output directory, where it can be accessed by the server.
 
 ### Running The Server
 
@@ -133,7 +126,7 @@ To run the server from the command line you can use the `dotnet run` command. Th
 
 ```bash
 cd jellyfin                          # Move into the repository directory
-dotnet run --project Jellyfin.Server # Run the server startup project
+dotnet run --project Jellyfin.Server --webdir /absolute/path/to/jellyfin-web/dist # Run the server startup project
 ```
 
 A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.

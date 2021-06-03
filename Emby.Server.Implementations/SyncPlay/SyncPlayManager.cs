@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -42,6 +44,12 @@ namespace Emby.Server.Implementations.SyncPlay
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
+        /// The map between users and counter of active sessions.
+        /// </summary>
+        private readonly ConcurrentDictionary<Guid, int> _activeUsers =
+            new ConcurrentDictionary<Guid, int>();
+
+        /// <summary>
         /// The map between sessions and groups.
         /// </summary>
         private readonly ConcurrentDictionary<string, Group> _sessionToGroupMap =
@@ -81,7 +89,7 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
-            _sessionManager.SessionControllerConnected += OnSessionControllerConnected;
+            _sessionManager.SessionEnded += OnSessionEnded;
         }
 
         /// <inheritdoc />
@@ -122,6 +130,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     throw new InvalidOperationException("Could not add session to group!");
                 }
 
+                UpdateSessionsCounter(session.UserId, 1);
                 group.CreateGroup(session, request, cancellationToken);
             }
         }
@@ -172,6 +181,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         if (existingGroup.GroupId.Equals(request.GroupId))
                         {
                             // Restore session.
+                            UpdateSessionsCounter(session.UserId, 1);
                             group.SessionJoin(session, request, cancellationToken);
                             return;
                         }
@@ -185,6 +195,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         throw new InvalidOperationException("Could not add session to group!");
                     }
 
+                    UpdateSessionsCounter(session.UserId, 1);
                     group.SessionJoin(session, request, cancellationToken);
                 }
             }
@@ -223,6 +234,7 @@ namespace Emby.Server.Implementations.SyncPlay
                             throw new InvalidOperationException("Could not remove session from group!");
                         }
 
+                        UpdateSessionsCounter(session.UserId, -1);
                         group.SessionLeave(session, request, cancellationToken);
 
                         if (group.IsGroupEmpty())
@@ -259,14 +271,17 @@ namespace Emby.Server.Implementations.SyncPlay
             var user = _userManager.GetUserById(session.UserId);
             List<GroupInfoDto> list = new List<GroupInfoDto>();
 
-            foreach (var group in _groups.Values)
+            lock (_groupsLock)
             {
-                // Locking required as group is not thread-safe.
-                lock (group)
+                foreach (var (_, group) in _groups)
                 {
-                    if (group.HasAccessToPlayQueue(user))
+                    // Locking required as group is not thread-safe.
+                    lock (group)
                     {
-                        list.Add(group.GetInfo());
+                        if (group.HasAccessToPlayQueue(user))
+                        {
+                            list.Add(group.GetInfo());
+                        }
                     }
                 }
             }
@@ -318,6 +333,19 @@ namespace Emby.Server.Implementations.SyncPlay
             }
         }
 
+        /// <inheritdoc />
+        public bool IsUserActive(Guid userId)
+        {
+            if (_activeUsers.TryGetValue(userId, out var sessionsCounter))
+            {
+                return sessionsCounter > 0;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Releases unmanaged and optionally managed resources.
         /// </summary>
@@ -329,18 +357,39 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            _sessionManager.SessionControllerConnected -= OnSessionControllerConnected;
+            _sessionManager.SessionEnded -= OnSessionEnded;
             _disposed = true;
         }
 
-        private void OnSessionControllerConnected(object sender, SessionEventArgs e)
+        private void OnSessionEnded(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
 
             if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
             {
-                var request = new JoinGroupRequest(group.GroupId);
-                JoinGroup(session, request, CancellationToken.None);
+                var leaveGroupRequest = new LeaveGroupRequest();
+                LeaveGroup(session, leaveGroupRequest, CancellationToken.None);
+            }
+        }
+
+        private void UpdateSessionsCounter(Guid userId, int toAdd)
+        {
+            // Update sessions counter.
+            var newSessionsCounter = _activeUsers.AddOrUpdate(
+                userId,
+                1,
+                (key, sessionsCounter) => sessionsCounter + toAdd);
+
+            // Should never happen.
+            if (newSessionsCounter < 0)
+            {
+                throw new InvalidOperationException("Sessions counter is negative!");
+            }
+
+            // Clean record if user has no more active sessions.
+            if (newSessionsCounter == 0)
+            {
+                _activeUsers.TryRemove(new KeyValuePair<Guid, int>(userId, newSessionsCounter));
             }
         }
     }

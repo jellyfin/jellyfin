@@ -25,7 +25,6 @@ using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
@@ -60,8 +59,8 @@ namespace MediaBrowser.Providers.Manager
 
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
         private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
-        private IEnumerable<IMetadataSaver> _savers;
-        private IExternalId[] _externalIds;
+        private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
+        private IExternalId[] _externalIds = Array.Empty<IExternalId>();
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -125,7 +124,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers
-                .Where(i => !(i is IConfigurableProvider configurable) || configurable.IsEnabled)
+                .Where(i => i is not IConfigurableProvider configurable || configurable.IsEnabled)
                 .ToArray();
         }
 
@@ -168,7 +167,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentType = response.Content.Headers.ContentType.MediaType;
+            var contentType = response.Content.Headers.ContentType?.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
@@ -242,6 +241,7 @@ namespace MediaBrowser.Providers.Manager
                 languages.Add(preferredLanguage);
             }
 
+            // TODO include [query.IncludeAllLanguages] as an argument to the providers
             var tasks = providers.Select(i => GetImages(item, i, languages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -869,13 +869,13 @@ namespace MediaBrowser.Providers.Manager
                         }
                     }
                 }
-                catch (Exception)
+#pragma warning disable CA1031 // do not catch general exception types
+                catch (Exception ex)
+#pragma warning restore CA1031 // do not catch general exception types
                 {
-                    // Logged at lower levels
+                    _logger.LogError(ex, "Provider {ProviderName} failed to retrieve search results", provider.Name);
                 }
             }
-
-            // _logger.LogDebug("Returning search results {0}", _json.SerializeToString(resultList));
 
             return resultList;
         }
@@ -960,13 +960,11 @@ namespace MediaBrowser.Providers.Manager
         public IEnumerable<ExternalIdInfo> GetExternalIdInfos(IHasProviderIds item)
         {
             return GetExternalIds(item)
-                .Select(i => new ExternalIdInfo
-                {
-                    Name = i.ProviderName,
-                    Key = i.Key,
-                    Type = i.Type,
-                    UrlFormatString = i.UrlFormatString
-                });
+                .Select(i => new ExternalIdInfo(
+                    name: i.ProviderName,
+                    key: i.Key,
+                    type: i.Type,
+                    urlFormatString: i.UrlFormatString));
         }
 
         /// <inheritdoc/>
@@ -1023,26 +1021,26 @@ namespace MediaBrowser.Providers.Manager
             // TODO: Need to hunt down the conditions for this happening
             _activeRefreshes.AddOrUpdate(
                 id,
-                (_) => throw new Exception(
+                (_) => throw new InvalidOperationException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
                         item.GetType().Name,
                         item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, __) => progress);
+                (_, _) => progress);
 
             RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
 
         /// <inheritdoc/>
-        public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
+        public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
             if (_disposed)
             {
                 return;
             }
 
-            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options), (int)priority);
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(itemId, options), (int)priority);
 
             lock (_refreshQueueLock)
             {
@@ -1075,17 +1073,16 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     var item = libraryManager.GetItemById(refreshItem.Item1);
-                    if (item != null)
+                    if (item == null)
                     {
-                        // Try to throttle this a little bit.
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-
-                        var task = item is MusicArtist artist
-                            ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
-                            : RefreshItem(item, refreshItem.Item2, cancellationToken);
-
-                        await task.ConfigureAwait(false);
+                        continue;
                     }
+
+                    var task = item is MusicArtist artist
+                        ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
+                        : RefreshItem(item, refreshItem.Item2, cancellationToken);
+
+                    await task.ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {

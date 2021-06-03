@@ -87,6 +87,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Users/{userId}/Images/{imageType}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
@@ -112,7 +113,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -133,6 +134,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Users/{userId}/Images/{imageType}/{index}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "imageType", Justification = "Imported from ServiceStack")]
@@ -158,7 +160,7 @@ namespace Jellyfin.Api.Controllers
                 await _userManager.ClearProfileImageAsync(user).ConfigureAwait(false);
             }
 
-            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType)));
+            user.ProfileImage = new Data.Entities.ImageInfo(Path.Combine(userDataPath, "profile" + MimeTypes.ToExtension(mimeType ?? string.Empty)));
 
             await _providerManager
                 .SaveImage(memoryStream, mimeType, user.ProfileImage.Path)
@@ -194,6 +196,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -233,6 +240,11 @@ namespace Jellyfin.Api.Controllers
             }
 
             var user = _userManager.GetUserById(userId);
+            if (user?.ProfileImage == null)
+            {
+                return NoContent();
+            }
+
             try
             {
                 System.IO.File.Delete(user.ProfileImage.Path);
@@ -312,6 +324,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpPost("Items/{itemId}/Images/{imageType}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -325,9 +338,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -344,6 +359,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if item not found.</returns>
         [HttpPost("Items/{itemId}/Images/{imageType}/{imageIndex}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [AcceptsImageFile]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "index", Justification = "Imported from ServiceStack")]
@@ -358,9 +374,11 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
             // Handle image/png; charset=utf-8
             var mimeType = Request.ContentType.Split(';').FirstOrDefault();
-            await _providerManager.SaveImage(item, Request.Body, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
+            await _providerManager.SaveImage(item, memoryStream, mimeType, imageType, null, CancellationToken.None).ConfigureAwait(false);
             await item.UpdateToRepositoryAsync(ItemUpdateType.ImageUpdate, CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
@@ -384,7 +402,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] int newIndex)
+            [FromQuery, Required] int newIndex)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -472,6 +490,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
@@ -501,8 +521,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] string? tag,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
@@ -531,7 +553,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -552,6 +575,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="format">Optional. The <see cref="ImageFormat"/> of the returned image.</param>
@@ -581,8 +606,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromQuery] string? tag,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] ImageFormat? format,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] double? percentPlayed,
@@ -610,7 +637,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -630,6 +658,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
@@ -659,8 +689,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
             [FromRoute, Required] string tag,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromRoute, Required] ImageFormat format,
             [FromQuery] bool? addPlayedIndicator,
             [FromRoute, Required] double percentPlayed,
@@ -689,7 +721,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -713,6 +746,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -733,7 +768,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetArtistImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -742,7 +777,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -768,7 +805,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -792,6 +830,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -812,7 +852,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -821,7 +861,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -847,7 +889,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -872,6 +915,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -892,7 +937,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -901,7 +946,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -926,7 +973,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -950,6 +998,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -970,7 +1020,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetMusicGenreImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -979,7 +1029,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1005,7 +1057,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1030,6 +1083,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1050,7 +1105,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1059,7 +1114,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1084,7 +1141,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1108,6 +1166,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1128,7 +1188,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> GetPersonImage(
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1137,7 +1197,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1163,7 +1225,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1188,6 +1251,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1208,7 +1273,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string name,
             [FromRoute, Required] ImageType imageType,
             [FromRoute, Required] int imageIndex,
-            [FromQuery] string tag,
+            [FromQuery] string? tag,
             [FromQuery] ImageFormat? format,
             [FromQuery] int? maxWidth,
             [FromQuery] int? maxHeight,
@@ -1217,7 +1282,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1242,7 +1309,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1266,6 +1334,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1295,7 +1365,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1321,7 +1393,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1346,6 +1419,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1375,7 +1450,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1400,7 +1477,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1424,6 +1502,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1453,7 +1533,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1461,7 +1543,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageIndex)
         {
             var user = _userManager.GetUserById(userId);
-            if (user == null)
+            if (user?.ProfileImage == null)
             {
                 return NotFound();
             }
@@ -1496,7 +1578,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1522,6 +1605,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
         /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
         /// <param name="cropWhitespace">Optional. Specify if whitespace should be cropped out of the image. True/False. If unspecified, whitespace will be cropped from logos and clear art.</param>
         /// <param name="addPlayedIndicator">Optional. Add a played indicator.</param>
         /// <param name="blur">Optional. Blur image.</param>
@@ -1551,7 +1636,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? width,
             [FromQuery] int? height,
             [FromQuery] int? quality,
-            [FromQuery] bool? cropWhitespace,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery, ParameterObsolete] bool? cropWhitespace,
             [FromQuery] bool? addPlayedIndicator,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
@@ -1593,7 +1680,8 @@ namespace Jellyfin.Api.Controllers
                     width,
                     height,
                     quality,
-                    cropWhitespace,
+                    fillWidth,
+                    fillHeight,
                     addPlayedIndicator,
                     blur,
                     backgroundColor,
@@ -1677,7 +1765,8 @@ namespace Jellyfin.Api.Controllers
             int? width,
             int? height,
             int? quality,
-            bool? cropWhitespace,
+            int? fillWidth,
+            int? fillHeight,
             bool? addPlayedIndicator,
             int? blur,
             string? backgroundColor,
@@ -1719,8 +1808,6 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            cropWhitespace ??= imageType == ImageType.Logo || imageType == ImageType.Art;
-
             var outputFormats = GetOutputFormats(format);
 
             TimeSpan? cacheDuration = null;
@@ -1740,11 +1827,13 @@ namespace Jellyfin.Api.Controllers
                 item,
                 itemId,
                 imageIndex,
-                height,
-                maxHeight,
-                maxWidth,
-                quality,
                 width,
+                height,
+                maxWidth,
+                maxHeight,
+                fillWidth,
+                fillHeight,
+                quality,
                 addPlayedIndicator,
                 percentPlayed,
                 unplayedCount,
@@ -1752,7 +1841,6 @@ namespace Jellyfin.Api.Controllers
                 backgroundColor,
                 foregroundLayer,
                 imageInfo,
-                cropWhitespace.Value,
                 outputFormats,
                 cacheDuration,
                 responseHeaders,
@@ -1771,17 +1859,15 @@ namespace Jellyfin.Api.Controllers
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            var acceptTypes = Request.Headers[HeaderNames.Accept];
-            var supportedFormats = new List<string>();
-            if (acceptTypes.Count > 0)
+            var supportedFormats = Request.Headers.GetCommaSeparatedValues(HeaderNames.Accept);
+            for (var i = 0; i < supportedFormats.Length; i++)
             {
-                foreach (var type in acceptTypes)
+                // Remove charsets etc. (anything after semi-colon)
+                var type = supportedFormats[i];
+                int index = type.IndexOf(';', StringComparison.Ordinal);
+                if (index != -1)
                 {
-                    int index = type.IndexOf(';', StringComparison.Ordinal);
-                    if (index != -1)
-                    {
-                        supportedFormats.Add(type.Substring(0, index));
-                    }
+                    supportedFormats[i] = type.Substring(0, index);
                 }
             }
 
@@ -1839,11 +1925,13 @@ namespace Jellyfin.Api.Controllers
             BaseItem? item,
             Guid itemId,
             int? index,
-            int? height,
-            int? maxHeight,
-            int? maxWidth,
-            int? quality,
             int? width,
+            int? height,
+            int? maxWidth,
+            int? maxHeight,
+            int? fillWidth,
+            int? fillHeight,
+            int? quality,
             bool? addPlayedIndicator,
             double? percentPlayed,
             int? unplayedCount,
@@ -1851,7 +1939,6 @@ namespace Jellyfin.Api.Controllers
             string? backgroundColor,
             string? foregroundLayer,
             ItemImageInfo imageInfo,
-            bool cropWhitespace,
             IReadOnlyCollection<ImageFormat> supportedFormats,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
@@ -1864,7 +1951,6 @@ namespace Jellyfin.Api.Controllers
 
             var options = new ImageProcessingOptions
             {
-                CropWhiteSpace = cropWhitespace,
                 Height = height,
                 ImageIndex = index ?? 0,
                 Image = imageInfo,
@@ -1872,6 +1958,8 @@ namespace Jellyfin.Api.Controllers
                 ItemId = itemId,
                 MaxHeight = maxHeight,
                 MaxWidth = maxWidth,
+                FillHeight = fillHeight,
+                FillWidth = fillWidth,
                 Quality = quality ?? 100,
                 Width = width,
                 AddPlayedIndicator = addPlayedIndicator ?? false,
