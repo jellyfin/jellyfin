@@ -276,16 +276,15 @@ namespace Emby.Server.Implementations.HttpServer.Security
         public static Dictionary<string, string> GetParts(string authtorizationHeader)
         {
             var result = new Dictionary<string, string>();
-            var escapeChars = new[] { '"', ',' };
             var escaped = false;
             int start = 0;
-            int i = 0;
             string key = string.Empty;
 
-            while (i < authtorizationHeader.Length)
+            int i;
+            for (i = 0; i < authtorizationHeader.Length; i++)
             {
                 var token = authtorizationHeader[i];
-                if (escapeChars.Contains(token))
+                if (token == '"' || token == ',')
                 {
                     // Applying a XOR logic to evaluate whether it is opening or closing a value
                     escaped = (!escaped) == (token == '"');
@@ -306,8 +305,6 @@ namespace Emby.Server.Implementations.HttpServer.Security
                     key = authtorizationHeader[start.. i];
                     start = i + 1;
                 }
-
-                i++;
             }
 
             // Add last value
