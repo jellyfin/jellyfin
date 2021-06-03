@@ -264,8 +264,8 @@ namespace Emby.Server.Implementations.HttpServer.Security
             }
 
             // Remove up until the first space
-            authorizationHeader = parts[1];
-            return GetParts(authorizationHeader);
+            authorizationHeader = authorizationHeader[(firstSpace + 1)..];
+            return GetParts(authorizationHeader.ToString());
         }
 
         /// <summary>
