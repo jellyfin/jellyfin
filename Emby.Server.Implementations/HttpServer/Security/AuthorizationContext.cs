@@ -265,7 +265,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             // Remove up until the first space
             authorizationHeader = authorizationHeader[(firstSpace + 1)..];
-            return GetParts(authorizationHeader.ToString());
+            return GetParts(authorizationHeader);
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>string</returns>
-        public static Dictionary<string, string> GetParts(string authorizationHeader)
+        public static Dictionary<string, string> GetParts(ReadOnlySpan<char> authorizationHeader)
         {
             var result = new Dictionary<string, string>();
             var escaped = false;
@@ -293,7 +293,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         // Meeting a comma after a closing escape char means the value is complete
                         if (start < i)
                         {
-                            result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"'));
+                            result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"').ToString());
                             key = string.Empty;
                         }
 
@@ -302,7 +302,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 }
                 else if (!escaped && token == '=')
                 {
-                    key = authorizationHeader[start.. i];
+                    key = authorizationHeader[start.. i].ToString();
                     start = i + 1;
                 }
             }
@@ -310,7 +310,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // Add last value
             if (start < i)
             {
-                result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"'));
+                result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"').ToString());
             }
 
             return result;
