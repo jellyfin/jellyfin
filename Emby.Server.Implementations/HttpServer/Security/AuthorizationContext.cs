@@ -273,7 +273,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>string</returns>
-        public static Dictionary<string, string> GetParts(string authtorizationHeader)
+        public static Dictionary<string, string> GetParts(string authorizationHeader)
         {
             var result = new Dictionary<string, string>();
             var escaped = false;
@@ -281,9 +281,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
             string key = string.Empty;
 
             int i;
-            for (i = 0; i < authtorizationHeader.Length; i++)
+            for (i = 0; i < authorizationHeader.Length; i++)
             {
-                var token = authtorizationHeader[i];
+                var token = authorizationHeader[i];
                 if (token == '"' || token == ',')
                 {
                     // Applying a XOR logic to evaluate whether it is opening or closing a value
@@ -293,7 +293,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                         // Meeting a comma after a closing escape char means the value is complete
                         if (start < i)
                         {
-                            result[key] = WebUtility.UrlDecode(authtorizationHeader[start..i].Trim('"'));
+                            result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"'));
                             key = string.Empty;
                         }
 
@@ -302,7 +302,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 }
                 else if (!escaped && token == '=')
                 {
-                    key = authtorizationHeader[start.. i];
+                    key = authorizationHeader[start.. i];
                     start = i + 1;
                 }
             }
@@ -310,7 +310,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
             // Add last value
             if (start < i)
             {
-                result[key] = WebUtility.UrlDecode(authtorizationHeader[start..i].Trim('"'));
+                result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"'));
             }
 
             return result;
