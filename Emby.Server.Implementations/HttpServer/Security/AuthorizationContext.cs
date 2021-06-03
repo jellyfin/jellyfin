@@ -272,7 +272,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// Get the authorization header components.
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
-        /// <returns>string</returns>
+        /// <returns>Dictionary{System.StringSystem.String}.</returns>
         public static Dictionary<string, string> GetParts(ReadOnlySpan<char> authorizationHeader)
         {
             var result = new Dictionary<string, string>();
