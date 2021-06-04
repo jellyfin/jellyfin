@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Emby.Dlna.Didl;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -30,8 +31,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlayToController : ISessionController, IDisposable
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
-
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
@@ -716,7 +715,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetAudioStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out string index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureDefault.UsCulture, out var val))
                         {
                             return SetAudioStreamIndex(val);
                         }
@@ -728,7 +727,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetSubtitleStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureDefault.UsCulture, out var val))
                         {
                             return SetSubtitleStreamIndex(val);
                         }
@@ -740,7 +739,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetVolume:
                     if (command.Arguments.TryGetValue("Volume", out string vol))
                     {
-                        if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
+                        if (int.TryParse(vol, NumberStyles.Integer, CultureDefault.UsCulture, out var volume))
                         {
                             return _device.SetVolume(volume, cancellationToken);
                         }

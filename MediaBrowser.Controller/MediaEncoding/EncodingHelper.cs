@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -24,8 +25,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class EncodingHelper
     {
-        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
 
@@ -773,7 +772,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public static string NormalizeTranscodingLevel(EncodingJobInfo state, string level)
         {
-            if (double.TryParse(level, NumberStyles.Any, _usCulture, out double requestLevel))
+            if (double.TryParse(level, NumberStyles.Any, CultureDefault.UsCulture, out double requestLevel))
             {
                 if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
@@ -868,7 +867,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 CultureInfo.InvariantCulture,
                 "subtitles='{0}:si={1}'{2}",
                 _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
-                state.InternalSubtitleStreamOffset.ToString(_usCulture),
+                state.InternalSubtitleStreamOffset.ToString(CultureDefault.UsCulture),
                 // fallbackFontParam,
                 setPtsParam);
         }
@@ -1167,7 +1166,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 // http://www.webmproject.org/docs/encoder-parameters/
                 param += string.Format(CultureInfo.InvariantCulture, " -speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
-                    profileScore.ToString(_usCulture),
+                    profileScore.ToString(CultureDefault.UsCulture),
                     crf,
                     qmin,
                     qmax);
@@ -1190,7 +1189,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var framerate = GetFramerateParam(state);
             if (framerate.HasValue)
             {
-                param += string.Format(CultureInfo.InvariantCulture, " -r {0}", framerate.Value.ToString(_usCulture));
+                param += string.Format(CultureInfo.InvariantCulture, " -r {0}", framerate.Value.ToString(CultureDefault.UsCulture));
             }
 
             var targetVideoCodec = state.ActualOutputVideoCodec;
@@ -1294,7 +1293,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     // hevc_qsv use -level 51 instead of -level 153.
-                    if (double.TryParse(level, NumberStyles.Any, _usCulture, out double hevcLevel))
+                    if (double.TryParse(level, NumberStyles.Any, CultureDefault.UsCulture, out double hevcLevel))
                     {
                         param += " -level " + hevcLevel / 3;
                     }
@@ -1456,7 +1455,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // If a specific level was requested, the source must match or be less than
             var level = state.GetRequestedLevel(videoStream.Codec);
             if (!string.IsNullOrEmpty(level)
-                && double.TryParse(level, NumberStyles.Any, _usCulture, out var requestLevel))
+                && double.TryParse(level, NumberStyles.Any, CultureDefault.UsCulture, out var requestLevel))
             {
                 if (!videoStream.Level.HasValue)
                 {
@@ -1704,7 +1703,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.AudioStream.Channels.Value > 5
                 && !encodingOptions.DownMixAudioBoost.Equals(1))
             {
-                filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(_usCulture));
+                filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureDefault.UsCulture));
             }
 
             var isCopyingTimestamps = state.CopyTimestamps || state.TranscodingType != TranscodingJobType.Progressive;
@@ -2302,8 +2301,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (isExynosV4L2)
                     {
-                        var widthParam = requestedWidth.Value.ToString(_usCulture);
-                        var heightParam = requestedHeight.Value.ToString(_usCulture);
+                        var widthParam = requestedWidth.Value.ToString(CultureDefault.UsCulture);
+                        var heightParam = requestedHeight.Value.ToString(CultureDefault.UsCulture);
 
                         filters.Add(
                             string.Format(
@@ -2321,8 +2320,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
                 else if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
                 {
-                    var maxWidthParam = requestedMaxWidth.Value.ToString(_usCulture);
-                    var maxHeightParam = requestedMaxHeight.Value.ToString(_usCulture);
+                    var maxWidthParam = requestedMaxWidth.Value.ToString(CultureDefault.UsCulture);
+                    var maxHeightParam = requestedMaxHeight.Value.ToString(CultureDefault.UsCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2354,7 +2353,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else
                     {
-                        var widthParam = requestedWidth.Value.ToString(_usCulture);
+                        var widthParam = requestedWidth.Value.ToString(CultureDefault.UsCulture);
 
                         filters.Add(
                             string.Format(
@@ -2367,7 +2366,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a fixed height was requested
                 else if (requestedHeight.HasValue)
                 {
-                    var heightParam = requestedHeight.Value.ToString(_usCulture);
+                    var heightParam = requestedHeight.Value.ToString(CultureDefault.UsCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2390,7 +2389,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a max width was requested
                 else if (requestedMaxWidth.HasValue)
                 {
-                    var maxWidthParam = requestedMaxWidth.Value.ToString(_usCulture);
+                    var maxWidthParam = requestedMaxWidth.Value.ToString(CultureDefault.UsCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2413,7 +2412,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a max height was requested
                 else if (requestedMaxHeight.HasValue)
                 {
-                    var maxHeightParam = requestedMaxHeight.Value.ToString(_usCulture);
+                    var maxHeightParam = requestedMaxHeight.Value.ToString(CultureDefault.UsCulture);
 
                     if (isExynosV4L2)
                     {
@@ -3827,12 +3826,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                args += " -ab " + bitrate.Value.ToString(_usCulture);
+                args += " -ab " + bitrate.Value.ToString(CultureDefault.UsCulture);
             }
 
             if (state.OutputAudioSampleRate.HasValue)
             {
-                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture);
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureDefault.UsCulture);
             }
 
             args += GetAudioFilterParam(state, encodingOptions, false);
@@ -3848,12 +3847,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(_usCulture));
+                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(CultureDefault.UsCulture));
             }
 
             if (state.OutputAudioChannels.HasValue)
             {
-                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(_usCulture));
+                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureDefault.UsCulture));
             }
 
             // opus will fail on 44100
@@ -3861,7 +3860,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (state.OutputAudioSampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture));
+                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureDefault.UsCulture));
                 }
             }
 

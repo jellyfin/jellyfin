@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
@@ -43,11 +44,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// The default HDR image extraction timeout in milliseconds.
         /// </summary>
         internal const int DefaultHdrImageExtractionTimeout = 20000;
-
-        /// <summary>
-        /// The us culture.
-        /// </summary>
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
@@ -698,7 +694,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string GetTimeParameter(TimeSpan time)
         {
-            return time.ToString(@"hh\:mm\:ss\.fff", _usCulture);
+            return time.ToString(@"hh\:mm\:ss\.fff", CultureDefault.UsCulture);
         }
 
         public async Task ExtractVideoImagesOnInterval(
@@ -715,11 +711,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
 
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(_usCulture);
+            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureDefault.UsCulture);
 
             if (maxWidth.HasValue)
             {
-                var maxWidthParam = maxWidth.Value.ToString(_usCulture);
+                var maxWidthParam = maxWidth.Value.ToString(CultureDefault.UsCulture);
 
                 vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }

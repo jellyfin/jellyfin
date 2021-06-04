@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Culture;
 using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -56,8 +57,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _userDataManager = userDataManager;
             _directoryService = directoryService;
         }
-
-        protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the logger.
@@ -312,7 +311,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrEmpty(text))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, UsCulture, out var value))
+                            if (float.TryParse(text, NumberStyles.Any, CultureDefault.UsCulture, out var value))
                             {
                                 item.CriticRating = value;
                             }
@@ -373,7 +372,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var count))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureDefault.UsCulture, out var count))
                             {
                                 userData.PlayCount = count;
                             }
@@ -478,7 +477,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, UsCulture, out var runtime))
+                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, CultureDefault.UsCulture, out var runtime))
                             {
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
@@ -1250,7 +1249,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var intVal))
+                                    if (int.TryParse(val, NumberStyles.Integer, CultureDefault.UsCulture, out var intVal))
                                     {
                                         sortOrder = intVal;
                                     }
