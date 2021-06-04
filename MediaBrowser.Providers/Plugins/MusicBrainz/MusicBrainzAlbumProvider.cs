@@ -128,53 +128,49 @@ namespace MediaBrowser.Providers.Music
 
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings()
             {
-                var settings = new XmlReaderSettings()
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
+
+            using var reader = XmlReader.Create(oReader, settings);
+            var results = ReleaseResult.Parse(reader);
+
+            return results.Select(i =>
+            {
+                var result = new RemoteSearchResult
                 {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
+                    Name = i.Title,
+                    ProductionYear = i.Year
                 };
 
-                using (var reader = XmlReader.Create(oReader, settings))
+                if (i.Artists.Count > 0)
                 {
-                    var results = ReleaseResult.Parse(reader);
-
-                    return results.Select(i =>
+                    result.AlbumArtist = new RemoteSearchResult
                     {
-                        var result = new RemoteSearchResult
-                        {
-                            Name = i.Title,
-                            ProductionYear = i.Year
-                        };
+                        SearchProviderName = Name,
+                        Name = i.Artists[0].Item1
+                    };
 
-                        if (i.Artists.Count > 0)
-                        {
-                            result.AlbumArtist = new RemoteSearchResult
-                            {
-                                SearchProviderName = Name,
-                                Name = i.Artists[0].Item1
-                            };
-
-                            result.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, i.Artists[0].Item2);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(i.ReleaseId))
-                        {
-                            result.SetProviderId(MetadataProvider.MusicBrainzAlbum, i.ReleaseId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
-                        {
-                            result.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, i.ReleaseGroupId);
-                        }
-
-                        return result;
-                    });
+                    result.AlbumArtist.SetProviderId(MetadataProvider.MusicBrainzArtist, i.Artists[0].Item2);
                 }
-            }
+
+                if (!string.IsNullOrWhiteSpace(i.ReleaseId))
+                {
+                    result.SetProviderId(MetadataProvider.MusicBrainzAlbum, i.ReleaseId);
+                }
+
+                if (!string.IsNullOrWhiteSpace(i.ReleaseGroupId))
+                {
+                    result.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, i.ReleaseGroupId);
+                }
+
+                return result;
+            });
         }
 
         /// <inheritdoc />
@@ -339,10 +335,8 @@ namespace MediaBrowser.Providers.Music
                                         continue;
                                     }
 
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        return ParseReleaseList(subReader).ToList();
-                                    }
+                                    using var subReader = reader.ReadSubtree();
+                                    return ParseReleaseList(subReader).ToList();
                                 }
 
                             default:
@@ -383,13 +377,11 @@ namespace MediaBrowser.Providers.Music
 
                                     var releaseId = reader.GetAttribute("id");
 
-                                    using (var subReader = reader.ReadSubtree())
+                                    using var subReader = reader.ReadSubtree();
+                                    var release = ParseRelease(subReader, releaseId);
+                                    if (release != null)
                                     {
-                                        var release = ParseRelease(subReader, releaseId);
-                                        if (release != null)
-                                        {
-                                            yield return release;
-                                        }
+                                        yield return release;
                                     }
 
                                     break;
@@ -460,14 +452,12 @@ namespace MediaBrowser.Providers.Music
 
                             case "artist-credit":
                                 {
-                                    using (var subReader = reader.ReadSubtree())
-                                    {
-                                        var artist = ParseArtistCredit(subReader);
+                                    using var subReader = reader.ReadSubtree();
+                                    var artist = ParseArtistCredit(subReader);
 
-                                        if (!string.IsNullOrEmpty(artist.Item1))
-                                        {
-                                            result.Artists.Add(artist);
-                                        }
+                                    if (!string.IsNullOrEmpty(artist.Item1))
+                                    {
+                                        result.Artists.Add(artist);
                                     }
 
                                     break;
@@ -505,12 +495,10 @@ namespace MediaBrowser.Providers.Music
                     switch (reader.Name)
                     {
                         case "name-credit":
-                            {
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    return ParseArtistNameCredit(subReader);
-                                }
-                            }
+                        {
+                            using var subReader = reader.ReadSubtree();
+                            return ParseArtistNameCredit(subReader);
+                        }
 
                         default:
                             {
@@ -545,10 +533,8 @@ namespace MediaBrowser.Providers.Music
                         case "artist":
                             {
                                 var id = reader.GetAttribute("id");
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    return ParseArtistArtistCredit(subReader, id);
-                                }
+                                using var subReader = reader.ReadSubtree();
+                                return ParseArtistArtistCredit(subReader, id);
                             }
 
                         default:
@@ -647,47 +633,43 @@ namespace MediaBrowser.Providers.Music
                 IgnoreComments = true
             };
 
-            using (var reader = XmlReader.Create(oReader, settings))
+            using var reader = XmlReader.Create(oReader, settings);
+            reader.MoveToContent();
+            reader.Read();
+
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
             {
-                reader.MoveToContent();
-                reader.Read();
-
-                // Loop through each element
-                while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                if (reader.NodeType == XmlNodeType.Element)
                 {
-                    if (reader.NodeType == XmlNodeType.Element)
+                    switch (reader.Name)
                     {
-                        switch (reader.Name)
+                        case "release-group-list":
                         {
-                            case "release-group-list":
+                            if (reader.IsEmptyElement)
                             {
-                                if (reader.IsEmptyElement)
-                                {
-                                    reader.Read();
-                                    continue;
-                                }
-
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    return GetFirstReleaseGroupId(subReader);
-                                }
+                                reader.Read();
+                                continue;
                             }
 
-                            default:
-                            {
-                                reader.Skip();
-                                break;
-                            }
+                            using var subReader = reader.ReadSubtree();
+                            return GetFirstReleaseGroupId(subReader);
+                        }
+
+                        default:
+                        {
+                            reader.Skip();
+                            break;
                         }
                     }
-                    else
-                    {
-                        reader.Read();
-                    }
                 }
-
-                return null;
+                else
+                {
+                    reader.Read();
+                }
             }
+
+            return null;
         }
 
         private string GetFirstReleaseGroupId(XmlReader reader)

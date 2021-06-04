@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -210,7 +212,7 @@ namespace Emby.Server.Implementations
         /// Gets or sets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
-        protected IConfigurationManager ConfigurationManager { get; set; }
+        public ServerConfigurationManager ConfigurationManager { get; set; }
 
         /// <summary>
         /// Gets or sets the service provider.
@@ -233,12 +235,6 @@ namespace Emby.Server.Implementations
         public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
 
         /// <summary>
-        /// Gets the server configuration manager.
-        /// </summary>
-        /// <value>The server configuration manager.</value>
-        public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
         /// </summary>
         /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
@@ -255,43 +251,26 @@ namespace Emby.Server.Implementations
             IFileSystem fileSystem,
             IServiceCollection serviceCollection)
         {
-            _xmlSerializer = new MyXmlSerializer();
-
-            ServiceCollection = serviceCollection;
-
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
-            _fileSystemManager = fileSystem;
-
-            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
-            // Have to migrate settings here as migration subsystem not yet initialised.
-            MigrateNetworkConfiguration();
-
-            // Have to pre-register the NetworkConfigurationFactory, as the configuration sub-system is not yet initialised.
-            ConfigurationManager.RegisterConfiguration<NetworkConfigurationFactory>();
-            NetManager = new NetworkManager((IServerConfigurationManager)ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
-
-            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-
             _startupOptions = options;
             _startupConfig = startupConfig;
+            _fileSystemManager = fileSystem;
+            ServiceCollection = serviceCollection;
 
-            // Initialize runtime stat collection
-            if (ServerConfigurationManager.Configuration.EnableMetrics)
-            {
-                DotNetRuntimeStatsBuilder.Default().StartCollecting();
-            }
-
+            Logger = LoggerFactory.CreateLogger<ApplicationHost>();
             fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
             ApplicationUserAgent = Name.Replace(' ', '-') + "/" + ApplicationVersionString;
 
+            _xmlSerializer = new MyXmlSerializer();
+            ConfigurationManager = new ServerConfigurationManager(ApplicationPaths, LoggerFactory, _xmlSerializer, _fileSystemManager);
             _pluginManager = new PluginManager(
                 LoggerFactory.CreateLogger<PluginManager>(),
                 this,
-                ServerConfigurationManager.Configuration,
+                ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
         }
@@ -306,9 +285,9 @@ namespace Emby.Server.Implementations
             if (!File.Exists(path))
             {
                 var networkSettings = new NetworkConfiguration();
-                ClassMigrationHelper.CopyProperties(ServerConfigurationManager.Configuration, networkSettings);
+                ClassMigrationHelper.CopyProperties(ConfigurationManager.Configuration, networkSettings);
                 _xmlSerializer.SerializeToFile(networkSettings, path);
-                Logger?.LogDebug("Successfully migrated network settings.");
+                Logger.LogDebug("Successfully migrated network settings.");
             }
         }
 
@@ -358,10 +337,7 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                if (_deviceId == null)
-                {
-                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
-                }
+                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
 
                 return _deviceId.Value;
             }
@@ -393,10 +369,7 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
-            if (_creatingInstances == null)
-            {
-                _creatingInstances = new List<Type>();
-            }
+            _creatingInstances ??= new List<Type>();
 
             if (_creatingInstances.IndexOf(type) != -1)
             {
@@ -545,7 +518,21 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public void Init()
         {
-            var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
+            DiscoverTypes();
+
+            ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
+
+            // Have to migrate settings here as migration subsystem not yet initialised.
+            MigrateNetworkConfiguration();
+            NetManager = new NetworkManager(ConfigurationManager, LoggerFactory.CreateLogger<NetworkManager>());
+
+            // Initialize runtime stat collection
+            if (ConfigurationManager.Configuration.EnableMetrics)
+            {
+                DotNetRuntimeStatsBuilder.Default().StartCollecting();
+            }
+
+            var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
             HttpPort = networkConfiguration.HttpServerPortNumber;
             HttpsPort = networkConfiguration.HttpsPortNumber;
 
@@ -563,8 +550,6 @@ namespace Emby.Server.Implementations
             };
             Certificate = GetCertificate(CertificateInfo);
 
-            DiscoverTypes();
-
             RegisterServices();
 
             _pluginManager.RegisterServices(ServiceCollection);
@@ -579,7 +564,8 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddMemoryCache();
 
-            ServiceCollection.AddSingleton(ConfigurationManager);
+            ServiceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
+            ServiceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
             ServiceCollection.AddSingleton<IApplicationHost>(this);
             ServiceCollection.AddSingleton<IPluginManager>(_pluginManager);
             ServiceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
@@ -606,8 +592,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
-            ServiceCollection.AddSingleton(ServerConfigurationManager);
-
             ServiceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             ServiceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
@@ -619,12 +603,8 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
-
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
+            ServiceCollection.AddSingleton<EncodingHelper>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             ServiceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -688,8 +668,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
-
-            ServiceCollection.AddSingleton<EncodingHelper>();
 
             ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
@@ -796,7 +774,7 @@ namespace Emby.Server.Implementations
         {
             // For now there's no real way to inject these properly
             BaseItem.Logger = Resolve<ILogger<BaseItem>>();
-            BaseItem.ConfigurationManager = ServerConfigurationManager;
+            BaseItem.ConfigurationManager = ConfigurationManager;
             BaseItem.LibraryManager = Resolve<ILibraryManager>();
             BaseItem.ProviderManager = Resolve<IProviderManager>();
             BaseItem.LocalizationManager = Resolve<ILocalizationManager>();
@@ -818,13 +796,12 @@ namespace Emby.Server.Implementations
         /// </summary>
         private void FindParts()
         {
-            if (!ServerConfigurationManager.Configuration.IsPortAuthorized)
+            if (!ConfigurationManager.Configuration.IsPortAuthorized)
             {
-                ServerConfigurationManager.Configuration.IsPortAuthorized = true;
+                ConfigurationManager.Configuration.IsPortAuthorized = true;
                 ConfigurationManager.SaveConfiguration();
             }
 
-            ConfigurationManager.AddParts(GetExports<IConfigurationFactory>());
             _pluginManager.CreatePlugins();
 
             _urlPrefixes = GetUrlPrefixes().ToArray();
@@ -928,7 +905,7 @@ namespace Emby.Server.Implementations
         protected void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
-            var networkConfiguration = ServerConfigurationManager.GetNetworkConfiguration();
+            var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
 
             // Don't do anything if these haven't been set yet
             if (HttpPort != 0 && HttpsPort != 0)
@@ -937,10 +914,10 @@ namespace Emby.Server.Implementations
                 if (networkConfiguration.HttpServerPortNumber != HttpPort ||
                     networkConfiguration.HttpsPortNumber != HttpsPort)
                 {
-                    if (ServerConfigurationManager.Configuration.IsPortAuthorized)
+                    if (ConfigurationManager.Configuration.IsPortAuthorized)
                     {
-                        ServerConfigurationManager.Configuration.IsPortAuthorized = false;
-                        ServerConfigurationManager.SaveConfiguration();
+                        ConfigurationManager.Configuration.IsPortAuthorized = false;
+                        ConfigurationManager.SaveConfiguration();
 
                         requiresRestart = true;
                     }
@@ -1156,7 +1133,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public bool ListenWithHttps => Certificate != null && ServerConfigurationManager.GetNetworkConfiguration().EnableHttps;
+        public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
         public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
@@ -1240,14 +1217,14 @@ namespace Emby.Server.Implementations
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
                 Host = host,
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
-                Path = ServerConfigurationManager.GetNetworkConfiguration().BaseUrl
+                Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
         }
 
         public string FriendlyName =>
-            string.IsNullOrEmpty(ServerConfigurationManager.Configuration.ServerName)
+            string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
                 ? Environment.MachineName
-                : ServerConfigurationManager.Configuration.ServerName;
+                : ConfigurationManager.Configuration.ServerName;
 
         /// <summary>
         /// Shuts down.

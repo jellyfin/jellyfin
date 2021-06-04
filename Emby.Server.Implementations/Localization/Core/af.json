@@ -115,5 +115,7 @@
     "TaskRefreshChapterImages": "Verkry Hoofstuk Beelde",
     "Undefined": "Ongedefineerd",
     "Forced": "Geforseer",
-    "Default": "Oorspronklik"
+    "Default": "Oorspronklik",
+    "TaskCleanActivityLogDescription": "Verwyder aktiwiteitsaantekeninge ouer as die opgestelde ouderdom.",
+    "TaskCleanActivityLog": "Maak Aktiwiteitsaantekeninge Skoon"
 }

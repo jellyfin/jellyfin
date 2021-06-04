@@ -113,5 +113,9 @@
     "Sync": "ซิงค์",
     "SubtitleDownloadFailureFromForItem": "ไม่สามารถดาวน์โหลดคำบรรยายจาก {0} สำหรับ {1} ได้",
     "StartupEmbyServerIsLoading": "กำลังโหลดเซิร์ฟเวอร์ Jellyfin โปรดลองอีกครั้งในอีกสักครู่",
-    "Default": "ค่าเริ่มต้น"
+    "Default": "ค่าเริ่มต้น",
+    "TaskCleanActivityLogDescription": "ลบบันทึกกิจกรรมที่เก่ากว่าค่าที่กำหนดไว้",
+    "TaskCleanActivityLog": "ล้างบันทึกกิจกรรม",
+    "Undefined": "ไม่ได้กำหนด",
+    "Forced": "บังคับใช้"
 }

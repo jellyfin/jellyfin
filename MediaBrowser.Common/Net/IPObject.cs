@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -10,16 +9,6 @@ namespace MediaBrowser.Common.Net
     /// </summary>
     public abstract class IPObject : IEquatable<IPObject>
     {
-        /// <summary>
-        /// IPv6 Loopback address.
-        /// </summary>
-        protected static readonly byte[] Ipv6Loopback = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
-
-        /// <summary>
-        /// IPv4 Loopback address.
-        /// </summary>
-        protected static readonly byte[] Ipv4Loopback = { 127, 0, 0, 1 };
-
         /// <summary>
         /// The network address of this object.
         /// </summary>
@@ -64,7 +53,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">IP Address to convert.</param>
         /// <param name="prefixLength">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        public static (IPAddress Address, byte PrefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
+        public static (IPAddress address, byte prefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
         {
             if (address == null)
             {
@@ -78,7 +67,7 @@ namespace MediaBrowser.Common.Net
 
             if (IsLoopback(address))
             {
-                return (Address: address, PrefixLength: prefixLength);
+                return (address, prefixLength);
             }
 
             // An ip address is just a list of bytes, each one representing a segment on the network.
@@ -110,7 +99,7 @@ namespace MediaBrowser.Common.Net
             }
 
             // Return the network address for the prefix.
-            return (Address: new IPAddress(addressBytes), PrefixLength: prefixLength);
+            return (new IPAddress(addressBytes), prefixLength);
         }
 
         /// <summary>

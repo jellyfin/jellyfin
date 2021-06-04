@@ -1,4 +1,3 @@
-using System;
 using MediaBrowser.Model.Extensions;
 using Xunit;
 

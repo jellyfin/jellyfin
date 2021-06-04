@@ -7,11 +7,11 @@ namespace MediaBrowser.Controller.Providers
 {
     public class SeasonInfo : ItemLookupInfo
     {
-        public Dictionary<string, string> SeriesProviderIds { get; set; }
-
         public SeasonInfo()
         {
             SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        public Dictionary<string, string> SeriesProviderIds { get; set; }
     }
 }

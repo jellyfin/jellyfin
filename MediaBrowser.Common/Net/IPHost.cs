@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -135,7 +134,7 @@ namespace MediaBrowser.Common.Net
             }
 
             // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
-            int i = host.IndexOf("]", StringComparison.OrdinalIgnoreCase);
+            int i = host.IndexOf(']', StringComparison.Ordinal);
             if (i != -1)
             {
                 return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
@@ -389,8 +388,8 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         protected override IPObject CalculateNetworkAddress()
         {
-            var netAddr = NetworkAddressOf(this[0], PrefixLength);
-            return new IPNetAddress(netAddr.Address, netAddr.PrefixLength);
+            var (address, prefixLength) = NetworkAddressOf(this[0], PrefixLength);
+            return new IPNetAddress(address, prefixLength);
         }
 
         /// <summary>
@@ -400,10 +399,7 @@ namespace MediaBrowser.Common.Net
         private bool ResolveHost()
         {
             // When was the last time we resolved?
-            if (_lastResolved == null)
-            {
-                _lastResolved = DateTime.UtcNow;
-            }
+            _lastResolved ??= DateTime.UtcNow;
 
             // If we haven't resolved before, or our timer has run out...
             if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
@@ -427,7 +423,7 @@ namespace MediaBrowser.Common.Net
                 // Resolves the host name - so save a DNS lookup.
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    _addresses = new IPAddress[] { new IPAddress(Ipv4Loopback), new IPAddress(Ipv6Loopback) };
+                    _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
                     return;
                 }
 

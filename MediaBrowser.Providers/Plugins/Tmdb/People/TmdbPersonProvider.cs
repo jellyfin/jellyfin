@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,11 +29,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(PersonLookupInfo searchInfo, CancellationToken cancellationToken)
         {
-            var personTmdbId = Convert.ToInt32(searchInfo.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
-
-            if (personTmdbId <= 0)
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                var personResult = await _tmdbClientManager.GetPersonAsync(personTmdbId, cancellationToken).ConfigureAwait(false);
+                var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 if (personResult != null)
                 {
@@ -51,17 +48,13 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                     }
 
                     result.SetProviderId(MetadataProvider.Tmdb, personResult.Id.ToString(CultureInfo.InvariantCulture));
-                    result.SetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
+                    if (!string.IsNullOrEmpty(personResult.ExternalIds.ImdbId))
+                    {
+                        result.SetProviderId(MetadataProvider.Imdb, personResult.ExternalIds.ImdbId);
+                    }
 
                     return new[] { result };
                 }
-            }
-
-            // TODO why? Because of the old rate limit?
-            if (searchInfo.IsAutomated)
-            {
-                // Don't hammer moviedb searching by name
-                return Enumerable.Empty<RemoteSearchResult>();
             }
 
             var personSearchResult = await _tmdbClientManager.SearchPersonAsync(searchInfo.Name, cancellationToken).ConfigureAwait(false);
@@ -102,7 +95,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
 
             if (personTmdbId > 0)
             {
-                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, cancellationToken).ConfigureAwait(false);
+                var person = await _tmdbClientManager.GetPersonAsync(personTmdbId, id.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
                 result.HasMetadata = true;
 

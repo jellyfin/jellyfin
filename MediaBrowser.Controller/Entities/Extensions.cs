@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Linq;
 using MediaBrowser.Common.Extensions;

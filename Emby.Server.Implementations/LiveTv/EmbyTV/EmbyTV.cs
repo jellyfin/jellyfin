@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -17,7 +19,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -802,22 +803,22 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public ActiveRecordingInfo GetActiveRecordingInfo(string path)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(path) || _activeRecordings.IsEmpty)
             {
                 return null;
             }
 
-            foreach (var recording in _activeRecordings.Values)
+            foreach (var (_, recordingInfo) in _activeRecordings)
             {
-                if (string.Equals(recording.Path, path, StringComparison.Ordinal) && !recording.CancellationTokenSource.IsCancellationRequested)
+                if (string.Equals(recordingInfo.Path, path, StringComparison.Ordinal) && !recordingInfo.CancellationTokenSource.IsCancellationRequested)
                 {
-                    var timer = recording.Timer;
+                    var timer = recordingInfo.Timer;
                     if (timer.Status != RecordingStatus.InProgress)
                     {
                         return null;
                     }
 
-                    return recording;
+                    return recordingInfo;
                 }
             }
 
@@ -1622,9 +1623,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
 
             return _activeRecordings
-                .Values
-                .ToList()
-                .Any(i => string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
+                .Any(i => string.Equals(i.Value.Path, path, StringComparison.OrdinalIgnoreCase) && !string.Equals(i.Value.Timer.Id, timerId, StringComparison.OrdinalIgnoreCase));
         }
 
         private IRecorder GetRecorder(MediaSourceInfo mediaSource)
@@ -2240,14 +2239,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             var enabledTimersForSeries = new List<TimerInfo>();
             foreach (var timer in allTimers)
             {
-                var existingTimer = _timerProvider.GetTimer(timer.Id);
-
-                if (existingTimer == null)
-                {
-                    existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId)
+                var existingTimer = _timerProvider.GetTimer(timer.Id) 
+                    ?? (string.IsNullOrWhiteSpace(timer.ProgramId)
                         ? null
-                        : _timerProvider.GetTimerByProgramId(timer.ProgramId);
-                }
+                        : _timerProvider.GetTimerByProgramId(timer.ProgramId));
 
                 if (existingTimer == null)
                 {

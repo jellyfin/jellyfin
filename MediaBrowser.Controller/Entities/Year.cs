@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -22,7 +24,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Returns the folder containing the item.
+        /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
         /// </summary>
         /// <value>The containing folder path.</value>
@@ -110,11 +112,13 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
+        /// This is called before any metadata refresh and returns true if changes were made.
         /// </summary>
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <param name="replaceAllMetadata">Whether to replace all metadata.</param>
+        /// <returns>true if the item has change, else false.</returns>
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             var newPath = GetRebasedPath();
             if (!string.Equals(Path, newPath, StringComparison.Ordinal))

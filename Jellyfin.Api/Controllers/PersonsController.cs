@@ -94,10 +94,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             var isFavoriteInFilters = filters.Any(f => f == ItemFilter.IsFavorite);
-            var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery
+            var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery(
+                personTypes,
+                excludePersonTypes)
             {
-                PersonTypes = personTypes,
-                ExcludePersonTypes = excludePersonTypes,
                 NameContains = searchTerm,
                 User = user,
                 IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,

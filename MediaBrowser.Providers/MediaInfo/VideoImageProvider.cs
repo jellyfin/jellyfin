@@ -154,9 +154,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            var video = item as Video;
-
-            if (video != null && !video.IsPlaceHolder && video.IsCompleteMedia)
+            if (item is Video video && !video.IsPlaceHolder && video.IsCompleteMedia)
             {
                 return true;
             }

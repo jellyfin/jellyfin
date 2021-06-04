@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -43,9 +45,7 @@ namespace Emby.Server.Implementations.TV
             string presentationUniqueKey = null;
             if (!string.IsNullOrEmpty(request.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
-
-                if (series != null)
+                if (_libraryManager.GetItemById(request.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                 }
@@ -95,9 +95,7 @@ namespace Emby.Server.Implementations.TV
             int? limit = null;
             if (!string.IsNullOrEmpty(request.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
-
-                if (series != null)
+                if (_libraryManager.GetItemById(request.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                     limit = 1;
@@ -156,7 +154,7 @@ namespace Emby.Server.Implementations.TV
                         return i.Item1 != DateTime.MinValue;
                     }
 
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    if (alwaysEnableFirstEpisode || (i.Item1 != DateTime.MinValue && i.Item1.Date >= request.NextUpDateCutoff))
                     {
                         anyFound = true;
                         return true;

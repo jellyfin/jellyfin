@@ -33,6 +33,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

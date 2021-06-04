@@ -415,10 +415,7 @@ namespace Rssdp.Infrastructure
             {
                 lock (_SendSocketSynchroniser)
                 {
-                    if (_sendSockets == null)
-                    {
-                        _sendSockets = CreateSocketAndListenForResponsesAsync();
-                    }
+                    _sendSockets ??= CreateSocketAndListenForResponsesAsync();
                 }
             }
         }

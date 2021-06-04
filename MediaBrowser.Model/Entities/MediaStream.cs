@@ -104,6 +104,19 @@ namespace MediaBrowser.Model.Entities
                     return "HDR";
                 }
 
+                // For some Dolby Vision files, no color transfer is provided, so check the codec
+
+                var codecTag = CodecTag;
+
+                if (string.Equals(codecTag, "dva1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvav", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "HDR";
+                }
+
                 return "SDR";
             }
         }
@@ -163,7 +176,7 @@ namespace MediaBrowser.Model.Entities
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }
@@ -202,7 +215,7 @@ namespace MediaBrowser.Model.Entities
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }
@@ -522,9 +535,9 @@ namespace MediaBrowser.Model.Entities
 
             // sub = external .sub file
 
-            return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   codec.IndexOf("dvbsub", StringComparison.OrdinalIgnoreCase) == -1 &&
+            return !codec.Contains("pgs", StringComparison.OrdinalIgnoreCase) &&
+                   !codec.Contains("dvd", StringComparison.OrdinalIgnoreCase) &&
+                   !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
         }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -18,7 +20,6 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         /// <param name="reportedId">The reported identifier.</param>
         /// <param name="capabilities">The capabilities.</param>
-        /// <returns>Task.</returns>
         void SaveCapabilities(string reportedId, ClientCapabilities capabilities);
 
         /// <summary>
@@ -45,6 +46,9 @@ namespace MediaBrowser.Controller.Devices
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.
         /// </summary>
+        /// <param name="user">The user to test.</param>
+        /// <param name="deviceId">The device id to test.</param>
+        /// <returns>Whether the user can access the device.</returns>
         bool CanAccessDevice(User user, string deviceId);
 
         void UpdateDeviceOptions(string deviceId, DeviceOptions options);

@@ -144,7 +144,13 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            await using var dbContext = _dbProvider.CreateContext();
+
+            if (await dbContext.Users
+                .AsQueryable()
+                .Where(u => u.Username == newName && u.Id != user.Id)
+                .AnyAsync()
+                .ConfigureAwait(false))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -251,16 +257,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             await using var dbContext = _dbProvider.CreateContext();
-
-            // Clear all entities related to the user from the database.
-            if (user.ProfileImage != null)
-            {
-                dbContext.Remove(user.ProfileImage);
-            }
-
-            dbContext.RemoveRange(user.Permissions);
-            dbContext.RemoveRange(user.Preferences);
-            dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);

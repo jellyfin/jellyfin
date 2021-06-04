@@ -118,10 +118,7 @@ namespace Jellyfin.Api.Helpers
         /// <returns>The playlist text as a string.</returns>
         public static string GetLivePlaylistText(string path, StreamState state)
         {
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(stream);
-
-            var text = reader.ReadToEnd();
+            var text = File.ReadAllText(path);
 
             var segmentFormat = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))

@@ -77,8 +77,9 @@ namespace Jellyfin.Api.Auth
                 return false;
             }
 
-            var ip = _httpContextAccessor.HttpContext.GetNormalizedRemoteIp();
-            var isInLocalNetwork = _networkManager.IsInLocalNetwork(ip);
+            var isInLocalNetwork = _httpContextAccessor.HttpContext != null
+                && _networkManager.IsInLocalNetwork(_httpContextAccessor.HttpContext.GetNormalizedRemoteIp());
+
             // User cannot access remotely and user is remote
             if (!user.HasPermission(PermissionKind.EnableRemoteAccess) && !isInLocalNetwork)
             {

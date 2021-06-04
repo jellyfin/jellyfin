@@ -27,9 +27,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="item">Item to add.</param>
-        public static void AddItem(this Collection<IPObject> source, IPObject item)
+        /// <param name="itemsAreNetworks">If <c>true</c> the values are treated as subnets.
+        /// If <b>false</b> items are addresses.</param>
+        public static void AddItem(this Collection<IPObject> source, IPObject item, bool itemsAreNetworks = true)
         {
-            if (!source.ContainsAddress(item))
+            if (!source.ContainsAddress(item) || !itemsAreNetworks)
             {
                 source.Add(item);
             }
@@ -190,8 +192,9 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="excludeList">Items to exclude.</param>
+        /// <param name="isNetwork">Collection is a network collection.</param>
         /// <returns>A new collection, with the items excluded.</returns>
-        public static Collection<IPObject> Exclude(this Collection<IPObject> source, Collection<IPObject> excludeList)
+        public static Collection<IPObject> Exclude(this Collection<IPObject> source, Collection<IPObject> excludeList, bool isNetwork)
         {
             if (source.Count == 0 || excludeList == null)
             {
@@ -216,7 +219,7 @@ namespace MediaBrowser.Common.Net
 
                 if (!found)
                 {
-                    results.AddItem(outer);
+                    results.AddItem(outer, isNetwork);
                 }
             }
 
@@ -229,7 +232,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="source">The <see cref="Collection{IPObject}"/>.</param>
         /// <param name="target">Collection to compare with.</param>
         /// <returns>A collection containing all the matches.</returns>
-        public static Collection<IPObject> Union(this Collection<IPObject> source, Collection<IPObject> target)
+        public static Collection<IPObject> ThatAreContainedInNetworks(this Collection<IPObject> source, Collection<IPObject> target)
         {
             if (source.Count == 0)
             {

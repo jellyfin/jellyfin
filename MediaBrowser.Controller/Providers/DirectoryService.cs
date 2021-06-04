@@ -43,18 +43,17 @@ namespace MediaBrowser.Controller.Providers
             return list;
         }
 
-        public FileSystemMetadata GetFile(string path)
+        public FileSystemMetadata? GetFile(string path)
         {
-            var result = _fileCache.GetOrAdd(path, p =>
+            if (!_fileCache.TryGetValue(path, out var result))
             {
-                var file = _fileSystem.GetFileInfo(p);
-                return file != null && file.Exists ? file : null;
-            });
-
-            if (result == null)
-            {
-                // lets not store null results in the cache
-                _fileCache.TryRemove(path, out _);
+                var file = _fileSystem.GetFileInfo(path);
+                var res = file != null && file.Exists ? file : null;
+                if (res != null)
+                {
+                    result = res;
+                    _fileCache.TryAdd(path, result);
+                }
             }
 
             return result;

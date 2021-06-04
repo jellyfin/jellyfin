@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -26,11 +24,11 @@ namespace Jellyfin.Data.Entities.Libraries
         public int? TrackNumber { get; set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Release> Releases { get; protected set; }
+        public virtual ICollection<Release> Releases { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the track metadata.
+        /// Gets a collection containing the track metadata.
         /// </summary>
-        public virtual ICollection<TrackMetadata> TrackMetadata { get; protected set; }
+        public virtual ICollection<TrackMetadata> TrackMetadata { get; private set; }
     }
 }

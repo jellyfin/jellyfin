@@ -47,7 +47,7 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
-            ControlRequestInfo requestInfo = null;
+            ControlRequestInfo? requestInfo = null;
 
             using (var streamReader = new StreamReader(request.InputXml, Encoding.UTF8))
             {
@@ -151,7 +151,7 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
         {
-            string namespaceURI = null, localName = null;
+            string? namespaceURI = null, localName = null;
 
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);

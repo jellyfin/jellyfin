@@ -19,10 +19,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OptimizedPriorityQueue" Version="5.0.0" />
     <PackageReference Include="PlaylistsNET" Version="1.1.3" />
-    <PackageReference Include="TMDbLib" Version="1.7.3-alpha" />
+    <PackageReference Include="TMDbLib" Version="1.8.1" />
   </ItemGroup>
 
   <PropertyGroup>

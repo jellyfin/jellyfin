@@ -123,10 +123,7 @@ namespace MediaBrowser.Model.Entities
             else
             {
                 // Ensure it exists
-                if (instance.ProviderIds == null)
-                {
-                    instance.ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                }
+                instance.ProviderIds ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 instance.ProviderIds[name] = value;
             }

@@ -1,4 +1,3 @@
-using System;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;

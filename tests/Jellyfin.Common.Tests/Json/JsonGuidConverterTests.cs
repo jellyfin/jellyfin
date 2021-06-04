@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Text.Json;
 using MediaBrowser.Common.Json.Converters;
 using Xunit;

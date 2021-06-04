@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -38,6 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         public virtual bool IsSupported => true;
 
         protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
+
         public abstract string Type { get; }
 
         public async Task<List<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)

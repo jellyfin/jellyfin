@@ -34,10 +34,12 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
         // eth16 only
         [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
-        // All interfaces excluded.
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
+        // All interfaces excluded. (including loopbacks)
+        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[127.0.0.1/8,::1/128]")]
         // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
+        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24,127.0.0.1/8,::1/128]")]
+        // Overlapping interface,
+        [InlineData("192.168.1.110/24,-20,br0|192.168.1.10/24,-16,br0|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.110/24,192.168.1.10/24]")]
         public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
         {
             var conf = new NetworkConfiguration()
@@ -239,7 +241,7 @@ namespace Jellyfin.Networking.Tests
             Collection<IPObject> nc1 = nm.CreateIPCollection(settings.Split(','), false);
             Collection<IPObject> nc2 = nm.CreateIPCollection(compare.Split(','), false);
 
-            Assert.Equal(nc1.Union(nc2).AsString(), result);
+            Assert.Equal(nc1.ThatAreContainedInNetworks(nc2).AsString(), result);
         }
 
         [Theory]
@@ -348,7 +350,7 @@ namespace Jellyfin.Networking.Tests
             // Test included, IP6.
             Collection<IPObject> ncSource = nm.CreateIPCollection(source.Split(','));
             Collection<IPObject> ncDest = nm.CreateIPCollection(dest.Split(','));
-            Collection<IPObject> ncResult = ncSource.Union(ncDest);
+            Collection<IPObject> ncResult = ncSource.ThatAreContainedInNetworks(ncDest);
             Collection<IPObject> resultCollection = nm.CreateIPCollection(result.Split(','));
             Assert.True(ncResult.Compare(resultCollection));
         }
@@ -382,6 +384,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("jellyfin.org", "eth16", false, "eth16")]
         // User on external network, no binding - so result is the 1st external.
         [InlineData("jellyfin.org", "", false, "eth11")]
+        // Dns failure - should skip the test.
+        // https://en.wikipedia.org/wiki/.test
+        [InlineData("invalid.domain.test", "", false, "eth11")]
         // User assumed to be internal, no binding - so result is the 1st internal.
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
@@ -414,10 +419,13 @@ namespace Jellyfin.Networking.Tests
 
             _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
 
-            if (resultObj != null)
+            // Check to see if dns resolution is working. If not, skip test.
+            _ = IPHost.TryParse(source, out var host);
+
+            if (resultObj != null && host?.HasAddress == true)
             {
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
-                var intf = nm.GetBindInterface(source, out int? _);
+                var intf = nm.GetBindInterface(source, out _);
 
                 Assert.Equal(intf, result);
             }

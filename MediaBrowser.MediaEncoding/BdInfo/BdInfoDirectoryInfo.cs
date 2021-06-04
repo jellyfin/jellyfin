@@ -9,9 +9,9 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 {
     public class BdInfoDirectoryInfo : IDirectoryInfo
     {
-        private readonly IFileSystem _fileSystem = null;
+        private readonly IFileSystem _fileSystem;
 
-        private readonly FileSystemMetadata _impl = null;
+        private readonly FileSystemMetadata _impl;
 
         public BdInfoDirectoryInfo(IFileSystem fileSystem, string path)
         {
@@ -29,7 +29,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
         public string FullName => _impl.FullName;
 
-        public IDirectoryInfo Parent
+        public IDirectoryInfo? Parent
         {
             get
             {

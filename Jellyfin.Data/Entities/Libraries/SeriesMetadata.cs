@@ -1,8 +1,5 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -63,9 +60,9 @@ namespace Jellyfin.Data.Entities.Libraries
         public string? Country { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the networks.
+        /// Gets a collection containing the networks.
         /// </summary>
-        public virtual ICollection<Company> Networks { get; protected set; }
+        public virtual ICollection<Company> Networks { get; private set; }
 
         /// <inheritdoc />
         public ICollection<Company> Companies => Networks;

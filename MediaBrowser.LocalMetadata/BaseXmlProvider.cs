@@ -91,7 +91,7 @@ namespace MediaBrowser.LocalMetadata
         /// <param name="info">Item inf.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <returns>The file system metadata.</returns>
-        protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
+        protected abstract FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService);
 
         /// <inheritdoc />
         public bool HasChanged(BaseItem item, IDirectoryService directoryService)

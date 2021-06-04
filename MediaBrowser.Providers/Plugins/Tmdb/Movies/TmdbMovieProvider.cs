@@ -7,8 +7,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using TMDbLib.Objects.Find;
-using TMDbLib.Objects.Search;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -16,6 +14,8 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using TMDbLib.Objects.Find;
+using TMDbLib.Objects.Search;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
@@ -206,12 +206,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 if (ourRelease != null)
                 {
-                    var ratingPrefix = string.Equals(info.MetadataCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? string.Empty : info.MetadataCountryCode + "-";
-                    var newRating = ratingPrefix + ourRelease.Certification;
-
-                    newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
-
-                    movie.OfficialRating = newRating;
+                    movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
                 }
                 else if (usRelease != null)
                 {

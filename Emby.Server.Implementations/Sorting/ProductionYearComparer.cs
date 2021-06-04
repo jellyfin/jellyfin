@@ -15,7 +15,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             return GetValue(x).CompareTo(GetValue(y));
         }
@@ -25,8 +25,13 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>DateTime.</returns>
-        private static int GetValue(BaseItem x)
+        private static int GetValue(BaseItem? x)
         {
+            if (x == null)
+            {
+                return 0;
+            }
+
             if (x.ProductionYear.HasValue)
             {
                 return x.ProductionYear.Value;

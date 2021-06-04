@@ -38,12 +38,6 @@ namespace MediaBrowser.Model.IO
         public long Length { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the directory.
-        /// </summary>
-        /// <value>The name of the directory.</value>
-        public string DirectoryName { get; set; }
-
-        /// <summary>
         /// Gets or sets the last write time UTC.
         /// </summary>
         /// <value>The last write time UTC.</value>

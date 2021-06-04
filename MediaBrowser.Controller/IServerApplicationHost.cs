@@ -1,12 +1,11 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.System;
 using Microsoft.AspNetCore.Http;
 

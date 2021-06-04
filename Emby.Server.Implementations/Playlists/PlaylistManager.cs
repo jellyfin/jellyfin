@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -215,7 +217,7 @@ namespace Emby.Server.Implementations.Playlists
 
             // Create a list of the new linked children to add to the playlist
             var childrenToAdd = newItems
-                .Select(i => LinkedChild.Create(i))
+                .Select(LinkedChild.Create)
                 .ToList();
 
             // Log duplicates that have been ignored, if any

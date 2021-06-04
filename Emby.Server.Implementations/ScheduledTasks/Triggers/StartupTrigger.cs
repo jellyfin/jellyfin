@@ -10,24 +10,28 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Class StartupTaskTrigger.
     /// </summary>
-    public class StartupTrigger : ITaskTrigger
+    public sealed class StartupTrigger : ITaskTrigger
     {
+        public const int DelayMs = 3000;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StartupTrigger"/> class.
+        /// </summary>
+        /// <param name="taskOptions">The options of this task.</param>
+        public StartupTrigger(TaskOptions taskOptions)
+        {
+            TaskOptions = taskOptions;
+        }
+
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<EventArgs> Triggered;
-
-        public int DelayMs { get; set; }
+        public event EventHandler<EventArgs>? Triggered;
 
         /// <summary>
-        /// Gets or sets the options of this task.
+        /// Gets the options of this task.
         /// </summary>
-        public TaskOptions TaskOptions { get; set; }
-
-        public StartupTrigger()
-        {
-            DelayMs = 3000;
-        }
+        public TaskOptions TaskOptions { get; }
 
         /// <summary>
         /// Stars waiting for the trigger action.

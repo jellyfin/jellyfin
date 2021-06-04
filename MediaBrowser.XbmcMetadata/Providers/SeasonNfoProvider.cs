@@ -57,7 +57,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
         }
 
         /// <inheritdoc />
-        protected override FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService)
+        protected override FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService)
             => directoryService.GetFile(Path.Combine(info.Path, "season.nfo"));
     }
 }

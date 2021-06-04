@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
-    <!-- disable warning SA1202: 'public' members must come before 'private' members -->
-    <Rule Id="SA1202" Action="Info" />
-    <!-- disable warning SA1204: Static members must appear before non-static members -->
-    <Rule Id="SA1204" Action="Info" />
-    <!-- disable warning SA1404: Code analysis suppression should have justification -->
-    <Rule Id="SA1404" Action="Info" />
+    <!-- disable warning CA1040: Avoid empty interfaces -->
+    <Rule Id="CA1040" Action="Info" />
 
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
@@ -22,6 +18,10 @@
     <Rule Id="SA1130" Action="None" />
     <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
     <Rule Id="SA1200" Action="None" />
+    <!-- disable warning SA1202: 'public' members must come before 'private' members -->
+    <Rule Id="SA1202" Action="None" />
+    <!-- disable warning SA1204: Static members must appear before non-static members -->
+    <Rule Id="SA1204" Action="None" />
     <!-- disable warning SA1309: Fields must not begin with an underscore -->
     <Rule Id="SA1309" Action="None" />
     <!-- disable warning SA1413: Use trailing comma in multi-line initializers -->
@@ -43,6 +43,8 @@
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
 
+    <!-- disable warning CA1024: Use properties where appropriate -->
+    <Rule Id="CA1024" Action="Info" />
     <!-- disable warning CA1031: Do not catch general exception types -->
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1032: Implement standard exception constructors -->
@@ -78,5 +80,7 @@
     <Rule Id="CA1303" Action="None" />
     <!-- disable warning CA1308: Normalize strings to uppercase -->
     <Rule Id="CA1308" Action="None" />
+    <!-- disable warning CA2101: Specify marshaling for P/Invoke string arguments -->
+    <Rule Id="CA2101" Action="None" />
   </Rules>
 </RuleSet>

@@ -33,7 +33,13 @@ assignees: ''
 **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
 
-**Logs**
+**Server Logs**
+<!-- Please paste any log errors. -->
+
+**FFmpeg Logs**
+<!-- Please paste any log errors. -->
+
+**Browser Console Logs**
 <!-- Please paste any log errors. -->
 
 **Screenshots**

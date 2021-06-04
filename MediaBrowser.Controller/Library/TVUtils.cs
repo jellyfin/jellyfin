@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -12,7 +13,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="day">The day.</param>
         /// <returns>List{DayOfWeek}.</returns>
-        public static DayOfWeek[] GetAirDays(string day)
+        [return: NotNullIfNotNull("day")]
+        public static DayOfWeek[]? GetAirDays(string? day)
         {
             if (!string.IsNullOrEmpty(day))
             {

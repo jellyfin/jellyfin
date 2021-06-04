@@ -250,7 +250,8 @@ namespace Emby.Dlna.Server
 
             url = _serverAddress.TrimEnd('/') + "/dlna/" + _serverUdn + "/" + url.TrimStart('/');
 
-            return SecurityElement.Escape(url);
+            // TODO: @bond remove null-coalescing operator when https://github.com/dotnet/runtime/pull/52442 is merged/released
+            return SecurityElement.Escape(url) ?? string.Empty;
         }
 
         private IEnumerable<DeviceIcon> GetIcons()

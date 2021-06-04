@@ -296,8 +296,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            var hasDisplayOrder = item as IHasDisplayOrder;
-            if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
+            if (item is IHasDisplayOrder hasDisplayOrder && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
             {
                 writer.WriteElementString("DisplayOrder", hasDisplayOrder.DisplayOrder);
             }
@@ -312,8 +311,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(_usCulture));
             }
 
-            var hasAspectRatio = item as IHasAspectRatio;
-            if (hasAspectRatio != null)
+            if (item is IHasAspectRatio hasAspectRatio)
             {
                 if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
                 {

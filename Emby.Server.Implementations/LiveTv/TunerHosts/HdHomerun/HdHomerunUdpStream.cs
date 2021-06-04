@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -10,7 +12,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -28,7 +29,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
-        private readonly INetworkManager _networkManager;
 
         public HdHomerunUdpStream(
             MediaSourceInfo mediaSource,
@@ -40,12 +40,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
-            INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _appHost = appHost;
-            _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
@@ -126,7 +124,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using (udpClient)
                 using (hdHomerunManager)
                 {
-                    if (!(ex is OperationCanceledException))
+                    if (ex is not OperationCanceledException)
                     {
                         Logger.LogError(ex, "Error opening live stream:");
                     }

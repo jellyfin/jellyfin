@@ -11,12 +11,12 @@ namespace MediaBrowser.Model.Tasks
         /// <summary>
         /// Fires when the trigger condition is satisfied and the task should run.
         /// </summary>
-        event EventHandler<EventArgs> Triggered;
+        event EventHandler<EventArgs>? Triggered;
 
         /// <summary>
-        /// Gets or sets the options of this task.
+        /// Gets the options of this task.
         /// </summary>
-        TaskOptions TaskOptions { get; set; }
+        TaskOptions TaskOptions { get; }
 
         /// <summary>
         /// Stars waiting for the trigger action.

@@ -14,7 +14,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
 {

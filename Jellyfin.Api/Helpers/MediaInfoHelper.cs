@@ -283,6 +283,7 @@ namespace Jellyfin.Api.Helpers
                     if (streamInfo != null)
                     {
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
             }
@@ -308,7 +309,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         if (!user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding)
                             && !user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding)
-                            && !user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
+                            && user.HasPermission(PermissionKind.EnablePlaybackRemuxing))
                         {
                             options.ForceDirectStream = true;
                         }
@@ -327,6 +328,7 @@ namespace Jellyfin.Api.Helpers
                     if (streamInfo != null)
                     {
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
             }
@@ -354,6 +356,7 @@ namespace Jellyfin.Api.Helpers
 
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
                 else
@@ -391,6 +394,7 @@ namespace Jellyfin.Api.Helpers
 
                         // Do this after the above so that StartPositionTicks is set
                         SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                        mediaSource.DefaultAudioStreamIndex = streamInfo.AudioStreamIndex;
                     }
                 }
             }

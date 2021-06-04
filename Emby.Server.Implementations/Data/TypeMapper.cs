@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.Data
         /// This holds all the types in the running assemblies
         /// so that we can de-serialize properly when we don't have strong types.
         /// </summary>
-        private readonly ConcurrentDictionary<string, Type> _typeMap = new ConcurrentDictionary<string, Type>();
+        private readonly ConcurrentDictionary<string, Type?> _typeMap = new ConcurrentDictionary<string, Type?>();
 
         /// <summary>
         /// Gets the type.
@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="typeName">Name of the type.</param>
         /// <returns>Type.</returns>
         /// <exception cref="ArgumentNullException"><c>typeName</c> is null.</exception>
-        public Type GetType(string typeName)
+        public Type? GetType(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))
             {
@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="typeName">Name of the type.</param>
         /// <returns>Type.</returns>
-        private Type LookupType(string typeName)
+        private Type? LookupType(string typeName)
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Select(a => a.GetType(typeName))

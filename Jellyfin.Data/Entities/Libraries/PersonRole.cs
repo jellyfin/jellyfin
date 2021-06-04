@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -27,13 +25,13 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the person's role.
@@ -55,7 +53,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; protected set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the person.
@@ -66,12 +64,12 @@ namespace Jellyfin.Data.Entities.Libraries
         public virtual Person Person { get; set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Artwork> Artwork { get; protected set; }
+        public virtual ICollection<Artwork> Artwork { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the metadata sources for this person role.
+        /// Gets a collection containing the metadata sources for this person role.
         /// </summary>
-        public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
+        public virtual ICollection<MetadataProviderId> Sources { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

@@ -8,29 +8,31 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Represents a task trigger that fires everyday.
     /// </summary>
-    public class DailyTrigger : ITaskTrigger
+    public sealed class DailyTrigger : ITaskTrigger
     {
+        private readonly TimeSpan _timeOfDay;
+        private Timer? _timer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DailyTrigger"/> class.
+        /// </summary>
+        /// <param name="timeofDay">The time of day to trigger the task to run.</param>
+        /// <param name="taskOptions">The options of this task.</param>
+        public DailyTrigger(TimeSpan timeofDay, TaskOptions taskOptions)
+        {
+            _timeOfDay = timeofDay;
+            TaskOptions = taskOptions;
+        }
+
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<EventArgs> Triggered;
+        public event EventHandler<EventArgs>? Triggered;
 
         /// <summary>
-        /// Gets or sets the time of day to trigger the task to run.
+        /// Gets the options of this task.
         /// </summary>
-        /// <value>The time of day.</value>
-        public TimeSpan TimeOfDay { get; set; }
-
-        /// <summary>
-        /// Gets or sets the options of this task.
-        /// </summary>
-        public TaskOptions TaskOptions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timer.
-        /// </summary>
-        /// <value>The timer.</value>
-        private Timer Timer { get; set; }
+        public TaskOptions TaskOptions { get; }
 
         /// <summary>
         /// Stars waiting for the trigger action.
@@ -45,14 +47,14 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             var now = DateTime.Now;
 
-            var triggerDate = now.TimeOfDay > TimeOfDay ? now.Date.AddDays(1) : now.Date;
-            triggerDate = triggerDate.Add(TimeOfDay);
+            var triggerDate = now.TimeOfDay > _timeOfDay ? now.Date.AddDays(1) : now.Date;
+            triggerDate = triggerDate.Add(_timeOfDay);
 
             var dueTime = triggerDate - now;
 
             logger.LogInformation("Daily trigger for {Task} set to fire at {TriggerDate:yyyy-MM-dd HH:mm:ss.fff zzz}, which is {DueTime:c} from now.", taskName, triggerDate, dueTime);
 
-            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
+            _timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
@@ -68,10 +70,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         private void DisposeTimer()
         {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            _timer?.Dispose();
         }
 
         /// <summary>

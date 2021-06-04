@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -14,21 +16,20 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static string[] SupportedExtensions =
-            {
-                ".m3u",
-                ".m3u8",
-                ".pls",
-                ".wpl",
-                ".zpl"
-            };
+        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
+        {
+            ".m3u",
+            ".m3u8",
+            ".pls",
+            ".wpl",
+            ".zpl"
+        };
 
         public Guid OwnerUserId { get; set; }
 
@@ -127,10 +128,7 @@ namespace MediaBrowser.Controller.Playlists
 
         private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                query = new InternalItemsQuery(user);
-            }
+            query ??= new InternalItemsQuery(user);
 
             query.IsFolder = false;
 
@@ -164,7 +162,7 @@ namespace MediaBrowser.Controller.Playlists
                     Recursive = true,
                     IncludeItemTypes = new[] { nameof(Audio) },
                     GenreIds = new[] { musicGenre.Id },
-                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
                 });
             }
@@ -176,7 +174,7 @@ namespace MediaBrowser.Controller.Playlists
                     Recursive = true,
                     IncludeItemTypes = new[] { nameof(Audio) },
                     ArtistIds = new[] { musicArtist.Id },
-                    OrderBy = new[] { ItemSortBy.AlbumArtist, ItemSortBy.Album, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                    OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
                 });
             }

@@ -15,14 +15,14 @@ namespace Emby.Server.Implementations.Sorting
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             return GetValue(x).CompareTo(GetValue(y));
         }
 
-        private static float GetValue(BaseItem x)
+        private static float GetValue(BaseItem? x)
         {
-            return x.CriticRating ?? 0;
+            return x?.CriticRating ?? 0;
         }
 
         /// <summary>

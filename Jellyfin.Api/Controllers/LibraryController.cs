@@ -600,7 +600,7 @@ namespace Jellyfin.Api.Controllers
         {
             foreach (var item in dto.Updates)
             {
-                _libraryMonitor.ReportFileSystemChanged(item.Path);
+                _libraryMonitor.ReportFileSystemChanged(item.Path ?? throw new ArgumentException("Item path can't be null."));
             }
 
             return NoContent();

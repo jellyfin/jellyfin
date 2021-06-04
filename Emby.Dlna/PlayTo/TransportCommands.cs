@@ -46,7 +46,7 @@ namespace Emby.Dlna.PlayTo
         {
             var serviceAction = new ServiceAction
             {
-                Name = container.GetValue(UPnpNamespaces.Svc + "name"),
+                Name = container.GetValue(UPnpNamespaces.Svc + "name") ?? string.Empty,
             };
 
             var argumentList = serviceAction.ArgumentList;
@@ -68,9 +68,9 @@ namespace Emby.Dlna.PlayTo
 
             return new Argument
             {
-                Name = container.GetValue(UPnpNamespaces.Svc + "name"),
-                Direction = container.GetValue(UPnpNamespaces.Svc + "direction"),
-                RelatedStateVariable = container.GetValue(UPnpNamespaces.Svc + "relatedStateVariable")
+                Name = container.GetValue(UPnpNamespaces.Svc + "name") ?? string.Empty,
+                Direction = container.GetValue(UPnpNamespaces.Svc + "direction") ?? string.Empty,
+                RelatedStateVariable = container.GetValue(UPnpNamespaces.Svc + "relatedStateVariable") ?? string.Empty
             };
         }
 
@@ -89,8 +89,8 @@ namespace Emby.Dlna.PlayTo
 
             return new StateVariable
             {
-                Name = container.GetValue(UPnpNamespaces.Svc + "name"),
-                DataType = container.GetValue(UPnpNamespaces.Svc + "dataType"),
+                Name = container.GetValue(UPnpNamespaces.Svc + "name") ?? string.Empty,
+                DataType = container.GetValue(UPnpNamespaces.Svc + "dataType") ?? string.Empty,
                 AllowedValues = allowedValues
             };
         }
@@ -166,7 +166,7 @@ namespace Emby.Dlna.PlayTo
             return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
-        private string BuildArgumentXml(Argument argument, string value, string commandParameter = "")
+        private string BuildArgumentXml(Argument argument, string? value, string commandParameter = "")
         {
             var state = StateVariables.FirstOrDefault(a => string.Equals(a.Name, argument.RelatedStateVariable, StringComparison.OrdinalIgnoreCase));
 

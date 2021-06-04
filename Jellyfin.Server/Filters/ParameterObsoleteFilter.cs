@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Jellyfin.Api.Attributes;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

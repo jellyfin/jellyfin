@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Sorting
     /// <summary>
     /// Interface IBaseItemComparer.
     /// </summary>
-    public interface IBaseItemComparer : IComparer<BaseItem>
+    public interface IBaseItemComparer : IComparer<BaseItem?>
     {
         /// <summary>
         /// Gets the name.

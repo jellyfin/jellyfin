@@ -22,7 +22,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Helpers
@@ -62,8 +61,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         public TranscodingJobHelper(
             ILogger<TranscodingJobHelper> logger,
@@ -73,8 +71,7 @@ namespace Jellyfin.Api.Helpers
             IServerConfigurationManager serverConfigurationManager,
             ISessionManager sessionManager,
             IAuthorizationContext authorizationContext,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
+            EncodingHelper encodingHelper,
             ILoggerFactory loggerFactory)
         {
             _logger = logger;
@@ -84,8 +81,8 @@ namespace Jellyfin.Api.Helpers
             _serverConfigurationManager = serverConfigurationManager;
             _sessionManager = sessionManager;
             _authorizationContext = authorizationContext;
+            _encodingHelper = encodingHelper;
             _loggerFactory = loggerFactory;
-            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
 
             DeleteEncodedMediaCache();
 
@@ -272,7 +269,7 @@ namespace Jellyfin.Api.Helpers
             {
                 _activeTranscodingJobs.Remove(job);
 
-                if (!job.CancellationTokenSource!.IsCancellationRequested)
+                if (job.CancellationTokenSource?.IsCancellationRequested == false)
                 {
                     job.CancellationTokenSource.Cancel();
                 }
@@ -382,7 +379,9 @@ namespace Jellyfin.Api.Helpers
         /// <param name="outputFilePath">The output file path.</param>
         private void DeleteHlsPartialStreamFiles(string outputFilePath)
         {
-            var directory = Path.GetDirectoryName(outputFilePath);
+            var directory = Path.GetDirectoryName(outputFilePath)
+                ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
+
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
             var filesToDelete = _fileSystem.GetFilePaths(directory)
@@ -752,7 +751,7 @@ namespace Jellyfin.Api.Helpers
                 _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
             }
 
-            process.Dispose();
+            job.Dispose();
         }
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)

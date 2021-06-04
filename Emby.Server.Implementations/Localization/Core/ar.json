@@ -113,5 +113,10 @@
     "TaskRefreshPeopleDescription": "تحديث البيانات الوصفية للممثلين والمخرجين في مكتبة الوسائط الخاصة بك.",
     "TaskRefreshPeople": "إعادة تحميل الأشخاص",
     "TaskCleanLogsDescription": "حذف السجلات الأقدم من {0} يوم.",
-    "TaskCleanLogs": "حذف دليل السجل"
+    "TaskCleanLogs": "حذف دليل السجل",
+    "TaskCleanActivityLogDescription": "يحذف سجل الأنشطة الأقدم من الوقت الموضوع.",
+    "TaskCleanActivityLog": "حذف سجل الأنشطة",
+    "Default": "الإعدادات الافتراضية",
+    "Undefined": "غير معرف",
+    "Forced": "ملحقة"
 }

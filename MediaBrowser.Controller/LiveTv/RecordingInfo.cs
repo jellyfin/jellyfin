@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,8 +10,13 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class RecordingInfo
     {
+        public RecordingInfo()
+        {
+            Genres = new List<string>();
+        }
+
         /// <summary>
-        /// Id of the recording.
+        /// Gets or sets the id of the recording.
         /// </summary>
         public string Id { get; set; }
 
@@ -26,7 +33,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string TimerId { get; set; }
 
         /// <summary>
-        /// ChannelId of the recording.
+        /// Gets or sets the channelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
 
@@ -37,7 +44,7 @@ namespace MediaBrowser.Controller.LiveTv
         public ChannelType ChannelType { get; set; }
 
         /// <summary>
-        /// Name of the recording.
+        /// Gets or sets the name of the recording.
         /// </summary>
         public string Name { get; set; }
 
@@ -60,12 +67,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string Overview { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The end date of the recording, in UTC.
+        /// Gets or sets the end date of the recording, in UTC.
         /// </summary>
         public DateTime EndDate { get; set; }
 
@@ -82,7 +89,7 @@ namespace MediaBrowser.Controller.LiveTv
         public RecordingStatus Status { get; set; }
 
         /// <summary>
-        /// Genre of the program.
+        /// Gets or sets the genre of the program.
         /// </summary>
         public List<string> Genres { get; set; }
 
@@ -171,13 +178,13 @@ namespace MediaBrowser.Controller.LiveTv
         public float? CommunityRating { get; set; }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system.
+        /// Gets or sets the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
 
         /// <summary>
-        /// Supply the image url if it can be downloaded.
+        /// Gets or sets the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
@@ -199,10 +206,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The date last updated.</value>
         public DateTime DateLastUpdated { get; set; }
-
-        public RecordingInfo()
-        {
-            Genres = new List<string>();
-        }
     }
 }

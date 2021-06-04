@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,11 +9,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Localization
@@ -73,8 +75,7 @@ namespace Emby.Server.Implementations.Localization
                 using (var str = _assembly.GetManifestResourceStream(resource))
                 using (var reader = new StreamReader(str))
                 {
-                    string line;
-                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
                         if (string.IsNullOrWhiteSpace(line))
                         {
@@ -119,10 +120,8 @@ namespace Emby.Server.Implementations.Localization
             using (var stream = _assembly.GetManifestResourceStream(ResourcePath))
             using (var reader = new StreamReader(stream))
             {
-                while (!reader.EndOfStream)
+                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
@@ -180,7 +179,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<CountryInfo> GetCountries()
         {
-            StreamReader reader = new StreamReader(_assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
+            using StreamReader reader = new StreamReader(_assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
 
             return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions);
         }
@@ -316,10 +315,9 @@ namespace Emby.Server.Implementations.Localization
             }
 
             const string Prefix = "Core";
-            var key = Prefix + culture;
 
             return _dictionaries.GetOrAdd(
-                key,
+                culture,
                 f => GetDictionary(Prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
         }
 

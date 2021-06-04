@@ -1,3 +1,5 @@
+#nullable disable
+
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     internal class Channels

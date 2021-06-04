@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -14,8 +16,7 @@ namespace MediaBrowser.Controller.Providers
             ContainingFolderPath = item.ContainingFolderPath;
             IsInMixedFolder = item.IsInMixedFolder;
 
-            var video = item as Video;
-            if (video != null)
+            if (item is Video video)
             {
                 VideoType = video.VideoType;
                 IsPlaceHolder = video.IsPlaceHolder;

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -199,10 +201,15 @@ namespace Emby.Server.Implementations.Library
                     {
                         source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableAudioPlaybackTranscoding);
                     }
+                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    {
+                        source.SupportsTranscoding = user.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding);
+                        source.SupportsDirectStream = user.HasPermission(PermissionKind.EnablePlaybackRemuxing);
+                    }
                 }
             }
 
-            return SortMediaSources(list).Where(i => i.Type != MediaSourceType.Placeholder).ToList();
+            return SortMediaSources(list);
         }
 
         public MediaProtocol GetPathProtocol(string path)
@@ -436,7 +443,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private static IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
+        private static List<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
         {
             return sources.OrderBy(i =>
             {
@@ -451,8 +458,9 @@ namespace Emby.Server.Implementations.Library
             {
                 var stream = i.VideoStream;
 
-                return stream == null || stream.Width == null ? 0 : stream.Width.Value;
+                return stream?.Width ?? 0;
             })
+            .Where(i => i.Type != MediaSourceType.Placeholder)
             .ToList();
         }
 
@@ -584,18 +592,9 @@ namespace Emby.Server.Implementations.Library
 
         public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
         {
-            var info = _openStreams.Values.FirstOrDefault(i =>
-            {
-                var liveStream = i as ILiveStream;
-                if (liveStream != null)
-                {
-                    return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
-                }
+            var info = _openStreams.FirstOrDefault(i => i.Value != null && string.Equals(i.Value.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
 
-                return false;
-            });
-
-            return Task.FromResult(info as IDirectStreamProvider);
+            return Task.FromResult(info.Value as IDirectStreamProvider);
         }
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)

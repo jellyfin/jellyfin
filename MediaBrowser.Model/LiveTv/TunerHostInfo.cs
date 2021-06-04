@@ -1,9 +1,6 @@
 #nullable disable
 #pragma warning disable CS1591
 
-using System;
-using MediaBrowser.Model.Dto;
-
 namespace MediaBrowser.Model.LiveTv
 {
     public class TunerHostInfo

@@ -48,6 +48,11 @@
         /// <summary>
         /// Live TV.
         /// </summary>
-        LiveTv = 8
+        LiveTv = 8,
+
+        /// <summary>
+        /// Continue Reading.
+        /// </summary>
+        ResumeBook = 9
     }
 }

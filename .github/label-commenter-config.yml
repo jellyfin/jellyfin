@@ -1,0 +1,43 @@
+comment:
+  header: Hello!
+  footer: "\
+    ---\n\n
+    > This is an automated comment created by the [peaceiris/actions-label-commenter]. \
+    Responding to the bot or mentioning it won't have any effect.\n\n
+    [peaceiris/actions-label-commenter]: https://github.com/peaceiris/actions-label-commenter
+    "
+
+labels:
+  - name: stable backport
+    labeled:
+      pr:
+        body: |
+          This pull request has been tagged as a stable backport. It will be cherry-picked into the next stable point release.
+
+          Please observe the following:
+
+            * Any dependent PRs that this PR requires **must** be tagged for stable backporting as well.
+
+            * Any issue(s) this PR fixes or closes **should** target the current stable release or a previous stable release to which a fix has not yet entered the current stable release.
+          
+            * This PR **must** be test cherry-picked against the current release branch (`release-X.Y.z` where X and Y are numbers). It must apply cleanly, or a diff of the expected change must be provided.
+              
+              To do this, run the following commands from your local copy of the Jellyfin repository:
+              
+                1. `git checkout master`
+
+                1. `git merge --no-ff <myPullRequestBranch>`
+
+                1. `git log` -> `commit xxxxxxxxx`, grab hash
+
+                1. `git checkout release-X.Y.z` replacing X and Y with the *current* stable version (e.g. `release-10.7.z`)
+
+                1. `git cherry-pick -sx -m1 <hash>`
+
+              Ensure the `cherry-pick` applies cleanly. If it does not, fix any merge conflicts *preserving as much of the original code as possible*, and make note of the resulting diff.
+
+              Test your changes with a build to ensure they are successful. If not, adjust the diff accordingly.
+
+              **Do not** push your merges to either branch. Use `git reset --hard HEAD~1` to revert both branches to their original state.
+
+              Reply to this PR with a comment beginning "Cherry-pick test completed." and including the merge-conflict-fixing diff(s) if applicable.

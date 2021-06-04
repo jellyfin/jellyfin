@@ -466,7 +466,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return added;
         }
 
-        private bool AddImage(IEnumerable<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
+        private bool AddImage(List<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
         {
             var image = GetImage(files, name);
 
@@ -484,9 +484,20 @@ namespace MediaBrowser.LocalMetadata.Images
             return false;
         }
 
-        private FileSystemMetadata? GetImage(IEnumerable<FileSystemMetadata> files, string name)
+        private static FileSystemMetadata? GetImage(IReadOnlyList<FileSystemMetadata> files, string name)
         {
-            return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase) && i.Length > 0);
+            for (var i = 0; i < files.Count; i++)
+            {
+                var file = files[i];
+                if (!file.IsDirectory
+                    && file.Length > 0
+                    && Path.GetFileNameWithoutExtension(file.FullName.AsSpan()).Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return file;
+                }
+            }
+
+            return null;
         }
     }
 }

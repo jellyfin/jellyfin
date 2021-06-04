@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -63,7 +65,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         Path = args.Path,
                         Name = Path.GetFileNameWithoutExtension(args.Path),
-                        IsInMixedFolder = true
+                        IsInMixedFolder = true,
+                        PlaylistMediaType = MediaType.Audio
                     };
                 }
             }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -104,7 +106,7 @@ namespace Emby.Dlna.Ssdp
                 {
                     Location = e.DiscoveredDevice.DescriptionLocation,
                     Headers = headers,
-                    LocalIpAddress = e.LocalIpAddress
+                    RemoteIpAddress = e.RemoteIpAddress
                 });
 
             DeviceDiscoveredInternal?.Invoke(this, args);

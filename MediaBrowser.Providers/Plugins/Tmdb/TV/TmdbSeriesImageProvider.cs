@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                return null;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var language = item.GetPreferredMetadataLanguage();

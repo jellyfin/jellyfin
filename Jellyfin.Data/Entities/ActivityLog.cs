@@ -38,11 +38,10 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Gets or sets the identity of this instance.
-        /// This is the key in the backing database.
+        /// Gets the identity of this instance.
         /// </summary>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -120,7 +119,7 @@ namespace Jellyfin.Data.Entities
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

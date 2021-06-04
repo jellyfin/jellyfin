@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -31,6 +33,10 @@ namespace MediaBrowser.Controller.Drawing
         public int? MaxWidth { get; set; }
 
         public int? MaxHeight { get; set; }
+
+        public int? FillWidth { get; set; }
+
+        public int? FillHeight { get; set; }
 
         public int Quality { get; set; }
 
@@ -89,6 +95,11 @@ namespace MediaBrowser.Controller.Drawing
             }
 
             if (MaxHeight.HasValue && sizeValue.Height > MaxHeight.Value)
+            {
+                return false;
+            }
+
+            if (sizeValue.Width > FillWidth || sizeValue.Height > FillHeight)
             {
                 return false;
             }

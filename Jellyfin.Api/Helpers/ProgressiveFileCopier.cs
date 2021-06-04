@@ -71,7 +71,8 @@ namespace Jellyfin.Api.Helpers
         /// <returns>A <see cref="Task"/>.</returns>
         public async Task WriteToAsync(Stream outputStream, CancellationToken cancellationToken)
         {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken).Token;
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken);
+            cancellationToken = linkedCancellationTokenSource.Token;
 
             try
             {

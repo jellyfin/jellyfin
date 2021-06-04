@@ -6,7 +6,7 @@ using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-    internal class RecordingHelper
+    internal static class RecordingHelper
     {
         public static DateTime GetStartTime(TimerInfo timer)
         {
@@ -70,17 +70,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private static string GetDateString(DateTime date)
         {
-            date = date.ToLocalTime();
-
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}_{1}_{2}_{3}_{4}_{5}",
-                date.Year.ToString("0000", CultureInfo.InvariantCulture),
-                date.Month.ToString("00", CultureInfo.InvariantCulture),
-                date.Day.ToString("00", CultureInfo.InvariantCulture),
-                date.Hour.ToString("00", CultureInfo.InvariantCulture),
-                date.Minute.ToString("00", CultureInfo.InvariantCulture),
-                date.Second.ToString("00", CultureInfo.InvariantCulture));
+            return date.ToLocalTime().ToString("yyyy_MM_dd_HH_mm_ss", CultureInfo.InvariantCulture);
         }
     }
 }

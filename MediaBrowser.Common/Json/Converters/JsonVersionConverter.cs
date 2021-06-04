@@ -14,7 +14,7 @@ namespace MediaBrowser.Common.Json.Converters
     {
         /// <inheritdoc />
         public override Version Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => new Version(reader.GetString());
+            => new Version(reader.GetString()!); // Will throw ArgumentNullException on null
 
         /// <inheritdoc />
         public override void Write(Utf8JsonWriter writer, Version value, JsonSerializerOptions options)
