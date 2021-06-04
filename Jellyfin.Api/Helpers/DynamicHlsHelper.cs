@@ -106,6 +106,7 @@ namespace Jellyfin.Api.Helpers
             bool enableAdaptiveBitrateStreaming)
         {
             var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
                 streamingRequest,
