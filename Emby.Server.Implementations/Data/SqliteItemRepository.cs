@@ -1073,10 +1073,7 @@ namespace Emby.Server.Implementations.Data
             }
 
             // Extremely unlikely, but somehow one or more of the image strings were malformed. Cut the array.
-            var newResult = new ItemImageInfo[position];
-            Array.Copy(result, newResult, position);
-
-            return newResult;
+            return result[..position];
         }
 
         private void AppendItemImageInfo(StringBuilder bldr, ItemImageInfo image)

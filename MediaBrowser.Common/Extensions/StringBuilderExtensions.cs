@@ -17,7 +17,8 @@ namespace MediaBrowser.Common.Extensions
         /// <returns>The updated string builder.</returns>
         public static StringBuilder AppendJoinInSingleQuotes(this StringBuilder builder, char delimiter, IReadOnlyList<string> values)
         {
-            for (var i = 0; i < values.Count; i++)
+            var len = values.Count;
+            for (var i = 0; i < len; i++)
             {
                 builder.Append('\'')
                     .Append(values[i])
