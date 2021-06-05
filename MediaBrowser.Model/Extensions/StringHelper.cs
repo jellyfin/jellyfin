@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Extensions
                 return str;
             }
 
-            if (char.IsUpper(str[0]))
+            if (!char.IsLower(str[0]))
             {
                 return str;
             }
