@@ -1065,17 +1065,17 @@ namespace Emby.Server.Implementations.Library
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(
                 new SimpleProgress<double>(),
-                cancellationToken,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false).ConfigureAwait(false);
+                recursive: false,
+                cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().ValidateChildren(
                 new SimpleProgress<double>(),
-                cancellationToken,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false).ConfigureAwait(false);
+                recursive: false,
+                cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
             foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
@@ -1095,7 +1095,7 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
 
             progress.Report(96);
 

@@ -207,8 +207,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="InvalidOperationException">Unable to add  + item.Name</exception>
+        /// <exception cref="InvalidOperationException">Unable to add  + item.Name.</exception>
         public void AddChild(BaseItem item, CancellationToken cancellationToken)
         {
             item.SetParent(this);
@@ -274,20 +273,20 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(FileSystem)));
+            return ValidateChildren(progress, new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken: cancellationToken);
         }
 
         /// <summary>
         /// Validates that the children of the folder still exist.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="metadataRefreshOptions">The metadata refresh options.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true)
+        public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true,  CancellationToken cancellationToken = default)
         {
-            return ValidateChildrenInternal(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
+            return ValidateChildrenInternal(progress, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -327,13 +326,13 @@ namespace MediaBrowser.Controller.Entities
         /// Validates the children internal.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (recursive)
             {
@@ -342,7 +341,7 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                await ValidateChildrenInternal2(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService).ConfigureAwait(false);
+                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -353,7 +352,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private async Task ValidateChildrenInternal2(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -575,7 +574,7 @@ namespace MediaBrowser.Controller.Entities
         private Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
             return RunTasks(
-                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService),
+                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, null, directoryService, cancellationToken),
                 children,
                 progress,
                 cancellationToken);
@@ -1013,7 +1012,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.CurrentCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(query.NameLessThan))
@@ -1324,7 +1323,6 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the children to list.
         /// </summary>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query)
         {
             foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
@@ -1596,7 +1594,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the linked children.
         /// </summary>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        /// <param name="fileSystemChildren">The enumerable of file system metadata.</param>
+        /// <returns><c>true</c> if the linked children were updated, <c>false</c> otherwise.</returns>
         protected virtual bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
         {
             if (SupportsShortcutChildren)

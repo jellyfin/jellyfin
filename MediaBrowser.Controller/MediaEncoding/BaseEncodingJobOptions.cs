@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 
 #pragma warning disable CS1591
 
@@ -8,7 +8,6 @@ using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
-    // For now until api and media encoding layers are unified
     public class BaseEncodingJobOptions
     {
         /// <summary>

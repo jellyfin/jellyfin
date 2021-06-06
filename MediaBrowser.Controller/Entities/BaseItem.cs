@@ -620,7 +620,11 @@ namespace MediaBrowser.Controller.Entities
         public string ForcedSortName
         {
             get => _forcedSortName;
-            set { _forcedSortName = value; _sortName = null; }
+            set
+            {
+                _forcedSortName = value;
+                _sortName = null;
+            }
         }
 
         private string _sortName;
@@ -1337,7 +1341,7 @@ namespace MediaBrowser.Controller.Entities
                         }
 
                         // Use some hackery to get the extra type based on foldername
-                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty), true, out ExtraType extraType)
+                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty, StringComparison.Ordinal), true, out ExtraType extraType)
                             ? extraType
                             : Model.Entities.ExtraType.Unknown;
 
@@ -1427,10 +1431,10 @@ namespace MediaBrowser.Controller.Entities
         /// Refreshes owned items such as trailers, theme videos, special features, etc.
         /// Returns true or false indicating if changes were found.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="fileSystemChildren"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="options">The metadata refresh options.</param>
+        /// <param name="fileSystemChildren">The list of filesystem children.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var themeSongsChanged = false;
@@ -1772,7 +1776,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">If user is null.</exception>
         public bool IsParentalAllowed(User user)
         {
             if (user == null)
@@ -1917,7 +1921,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="user" /> is <c>null</c>.</exception>
         public virtual bool IsVisible(User user)
         {
             if (user == null)
@@ -2215,7 +2219,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns><c>true</c> if the specified type has image; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
+        /// <exception cref="ArgumentException">Backdrops should be accessed using Item.Backdrops.</exception>
         public bool HasImage(ImageType type, int imageIndex)
         {
             return GetImageInfo(type, imageIndex) != null;
@@ -2344,9 +2348,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// </exception>
-        /// <exception cref="ArgumentNullException">item</exception>
+        /// <exception cref="InvalidOperationException"> </exception>
+        /// <exception cref="ArgumentNullException">Item is null.</exception>
         public string GetImagePath(ImageType imageType, int imageIndex)
             => GetImageInfo(imageType, imageIndex)?.Path;
 
@@ -2442,7 +2445,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        /// <exception cref="ArgumentException">Cannot call AddImages with chapter images</exception>
+        /// <exception cref="ArgumentException">Cannot call AddImages with chapter images.</exception>
         public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)
@@ -2526,10 +2529,11 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets the file system path to delete when the item is to be deleted.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The metadata for the deleted paths.</returns>
         public virtual IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            return new[] {
+            return new[]
+            {
                 new FileSystemMetadata
                 {
                     FullName = Path,
@@ -2889,7 +2893,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Updates the official rating based on content and returns true or false indicating if it changed.
         /// </summary>
-        /// <returns></returns>
+        /// <returns><c>true</c> if the rating was updated; otherwise <c>false</c>.</returns>
         public bool UpdateRatingToItems(IList<BaseItem> children)
         {
             var currentOfficialRating = OfficialRating;
@@ -2905,7 +2909,9 @@ namespace MediaBrowser.Controller.Entities
 
             OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
 
-            return !string.Equals(currentOfficialRating ?? string.Empty, OfficialRating ?? string.Empty,
+            return !string.Equals(
+                currentOfficialRating ?? string.Empty,
+                OfficialRating ?? string.Empty,
                 StringComparison.OrdinalIgnoreCase);
         }
 
@@ -3002,7 +3008,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public bool Equals(BaseItem item) => Object.Equals(Id, item?.Id);
+        public bool Equals(BaseItem other) => object.Equals(Id, other?.Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(Id);
