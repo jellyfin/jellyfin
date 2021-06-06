@@ -394,7 +394,7 @@ namespace Emby.Server.Implementations.Plugins
                 Category = packageInfo.Category,
                 Changelog = versionInfo.Changelog ?? string.Empty,
                 Description = packageInfo.Description,
-                Id = new Guid(packageInfo.Id),
+                Id = packageInfo.Id,
                 Name = packageInfo.Name,
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,

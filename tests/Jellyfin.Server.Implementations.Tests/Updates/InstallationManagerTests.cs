@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,12 +47,36 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
         [Fact]
         public async Task GetPackages_Valid_Success()
         {
-            IList<PackageInfo> packages = await _installationManager.GetPackages(
+            PackageInfo[] packages = await _installationManager.GetPackages(
                 "Jellyfin Stable",
                 "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
                 false);
 
-            Assert.Equal(25, packages.Count);
+            Assert.Equal(25, packages.Length);
+        }
+
+        [Fact]
+        public async Task FilterPackages_NameOnly_Success()
+        {
+            PackageInfo[] packages = await _installationManager.GetPackages(
+                "Jellyfin Stable",
+                "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
+                false);
+
+            packages = _installationManager.FilterPackages(packages, "Anime").ToArray();
+            Assert.Single(packages);
+        }
+
+        [Fact]
+        public async Task FilterPackages_GuidOnly_Success()
+        {
+            PackageInfo[] packages = await _installationManager.GetPackages(
+                "Jellyfin Stable",
+                "https://repo.jellyfin.org/releases/plugin/manifest-stable.json",
+                false);
+
+            packages = _installationManager.FilterPackages(packages, id: new Guid("a4df60c5-6ab4-412a-8f79-2cab93fb2bc5")).ToArray();
+            Assert.Single(packages);
         }
     }
 }
