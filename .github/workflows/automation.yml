@@ -1,21 +1,31 @@
 name: Automation
 
 on:
+  push:
+    branches:
+      - master
   pull_request_target:
+  issue_comment:
 
 jobs:
-  main:
+  label:
+    name: Labeling
     runs-on: ubuntu-latest
     steps:
-      - name: Does PR has the stable backport label?
-        uses: Dreamcodeio/does-pr-has-label@v1.2
-        id: checkLabel
+      - name: Apply label
+        uses: eps1lon/actions-label-merge-conflict@v2.0.1
+        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request_target'}}
         with:
-          label: stable backport
+          dirtyLabel: 'merge conflict'
+          repoToken: ${{ secrets.JF_BOT_TOKEN }}
 
+  project:
+    name: Project board
+    runs-on: ubuntu-latest
+    steps:
       - name: Remove from 'Current Release' project
         uses: alex-page/github-project-automation-plus@v0.7.1
-        if: (github.event.pull_request || github.event.issue.pull_request) && !steps.checkLabel.outputs.hasLabel
+        if: (github.event.pull_request || github.event.issue.pull_request) && !contains(github.event.*.labels.*.name, 'stable backport')
         continue-on-error: true
         with:
           project: Current Release
@@ -33,7 +43,7 @@ jobs:
 
       - name: Add to 'Current Release' project
         uses: alex-page/github-project-automation-plus@v0.7.1
-        if: (github.event.pull_request || github.event.issue.pull_request) && steps.checkLabel.outputs.hasLabel
+        if: (github.event.pull_request || github.event.issue.pull_request) && !contains(github.event.*.labels.*.name, 'stable backport')
         continue-on-error: true
         with:
           project: Current Release
