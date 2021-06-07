@@ -987,7 +987,13 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                items = GetChildren(user, true).Where(filter);
+                // need to pass this param to the children.
+                var childQuery = new InternalItemsQuery
+                {
+                    DisplayAlbumFolders = query.DisplayAlbumFolders
+                };
+
+                items = GetChildren(user, true, childQuery).Where(filter);
             }
 
             return PostFilterAndSort(items, query, true);
@@ -1325,7 +1331,21 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query)
         {
-            foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
+            // If Query.AlbumFolders is set, then enforce the format as per the db in that it permits sub-folders in music albums.
+            IEnumerable<BaseItem> children = null;
+            if ((query?.DisplayAlbumFolders ?? false) && (this is MusicAlbum))
+            {
+                children = Children;
+                query = null;
+            }
+
+            // If there are not sub-folders, proceed as normal.
+            if (children == null)
+            {
+                children = GetEligibleChildrenForRecursiveChildren(user);
+            }
+
+            foreach (var child in children)
             {
                 bool? isVisibleToUser = null;
 
