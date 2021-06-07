@@ -1,6 +1,4 @@
-﻿#pragma warning disable CA1040 // Avoid empty interfaces
-
-namespace MediaBrowser.Controller.Channels
+﻿namespace MediaBrowser.Controller.Channels
 {
     /// <summary>
     /// Disable media source display.
