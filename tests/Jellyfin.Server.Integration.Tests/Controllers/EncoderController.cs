@@ -18,7 +18,7 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Information retrieved.</response>
         [HttpGet("UrlDecode")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ContentResult TestUrlDecoding([FromQuery]Dictionary<string, string>? @params = null)
+        public ContentResult TestUrlDecoding([FromQuery] Dictionary<string, string>? @params = null)
         {
             return new ContentResult()
             {
