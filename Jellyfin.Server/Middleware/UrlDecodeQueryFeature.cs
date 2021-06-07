@@ -72,7 +72,7 @@ namespace Jellyfin.Server.Middleware
                     if (i == -1)
                     {
                         // encoded is an equals.
-                        pairs.Add(pair[0..i].ToString(), new StringValues(string.Empty));
+                        pairs.Add(pair[..i].ToString(), StringValues.Empty);
                         continue;
                     }
 
