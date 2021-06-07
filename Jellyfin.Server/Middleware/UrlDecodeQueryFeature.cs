@@ -76,7 +76,7 @@ namespace Jellyfin.Server.Middleware
                         continue;
                     }
 
-                    pairs.Add(pair[0..i].ToString(), new StringValues(pair[(i + 1)..].ToString()));
+                    pairs.Add(pair[..i].ToString(), new StringValues(pair[(i + 1)..].ToString()));
                 }
 
                 _store = new QueryCollection(pairs);
