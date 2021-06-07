@@ -46,7 +46,7 @@ namespace Jellyfin.Server.Middleware
 
                 // Encoded querystrings have no value, so don't process anything if a value is present.
                 var (key, stringValues) = value.First();
-                if (!string.IsNullOrEmpty(kvp.Value))
+                if (!string.IsNullOrEmpty(stringValues))
                 {
                     _store = value;
                     return;
