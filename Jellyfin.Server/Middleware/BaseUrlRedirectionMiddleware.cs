@@ -66,6 +66,14 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
             }
+            else if (string.IsNullOrEmpty(localPath)
+                     || localPath.Equals("/", StringComparison.Ordinal))
+            {
+                // Always redirect back to the default path if root is requested.
+                _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
+                httpContext.Response.Redirect("/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
+                return;
+            }
 
             await _next(httpContext).ConfigureAwait(false);
         }
