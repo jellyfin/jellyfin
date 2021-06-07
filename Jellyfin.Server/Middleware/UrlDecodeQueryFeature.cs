@@ -53,7 +53,7 @@ namespace Jellyfin.Server.Middleware
                 }
 
                 // Unencode and re-parse querystring.
-                var unencodedKey = HttpUtility.UrlDecode(kvp.Key);
+                var unencodedKey = HttpUtility.UrlDecode(key);
 
                 if (string.Equals(unencodedKey, kvp.Key, System.StringComparison.Ordinal))
                 {
