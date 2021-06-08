@@ -55,7 +55,7 @@ namespace Jellyfin.Server.Middleware
                 // Unencode and re-parse querystring.
                 var unencodedKey = HttpUtility.UrlDecode(key);
 
-                if (string.Equals(unencodedKey, key, System.StringComparison.Ordinal))
+                if (string.Equals(unencodedKey, key, StringComparison.Ordinal))
                 {
                     // Don't do anything if it's not encoded.
                     _store = value;
@@ -72,7 +72,7 @@ namespace Jellyfin.Server.Middleware
                     if (i == -1)
                     {
                         // encoded is an equals.
-                        pairs.Add(pair[..i].ToString(), StringValues.Empty);
+                        pairs.Add(pair.ToString(), StringValues.Empty);
                         continue;
                     }
 
