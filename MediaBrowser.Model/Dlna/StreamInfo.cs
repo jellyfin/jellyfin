@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -597,196 +598,246 @@ namespace MediaBrowser.Model.Dlna
             return null;
         }
 
-        public string ToUrl(string baseUrl, string accessToken)
+        /// <summary>
+        /// Returns this class as a url.
+        /// </summary>
+        /// <param name="baseUrl">The baseUrl.</param>
+        /// <param name="accessToken">The accessToken.</param>
+        /// <param name="query">Optional extra query.</param>
+        /// <returns>A querystring representation of this object.</returns>
+        public string ToUrl(string baseUrl, string accessToken, string query = null)
         {
             if (PlayMethod == PlayMethod.DirectPlay)
             {
-                return MediaSource.Path;
+                return MediaSource?.Path ?? string.Empty;
             }
 
-            if (string.IsNullOrEmpty(baseUrl))
+            var sb = new StringBuilder(2000);
+
+            if (!string.IsNullOrEmpty(baseUrl))
             {
-                throw new ArgumentNullException(nameof(baseUrl));
+                sb.Append(baseUrl.TrimEnd('/'));
             }
 
-            var list = new List<string>();
-            foreach (NameValuePair pair in BuildParams(this, accessToken))
-            {
-                if (string.IsNullOrEmpty(pair.Value))
-                {
-                    continue;
-                }
-
-                // Try to keep the url clean by omitting defaults
-                if (string.Equals(pair.Name, "StartTimeTicks", StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(pair.Value, "0", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (string.Equals(pair.Name, "SubtitleStreamIndex", StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(pair.Value, "-1", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                if (string.Equals(pair.Name, "Static", StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(pair.Value, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                var encodedValue = pair.Value.Replace(" ", "%20");
-
-                list.Add(string.Format(CultureInfo.InvariantCulture, "{0}={1}", pair.Name, encodedValue));
-            }
-
-            string queryString = string.Join("&", list.ToArray());
-
-            return GetUrl(baseUrl, queryString);
-        }
-
-        private string GetUrl(string baseUrl, string queryString)
-        {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(nameof(baseUrl));
-            }
-
-            string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
-
-            baseUrl = baseUrl.TrimEnd('/');
-
-            if (MediaType == DlnaProfileType.Audio)
-            {
-                if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
-                {
-                    return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
-                }
-
-                return string.Format(CultureInfo.InvariantCulture, "{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
-            }
+            sb.Append($"/{MediaType}/");
+            sb.Append(ItemId);
 
             if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
-            }
-
-            return string.Format(CultureInfo.InvariantCulture, "{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
-        }
-
-        private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken)
-        {
-            var list = new List<NameValuePair>();
-
-            string audioCodecs = item.AudioCodecs.Length == 0 ?
-                string.Empty :
-                string.Join(",", item.AudioCodecs);
-
-            string videoCodecs = item.VideoCodecs.Length == 0 ?
-                string.Empty :
-                string.Join(",", item.VideoCodecs);
-
-            list.Add(new NameValuePair("DeviceProfileId", item.DeviceProfileId ?? string.Empty));
-            list.Add(new NameValuePair("DeviceId", item.DeviceId ?? string.Empty));
-            list.Add(new NameValuePair("MediaSourceId", item.MediaSourceId ?? string.Empty));
-            list.Add(new NameValuePair("Static", item.IsDirectStream.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-            list.Add(new NameValuePair("VideoCodec", videoCodecs));
-            list.Add(new NameValuePair("AudioCodec", audioCodecs));
-            list.Add(new NameValuePair("AudioStreamIndex", item.AudioStreamIndex.HasValue ? item.AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-            list.Add(new NameValuePair("SubtitleStreamIndex", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-            list.Add(new NameValuePair("VideoBitrate", item.VideoBitrate.HasValue ? item.VideoBitrate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-            list.Add(new NameValuePair("AudioBitrate", item.AudioBitrate.HasValue ? item.AudioBitrate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-            list.Add(new NameValuePair("AudioSampleRate", item.AudioSampleRate.HasValue ? item.AudioSampleRate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-
-            list.Add(new NameValuePair("MaxFramerate", item.MaxFramerate.HasValue ? item.MaxFramerate.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-            list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? item.MaxWidth.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-            list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? item.MaxHeight.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-
-            long startPositionTicks = item.StartPositionTicks;
-
-            var isHls = string.Equals(item.SubProtocol, "hls", StringComparison.OrdinalIgnoreCase);
-
-            if (isHls)
-            {
-                list.Add(new NameValuePair("StartTimeTicks", string.Empty));
+                sb.Append("/master.m3u8?");
             }
             else
             {
-                list.Add(new NameValuePair("StartTimeTicks", startPositionTicks.ToString(CultureInfo.InvariantCulture)));
+                sb.Append("/stream");
+
+                if (!string.IsNullOrEmpty(Container))
+                {
+                    sb.Append('.');
+                    sb.Append(Container);
+                }
+
+                sb.Append('?');
             }
 
-            list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
-            list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
-
-            string liveStreamId = item.MediaSource?.LiveStreamId;
-            list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
-
-            list.Add(new NameValuePair("SubtitleMethod", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? item.SubtitleDeliveryMethod.ToString() : string.Empty));
-
-            if (!item.IsDirectStream)
+            if (!string.IsNullOrEmpty(DeviceProfileId))
             {
-                if (item.RequireNonAnamorphic)
-                {
-                    list.Add(new NameValuePair("RequireNonAnamorphic", item.RequireNonAnamorphic.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-                }
-
-                list.Add(new NameValuePair("TranscodingMaxAudioChannels", item.TranscodingMaxAudioChannels.HasValue ? item.TranscodingMaxAudioChannels.Value.ToString(CultureInfo.InvariantCulture) : string.Empty));
-
-                if (item.EnableSubtitlesInManifest)
-                {
-                    list.Add(new NameValuePair("EnableSubtitlesInManifest", item.EnableSubtitlesInManifest.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-                }
-
-                if (item.EnableMpegtsM2TsMode)
-                {
-                    list.Add(new NameValuePair("EnableMpegtsM2TsMode", item.EnableMpegtsM2TsMode.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-                }
-
-                if (item.EstimateContentLength)
-                {
-                    list.Add(new NameValuePair("EstimateContentLength", item.EstimateContentLength.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-                }
-
-                if (item.TranscodeSeekInfo != TranscodeSeekInfo.Auto)
-                {
-                    list.Add(new NameValuePair("TranscodeSeekInfo", item.TranscodeSeekInfo.ToString().ToLowerInvariant()));
-                }
-
-                if (item.CopyTimestamps)
-                {
-                    list.Add(new NameValuePair("CopyTimestamps", item.CopyTimestamps.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
-                }
-
-                list.Add(new NameValuePair("RequireAvc", item.RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()));
+                sb.Append("&DeviceProfileId=");
+                sb.Append(DeviceProfileId);
             }
 
-            list.Add(new NameValuePair("Tag", item.MediaSource.ETag ?? string.Empty));
-
-            string subtitleCodecs = item.SubtitleCodecs.Length == 0 ?
-               string.Empty :
-               string.Join(",", item.SubtitleCodecs);
-
-            list.Add(new NameValuePair("SubtitleCodec", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed ? subtitleCodecs : string.Empty));
-
-            if (isHls)
+            if (!string.IsNullOrEmpty(DeviceId))
             {
-                list.Add(new NameValuePair("SegmentContainer", item.Container ?? string.Empty));
-
-                if (item.SegmentLength.HasValue)
-                {
-                    list.Add(new NameValuePair("SegmentLength", item.SegmentLength.Value.ToString(CultureInfo.InvariantCulture)));
-                }
-
-                if (item.MinSegments.HasValue)
-                {
-                    list.Add(new NameValuePair("MinSegments", item.MinSegments.Value.ToString(CultureInfo.InvariantCulture)));
-                }
-
-                list.Add(new NameValuePair("BreakOnNonKeyFrames", item.BreakOnNonKeyFrames.ToString(CultureInfo.InvariantCulture)));
+                sb.Append("&DeviceId=");
+                sb.Append(DeviceId);
             }
 
-            foreach (var pair in item.StreamOptions)
+            if (!string.IsNullOrEmpty(MediaSourceId))
+            {
+                sb.Append("&MediaSourceId=");
+                sb.Append(MediaSourceId);
+            }
+
+            // default true so don't store.
+            if (IsDirectStream)
+            {
+                sb.Append("&Static=true");
+            }
+
+            if (VideoCodecs.Length != 0)
+            {
+                sb.Append("&VideoCodec=");
+                sb.Append(string.Join(",", VideoCodecs));
+            }
+
+            if (AudioCodecs.Length != 0)
+            {
+                sb.Append("&AudioCodec=");
+                sb.Append(string.Join(",", AudioCodecs));
+            }
+
+            if (AudioStreamIndex.HasValue)
+            {
+                sb.Append("&AudioStreamIndex=");
+                sb.Append(AudioStreamIndex.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (SubtitleStreamIndex.HasValue && SubtitleDeliveryMethod != SubtitleDeliveryMethod.External && SubtitleStreamIndex != -1)
+            {
+                sb.Append("&SubtitleStreamIndex=");
+                sb.Append(SubtitleStreamIndex.Value.ToString(CultureInfo.InvariantCulture));
+                sb.Append("&SubtitleMethod=");
+                sb.Append(SubtitleDeliveryMethod.ToString());
+            }
+
+            if (VideoBitrate.HasValue)
+            {
+                sb.Append("&VideoBitrate=");
+                sb.Append(VideoBitrate.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (AudioBitrate.HasValue)
+            {
+                sb.Append("&AudioBitrate=");
+                sb.Append(AudioBitrate.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (AudioSampleRate.HasValue)
+            {
+                sb.Append("&AudioSampleRate=");
+                sb.Append(AudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (MaxFramerate.HasValue)
+            {
+                sb.Append("&MaxFramerate=");
+                sb.Append(MaxFramerate.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (MaxWidth.HasValue)
+            {
+                sb.Append("&MaxWidth=");
+                sb.Append(MaxWidth.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (MaxHeight.HasValue)
+            {
+                sb.Append("&MaxHeight=");
+                sb.Append(MaxHeight.Value.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (!string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
+            {
+                if (StartPositionTicks != 0)
+                {
+                    sb.Append("&StartTimeTicks=");
+                    sb.Append(StartPositionTicks.ToString(CultureInfo.InvariantCulture));
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(Container))
+                {
+                    sb.Append("&SegmentContainer=");
+                    sb.Append(Container);
+                }
+
+                if (SegmentLength.HasValue)
+                {
+                    sb.Append("&SegmentLength=");
+                    sb.Append(SegmentLength.Value.ToString(CultureInfo.InvariantCulture));
+                }
+
+                if (MinSegments.HasValue)
+                {
+                    sb.Append("&MinSegments=");
+                    sb.Append(MinSegments.Value.ToString(CultureInfo.InvariantCulture));
+                }
+
+                sb.Append("&BreakOnNonKeyFrames=");
+                sb.Append(BreakOnNonKeyFrames.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (!string.IsNullOrEmpty(PlaySessionId))
+            {
+                sb.Append("&PlaySessionId=");
+                sb.Append(PlaySessionId);
+            }
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                sb.Append("&api_key=");
+                sb.Append(accessToken);
+            }
+
+            var liveStreamId = MediaSource?.LiveStreamId;
+            if (!string.IsNullOrEmpty(liveStreamId))
+            {
+                sb.Append("&LiveStreamId=");
+                sb.Append(liveStreamId);
+            }
+
+            if (!IsDirectStream)
+            {
+                if (RequireNonAnamorphic)
+                {
+                    sb.Append("&RequireNonAnamorphic=");
+                    sb.Append(RequireNonAnamorphic.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                }
+
+                if (TranscodingMaxAudioChannels.HasValue)
+                {
+                    sb.Append("&TranscodingMaxAudioChannels=");
+                    sb.Append(TranscodingMaxAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
+                }
+
+                if (EnableSubtitlesInManifest)
+                {
+                    sb.Append("&EnableSubtitlesInManifest=");
+                    sb.Append(EnableSubtitlesInManifest.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                }
+
+                if (EnableMpegtsM2TsMode)
+                {
+                    sb.Append("&EnableMpegtsM2TsMode=");
+                    sb.Append(EnableMpegtsM2TsMode.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                }
+
+                if (EstimateContentLength)
+                {
+                    sb.Append("&EstimateContentLength=");
+                    sb.Append(EstimateContentLength.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                }
+
+                if (TranscodeSeekInfo != TranscodeSeekInfo.Auto)
+                {
+                    sb.Append("&TranscodeSeekInfo=");
+                    sb.Append(TranscodeSeekInfo.ToString().ToLowerInvariant());
+                }
+
+                if (CopyTimestamps)
+                {
+                    sb.Append("&CopyTimestamps=");
+                    sb.Append(CopyTimestamps.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+                }
+
+                sb.Append("&RequireAvc=");
+                sb.Append(RequireAvc.ToString(CultureInfo.InvariantCulture).ToLowerInvariant());
+            }
+
+            var etag = MediaSource?.ETag;
+            if (!string.IsNullOrEmpty(etag))
+            {
+                sb.Append("&Tag=");
+                sb.Append(etag);
+            }
+
+            if (SubtitleStreamIndex.HasValue && SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed && SubtitleCodecs.Length != 0)
+            {
+                sb.Append("&SubtitleCodec=");
+                sb.Append(string.Join(",", SubtitleCodecs));
+            }
+
+            foreach (var pair in StreamOptions)
             {
                 if (string.IsNullOrEmpty(pair.Value))
                 {
@@ -794,15 +845,24 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // strip spaces to avoid having to encode h264 profile names
-                list.Add(new NameValuePair(pair.Key, pair.Value.Replace(" ", string.Empty)));
+                sb.Append('&');
+                sb.Append(pair.Key);
+                sb.Append('=');
+                sb.Append(pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal));
             }
 
-            if (!item.IsDirectStream)
+            if (!IsDirectStream)
             {
-                list.Add(new NameValuePair("TranscodeReasons", string.Join(',', item.TranscodeReasons.Distinct())));
+                sb.Append("&TranscodeReasons=");
+                sb.Append(string.Join(",", TranscodeReasons.Distinct().Select(i => i.ToString())));
             }
 
-            return list;
+            if (!string.IsNullOrEmpty(query))
+            {
+                sb.Append(query);
+            }
+
+            return sb.ToString();
         }
 
         public List<SubtitleStreamInfo> GetExternalSubtitles(ITranscoderSupport transcoderSupport, bool includeSelectedTrackOnly, string baseUrl, string accessToken)
