@@ -14,6 +14,7 @@ namespace Jellyfin.Server.Tests
         [InlineData("e0a72cb2a2c7", "e0a72cb2a2c7")] // isn't encoded
         [InlineData("random+test", "random test")] // encoded
         [InlineData("random%20test", "random test")] // encoded
+        [InlineData("++", "  ")] // encoded
         public static void EmptyValueTest(string query, string key)
         {
             var dict = new Dictionary<string, StringValues>
@@ -23,7 +24,7 @@ namespace Jellyfin.Server.Tests
             var test = new UrlDecodeQueryFeature(new QueryFeature(new QueryCollection(dict)));
             Assert.Single(test.Query);
             var (k, v) = test.Query.First();
-            Assert.Equal(k, key);
+            Assert.Equal(key, k);
             Assert.Empty(v);
         }
     }
