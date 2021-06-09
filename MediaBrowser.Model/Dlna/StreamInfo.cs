@@ -605,7 +605,7 @@ namespace MediaBrowser.Model.Dlna
         /// <param name="accessToken">The accessToken.</param>
         /// <param name="query">Optional extra query.</param>
         /// <returns>A querystring representation of this object.</returns>
-        public string ToUrl(string baseUrl, string accessToken, string query = null)
+        public string ToUrl(string? baseUrl, string? accessToken, string? query = null)
         {
             if (PlayMethod == PlayMethod.DirectPlay)
             {
@@ -619,7 +619,15 @@ namespace MediaBrowser.Model.Dlna
                 sb.Append(baseUrl.TrimEnd('/'));
             }
 
-            sb.Append($"/{MediaType}/");
+            if (MediaType == DlnaProfileType.Audio)
+            {
+                sb.Append("/audio/");
+            }
+            else
+            {
+                sb.Append("/videos/");
+            }
+
             sb.Append(ItemId);
 
             if (string.Equals(SubProtocol, "hls", StringComparison.OrdinalIgnoreCase))
