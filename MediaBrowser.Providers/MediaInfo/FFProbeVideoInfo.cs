@@ -147,7 +147,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         Path = path,
                         Protocol = protocol,
-                        VideoType = item.VideoType
+                        VideoType = item.VideoType,
+                        IsoType = item.IsoType
                     }
                 },
                 cancellationToken);
