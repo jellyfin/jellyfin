@@ -57,14 +57,6 @@ namespace MediaBrowser.Model.Globalization
         IEnumerable<LocalizationOption> GetLocalizationOptions();
 
         /// <summary>
-        /// Checks if the string contains a character with the specified unicode category.
-        /// </summary>
-        /// <param name="value">The string.</param>
-        /// <param name="category">The unicode category.</param>
-        /// <returns>Wether or not the string contains a character with the specified unicode category.</returns>
-        bool HasUnicodeCategory(string value, UnicodeCategory category);
-
-        /// <summary>
         /// Returns the correct <see cref="CultureInfo" /> for the given language.
         /// </summary>
         /// <param name="language">The language.</param>
