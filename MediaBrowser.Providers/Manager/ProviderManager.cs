@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;

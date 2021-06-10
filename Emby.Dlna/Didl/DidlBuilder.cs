@@ -10,6 +10,7 @@ using System.Text;
 using System.Xml;
 using Emby.Dlna.ContentDirectory;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;

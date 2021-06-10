@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Drawing;
@@ -433,7 +434,7 @@ namespace Emby.Drawing
                 return null;
             }
 
-            return (user.ProfileImage.Path + user.ProfileImage.LastModified.Ticks).GetMD5()
+            return (user.ProfileImage.Path + user.ProfileImage.LastModifiedDate.Ticks).GetMD5()
                 .ToString("N", CultureInfo.InvariantCulture);
         }
 

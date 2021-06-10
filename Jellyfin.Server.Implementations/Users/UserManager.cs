@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1307
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -712,8 +712,8 @@ namespace Jellyfin.Server.Implementations.Users
         {
             await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
             user.ProfileImage = null;
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users[user.Id] = user;
         }
 

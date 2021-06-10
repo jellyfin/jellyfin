@@ -1,9 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace MediaBrowser.Common.Json.Converters
+﻿namespace MediaBrowser.Common.Json.Converters
 {
     /// <summary>
     /// Convert Pipe delimited string to array of type.
