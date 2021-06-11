@@ -1048,7 +1048,7 @@ namespace Emby.Server.Implementations.Data
 
             // TODO The following is an ugly performance optimization, but it's extremely unlikely that the data in the database would be malformed
             var valueSpan = value.AsSpan();
-            var count = valueSpan.CountOccurrences('|') + 1;
+            var count = valueSpan.Count('|') + 1;
 
             var position = 0;
             var result = new ItemImageInfo[count];
