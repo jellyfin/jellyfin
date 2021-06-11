@@ -211,6 +211,7 @@ namespace MediaBrowser.Providers.Manager
 
         private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
         {
+            // Episode and Season do not support Identify, so the search results are the Series'
             switch (lookupInfo)
             {
                 case EpisodeInfo episodeInfo:
