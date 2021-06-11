@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Text.Json.Serialization;
 using SysVersion = System.Version;
 
