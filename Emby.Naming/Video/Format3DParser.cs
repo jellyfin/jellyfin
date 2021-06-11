@@ -17,17 +17,17 @@ namespace Emby.Naming.Video
         /// <param name="path">Path to file.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <returns>Returns <see cref="Format3DResult"/> object.</returns>
-        public static Format3DResult Parse(string path, NamingOptions namingOptions)
+        public static Format3DResult Parse(ReadOnlySpan<char> path, NamingOptions namingOptions)
         {
             int oldLen = namingOptions.VideoFlagDelimiters.Length;
-            var delimiters = new char[oldLen + 1];
-            namingOptions.VideoFlagDelimiters.CopyTo(delimiters, 0);
+            Span<char> delimiters = stackalloc char[oldLen + 1];
+            namingOptions.VideoFlagDelimiters.AsSpan().CopyTo(delimiters);
             delimiters[oldLen] = ' ';
 
             return Parse(path, delimiters, namingOptions);
         }
 
-        private static Format3DResult Parse(ReadOnlySpan<char> path, char[] delimiters, NamingOptions namingOptions)
+        private static Format3DResult Parse(ReadOnlySpan<char> path, ReadOnlySpan<char> delimiters, NamingOptions namingOptions)
         {
             foreach (var rule in namingOptions.Format3DRules)
             {
@@ -42,7 +42,7 @@ namespace Emby.Naming.Video
             return _defaultResult;
         }
 
-        private static Format3DResult Parse(ReadOnlySpan<char> path, Format3DRule rule, char[] delimiters)
+        private static Format3DResult Parse(ReadOnlySpan<char> path, Format3DRule rule, ReadOnlySpan<char> delimiters)
         {
             bool is3D = false;
             string? format3D = null;
