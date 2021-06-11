@@ -112,5 +112,10 @@
     "Artists": "Artistë",
     "Application": "Aplikacioni",
     "AppDeviceValues": "Aplikacioni: {0}, Pajisja: {1}",
-    "Albums": "Albume"
+    "Albums": "Albume",
+    "TaskCleanActivityLogDescription": "Pastro të dhënat mbi aktivitetin më të vjetra sesa koha e përcaktuar.",
+    "TaskCleanActivityLog": "Pastro të dhënat mbi aktivitetin",
+    "Undefined": "I papërcaktuar",
+    "Forced": "I detyruar",
+    "Default": "Parazgjedhur"
 }
