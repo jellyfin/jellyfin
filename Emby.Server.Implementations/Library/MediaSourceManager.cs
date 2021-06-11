@@ -352,7 +352,7 @@ namespace Emby.Server.Implementations.Library
 
         private string[] NormalizeLanguage(string language)
         {
-            if (language == null)
+            if (string.IsNullOrEmpty(language))
             {
                 return Array.Empty<string>();
             }
@@ -381,8 +381,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredSubs = string.IsNullOrEmpty(user.SubtitleLanguagePreference)
-                ? Array.Empty<string>() : NormalizeLanguage(user.SubtitleLanguagePreference);
+            var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLangage = defaultAudioIndex == null
@@ -411,9 +410,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = string.IsNullOrEmpty(user.AudioLanguagePreference)
-                ? Array.Empty<string>()
-                : NormalizeLanguage(user.AudioLanguagePreference);
+            var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }

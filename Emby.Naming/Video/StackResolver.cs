@@ -85,10 +85,8 @@ namespace Emby.Naming.Video
         /// <returns>Enumerable <see cref="FileStack"/> of videos.</returns>
         public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
         {
-            var resolver = new VideoResolver(_options);
-
             var list = files
-                .Where(i => i.IsDirectory || resolver.IsVideoFile(i.FullName) || resolver.IsStubFile(i.FullName))
+                .Where(i => i.IsDirectory || VideoResolver.IsVideoFile(i.FullName, _options) || VideoResolver.IsStubFile(i.FullName, _options))
                 .OrderBy(i => i.FullName)
                 .ToList();
 

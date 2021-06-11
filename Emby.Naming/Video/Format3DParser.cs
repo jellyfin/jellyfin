@@ -1,45 +1,37 @@
 using System;
-using System.Linq;
 using Emby.Naming.Common;
 
 namespace Emby.Naming.Video
 {
     /// <summary>
-    /// Parste 3D format related flags.
+    /// Parse 3D format related flags.
     /// </summary>
-    public class Format3DParser
+    public static class Format3DParser
     {
-        private readonly NamingOptions _options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Format3DParser"/> class.
-        /// </summary>
-        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFlagDelimiters and passes options to <see cref="FlagParser"/>.</param>
-        public Format3DParser(NamingOptions options)
-        {
-            _options = options;
-        }
+        // Static default result to save on allocation costs.
+        private static readonly Format3DResult _defaultResult = new (false, null);
 
         /// <summary>
         /// Parse 3D format related flags.
         /// </summary>
         /// <param name="path">Path to file.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Returns <see cref="Format3DResult"/> object.</returns>
-        public Format3DResult Parse(string path)
+        public static Format3DResult Parse(ReadOnlySpan<char> path, NamingOptions namingOptions)
         {
-            int oldLen = _options.VideoFlagDelimiters.Length;
-            var delimiters = new char[oldLen + 1];
-            _options.VideoFlagDelimiters.CopyTo(delimiters, 0);
+            int oldLen = namingOptions.VideoFlagDelimiters.Length;
+            Span<char> delimiters = stackalloc char[oldLen + 1];
+            namingOptions.VideoFlagDelimiters.AsSpan().CopyTo(delimiters);
             delimiters[oldLen] = ' ';
 
-            return Parse(new FlagParser(_options).GetFlags(path, delimiters));
+            return Parse(path, delimiters, namingOptions);
         }
 
-        internal Format3DResult Parse(string[] videoFlags)
+        private static Format3DResult Parse(ReadOnlySpan<char> path, ReadOnlySpan<char> delimiters, NamingOptions namingOptions)
         {
-            foreach (var rule in _options.Format3DRules)
+            foreach (var rule in namingOptions.Format3DRules)
             {
-                var result = Parse(videoFlags, rule);
+                var result = Parse(path, rule, delimiters);
 
                 if (result.Is3D)
                 {
@@ -47,51 +39,43 @@ namespace Emby.Naming.Video
                 }
             }
 
-            return new Format3DResult();
+            return _defaultResult;
         }
 
-        private static Format3DResult Parse(string[] videoFlags, Format3DRule rule)
+        private static Format3DResult Parse(ReadOnlySpan<char> path, Format3DRule rule, ReadOnlySpan<char> delimiters)
         {
-            var result = new Format3DResult();
+            bool is3D = false;
+            string? format3D = null;
 
-            if (string.IsNullOrEmpty(rule.PrecedingToken))
+            // If there's no preceding token we just consider it found
+            var foundPrefix = string.IsNullOrEmpty(rule.PrecedingToken);
+            while (path.Length > 0)
             {
-                result.Format3D = new[] { rule.Token }.FirstOrDefault(i => videoFlags.Contains(i, StringComparer.OrdinalIgnoreCase));
-                result.Is3D = !string.IsNullOrEmpty(result.Format3D);
-
-                if (result.Is3D)
+                var index = path.IndexOfAny(delimiters);
+                if (index == -1)
                 {
-                    result.Tokens.Add(rule.Token);
-                }
-            }
-            else
-            {
-                var foundPrefix = false;
-                string? format = null;
-
-                foreach (var flag in videoFlags)
-                {
-                    if (foundPrefix)
-                    {
-                        result.Tokens.Add(rule.PrecedingToken);
-
-                        if (string.Equals(rule.Token, flag, StringComparison.OrdinalIgnoreCase))
-                        {
-                            format = flag;
-                            result.Tokens.Add(rule.Token);
-                        }
-
-                        break;
-                    }
-
-                    foundPrefix = string.Equals(flag, rule.PrecedingToken, StringComparison.OrdinalIgnoreCase);
+                    index = path.Length - 1;
                 }
 
-                result.Is3D = foundPrefix && !string.IsNullOrEmpty(format);
-                result.Format3D = format;
+                var currentSlice = path[..index];
+                path = path[(index + 1)..];
+
+                if (!foundPrefix)
+                {
+                    foundPrefix = currentSlice.Equals(rule.PrecedingToken, StringComparison.OrdinalIgnoreCase);
+                    continue;
+                }
+
+                is3D = foundPrefix && currentSlice.Equals(rule.Token, StringComparison.OrdinalIgnoreCase);
+
+                if (is3D)
+                {
+                    format3D = rule.Token;
+                    break;
+                }
             }
 
-            return result;
+            return is3D ? new Format3DResult(true, format3D) : _defaultResult;
         }
     }
 }

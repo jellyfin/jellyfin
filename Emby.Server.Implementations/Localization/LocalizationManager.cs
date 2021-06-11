@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -169,12 +168,22 @@ namespace Emby.Server.Implementations.Localization
 
         /// <inheritdoc />
         public CultureDto FindLanguageInfo(string language)
-            => GetCultures()
-                .FirstOrDefault(i =>
-                    string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase)
-                    || i.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase)
-                    || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
+        {
+            // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
+            for (var i = 0; i < _cultures.Count; i++)
+            {
+                var culture = _cultures[i];
+                if (language.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
+                    || language.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
+                    || culture.ThreeLetterISOLanguageNames.Contains(language, StringComparison.OrdinalIgnoreCase)
+                    || language.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return culture;
+                }
+            }
+
+            return default;
+        }
 
         /// <inheritdoc />
         public IEnumerable<CountryInfo> GetCountries()
@@ -224,7 +233,7 @@ namespace Emby.Server.Implementations.Localization
                 throw new ArgumentNullException(nameof(rating));
             }
 
-            if (_unratedValues.Contains(rating, StringComparer.OrdinalIgnoreCase))
+            if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -252,11 +261,11 @@ namespace Emby.Server.Implementations.Localization
             var index = rating.IndexOf(':', StringComparison.Ordinal);
             if (index != -1)
             {
-                rating = rating.Substring(index).TrimStart(':').Trim();
+                var trimmedRating = rating.AsSpan(index).TrimStart(':').Trim();
 
-                if (!string.IsNullOrWhiteSpace(rating))
+                if (!trimmedRating.IsEmpty)
                 {
-                    return GetRatingLevel(rating);
+                    return GetRatingLevel(trimmedRating.ToString());
                 }
             }
 
@@ -318,7 +327,8 @@ namespace Emby.Server.Implementations.Localization
 
             return _dictionaries.GetOrAdd(
                 culture,
-                f => GetDictionary(Prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
+                (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
+                this);
         }
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
