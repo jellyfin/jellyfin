@@ -1498,7 +1498,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var packetBuffer = new byte[197];
 
-            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
             {
                 fs.Read(packetBuffer);
             }

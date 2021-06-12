@@ -236,29 +236,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
-            await using var stream = File.OpenRead(path);
+            await using var stream = AsyncFile.OpenRead(path);
             return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
-            await using var stream = File.OpenRead(path);
+            await using var stream = AsyncFile.OpenRead(path);
             return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        }
-
-        internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
-        {
-            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id))
-            {
-                // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
-                if (!string.IsNullOrWhiteSpace(id))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>Gets OMDB URL.</summary>
@@ -309,7 +295,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
@@ -349,7 +335,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;

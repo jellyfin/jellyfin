@@ -15,6 +15,7 @@ using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -546,7 +547,7 @@ namespace Jellyfin.Server
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = File.Open(configPath, FileMode.CreateNew);
+            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 

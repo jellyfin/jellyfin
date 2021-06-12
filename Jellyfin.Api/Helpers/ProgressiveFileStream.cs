@@ -40,7 +40,7 @@ namespace Jellyfin.Api.Helpers
             _allowAsyncFileRead = false;
 
             // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (AsyncFile.UseAsyncIO)
             {
                 fileOptions |= FileOptions.Asynchronous;
                 _allowAsyncFileRead = true;
