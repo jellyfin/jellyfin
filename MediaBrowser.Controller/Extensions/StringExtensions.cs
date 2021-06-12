@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -28,7 +27,7 @@ namespace MediaBrowser.Controller.Extensions
         /// <param name="value">The haystack to search in.</param>
         /// <param name="needle">The character to search for.</param>
         /// <returns>The number of occurrences of the [needle] character.</returns>
-        public static int CountOccurrences(this ReadOnlySpan<char> value, char needle)
+        public static int Count(this ReadOnlySpan<char> value, char needle)
         {
             var count = 0;
             var length = value.Length;
