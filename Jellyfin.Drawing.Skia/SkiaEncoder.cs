@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using BlurHashSharp.SkiaSharp;
+using Diacritics.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
@@ -142,9 +142,6 @@ namespace Jellyfin.Drawing.Skia
             return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
         }
 
-        private static bool HasDiacritics(string text)
-            => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
-
         private bool RequiresSpecialCharacterHack(string path)
         {
             for (int i = 0; i < path.Length; i++)
@@ -155,7 +152,7 @@ namespace Jellyfin.Drawing.Skia
                 }
             }
 
-            return HasDiacritics(path);
+            return path.HasDiacritics();
         }
 
         private string NormalizePath(string path)
