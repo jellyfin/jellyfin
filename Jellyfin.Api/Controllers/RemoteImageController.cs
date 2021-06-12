@@ -208,7 +208,7 @@ namespace Jellyfin.Api.Controllers
             var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
             Directory.CreateDirectory(fullCacheDirectory);
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, true);
+            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
             await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
             var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));

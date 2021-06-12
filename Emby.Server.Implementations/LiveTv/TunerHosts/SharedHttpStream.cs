@@ -129,37 +129,39 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private Task StartStreaming(HttpResponseMessage response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
-            return Task.Run(async () =>
-            {
-                try
+            return Task.Run(
+                async () =>
                 {
-                    Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
-                    using var message = response;
-                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                    await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
-                    await StreamHelper.CopyToAsync(
-                        stream,
-                        fileStream,
-                        IODefaults.CopyToBufferSize,
-                        () => Resolve(openTaskCompletionSource),
-                        cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException ex)
-                {
-                    Logger.LogInformation("Copying of {0} to {1} was canceled", GetType().Name, TempFilePath);
-                    openTaskCompletionSource.TrySetException(ex);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error copying live stream {0} to {1}.", GetType().Name, TempFilePath);
-                    openTaskCompletionSource.TrySetException(ex);
-                }
+                    try
+                    {
+                        Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
+                        using var message = response;
+                        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                        await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+                        await StreamHelper.CopyToAsync(
+                            stream,
+                            fileStream,
+                            IODefaults.CopyToBufferSize,
+                            () => Resolve(openTaskCompletionSource),
+                            cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        Logger.LogInformation("Copying of {0} to {1} was canceled", GetType().Name, TempFilePath);
+                        openTaskCompletionSource.TrySetException(ex);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex, "Error copying live stream {0} to {1}.", GetType().Name, TempFilePath);
+                        openTaskCompletionSource.TrySetException(ex);
+                    }
 
-                openTaskCompletionSource.TrySetResult(false);
+                    openTaskCompletionSource.TrySetResult(false);
 
-                EnableStreamSharing = false;
-                await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
-            }, CancellationToken.None);
+                    EnableStreamSharing = false;
+                    await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
+                },
+                CancellationToken.None);
         }
 
         private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)

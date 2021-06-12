@@ -15,6 +15,7 @@ using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
@@ -371,7 +372,7 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                await using var fileStream = File.OpenWrite(imagePath);
+                await using var fileStream = AsyncFile.OpenWrite(imagePath);
 
                 try
                 {

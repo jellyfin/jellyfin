@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
@@ -59,7 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            return File.OpenRead(info.Url);
+            return AsyncFile.OpenRead(info.Url);
         }
 
         private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)

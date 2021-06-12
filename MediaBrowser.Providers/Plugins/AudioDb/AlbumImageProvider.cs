@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.AudioDb
@@ -57,7 +58,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = AudioDbAlbumProvider.GetAlbumInfoPath(_config.ApplicationPaths, id);
 
-                await using FileStream jsonStream = File.OpenRead(path);
+                await using FileStream jsonStream = AsyncFile.OpenRead(path);
                 var obj = await JsonSerializer.DeserializeAsync<AudioDbAlbumProvider.RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (obj != null && obj.album != null && obj.album.Count > 0)
