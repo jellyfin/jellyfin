@@ -53,7 +53,11 @@ RUN apt-get update \
  vainfo \
  libva2 \
  locales \
- && apt-get remove curl gnupg -y \
+ unzip \
+# install Noto CJK fonts
+ && wget https://noto-website-2.storage.googleapis.com/pkgs/NotoSansCJK-Bold.ttc.zip -O /usr/share/fonts/NotoSansCJK-Bold.ttc.zip \
+ && unzip /usr/share/fonts/NotoSansCJK-Bold.ttc.zip -d /usr/share/fonts/ \
+ && apt-get remove curl gnupg unzip -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
