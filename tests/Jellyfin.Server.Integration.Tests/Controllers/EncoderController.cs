@@ -3,12 +3,12 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Jellyfin.Api.Controllers
+namespace Jellyfin.Server.Integration.Tests.Controllers
 {
     /// <summary>
     /// Controller for testing the encoded url.
     /// </summary>
-    public class EncoderController : BaseJellyfinApiController
+    public class EncoderController : BaseJellyfinTestController
     {
         /// <summary>
         /// Tests the url decoding.
