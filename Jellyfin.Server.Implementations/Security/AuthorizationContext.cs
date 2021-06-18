@@ -117,8 +117,8 @@ namespace Jellyfin.Server.Implementations.Security
 #pragma warning restore CA1508
 
             authInfo.HasToken = true;
-            await using var jellyfinDb = _jellyfinDbProvider.CreateContext();
-            var device = await jellyfinDb.Devices.FirstOrDefaultAsync(d => d.AccessToken == token).ConfigureAwait(false);
+            await using var dbContext = _jellyfinDbProvider.CreateContext();
+            var device = await dbContext.Devices.FirstOrDefaultAsync(d => d.AccessToken == token).ConfigureAwait(false);
 
             if (device != null)
             {
@@ -183,8 +183,8 @@ namespace Jellyfin.Server.Implementations.Security
 
                 if (updateToken)
                 {
-                    jellyfinDb.Devices.Update(device);
-                    await jellyfinDb.SaveChangesAsync().ConfigureAwait(false);
+                    dbContext.Devices.Update(device);
+                    await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
 
