@@ -123,10 +123,6 @@ namespace Jellyfin.Server.Implementations.Security
             if (device != null)
             {
                 authInfo.IsAuthenticated = true;
-            }
-
-            if (device != null)
-            {
                 var updateToken = false;
 
                 // TODO: Remove these checks for IsNullOrWhiteSpace
