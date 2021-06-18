@@ -532,7 +532,7 @@ namespace Emby.Server.Implementations.Session
             }
 
             var deviceOptions = await _deviceManager.GetDeviceOptions(deviceId).ConfigureAwait(false);
-            if (string.IsNullOrEmpty(deviceOptions.CustomName))
+            if (string.IsNullOrEmpty(deviceOptions?.CustomName))
             {
                 sessionInfo.DeviceName = deviceName;
             }
