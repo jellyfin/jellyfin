@@ -187,6 +187,19 @@ namespace Jellyfin.Server.Implementations.Security
                     await dbContext.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
+            else
+            {
+                var key = await dbContext.ApiKeys.FirstOrDefaultAsync(apiKey => apiKey.AccessToken == token).ConfigureAwait(false);
+                if (key != null)
+                {
+                    authInfo.IsAuthenticated = true;
+                    authInfo.Client = key.Name;
+                    authInfo.Token = key.AccessToken;
+                    authInfo.DeviceId = string.Empty;
+                    authInfo.Device = string.Empty;
+                    authInfo.Version = string.Empty;
+                }
+            }
 
             return authInfo;
         }

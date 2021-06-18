@@ -29,6 +29,6 @@ namespace MediaBrowser.Controller.Security
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <returns>A task representing the deletion of the API key.</returns>
-        Task DeleteApiKey(Guid accessToken);
+        Task DeleteApiKey(string accessToken);
     }
 }

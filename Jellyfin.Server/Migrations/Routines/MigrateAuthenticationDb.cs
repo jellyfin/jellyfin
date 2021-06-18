@@ -61,7 +61,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     {
                         dbContext.ApiKeys.Add(new ApiKey(row[3].ToString())
                         {
-                            AccessToken = row[1].ToGuid(),
+                            AccessToken = row[1].ToString(),
                             DateCreated = row[9].ToDateTime(),
                             DateLastActivity = row[10].ToDateTime()
                         });

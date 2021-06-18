@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Keys/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> RevokeKey([FromRoute, Required] Guid key)
+        public async Task<ActionResult> RevokeKey([FromRoute, Required] string key)
         {
             await _authenticationManager.DeleteApiKey(key).ConfigureAwait(false);
 

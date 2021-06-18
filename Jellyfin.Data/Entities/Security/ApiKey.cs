@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Globalization;
 
 namespace Jellyfin.Data.Entities.Security
 {
@@ -17,7 +18,7 @@ namespace Jellyfin.Data.Entities.Security
         {
             Name = name;
 
-            AccessToken = Guid.NewGuid();
+            AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             DateCreated = DateTime.UtcNow;
         }
 
@@ -50,6 +51,6 @@ namespace Jellyfin.Data.Entities.Security
         /// <summary>
         /// Gets or sets the access token.
         /// </summary>
-        public Guid AccessToken { get; set; }
+        public string AccessToken { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities.Security;
@@ -43,7 +41,7 @@ namespace Jellyfin.Server.Implementations.Security
                 .Select(key => new AuthenticationInfo
                 {
                     AppName = key.Name,
-                    AccessToken = key.AccessToken.ToString("N", CultureInfo.InvariantCulture),
+                    AccessToken = key.AccessToken,
                     DateCreated = key.DateCreated,
                     DeviceId = string.Empty,
                     DeviceName = string.Empty,
@@ -52,7 +50,7 @@ namespace Jellyfin.Server.Implementations.Security
         }
 
         /// <inheritdoc />
-        public async Task DeleteApiKey(Guid accessToken)
+        public async Task DeleteApiKey(string accessToken)
         {
             await using var dbContext = _dbProvider.CreateContext();
 
