@@ -84,9 +84,9 @@ namespace Jellyfin.Data.Entities.Security
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets the date this device was created.
+        /// Gets or sets the date this device was created.
         /// </summary>
-        public DateTime DateCreated { get; private set; }
+        public DateTime DateCreated { get; set; }
 
         /// <summary>
         /// Gets or sets the date of last activity.

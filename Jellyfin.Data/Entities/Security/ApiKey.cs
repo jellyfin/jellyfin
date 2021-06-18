@@ -31,9 +31,14 @@ namespace Jellyfin.Data.Entities.Security
         public int Id { get; private set; }
 
         /// <summary>
-        /// Gets the date created.
+        /// Gets or sets the date created.
         /// </summary>
-        public DateTime DateCreated { get; private set; }
+        public DateTime DateCreated { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date of last activity.
+        /// </summary>
+        public DateTime DateLastActivity { get; set; }
 
         /// <summary>
         /// Gets or sets the name.

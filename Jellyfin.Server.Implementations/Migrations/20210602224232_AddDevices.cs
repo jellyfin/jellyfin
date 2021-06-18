@@ -1,5 +1,6 @@
 ﻿#pragma warning disable CS1591
 #pragma warning disable SA1601
+
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -17,6 +18,7 @@ namespace Jellyfin.Server.Implementations.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     DateCreated = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DateLastActivity = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                     AccessToken = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
