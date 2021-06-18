@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -348,7 +350,7 @@ namespace Emby.Server.Implementations.Data
         /// Read a row from the specified reader into the provided userData object.
         /// </summary>
         /// <param name="reader"></param>
-        private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)
+        private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
         {
             var userData = new UserItemData();
 

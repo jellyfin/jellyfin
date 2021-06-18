@@ -61,8 +61,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">If user is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If the provided user doesn't exist.</exception>
         Task RenameUser(User user, string newName);
 
         /// <summary>
@@ -79,8 +79,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name of the new user.</param>
         /// <returns>The created user.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="name"/> already exists.</exception>
         Task<User> CreateUserAsync(string name);
 
         /// <summary>

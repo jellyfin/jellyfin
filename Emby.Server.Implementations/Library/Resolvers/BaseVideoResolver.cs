@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -45,11 +47,9 @@ namespace Emby.Server.Implementations.Library.Resolvers
         protected virtual TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            var namingOptions = LibraryManager.GetNamingOptions();
 
             // If the path is a file check for a matching extensions
-            var parser = new VideoResolver(namingOptions);
-
             if (args.IsDirectory)
             {
                 TVideoType video = null;
@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         if (IsDvdDirectory(child.FullName, filename, args.DirectoryService))
                         {
-                            videoInfo = parser.ResolveDirectory(args.Path);
+                            videoInfo = VideoResolver.ResolveDirectory(args.Path, namingOptions);
 
                             if (videoInfo == null)
                             {
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
                         if (IsBluRayDirectory(child.FullName, filename, args.DirectoryService))
                         {
-                            videoInfo = parser.ResolveDirectory(args.Path);
+                            videoInfo = VideoResolver.ResolveDirectory(args.Path, namingOptions);
 
                             if (videoInfo == null)
                             {
@@ -100,7 +100,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     }
                     else if (IsDvdFile(filename))
                     {
-                        videoInfo = parser.ResolveDirectory(args.Path);
+                        videoInfo = VideoResolver.ResolveDirectory(args.Path, namingOptions);
 
                         if (videoInfo == null)
                         {
@@ -130,7 +130,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             }
             else
             {
-                var videoInfo = parser.Resolve(args.Path, false, false);
+                var videoInfo = VideoResolver.Resolve(args.Path, false, namingOptions, false);
 
                 if (videoInfo == null)
                 {
@@ -250,10 +250,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         protected void Set3DFormat(Video video)
         {
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-
-            var resolver = new Format3DParser(namingOptions);
-            var result = resolver.Parse(video.Path);
+            var result = Format3DParser.Parse(video.Path, LibraryManager.GetNamingOptions());
 
             Set3DFormat(video, result.Is3D, result.Format3D);
         }

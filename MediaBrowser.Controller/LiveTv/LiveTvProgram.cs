@@ -53,6 +53,7 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         private static string EmbyServiceName = "Emby";
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             var serviceName = ServiceName;
@@ -150,14 +151,14 @@ namespace MediaBrowser.Controller.LiveTv
         [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
-        //[JsonIgnore]
+        // [JsonIgnore]
         // public override string MediaType
-        //{
+        // {
         //    get
         //    {
         //        return ChannelType == ChannelType.TV ? Model.Entities.MediaType.Video : Model.Entities.MediaType.Audio;
         //    }
-        //}
+        // }
 
         [JsonIgnore]
         public bool IsAiring

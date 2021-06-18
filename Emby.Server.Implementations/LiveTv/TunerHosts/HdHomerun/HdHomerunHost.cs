@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -581,7 +583,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     Logger,
                     Config,
                     _appHost,
-                    _networkManager,
                     _streamHelper);
             }
 
@@ -622,7 +623,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Logger,
                 Config,
                 _appHost,
-                _networkManager,
                 _streamHelper);
         }
 

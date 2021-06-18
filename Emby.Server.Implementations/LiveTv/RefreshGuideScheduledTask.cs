@@ -1,7 +1,6 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.LiveTv;
@@ -10,34 +9,55 @@ using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.LiveTv
 {
-    public class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
+    /// <summary>
+    /// The "Refresh Guide" scheduled task.
+    /// </summary>
+    public class RefreshGuideScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IConfigurationManager _config;
 
-        public RefreshChannelsScheduledTask(ILiveTvManager liveTvManager, IConfigurationManager config)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RefreshGuideScheduledTask"/> class.
+        /// </summary>
+        /// <param name="liveTvManager">The live tv manager.</param>
+        /// <param name="config">The configuration manager.</param>
+        public RefreshGuideScheduledTask(ILiveTvManager liveTvManager, IConfigurationManager config)
         {
             _liveTvManager = liveTvManager;
             _config = config;
         }
 
+        /// <inheritdoc />
         public string Name => "Refresh Guide";
 
+        /// <inheritdoc />
         public string Description => "Downloads channel information from live tv services.";
 
+        /// <inheritdoc />
         public string Category => "Live TV";
 
-        public Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
+        /// <inheritdoc />
+        public bool IsHidden => _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Length == 0;
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
+        public bool IsLogged => true;
+
+        /// <inheritdoc />
+        public string Key => "RefreshGuide";
+
+        /// <inheritdoc />
+        public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var manager = (LiveTvManager)_liveTvManager;
 
             return manager.RefreshChannels(progress, cancellationToken);
         }
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run.
-        /// </summary>
-        /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
@@ -51,13 +71,5 @@ namespace Emby.Server.Implementations.LiveTv
         {
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
-
-        public bool IsHidden => _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Length == 0;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
-
-        public string Key => "RefreshGuide";
     }
 }

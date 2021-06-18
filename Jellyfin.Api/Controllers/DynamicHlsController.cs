@@ -1190,7 +1190,8 @@ namespace Jellyfin.Api.Controllers
                 throw new ArgumentException("StartTimeTicks is not allowed.");
             }
 
-            using var cancellationTokenSource = new CancellationTokenSource();
+            // CTS lifecycle is managed internally.
+            var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
             using var state = await StreamingHelpers.GetStreamingState(
@@ -1760,9 +1761,9 @@ namespace Jellyfin.Api.Controllers
 
         private static FileSystemMetadata? GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
-            var folder = Path.GetDirectoryName(playlist);
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException("Path can't be a root directory.", nameof(playlist));
 
-            var filePrefix = Path.GetFileNameWithoutExtension(playlist) ?? string.Empty;
+            var filePrefix = Path.GetFileNameWithoutExtension(playlist);
 
             try
             {

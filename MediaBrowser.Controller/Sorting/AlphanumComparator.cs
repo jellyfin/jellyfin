@@ -121,7 +121,9 @@ namespace MediaBrowser.Controller.Sorting
                         return result;
                     }
                 }
+#pragma warning disable SA1500 // TODO remove with StyleCop.Analyzers v1.2.0 https://github.com/DotNetAnalyzers/StyleCopAnalyzers/pull/3196
             } while (pos1 < len1 && pos2 < len2);
+#pragma warning restore SA1500
 
             return len1 - len2;
         }

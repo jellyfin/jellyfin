@@ -11,10 +11,10 @@ namespace MediaBrowser.Controller.Net
     {
         Task<SessionInfo> GetSession(object requestContext);
 
-        Task<User> GetUser(object requestContext);
+        Task<User?> GetUser(object requestContext);
 
         Task<SessionInfo> GetSession(HttpContext requestContext);
 
-        Task<User> GetUser(HttpContext requestContext);
+        Task<User?> GetUser(HttpContext requestContext);
     }
 }

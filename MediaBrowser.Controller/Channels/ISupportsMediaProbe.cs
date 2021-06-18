@@ -1,7 +1,8 @@
-﻿#pragma warning disable CS1591
-
-namespace MediaBrowser.Controller.Channels
+﻿namespace MediaBrowser.Controller.Channels
 {
+    /// <summary>
+    /// Channel supports media probe.
+    /// </summary>
     public interface ISupportsMediaProbe
     {
     }

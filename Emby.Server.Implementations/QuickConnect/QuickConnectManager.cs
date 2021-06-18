@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -127,6 +129,7 @@ namespace Emby.Server.Implementations.QuickConnect
             return result;
         }
 
+        /// <inheritdoc/>
         public void AuthenticateRequest(AuthenticationRequest request, string token)
         {
             if (!_quickConnectTokens.TryGetValue(token, out var entry))

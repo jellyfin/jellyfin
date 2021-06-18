@@ -21,8 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj" />
-    <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
+    <ProjectReference Include="../Emby.Naming/Emby.Naming.csproj" />
+    <ProjectReference Include="../MediaBrowser.Model/MediaBrowser.Model.csproj" />
+    <ProjectReference Include="../MediaBrowser.Common/MediaBrowser.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

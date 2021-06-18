@@ -269,7 +269,7 @@ namespace Jellyfin.Api.Helpers
             {
                 _activeTranscodingJobs.Remove(job);
 
-                if (!job.CancellationTokenSource!.IsCancellationRequested)
+                if (job.CancellationTokenSource?.IsCancellationRequested == false)
                 {
                     job.CancellationTokenSource.Cancel();
                 }
@@ -379,7 +379,9 @@ namespace Jellyfin.Api.Helpers
         /// <param name="outputFilePath">The output file path.</param>
         private void DeleteHlsPartialStreamFiles(string outputFilePath)
         {
-            var directory = Path.GetDirectoryName(outputFilePath);
+            var directory = Path.GetDirectoryName(outputFilePath)
+                ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
+
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
             var filesToDelete = _fileSystem.GetFilePaths(directory)
@@ -749,7 +751,7 @@ namespace Jellyfin.Api.Helpers
                 _logger.LogError("FFmpeg exited with code {0}", process.ExitCode);
             }
 
-            process.Dispose();
+            job.Dispose();
         }
 
         private async Task AcquireResources(StreamState state, CancellationTokenSource cancellationTokenSource)

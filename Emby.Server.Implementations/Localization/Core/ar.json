@@ -116,5 +116,7 @@
     "TaskCleanLogs": "حذف دليل السجل",
     "TaskCleanActivityLogDescription": "يحذف سجل الأنشطة الأقدم من الوقت الموضوع.",
     "TaskCleanActivityLog": "حذف سجل الأنشطة",
-    "Default": "الإعدادات الافتراضية"
+    "Default": "الإعدادات الافتراضية",
+    "Undefined": "غير معرف",
+    "Forced": "ملحقة"
 }

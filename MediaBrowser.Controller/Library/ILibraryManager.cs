@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -352,6 +353,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="uniqueId">The unique identifier.</param>
+        /// <returns>The named view.</returns>
         UserView GetNamedView(
             string name,
             Guid parentId,
@@ -365,10 +367,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
+        /// <returns>The shadow view.</returns>
         UserView GetShadowView(
             BaseItem parent,
-          string viewType,
-          string sortName);
+            string viewType,
+            string sortName);
 
         /// <summary>
         /// Determines whether [is video file] [the specified path].
@@ -593,5 +596,11 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetParentItem(string parentId, Guid? userId);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        /// <summary>
+        /// Gets or creates a static instance of <see cref="NamingOptions"/>.
+        /// </summary>
+        /// <returns>An instance of the <see cref="NamingOptions"/> class.</returns>
+        NamingOptions GetNamingOptions();
     }
 }

@@ -28,7 +28,7 @@ namespace Jellyfin.Server.Implementations.Security
         {
             if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached) && cached != null)
             {
-                return Task.FromResult((AuthorizationInfo)cached);
+                return Task.FromResult((AuthorizationInfo)cached!); // Cache should never contain null
             }
 
             return GetAuthorization(requestContext);

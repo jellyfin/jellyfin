@@ -2,6 +2,7 @@
 
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;
 
@@ -28,7 +29,7 @@ namespace MediaBrowser.Controller.Entities
 
         public int GetHashCode(LinkedChild obj)
         {
-            return ((obj.Path ?? string.Empty) + (obj.LibraryItemId ?? string.Empty) + obj.Type).GetHashCode();
+            return ((obj.Path ?? string.Empty) + (obj.LibraryItemId ?? string.Empty) + obj.Type).GetHashCode(StringComparison.Ordinal);
         }
     }
 }

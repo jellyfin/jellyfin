@@ -43,14 +43,14 @@ namespace Emby.Server.Implementations.HttpServer.Security
             return GetSession((HttpContext)requestContext);
         }
 
-        public async Task<User> GetUser(HttpContext requestContext)
+        public async Task<User?> GetUser(HttpContext requestContext)
         {
             var session = await GetSession(requestContext).ConfigureAwait(false);
 
             return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
         }
 
-        public Task<User> GetUser(object requestContext)
+        public Task<User?> GetUser(object requestContext)
         {
             return GetUser(((HttpRequest)requestContext).HttpContext);
         }
