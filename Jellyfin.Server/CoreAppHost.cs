@@ -95,7 +95,7 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
 
-            ServiceCollection.AddScoped<IAuthorizationContext, AuthorizationContext>();
+            ServiceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
 
             base.RegisterServices();
         }

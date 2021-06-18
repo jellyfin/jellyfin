@@ -15,12 +15,12 @@ namespace Jellyfin.Server.Implementations.Security
 {
     public class AuthorizationContext : IAuthorizationContext
     {
-        private readonly JellyfinDb _jellyfinDb;
+        private readonly JellyfinDbProvider _jellyfinDbProvider;
         private readonly IUserManager _userManager;
 
-        public AuthorizationContext(JellyfinDb jellyfinDb, IUserManager userManager)
+        public AuthorizationContext(JellyfinDbProvider jellyfinDb, IUserManager userManager)
         {
-            _jellyfinDb = jellyfinDb;
+            _jellyfinDbProvider = jellyfinDb;
             _userManager = userManager;
         }
 
@@ -117,7 +117,8 @@ namespace Jellyfin.Server.Implementations.Security
 #pragma warning restore CA1508
 
             authInfo.HasToken = true;
-            var device = await _jellyfinDb.Devices.FirstOrDefaultAsync(d => d.AccessToken == token).ConfigureAwait(false);
+            await using var jellyfinDb = _jellyfinDbProvider.CreateContext();
+            var device = await jellyfinDb.Devices.FirstOrDefaultAsync(d => d.AccessToken == token).ConfigureAwait(false);
 
             if (device != null)
             {
@@ -186,8 +187,8 @@ namespace Jellyfin.Server.Implementations.Security
 
                 if (updateToken)
                 {
-                    _jellyfinDb.Devices.Update(device);
-                    await _jellyfinDb.SaveChangesAsync().ConfigureAwait(false);
+                    jellyfinDb.Devices.Update(device);
+                    await jellyfinDb.SaveChangesAsync().ConfigureAwait(false);
                 }
             }
 
