@@ -50,7 +50,7 @@ namespace Jellyfin.Server.Implementations.Devices
         {
             await using var dbContext = _dbProvider.CreateContext();
             await dbContext.Database
-                .ExecuteSqlRawAsync($"UPDATE [DeviceOptions] SET [CustomName] = ${options.CustomName}")
+                .ExecuteSqlInterpolatedAsync($"UPDATE [DeviceOptions] SET [CustomName] = {options.CustomName}")
                 .ConfigureAwait(false);
 
             DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>(new Tuple<string, DeviceOptions>(deviceId, options)));
