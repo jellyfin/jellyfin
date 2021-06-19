@@ -96,10 +96,10 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             ClearCache();
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -117,11 +117,11 @@ namespace MediaBrowser.Controller.Entities
             return base.GetNonCachedChildren(directoryService);
         }
 
-        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             ClearCache();
 
-            await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken)
                 .ConfigureAwait(false);
 
             ClearCache();

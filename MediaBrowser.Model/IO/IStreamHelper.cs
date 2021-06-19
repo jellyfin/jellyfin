@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.IO
 {
     public interface IStreamHelper
     {
-        Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action onStarted, CancellationToken cancellationToken);
+        Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action? onStarted, CancellationToken cancellationToken);
 
         Task CopyToAsync(Stream source, Stream destination, int bufferSize, int emptyReadLimit, CancellationToken cancellationToken);
 

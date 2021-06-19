@@ -300,7 +300,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (ourRelease != null)
             {
-                series.OfficialRating = ourRelease.Rating;
+                series.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Rating);
             }
             else if (usRelease != null)
             {

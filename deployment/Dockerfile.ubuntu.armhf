@@ -16,7 +16,7 @@ RUN apt-get update \
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/5f0f07ab-cd9a-4498-a9f7-67d90d582180/2a3db6698751e6cbb93ec244cb81cc5f/dotnet-sdk-5.0.202-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+RUN wget https://download.visualstudio.microsoft.com/download/pr/e1c236ec-c392-4eaa-a846-c600c82bb7f6/b13bd8b69f875f87cf83fc6f5457bcdf/dotnet-sdk-5.0.301-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
  && mkdir -p dotnet-sdk \
  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet

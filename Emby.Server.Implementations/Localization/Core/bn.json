@@ -1,7 +1,7 @@
 {
     "DeviceOnlineWithName": "{0}-এর সাথে সংযুক্ত হয়েছে",
     "DeviceOfflineWithName": "{0}-এর সাথে সংযোগ বিচ্ছিন্ন হয়েছে",
-    "Collections": "কলেক্শন",
+    "Collections": "সংগ্রহ",
     "ChapterNameValue": "অধ্যায় {0}",
     "Channels": "চ্যানেল",
     "CameraImageUploadedFrom": "{0} থেকে একটি নতুন ক্যামেরার চিত্র আপলোড করা হয়েছে",
@@ -115,7 +115,7 @@
     "TaskRefreshLibraryDescription": "নতুন ফাইলের জন্য মিডিয়া লাইব্রেরি স্ক্যান এবং মেটাডাটা রিফ্রেশ করুন।",
     "Undefined": "অসঙ্গায়িত",
     "Forced": "জোরকরে",
-    "TaskCleanActivityLogDescription": "নির্ধারিত সময়ের আগের কাজের  হিসাব মুছে দিন খালি করুন",
+    "TaskCleanActivityLogDescription": "নির্ধারিত সময়ের আগের কাজের হিসাব মুছে দিন খালি করুন.",
     "TaskCleanActivityLog": "কাজের ফাইল খালি করুন",
     "Default": "প্রাথমিক"
 }

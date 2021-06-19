@@ -339,7 +339,10 @@ namespace Jellyfin.Profiles
                 {
                     // Ensure new name is valid and unique, and delete the old disk profile.
                     EnsureUniqueValidFilename(newProfile);
-                    _fileSystem.DeleteFile(currentProfile.Path);
+                    if (!string.IsNullOrEmpty(currentProfile.Path))
+                    {
+                        _fileSystem.DeleteFile(currentProfile.Path);
+                    }
                 }
 
                 // update the version we have in memory.

@@ -92,7 +92,8 @@ namespace MediaBrowser.Controller.Entities
         public const string ShortsFolderName = "shorts";
         public const string FeaturettesFolderName = "featurettes";
 
-        public static readonly string[] AllExtrasTypesFolderNames = {
+        public static readonly string[] AllExtrasTypesFolderNames =
+        {
             ExtrasFolderName,
             BehindTheScenesFolderName,
             DeletedScenesFolderName,
@@ -177,7 +178,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual bool AlwaysScanInternalMetadataPath => false;
 
         /// <summary>
-        /// Gets a value indicating whether this instance is in mixed folder.
+        /// Gets or sets a value indicating whether this instance is in mixed folder.
         /// </summary>
         /// <value><c>true</c> if this instance is in mixed folder; otherwise, <c>false</c>.</value>
         [JsonIgnore]
@@ -244,7 +245,7 @@ namespace MediaBrowser.Controller.Entities
         public ProgramAudio? Audio { get; set; }
 
         /// <summary>
-        /// Return the id that should be used to key display prefs for this item.
+        /// Gets the id that should be used to key display prefs for this item.
         /// Default is based on the type for everything except actual generic folders.
         /// </summary>
         /// <value>The display prefs id.</value>
@@ -280,7 +281,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Returns the folder containing the item.
+        /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
         /// </summary>
         [JsonIgnore]
@@ -305,8 +306,11 @@ namespace MediaBrowser.Controller.Entities
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// If this content came from an external service, the id of the content on that service.
+        /// Gets or sets the external id.
         /// </summary>
+        /// <remarks>
+        /// If this content came from an external service, the id of the content on that service.
+        /// </remarks>
         [JsonIgnore]
         public string ExternalId { get; set; }
 
@@ -330,7 +334,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Gets or sets the type of the location.
+        /// Gets the type of the location.
         /// </summary>
         /// <value>The type of the location.</value>
         [JsonIgnore]
@@ -339,9 +343,9 @@ namespace MediaBrowser.Controller.Entities
             get
             {
                 // if (IsOffline)
-                //{
+                // {
                 //    return LocationType.Offline;
-                //}
+                // }
 
                 var path = Path;
                 if (string.IsNullOrEmpty(path))
@@ -449,8 +453,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is just a helper for convenience.
+        /// Gets the primary image path.
         /// </summary>
+        /// <remarks>
+        /// This is just a helper for convenience.
+        /// </remarks>
         /// <value>The primary image path.</value>
         [JsonIgnore]
         public string PrimaryImagePath => this.GetImagePath(ImageType.Primary);
@@ -541,7 +548,7 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateLastRefreshed { get; set; }
 
         /// <summary>
-        /// The logger.
+        /// Gets or sets the logger.
         /// </summary>
         public static ILogger<BaseItem> Logger { get; set; }
 
@@ -613,7 +620,11 @@ namespace MediaBrowser.Controller.Entities
         public string ForcedSortName
         {
             get => _forcedSortName;
-            set { _forcedSortName = value; _sortName = null; }
+            set
+            {
+                _forcedSortName = value;
+                _sortName = null;
+            }
         }
 
         private string _sortName;
@@ -621,7 +632,7 @@ namespace MediaBrowser.Controller.Entities
         private Guid[] _themeVideoIds;
 
         /// <summary>
-        /// Gets the name of the sort.
+        /// Gets or sets the name of the sort.
         /// </summary>
         /// <value>The name of the sort.</value>
         [JsonIgnore]
@@ -659,14 +670,12 @@ namespace MediaBrowser.Controller.Entities
         {
             if (SourceType == SourceType.Channel)
             {
-                return System.IO.Path.Combine(basePath, "channels", ChannelId.ToString("N", CultureInfo.InvariantCulture), Id.ToString("N", CultureInfo.InvariantCulture));
+                return System.IO.Path.Join(basePath, "channels", ChannelId.ToString("N", CultureInfo.InvariantCulture), Id.ToString("N", CultureInfo.InvariantCulture));
             }
 
             ReadOnlySpan<char> idString = Id.ToString("N", CultureInfo.InvariantCulture);
 
-            basePath = System.IO.Path.Combine(basePath, "library");
-
-            return System.IO.Path.Join(basePath, idString.Slice(0, 2), idString);
+            return System.IO.Path.Join(basePath, "library", idString.Slice(0, 2), idString);
         }
 
         /// <summary>
@@ -848,7 +857,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// When the item first debuted. For movies this could be premiere date, episodes would be first aired
+        /// Gets or sets the date that the item first debuted. For movies this could be premiere date, episodes would be first aired.
         /// </summary>
         /// <value>The premiere date.</value>
         [JsonIgnore]
@@ -945,7 +954,7 @@ namespace MediaBrowser.Controller.Entities
         public int? ProductionYear { get; set; }
 
         /// <summary>
-        /// If the item is part of a series, this is it's number in the series.
+        /// Gets or sets the index number. If the item is part of a series, this is it's number in the series.
         /// This could be episode number, album track number, etc.
         /// </summary>
         /// <value>The index number.</value>
@@ -953,7 +962,7 @@ namespace MediaBrowser.Controller.Entities
         public int? IndexNumber { get; set; }
 
         /// <summary>
-        /// For an episode this could be the season number, or for a song this could be the disc number.
+        /// Gets or sets the parent index number. For an episode this could be the season number, or for a song this could be the disc number.
         /// </summary>
         /// <value>The parent index number.</value>
         [JsonIgnore]
@@ -1017,9 +1026,9 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // if (!user.IsParentalScheduleAllowed())
-            //{
+            // {
             //    return PlayAccess.None;
-            //}
+            // }
 
             return PlayAccess.Full;
         }
@@ -1251,7 +1260,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren
-                .Where(i => !i.IsDirectory && string.Equals(FileSystem.GetFileNameWithoutExtension(i), ThemeSongFilename, StringComparison.OrdinalIgnoreCase)));
+                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFilename, StringComparison.OrdinalIgnoreCase)));
 
             return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
                 .OfType<Audio.Audio>()
@@ -1312,14 +1321,16 @@ namespace MediaBrowser.Controller.Entities
         {
             var extras = new List<Video>();
 
-            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToArray();
+            var libraryOptions = new LibraryOptions();
+            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToList();
             foreach (var extraFolderName in AllExtrasTypesFolderNames)
             {
                 var files = folders
                     .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
                     .SelectMany(i => FileSystem.GetFiles(i.FullName));
 
-                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
+                // Re-using the same instance of LibraryOptions since it looks like it's never being altered.
+                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, libraryOptions)
                     .OfType<Video>()
                     .Select(item =>
                     {
@@ -1330,7 +1341,7 @@ namespace MediaBrowser.Controller.Entities
                         }
 
                         // Use some hackery to get the extra type based on foldername
-                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty), true, out ExtraType extraType)
+                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty, StringComparison.Ordinal), true, out ExtraType extraType)
                             ? extraType
                             : Model.Entities.ExtraType.Unknown;
 
@@ -1420,10 +1431,10 @@ namespace MediaBrowser.Controller.Entities
         /// Refreshes owned items such as trailers, theme videos, special features, etc.
         /// Returns true or false indicating if changes were found.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="fileSystemChildren"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="options">The metadata refresh options.</param>
+        /// <param name="fileSystemChildren">The list of filesystem children.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var themeSongsChanged = false;
@@ -1765,7 +1776,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if [is parental allowed] [the specified user]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException">If user is null.</exception>
         public bool IsParentalAllowed(User user)
         {
             if (user == null)
@@ -1910,7 +1921,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns><c>true</c> if the specified user is visible; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="user" /> is <c>null</c>.</exception>
         public virtual bool IsVisible(User user)
         {
             if (user == null)
@@ -2208,7 +2219,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="type">The type.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns><c>true</c> if the specified type has image; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentException">Backdrops should be accessed using Item.Backdrops</exception>
+        /// <exception cref="ArgumentException">Backdrops should be accessed using Item.Backdrops.</exception>
         public bool HasImage(ImageType type, int imageIndex)
         {
             return GetImageInfo(type, imageIndex) != null;
@@ -2316,7 +2327,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.IsLocalFile)
                 .Select(i => System.IO.Path.GetDirectoryName(i.Path))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .SelectMany(directoryService.GetFilePaths)
+                .SelectMany(path => directoryService.GetFilePaths(path))
                 .ToList();
 
             var deletedImages = ImageInfos
@@ -2337,9 +2348,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="imageIndex">Index of the image.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// </exception>
-        /// <exception cref="ArgumentNullException">item</exception>
+        /// <exception cref="InvalidOperationException"> </exception>
+        /// <exception cref="ArgumentNullException">Item is null.</exception>
         public string GetImagePath(ImageType imageType, int imageIndex)
             => GetImageInfo(imageType, imageIndex)?.Path;
 
@@ -2426,7 +2436,15 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentException("No image info for chapter images");
             }
 
-            return ImageInfos.Where(i => i.Type == imageType);
+            // Yield return is more performant than LINQ Where on an Array
+            for (var i = 0; i < ImageInfos.Length; i++)
+            {
+                var imageInfo = ImageInfos[i];
+                if (imageInfo.Type == imageType)
+                {
+                    yield return imageInfo;
+                }
+            }
         }
 
         /// <summary>
@@ -2435,7 +2453,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        /// <exception cref="ArgumentException">Cannot call AddImages with chapter images</exception>
+        /// <exception cref="ArgumentException">Cannot call AddImages with chapter images.</exception>
         public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
             if (imageType == ImageType.Chapter)
@@ -2458,7 +2476,7 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 var existing = existingImages
-                    .FirstOrDefault(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
+                    .Find(i => string.Equals(i.Path, newImage.FullName, StringComparison.OrdinalIgnoreCase));
 
                 if (existing == null)
                 {
@@ -2489,8 +2507,7 @@ namespace MediaBrowser.Controller.Entities
                 var newImagePaths = images.Select(i => i.FullName).ToList();
 
                 var deleted = existingImages
-                    .Where(i => i.IsLocalFile && !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
-                    .ToList();
+                    .FindAll(i => i.IsLocalFile && !newImagePaths.Contains(i.Path.AsSpan(), StringComparison.OrdinalIgnoreCase) && !File.Exists(i.Path));
 
                 if (deleted.Count > 0)
                 {
@@ -2519,10 +2536,11 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Gets the file system path to delete when the item is to be deleted.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The metadata for the deleted paths.</returns>
         public virtual IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            return new[] {
+            return new[]
+            {
                 new FileSystemMetadata
                 {
                     FullName = Path,
@@ -2629,6 +2647,7 @@ namespace MediaBrowser.Controller.Entities
                 MetadataCountryCode = GetPreferredMetadataCountryCode(),
                 MetadataLanguage = GetPreferredMetadataLanguage(),
                 Name = GetNameForMetadataLookup(),
+                OriginalTitle = OriginalTitle,
                 ProviderIds = ProviderIds,
                 IndexNumber = IndexNumber,
                 ParentIndexNumber = ParentIndexNumber,
@@ -2645,7 +2664,9 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// This is called before any metadata refresh and returns true if changes were made.
         /// </summary>
-        public virtual bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <param name="replaceAllMetadata">Whether to replace all metadata.</param>
+        /// <returns>true if the item has change, else false.</returns>
+        public virtual bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             _sortName = null;
 
@@ -2769,11 +2790,11 @@ namespace MediaBrowser.Controller.Entities
 
             // var parentId = Id;
             // if (!video.IsOwnedItem || video.ParentId != parentId)
-            //{
+            // {
             //    video.IsOwnedItem = true;
             //    video.ParentId = parentId;
             //    newOptions.ForceSave = true;
-            //}
+            // }
 
             if (video == null)
             {
@@ -2880,7 +2901,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Updates the official rating based on content and returns true or false indicating if it changed.
         /// </summary>
-        /// <returns></returns>
+        /// <returns><c>true</c> if the rating was updated; otherwise <c>false</c>.</returns>
         public bool UpdateRatingToItems(IList<BaseItem> children)
         {
             var currentOfficialRating = OfficialRating;
@@ -2896,7 +2917,9 @@ namespace MediaBrowser.Controller.Entities
 
             OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
 
-            return !string.Equals(currentOfficialRating ?? string.Empty, OfficialRating ?? string.Empty,
+            return !string.Equals(
+                currentOfficialRating ?? string.Empty,
+                OfficialRating ?? string.Empty,
                 StringComparison.OrdinalIgnoreCase);
         }
 
@@ -2993,7 +3016,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public bool Equals(BaseItem item) => Object.Equals(Id, item?.Id);
+        public bool Equals(BaseItem other) => object.Equals(Id, other?.Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(Id);

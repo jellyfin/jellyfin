@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using MediaBrowser.Common.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
@@ -35,37 +37,51 @@ namespace Jellyfin.Server.Middleware
 
             set
             {
-                // Only interested in where the querystring is encoded which shows up as one key with everything else in the value.
+                // Only interested in where the querystring is encoded which shows up as one key with nothing in the value.
                 if (value.Count != 1)
                 {
                     _store = value;
                     return;
                 }
 
-                // Encoded querystrings have no value, so don't process anything if a values is present.
-                var kvp = value.First();
-                if (!string.IsNullOrEmpty(kvp.Value))
+                // Encoded querystrings have no value, so don't process anything if a value is present.
+                var (key, stringValues) = value.First();
+                if (!string.IsNullOrEmpty(stringValues))
                 {
                     _store = value;
                     return;
                 }
 
                 // Unencode and re-parse querystring.
-                var unencodedKey = HttpUtility.UrlDecode(kvp.Key);
+                var unencodedKey = HttpUtility.UrlDecode(key);
 
-                if (string.Equals(unencodedKey, kvp.Key, System.StringComparison.Ordinal))
+                if (string.Equals(unencodedKey, key, StringComparison.Ordinal))
                 {
+                    // Don't do anything if it's not encoded.
                     _store = value;
                     return;
                 }
 
                 var pairs = new Dictionary<string, StringValues>();
-                var queryString = unencodedKey.Split('&', System.StringSplitOptions.RemoveEmptyEntries);
+                var queryString = unencodedKey.SpanSplit('&');
 
                 foreach (var pair in queryString)
                 {
-                    var item = pair.Split('=', System.StringSplitOptions.RemoveEmptyEntries);
-                    pairs.Add(item[0], new StringValues(item.Length == 2 ? item[1] : string.Empty));
+                    var i = pair.IndexOf('=');
+                    if (i == -1)
+                    {
+                        // encoded is an equals.
+                        // We use TryAdd so duplicate keys get ignored
+                        pairs.TryAdd(pair.ToString(), StringValues.Empty);
+                        continue;
+                    }
+
+                    var k = pair[..i].ToString();
+                    var v = pair[(i + 1)..].ToString();
+                    if (!pairs.TryAdd(k, new StringValues(v)))
+                    {
+                        pairs[k] = StringValues.Concat(pairs[k], v);
+                    }
                 }
 
                 _store = new QueryCollection(pairs);

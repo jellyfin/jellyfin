@@ -1,3 +1,5 @@
+#nullable disable
+
 using System.Globalization;
 using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;

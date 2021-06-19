@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -694,25 +696,32 @@ namespace Emby.Server.Implementations.Library
         }
 
         private IEnumerable<BaseItem> ResolveFileList(
-            IEnumerable<FileSystemMetadata> fileList,
+            IReadOnlyList<FileSystemMetadata> fileList,
             IDirectoryService directoryService,
             Folder parent,
             string collectionType,
             IItemResolver[] resolvers,
             LibraryOptions libraryOptions)
         {
-            return fileList.Select(f =>
+            // Given that fileList is a list we can save enumerator allocations by indexing
+            for (var i = 0; i < fileList.Count; i++)
             {
+                var file = fileList[i];
+                BaseItem result = null;
                 try
                 {
-                    return ResolvePath(f, directoryService, resolvers, parent, collectionType, libraryOptions);
+                    result = ResolvePath(file, directoryService, resolvers, parent, collectionType, libraryOptions);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error resolving path {path}", f.FullName);
-                    return null;
+                    _logger.LogError(ex, "Error resolving path {Path}", file.FullName);
                 }
-            }).Where(i => i != null);
+
+                if (result != null)
+                {
+                    yield return result;
+                }
+            }
         }
 
         /// <summary>
@@ -1063,17 +1072,17 @@ namespace Emby.Server.Implementations.Library
             // Start by just validating the children of the root, but go no further
             await RootFolder.ValidateChildren(
                 new SimpleProgress<double>(),
-                cancellationToken,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false).ConfigureAwait(false);
+                recursive: false,
+                cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().RefreshMetadata(cancellationToken).ConfigureAwait(false);
 
             await GetUserRootFolder().ValidateChildren(
                 new SimpleProgress<double>(),
-                cancellationToken,
                 new MetadataRefreshOptions(new DirectoryService(_fileSystem)),
-                recursive: false).ConfigureAwait(false);
+                recursive: false,
+                cancellationToken).ConfigureAwait(false);
 
             // Quickly scan CollectionFolders for changes
             foreach (var folder in GetUserRootFolder().Children.OfType<Folder>())
@@ -1093,7 +1102,7 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(pct * 0.96));
 
             // Validate the entire media library
-            await RootFolder.ValidateChildren(innerProgress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true).ConfigureAwait(false);
+            await RootFolder.ValidateChildren(innerProgress, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), recursive: true, cancellationToken).ConfigureAwait(false);
 
             progress.Report(96);
 
@@ -2074,7 +2083,7 @@ namespace Emby.Server.Implementations.Library
                 return new List<Folder>();
             }
 
-            return GetCollectionFoldersInternal(item, GetUserRootFolder().Children.OfType<Folder>().ToList());
+            return GetCollectionFoldersInternal(item, GetUserRootFolder().Children.OfType<Folder>());
         }
 
         public List<Folder> GetCollectionFolders(BaseItem item, List<Folder> allUserRootChildren)
@@ -2099,10 +2108,10 @@ namespace Emby.Server.Implementations.Library
             return GetCollectionFoldersInternal(item, allUserRootChildren);
         }
 
-        private static List<Folder> GetCollectionFoldersInternal(BaseItem item, List<Folder> allUserRootChildren)
+        private static List<Folder> GetCollectionFoldersInternal(BaseItem item, IEnumerable<Folder> allUserRootChildren)
         {
             return allUserRootChildren
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase))
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -2110,9 +2119,9 @@ namespace Emby.Server.Implementations.Library
         {
             if (!(item is CollectionFolder collectionFolder))
             {
+                // List.Find is more performant than FirstOrDefault due to enumerator allocation
                 collectionFolder = GetCollectionFolders(item)
-                   .OfType<CollectionFolder>()
-                   .FirstOrDefault();
+                    .Find(folder => folder is CollectionFolder) as CollectionFolder;
             }
 
             return collectionFolder == null ? new LibraryOptions() : collectionFolder.GetLibraryOptions();
@@ -2498,8 +2507,7 @@ namespace Emby.Server.Implementations.Library
         /// <inheritdoc />
         public bool IsVideoFile(string path)
         {
-            var resolver = new VideoResolver(GetNamingOptions());
-            return resolver.IsVideoFile(path);
+            return VideoResolver.IsVideoFile(path, GetNamingOptions());
         }
 
         /// <inheritdoc />
@@ -2677,6 +2685,7 @@ namespace Emby.Server.Implementations.Library
             return changed;
         }
 
+        /// <inheritdoc />
         public NamingOptions GetNamingOptions()
         {
             if (_namingOptions == null)
@@ -2690,13 +2699,12 @@ namespace Emby.Server.Implementations.Library
 
         public ItemLookupInfo ParseName(string name)
         {
-            var resolver = new VideoResolver(GetNamingOptions());
-
-            var result = resolver.CleanDateTime(name);
+            var namingOptions = GetNamingOptions();
+            var result = VideoResolver.CleanDateTime(name, namingOptions);
 
             return new ItemLookupInfo
             {
-                Name = resolver.TryCleanString(result.Name, out var newName) ? newName.ToString() : result.Name,
+                Name = VideoResolver.TryCleanString(result.Name, namingOptions, out var newName) ? newName.ToString() : result.Name,
                 Year = result.Year
             };
         }
@@ -2710,9 +2718,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(namingOptions);
-
-            var videos = videoListResolver.Resolve(fileSystemChildren);
+            var videos = VideoListResolver.Resolve(fileSystemChildren, namingOptions);
 
             var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 
@@ -2756,9 +2762,7 @@ namespace Emby.Server.Implementations.Library
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
-            var videoListResolver = new VideoListResolver(namingOptions);
-
-            var videos = videoListResolver.Resolve(fileSystemChildren);
+            var videos = VideoListResolver.Resolve(fileSystemChildren, namingOptions);
 
             var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
 

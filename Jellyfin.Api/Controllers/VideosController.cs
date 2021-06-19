@@ -371,6 +371,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? ext)
         {
             var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             var streamingRequest = new VideoRequestDto
             {

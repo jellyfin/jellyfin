@@ -594,7 +594,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && string.Equals(encodingOptions.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
                     && isNvdecDecoder)
                 {
-                    arg.Append("-hwaccel_output_format cuda -autorotate 0 ");
+                    // Fix for 'No decoder surfaces left' error. https://trac.ffmpeg.org/ticket/7562
+                    arg.Append("-hwaccel_output_format cuda -extra_hw_frames 3 -autorotate 0 ");
                 }
 
                 if (state.IsVideoRequest
@@ -1065,7 +1066,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             else if (string.Equals(videoEncoder, "h264_nvenc", StringComparison.OrdinalIgnoreCase) // h264 (h264_nvenc)
                      || string.Equals(videoEncoder, "hevc_nvenc", StringComparison.OrdinalIgnoreCase)) // hevc (hevc_nvenc)
             {
-                // following preset will be deprecated in ffmpeg 4.4, use p1~p7 instead.
                 switch (encodingOptions.EncoderPreset)
                 {
                     case "veryslow":
@@ -1161,7 +1161,9 @@ namespace MediaBrowser.Controller.MediaEncoding
                 profileScore = Math.Min(profileScore, 2);
 
                 // http://www.webmproject.org/docs/encoder-parameters/
-                param += string.Format(CultureInfo.InvariantCulture, " -speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
+                param += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " -speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
                     profileScore.ToString(_usCulture),
                     crf,
                     qmin,
@@ -1246,7 +1248,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
-                && profile.Contains("constrainedbaseline", StringComparison.OrdinalIgnoreCase))
+                && profile.Contains("baseline", StringComparison.OrdinalIgnoreCase))
             {
                 profile = "constrained_baseline";
             }
@@ -1291,7 +1293,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     // hevc_qsv use -level 51 instead of -level 153.
                     if (double.TryParse(level, NumberStyles.Any, _usCulture, out double hevcLevel))
                     {
-                        param += " -level " + hevcLevel / 3;
+                        param += " -level " + (hevcLevel / 3);
                     }
                 }
                 else if (string.Equals(videoEncoder, "h264_amf", StringComparison.OrdinalIgnoreCase)
@@ -1387,7 +1389,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var requestedProfile = requestedProfiles[0];
                 // strip spaces because they may be stripped out on the query string as well
                 if (!string.IsNullOrEmpty(videoStream.Profile)
-                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", "", StringComparison.Ordinal), StringComparer.OrdinalIgnoreCase))
+                    && !requestedProfiles.Contains(videoStream.Profile.Replace(" ", string.Empty, StringComparison.Ordinal), StringComparer.OrdinalIgnoreCase))
                 {
                     var currentScore = GetVideoProfileScore(videoStream.Profile);
                     var requestedScore = GetVideoProfileScore(requestedProfile);
@@ -1796,7 +1798,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (isTranscodingAudio
                 && state.TranscodingType != TranscodingJobType.Progressive
                 && resultChannels.HasValue
-                && (resultChannels.Value > 2 && resultChannels.Value < 6 || resultChannels.Value == 7))
+                && ((resultChannels.Value > 2 && resultChannels.Value < 6) || resultChannels.Value == 7))
             {
                 resultChannels = 2;
             }
@@ -2124,8 +2126,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return (null, null);
             }
 
-            decimal inputWidth = Convert.ToDecimal(videoWidth ?? requestedWidth);
-            decimal inputHeight = Convert.ToDecimal(videoHeight ?? requestedHeight);
+            decimal inputWidth = Convert.ToDecimal(videoWidth ?? requestedWidth, CultureInfo.InvariantCulture);
+            decimal inputHeight = Convert.ToDecimal(videoHeight ?? requestedHeight, CultureInfo.InvariantCulture);
             decimal outputWidth = requestedWidth.HasValue ? Convert.ToDecimal(requestedWidth.Value) : inputWidth;
             decimal outputHeight = requestedHeight.HasValue ? Convert.ToDecimal(requestedHeight.Value) : inputHeight;
             decimal maximumWidth = requestedMaxWidth.HasValue ? Convert.ToDecimal(requestedMaxWidth.Value) : outputWidth;
@@ -2192,11 +2194,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isQsvHevcEncoder = videoEncoder.Contains("hevc_qsv", StringComparison.OrdinalIgnoreCase);
                 var isTonemappingSupported = IsTonemappingSupported(state, options);
                 var isVppTonemappingSupported = IsVppTonemappingSupported(state, options);
-                var isTonemappingSupportedOnVaapi = string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase)&& isVaapiDecoder && (isVaapiH264Encoder || isVaapiHevcEncoder);
+                var isTonemappingSupportedOnVaapi = string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase) && isVaapiDecoder && (isVaapiH264Encoder || isVaapiHevcEncoder);
                 var isTonemappingSupportedOnQsv = string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase) && isVaapiDecoder && (isQsvH264Encoder || isQsvHevcEncoder);
                 var isP010PixFmtRequired = (isTonemappingSupportedOnVaapi && (isTonemappingSupported || isVppTonemappingSupported))
                     || (isTonemappingSupportedOnQsv && isVppTonemappingSupported);
-
 
                 var outputPixFmt = "format=nv12";
                 if (isP010PixFmtRequired)
@@ -2928,6 +2929,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             return threads;
         }
+
 #nullable disable
         public void TryStreamCopy(EncodingJobInfo state)
         {
@@ -3538,7 +3540,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets a hw decoder name
+        /// Gets a hw decoder name.
         /// </summary>
         public string GetHwDecoderName(EncodingOptions options, string decoder, string videoCodec, bool isColorDepth10)
         {
@@ -3556,7 +3558,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets a hwaccel type to use as a hardware decoder(dxva/vaapi) depending on the system
+        /// Gets a hwaccel type to use as a hardware decoder(dxva/vaapi) depending on the system.
         /// </summary>
         public string GetHwaccelType(EncodingJobInfo state, EncodingOptions options, string videoCodec, bool isColorDepth10)
         {
@@ -3682,7 +3684,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (flags.Count > 0)
             {
-                return " -fflags " + string.Join("", flags);
+                return " -fflags " + string.Join(string.Empty, flags);
             }
 
             return string.Empty;

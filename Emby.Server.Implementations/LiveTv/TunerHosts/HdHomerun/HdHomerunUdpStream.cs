@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -48,11 +50,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             _config = configurationManager.GetNetworkConfiguration();
             _appHost = appHost;
-            _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
             EnableStreamSharing = true;
+            _networkManager = networkManager;
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
@@ -109,7 +111,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using (udpClient)
                 using (hdHomerunManager)
                 {
-                    if (!(ex is OperationCanceledException))
+                    if (ex is not OperationCanceledException)
                     {
                         Logger.LogError(ex, "Error opening live stream:");
                     }
