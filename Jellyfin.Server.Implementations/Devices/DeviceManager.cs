@@ -130,12 +130,12 @@ namespace Jellyfin.Server.Implementations.Devices
                 devices = devices.Where(device => device.AccessToken == query.AccessToken);
             }
 
+            var count = await devices.CountAsync().ConfigureAwait(false);
+
             if (query.Skip.HasValue)
             {
                 devices = devices.Skip(query.Skip.Value);
             }
-
-            var count = await devices.CountAsync().ConfigureAwait(false);
 
             if (query.Limit.HasValue)
             {
