@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -709,11 +711,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
-                return new DailyTrigger
-                {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    TaskOptions = options
-                };
+                return new DailyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), options);
             }
 
             if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
@@ -728,12 +726,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
                 }
 
-                return new WeeklyTrigger
-                {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    DayOfWeek = info.DayOfWeek.Value,
-                    TaskOptions = options
-                };
+                return new WeeklyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), info.DayOfWeek.Value, options);
             }
 
             if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
@@ -743,16 +736,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
                 }
 
-                return new IntervalTrigger
-                {
-                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value),
-                    TaskOptions = options
-                };
+                return new IntervalTrigger(TimeSpan.FromTicks(info.IntervalTicks.Value), options);
             }
 
             if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
             {
-                return new StartupTrigger();
+                return new StartupTrigger(options);
             }
 
             throw new ArgumentException("Unrecognized trigger type: " + info.Type);

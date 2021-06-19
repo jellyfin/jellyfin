@@ -7,7 +7,7 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public sealed class CleanStringTests
     {
-        private readonly VideoResolver _videoResolver = new VideoResolver(new NamingOptions());
+        private readonly NamingOptions _namingOptions = new NamingOptions();
 
         [Theory]
         [InlineData("Super movie 480p.mp4", "Super movie")]
@@ -26,7 +26,7 @@ namespace Jellyfin.Naming.Tests.Video
         // FIXME: [InlineData("After The Sunset - [0004].mkv", "After The Sunset")]
         public void CleanStringTest_NeedsCleaning_Success(string input, string expectedName)
         {
-            Assert.True(_videoResolver.TryCleanString(input, out ReadOnlySpan<char> newName));
+            Assert.True(VideoResolver.TryCleanString(input, _namingOptions, out ReadOnlySpan<char> newName));
             // TODO: compare spans when XUnit supports it
             Assert.Equal(expectedName, newName.ToString());
         }
@@ -41,7 +41,7 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("Run lola run (lola rennt) (2009).mp4")]
         public void CleanStringTest_DoesntNeedCleaning_False(string? input)
         {
-            Assert.False(_videoResolver.TryCleanString(input, out ReadOnlySpan<char> newName));
+            Assert.False(VideoResolver.TryCleanString(input, _namingOptions, out ReadOnlySpan<char> newName));
             Assert.True(newName.IsEmpty);
         }
     }

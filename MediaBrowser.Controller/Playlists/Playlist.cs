@@ -22,14 +22,14 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static string[] SupportedExtensions =
-            {
-                ".m3u",
-                ".m3u8",
-                ".pls",
-                ".wpl",
-                ".zpl"
-            };
+        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
+        {
+            ".m3u",
+            ".m3u8",
+            ".pls",
+            ".wpl",
+            ".zpl"
+        };
 
         public Guid OwnerUserId { get; set; }
 
@@ -101,7 +101,7 @@ namespace MediaBrowser.Controller.Playlists
             return new List<BaseItem>();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

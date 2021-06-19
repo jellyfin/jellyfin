@@ -9,31 +9,32 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Represents a task trigger that runs repeatedly on an interval.
     /// </summary>
-    public class IntervalTrigger : ITaskTrigger
+    public sealed class IntervalTrigger : ITaskTrigger
     {
+        private readonly TimeSpan _interval;
         private DateTime _lastStartDate;
+        private Timer? _timer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IntervalTrigger"/> class.
+        /// </summary>
+        /// <param name="interval">The interval.</param>
+        /// <param name="taskOptions">The options of this task.</param>
+        public IntervalTrigger(TimeSpan interval, TaskOptions taskOptions)
+        {
+            _interval = interval;
+            TaskOptions = taskOptions;
+        }
 
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<EventArgs> Triggered;
+        public event EventHandler<EventArgs>? Triggered;
 
         /// <summary>
-        /// Gets or sets the interval.
+        /// Gets the options of this task.
         /// </summary>
-        /// <value>The interval.</value>
-        public TimeSpan Interval { get; set; }
-
-        /// <summary>
-        /// Gets or sets the options of this task.
-        /// </summary>
-        public TaskOptions TaskOptions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timer.
-        /// </summary>
-        /// <value>The timer.</value>
-        private Timer Timer { get; set; }
+        public TaskOptions TaskOptions { get; }
 
         /// <summary>
         /// Stars waiting for the trigger action.
@@ -55,7 +56,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
             }
             else
             {
-                triggerDate = new[] { lastResult.EndTimeUtc, _lastStartDate }.Max().Add(Interval);
+                triggerDate = new[] { lastResult.EndTimeUtc, _lastStartDate }.Max().Add(_interval);
             }
 
             if (DateTime.UtcNow > triggerDate)
@@ -71,7 +72,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 dueTime = maxDueTime;
             }
 
-            Timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
+            _timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
@@ -87,10 +88,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         private void DisposeTimer()
         {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            _timer?.Dispose();
         }
 
         /// <summary>

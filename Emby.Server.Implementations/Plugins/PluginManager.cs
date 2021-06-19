@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -396,7 +394,7 @@ namespace Emby.Server.Implementations.Plugins
                 Category = packageInfo.Category,
                 Changelog = versionInfo.Changelog ?? string.Empty,
                 Description = packageInfo.Description,
-                Id = new Guid(packageInfo.Id),
+                Id = packageInfo.Id,
                 Name = packageInfo.Name,
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,
@@ -457,7 +455,8 @@ namespace Emby.Server.Implementations.Plugins
             try
             {
                 _logger.LogDebug("Creating instance of {Type}", type);
-                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider, type);
+                // _appHost.ServiceProvider is already assigned when we create the plugins
+                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider!, type);
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.

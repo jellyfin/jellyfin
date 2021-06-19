@@ -39,7 +39,7 @@
     "MixedContent": "Смесено съдържание",
     "Movies": "Филми",
     "Music": "Музика",
-    "MusicVideos": "Музикални клипове",
+    "MusicVideos": "Музикални видеа",
     "NameInstallFailed": "{0} не можа да се инсталира",
     "NameSeasonNumber": "Сезон {0}",
     "NameSeasonUnknown": "Неразпознат сезон",
@@ -62,7 +62,7 @@
     "NotificationOptionVideoPlaybackStopped": "Възпроизвеждането на видео е спряно",
     "Photos": "Снимки",
     "Playlists": "Списъци",
-    "Plugin": "Приставка",
+    "Plugin": "Добавка",
     "PluginInstalledWithName": "{0} е инсталиранa",
     "PluginUninstalledWithName": "{0} е деинсталиранa",
     "PluginUpdatedWithName": "{0} е обновенa",
@@ -116,5 +116,7 @@
     "TasksMaintenanceCategory": "Поддръжка",
     "Undefined": "Неопределено",
     "Forced": "Принудително",
-    "Default": "По подразбиране"
+    "Default": "По подразбиране",
+    "TaskCleanActivityLogDescription": "Изтрива записите в дневника с активност по стари от конфигурираната възраст.",
+    "TaskCleanActivityLog": "Изчисти дневника с активност"
 }

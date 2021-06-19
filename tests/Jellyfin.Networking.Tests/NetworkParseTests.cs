@@ -235,6 +235,7 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
+
         /// Test collection parsing.
         /// </summary>
         /// <param name="settings">Collection to parse.</param>

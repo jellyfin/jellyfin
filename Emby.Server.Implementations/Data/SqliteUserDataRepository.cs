@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -348,16 +350,16 @@ namespace Emby.Server.Implementations.Data
         /// Read a row from the specified reader into the provided userData object.
         /// </summary>
         /// <param name="reader"></param>
-        private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)
+        private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
         {
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
             // userData.UserId = reader[1].ReadGuidFromBlob();
 
-            if (reader[2].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetDouble(2, out var rating))
             {
-                userData.Rating = reader[2].ToDouble();
+                userData.Rating = rating;
             }
 
             userData.Played = reader[3].ToBool();
@@ -365,19 +367,19 @@ namespace Emby.Server.Implementations.Data
             userData.IsFavorite = reader[5].ToBool();
             userData.PlaybackPositionTicks = reader[6].ToInt64();
 
-            if (reader[7].SQLiteType != SQLiteType.Null)
+            if (reader.TryReadDateTime(7, out var lastPlayedDate))
             {
-                userData.LastPlayedDate = reader[7].TryReadDateTime();
+                userData.LastPlayedDate = lastPlayedDate;
             }
 
-            if (reader[8].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(8, out var audioStreamIndex))
             {
-                userData.AudioStreamIndex = reader[8].ToInt();
+                userData.AudioStreamIndex = audioStreamIndex;
             }
 
-            if (reader[9].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(9, out var subtitleStreamIndex))
             {
-                userData.SubtitleStreamIndex = reader[9].ToInt();
+                userData.SubtitleStreamIndex = subtitleStreamIndex;
             }
 
             return userData;
