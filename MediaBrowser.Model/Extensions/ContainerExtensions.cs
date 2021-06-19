@@ -106,9 +106,9 @@ namespace MediaBrowser.Model.Extensions
             }
 
             var allInputContainers = inputContainer.Split(',');
+            var allProfileContainers = profileContainers.SpanSplit(',');
             foreach (var container in allInputContainers)
             {
-                var allProfileContainers = profileContainers.SpanSplit(',');
                 foreach (var profile in allProfileContainers)
                 {
                     if (MemoryExtensions.Equals(profile, container, StringComparison.OrdinalIgnoreCase))
