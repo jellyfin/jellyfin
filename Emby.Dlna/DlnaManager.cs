@@ -278,7 +278,7 @@ namespace Emby.Dlna
 
                     profile = ReserializeProfile(tempProfile);
 
-                    profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
+                    profile.Id = path.ToLowerInvariant().GetMD5();
 
                     _profiles[path] = new Tuple<InternalProfileInfo, DeviceProfile>(GetInternalProfileInfo(_fileSystem.GetFileInfo(path), type), profile);
 
@@ -416,7 +416,7 @@ namespace Emby.Dlna
         {
             profile = ReserializeProfile(profile);
 
-            if (string.IsNullOrEmpty(profile.Id))
+            if (profile.Id.Equals(Guid.Empty))
             {
                 throw new ArgumentException("Profile is missing Id");
             }
@@ -426,7 +426,7 @@ namespace Emby.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase));
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
