@@ -19,7 +19,7 @@ namespace MediaBrowser.Model.Dlna
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="DlnaProfileType"/> which this container must meet.
+        /// Gets or sets the <see cref="CodecType"/> which this container must meet.
         /// </summary>
         [XmlAttribute("type")]
         public CodecType Type { get; set; }
