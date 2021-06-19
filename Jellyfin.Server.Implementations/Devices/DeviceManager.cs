@@ -194,6 +194,8 @@ namespace Jellyfin.Server.Implementations.Devices
         public async Task DeleteDevice(Device device)
         {
             await using var dbContext = _dbProvider.CreateContext();
+            dbContext.Devices.Remove(device);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         /// <inheritdoc />
