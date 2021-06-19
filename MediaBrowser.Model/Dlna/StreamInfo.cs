@@ -601,8 +601,8 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Returns this class as a url.
         /// </summary>
-        /// <param name="baseUrl">Nullable. The baseUrl.</param>
-        /// <param name="accessToken">Nullable. The accessToken.</param>
+        /// <param name="baseUrl">The base Url.</param>
+        /// <param name="accessToken">The access Token.</param>
         /// <param name="query">Optional extra query.</param>
         /// <returns>A querystring representation of this object.</returns>
         public string ToUrl(string baseUrl, string accessToken, string query = null)
@@ -859,7 +859,7 @@ namespace MediaBrowser.Model.Dlna
                 sb.Append(pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal));
             }
 
-            if (!IsDirectStream)
+            if (!IsDirectStream && TranscodeReasons.Length > 0)
             {
                 sb.Append("&TranscodeReasons=");
                 sb.Append(string.Join(",", TranscodeReasons.Distinct().Select(i => i.ToString())));
