@@ -9,7 +9,7 @@ namespace Jellyfin.Naming.Tests.Video
 {
     public class VideoResolverTests
     {
-        private readonly VideoResolver _videoResolver = new VideoResolver(new NamingOptions());
+        private static NamingOptions _namingOptions = new NamingOptions();
 
         public static IEnumerable<object[]> ResolveFile_ValidFileNameTestData()
         {
@@ -148,7 +148,7 @@ namespace Jellyfin.Naming.Tests.Video
             yield return new object[]
             {
                 new VideoFileInfo(
-                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - Ozlem.mp4",
+                    path: @"/server/Movies/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF/Rain Man 1988 REMASTERED 1080p BluRay x264 AAC - JEFF.mp4",
                     container: "mp4",
                     name: "Rain Man",
                     year: 1988)
@@ -159,27 +159,27 @@ namespace Jellyfin.Naming.Tests.Video
         [MemberData(nameof(ResolveFile_ValidFileNameTestData))]
         public void ResolveFile_ValidFileName_Success(VideoFileInfo expectedResult)
         {
-            var result = _videoResolver.ResolveFile(expectedResult.Path);
+            var result = VideoResolver.ResolveFile(expectedResult.Path, _namingOptions);
 
             Assert.NotNull(result);
-            Assert.Equal(result?.Path, expectedResult.Path);
-            Assert.Equal(result?.Container, expectedResult.Container);
-            Assert.Equal(result?.Name, expectedResult.Name);
-            Assert.Equal(result?.Year, expectedResult.Year);
-            Assert.Equal(result?.ExtraType, expectedResult.ExtraType);
-            Assert.Equal(result?.Format3D, expectedResult.Format3D);
-            Assert.Equal(result?.Is3D, expectedResult.Is3D);
-            Assert.Equal(result?.IsStub, expectedResult.IsStub);
-            Assert.Equal(result?.StubType, expectedResult.StubType);
-            Assert.Equal(result?.IsDirectory, expectedResult.IsDirectory);
-            Assert.Equal(result?.FileNameWithoutExtension, expectedResult.FileNameWithoutExtension);
-            Assert.Equal(result?.ToString(), expectedResult.ToString());
+            Assert.Equal(result!.Path, expectedResult.Path);
+            Assert.Equal(result.Container, expectedResult.Container);
+            Assert.Equal(result.Name, expectedResult.Name);
+            Assert.Equal(result.Year, expectedResult.Year);
+            Assert.Equal(result.ExtraType, expectedResult.ExtraType);
+            Assert.Equal(result.Format3D, expectedResult.Format3D);
+            Assert.Equal(result.Is3D, expectedResult.Is3D);
+            Assert.Equal(result.IsStub, expectedResult.IsStub);
+            Assert.Equal(result.StubType, expectedResult.StubType);
+            Assert.Equal(result.IsDirectory, expectedResult.IsDirectory);
+            Assert.Equal(result.FileNameWithoutExtension.ToString(), expectedResult.FileNameWithoutExtension.ToString());
+            Assert.Equal(result.ToString(), expectedResult.ToString());
         }
 
         [Fact]
         public void ResolveFile_EmptyPath()
         {
-            var result = _videoResolver.ResolveFile(string.Empty);
+            var result = VideoResolver.ResolveFile(string.Empty, _namingOptions);
 
             Assert.Null(result);
         }
@@ -194,12 +194,16 @@ namespace Jellyfin.Naming.Tests.Video
                 string.Empty
             };
 
-            var results = paths.Select(path => _videoResolver.ResolveDirectory(path)).ToList();
+            var results = paths.Select(path => VideoResolver.ResolveDirectory(path, _namingOptions)).ToList();
 
             Assert.Equal(3, results.Count);
             Assert.NotNull(results[0]);
             Assert.NotNull(results[1]);
             Assert.Null(results[2]);
+            foreach (var result in results)
+            {
+                Assert.Null(result?.Container);
+            }
         }
     }
 }

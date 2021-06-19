@@ -70,6 +70,7 @@
  - [marius-luca-87](https://github.com/marius-luca-87)
  - [mark-monteiro](https://github.com/mark-monteiro)
  - [Matt07211](https://github.com/Matt07211)
+ - [Maxr1998](https://github.com/Maxr1998)
  - [mcarlton00](https://github.com/mcarlton00)
  - [mitchfizz05](https://github.com/mitchfizz05)
  - [MrTimscampi](https://github.com/MrTimscampi)
@@ -110,7 +111,7 @@
  - [sorinyo2004](https://github.com/sorinyo2004)
  - [sparky8251](https://github.com/sparky8251)
  - [spookbits](https://github.com/spookbits)
- - [ssenart] (https://github.com/ssenart)
+ - [ssenart](https://github.com/ssenart)
  - [stanionascu](https://github.com/stanionascu)
  - [stevehayles](https://github.com/stevehayles)
  - [SuperSandro2000](https://github.com/SuperSandro2000)
@@ -146,6 +147,7 @@
  - [nielsvanvelzen](https://github.com/nielsvanvelzen)
  - [skyfrk](https://github.com/skyfrk)
  - [ianjazz246](https://github.com/ianjazz246)
+ - [peterspenler](https://github.com/peterspenler)
 
 # Emby Contributors
 

@@ -19,7 +19,10 @@ namespace Emby.Server.Implementations.Serialization
             new ConcurrentDictionary<string, XmlSerializer>();
 
         private static XmlSerializer GetSerializer(Type type)
-            => _serializers.GetOrAdd(type.FullName, _ => new XmlSerializer(type));
+            => _serializers.GetOrAdd(
+                type.FullName ?? throw new ArgumentException($"Invalid type {type}."),
+                (_, t) => new XmlSerializer(t),
+                type);
 
         /// <summary>
         /// Serializes to writer.
@@ -38,7 +41,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="stream">The stream.</param>
         /// <returns>System.Object.</returns>
-        public object DeserializeFromStream(Type type, Stream stream)
+        public object? DeserializeFromStream(Type type, Stream stream)
         {
             using (var reader = XmlReader.Create(stream))
             {
@@ -81,7 +84,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="file">The file.</param>
         /// <returns>System.Object.</returns>
-        public object DeserializeFromFile(Type type, string file)
+        public object? DeserializeFromFile(Type type, string file)
         {
             using (var stream = File.OpenRead(file))
             {
@@ -95,7 +98,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="type">The type.</param>
         /// <param name="buffer">The buffer.</param>
         /// <returns>System.Object.</returns>
-        public object DeserializeFromBytes(Type type, byte[] buffer)
+        public object? DeserializeFromBytes(Type type, byte[] buffer)
         {
             using (var stream = new MemoryStream(buffer, 0, buffer.Length, false, true))
             {

@@ -55,12 +55,12 @@ namespace MediaBrowser.Controller.Entities
             // if (query.IncludeItemTypes != null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
-            //{
+            // {
             //    if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             //    {
             //        return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
             //    }
-            //}
+            // }
 
             switch (viewType)
             {
@@ -344,12 +344,14 @@ namespace MediaBrowser.Controller.Entities
             var parentFolders = GetMediaFolders(parent, query.User, new[] { CollectionType.TvShows, string.Empty });
 
             var result = _tvSeriesManager.GetNextUp(
-            new NextUpQuery
-            {
-                Limit = query.Limit,
-                StartIndex = query.StartIndex,
-                UserId = query.User.Id
-            }, parentFolders, query.DtoOptions);
+                new NextUpQuery
+                {
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex,
+                    UserId = query.User.Id
+                },
+                parentFolders,
+                query.DtoOptions);
 
             return result;
         }

@@ -6,14 +6,13 @@ namespace Jellyfin.Common.Tests.Json
 {
     public class JsonStringConverterTests
     {
-        private readonly JsonSerializerOptions _jsonSerializerOptions
-            = new ()
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new ()
+        {
+            Converters =
             {
-                Converters =
-                {
-                    new JsonStringConverter()
-                }
-            };
+                new JsonStringConverter()
+            }
+        };
 
         [Theory]
         [InlineData("\"test\"", "test")]

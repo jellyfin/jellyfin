@@ -206,12 +206,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 if (ourRelease != null)
                 {
-                    var ratingPrefix = string.Equals(info.MetadataCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? string.Empty : info.MetadataCountryCode + "-";
-                    var newRating = ratingPrefix + ourRelease.Certification;
-
-                    newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
-
-                    movie.OfficialRating = newRating;
+                    movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
                 }
                 else if (usRelease != null)
                 {

@@ -265,6 +265,7 @@ namespace Jellyfin.Api.Controllers
                 EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true
             };
 
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,

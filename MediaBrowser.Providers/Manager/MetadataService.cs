@@ -28,7 +28,10 @@ namespace MediaBrowser.Providers.Manager
             ProviderManager = providerManager;
             FileSystem = fileSystem;
             LibraryManager = libraryManager;
+            ImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
         }
+
+        protected ItemImageProvider ImageProvider { get; }
 
         protected IServerConfigurationManager ServerConfigurationManager { get; }
 
@@ -88,7 +91,6 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var itemImageProvider = new ItemImageProvider(Logger, ProviderManager, FileSystem);
             var localImagesFailed = false;
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
@@ -97,7 +99,7 @@ namespace MediaBrowser.Providers.Manager
             try
             {
                 // Always validate images and check for new locally stored ones.
-                if (itemImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
+                if (ImageProvider.ValidateImages(item, allImageProviders.OfType<ILocalImageProvider>(), refreshOptions.DirectoryService))
                 {
                     updateType |= ItemUpdateType.ImageUpdate;
                 }
@@ -143,7 +145,7 @@ namespace MediaBrowser.Providers.Manager
                     // await FindIdentities(id, cancellationToken).ConfigureAwait(false);
                     id.IsAutomated = refreshOptions.IsAutomated;
 
-                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, ImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType |= result.UpdateType;
                     if (result.Failures > 0)
@@ -160,7 +162,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (providers.Count > 0)
                 {
-                    var result = await itemImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken).ConfigureAwait(false);
+                    var result = await ImageProvider.RefreshImages(itemOfType, libraryOptions, providers, refreshOptions, cancellationToken).ConfigureAwait(false);
 
                     updateType |= result.UpdateType;
                     if (result.Failures > 0)
@@ -211,9 +213,23 @@ namespace MediaBrowser.Providers.Manager
 
         private void ApplySearchResult(ItemLookupInfo lookupInfo, RemoteSearchResult result)
         {
-            lookupInfo.ProviderIds = result.ProviderIds;
-            lookupInfo.Name = result.Name;
-            lookupInfo.Year = result.ProductionYear;
+            // Episode and Season do not support Identify, so the search results are the Series'
+            switch (lookupInfo)
+            {
+                case EpisodeInfo episodeInfo:
+                    episodeInfo.SeriesProviderIds = result.ProviderIds;
+                    episodeInfo.ProviderIds.Clear();
+                    break;
+                case SeasonInfo seasonInfo:
+                    seasonInfo.SeriesProviderIds = result.ProviderIds;
+                    seasonInfo.ProviderIds.Clear();
+                    break;
+                default:
+                    lookupInfo.ProviderIds = result.ProviderIds;
+                    lookupInfo.Name = result.Name;
+                    lookupInfo.Year = result.ProductionYear;
+                    break;
+            }
         }
 
         protected async Task SaveItemAsync(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
@@ -563,7 +579,7 @@ namespace MediaBrowser.Providers.Manager
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
             // Get providers to refresh
-            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider)).ToList();
+            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider));
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
@@ -575,15 +591,13 @@ namespace MediaBrowser.Providers.Manager
                 providers = providers
                     .Where(i =>
                     {
-                        var hasFileChangeMonitor = i as IHasItemChangeMonitor;
-                        if (hasFileChangeMonitor != null)
+                        if (i is IHasItemChangeMonitor hasFileChangeMonitor)
                         {
                             return HasChanged(item, hasFileChangeMonitor, options.DirectoryService);
                         }
 
                         return false;
-                    })
-                    .ToList();
+                    });
             }
 
             return providers;
