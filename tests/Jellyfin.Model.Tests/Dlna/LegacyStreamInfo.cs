@@ -18,7 +18,7 @@ namespace Jellyfin.Model.Tests.Dlna
         }
 
         /// <summary>
-        /// The 10.6 ToUrl code from StreamInfo.cs with with to compare new version.
+        /// The 10.6 ToUrl code from StreamInfo.cs with which to compare new version.
         /// </summary>
         /// <param name="baseUrl">The base url to use.</param>
         /// <param name="accessToken">The Access token.</param>
