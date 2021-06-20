@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -64,9 +65,19 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="source">The source object.</param>
         /// <param name="dest">The destination object.</param>
         public static void DeepCopy<T, TU>(this T source, TU dest)
-        where T : BaseItem
-        where TU : BaseItem
+            where T : BaseItem
+            where TU : BaseItem
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (dest == null)
+            {
+                throw new ArgumentNullException(nameof(dest));
+            }
+
             var destProps = typeof(TU).GetProperties().Where(x => x.CanWrite).ToList();
 
             foreach (var sourceProp in typeof(T).GetProperties())
@@ -99,8 +110,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="source">The source object.</param>
         public static TU DeepCopy<T, TU>(this T source)
-        where T : BaseItem
-        where TU : BaseItem, new()
+            where T : BaseItem
+            where TU : BaseItem, new()
         {
             var dest = new TU();
             source.DeepCopy(dest);

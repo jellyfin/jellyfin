@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.XbmcMetadata.Parsers;
@@ -18,17 +19,26 @@ namespace MediaBrowser.XbmcMetadata.Providers
         private readonly ILogger<BaseVideoNfoProvider<T>> _logger;
         private readonly IConfigurationManager _config;
         private readonly IProviderManager _providerManager;
+        private readonly IUserManager _userManager;
+        private readonly IUserDataManager _userDataManager;
+        private readonly IDirectoryService _directoryService;
 
-        public BaseVideoNfoProvider(
+        protected BaseVideoNfoProvider(
             ILogger<BaseVideoNfoProvider<T>> logger,
             IFileSystem fileSystem,
             IConfigurationManager config,
-            IProviderManager providerManager)
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
             : base(fileSystem)
         {
             _logger = logger;
             _config = config;
             _providerManager = providerManager;
+            _userManager = userManager;
+            _userDataManager = userDataManager;
+            _directoryService = directoryService;
         }
 
         /// <inheritdoc />
@@ -38,10 +48,12 @@ namespace MediaBrowser.XbmcMetadata.Providers
             {
                 Item = result.Item
             };
-            new MovieNfoParser(_logger, _config, _providerManager).Fetch(tmpItem, path, cancellationToken);
+            new MovieNfoParser(_logger, _config, _providerManager, _userManager, _userDataManager, _directoryService).Fetch(tmpItem, path, cancellationToken);
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;
+            result.Images = tmpItem.Images;
+            result.RemoteImages = tmpItem.RemoteImages;
 
             if (tmpItem.UserDataList != null)
             {

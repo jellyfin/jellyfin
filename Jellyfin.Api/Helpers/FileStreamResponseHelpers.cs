@@ -39,14 +39,15 @@ namespace Jellyfin.Api.Helpers
             }
 
             // Can't dispose the response as it's required up the call chain.
-            var response = await httpClient.GetAsync(new Uri(state.MediaPath)).ConfigureAwait(false);
+            var response = await httpClient.GetAsync(new Uri(state.MediaPath), cancellationToken).ConfigureAwait(false);
             var contentType = response.Content.Headers.ContentType?.ToString();
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
             if (isHeadRequest)
             {
-                return new FileContentResult(Array.Empty<byte>(), contentType);
+                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
+                return new OkResult();
             }
 
             return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
@@ -68,10 +69,10 @@ namespace Jellyfin.Api.Helpers
         {
             httpContext.Response.ContentType = contentType;
 
-            // if the request is a head request, return a NoContent result with the same headers as it would with a GET request
+            // if the request is a head request, return an OkResult (200) with the same headers as it would with a GET request
             if (isHeadRequest)
             {
-                return new NoContentResult();
+                return new OkResult();
             }
 
             return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
@@ -107,7 +108,8 @@ namespace Jellyfin.Api.Helpers
             // Headers only
             if (isHeadRequest)
             {
-                return new FileContentResult(Array.Empty<byte>(), contentType);
+                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
+                return new OkResult();
             }
 
             var transcodingLock = transcodingJobHelper.GetTranscodingLock(outputPath);

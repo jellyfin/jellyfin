@@ -11,10 +11,10 @@ namespace MediaBrowser.Controller.Providers
 
         List<FileSystemMetadata> GetFiles(string path);
 
-        FileSystemMetadata GetFile(string path);
+        FileSystemMetadata? GetFile(string path);
 
         IReadOnlyList<string> GetFilePaths(string path);
 
-        IReadOnlyList<string> GetFilePaths(string path, bool clearCache);
+        IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false);
     }
 }

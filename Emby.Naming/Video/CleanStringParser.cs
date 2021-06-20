@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Emby.Naming.Video
@@ -16,8 +17,14 @@ namespace Emby.Naming.Video
         /// <param name="expressions">List of regex to parse name and year from.</param>
         /// <param name="newName">Parsing result string.</param>
         /// <returns>True if parsing was successful.</returns>
-        public static bool TryClean(string name, IReadOnlyList<Regex> expressions, out ReadOnlySpan<char> newName)
+        public static bool TryClean([NotNullWhen(true)] string? name, IReadOnlyList<Regex> expressions, out ReadOnlySpan<char> newName)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                newName = ReadOnlySpan<char>.Empty;
+                return false;
+            }
+
             var len = expressions.Count;
             for (int i = 0; i < len; i++)
             {
@@ -41,7 +48,7 @@ namespace Emby.Naming.Video
                 return true;
             }
 
-            newName = string.Empty;
+            newName = ReadOnlySpan<char>.Empty;
             return false;
         }
     }

@@ -25,7 +25,7 @@ namespace MediaBrowser.Common.Json.Converters
                 return (int?)converter.ConvertFromString(str);
             }
 
-            return JsonSerializer.Deserialize<int?>(ref reader, options);
+            return JsonSerializer.Deserialize<int>(ref reader, options);
         }
 
         /// <inheritdoc />

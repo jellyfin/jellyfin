@@ -91,9 +91,9 @@ namespace MediaBrowser.Model.Net
             { ".webp", "image/webp" },
 
             // Type font
-            { ".ttf" , "font/ttf" },
-            { ".woff" , "font/woff" },
-            { ".woff2" , "font/woff2" },
+            { ".ttf", "font/ttf" },
+            { ".woff", "font/woff" },
+            { ".woff2", "font/woff2" },
 
             // Type text
             { ".ass", "text/x-ssa" },
@@ -168,14 +168,17 @@ namespace MediaBrowser.Model.Net
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
-        public static string? GetMimeType(string path, bool enableStreamDefault)
+        /// <param name="filename">The filename to find the MIME type of.</param>
+        /// <param name="enableStreamDefault">Whether of not to return a default value if no fitting MIME type is found.</param>
+        /// <returns>The worrect MIME type for the given filename, or `null` if it wasn't found and <paramref name="enableStreamDefault"/> is false.</returns>
+        public static string? GetMimeType(string filename, bool enableStreamDefault)
         {
-            if (path.Length == 0)
+            if (filename.Length == 0)
             {
-                throw new ArgumentException("String can't be empty.", nameof(path));
+                throw new ArgumentException("String can't be empty.", nameof(filename));
             }
 
-            var ext = Path.GetExtension(path);
+            var ext = Path.GetExtension(filename);
 
             if (_mimeTypeLookup.TryGetValue(ext, out string? result))
             {
@@ -210,9 +213,9 @@ namespace MediaBrowser.Model.Net
             return enableStreamDefault ? "application/octet-stream" : null;
         }
 
-        public static string? ToExtension(string? mimeType)
+        public static string? ToExtension(string mimeType)
         {
-            if (string.IsNullOrEmpty(mimeType))
+            if (mimeType.Length == 0)
             {
                 throw new ArgumentException("String can't be empty.", nameof(mimeType));
             }

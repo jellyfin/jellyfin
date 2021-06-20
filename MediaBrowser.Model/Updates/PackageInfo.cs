@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -16,7 +15,6 @@ namespace MediaBrowser.Model.Updates
         public PackageInfo()
         {
             Versions = Array.Empty<VersionInfo>();
-            Id = string.Empty;
             Category = string.Empty;
             Name = string.Empty;
             Overview = string.Empty;
@@ -65,7 +63,7 @@ namespace MediaBrowser.Model.Updates
         /// </summary>
         /// <value>The name.</value>
         [JsonPropertyName("guid")]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the versions.

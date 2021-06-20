@@ -24,29 +24,26 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Preference"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Preference()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id of this preference.
+        /// Gets the id of this preference.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the type of this preference.
+        /// Gets or sets the id of the associated user.
+        /// </summary>
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets the type of this preference.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        public PreferenceKind Kind { get; protected set; }
+        public PreferenceKind Kind { get; private set; }
 
         /// <summary>
         /// Gets or sets the value of this preference.
@@ -54,14 +51,13 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
-        [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Value { get; set; }
 
         /// <inheritdoc/>
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()

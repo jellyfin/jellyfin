@@ -17,7 +17,8 @@ namespace MediaBrowser.Model.Extensions
                 return str;
             }
 
-            if (char.IsUpper(str[0]))
+            // We check IsLower instead of IsUpper because both return false for non-letters
+            if (!char.IsLower(str[0]))
             {
                 return str;
             }

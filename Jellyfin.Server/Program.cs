@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -164,6 +164,7 @@ namespace Jellyfin.Server
                 appPaths,
                 _loggerFactory,
                 options,
+                startupConfig,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
                 serviceCollection);
 
@@ -172,7 +173,7 @@ namespace Jellyfin.Server
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
+                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(
@@ -198,11 +199,11 @@ namespace Jellyfin.Server
                 }
                 catch
                 {
-                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
                 }
 
-                await appHost.RunStartupTasksAsync().ConfigureAwait(false);
+                await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
 
                 stopWatch.Stop();
 
@@ -221,7 +222,15 @@ namespace Jellyfin.Server
             }
             finally
             {
-                appHost?.Dispose();
+                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                // Run before disposing the application
+                using var context = new JellyfinDbProvider(appHost.ServiceProvider, appPaths).CreateContext();
+                if (context.Database.IsSqlite())
+                {
+                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                }
+
+                appHost.Dispose();
             }
 
             if (_restartOnShutdown)
@@ -280,7 +289,7 @@ namespace Jellyfin.Server
                     bool flagged = false;
                     foreach (IPObject netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on {0}", netAdd);
+                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
                         options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
@@ -622,7 +631,7 @@ namespace Jellyfin.Server
             string commandLineArgsString;
             if (options.RestartArgs != null)
             {
-                commandLineArgsString = options.RestartArgs ?? string.Empty;
+                commandLineArgsString = options.RestartArgs;
             }
             else
             {

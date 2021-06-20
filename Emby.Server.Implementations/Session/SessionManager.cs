@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -1475,17 +1477,14 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserById(request.UserId);
             }
 
-            if (user == null)
-            {
-                user = _userManager.GetUserByName(request.Username);
-            }
+            user ??= _userManager.GetUserByName(request.Username);
 
             if (enforcePassword)
             {
                 user = await _userManager.AuthenticateUser(
                     request.Username,
                     request.Password,
-                    request.PasswordSha1,
+                    null,
                     request.RemoteEndPoint,
                     true).ConfigureAwait(false);
             }
@@ -1543,23 +1542,26 @@ namespace Emby.Server.Implementations.Session
                     Limit = 1
                 }).Items.FirstOrDefault();
 
-            var allExistingForDevice = _authRepo.Get(
-                new AuthenticationInfoQuery
-                {
-                    DeviceId = deviceId
-                }).Items;
-
-            foreach (var auth in allExistingForDevice)
+            if (!string.IsNullOrEmpty(deviceId))
             {
-                if (existing == null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
+                var allExistingForDevice = _authRepo.Get(
+                    new AuthenticationInfoQuery
+                    {
+                        DeviceId = deviceId
+                    }).Items;
+
+                foreach (var auth in allExistingForDevice)
                 {
-                    try
+                    if (existing == null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
                     {
-                        Logout(auth);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while logging out.");
+                        try
+                        {
+                            Logout(auth);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error while logging out.");
+                        }
                     }
                 }
             }

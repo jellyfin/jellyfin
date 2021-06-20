@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -45,7 +47,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read))
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
             {
                 onStarted();
 
@@ -70,7 +73,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
-            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None);
 
             onStarted();
 

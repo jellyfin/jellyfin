@@ -1,10 +1,9 @@
-﻿#pragma warning disable CA5369
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -28,11 +27,21 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            _parser = new SeasonNfoParser(new NullLogger<SeasonNfoParser>(), config.Object, providerManager.Object);
+            var user = new Mock<IUserManager>();
+            var userData = new Mock<IUserDataManager>();
+            var directoryService = new Mock<IDirectoryService>();
+
+            _parser = new SeasonNfoParser(
+                new NullLogger<SeasonNfoParser>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Succes()
+        public void Fetch_Valid_Success()
         {
             var result = new MetadataResult<Season>()
             {

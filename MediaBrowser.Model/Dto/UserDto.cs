@@ -11,6 +11,15 @@ namespace MediaBrowser.Model.Dto
     public class UserDto : IItemDto, IHasServerId
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="UserDto"/> class.
+        /// </summary>
+        public UserDto()
+        {
+            Configuration = new UserConfiguration();
+            Policy = new UserPolicy();
+        }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
@@ -93,15 +102,6 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The primary image aspect ratio.</value>
         public double? PrimaryImageAspectRatio { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UserDto"/> class.
-        /// </summary>
-        public UserDto()
-        {
-            Configuration = new UserConfiguration();
-            Policy = new UserPolicy();
-        }
 
         /// <inheritdoc />
         public override string ToString()

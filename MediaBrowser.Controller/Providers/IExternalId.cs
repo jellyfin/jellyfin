@@ -1,3 +1,5 @@
+#nullable disable
+
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 

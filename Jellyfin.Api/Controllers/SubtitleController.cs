@@ -182,6 +182,10 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets subtitles in a specified format.
         /// </summary>
+        /// <param name="routeItemId">The (route) item id.</param>
+        /// <param name="routeMediaSourceId">The (route) media source id.</param>
+        /// <param name="routeIndex">The (route) subtitle stream index.</param>
+        /// <param name="routeFormat">The (route) format of the returned subtitle.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="mediaSourceId">The media source id.</param>
         /// <param name="index">The subtitle stream index.</param>
@@ -189,22 +193,32 @@ namespace Jellyfin.Api.Controllers
         /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
         /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
         /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
-        /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
+        /// <param name="startPositionTicks">The start position of the subtitle in ticks.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/Stream.{format}")]
+        [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/Stream.{routeFormat}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile("text/*")]
         public async Task<ActionResult> GetSubtitle(
-            [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string mediaSourceId,
-            [FromRoute, Required] int index,
-            [FromRoute, Required] string format,
+            [FromRoute, Required] Guid routeItemId,
+            [FromRoute, Required] string routeMediaSourceId,
+            [FromRoute, Required] int routeIndex,
+            [FromRoute, Required] string routeFormat,
+            [FromQuery, ParameterObsolete] Guid? itemId,
+            [FromQuery, ParameterObsolete] string? mediaSourceId,
+            [FromQuery, ParameterObsolete] int? index,
+            [FromQuery, ParameterObsolete] string? format,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false,
             [FromQuery] long startPositionTicks = 0)
         {
+            // Set parameters to route value if not provided via query.
+            itemId ??= routeItemId;
+            mediaSourceId ??= routeMediaSourceId;
+            index ??= routeIndex;
+            format ??= routeFormat;
+
             if (string.Equals(format, "js", StringComparison.OrdinalIgnoreCase))
             {
                 format = "json";
@@ -212,9 +226,9 @@ namespace Jellyfin.Api.Controllers
 
             if (string.IsNullOrEmpty(format))
             {
-                var item = (Video)_libraryManager.GetItemById(itemId);
+                var item = (Video)_libraryManager.GetItemById(itemId.Value);
 
-                var idString = itemId.ToString("N", CultureInfo.InvariantCulture);
+                var idString = itemId.Value.ToString("N", CultureInfo.InvariantCulture);
                 var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false)
                     .First(i => string.Equals(i.Id, mediaSourceId ?? idString, StringComparison.Ordinal));
 
@@ -226,7 +240,7 @@ namespace Jellyfin.Api.Controllers
 
             if (string.Equals(format, "vtt", StringComparison.OrdinalIgnoreCase) && addVttTimeMap)
             {
-                await using Stream stream = await EncodeSubtitles(itemId, mediaSourceId, index, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
+                await using Stream stream = await EncodeSubtitles(itemId.Value, mediaSourceId, index.Value, format, startPositionTicks, endPositionTicks, copyTimestamps).ConfigureAwait(false);
                 using var reader = new StreamReader(stream);
 
                 var text = await reader.ReadToEndAsync().ConfigureAwait(false);
@@ -238,9 +252,9 @@ namespace Jellyfin.Api.Controllers
 
             return File(
                 await EncodeSubtitles(
-                    itemId,
+                    itemId.Value,
                     mediaSourceId,
-                    index,
+                    index.Value,
                     format,
                     startPositionTicks,
                     endPositionTicks,
@@ -251,30 +265,44 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Gets subtitles in a specified format.
         /// </summary>
+        /// <param name="routeItemId">The (route) item id.</param>
+        /// <param name="routeMediaSourceId">The (route) media source id.</param>
+        /// <param name="routeIndex">The (route) subtitle stream index.</param>
+        /// <param name="routeStartPositionTicks">The (route) start position of the subtitle in ticks.</param>
+        /// <param name="routeFormat">The (route) format of the returned subtitle.</param>
         /// <param name="itemId">The item id.</param>
         /// <param name="mediaSourceId">The media source id.</param>
         /// <param name="index">The subtitle stream index.</param>
-        /// <param name="startPositionTicks">Optional. The start position of the subtitle in ticks.</param>
+        /// <param name="startPositionTicks">The start position of the subtitle in ticks.</param>
         /// <param name="format">The format of the returned subtitle.</param>
         /// <param name="endPositionTicks">Optional. The end position of the subtitle in ticks.</param>
         /// <param name="copyTimestamps">Optional. Whether to copy the timestamps.</param>
         /// <param name="addVttTimeMap">Optional. Whether to add a VTT time map.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-        [HttpGet("Videos/{itemId}/{mediaSourceId}/Subtitles/{index}/{startPositionTicks}/Stream.{format}")]
+        [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/{routeStartPositionTicks}/Stream.{routeFormat}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile("text/*")]
         public Task<ActionResult> GetSubtitleWithTicks(
-            [FromRoute, Required] Guid itemId,
-            [FromRoute, Required] string mediaSourceId,
-            [FromRoute, Required] int index,
-            [FromRoute, Required] long startPositionTicks,
-            [FromRoute, Required] string format,
+            [FromRoute, Required] Guid routeItemId,
+            [FromRoute, Required] string routeMediaSourceId,
+            [FromRoute, Required] int routeIndex,
+            [FromRoute, Required] long routeStartPositionTicks,
+            [FromRoute, Required] string routeFormat,
+            [FromQuery, ParameterObsolete] Guid? itemId,
+            [FromQuery, ParameterObsolete] string? mediaSourceId,
+            [FromQuery, ParameterObsolete] int? index,
+            [FromQuery, ParameterObsolete] long? startPositionTicks,
+            [FromQuery, ParameterObsolete] string? format,
             [FromQuery] long? endPositionTicks,
             [FromQuery] bool copyTimestamps = false,
             [FromQuery] bool addVttTimeMap = false)
         {
             return GetSubtitle(
+                routeItemId,
+                routeMediaSourceId,
+                routeIndex,
+                routeFormat,
                 itemId,
                 mediaSourceId,
                 index,
@@ -282,7 +310,7 @@ namespace Jellyfin.Api.Controllers
                 endPositionTicks,
                 copyTimestamps,
                 addVttTimeMap,
-                startPositionTicks);
+                startPositionTicks ?? routeStartPositionTicks);
         }
 
         /// <summary>

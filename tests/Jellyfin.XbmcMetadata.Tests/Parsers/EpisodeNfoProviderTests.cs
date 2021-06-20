@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -12,8 +13,6 @@ using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
-
-#pragma warning disable CA5369
 
 namespace Jellyfin.XbmcMetadata.Tests.Parsers
 {
@@ -34,11 +33,21 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var config = new Mock<IConfigurationManager>();
             config.Setup(x => x.GetConfiguration(It.IsAny<string>()))
                 .Returns(new XbmcMetadataOptions());
-            _parser = new EpisodeNfoParser(new NullLogger<EpisodeNfoParser>(), config.Object, providerManager.Object);
+            var user = new Mock<IUserManager>();
+            var userData = new Mock<IUserDataManager>();
+            var directoryService = new Mock<IDirectoryService>();
+
+            _parser = new EpisodeNfoParser(
+                new NullLogger<EpisodeNfoParser>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]
-        public void Fetch_Valid_Succes()
+        public void Fetch_Valid_Success()
         {
             var result = new MetadataResult<Episode>()
             {
@@ -62,6 +71,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal(2017, item.ProductionYear);
             Assert.Single(item.Studios);
             Assert.Contains("Starz", item.Studios);
+            Assert.Equal(1, item.IndexNumberEnd);
+            Assert.Equal(2, item.AirsAfterSeasonNumber);
+            Assert.Equal(3, item.AirsBeforeSeasonNumber);
+            Assert.Equal(1, item.AirsBeforeEpisodeNumber);
             Assert.Equal("tt5017734", item.ProviderIds[MetadataProvider.Imdb.ToString()]);
             Assert.Equal("1276153", item.ProviderIds[MetadataProvider.Tmdb.ToString()]);
 
@@ -87,6 +100,26 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("http://image.tmdb.org/t/p/original/cjeDbVfBp6Qvb3C74Dfy7BKDTQN.jpg", shadow!.ImageUrl);
 
             Assert.Equal(new DateTime(2017, 10, 7, 14, 25, 47), item.DateCreated);
+        }
+
+        [Fact]
+        public void Fetch_Valid_MultiEpisode_Success()
+        {
+            var result = new MetadataResult<Episode>()
+            {
+                Item = new Episode()
+            };
+
+            _parser.Fetch(result, "Test Data/Rising.nfo", CancellationToken.None);
+
+            var item = result.Item;
+            Assert.Equal("Rising (1)", item.Name);
+            Assert.Equal(1, item.IndexNumber);
+            Assert.Equal(2, item.IndexNumberEnd);
+            Assert.Equal(1, item.ParentIndexNumber);
+            Assert.Equal("A new Stargate team embarks on a dangerous mission to a distant galaxy, where they discover a mythical lost city -- and a deadly new enemy.", item.Overview);
+            Assert.Equal(new DateTime(2004, 7, 16), item.PremiereDate);
+            Assert.Equal(2004, item.ProductionYear);
         }
 
         [Fact]

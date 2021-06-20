@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System.Text.Json.Serialization;
@@ -24,8 +26,7 @@ namespace MediaBrowser.Controller.Entities
                 var parents = GetParents();
                 foreach (var parent in parents)
                 {
-                    var photoAlbum = parent as PhotoAlbum;
-                    if (photoAlbum != null)
+                    if (parent is PhotoAlbum photoAlbum)
                     {
                         return photoAlbum;
                     }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 namespace Emby.Dlna.Configuration

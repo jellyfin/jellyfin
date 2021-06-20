@@ -137,17 +137,20 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (string.IsNullOrWhiteSpace(newName))
-            {
-                throw new ArgumentException("Invalid username", nameof(newName));
-            }
+            ThrowIfInvalidUsername(newName);
 
             if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.Ordinal)))
+            await using var dbContext = _dbProvider.CreateContext();
+
+            if (await dbContext.Users
+                .AsQueryable()
+                .Where(u => u.Username == newName && u.Id != user.Id)
+                .AnyAsync()
+                .ConfigureAwait(false))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -187,11 +190,14 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = new User(
                 name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
+                _defaultAuthenticationProvider.GetType().FullName!,
+                _defaultPasswordResetProvider.GetType().FullName!)
             {
                 InternalId = max + 1
             };
+
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
 
             _users.Add(user.Id, user);
 
@@ -201,9 +207,14 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task<User> CreateUserAsync(string name)
         {
-            if (!IsValidUsername(name))
+            ThrowIfInvalidUsername(name);
+
+            if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
+                throw new ArgumentException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "A user with the name '{0}' already exists.",
+                    name));
             }
 
             await using var dbContext = _dbProvider.CreateContext();
@@ -246,16 +257,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             await using var dbContext = _dbProvider.CreateContext();
-
-            // Clear all entities related to the user from the database.
-            if (user.ProfileImage != null)
-            {
-                dbContext.Remove(user.ProfileImage);
-            }
-
-            dbContext.RemoveRange(user.Permissions);
-            dbContext.RemoveRange(user.Preferences);
-            dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
@@ -402,27 +403,18 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            bool success;
-            IAuthenticationProvider? authenticationProvider;
+            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+                .ConfigureAwait(false);
+            var authenticationProvider = authResult.authenticationProvider;
+            var success = authResult.success;
 
-            if (user != null)
+            if (user == null)
             {
-                var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
-                success = authResult.success;
-            }
-            else
-            {
-                var authResult = await AuthenticateLocalUser(username, password, null, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
                 string updatedUsername = authResult.username;
-                success = authResult.success;
 
                 if (success
                     && authenticationProvider != null
-                    && !(authenticationProvider is DefaultAuthenticationProvider))
+                    && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
                     username = updatedUsername;
@@ -442,7 +434,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (!string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);
@@ -725,12 +717,22 @@ namespace Jellyfin.Server.Implementations.Users
             _users[user.Id] = user;
         }
 
+        internal static void ThrowIfInvalidUsername(string name)
+        {
+            if (!string.IsNullOrWhiteSpace(name) && IsValidUsername(name))
+            {
+                return;
+            }
+
+            throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
+        }
+
         private static bool IsValidUsername(string name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
             // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-            return Regex.IsMatch(name, @"^[\w\ \-'._@]*$");
+            return Regex.IsMatch(name, @"^[\w\ \-'._@]+$");
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)

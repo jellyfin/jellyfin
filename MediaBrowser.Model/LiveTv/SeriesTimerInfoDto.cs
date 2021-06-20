@@ -7,6 +7,14 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.LiveTv
 {
+    public enum KeepUntil
+    {
+        UntilDeleted,
+        UntilSpaceNeeded,
+        UntilWatched,
+        UntilDate
+    }
+
     /// <summary>
     /// Class SeriesTimerInfoDto.
     /// </summary>
@@ -82,13 +90,5 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The parent primary image tag.</value>
         public string ParentPrimaryImageTag { get; set; }
-    }
-
-    public enum KeepUntil
-    {
-        UntilDeleted,
-        UntilSpaceNeeded,
-        UntilWatched,
-        UntilDate
     }
 }

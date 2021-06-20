@@ -225,14 +225,13 @@ namespace Jellyfin.Server.Extensions
                 .AddJsonOptions(options =>
                 {
                     // Update all properties that are set in JsonDefaults
-                    var jsonOptions = JsonDefaults.GetPascalCaseOptions();
+                    var jsonOptions = JsonDefaults.PascalCaseOptions;
 
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
                     options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
                     options.JsonSerializerOptions.NumberHandling = jsonOptions.NumberHandling;
-                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = jsonOptions.PropertyNameCaseInsensitive;
 
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)
@@ -261,15 +260,16 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
+                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
                 c.SwaggerDoc("api-docs", new OpenApiInfo
                 {
                     Title = "Jellyfin API",
-                    Version = "v1",
+                    Version = version,
                     Extensions = new Dictionary<string, IOpenApiExtension>
                     {
                         {
                             "x-jellyfin-version",
-                            new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                            new OpenApiString(version)
                         }
                     }
                 });
@@ -310,6 +310,7 @@ namespace Jellyfin.Server.Extensions
 
                 // Allow parameters to properly be nullable.
                 c.UseAllOfToExtendReferenceSchemas();
+                c.SupportNonNullableReferenceTypes();
 
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
@@ -318,7 +319,7 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
-                c.DocumentFilter<WebsocketModelFilter>();
+                c.DocumentFilter<AdditionalModelFilter>();
             });
         }
 

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -47,17 +49,16 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Get all user data for the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <returns>The user item data.</returns>
         List<UserItemData> GetAllUserData(Guid userId);
 
         /// <summary>
         /// Save the all provided user data for the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="userData"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userData">The array of user data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
 
         /// <summary>

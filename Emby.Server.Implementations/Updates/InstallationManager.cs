@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,6 +20,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
 
@@ -92,7 +91,7 @@ namespace Emby.Server.Implementations.Updates
             _httpClientFactory = httpClientFactory;
             _config = config;
             _zipClient = zipClient;
-            _jsonSerializerOptions = JsonDefaults.GetOptions();
+            _jsonSerializerOptions = JsonDefaults.Options;
             _pluginManager = pluginManager;
         }
 
@@ -100,12 +99,12 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
-        public async Task<IList<PackageInfo>> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default)
+        public async Task<PackageInfo[]> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default)
         {
             try
             {
-                List<PackageInfo>? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetFromJsonAsync<List<PackageInfo>>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+                PackageInfo[]? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetFromJsonAsync<PackageInfo[]>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 
                 if (packages == null)
                 {
@@ -178,31 +177,20 @@ namespace Emby.Server.Implementations.Updates
                     // Where repositories have the same content, the details from the first is taken.
                     foreach (var package in await GetPackages(repository.Name ?? "Unnamed Repo", repository.Url, true, cancellationToken).ConfigureAwait(true))
                     {
-                        if (!Guid.TryParse(package.Id, out var packageGuid))
-                        {
-                            // Package doesn't have a valid GUID, skip.
-                            continue;
-                        }
-
-                        var existing = FilterPackages(result, package.Name, packageGuid).FirstOrDefault();
+                        var existing = FilterPackages(result, package.Name, package.Id).FirstOrDefault();
 
                         // Remove invalid versions from the valid package.
                         for (var i = package.Versions.Count - 1; i >= 0; i--)
                         {
                             var version = package.Versions[i];
 
-                            var plugin = _pluginManager.GetPlugin(packageGuid, version.VersionNumber);
-                            // Update the manifests, if anything changes.
+                            var plugin = _pluginManager.GetPlugin(package.Id, version.VersionNumber);
                             if (plugin != null)
                             {
-                                if (!string.Equals(plugin.Manifest.TargetAbi, version.TargetAbi, StringComparison.Ordinal))
-                                {
-                                    plugin.Manifest.TargetAbi = version.TargetAbi ?? string.Empty;
-                                    _pluginManager.SaveManifest(plugin.Manifest, plugin.Path);
-                                }
+                                await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
                             }
 
-                            // Remove versions with a target abi that is greater then the current application version.
+                            // Remove versions with a target ABI greater then the current application version.
                             if (Version.TryParse(version.TargetAbi, out var targetAbi) && _applicationHost.ApplicationVersion < targetAbi)
                             {
                                 package.Versions.RemoveAt(i);
@@ -235,7 +223,7 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? id = default,
+            Guid id = default,
             Version? specificVersion = null)
         {
             if (name != null)
@@ -243,9 +231,9 @@ namespace Emby.Server.Implementations.Updates
                 availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (id != Guid.Empty)
+            if (id != default)
             {
-                availablePackages = availablePackages.Where(x => Guid.Parse(x.Id) == id);
+                availablePackages = availablePackages.Where(x => x.Id == id);
             }
 
             if (specificVersion != null)
@@ -260,7 +248,7 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? id = default,
+            Guid id = default,
             Version? minVersion = null,
             Version? specificVersion = null)
         {
@@ -290,11 +278,12 @@ namespace Emby.Server.Implementations.Updates
                 yield return new InstallationInfo
                 {
                     Changelog = v.Changelog,
-                    Id = new Guid(package.Id),
+                    Id = package.Id,
                     Name = package.Name,
                     Version = v.VersionNumber,
                     SourceUrl = v.SourceUrl,
-                    Checksum = v.Checksum
+                    Checksum = v.Checksum,
+                    PackageInfo = package
                 };
             }
         }
@@ -504,7 +493,8 @@ namespace Emby.Server.Implementations.Updates
             var plugins = _pluginManager.Plugins;
             foreach (var plugin in plugins)
             {
-                if (plugin.Manifest?.AutoUpdate == false)
+                // Don't auto update when plugin marked not to, or when it's disabled.
+                if (plugin.Manifest?.AutoUpdate == false || plugin.Manifest?.Status == PluginStatus.Disabled)
                 {
                     continue;
                 }
@@ -519,7 +509,7 @@ namespace Emby.Server.Implementations.Updates
             }
         }
 
-        private async Task PerformPackageInstallation(InstallationInfo package, CancellationToken cancellationToken)
+        private async Task PerformPackageInstallation(InstallationInfo package, PluginStatus status, CancellationToken cancellationToken)
         {
             var extension = Path.GetExtension(package.SourceUrl);
             if (!string.Equals(extension, ".zip", StringComparison.OrdinalIgnoreCase))
@@ -571,24 +561,16 @@ namespace Emby.Server.Implementations.Updates
 
             stream.Position = 0;
             _zipClient.ExtractAllFromZip(stream, targetDir, true);
+            await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
             _pluginManager.ImportPluginFrom(targetDir);
         }
 
         private async Task<bool> InstallPackageInternal(InstallationInfo package, CancellationToken cancellationToken)
         {
-            // Set last update time if we were installed before
             LocalPlugin? plugin = _pluginManager.Plugins.FirstOrDefault(p => p.Id.Equals(package.Id) && p.Version.Equals(package.Version))
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
-            if (plugin != null)
-            {
-                plugin.Manifest.Timestamp = DateTime.UtcNow;
-                _pluginManager.SaveManifest(plugin.Manifest, plugin.Path);
-            }
 
-            // Do the install
-            await PerformPackageInstallation(package, cancellationToken).ConfigureAwait(false);
-
-            // Do plugin-specific processing
+            await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
 
             return plugin != null;

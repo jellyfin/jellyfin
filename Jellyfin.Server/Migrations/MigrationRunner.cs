@@ -40,15 +40,15 @@ namespace Jellyfin.Server.Migrations
                 .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
                 .OfType<IMigrationRoutine>()
                 .ToArray();
-            var migrationOptions = ((IConfigurationManager)host.ServerConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
+            var migrationOptions = ((IConfigurationManager)host.ConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
-            if (!host.ServerConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Count == 0)
+            if (!host.ConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Count == 0)
             {
                 // If startup wizard is not finished, this is a fresh install.
                 // Don't run any migrations, just mark all of them as applied.
                 logger.LogInformation("Marking all known migrations as applied because this is a fresh install");
                 migrationOptions.Applied.AddRange(migrations.Where(m => !m.PerformOnNewInstall).Select(m => (m.Id, m.Name)));
-                host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
             }
 
             var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
@@ -77,7 +77,7 @@ namespace Jellyfin.Server.Migrations
                 // Mark the migration as completed
                 logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
                 migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
-                host.ServerConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
                 logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
             }
         }

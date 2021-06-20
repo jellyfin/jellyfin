@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -91,8 +93,11 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
-            IEnumerable<IMetadataSaver> savers,
+        void AddParts(
+            IEnumerable<IImageProvider> imageProviders,
+            IEnumerable<IMetadataService> metadataServices,
+            IEnumerable<IMetadataProvider> metadataProviders,
+            IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds);
 
         /// <summary>
@@ -185,12 +190,5 @@ namespace MediaBrowser.Controller.Providers
         void OnRefreshComplete(BaseItem item);
 
         double? GetRefreshProgress(Guid id);
-    }
-
-    public enum RefreshPriority
-    {
-        High = 0,
-        Normal = 1,
-        Low = 2
     }
 }

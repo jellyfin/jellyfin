@@ -1,5 +1,3 @@
-﻿#nullable enable
-
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
@@ -56,7 +54,7 @@ namespace Emby.Server.Implementations.HttpServer
             RemoteEndPoint = remoteEndPoint;
             QueryString = query;
 
-            _jsonOptions = JsonDefaults.GetOptions();
+            _jsonOptions = JsonDefaults.Options;
             LastActivityDate = DateTime.Now;
         }
 

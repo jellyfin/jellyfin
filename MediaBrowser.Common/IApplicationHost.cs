@@ -10,7 +10,7 @@ namespace MediaBrowser.Common
     /// </summary>
     /// <param name="type">Type to create.</param>
     /// <returns>New instance of type <param>type</param>.</returns>
-    public delegate object CreationDelegate(Type type);
+    public delegate object? CreationDelegateFactory(Type type);
 
     /// <summary>
     /// An interface to be implemented by the applications hosting a kernel.
@@ -20,7 +20,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
-        event EventHandler HasPendingRestartChanged;
+        event EventHandler? HasPendingRestartChanged;
 
         /// <summary>
         /// Gets the name.
@@ -61,7 +61,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Gets or sets the service provider.
         /// </summary>
-        IServiceProvider ServiceProvider { get; set; }
+        IServiceProvider? ServiceProvider { get; set; }
 
         /// <summary>
         /// Gets the application version.
@@ -112,7 +112,7 @@ namespace MediaBrowser.Common
         /// <param name="defaultFunc">Delegate function that gets called to create the object.</param>
         /// <param name="manageLifetime">If set to <c>true</c> [manage lifetime].</param>
         /// <returns><see cref="IReadOnlyCollection{T}" />.</returns>
-        IReadOnlyCollection<T> GetExports<T>(CreationDelegate defaultFunc, bool manageLifetime = true);
+        IReadOnlyCollection<T> GetExports<T>(CreationDelegateFactory defaultFunc, bool manageLifetime = true);
 
         /// <summary>
         /// Gets the export types.
