@@ -129,6 +129,11 @@
         Playlist,
 
         /// <summary>
+        /// Item is playlist folder.
+        /// </summary>
+        PlaylistsFolder,
+
+        /// <summary>
         /// Item is program
         /// </summary>
         Program,
