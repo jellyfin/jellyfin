@@ -69,6 +69,16 @@
         Genre,
 
         /// <summary>
+        /// Item is a live tv channel.
+        /// </summary>
+        LiveTvChannel,
+
+        /// <summary>
+        /// Item is a live tv program.
+        /// </summary>
+        LiveTvProgram,
+
+        /// <summary>
         /// Item is manual playlists folder.
         /// </summary>
         ManualPlaylistsFolder,
