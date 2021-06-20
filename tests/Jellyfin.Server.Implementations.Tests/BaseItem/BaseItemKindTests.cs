@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Entities;
+using System.Reflection;
+using Jellyfin.Data.Enums;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Jellyfin.Server.Implementations.Tests.BaseItem
 {
@@ -11,7 +14,15 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
     {
         [Theory]
         [ClassData(typeof(GetBaseItemDescendant))]
-        public void BaseKindEnumTest(Type baseItemDescendantType)
+        public void BaseItemKindEnumTest(Type baseItemType)
+        {
+            var enumValue = Enum.Parse<BaseItemKind>(baseItemType.Name);
+            Assert.True(Enum.IsDefined(typeof(BaseItemKind), enumValue));
+        }
+
+        [Theory]
+        [ClassData(typeof(GetBaseItemDescendant))]
+        public void GetBaseKindEnumTest(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);
 
@@ -24,34 +35,58 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
             }
         }
 
-        private static bool IsProjectAssemblyName(string? name)
-        {
-            if (name == null)
-            {
-                return false;
-            }
-
-            return name.Contains("Jellyfin", StringComparison.InvariantCulture)
-                || name.Contains("Emby", StringComparison.InvariantCulture)
-                || name.Contains("MediaBrowser", StringComparison.InvariantCulture)
-                || name.Contains("RSSDP", StringComparison.InvariantCulture);
-        }
-
         private class GetBaseItemDescendant : IEnumerable<object?[]>
         {
+            private static bool IsProjectAssemblyName(string? name)
+            {
+                if (name == null)
+                {
+                    return false;
+                }
+
+                return name.StartsWith("Jellyfin", StringComparison.OrdinalIgnoreCase)
+                       || name.StartsWith("Emby", StringComparison.OrdinalIgnoreCase)
+                       || name.StartsWith("MediaBrowser", StringComparison.OrdinalIgnoreCase)
+                       || name.StartsWith("RSSDP", StringComparison.OrdinalIgnoreCase);
+            }
+
             public IEnumerator<object?[]> GetEnumerator()
             {
-                var projectAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(x => IsProjectAssemblyName(x.FullName));
-
-                foreach (var projectAssembly in projectAssemblies)
+                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in loadedAssemblies)
                 {
-                    var baseItemDescendantTypes = projectAssembly.GetTypes()
-                         .Where(targetType => targetType.IsClass && !targetType.IsAbstract && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
-
-                    foreach (var descendantType in baseItemDescendantTypes)
+                    if (IsProjectAssemblyName(assembly.FullName))
                     {
-                        yield return new object?[] { descendantType };
+                        var baseItemTypes = assembly.GetTypes()
+                            .Where(targetType => targetType.IsClass
+                                                 && !targetType.IsAbstract
+                                                 && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
+                        foreach (var baseItemType in baseItemTypes)
+                        {
+                            yield return new object?[] { baseItemType };
+                        }
+                    }
+                }
+
+                var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (path == null)
+                {
+                    throw new NullException("Assembly location is null");
+                }
+
+                foreach (string dll in Directory.GetFiles(path, "*.dll"))
+                {
+                    var assembly = Assembly.LoadFile(dll);
+                    if (IsProjectAssemblyName(assembly.FullName))
+                    {
+                        var baseItemTypes = assembly.GetTypes()
+                            .Where(targetType => targetType.IsClass
+                                                 && !targetType.IsAbstract
+                                                 && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
+                        foreach (var baseItemType in baseItemTypes)
+                        {
+                            yield return new object?[] { baseItemType };
+                        }
                     }
                 }
             }
