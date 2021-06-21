@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
     public class BaseItemKindTests
     {
         [Theory]
-        [ClassData(typeof(GetBaseItemDescendant))]
+        [ClassData(typeof(GetBaseItemDescendants))]
         public void BaseItemKindEnumTest(Type baseItemType)
         {
             var enumValue = Enum.Parse<BaseItemKind>(baseItemType.Name);
@@ -21,7 +21,7 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
         }
 
         [Theory]
-        [ClassData(typeof(GetBaseItemDescendant))]
+        [ClassData(typeof(GetBaseItemDescendants))]
         public void GetBaseKindEnumTest(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);
@@ -35,7 +35,7 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
             }
         }
 
-        private class GetBaseItemDescendant : IEnumerable<object?[]>
+        private class GetBaseItemDescendants : IEnumerable<object?[]>
         {
             private static bool IsProjectAssemblyName(string? name)
             {
@@ -46,8 +46,7 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
 
                 return name.StartsWith("Jellyfin", StringComparison.OrdinalIgnoreCase)
                        || name.StartsWith("Emby", StringComparison.OrdinalIgnoreCase)
-                       || name.StartsWith("MediaBrowser", StringComparison.OrdinalIgnoreCase)
-                       || name.StartsWith("RSSDP", StringComparison.OrdinalIgnoreCase);
+                       || name.StartsWith("MediaBrowser", StringComparison.OrdinalIgnoreCase);
             }
 
             public IEnumerator<object?[]> GetEnumerator()
