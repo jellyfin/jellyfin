@@ -212,4 +212,4 @@
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
  - [olsh](https://github.com/olsh)
- - [lbenini] (https://github.com/lbenini)
+ - [lbenini](https://github.com/lbenini)
