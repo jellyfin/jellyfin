@@ -46,10 +46,6 @@ RUN apt-get update \
    jellyfin-ffmpeg \
    openssl \
    locales \
-   unzip \
-# install Noto CJK fonts
- && wget https://noto-website-2.storage.googleapis.com/pkgs/NotoSansCJK-Bold.ttc.zip -O /usr/share/fonts/NotoSansCJK-Bold.ttc.zip \
- && unzip /usr/share/fonts/NotoSansCJK-Bold.ttc.zip -d /usr/share/fonts/ \
 # Intel VAAPI Tone mapping dependencies:
 # Prefer NEO to Beignet since the latter one doesn't support Comet Lake or newer for now.
 # Do not use the intel-opencl-icd package from repo since they will not build with RELEASE_WITH_REGKEYS enabled.
@@ -64,13 +60,16 @@ RUN apt-get update \
  && dpkg -i *.deb \
  && cd .. \
  && rm -rf intel-compute-runtime \
- && apt-get remove gnupg wget apt-transport-https unzip -y \
+ && apt-get remove gnupg wget apt-transport-https -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
  && mkdir -p /cache /config /media \
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
+
+# copy Noto CJK fonts
+COPY assets/NotoSansCJK-Bold/NotoSansCJK-Bold.ttc /usr/share/fonts/NotoSansCJK-Bold/NotoSansCJK-Bold.ttc
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
