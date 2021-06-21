@@ -69,7 +69,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     else
                     {
                         dbContext.Devices.Add(new Device(
-                            row[6].ToGuid(),
+                            new Guid(row[6].ToString()),
                             row[3].ToString(),
                             row[4].ToString(),
                             row[5].ToString(),
