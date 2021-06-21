@@ -157,7 +157,7 @@ namespace Jellyfin.Server.Implementations.Devices
 
             return new QueryResult<DeviceInfo>
             {
-                Items = devices.Items.Select(ToDeviceInfo).ToList(),
+                Items = devices.Items.Select(device => ToDeviceInfo(device)).ToList(),
                 StartIndex = devices.StartIndex,
                 TotalRecordCount = devices.TotalRecordCount
             };
@@ -185,7 +185,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 sessions = sessions.Where(i => CanAccessDevice(user, i.DeviceId));
             }
 
-            var array = await sessions.Select(ToDeviceInfo).ToArrayAsync().ConfigureAwait(false);
+            var array = await sessions.Select(device => ToDeviceInfo(device)).ToArrayAsync().ConfigureAwait(false);
 
             return new QueryResult<DeviceInfo>(array);
         }
