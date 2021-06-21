@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.QuickConnect
     {
         private readonly RNGCryptoServiceProvider _rng = new ();
         private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ();
-        private readonly ConcurrentDictionary<string, (string, Guid)> _quickConnectTokens = new ();
+        private readonly ConcurrentDictionary<string, (string Token, Guid UserId)> _quickConnectTokens = new ();
 
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<QuickConnectManager> _logger;
@@ -137,7 +137,7 @@ namespace Emby.Server.Implementations.QuickConnect
                 throw new SecurityException("Unknown quick connect token");
             }
 
-            request.UserId = entry.Item2;
+            request.UserId = entry.UserId;
             _quickConnectTokens.Remove(token, out _);
 
             _sessionManager.AuthenticateQuickConnect(request, token);
@@ -195,7 +195,7 @@ namespace Emby.Server.Implementations.QuickConnect
         public int DeleteAllDevices(Guid user)
         {
             var tokens = _quickConnectTokens
-                .Where(entry => entry.Value.Item1.StartsWith(TokenName, StringComparison.Ordinal) && entry.Value.Item2 == user)
+                .Where(entry => entry.Value.Token.StartsWith(TokenName, StringComparison.Ordinal) && entry.Value.UserId == user)
                 .ToList();
 
             var removed = 0;
