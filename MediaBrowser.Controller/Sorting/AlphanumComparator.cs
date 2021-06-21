@@ -13,11 +13,13 @@ namespace MediaBrowser.Controller.Sorting
             {
                 return 0;
             }
-            else if (s1 == null)
+
+            if (s1 == null)
             {
                 return -1;
             }
-            else if (s2 == null)
+
+            if (s2 == null)
             {
                 return 1;
             }
@@ -30,11 +32,13 @@ namespace MediaBrowser.Controller.Sorting
             {
                 return 0;
             }
-            else if (len1 == 0)
+
+            if (len1 == 0)
             {
                 return -1;
             }
-            else if (len2 == 0)
+
+            if (len2 == 0)
             {
                 return 1;
             }
@@ -75,11 +79,13 @@ namespace MediaBrowser.Controller.Sorting
                     {
                         return -1;
                     }
-                    else if (span1Len > span2Len)
+
+                    if (span1Len > span2Len)
                     {
                         return 1;
                     }
-                    else if (span1Len >= 20) // Number is probably too big for a ulong
+
+                    if (span1Len >= 20) // Number is probably too big for a ulong
                     {
                         // Trim all the first digits that are the same
                         int i = 0;
@@ -104,11 +110,13 @@ namespace MediaBrowser.Controller.Sorting
                     {
                         return 0;
                     }
-                    else if (num1 < num2)
+
+                    if (num1 < num2)
                     {
                         return -1;
                     }
-                    else if (num1 > num2)
+
+                    if (num1 > num2)
                     {
                         return 1;
                     }

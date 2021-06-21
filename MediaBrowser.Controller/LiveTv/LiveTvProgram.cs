@@ -62,10 +62,8 @@ namespace MediaBrowser.Controller.LiveTv
             {
                 return 2.0 / 3;
             }
-            else
-            {
-                return 16.0 / 9;
-            }
+
+            return 16.0 / 9;
         }
 
         [JsonIgnore]

@@ -340,10 +340,8 @@ namespace Emby.Server.Implementations.SyncPlay
             {
                 return sessionsCounter > 0;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <summary>

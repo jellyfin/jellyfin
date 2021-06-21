@@ -610,10 +610,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 RestartCurrentItem();
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <inheritdoc />
@@ -627,10 +625,8 @@ namespace Emby.Server.Implementations.SyncPlay
                 RestartCurrentItem();
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <inheritdoc />

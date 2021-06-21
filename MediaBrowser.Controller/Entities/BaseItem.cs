@@ -485,19 +485,17 @@ namespace MediaBrowser.Controller.Entities
             {
                 return allowed.Contains(ChannelId);
             }
-            else
-            {
-                var collectionFolders = LibraryManager.GetCollectionFolders(this, allCollectionFolders);
 
-                foreach (var folder in collectionFolders)
+            var collectionFolders = LibraryManager.GetCollectionFolders(this, allCollectionFolders);
+
+            foreach (var folder in collectionFolders)
+            {
+                if (allowed.Contains(folder.Id))
                 {
-                    if (allowed.Contains(folder.Id))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
-
+            
             return false;
         }
 
@@ -2970,10 +2968,8 @@ namespace MediaBrowser.Controller.Entities
             {
                 return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
             }
-            else
-            {
-                return Array.Empty<BaseItem>();
-            }
+
+            return Array.Empty<BaseItem>();
         }
 
         public virtual bool IsHD => Height >= 720;

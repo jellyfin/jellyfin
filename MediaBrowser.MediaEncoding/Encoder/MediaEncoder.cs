@@ -153,7 +153,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 throw new ArgumentException("Unexpected pathType value");
             }
-            else if (string.IsNullOrWhiteSpace(path))
+
+            if (string.IsNullOrWhiteSpace(path))
             {
                 // User had cleared the custom path in UI
                 newPath = string.Empty;
@@ -208,10 +209,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     EncoderLocation = location;
                     return true;
                 }
-                else
-                {
-                    _logger.LogWarning("FFmpeg: {Location}: File not found: {Path}", location, path);
-                }
+
+                _logger.LogWarning("FFmpeg: {Location}: File not found: {Path}", location, path);
             }
 
             return rc;
