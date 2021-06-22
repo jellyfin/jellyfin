@@ -6,9 +6,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Diacritics.Extensions;
 using Emby.Dlna.Didl;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
