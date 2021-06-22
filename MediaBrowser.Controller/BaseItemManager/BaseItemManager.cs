@@ -3,7 +3,7 @@
 using System;
 using System.Linq;
 using System.Threading;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;

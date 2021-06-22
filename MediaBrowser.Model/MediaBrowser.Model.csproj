@@ -50,7 +50,8 @@
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jellyfin.Data\Jellyfin.Data.csproj" />
+    <ProjectReference Include="../Jellyfin.Data/Jellyfin.Data.csproj" />
+    <ProjectReference Include="../src/Jellyfin.Extensions/Jellyfin.Extensions.csproj" />
   </ItemGroup>
 
 </Project>
