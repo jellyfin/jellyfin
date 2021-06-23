@@ -14,6 +14,7 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -1438,9 +1439,9 @@ namespace Emby.Server.Implementations.Session
             return AuthenticateNewSessionInternal(request, true);
         }
 
-        public Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token)
+        public Task<AuthenticationResult> AuthenticateQuickConnect(Guid userId)
         {
-            return AuthenticateNewSessionInternal(request, false);
+            return AuthenticateNewSessionInternal(new AuthenticationRequest { UserId = userId }, false);
         }
 
         private async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)

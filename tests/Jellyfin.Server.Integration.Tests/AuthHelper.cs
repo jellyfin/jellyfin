@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
 using Jellyfin.Api.Models.UserDtos;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests

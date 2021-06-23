@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Controller.Extensions;
+using Diacritics.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities.Audio
