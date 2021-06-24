@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Emby.Server.Implementations.Data;
 using Jellyfin.Data.Entities.Security;
@@ -53,9 +54,9 @@ namespace Jellyfin.Server.Migrations.Routines
             {
                 using var dbContext = _dbProvider.CreateContext();
 
-                var queryResult = connection.Query("SELECT * FROM Tokens");
+                var authenticatedDevices = connection.Query("SELECT * FROM Tokens");
 
-                foreach (var row in queryResult)
+                foreach (var row in authenticatedDevices)
                 {
                     if (row[6].IsDbNull())
                     {
@@ -81,6 +82,29 @@ namespace Jellyfin.Server.Migrations.Routines
                             DateLastActivity = row[10].ToDateTime()
                         });
                     }
+                }
+
+                var deviceOptions = connection.Query("SELECT * FROM Devices");
+                var deviceIds = new HashSet<string>();
+                foreach (var row in deviceOptions)
+                {
+                    if (row[2].IsDbNull())
+                    {
+                        continue;
+                    }
+
+                    var deviceId = row[2].ToString();
+                    if (deviceIds.Contains(deviceId))
+                    {
+                        continue;
+                    }
+
+                    deviceIds.Add(deviceId);
+
+                    dbContext.DeviceOptions.Add(new DeviceOptions(deviceId)
+                    {
+                        CustomName = row[1].IsDbNull() ? null : row[1].ToString()
+                    });
                 }
 
                 dbContext.SaveChanges();
