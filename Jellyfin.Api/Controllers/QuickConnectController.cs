@@ -4,6 +4,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -18,14 +19,17 @@ namespace Jellyfin.Api.Controllers
     public class QuickConnectController : BaseJellyfinApiController
     {
         private readonly IQuickConnect _quickConnect;
+        private readonly IAuthorizationContext _authContext;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectController"/> class.
         /// </summary>
         /// <param name="quickConnect">Instance of the <see cref="IQuickConnect"/> interface.</param>
-        public QuickConnectController(IQuickConnect quickConnect)
+        /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        public QuickConnectController(IQuickConnect quickConnect, IAuthorizationContext authContext)
         {
             _quickConnect = quickConnect;
+            _authContext = authContext;
         }
 
         /// <summary>
@@ -48,11 +52,12 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QuickConnectResult"/> with a secret and code for future use or an error message.</returns>
         [HttpGet("Initiate")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QuickConnectResult> Initiate()
+        public async Task<ActionResult<QuickConnectResult>> Initiate()
         {
             try
             {
-                return _quickConnect.TryConnect();
+                var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+                return _quickConnect.TryConnect(auth);
             }
             catch (AuthenticationException)
             {

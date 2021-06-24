@@ -1432,16 +1432,21 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Authenticates the new session.
         /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task{SessionInfo}.</returns>
+        /// <param name="request">The authenticationrequest.</param>
+        /// <returns>The authentication result.</returns>
         public Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request)
         {
             return AuthenticateNewSessionInternal(request, true);
         }
 
-        public Task<AuthenticationResult> AuthenticateQuickConnect(Guid userId)
+        /// <summary>
+        /// Directly authenticates the session without enforcing password.
+        /// </summary>
+        /// <param name="request">The authentication request.</param>
+        /// <returns>The authentication result.</returns>
+        public Task<AuthenticationResult> AuthenticateDirect(AuthenticationRequest request)
         {
-            return AuthenticateNewSessionInternal(new AuthenticationRequest { UserId = userId }, false);
+            return AuthenticateNewSessionInternal(request, false);
         }
 
         private async Task<AuthenticationResult> AuthenticateNewSessionInternal(AuthenticationRequest request, bool enforcePassword)
