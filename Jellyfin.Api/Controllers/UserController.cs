@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -38,6 +39,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IAuthorizationContext _authContext;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
+        private readonly IQuickConnect _quickConnectManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -49,6 +51,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
         public UserController(
             IUserManager userManager,
             ISessionManager sessionManager,
@@ -56,7 +59,8 @@ namespace Jellyfin.Api.Controllers
             IDeviceManager deviceManager,
             IAuthorizationContext authContext,
             IServerConfigurationManager config,
-            ILogger<UserController> logger)
+            ILogger<UserController> logger,
+            IQuickConnect quickConnectManager)
         {
             _userManager = userManager;
             _sessionManager = sessionManager;
@@ -65,6 +69,7 @@ namespace Jellyfin.Api.Controllers
             _authContext = authContext;
             _config = config;
             _logger = logger;
+            _quickConnectManager = quickConnectManager;
         }
 
         /// <summary>
@@ -228,23 +233,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
         [HttpPost("AuthenticateWithQuickConnect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthenticationResult>> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
+        public ActionResult<AuthenticationResult> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
         {
-            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
-
             try
             {
-                var authRequest = new AuthenticationRequest
-                {
-                    App = auth.Client,
-                    AppVersion = auth.Version,
-                    DeviceId = auth.DeviceId,
-                    DeviceName = auth.Device,
-                };
-
-                return await _sessionManager.AuthenticateQuickConnect(
-                    authRequest,
-                    request.Token).ConfigureAwait(false);
+                return _quickConnectManager.GetAuthorizedRequest(request.Secret);
             }
             catch (SecurityException e)
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Authentication;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.QuickConnect;
 
 namespace MediaBrowser.Controller.QuickConnect
@@ -18,8 +19,9 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <summary>
         /// Initiates a new quick connect request.
         /// </summary>
+        /// <param name="authorizationInfo">The initiator authorization info.</param>
         /// <returns>A quick connect result with tokens to proceed or throws an exception if not active.</returns>
-        QuickConnectResult TryConnect();
+        QuickConnectResult TryConnect(AuthorizationInfo authorizationInfo);
 
         /// <summary>
         /// Checks the status of an individual request.
@@ -35,5 +37,12 @@ namespace MediaBrowser.Controller.QuickConnect
         /// <param name="code">Identifying code for the request.</param>
         /// <returns>A boolean indicating if the authorization completed successfully.</returns>
         Task<bool> AuthorizeRequest(Guid userId, string code);
+
+        /// <summary>
+        /// Gets the authorized request for the secret.
+        /// </summary>
+        /// <param name="secret">The secret.</param>
+        /// <returns>The authentication result.</returns>
+        AuthenticationResult GetAuthorizedRequest(string secret);
     }
 }
