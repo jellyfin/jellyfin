@@ -686,11 +686,6 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.IsAVC = false;
             }
 
-            if (!string.IsNullOrWhiteSpace(streamInfo.FieldOrder) && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase))
-            {
-                stream.IsInterlaced = true;
-            }
-
             // Filter out junk
             if (!string.IsNullOrWhiteSpace(streamInfo.CodecTagString) && !streamInfo.CodecTagString.Contains("[0]", StringComparison.OrdinalIgnoreCase))
             {
@@ -745,6 +740,19 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
+
+                // Some interlaced H.264 files in mp4 containers using MBAFF coding aren't flagged as being interlaced by FFprobe,
+                // so for H.264 files we also check if the codec timebase duration is half the reported frame rate duration to
+                // determine if the file is interlaced
+                bool videoInterlaced = !string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
+                    && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
+                bool h264MbaffCoded = string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase)
+                    && string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
+                    && 1f / (stream.AverageFrameRate * 2) == GetFrameRate(stream.CodecTimeBase);
+                if (videoInterlaced || h264MbaffCoded)
+                {
+                    stream.IsInterlaced = true;
+                }
 
                 if (isAudio || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
