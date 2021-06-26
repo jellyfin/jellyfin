@@ -79,6 +79,16 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
+        /// Enables url decoding before binding to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseQueryStringDecoding(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<QueryStringDecodingMiddleware>();
+        }
+
+        /// <summary>
         /// Adds base url redirection to the application pipeline.
         /// </summary>
         /// <param name="appBuilder">The application builder.</param>

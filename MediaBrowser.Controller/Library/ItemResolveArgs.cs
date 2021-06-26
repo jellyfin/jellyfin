@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Library
         public IDirectoryService DirectoryService { get; }
 
         /// <summary>
-        /// Gets the file system children.
+        /// Gets or sets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
         public FileSystemMetadata[] FileSystemChildren { get; set; }
@@ -242,14 +242,14 @@ namespace MediaBrowser.Controller.Library
         /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         public override int GetHashCode()
         {
-            return Path.GetHashCode();
+            return Path.GetHashCode(StringComparison.Ordinal);
         }
 
         /// <summary>
         /// Equals the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if the arguments are the same, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
             if (args != null)

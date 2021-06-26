@@ -218,8 +218,8 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         /// <summary>
@@ -287,7 +287,8 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            return new[] {
+            return new[]
+            {
                 new FileSystemMetadata
                 {
                     FullName = Path,

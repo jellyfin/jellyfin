@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -21,15 +22,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3uParser
     {
+        private const string ExtInfPrefix = "#EXTINF:";
+
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IServerApplicationHost _appHost;
 
-        public M3uParser(ILogger logger, IHttpClientFactory httpClientFactory, IServerApplicationHost appHost)
+        public M3uParser(ILogger logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _appHost = appHost;
         }
 
         public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
@@ -60,8 +61,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             return File.OpenRead(info.Url);
         }
-
-        private const string ExtInfPrefix = "#EXTINF:";
 
         private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
         {
