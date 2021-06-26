@@ -12,16 +12,26 @@ namespace MediaBrowser.Controller.Providers
 {
     public class MetadataResult<T>
     {
+        // Images aren't always used so the allocation is a waste a lot of the time
+        private List<LocalImageInfo> _images;
+        private List<(string url, ImageType type)> _remoteImages;
+
         public MetadataResult()
         {
-            Images = new List<LocalImageInfo>();
-            RemoteImages = new List<(string url, ImageType type)>();
             ResultLanguage = "en";
         }
 
-        public List<LocalImageInfo> Images { get; set; }
+        public List<LocalImageInfo> Images
+        {
+            get => _images ??= new List<LocalImageInfo>();
+            set => _images = value;
+        }
 
-        public List<(string url, ImageType type)> RemoteImages { get; set; }
+        public List<(string url, ImageType type)> RemoteImages
+        {
+            get => _remoteImages ??= new List<(string url, ImageType type)>();
+            set => _remoteImages = value;
+        }
 
         public List<UserItemData> UserDataList { get; set; }
 

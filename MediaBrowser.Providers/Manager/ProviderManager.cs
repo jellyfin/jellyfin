@@ -1116,7 +1116,7 @@ namespace MediaBrowser.Providers.Manager
                     await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
                     break;
                 case Folder folder:
-                    await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                    await folder.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -1127,7 +1127,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                await child.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1149,7 +1149,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => i.MusicArtist)
                 .Where(i => i != null);
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true));
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), options, true, cancellationToken));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 

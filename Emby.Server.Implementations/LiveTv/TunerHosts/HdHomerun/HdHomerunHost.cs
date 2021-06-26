@@ -12,8 +12,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -583,7 +584,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     Logger,
                     Config,
                     _appHost,
-                    _networkManager,
                     _streamHelper);
             }
 
@@ -624,7 +624,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 Logger,
                 Config,
                 _appHost,
-                _networkManager,
                 _streamHelper);
         }
 

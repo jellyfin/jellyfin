@@ -13,6 +13,7 @@ namespace MediaBrowser.Model.Querying
             EnableImageTypes = Array.Empty<ImageType>();
             EnableTotalRecordCount = true;
             DisableFirstEpisode = false;
+            NextUpDateCutoff = DateTime.MinValue;
         }
 
         /// <summary>
@@ -75,5 +76,10 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets a value indicating whether do disable sending first episode as next up.
         /// </summary>
         public bool DisableFirstEpisode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the oldest date for a show to appear in Next Up.
+        /// </summary>
+        public DateTime NextUpDateCutoff { get; set; }
     }
 }

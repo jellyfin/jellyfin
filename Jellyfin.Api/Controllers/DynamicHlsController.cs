@@ -1190,7 +1190,8 @@ namespace Jellyfin.Api.Controllers
                 throw new ArgumentException("StartTimeTicks is not allowed.");
             }
 
-            using var cancellationTokenSource = new CancellationTokenSource();
+            // CTS lifecycle is managed internally.
+            var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
             using var state = await StreamingHelpers.GetStreamingState(

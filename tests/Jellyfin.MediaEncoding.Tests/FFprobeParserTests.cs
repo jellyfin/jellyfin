@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.MediaEncoding.Probing;
 using Xunit;
 

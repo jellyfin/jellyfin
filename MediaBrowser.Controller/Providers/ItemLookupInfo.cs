@@ -23,6 +23,12 @@ namespace MediaBrowser.Controller.Providers
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the original title
+        /// </summary>
+        /// <value>The original title of the item.</value>
+        public string OriginalTitle { get; set; }
+
+        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>

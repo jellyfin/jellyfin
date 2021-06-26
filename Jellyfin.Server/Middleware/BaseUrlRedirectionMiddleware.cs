@@ -45,15 +45,33 @@ namespace Jellyfin.Server.Middleware
             var localPath = httpContext.Request.Path.ToString();
             var baseUrlPrefix = serverConfigurationManager.GetNetworkConfiguration().BaseUrl;
 
-            if (string.Equals(localPath, baseUrlPrefix + "/", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase)
-                || string.IsNullOrEmpty(localPath)
-                || !localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(baseUrlPrefix))
             {
-                // Always redirect back to the default path if the base prefix is invalid or missing
+                var startsWithBaseUrl = localPath.StartsWith(baseUrlPrefix, StringComparison.OrdinalIgnoreCase);
+
+                if (!startsWithBaseUrl
+                    && (localPath.Equals("/health", StringComparison.OrdinalIgnoreCase)
+                        || localPath.Equals("/health/", StringComparison.OrdinalIgnoreCase)))
+                {
+                    _logger.LogDebug("Redirecting /health check");
+                    httpContext.Response.Redirect(baseUrlPrefix + "/health");
+                    return;
+                }
+
+                if (!startsWithBaseUrl)
+                {
+                    // Always redirect back to the default path if the base prefix is invalid or missing
+                    _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
+                    httpContext.Response.Redirect(baseUrlPrefix + "/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
+                    return;
+                }
+            }
+            else if (string.IsNullOrEmpty(localPath)
+                     || localPath.Equals("/", StringComparison.Ordinal))
+            {
+                // Always redirect back to the default path if root is requested.
                 _logger.LogDebug("Normalizing an URL at {LocalPath}", localPath);
-                httpContext.Response.Redirect(baseUrlPrefix + "/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
+                httpContext.Response.Redirect("/" + _configuration[ConfigurationExtensions.DefaultRedirectKey]);
                 return;
             }
 

@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -94,7 +94,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.IsSaveLocalMetadataEnabled();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (IsAccessedByName)
             {
@@ -102,7 +102,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return Task.CompletedTask;
             }
 
-            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);
+            return base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken);
         }
 
         public override List<string> GetUserDataKeys()
