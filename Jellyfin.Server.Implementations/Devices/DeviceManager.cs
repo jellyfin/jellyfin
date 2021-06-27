@@ -170,6 +170,7 @@ namespace Jellyfin.Server.Implementations.Devices
         {
             await using var dbContext = _dbProvider.CreateContext();
             var sessions = dbContext.Devices
+                .Include(d => d.User)
                 .AsQueryable()
                 .OrderBy(d => d.DeviceId)
                 .ThenByDescending(d => d.DateLastActivity)
