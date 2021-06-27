@@ -171,15 +171,7 @@ namespace Jellyfin.Server.Implementations.Security
                     updateToken = true;
                 }
 
-                if (!device.UserId.Equals(Guid.Empty))
-                {
-                    authInfo.User = _userManager.GetUserById(device.UserId);
-                    authInfo.IsApiKey = false;
-                }
-                else
-                {
-                    authInfo.IsApiKey = true;
-                }
+                authInfo.User = _userManager.GetUserById(device.UserId);
 
                 if (updateToken)
                 {
@@ -198,6 +190,7 @@ namespace Jellyfin.Server.Implementations.Security
                     authInfo.DeviceId = string.Empty;
                     authInfo.Device = string.Empty;
                     authInfo.Version = string.Empty;
+                    authInfo.IsApiKey = true;
                 }
             }
 
