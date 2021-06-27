@@ -107,12 +107,6 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, Required] string id,
             [FromBody, Required] DeviceOptions deviceOptions)
         {
-            var existingDeviceOptions = await _deviceManager.GetDeviceOptions(id).ConfigureAwait(false);
-            if (existingDeviceOptions == null)
-            {
-                return NotFound();
-            }
-
             await _deviceManager.UpdateDeviceOptions(id, deviceOptions).ConfigureAwait(false);
             return NoContent();
         }
