@@ -41,7 +41,6 @@ namespace MediaBrowser.Providers.Music
         private readonly long _musicBrainzQueryIntervalMs;
 
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IApplicationHost _appHost;
         private readonly ILogger<MusicBrainzAlbumProvider> _logger;
 
         private readonly string _musicBrainzBaseUrl;
@@ -51,11 +50,9 @@ namespace MediaBrowser.Providers.Music
 
         public MusicBrainzAlbumProvider(
             IHttpClientFactory httpClientFactory,
-            IApplicationHost appHost,
             ILogger<MusicBrainzAlbumProvider> logger)
         {
             _httpClientFactory = httpClientFactory;
-            _appHost = appHost;
             _logger = logger;
 
             _musicBrainzBaseUrl = Plugin.Instance.Configuration.Server;
@@ -174,10 +171,10 @@ namespace MediaBrowser.Providers.Music
         }
 
         /// <inheritdoc />
-        public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<MusicAlbum>> GetMetadata(AlbumInfo info, CancellationToken cancellationToken)
         {
-            var releaseId = id.GetReleaseId();
-            var releaseGroupId = id.GetReleaseGroupId();
+            var releaseId = info.GetReleaseId();
+            var releaseGroupId = info.GetReleaseGroupId();
 
             var result = new MetadataResult<MusicAlbum>
             {
@@ -193,9 +190,9 @@ namespace MediaBrowser.Providers.Music
 
             if (string.IsNullOrWhiteSpace(releaseId))
             {
-                var artistMusicBrainzId = id.GetMusicBrainzArtistId();
+                var artistMusicBrainzId = info.GetMusicBrainzArtistId();
 
-                var releaseResult = await GetReleaseResult(artistMusicBrainzId, id.GetAlbumArtist(), id.Name, cancellationToken).ConfigureAwait(false);
+                var releaseResult = await GetReleaseResult(artistMusicBrainzId, info.GetAlbumArtist(), info.Name, cancellationToken).ConfigureAwait(false);
 
                 if (releaseResult != null)
                 {
@@ -499,12 +496,11 @@ namespace MediaBrowser.Providers.Music
                             using var subReader = reader.ReadSubtree();
                             return ParseArtistNameCredit(subReader);
                         }
-
                         default:
-                            {
-                                reader.Skip();
-                                break;
-                            }
+                        {
+                            reader.Skip();
+                            break;
+                        }
                     }
                 }
                 else

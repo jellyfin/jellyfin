@@ -43,6 +43,8 @@
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
 
+    <!-- disable warning CA1014: Mark assemblies with CLSCompliantAttribute -->
+    <Rule Id="CA1014" Action="Info" />
     <!-- disable warning CA1024: Use properties where appropriate -->
     <Rule Id="CA1024" Action="Info" />
     <!-- disable warning CA1031: Do not catch general exception types -->
@@ -68,8 +70,6 @@
     <!-- disable warning CA5394: Do not use insecure randomness -->
     <Rule Id="CA5394" Action="Info" />
 
-    <!-- disable warning CA1014: Mark assemblies with CLSCompliantAttribute -->
-    <Rule Id="CA1014" Action="Info" />
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />
     <!-- disable warning CA1055: URI return values should not be strings -->
@@ -82,5 +82,7 @@
     <Rule Id="CA1308" Action="None" />
     <!-- disable warning CA2101: Specify marshaling for P/Invoke string arguments -->
     <Rule Id="CA2101" Action="None" />
+    <!-- disable warning CA2234: Pass System.Uri objects instead of strings -->
+    <Rule Id="CA2234" Action="None" />
   </Rules>
 </RuleSet>

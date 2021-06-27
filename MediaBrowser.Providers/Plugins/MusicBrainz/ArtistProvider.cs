@@ -215,18 +215,19 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>
             {
                 Item = new MusicArtist()
             };
 
-            var musicBrainzId = id.GetMusicBrainzArtistId();
+            var musicBrainzId = info.GetMusicBrainzArtistId();
 
             if (string.IsNullOrWhiteSpace(musicBrainzId))
             {
-                var searchResults = await GetSearchResults(id, cancellationToken).ConfigureAwait(false);
+                var searchResults = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
                 var singleResult = searchResults.FirstOrDefault();
 

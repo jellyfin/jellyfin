@@ -102,7 +102,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, libraryOptions, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -235,7 +235,6 @@ namespace MediaBrowser.Providers.Manager
         /// Refreshes from provider.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="libraryOptions">The library options.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
@@ -247,7 +246,6 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         private async Task RefreshFromProvider(
             BaseItem item,
-            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
@@ -295,7 +293,7 @@ namespace MediaBrowser.Providers.Manager
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
-                        var downloaded = await DownloadImage(item, libraryOptions, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
+                        var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
 
                         if (downloaded)
                         {
@@ -305,12 +303,12 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadBackdrops(item, libraryOptions, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
 
                 if (item is IHasScreenshots hasScreenshots)
                 {
                     minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadBackdrops(item, libraryOptions, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -360,7 +358,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public bool MergeImages(BaseItem item, List<LocalImageInfo> images)
+        public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images)
         {
             var changed = false;
 
@@ -444,12 +442,12 @@ namespace MediaBrowser.Providers.Manager
             return null;
         }
 
-        private bool UpdateMultiImages(BaseItem item, List<LocalImageInfo> images, ImageType type)
+        private bool UpdateMultiImages(BaseItem item, IReadOnlyList<LocalImageInfo> images, ImageType type)
         {
             var changed = false;
 
             var newImageFileInfos = images
-                .FindAll(i => i.Type == type)
+                .Where(i => i.Type == type)
                 .Select(i => i.FileInfo)
                 .ToList();
 
@@ -463,7 +461,6 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task<bool> DownloadImage(
             BaseItem item,
-            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             RefreshResult result,
             IEnumerable<RemoteImageInfo> images,
@@ -475,7 +472,7 @@ namespace MediaBrowser.Providers.Manager
                 .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
                 .ToList();
 
-            if (EnableImageStub(item, libraryOptions) && eligibleImages.Count > 0)
+            if (EnableImageStub(item) && eligibleImages.Count > 0)
             {
                 SaveImageStub(item, type, eligibleImages.Select(i => i.Url));
                 result.UpdateType |= ItemUpdateType.ImageUpdate;
@@ -519,7 +516,7 @@ namespace MediaBrowser.Providers.Manager
             return false;
         }
 
-        private bool EnableImageStub(BaseItem item, LibraryOptions libraryOptions)
+        private bool EnableImageStub(BaseItem item)
         {
             if (item is LiveTvProgram)
             {
@@ -563,7 +560,7 @@ namespace MediaBrowser.Providers.Manager
                 newIndex);
         }
 
-        private async Task DownloadBackdrops(BaseItem item, LibraryOptions libraryOptions, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
+        private async Task DownloadBackdrops(BaseItem item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
             {
@@ -579,7 +576,7 @@ namespace MediaBrowser.Providers.Manager
 
                 var url = image.Url;
 
-                if (EnableImageStub(item, libraryOptions))
+                if (EnableImageStub(item))
                 {
                     SaveImageStub(item, imageType, new[] { url });
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
