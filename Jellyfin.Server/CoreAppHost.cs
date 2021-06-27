@@ -20,6 +20,7 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +97,8 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
 
             ServiceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
+
+            ServiceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
             base.RegisterServices();
         }
