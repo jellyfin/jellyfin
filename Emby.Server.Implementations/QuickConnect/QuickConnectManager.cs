@@ -207,7 +207,7 @@ namespace Emby.Server.Implementations.QuickConnect
             // Expire stale connection requests
             foreach (var (_, currentRequest) in _currentRequests)
             {
-                if (expireAll || currentRequest.DateAdded > minTime)
+                if (expireAll || currentRequest.DateAdded < minTime)
                 {
                     var code = currentRequest.Code;
                     _logger.LogDebug("Removing expired request {Code}", code);
