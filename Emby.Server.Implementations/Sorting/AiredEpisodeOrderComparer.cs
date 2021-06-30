@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             if (x == null)
             {
@@ -131,11 +131,11 @@ namespace Emby.Server.Implementations.Sorting
             return GetSpecialCompareValue(x).CompareTo(GetSpecialCompareValue(y));
         }
 
-        private static int GetSpecialCompareValue(Episode item)
+        private static long GetSpecialCompareValue(Episode item)
         {
             // First sort by season number
             // Since there are three sort orders, pad with 9 digits (3 for each, figure 1000 episode buffer should be enough)
-            var val = (item.AirsAfterSeasonNumber ?? item.AirsBeforeSeasonNumber ?? 0) * 1000000000;
+            var val = (item.AirsAfterSeasonNumber ?? item.AirsBeforeSeasonNumber ?? 0) * 1000000000L;
 
             // Second sort order is if it airs after the season
             if (item.AirsAfterSeasonNumber.HasValue)

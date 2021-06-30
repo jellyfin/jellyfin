@@ -1,17 +1,18 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -178,7 +179,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 lock (_lastExecutionResultSyncLock)
                 {
                     using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-                    JsonSerializer.SerializeAsync(createStream, value, _jsonOptions);
+                    using Utf8JsonWriter jsonStream = new Utf8JsonWriter(createStream);
+                    JsonSerializer.Serialize(jsonStream, value, _jsonOptions);
                 }
             }
         }
@@ -301,12 +303,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             get
             {
-                if (_id == null)
-                {
-                    _id = ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
-                }
-
-                return _id;
+                return _id ??= ScheduledTask.GetType().FullName.GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
         }
 
@@ -348,9 +345,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             var trigger = (ITaskTrigger)sender;
 
-            var configurableTask = ScheduledTask as IConfigurableScheduledTask;
-
-            if (configurableTask != null && !configurableTask.IsEnabled)
+            if (ScheduledTask is IConfigurableScheduledTask configurableTask && !configurableTask.IsEnabled)
             {
                 return;
             }
@@ -578,7 +573,8 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             using FileStream createStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-            JsonSerializer.SerializeAsync(createStream, triggers, _jsonOptions);
+            using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(createStream);
+            JsonSerializer.Serialize(jsonWriter, triggers, _jsonOptions);
         }
 
         /// <summary>
@@ -715,11 +711,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a TimeOfDayTicks.", nameof(info));
                 }
 
-                return new DailyTrigger
-                {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    TaskOptions = options
-                };
+                return new DailyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), options);
             }
 
             if (info.Type.Equals(nameof(WeeklyTrigger), StringComparison.OrdinalIgnoreCase))
@@ -734,12 +726,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a DayOfWeek.", nameof(info));
                 }
 
-                return new WeeklyTrigger
-                {
-                    TimeOfDay = TimeSpan.FromTicks(info.TimeOfDayTicks.Value),
-                    DayOfWeek = info.DayOfWeek.Value,
-                    TaskOptions = options
-                };
+                return new WeeklyTrigger(TimeSpan.FromTicks(info.TimeOfDayTicks.Value), info.DayOfWeek.Value, options);
             }
 
             if (info.Type.Equals(nameof(IntervalTrigger), StringComparison.OrdinalIgnoreCase))
@@ -749,16 +736,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                     throw new ArgumentException("Info did not contain a IntervalTicks.", nameof(info));
                 }
 
-                return new IntervalTrigger
-                {
-                    Interval = TimeSpan.FromTicks(info.IntervalTicks.Value),
-                    TaskOptions = options
-                };
+                return new IntervalTrigger(TimeSpan.FromTicks(info.IntervalTicks.Value), options);
             }
 
             if (info.Type.Equals(nameof(StartupTrigger), StringComparison.OrdinalIgnoreCase))
             {
-                return new StartupTrigger();
+                return new StartupTrigger(options);
             }
 
             throw new ArgumentException("Unrecognized trigger type: " + info.Type);

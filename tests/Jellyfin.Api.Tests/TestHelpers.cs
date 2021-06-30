@@ -29,6 +29,9 @@ namespace Jellyfin.Api.Tests
                 typeof(DefaultAuthenticationProvider).FullName!,
                 typeof(DefaultPasswordResetProvider).FullName!);
 
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
+
             // Set administrator flag.
             user.SetPermission(PermissionKind.IsAdministrator, role.Equals(UserRoles.Administrator, StringComparison.OrdinalIgnoreCase));
 

@@ -1,9 +1,12 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -41,6 +44,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
         /// </summary>
+        /// <param name="files">The list of tiles.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        /// <param name="parent">The parent folder.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="collectionType">The collection type.</param>
+        /// <returns>The items resolved from the paths.</returns>
         IEnumerable<BaseItem> ResolvePaths(
             IEnumerable<FileSystemMetadata> files,
             IDirectoryService directoryService,
@@ -344,6 +353,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
         /// <param name="uniqueId">The unique identifier.</param>
+        /// <returns>The named view.</returns>
         UserView GetNamedView(
             string name,
             Guid parentId,
@@ -357,10 +367,11 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
+        /// <returns>The shadow view.</returns>
         UserView GetShadowView(
             BaseItem parent,
-          string viewType,
-          string sortName);
+            string viewType,
+            string sortName);
 
         /// <summary>
         /// Determines whether [is video file] [the specified path].
@@ -465,6 +476,15 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <param name="people">The people.</param>
         void UpdatePeople(BaseItem item, List<PersonInfo> people);
+
+        /// <summary>
+        /// Asynchronously updates the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="people">The people.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The async task.</returns>
+        Task UpdatePeopleAsync(BaseItem item, List<PersonInfo> people, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the item ids.
@@ -576,5 +596,11 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetParentItem(string parentId, Guid? userId);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        /// <summary>
+        /// Gets or creates a static instance of <see cref="NamingOptions"/>.
+        /// </summary>
+        /// <returns>An instance of the <see cref="NamingOptions"/> class.</returns>
+        NamingOptions GetNamingOptions();
     }
 }

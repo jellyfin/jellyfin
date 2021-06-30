@@ -1,7 +1,6 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -11,8 +10,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Json.Converters;
+using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
@@ -43,12 +42,7 @@ namespace Emby.Server.Implementations.Plugins
         {
             get
             {
-                if (_httpClientFactory == null)
-                {
-                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
-                }
-
-                return _httpClientFactory;
+                return _httpClientFactory ?? (_httpClientFactory = _appHost.Resolve<IHttpClientFactory>());
             }
         }
 
@@ -165,9 +159,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         public void CreatePlugins()
         {
-            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance)
-                .Where(i => i != null)
-                .ToArray();
+            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance);
         }
 
         /// <summary>
@@ -277,11 +269,7 @@ namespace Emby.Server.Implementations.Plugins
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null);
-                if (plugin == null)
-                {
-                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
-                }
+                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
             }
             else
             {
@@ -368,7 +356,7 @@ namespace Emby.Server.Implementations.Plugins
         }
 
         /// <inheritdoc/>
-        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path)
+        public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
             if (packageInfo == null)
             {
@@ -406,14 +394,14 @@ namespace Emby.Server.Implementations.Plugins
                 Category = packageInfo.Category,
                 Changelog = versionInfo.Changelog ?? string.Empty,
                 Description = packageInfo.Description,
-                Id = new Guid(packageInfo.Id),
+                Id = packageInfo.Id,
                 Name = packageInfo.Name,
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,
                 TargetAbi = versionInfo.TargetAbi ?? string.Empty,
-                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp),
+                Timestamp = string.IsNullOrEmpty(versionInfo.Timestamp) ? DateTime.MinValue : DateTime.Parse(versionInfo.Timestamp, CultureInfo.InvariantCulture),
                 Version = versionInfo.Version,
-                Status = PluginStatus.Active,
+                Status = status == PluginStatus.Disabled ? PluginStatus.Disabled : PluginStatus.Active, // Keep disabled state.
                 AutoUpdate = true,
                 ImagePath = imagePath
             };
@@ -467,7 +455,8 @@ namespace Emby.Server.Implementations.Plugins
             try
             {
                 _logger.LogDebug("Creating instance of {Type}", type);
-                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider, type);
+                // _appHost.ServiceProvider is already assigned when we create the plugins
+                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider!, type);
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.

@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         {
             if (requestContext.Request.HttpContext.Items.TryGetValue("AuthorizationInfo", out var cached))
             {
-                return (AuthorizationInfo)cached;
+                return (AuthorizationInfo)cached!; // Cache should never contain null
             }
 
             return GetAuthorization(requestContext);
@@ -55,15 +55,15 @@ namespace Emby.Server.Implementations.HttpServer.Security
         }
 
         private AuthorizationInfo GetAuthorizationInfoFromDictionary(
-            in Dictionary<string, string> auth,
+            in Dictionary<string, string>? auth,
             in IHeaderDictionary headers,
             in IQueryCollection queryString)
         {
-            string deviceId = null;
-            string device = null;
-            string client = null;
-            string version = null;
-            string token = null;
+            string? deviceId = null;
+            string? device = null;
+            string? client = null;
+            string? version = null;
+            string? token = null;
 
             if (auth != null)
             {
@@ -206,7 +206,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(HttpContext httpReq)
+        private Dictionary<string, string>? GetAuthorizationDictionary(HttpContext httpReq)
         {
             var auth = httpReq.Request.Headers["X-Emby-Authorization"];
 
@@ -215,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 auth = httpReq.Request.Headers[HeaderNames.Authorization];
             }
 
-            return GetAuthorization(auth);
+            return GetAuthorization(auth.Count > 0 ? auth[0] : null);
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="httpReq">The HTTP req.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorizationDictionary(HttpRequest httpReq)
+        private Dictionary<string, string>? GetAuthorizationDictionary(HttpRequest httpReq)
         {
             var auth = httpReq.Headers["X-Emby-Authorization"];
 
@@ -232,7 +232,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 auth = httpReq.Headers[HeaderNames.Authorization];
             }
 
-            return GetAuthorization(auth);
+            return GetAuthorization(auth.Count > 0 ? auth[0] : null);
         }
 
         /// <summary>
@@ -240,43 +240,43 @@ namespace Emby.Server.Implementations.HttpServer.Security
         /// </summary>
         /// <param name="authorizationHeader">The authorization header.</param>
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        private Dictionary<string, string> GetAuthorization(string authorizationHeader)
+        private Dictionary<string, string>? GetAuthorization(ReadOnlySpan<char> authorizationHeader)
         {
             if (authorizationHeader == null)
             {
                 return null;
             }
 
-            var parts = authorizationHeader.Split(' ', 2);
+            var firstSpace = authorizationHeader.IndexOf(' ');
 
-            // There should be at least to parts
-            if (parts.Length != 2)
+            // There should be at least two parts
+            if (firstSpace == -1)
             {
                 return null;
             }
 
-            var acceptedNames = new[] { "MediaBrowser", "Emby" };
+            var name = authorizationHeader[..firstSpace];
 
-            // It has to be a digest request
-            if (!acceptedNames.Contains(parts[0], StringComparer.OrdinalIgnoreCase))
+            if (!name.Equals("MediaBrowser", StringComparison.OrdinalIgnoreCase)
+                && !name.Equals("Emby", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
-            // Remove uptil the first space
-            authorizationHeader = parts[1];
-            parts = authorizationHeader.Split(',');
+            authorizationHeader = authorizationHeader[(firstSpace + 1)..];
 
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var item in parts)
+            foreach (var item in authorizationHeader.Split(','))
             {
-                var param = item.Trim().Split('=', 2);
+                var trimmedItem = item.Trim();
+                var firstEqualsSign = trimmedItem.IndexOf('=');
 
-                if (param.Length == 2)
+                if (firstEqualsSign > 0)
                 {
-                    var value = NormalizeValue(param[1].Trim('"'));
-                    result[param[0]] = value;
+                    var key = trimmedItem[..firstEqualsSign].ToString();
+                    var value = NormalizeValue(trimmedItem[(firstEqualsSign + 1)..].Trim('"').ToString());
+                    result[key] = value;
                 }
             }
 

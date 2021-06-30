@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
@@ -41,14 +40,12 @@ namespace Jellyfin.Api.Helpers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly INetworkManager _networkManager;
         private readonly ILogger<DynamicHlsHelper> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly EncodingHelper _encodingHelper;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHlsHelper"/> class.
@@ -60,14 +57,12 @@ namespace Jellyfin.Api.Helpers
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of <see cref="TranscodingJobHelper"/>.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsHelper}"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public DynamicHlsHelper(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -76,14 +71,12 @@ namespace Jellyfin.Api.Helpers
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             INetworkManager networkManager,
             ILogger<DynamicHlsHelper> logger,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            EncodingHelper encodingHelper)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -92,14 +85,12 @@ namespace Jellyfin.Api.Helpers
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _networkManager = networkManager;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _encodingHelper = encodingHelper;
         }
 
         /// <summary>
@@ -115,6 +106,7 @@ namespace Jellyfin.Api.Helpers
             bool enableAdaptiveBitrateStreaming)
         {
             var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
                 streamingRequest,
@@ -145,9 +137,7 @@ namespace Jellyfin.Api.Helpers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
@@ -228,9 +218,8 @@ namespace Jellyfin.Api.Helpers
                         var sdrVideoUrl = ReplaceProfile(playlistUrl, "hevc", string.Join(',', requestedVideoProfiles), "main");
                         sdrVideoUrl += "&AllowVideoStreamCopy=false";
 
-                        EncodingHelper encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
-                        var sdrOutputVideoBitrate = encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec) ?? 0;
-                        var sdrOutputAudioBitrate = encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
+                        var sdrOutputVideoBitrate = _encodingHelper.GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream, state.OutputVideoCodec) ?? 0;
+                        var sdrOutputAudioBitrate = _encodingHelper.GetAudioBitrateParam(state.VideoRequest, state.AudioStream) ?? 0;
                         var sdrTotalBitrate = sdrOutputAudioBitrate + sdrOutputVideoBitrate;
 
                         AppendPlaylist(builder, state, sdrVideoUrl, sdrTotalBitrate, subtitleGroup);
@@ -434,7 +423,7 @@ namespace Jellyfin.Api.Helpers
             }
         }
 
-        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, string ipAddress)
+        private bool EnableAdaptiveBitrateStreaming(StreamState state, bool isLiveStream, bool enableAdaptiveBitrateStreaming, IPAddress ipAddress)
         {
             // Within the local network this will likely do more harm than good.
             if (_networkManager.IsInLocalNetwork(ipAddress))

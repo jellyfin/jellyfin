@@ -144,7 +144,13 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            await using var dbContext = _dbProvider.CreateContext();
+
+            if (await dbContext.Users
+                .AsQueryable()
+                .Where(u => u.Username == newName && u.Id != user.Id)
+                .AnyAsync()
+                .ConfigureAwait(false))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -189,6 +195,9 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 InternalId = max + 1
             };
+
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
 
             _users.Add(user.Id, user);
 
@@ -248,16 +257,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             await using var dbContext = _dbProvider.CreateContext();
-
-            // Clear all entities related to the user from the database.
-            if (user.ProfileImage != null)
-            {
-                dbContext.Remove(user.ProfileImage);
-            }
-
-            dbContext.RemoveRange(user.Permissions);
-            dbContext.RemoveRange(user.Preferences);
-            dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
@@ -404,27 +403,18 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            bool success;
-            IAuthenticationProvider? authenticationProvider;
+            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+                .ConfigureAwait(false);
+            var authenticationProvider = authResult.authenticationProvider;
+            var success = authResult.success;
 
-            if (user != null)
+            if (user == null)
             {
-                var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
-                success = authResult.success;
-            }
-            else
-            {
-                var authResult = await AuthenticateLocalUser(username, password, null, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
                 string updatedUsername = authResult.username;
-                success = authResult.success;
 
                 if (success
                     && authenticationProvider != null
-                    && !(authenticationProvider is DefaultAuthenticationProvider))
+                    && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
                     username = updatedUsername;

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,7 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -27,15 +29,21 @@ namespace MediaBrowser.Controller.Entities
     public class CollectionFolder : Folder, ICollectionFolder
     {
         private static readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        public static IXmlSerializer XmlSerializer { get; set; }
+        private static readonly Dictionary<string, LibraryOptions> _libraryOptions = new Dictionary<string, LibraryOptions>();
+        private bool _requiresRefresh;
 
-        public static IServerApplicationHost ApplicationHost { get; set; }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CollectionFolder"/> class.
+        /// </summary>
         public CollectionFolder()
         {
             PhysicalLocationsList = Array.Empty<string>();
             PhysicalFolderIds = Array.Empty<Guid>();
         }
+
+        public static IXmlSerializer XmlSerializer { get; set; }
+
+        public static IServerApplicationHost ApplicationHost { get; set; }
 
         [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
@@ -43,14 +51,23 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
+        public string CollectionType { get; set; }
+
+        /// <summary>
+        /// Gets the item's children.
+        /// </summary>
+        /// <remarks>
+        /// Our children are actually just references to the ones in the physical root...
+        /// </remarks>
+        /// <value>The actual children.</value>
+        [JsonIgnore]
+        public override IEnumerable<BaseItem> Children => GetActualChildren();
+
         public override bool CanDelete()
         {
             return false;
         }
 
-        public string CollectionType { get; set; }
-
-        private static readonly Dictionary<string, LibraryOptions> LibraryOptions = new Dictionary<string, LibraryOptions>();
         public LibraryOptions GetLibraryOptions()
         {
             return GetLibraryOptions(Path);
@@ -61,7 +78,6 @@ namespace MediaBrowser.Controller.Entities
             try
             {
                 var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) as LibraryOptions;
-
                 if (result == null)
                 {
                     return new LibraryOptions();
@@ -105,12 +121,12 @@ namespace MediaBrowser.Controller.Entities
 
         public static LibraryOptions GetLibraryOptions(string path)
         {
-            lock (LibraryOptions)
+            lock (_libraryOptions)
             {
-                if (!LibraryOptions.TryGetValue(path, out var options))
+                if (!_libraryOptions.TryGetValue(path, out var options))
                 {
                     options = LoadLibraryOptions(path);
-                    LibraryOptions[path] = options;
+                    _libraryOptions[path] = options;
                 }
 
                 return options;
@@ -119,9 +135,9 @@ namespace MediaBrowser.Controller.Entities
 
         public static void SaveLibraryOptions(string path, LibraryOptions options)
         {
-            lock (LibraryOptions)
+            lock (_libraryOptions)
             {
-                LibraryOptions[path] = options;
+                _libraryOptions[path] = options;
 
                 var clone = JsonSerializer.Deserialize<LibraryOptions>(JsonSerializer.SerializeToUtf8Bytes(options, _jsonOptions), _jsonOptions);
                 foreach (var mediaPath in clone.PathInfos)
@@ -138,15 +154,18 @@ namespace MediaBrowser.Controller.Entities
 
         public static void OnCollectionFolderChange()
         {
-            lock (LibraryOptions)
+            lock (_libraryOptions)
             {
-                LibraryOptions.Clear();
+                _libraryOptions.Clear();
             }
         }
 
         /// <summary>
-        /// Allow different display preferences for each collection folder.
+        /// Gets the display preferences id.
         /// </summary>
+        /// <remarks>
+        /// Allow different display preferences for each collection folder.
+        /// </remarks>
         /// <value>The display prefs id.</value>
         [JsonIgnore]
         public override Guid DisplayPreferencesId => Id;
@@ -154,21 +173,20 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override string[] PhysicalLocations => PhysicalLocationsList;
 
+        public string[] PhysicalLocationsList { get; set; }
+
+        public Guid[] PhysicalFolderIds { get; set; }
+
         public override bool IsSaveLocalMetadataEnabled()
         {
             return true;
         }
-
-        public string[] PhysicalLocationsList { get; set; }
-
-        public Guid[] PhysicalFolderIds { get; set; }
 
         protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
             return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
 
-        private bool _requiresRefresh;
         public override bool RequiresRefresh()
         {
             var changed = base.RequiresRefresh() || _requiresRefresh;
@@ -200,9 +218,9 @@ namespace MediaBrowser.Controller.Entities
             return changed;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var changed = base.BeforeMetadataRefresh(replaceAllMetdata) || _requiresRefresh;
+            var changed = base.BeforeMetadataRefresh(replaceAllMetadata) || _requiresRefresh;
             _requiresRefresh = false;
             return changed;
         }
@@ -271,7 +289,6 @@ namespace MediaBrowser.Controller.Entities
             var args = new ItemResolveArgs(ConfigurationManager.ApplicationPaths, directoryService)
             {
                 FileInfo = FileSystem.GetDirectoryInfo(path),
-                Path = path,
                 Parent = GetParent() as Folder,
                 CollectionType = CollectionType
             };
@@ -298,26 +315,19 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Compare our current children (presumably just read from the repo) with the current state of the file system and adjust for any changes
-        /// ***Currently does not contain logic to maintain items that are unavailable in the file system***
+        /// ***Currently does not contain logic to maintain items that are unavailable in the file system***.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
-
-        /// <summary>
-        /// Our children are actually just references to the ones in the physical root...
-        /// </summary>
-        /// <value>The actual children.</value>
-        [JsonIgnore]
-        public override IEnumerable<BaseItem> Children => GetActualChildren();
 
         public IEnumerable<BaseItem> GetActualChildren()
         {
@@ -355,9 +365,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (result.Count == 0)
             {
-                var folder = LibraryManager.FindByPath(path, true) as Folder;
-
-                if (folder != null)
+                if (LibraryManager.FindByPath(path, true) is Folder folder)
                 {
                     result.Add(folder);
                 }

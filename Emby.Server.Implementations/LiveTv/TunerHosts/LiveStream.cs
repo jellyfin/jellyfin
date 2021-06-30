@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -150,7 +152,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
         {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, LiveStreamCancellationTokenSource.Token).Token;
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, LiveStreamCancellationTokenSource.Token);
+            cancellationToken = linkedCancellationTokenSource.Token;
 
             // use non-async filestream on windows along with read due to https://github.com/dotnet/corefx/issues/6039
             var allowAsync = Environment.OSVersion.Platform != PlatformID.Win32NT;

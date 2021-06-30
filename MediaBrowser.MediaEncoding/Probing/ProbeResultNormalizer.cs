@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -29,13 +30,15 @@ namespace MediaBrowser.MediaEncoding.Probing
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
-        private List<string> _splitWhiteList = null;
+        private string[] _splitWhiteList;
 
         public ProbeResultNormalizer(ILogger logger, ILocalizationManager localization)
         {
             _logger = logger;
             _localization = localization;
         }
+
+        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[] { "AC/DC" };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
         {
@@ -57,7 +60,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 .Where(i => i.Type != MediaStreamType.Subtitle || !string.IsNullOrWhiteSpace(i.Codec))
                 .ToList();
 
-            info.MediaAttachments = internalStreams.Select(s => GetMediaAttachment(s))
+            info.MediaAttachments = internalStreams.Select(GetMediaAttachment)
                 .Where(i => i != null)
                 .ToList();
 
@@ -121,18 +124,67 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 info.Name = title;
             }
+            else
+            {
+                title = FFProbeHelpers.GetDictionaryValue(tags, "title-eng");
+                if (!string.IsNullOrWhiteSpace(title))
+                {
+                    info.Name = title;
+                }
+            }
+
+            var titleSort = FFProbeHelpers.GetDictionaryValue(tags, "titlesort");
+            if (!string.IsNullOrWhiteSpace(titleSort))
+            {
+                info.ForcedSortName = titleSort;
+            }
 
             info.IndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "episode_sort");
             info.ParentIndexNumber = FFProbeHelpers.GetDictionaryNumericValue(tags, "season_number");
             info.ShowName = FFProbeHelpers.GetDictionaryValue(tags, "show_name");
             info.ProductionYear = FFProbeHelpers.GetDictionaryNumericValue(tags, "date");
 
-            // Several different forms of retaildate
-            info.PremiereDate = FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
+            // Several different forms of retail/premiere date
+            info.PremiereDate =
+                FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??
+                FFProbeHelpers.GetDictionaryDateTime(tags, "date_released") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "date");
 
+            // Set common metadata for music (audio) and music videos (video)
+            info.Album = FFProbeHelpers.GetDictionaryValue(tags, "album");
+
+            var artists = FFProbeHelpers.GetDictionaryValue(tags, "artists");
+
+            if (!string.IsNullOrWhiteSpace(artists))
+            {
+                info.Artists = SplitArtists(artists, new[] { '/', ';' }, false)
+                    .DistinctNames()
+                    .ToArray();
+            }
+            else
+            {
+                var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
+                if (string.IsNullOrWhiteSpace(artist))
+                {
+                    info.Artists = Array.Empty<string>();
+                }
+                else
+                {
+                    info.Artists = SplitArtists(artist, _nameDelimiters, true)
+                        .DistinctNames()
+                        .ToArray();
+                }
+            }
+
+            // If we don't have a ProductionYear try and get it from PremiereDate
+            if (!info.ProductionYear.HasValue && info.PremiereDate.HasValue)
+            {
+                info.ProductionYear = info.PremiereDate.Value.Year;
+            }
+
+            // Set mediaType-specific metadata
             if (isAudio)
             {
                 SetAudioRuntimeTicks(data, info);
@@ -1075,13 +1127,13 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void SetAudioInfoFromTags(MediaInfo audio, Dictionary<string, string> tags)
         {
-            var peoples = new List<BaseItemPerson>();
+            var people = new List<BaseItemPerson>();
             var composer = FFProbeHelpers.GetDictionaryValue(tags, "composer");
             if (!string.IsNullOrWhiteSpace(composer))
             {
                 foreach (var person in Split(composer, false))
                 {
-                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Composer });
                 }
             }
 
@@ -1090,7 +1142,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(conductor, false))
                 {
-                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Conductor });
                 }
             }
 
@@ -1099,46 +1151,21 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(lyricist, false))
                 {
-                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
                 }
             }
 
             // Check for writer some music is tagged that way as alternative to composer/lyricist
             var writer = FFProbeHelpers.GetDictionaryValue(tags, "writer");
-
             if (!string.IsNullOrWhiteSpace(writer))
             {
                 foreach (var person in Split(writer, false))
                 {
-                    peoples.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
                 }
             }
 
-            audio.People = peoples.ToArray();
-            audio.Album = FFProbeHelpers.GetDictionaryValue(tags, "album");
-
-            var artists = FFProbeHelpers.GetDictionaryValue(tags, "artists");
-
-            if (!string.IsNullOrWhiteSpace(artists))
-            {
-                audio.Artists = SplitArtists(artists, new[] { '/', ';' }, false)
-                    .DistinctNames()
-                    .ToArray();
-            }
-            else
-            {
-                var artist = FFProbeHelpers.GetDictionaryValue(tags, "artist");
-                if (string.IsNullOrWhiteSpace(artist))
-                {
-                    audio.Artists = Array.Empty<string>();
-                }
-                else
-                {
-                    audio.Artists = SplitArtists(artist, _nameDelimiters, true)
-                    .DistinctNames()
-                        .ToArray();
-                }
-            }
+            audio.People = people.ToArray();
 
             var albumArtist = FFProbeHelpers.GetDictionaryValue(tags, "albumartist");
             if (string.IsNullOrWhiteSpace(albumArtist))
@@ -1173,12 +1200,6 @@ namespace MediaBrowser.MediaEncoding.Probing
             // Disc number
             audio.ParentIndexNumber = GetDictionaryDiscValue(tags, "disc");
 
-            // If we don't have a ProductionYear try and get it from PremiereDate
-            if (audio.PremiereDate.HasValue && !audio.ProductionYear.HasValue)
-            {
-                audio.ProductionYear = audio.PremiereDate.Value.ToLocalTime().Year;
-            }
-
             // There's several values in tags may or may not be present
             FetchStudios(audio, tags, "organization");
             FetchStudios(audio, tags, "ensemble");
@@ -1186,43 +1207,28 @@ namespace MediaBrowser.MediaEncoding.Probing
             FetchStudios(audio, tags, "label");
 
             // These support mulitple values, but for now we only store the first.
-            var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
-            }
+            var mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbumArtist, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Artist Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ARTISTID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzArtist, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_ALBUMID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzAlbum, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Group Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASEGROUPID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzReleaseGroup, mb);
 
-            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"));
-            if (mb == null)
-            {
-                mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
-            }
+            mb = GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Release Track Id"))
+                ?? GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MUSICBRAINZ_RELEASETRACKID"));
 
             audio.SetProviderId(MetadataProvider.MusicBrainzTrack, mb);
         }
@@ -1268,7 +1274,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var artistsFound = new List<string>();
 
-            foreach (var whitelistArtist in GetSplitWhitelist())
+            foreach (var whitelistArtist in SplitWhitelist)
             {
                 var originalVal = val;
                 val = val.Replace(whitelistArtist, "|", StringComparison.OrdinalIgnoreCase);
@@ -1285,19 +1291,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             artistsFound.AddRange(artists);
             return artistsFound;
-        }
-
-        private IEnumerable<string> GetSplitWhitelist()
-        {
-            if (_splitWhiteList == null)
-            {
-                _splitWhiteList = new List<string>
-                        {
-                            "AC/DC"
-                        };
-            }
-
-            return _splitWhiteList;
         }
 
         /// <summary>

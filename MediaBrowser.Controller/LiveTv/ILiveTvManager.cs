@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -266,16 +268,21 @@ namespace MediaBrowser.Controller.LiveTv
         void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> items, DtoOptions options, User user);
 
         Task<List<ChannelInfo>> GetChannelsForListingsProvider(string id, CancellationToken cancellationToken);
+
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
 
         IListingsProvider[] ListingProviders { get; }
 
         List<NameIdPair> GetTunerHostTypes();
+
         Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken);
 
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
+
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
+
         event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
+
         event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
 
         string GetEmbyTvActiveRecordingPath(string id);
@@ -285,16 +292,5 @@ namespace MediaBrowser.Controller.LiveTv
         void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, ActiveRecordingInfo activeRecordingInfo, User user = null);
 
         List<BaseItem> GetRecordingFolders(User user);
-    }
-
-    public class ActiveRecordingInfo
-    {
-        public string Id { get; set; }
-
-        public string Path { get; set; }
-
-        public TimerInfo Timer { get; set; }
-
-        public CancellationTokenSource CancellationTokenSource { get; set; }
     }
 }

@@ -1,6 +1,8 @@
+#nullable disable
+
 using System;
 using System.Linq;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities

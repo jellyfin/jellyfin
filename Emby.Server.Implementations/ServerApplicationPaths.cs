@@ -25,6 +25,10 @@ namespace Emby.Server.Implementations
                 cacheDirectoryPath,
                 webDirectoryPath)
         {
+            // ProgramDataPath cannot change when the server is running, so cache these to avoid allocations.
+            RootFolderPath = Path.Join(ProgramDataPath, "root");
+            DefaultUserViewsPath = Path.Combine(RootFolderPath, "default");
+            DefaultInternalMetadataPath = Path.Combine(ProgramDataPath, "metadata");
             InternalMetadataPath = DefaultInternalMetadataPath;
         }
 
@@ -32,13 +36,13 @@ namespace Emby.Server.Implementations
         /// Gets the path to the base root media directory.
         /// </summary>
         /// <value>The root folder path.</value>
-        public string RootFolderPath => Path.Combine(ProgramDataPath, "root");
+        public string RootFolderPath { get; }
 
         /// <summary>
         /// Gets the path to the default user view directory.  Used if no specific user view is defined.
         /// </summary>
         /// <value>The default user views path.</value>
-        public string DefaultUserViewsPath => Path.Combine(RootFolderPath, "default");
+        public string DefaultUserViewsPath { get; }
 
         /// <summary>
         /// Gets the path to the People directory.
@@ -98,7 +102,7 @@ namespace Emby.Server.Implementations
         public string UserConfigurationDirectoryPath => Path.Combine(ConfigurationDirectoryPath, "users");
 
         /// <inheritdoc/>
-        public string DefaultInternalMetadataPath => Path.Combine(ProgramDataPath, "metadata");
+        public string DefaultInternalMetadataPath { get; }
 
         /// <inheritdoc />
         public string InternalMetadataPath { get; set; }

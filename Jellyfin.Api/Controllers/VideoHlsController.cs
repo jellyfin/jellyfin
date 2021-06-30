@@ -48,9 +48,6 @@ namespace Jellyfin.Api.Controllers
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly ILogger<VideoHlsController> _logger;
@@ -60,9 +57,6 @@ namespace Jellyfin.Api.Controllers
         /// Initializes a new instance of the <see cref="VideoHlsController"/> class.
         /// </summary>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
         /// <param name="userManger">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
@@ -72,11 +66,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">The <see cref="TranscodingJobHelper"/> singleton.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{VideoHlsController}"/>.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public VideoHlsController(
             IMediaEncoder mediaEncoder,
-            IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDlnaManager dlnaManager,
             IUserManager userManger,
             IAuthorizationContext authorizationContext,
@@ -85,10 +77,9 @@ namespace Jellyfin.Api.Controllers
             IServerConfigurationManager serverConfigurationManager,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
-            ILogger<VideoHlsController> logger)
+            ILogger<VideoHlsController> logger,
+            EncodingHelper encodingHelper)
         {
-            _encodingHelper = new EncodingHelper(mediaEncoder, fileSystem, subtitleEncoder, configuration);
-
             _dlnaManager = dlnaManager;
             _authContext = authorizationContext;
             _userManager = userManger;
@@ -96,12 +87,11 @@ namespace Jellyfin.Api.Controllers
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
-            _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _logger = logger;
+            _encodingHelper = encodingHelper;
+
             _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
 
@@ -223,7 +213,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Id = itemId,
                 Container = container,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -247,7 +237,7 @@ namespace Jellyfin.Api.Controllers
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
@@ -256,13 +246,13 @@ namespace Jellyfin.Api.Controllers
                 SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
                 TranscodeReasons = transcodeReasons,
@@ -275,6 +265,7 @@ namespace Jellyfin.Api.Controllers
                 EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true
             };
 
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
@@ -285,9 +276,7 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,

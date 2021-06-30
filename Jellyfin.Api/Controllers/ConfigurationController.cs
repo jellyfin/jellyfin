@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using System.Text.Json;
@@ -5,7 +6,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
@@ -94,6 +95,11 @@ namespace Jellyfin.Api.Controllers
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
+            if (configuration == null)
+            {
+                throw new ArgumentException("Body doesn't contain a valid configuration");
+            }
+
             _configurationManager.SaveConfiguration(key, configuration);
             return NoContent();
         }

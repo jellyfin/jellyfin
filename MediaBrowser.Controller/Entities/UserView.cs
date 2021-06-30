@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -13,13 +15,19 @@ namespace MediaBrowser.Controller.Entities
 {
     public class UserView : Folder, IHasCollectionType
     {
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the view type.
+        /// </summary>
         public string ViewType { get; set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the display parent id.
+        /// </summary>
         public new Guid DisplayParentId { get; set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
         public Guid? UserId { get; set; }
 
         public static ITVSeriesManager TVSeriesManager;
@@ -75,10 +83,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override List<BaseItem> GetChildren(User user, bool includeLinkedChildren, InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                query = new InternalItemsQuery(user);
-            }
+            query ??= new InternalItemsQuery(user);
 
             query.EnableTotalRecordCount = false;
             var result = GetItemList(query);
@@ -111,10 +116,10 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, false);
         }
 
-        private static string[] UserSpecificViewTypes = new string[]
-            {
-                Model.Entities.CollectionType.Playlists
-            };
+        private static readonly string[] UserSpecificViewTypes = new string[]
+        {
+            Model.Entities.CollectionType.Playlists
+        };
 
         public static bool IsUserSpecific(Folder folder)
         {
@@ -167,7 +172,7 @@ namespace MediaBrowser.Controller.Entities
             return OriginalFolderViewTypes.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, System.Threading.CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService, System.Threading.CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

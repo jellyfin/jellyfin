@@ -143,7 +143,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromQuery] Guid? userId,
+            [FromQuery] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
@@ -224,8 +224,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
+            var user = !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId)
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
@@ -246,8 +246,13 @@ namespace Jellyfin.Api.Controllers
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            if (folder is IHasCollectionType hasCollectionType
-                && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+            string? collectionType = null;
+            if (folder is IHasCollectionType hasCollectionType)
+            {
+                collectionType = hasCollectionType.CollectionType;
+            }
+
+            if (string.Equals(collectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 recursive = true;
                 includeItemTypes = new[] { BaseItemKind.Playlist };
@@ -270,10 +275,11 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            if (!(item is UserRootFolder)
+            if (item is not UserRootFolder
                 && !isInEnabledFolder
                 && !user.HasPermission(PermissionKind.EnableAllFolders)
-                && !user.HasPermission(PermissionKind.EnableAllChannels))
+                && !user.HasPermission(PermissionKind.EnableAllChannels)
+                && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");

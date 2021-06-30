@@ -1,17 +1,18 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Localization
@@ -73,8 +74,7 @@ namespace Emby.Server.Implementations.Localization
                 using (var str = _assembly.GetManifestResourceStream(resource))
                 using (var reader = new StreamReader(str))
                 {
-                    string line;
-                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
                         if (string.IsNullOrWhiteSpace(line))
                         {
@@ -119,10 +119,8 @@ namespace Emby.Server.Implementations.Localization
             using (var stream = _assembly.GetManifestResourceStream(ResourcePath))
             using (var reader = new StreamReader(stream))
             {
-                while (!reader.EndOfStream)
+                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue;
@@ -170,17 +168,27 @@ namespace Emby.Server.Implementations.Localization
 
         /// <inheritdoc />
         public CultureDto FindLanguageInfo(string language)
-            => GetCultures()
-                .FirstOrDefault(i =>
-                    string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase)
-                    || i.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase)
-                    || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
+        {
+            // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
+            for (var i = 0; i < _cultures.Count; i++)
+            {
+                var culture = _cultures[i];
+                if (language.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
+                    || language.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
+                    || culture.ThreeLetterISOLanguageNames.Contains(language, StringComparison.OrdinalIgnoreCase)
+                    || language.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return culture;
+                }
+            }
+
+            return default;
+        }
 
         /// <inheritdoc />
         public IEnumerable<CountryInfo> GetCountries()
         {
-            StreamReader reader = new StreamReader(_assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
+            using StreamReader reader = new StreamReader(_assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
 
             return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions);
         }
@@ -225,7 +233,7 @@ namespace Emby.Server.Implementations.Localization
                 throw new ArgumentNullException(nameof(rating));
             }
 
-            if (_unratedValues.Contains(rating, StringComparer.OrdinalIgnoreCase))
+            if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -253,11 +261,11 @@ namespace Emby.Server.Implementations.Localization
             var index = rating.IndexOf(':', StringComparison.Ordinal);
             if (index != -1)
             {
-                rating = rating.Substring(index).TrimStart(':').Trim();
+                var trimmedRating = rating.AsSpan(index).TrimStart(':').Trim();
 
-                if (!string.IsNullOrWhiteSpace(rating))
+                if (!trimmedRating.IsEmpty)
                 {
-                    return GetRatingLevel(rating);
+                    return GetRatingLevel(trimmedRating.ToString());
                 }
             }
 
@@ -316,11 +324,11 @@ namespace Emby.Server.Implementations.Localization
             }
 
             const string Prefix = "Core";
-            var key = Prefix + culture;
 
             return _dictionaries.GetOrAdd(
-                key,
-                f => GetDictionary(Prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
+                culture,
+                (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
+                this);
         }
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)

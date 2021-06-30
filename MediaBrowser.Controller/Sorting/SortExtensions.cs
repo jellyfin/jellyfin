@@ -3,12 +3,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Controller.Sorting
 {
     public static class SortExtensions
     {
-        private static readonly AlphanumComparator _comparer = new AlphanumComparator();
+        private static readonly AlphanumericComparator _comparer = new AlphanumericComparator();
 
         public static IEnumerable<T> OrderByString<T>(this IEnumerable<T> list, Func<T, string> getName)
         {

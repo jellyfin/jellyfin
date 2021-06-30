@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -100,8 +102,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
         {
-            var genre = item as MusicGenre;
-            if (genre != null)
+            if (item is MusicGenre genre)
             {
                 return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }

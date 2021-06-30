@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -173,7 +173,7 @@ namespace Jellyfin.Server
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
+                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(
@@ -222,6 +222,14 @@ namespace Jellyfin.Server
             }
             finally
             {
+                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                // Run before disposing the application
+                using var context = new JellyfinDbProvider(appHost.ServiceProvider, appPaths).CreateContext();
+                if (context.Database.IsSqlite())
+                {
+                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                }
+
                 appHost.Dispose();
             }
 

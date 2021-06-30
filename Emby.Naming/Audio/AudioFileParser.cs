@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Audio
 {
@@ -18,8 +18,8 @@ namespace Emby.Naming.Audio
         /// <returns>True if file at path is audio file.</returns>
         public static bool IsAudioFile(string path, NamingOptions options)
         {
-            var extension = Path.GetExtension(path);
-            return options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path.AsSpan());
+            return options.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

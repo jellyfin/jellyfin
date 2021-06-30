@@ -1,7 +1,5 @@
 #pragma warning disable CS1591
 
-#nullable enable
-
 using System;
 using System.Net;
 using System.Net.WebSockets;
@@ -32,7 +30,7 @@ namespace MediaBrowser.Controller.Net
         DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the query string.
+        /// Gets the query string.
         /// </summary>
         /// <value>The query string.</value>
         IQueryCollection QueryString { get; }
@@ -58,11 +56,11 @@ namespace MediaBrowser.Controller.Net
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of websocket message data.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">message</exception>
+        /// <exception cref="ArgumentNullException">The message is null.</exception>
         Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken);
 
         Task ProcessAsync(CancellationToken cancellationToken = default);

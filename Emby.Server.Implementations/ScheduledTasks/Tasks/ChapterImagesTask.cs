@@ -12,9 +12,9 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -140,8 +140,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         previouslyFailedImages.Add(key);
 
                         var parentPath = Path.GetDirectoryName(failHistoryPath);
-
-                        Directory.CreateDirectory(parentPath);
+                        if (parentPath != null)
+                        {
+                            Directory.CreateDirectory(parentPath);
+                        }
 
                         string text = string.Join('|', previouslyFailedImages);
                         File.WriteAllText(failHistoryPath, text);

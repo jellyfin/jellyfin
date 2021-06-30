@@ -145,7 +145,8 @@ namespace Jellyfin.Api.Models.PlaybackDtos
             var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
             var downloadPositionTicks = job.DownloadPositionTicks ?? 0;
 
-            var path = job.Path;
+            var path = job.Path ?? throw new ArgumentException("Path can't be null.");
+
             var gapLengthInTicks = TimeSpan.FromSeconds(thresholdSeconds).Ticks;
 
             if (downloadPositionTicks > 0 && transcodingPositionTicks > 0)

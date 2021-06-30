@@ -160,7 +160,6 @@ jobs:
   dependsOn:
   - BuildPackage
   - BuildDocker
-  condition: and(succeeded('BuildPackage'), succeeded('BuildDocker'))
 
   pool:
     vmImage: 'ubuntu-latest'
@@ -186,9 +185,6 @@ jobs:
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
-  dependsOn:
-  - BuildPackage
-  condition: succeeded('BuildPackage')
 
   pool:
     vmImage: 'ubuntu-latest'

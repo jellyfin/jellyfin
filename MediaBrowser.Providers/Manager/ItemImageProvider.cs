@@ -32,7 +32,7 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Image types that are only one per item.
         /// </summary>
-        private readonly ImageType[] _singularImages =
+        private static readonly ImageType[] _singularImages =
         {
             ImageType.Primary,
             ImageType.Art,
@@ -208,9 +208,14 @@ namespace MediaBrowser.Providers.Manager
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
         private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
         {
-            if (_singularImages.Any(i => images.Contains(i) && !HasImage(item, i) && savedOptions.GetLimit(i) > 0))
+            // Using .Any causes the creation of a DisplayClass aka. variable capture
+            for (var i = 0; i < _singularImages.Length; i++)
             {
-                return false;
+                var type = _singularImages[i];
+                if (images.Contains(type) && !HasImage(item, type) && savedOptions.GetLimit(type) > 0)
+                {
+                    return false;
+                }
             }
 
             if (images.Contains(ImageType.Backdrop) && item.GetImages(ImageType.Backdrop).Count() < backdropLimit)
@@ -329,7 +334,7 @@ namespace MediaBrowser.Providers.Manager
             var deleted = false;
             var deletedImages = new List<ItemImageInfo>();
 
-            foreach (var image in item.GetImages(type).ToList())
+            foreach (var image in item.GetImages(type))
             {
                 if (!image.IsLocalFile)
                 {
@@ -359,9 +364,10 @@ namespace MediaBrowser.Providers.Manager
         {
             var changed = false;
 
-            foreach (var type in _singularImages)
+            for (var i = 0; i < _singularImages.Length; i++)
             {
-                var image = images.FirstOrDefault(i => i.Type == type);
+                var type = _singularImages[i];
+                var image = GetFirstLocalImageInfoByType(images, type);
 
                 if (image != null)
                 {
@@ -423,15 +429,29 @@ namespace MediaBrowser.Providers.Manager
             return changed;
         }
 
+        private static LocalImageInfo GetFirstLocalImageInfoByType(IReadOnlyList<LocalImageInfo> images, ImageType type)
+        {
+            var len = images.Count;
+            for (var i = 0; i < len; i++)
+            {
+                var image = images[i];
+                if (image.Type == type)
+                {
+                    return image;
+                }
+            }
+
+            return null;
+        }
+
         private bool UpdateMultiImages(BaseItem item, List<LocalImageInfo> images, ImageType type)
         {
             var changed = false;
 
-            var newImages = images.Where(i => i.Type == type).ToList();
-
-            var newImageFileInfos = newImages
-                    .Select(i => i.FileInfo)
-                    .ToList();
+            var newImageFileInfos = images
+                .FindAll(i => i.Type == type)
+                .Select(i => i.FileInfo)
+                .ToList();
 
             if (item.AddImages(type, newImageFileInfos))
             {
@@ -469,6 +489,7 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
                     await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                     await _providerManager.SaveImage(

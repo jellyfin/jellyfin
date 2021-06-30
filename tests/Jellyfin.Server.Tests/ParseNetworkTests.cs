@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Text;
 using Jellyfin.Networking.Configuration;

@@ -11,8 +11,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Diacritics.Extensions;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -53,7 +53,7 @@ namespace MediaBrowser.Providers.Music
                     }
                 }
 
-                if (HasDiacritics(searchInfo.Name))
+                if (searchInfo.Name.HasDiacritics())
                 {
                     // Try again using the search with accent characters url
                     url = string.Format(CultureInfo.InvariantCulture, "/ws/2/artist/?query=artistaccent:\"{0}\"", UrlEncode(nameToSearch));
@@ -69,58 +69,52 @@ namespace MediaBrowser.Providers.Music
 
         private IEnumerable<RemoteSearchResult> GetResultsFromResponse(Stream stream)
         {
-            using (var oReader = new StreamReader(stream, Encoding.UTF8))
+            using var oReader = new StreamReader(stream, Encoding.UTF8);
+            var settings = new XmlReaderSettings()
             {
-                var settings = new XmlReaderSettings()
-                {
-                    ValidationType = ValidationType.None,
-                    CheckCharacters = false,
-                    IgnoreProcessingInstructions = true,
-                    IgnoreComments = true
-                };
+                ValidationType = ValidationType.None,
+                CheckCharacters = false,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true
+            };
 
-                using (var reader = XmlReader.Create(oReader, settings))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
+            using var reader = XmlReader.Create(oReader, settings);
+            reader.MoveToContent();
+            reader.Read();
 
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            // Loop through each element
+            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        case "artist-list":
                         {
-                            switch (reader.Name)
+                            if (reader.IsEmptyElement)
                             {
-                                case "artist-list":
-                                    {
-                                        if (reader.IsEmptyElement)
-                                        {
-                                            reader.Read();
-                                            continue;
-                                        }
-
-                                        using (var subReader = reader.ReadSubtree())
-                                        {
-                                            return ParseArtistList(subReader).ToList();
-                                        }
-                                    }
-
-                                default:
-                                    {
-                                        reader.Skip();
-                                        break;
-                                    }
+                                reader.Read();
+                                continue;
                             }
+
+                            using var subReader = reader.ReadSubtree();
+                            return ParseArtistList(subReader).ToList();
                         }
-                        else
+
+                        default:
                         {
-                            reader.Read();
+                            reader.Skip();
+                            break;
                         }
                     }
-
-                    return Enumerable.Empty<RemoteSearchResult>();
+                }
+                else
+                {
+                    reader.Read();
                 }
             }
+
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
         private IEnumerable<RemoteSearchResult> ParseArtistList(XmlReader reader)
@@ -145,13 +139,11 @@ namespace MediaBrowser.Providers.Music
 
                                 var mbzId = reader.GetAttribute("id");
 
-                                using (var subReader = reader.ReadSubtree())
+                                using var subReader = reader.ReadSubtree();
+                                var artist = ParseArtist(subReader, mbzId);
+                                if (artist != null)
                                 {
-                                    var artist = ParseArtist(subReader, mbzId);
-                                    if (artist != null)
-                                    {
-                                        yield return artist;
-                                    }
+                                    yield return artist;
                                 }
 
                                 break;
@@ -257,16 +249,6 @@ namespace MediaBrowser.Providers.Music
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Determines whether the specified text has diacritics.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <returns><c>true</c> if the specified text has diacritics; otherwise, <c>false</c>.</returns>
-        private bool HasDiacritics(string text)
-        {
-            return !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
         }
 
         /// <summary>

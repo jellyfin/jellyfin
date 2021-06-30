@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -480,7 +482,8 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!IsInMixedFolder)
             {
-                return new[] {
+                return new[]
+                {
                     new FileSystemMetadata
                     {
                         FullName = ContainingFolderPath,

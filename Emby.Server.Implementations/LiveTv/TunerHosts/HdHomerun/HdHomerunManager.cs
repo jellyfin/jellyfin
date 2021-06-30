@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -130,9 +132,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-                ParseReturnMessage(buffer, receivedBytes, out string returnVal);
-
-                return string.Equals(returnVal, "none", StringComparison.OrdinalIgnoreCase);
+                return VerifyReturnValueOfGetSet(buffer.AsSpan(receivedBytes), "none");
             }
             finally
             {
@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
                     // parse response to make sure it worked
-                    if (!ParseReturnMessage(buffer, receivedBytes, out _))
+                    if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                     {
                         continue;
                     }
@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
                         // parse response to make sure it worked
-                        if (!ParseReturnMessage(buffer, receivedBytes, out _))
+                        if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                         {
                             await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
                             continue;
@@ -199,7 +199,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
                     // parse response to make sure it worked
-                    if (!ParseReturnMessage(buffer, receivedBytes, out _))
+                    if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                     {
                         await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
                         continue;
@@ -239,7 +239,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
                     // parse response to make sure it worked
-                    if (!ParseReturnMessage(buffer, receivedBytes, out _))
+                    if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                     {
                         return;
                     }
@@ -292,7 +292,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return FinishPacket(buffer, offset);
         }
 
-        private static int WriteSetMessage(Span<byte> buffer, int tuner, string name, string value, uint? lockkey)
+        internal static int WriteSetMessage(Span<byte> buffer, int tuner, string name, string value, uint? lockkey)
         {
             var byteName = string.Format(CultureInfo.InvariantCulture, "/tuner{0}/{1}", tuner, name);
             int offset = WriteHeaderAndPayload(buffer, byteName);
@@ -355,60 +355,65 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return offset + 4;
         }
 
-        private static bool ParseReturnMessage(byte[] buf, int numBytes, out string returnVal)
+        internal static bool VerifyReturnValueOfGetSet(ReadOnlySpan<byte> buffer, string expected)
         {
-            returnVal = string.Empty;
+            return TryGetReturnValueOfGetSet(buffer, out var value)
+                && string.Equals(Encoding.UTF8.GetString(value), expected, StringComparison.OrdinalIgnoreCase);
+        }
 
-            if (numBytes < 4)
+        internal static bool TryGetReturnValueOfGetSet(ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> value)
+        {
+            value = ReadOnlySpan<byte>.Empty;
+
+            if (buffer.Length < 8)
             {
                 return false;
             }
 
-            var flipEndian = BitConverter.IsLittleEndian;
-            int offset = 0;
-            byte[] msgTypeBytes = new byte[2];
-            Buffer.BlockCopy(buf, offset, msgTypeBytes, 0, msgTypeBytes.Length);
-
-            if (flipEndian)
-            {
-                Array.Reverse(msgTypeBytes);
-            }
-
-            var msgType = BitConverter.ToUInt16(msgTypeBytes, 0);
-            offset += 2;
-
-            if (msgType != GetSetReply)
+            uint crc = BinaryPrimitives.ReadUInt32LittleEndian(buffer[^4..]);
+            if (crc != Crc32.Compute(buffer[..^4]))
             {
                 return false;
             }
 
-            byte[] msgLengthBytes = new byte[2];
-            Buffer.BlockCopy(buf, offset, msgLengthBytes, 0, msgLengthBytes.Length);
-            if (flipEndian)
-            {
-                Array.Reverse(msgLengthBytes);
-            }
-
-            var msgLength = BitConverter.ToUInt16(msgLengthBytes, 0);
-            offset += 2;
-
-            if (numBytes < msgLength + 8)
+            if (BinaryPrimitives.ReadUInt16BigEndian(buffer) != GetSetReply)
             {
                 return false;
             }
 
-            offset++; // Name Tag
+            var msgLength = BinaryPrimitives.ReadUInt16BigEndian(buffer.Slice(2));
+            if (buffer.Length != 2 + 2 + 4 + msgLength)
+            {
+                return false;
+            }
 
-            var nameLength = buf[offset++];
+            var offset = 4;
+            if (buffer[offset++] != GetSetName)
+            {
+                return false;
+            }
 
-            // skip the name field to get to value for return
+            var nameLength = buffer[offset++];
+            if (buffer.Length < 4 + 1 + offset + nameLength)
+            {
+                return false;
+            }
+
             offset += nameLength;
 
-            offset++; // Value Tag
+            if (buffer[offset++] != GetSetValue)
+            {
+                return false;
+            }
 
-            var valueLength = buf[offset++];
+            var valueLength = buffer[offset++];
+            if (buffer.Length < 4 + offset + valueLength)
+            {
+                return false;
+            }
 
-            returnVal = Encoding.UTF8.GetString(buf, offset, valueLength - 1); // remove null terminator
+            // remove null terminator
+            value = buffer.Slice(offset, valueLength - 1);
             return true;
         }
     }

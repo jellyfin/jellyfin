@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -13,7 +15,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Cryptography;
@@ -787,14 +789,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase));
-                if (station == null)
-                {
-                    station = new ScheduleDirect.Station
+                var station = allStations.Find(item => string.Equals(item.stationID, channel.stationID, StringComparison.OrdinalIgnoreCase))
+                    ?? new ScheduleDirect.Station
                     {
                         stationID = channel.stationID
                     };
-                }
 
                 var channelInfo = new ChannelInfo
                 {

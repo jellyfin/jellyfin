@@ -1,5 +1,4 @@
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-#pragma warning disable CA2227
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -22,13 +21,13 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -42,12 +41,12 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing this collection's items.
+        /// Gets a collection containing this collection's items.
         /// </summary>
-        public virtual ICollection<CollectionItem> Items { get; protected set; }
+        public virtual ICollection<CollectionItem> Items { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

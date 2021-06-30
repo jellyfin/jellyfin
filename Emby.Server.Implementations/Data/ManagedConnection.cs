@@ -9,7 +9,7 @@ namespace Emby.Server.Implementations.Data
 {
     public class ManagedConnection : IDisposable
     {
-        private SQLiteDatabaseConnection _db;
+        private SQLiteDatabaseConnection? _db;
         private readonly SemaphoreSlim _writeLock;
         private bool _disposed = false;
 
@@ -54,12 +54,12 @@ namespace Emby.Server.Implementations.Data
             return _db.RunInTransaction(action, mode);
         }
 
-        public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql)
+        public IEnumerable<IReadOnlyList<ResultSetValue>> Query(string sql)
         {
             return _db.Query(sql);
         }
 
-        public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql, params object[] values)
+        public IEnumerable<IReadOnlyList<ResultSetValue>> Query(string sql, params object[] values)
         {
             return _db.Query(sql, values);
         }

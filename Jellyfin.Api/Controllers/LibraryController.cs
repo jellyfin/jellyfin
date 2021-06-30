@@ -114,7 +114,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path));
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), true);
         }
 
         /// <summary>
@@ -600,7 +600,7 @@ namespace Jellyfin.Api.Controllers
         {
             foreach (var item in dto.Updates)
             {
-                _libraryMonitor.ReportFileSystemChanged(item.Path);
+                _libraryMonitor.ReportFileSystemChanged(item.Path ?? throw new ArgumentException("Item path can't be null."));
             }
 
             return NoContent();
@@ -666,7 +666,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename);
+            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename, true);
         }
 
         /// <summary>

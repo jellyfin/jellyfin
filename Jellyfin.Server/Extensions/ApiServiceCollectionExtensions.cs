@@ -21,11 +21,11 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -260,15 +260,16 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
+                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
                 c.SwaggerDoc("api-docs", new OpenApiInfo
                 {
                     Title = "Jellyfin API",
-                    Version = "v1",
+                    Version = version,
                     Extensions = new Dictionary<string, IOpenApiExtension>
                     {
                         {
                             "x-jellyfin-version",
-                            new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                            new OpenApiString(version)
                         }
                     }
                 });
@@ -318,7 +319,7 @@ namespace Jellyfin.Server.Extensions
                 c.OperationFilter<FileResponseFilter>();
                 c.OperationFilter<FileRequestFilter>();
                 c.OperationFilter<ParameterObsoleteFilter>();
-                c.DocumentFilter<WebsocketModelFilter>();
+                c.DocumentFilter<AdditionalModelFilter>();
             });
         }
 

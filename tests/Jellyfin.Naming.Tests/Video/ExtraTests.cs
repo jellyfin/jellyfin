@@ -1,4 +1,3 @@
-using System;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Model.Entities;
@@ -103,13 +102,6 @@ namespace Jellyfin.Naming.Tests.Video
             var res = GetExtraTypeParser(options).GetExtraInfo("extra.mp4");
 
             Assert.Equal(rule, res.Rule);
-        }
-
-        [Fact]
-        public void TestFlagsParser()
-        {
-            var flags = new FlagParser(_videoOptions).GetFlags(string.Empty);
-            Assert.Empty(flags);
         }
 
         private ExtraResolver GetExtraTypeParser(NamingOptions videoOptions)

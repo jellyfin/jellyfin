@@ -25,7 +25,7 @@
     "Channels": "Stöðvar",
     "CameraImageUploadedFrom": "Ný ljósmynd frá myndavél hefur verið hlaðið upp frá {0}",
     "Books": "Bækur",
-    "AuthenticationSucceededWithUserName": "{0} náði að auðkennast",
+    "AuthenticationSucceededWithUserName": "{0} auðkenning tókst",
     "Artists": "Listamaður",
     "Application": "Forrit",
     "AppDeviceValues": "Snjallforrit: {0}, Tæki: {1}",
@@ -106,5 +106,6 @@
     "TasksChannelsCategory": "Netrásir",
     "TasksApplicationCategory": "Forrit",
     "TasksLibraryCategory": "Miðlasafn",
-    "TasksMaintenanceCategory": "Viðhald"
+    "TasksMaintenanceCategory": "Viðhald",
+    "Default": "Sjálfgefið"
 }

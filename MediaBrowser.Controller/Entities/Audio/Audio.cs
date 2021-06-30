@@ -1,7 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
@@ -80,19 +83,19 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
 
-            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
+            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : string.Empty;
 
             if (ParentIndexNumber.HasValue)
             {
-                songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
+                songKey = ParentIndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) + "-" + songKey;
             }
 
             songKey += Name;

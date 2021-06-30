@@ -189,7 +189,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 // ParseName is required here.
                 // Caller provides the filename with extension stripped and NOT the parsed filename
                 var parsedName = _libraryManager.ParseName(info.Name);
-                var searchResults = await _tmdbClientManager.SearchSeriesAsync(parsedName.Name, info.MetadataLanguage, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
+                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
+                var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, info.MetadataLanguage, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
@@ -299,7 +300,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (ourRelease != null)
             {
-                series.OfficialRating = ourRelease.Rating;
+                series.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Rating);
             }
             else if (usRelease != null)
             {

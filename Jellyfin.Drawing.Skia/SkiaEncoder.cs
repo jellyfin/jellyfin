@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using BlurHashSharp.SkiaSharp;
+using Diacritics.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Drawing;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
@@ -91,9 +91,6 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
-        private static bool IsTransparent(SKColor color)
-            => (color.Red == 255 && color.Green == 255 && color.Blue == 255) || color.Alpha == 0;
-
         /// <summary>
         /// Convert a <see cref="ImageFormat"/> to a <see cref="SKEncodedImageFormat"/>.
         /// </summary>
@@ -109,65 +106,6 @@ namespace Jellyfin.Drawing.Skia
                 ImageFormat.Webp => SKEncodedImageFormat.Webp,
                 _ => SKEncodedImageFormat.Png
             };
-        }
-
-        private static bool IsTransparentRow(SKBitmap bmp, int row)
-        {
-            for (var i = 0; i < bmp.Width; ++i)
-            {
-                if (!IsTransparent(bmp.GetPixel(i, row)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool IsTransparentColumn(SKBitmap bmp, int col)
-        {
-            for (var i = 0; i < bmp.Height; ++i)
-            {
-                if (!IsTransparent(bmp.GetPixel(col, i)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private SKBitmap CropWhiteSpace(SKBitmap bitmap)
-        {
-            var topmost = 0;
-            while (topmost < bitmap.Height && IsTransparentRow(bitmap, topmost))
-            {
-                topmost++;
-            }
-
-            int bottommost = bitmap.Height;
-            while (bottommost >= 0 && IsTransparentRow(bitmap, bottommost - 1))
-            {
-                bottommost--;
-            }
-
-            var leftmost = 0;
-            while (leftmost < bitmap.Width && IsTransparentColumn(bitmap, leftmost))
-            {
-                leftmost++;
-            }
-
-            var rightmost = bitmap.Width;
-            while (rightmost >= 0 && IsTransparentColumn(bitmap, rightmost - 1))
-            {
-                rightmost--;
-            }
-
-            var newRect = SKRectI.Create(leftmost, topmost, rightmost - leftmost, bottommost - topmost);
-
-            using var image = SKImage.FromBitmap(bitmap);
-            using var subset = image.Subset(newRect);
-            return SKBitmap.FromImage(subset);
         }
 
         /// <inheritdoc />
@@ -204,9 +142,6 @@ namespace Jellyfin.Drawing.Skia
             return BlurHashEncoder.Encode(xComp, yComp, path, 128, 128);
         }
 
-        private static bool HasDiacritics(string text)
-            => !string.Equals(text, text.RemoveDiacritics(), StringComparison.Ordinal);
-
         private bool RequiresSpecialCharacterHack(string path)
         {
             for (int i = 0; i < path.Length; i++)
@@ -217,7 +152,7 @@ namespace Jellyfin.Drawing.Skia
                 }
             }
 
-            return HasDiacritics(path);
+            return path.HasDiacritics();
         }
 
         private string NormalizePath(string path)
@@ -312,22 +247,11 @@ namespace Jellyfin.Drawing.Skia
             return resultBitmap;
         }
 
-        private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool forceAnalyzeBitmap, ImageOrientation? orientation, out SKEncodedOrigin origin)
-        {
-            if (cropWhitespace)
-            {
-                using var bitmap = Decode(path, forceAnalyzeBitmap, orientation, out origin);
-                return bitmap == null ? null : CropWhiteSpace(bitmap);
-            }
-
-            return Decode(path, forceAnalyzeBitmap, orientation, out origin);
-        }
-
-        private SKBitmap? GetBitmap(string path, bool cropWhitespace, bool autoOrient, ImageOrientation? orientation)
+        private SKBitmap? GetBitmap(string path, bool autoOrient, ImageOrientation? orientation)
         {
             if (autoOrient)
             {
-                var bitmap = GetBitmap(path, cropWhitespace, true, orientation, out var origin);
+                var bitmap = Decode(path, true, orientation, out var origin);
 
                 if (bitmap != null && origin != SKEncodedOrigin.TopLeft)
                 {
@@ -340,7 +264,7 @@ namespace Jellyfin.Drawing.Skia
                 return bitmap;
             }
 
-            return GetBitmap(path, cropWhitespace, false, orientation, out _);
+            return Decode(path, false, orientation, out _);
         }
 
         private SKBitmap OrientImage(SKBitmap bitmap, SKEncodedOrigin origin)
@@ -461,7 +385,7 @@ namespace Jellyfin.Drawing.Skia
             var blur = options.Blur ?? 0;
             var hasIndicator = options.AddPlayedIndicator || options.UnplayedCount.HasValue || !options.PercentPlayed.Equals(0);
 
-            using var bitmap = GetBitmap(inputPath, options.CropWhiteSpace, autoOrient, orientation);
+            using var bitmap = GetBitmap(inputPath, autoOrient, orientation);
             if (bitmap == null)
             {
                 throw new InvalidDataException($"Skia unable to read image {inputPath}");
@@ -469,9 +393,7 @@ namespace Jellyfin.Drawing.Skia
 
             var originalImageSize = new ImageDimensions(bitmap.Width, bitmap.Height);
 
-            if (!options.CropWhiteSpace
-                && options.HasDefaultOptions(inputPath, originalImageSize)
-                && !autoOrient)
+            if (options.HasDefaultOptions(inputPath, originalImageSize) && !autoOrient)
             {
                 // Just spit out the original file if all the options are default
                 return inputPath;

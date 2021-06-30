@@ -1,8 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -94,10 +95,17 @@ namespace Emby.Dlna.PlayTo
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            return await XDocument.LoadAsync(
-                stream,
-                LoadOptions.PreserveWhitespace,
-                cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await XDocument.LoadAsync(
+                    stream,
+                    LoadOptions.PreserveWhitespace,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private async Task<HttpResponseMessage> PostSoapDataAsync(

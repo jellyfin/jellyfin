@@ -16,7 +16,7 @@ namespace Emby.Naming.TV
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
         /// </summary>
-        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileExtensions and passed to <see cref="StubResolver"/>, <see cref="FlagParser"/>, <see cref="Format3DParser"/> and <see cref="EpisodePathParser"/>.</param>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileExtensions and passed to <see cref="StubResolver"/>, <see cref="Format3DParser"/> and <see cref="EpisodePathParser"/>.</param>
         public EpisodeResolver(NamingOptions options)
         {
             _options = options;
@@ -62,11 +62,15 @@ namespace Emby.Naming.TV
                 container = extension.TrimStart('.');
             }
 
-            var flags = new FlagParser(_options).GetFlags(path);
-            var format3DResult = new Format3DParser(_options).Parse(flags);
+            var format3DResult = Format3DParser.Parse(path, _options);
 
             var parsingResult = new EpisodePathParser(_options)
                 .Parse(path, isDirectory, isNamed, isOptimistic, supportsAbsoluteNumbers, fillExtendedInfo);
+
+            if (!parsingResult.Success && !isStub)
+            {
+                return null;
+            }
 
             return new EpisodeInfo(path)
             {
