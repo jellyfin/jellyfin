@@ -350,6 +350,7 @@ namespace MediaBrowser.Controller.Entities.TV
             {
                 this.EpisodeGroupId = null;
             }
+            
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 
