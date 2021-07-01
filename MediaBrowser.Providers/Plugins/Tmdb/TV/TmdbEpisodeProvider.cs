@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, !string.IsNullOrEmpty(info.TmdbEpisodeGroupId) ? info.TmdbEpisodeGroupId : string.Empty, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info?.TmdbEpisodeGroupId ?? string.Empty, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
             if (episodeResult == null)
