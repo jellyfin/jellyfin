@@ -67,6 +67,14 @@ namespace MediaBrowser.Controller.Entities.TV
         public string DisplayOrder { get; set; }
 
         /// <summary>
+        /// Gets or sets the Episode Group ID.
+        /// </summary>
+        /// <remarks>
+        /// Episode Group ID is an identifier for different episode orders provided by TMDb
+        /// </remarks>
+        public string EpisodeGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>The status.</value>
@@ -344,6 +352,11 @@ namespace MediaBrowser.Controller.Entities.TV
             }
 
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
+            if (string.IsNullOrEmpty(refreshOptions.SearchResult.EpisodeGroupId))
+            {
+                this.EpisodeGroupId = null;
+            }
+            
             await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
         }
 

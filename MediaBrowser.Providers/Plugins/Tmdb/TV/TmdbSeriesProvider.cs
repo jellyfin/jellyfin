@@ -102,13 +102,71 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
+            var tmdbSearchResults = new TMDbLib.Objects.TvShows.TvShow[tvSearchResults.Count];
+
             var remoteResults = new RemoteSearchResult[tvSearchResults.Count];
             for (var i = 0; i < tvSearchResults.Count; i++)
             {
-                remoteResults[i] = MapSearchTvToRemoteSearchResult(tvSearchResults[i]);
+                tmdbSearchResults[i] = await _tmdbClientManager
+                    .GetSeriesAsync(Convert.ToInt32(tvSearchResults[i].Id, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, cancellationToken)
+                    .ConfigureAwait(false);
+                remoteResults[i] = MapTvShowToRemoteSearchResult(tmdbSearchResults[i]);
             }
 
-            return remoteResults;
+            int resultCountHelper = 0;
+
+            for (var i = 0; i < remoteResults.Length; i++)
+            {
+                resultCountHelper += 1 + remoteResults[i].EpisodeGroups.Results.Count;
+            }
+
+            var remoteResultEpisodeGroups = new RemoteSearchResult[resultCountHelper];
+
+            for (var i = 0; i < remoteResultEpisodeGroups.Length; i++)
+            {
+                for (var j = 0; j < tmdbSearchResults.Length; j++)
+                {
+                    remoteResultEpisodeGroups[i++] = MapTvShowToRemoteSearchResult(tmdbSearchResults[j]);
+
+                    for (var k = 0; k < tmdbSearchResults[j].EpisodeGroups.Results.Count; k++)
+                    {
+                        remoteResultEpisodeGroups[i++] = MapTvShowEpisodeGroupToRemoteSearchResult(tmdbSearchResults[j], k);
+                    }
+                }
+            }
+
+            return remoteResultEpisodeGroups;
+        }
+
+        private RemoteSearchResult MapTvShowEpisodeGroupToRemoteSearchResult(TvShow series, int episodeGroup)
+        {
+            var remoteResult = new RemoteSearchResult
+            {
+                Name = series.Name ?? series.OriginalName,
+                SearchProviderName = Name,
+                ImageUrl = _tmdbClientManager.GetPosterUrl(series.PosterPath),
+                Overview = series.Overview,
+                EpisodeGroupId = series.EpisodeGroups.Results[episodeGroup].Id,
+                EpisodeGroupName = series.EpisodeGroups.Results[episodeGroup].Name
+            };
+
+            remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
+            if (series.ExternalIds != null)
+            {
+                if (!string.IsNullOrEmpty(series.ExternalIds.ImdbId))
+                {
+                    remoteResult.SetProviderId(MetadataProvider.Imdb, series.ExternalIds.ImdbId);
+                }
+
+                if (!string.IsNullOrEmpty(series.ExternalIds.TvdbId))
+                {
+                    remoteResult.SetProviderId(MetadataProvider.Tvdb, series.ExternalIds.TvdbId);
+                }
+            }
+
+            remoteResult.PremiereDate = series.FirstAirDate?.ToUniversalTime();
+
+            return remoteResult;
         }
 
         private RemoteSearchResult MapTvShowToRemoteSearchResult(TvShow series)
@@ -118,7 +176,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 Name = series.Name ?? series.OriginalName,
                 SearchProviderName = Name,
                 ImageUrl = _tmdbClientManager.GetPosterUrl(series.PosterPath),
-                Overview = series.Overview
+                Overview = series.Overview,
+                EpisodeGroups = series.EpisodeGroups
             };
 
             remoteResult.SetProviderId(MetadataProvider.Tmdb, series.Id.ToString(CultureInfo.InvariantCulture));
@@ -212,12 +271,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             result = new MetadataResult<Series>
             {
                 Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
-                ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
+                ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage,
             };
 
             foreach (var person in GetPersons(tvShow))
             {
                 result.AddPerson(person);
+            }
+
+            if (!string.IsNullOrEmpty(info.TmdbEpisodeGroupId))
+            {
+                result.Item.EpisodeGroupId = info.TmdbEpisodeGroupId;
             }
 
             result.HasMetadata = result.Item != null;

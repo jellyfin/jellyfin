@@ -65,5 +65,7 @@ namespace MediaBrowser.Controller.Providers
         public DateTime? PremiereDate { get; set; }
 
         public bool IsAutomated { get; set; }
+
+        public string TmdbEpisodeGroupId { get; set; }
     }
 }

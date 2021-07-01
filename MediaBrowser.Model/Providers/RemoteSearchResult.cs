@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
+using TMDbLib;
 
 namespace MediaBrowser.Model.Providers
 {
@@ -50,5 +51,11 @@ namespace MediaBrowser.Model.Providers
         public RemoteSearchResult AlbumArtist { get; set; }
 
         public RemoteSearchResult[] Artists { get; set; }
+
+        public TMDbLib.Objects.General.ResultContainer<TMDbLib.Objects.TvShows.TvGroupCollection> EpisodeGroups { get; set; }
+
+        public string EpisodeGroupId { get; set; }
+
+        public string EpisodeGroupName { get; set; }
     }
 }
