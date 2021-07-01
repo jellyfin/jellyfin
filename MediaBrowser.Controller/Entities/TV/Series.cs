@@ -66,6 +66,12 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </remarks>
         public string DisplayOrder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Episode Group ID.
+        /// </summary>
+        /// <remarks>
+        /// Episode Group ID is an identifier for different episode orders provided by TMDb
+        /// </remarks>
         public string EpisodeGroupId { get; set; }
 
         /// <summary>
