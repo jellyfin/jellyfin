@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -28,11 +24,11 @@ namespace Jellyfin.Profiles.Tests
 
             var dlnaServerClient = manager.GetOrCreateProfile(headers, IPAddress.Parse("10.10.10.10"));
             // Should have been assigned the default client, as no match found.
-            Assert.True(string.Equals(dlnaServerClient.Name, "Default Profile", StringComparison.Ordinal));
+            Assert.StartsWith("Default Profile", dlnaServerClient.Name, StringComparison.Ordinal);
 
             // Simulate the device is then discovered by DLNA PlayTo.
             var enhancedProfile = manager.GetOrCreateProfile(
-                new DeviceDetails
+                new DeviceIdentification
                 {
                     Address = "10.10.10.10",
                     FriendlyName = "Hisense TV"
@@ -52,7 +48,7 @@ namespace Jellyfin.Profiles.Tests
 
             // Simulate the dlna PlayTo callback.
             var playToClient = manager.GetOrCreateProfile(
-                new DeviceDetails
+                new DeviceIdentification
                 {
                     Address = "10.10.10.10",
                     FriendlyName = "Hisense TV"

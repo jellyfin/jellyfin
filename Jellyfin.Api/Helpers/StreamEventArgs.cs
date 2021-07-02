@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
-using Jellyfin.Profiles;
 using MediaBrowser.Controller.Devices;
 using Microsoft.AspNetCore.Http;
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -11,14 +10,13 @@ namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
     /// A <see cref="DeviceProfile" /> represents a set of metadata which determines which content a certain device is able to play.
-    /// <br/>
-    /// Specifically, it defines the supported <see cref="ContainerProfiles">containers</see> and
-    /// <see cref="CodecProfiles">codecs</see> (video and/or audio, including codec profiles and levels)
-    /// the device is able to direct play (without transcoding or remuxing),
+    ///
+    /// Specifically, it defines the supported <see cref="ContainerProfiles">containers</see> and <see cref="CodecProfiles">codecs</see>
+    /// (video and/or audio, including codec profiles and levels) the device is able to direct play (without transcoding or remuxing),
     /// as well as which <see cref="TranscodingProfiles">containers/codecs to transcode to</see> in case it isn't.
     /// </summary>
     [XmlRoot("Profile")]
-    public class DeviceProfile : DeviceIdentification
+    public class DeviceProfile
     {
         /// <summary>
         /// String constants for the media types.
@@ -46,9 +44,33 @@ namespace MediaBrowser.Model.Dlna
         private string _supportedMediaTypeString = AllMedia;
 
         /// <summary>
-        /// Gets or sets the identification information that is used to detect this device.
+        /// Initializes a new instance of the <see cref="DeviceProfile"/> class.
+        /// </summary>
+        public DeviceProfile()
+        {
+            // Required for serialization.
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceProfile"/> class.
+        /// </summary>
+        /// <param name="source">Optional <see cref="DeviceProfile"/> from which to copy the settings.</param>
+        /// <param name="name">Optional. Profile name.</param>
+        public DeviceProfile(DeviceProfile source, string? name = null)
+        {
+            CopyFrom(source);
+            Name = name ?? source.Name;
+        }
+
+        /// <summary>
+        /// Gets or sets the identification information that is used to match to this device.
         /// </summary>
         public DeviceIdentification? Identification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ip address.
+        /// </summary>
+        public string? Address { get; set; }
 
         /// <summary>
         /// Gets or sets the name of this device profile. User profiles must have a unique name.
@@ -88,7 +110,7 @@ namespace MediaBrowser.Model.Dlna
         public bool EnableSingleSubtitleLimit { get; set; }
 
         /// <summary>
-        /// Gets or sets the supported media types.
+        /// Gets or sets the supported media types as a string.
         /// </summary>
         [DefaultValue(AllMedia)]
         public string SupportedMediaTypes
@@ -253,8 +275,6 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>A <see cref="DeviceProfile"/> set to the default profile.</returns>
         public static DeviceProfile DefaultProfile()
         {
-            const string Url = "https://github.com/jellyfin/jellyfin";
-
             if (_defaultProfile == null)
             {
                 _defaultProfile = new DeviceProfile()
@@ -263,17 +283,11 @@ namespace MediaBrowser.Model.Dlna
                     EnableAlbumArtInDidl = false,
                     EncodeContextOnTransmission = true,
                     Id = Guid.Empty,
-                    Manufacturer = "Jellyfin",
-                    ManufacturerUrl = Url,
                     MaxAlbumArtHeight = 480,
                     MaxAlbumArtWidth = 480,
                     MaxIconHeight = 48,
                     MaxIconWidth = 48,
                     MaxStreamingBitrate = 140000000,
-                    ModelDescription = "UPnP/AV 1.0 Compliant Media Server",
-                    ModelName = "Jellyfin Server",
-                    ModelNumber = "01",
-                    ModelUrl = Url,
                     MusicStreamingTranscodingBitrate = 192000,
                     Name = "Default Profile",
                     ProfileType = DeviceProfileType.SystemTemplate,
@@ -405,12 +419,12 @@ namespace MediaBrowser.Model.Dlna
         /// <returns>True if the profile supports the media type.</returns>
         public bool IsMediaTypeSupported(string type)
         {
-            if (!Enum.TryParse<DlnaProfileType>(type, true, out var mediaType))
+            if (Enum.TryParse<DlnaProfileType>(type, true, out var mediaType))
             {
-                return false;
+                return _supportedMediaTypes.Contains(mediaType);
             }
 
-            return _supportedMediaTypes.Contains(mediaType);
+            return false;
         }
 
         /// <summary>
@@ -431,7 +445,6 @@ namespace MediaBrowser.Model.Dlna
             for (int i = 0; i < TranscodingProfiles.Length; i++)
             {
                 var profile = TranscodingProfiles[i];
-
                 if ((profile.Type == DlnaProfileType.Audio)
                     && string.Equals(container, profile.Container, StringComparison.OrdinalIgnoreCase)
                     && (profile.AudioCodec?.ContainsContainer(audioCodec) ?? true))
@@ -458,7 +471,6 @@ namespace MediaBrowser.Model.Dlna
             }
 
             container = container?.TrimStart('.');
-
             for (int i = 0; i < TranscodingProfiles.Length; i++)
             {
                 var profile = TranscodingProfiles[i];
@@ -500,7 +512,6 @@ namespace MediaBrowser.Model.Dlna
             for (int i = 0; i < ResponseProfiles.Length; i++)
             {
                 var profile = ResponseProfiles[i];
-
                 if ((profile.Type == DlnaProfileType.Audio)
                     && profile.Container.ContainsContainer(container)
                     && (profile.AudioCodec?.ContainsContainer(audioCodec) ?? true))
@@ -667,6 +678,53 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Copies the values from <paramref name="source"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="DeviceProfile"/> to copy.</param>
+        public void CopyFrom(DeviceProfile source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            Address = source.Address;
+            AlbumArtPn = source.AlbumArtPn;
+            CodecProfiles = source.CodecProfiles;
+            ContainerProfiles = source.ContainerProfiles;
+            DirectPlayProfiles = source.DirectPlayProfiles;
+            EnableAlbumArtInDidl = source.EnableAlbumArtInDidl;
+            EnableMSMediaReceiverRegistrar = source.EnableMSMediaReceiverRegistrar;
+            EnableSingleAlbumArtLimit = source.EnableSingleAlbumArtLimit;
+            EnableSingleSubtitleLimit = source.EnableSingleSubtitleLimit;
+            EncodeContextOnTransmission = source.EncodeContextOnTransmission;
+            IgnoreTranscodeByteRangeRequests = source.IgnoreTranscodeByteRangeRequests;
+            MaxAlbumArtHeight = source.MaxAlbumArtHeight;
+            MaxAlbumArtWidth = source.MaxAlbumArtWidth;
+            MaxIconHeight = source.MaxIconHeight;
+            MaxIconWidth = source.MaxIconWidth;
+            MaxStaticBitrate = source.MaxStaticBitrate;
+            MaxStaticMusicBitrate = source.MaxStaticMusicBitrate;
+            MaxStreamingBitrate = source.MaxStreamingBitrate;
+            MusicStreamingTranscodingBitrate = source.MusicStreamingTranscodingBitrate;
+            ProtocolInfo = source.ProtocolInfo;
+            RequiresPlainFolders = source.RequiresPlainFolders;
+            RequiresPlainVideoItems = source.RequiresPlainVideoItems;
+            ResponseProfiles = source.ResponseProfiles;
+            SonyAggregationFlags = source.SonyAggregationFlags;
+            SubtitleProfiles = source.SubtitleProfiles;
+            _supportedMediaTypes = source._supportedMediaTypes;
+            TimelineOffsetSeconds = source.TimelineOffsetSeconds;
+            TranscodingProfiles = source.TranscodingProfiles;
+            UserId = source.UserId;
+            XmlRootAttributes = source.XmlRootAttributes;
+
+            // Path is reset to null, meaning the uniqueness of the name will be checked if saved to disk.
+            Path = null;
+            ProfileType = DeviceProfileType.Profile;
         }
     }
 }

@@ -22,8 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jellyfin.DeviceProfiles\Jellyfin.DeviceProfiles.csproj" />
     <ProjectReference Include="..\Jellyfin.Networking\Jellyfin.Networking.csproj" />
-    <ProjectReference Include="..\Jellyfin.Profiles\Jellyfin.Profiles.csproj" />
+    <ProjectReference Include="..\Jellyfin.Profiles\Jellyfin.DeviceProfiles.csproj" />
     <ProjectReference Include="..\MediaBrowser.Controller\MediaBrowser.Controller.csproj" />
   </ItemGroup>
 

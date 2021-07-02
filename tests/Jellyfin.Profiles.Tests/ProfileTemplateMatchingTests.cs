@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using Jellyfin.DeviceProfiles;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -24,11 +25,11 @@ namespace Jellyfin.Profiles.Tests
             };
 
             // Match device. Should return the general Hisense profile.
-            var match = manager.GetProfile(device, IPAddress.Parse("10.10.10.10"));
-            Assert.True(string.Equals(match.Name, ProfileTestingHelper.GeneralProfile, StringComparison.Ordinal));
+            var match = manager.GetOrCreateProfile(device, IPAddress.Parse("10.10.10.10"));
+            Assert.StartsWith(ProfileTestingHelper.GeneralProfile, match.Name, StringComparison.Ordinal);
 
             // Ensure the correct profile type is returned.
-            Assert.True(match.ProfileType == DeviceProfileType.UserTemplate);
+            Assert.True(match.ProfileType == DeviceProfileType.Profile);
         }
 
         /// <summary>
@@ -39,19 +40,20 @@ namespace Jellyfin.Profiles.Tests
         {
             var manager = ProfileTestingHelper.CreateProfileManager(true);
 
-            var device = new DeviceDetails()
+            var device = new DeviceIdentification()
             {
+                Address = "192.168.0.1",
                 FriendlyName = "Hisense (Other TV's are available)",
                 ModelNumber = "123",
                 ModelDescription = "1bc"
             };
 
             // Match by address
-            var match = manager.GetProfile(device, IPAddress.Parse("192.168.0.1"));
-            Assert.True(string.Equals(match.Name, ProfileTestingHelper.SpecificProfile, StringComparison.Ordinal));
+            var match = manager.GetOrCreateProfile(device, IPAddress.Parse("192.168.0.1"));
+            Assert.StartsWith(ProfileTestingHelper.SpecificProfile, match.Name, StringComparison.Ordinal);
 
             // Ensure a profile is returned and not a template.
-            Assert.True(match.ProfileType == DeviceProfileType.UserTemplate);
+            Assert.True(match.ProfileType == DeviceProfileType.Profile);
         }
 
         /// <summary>
@@ -79,7 +81,7 @@ namespace Jellyfin.Profiles.Tests
                 false);
 
             // Create a matching device.
-            var device = new DeviceDetails()
+            var device = new DeviceIdentification()
             {
                 Address = "192.168.0.1",
                 FriendlyName = "Hisense (Other TV's are available)",
@@ -87,11 +89,11 @@ namespace Jellyfin.Profiles.Tests
                 ModelDescription = "1bc"
             };
 
-            var match = manager.GetProfile(device);
-            Assert.True(string.Equals(match.Name, ProfileTestingHelper.ExactProfile, StringComparison.Ordinal));
+            var match = manager.GetOrCreateProfile(device);
+            Assert.StartsWith(ProfileTestingHelper.ExactProfile, match.Name, StringComparison.Ordinal);
 
             // Ensure a profile is returned and not a template.
-            Assert.True(match.ProfileType == DeviceProfileType.UserTemplate);
+            Assert.True(match.ProfileType == DeviceProfileType.Profile);
         }
 
         [Fact]
@@ -99,18 +101,16 @@ namespace Jellyfin.Profiles.Tests
         {
             var manager = ProfileTestingHelper.CreateProfileManager(true);
 
-            var device = new DeviceDetails()
+            var device = new DeviceIdentification()
             {
                 FriendlyName = "Panasonic",
                 ModelNumber = "123",
                 ModelDescription = "1bc"
             };
 
-            // No match found, so the Generic Profile should be returned.
-            Assert.True(manager.GetProfile(device, null).Name == "Default Profile");
-
-            // No match found, so the Generic Profile should be returned. named as Panasonic.
-            Assert.True(manager.GetOrCreateProfile(device).Name == "Panasonic");
+            // No match found, so the Generic Profile should be returned, named as Panasonic.
+            var match = manager.GetOrCreateProfile(device);
+            Assert.True(string.Equals(match.Name, "Panasonic", StringComparison.Ordinal));
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Jellyfin.Profiles.Tests
             var dlnaServerClient = manager.GetOrCreateProfile(new HeaderDictionary(), IPAddress.Parse("10.10.10.10"));
 
             // Should have been assigned the default client, as no match found.
-            Assert.True(string.Equals(dlnaServerClient.Name, "Default Profile", StringComparison.Ordinal));
+            Assert.StartsWith("Default Profile", dlnaServerClient.Name, StringComparison.Ordinal);
         }
 
         /// <summary>
@@ -156,11 +156,11 @@ namespace Jellyfin.Profiles.Tests
                 headers[property2] = value2;
             }
 
-            var profile = manager.GetProfile(headers, IPAddress.Parse("10.10.10.9"));
+            var profile = manager.GetProfile(headers, IPAddress.Parse("10.10.10.9"), null);
             Assert.True(string.Equals(profile.Name, match, StringComparison.Ordinal));
         }
 
-        private static void AddTestData(IProfileManager manager)
+        private static void AddTestData(IDeviceProfileManager manager)
         {
             manager.AddProfile(
                 new DeviceProfile
@@ -179,7 +179,6 @@ namespace Jellyfin.Profiles.Tests
                             }
                         }
                     },
-                    SerialNumber = "1"
                 },
                 false);
 
@@ -199,8 +198,7 @@ namespace Jellyfin.Profiles.Tests
                                 Match = HeaderMatchType.Equals
                             }
                         }
-                    },
-                    SerialNumber = "2"
+                    }
                 },
                 false);
 
@@ -229,7 +227,6 @@ namespace Jellyfin.Profiles.Tests
                             }
                         }
                     },
-                    SerialNumber = "3"
                 },
                 false);
         }

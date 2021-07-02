@@ -1,8 +1,8 @@
-using System;
 using System.IO;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Serialization;
+using Jellyfin.DeviceProfiles;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
@@ -23,7 +23,7 @@ namespace Jellyfin.Profiles.Tests
 
         private static readonly string _testPathRoot = Path.Combine(Path.GetTempPath(), "jellyfin-test-data");
 
-        public static IProfileManager CreateProfileManager(bool addData)
+        public static IDeviceProfileManager CreateProfileManager(bool addData)
         {
             var conf = new NetworkConfiguration()
             {
@@ -32,10 +32,10 @@ namespace Jellyfin.Profiles.Tests
             };
 
             var appPaths = GetApplicationPaths();
-            var pm = new ProfileManager(
+            var pm = new DeviceProfileManager(
                 new MyXmlSerializer(),
                 appPaths,
-                new NullLogger<ProfileManager>(),
+                new NullLogger<DeviceProfileManager>(),
                 new ManagedFileSystem(new NullLogger<ManagedFileSystem>(), appPaths),
                 GetConfigurationManager(conf));
 
@@ -50,8 +50,8 @@ namespace Jellyfin.Profiles.Tests
         /// <summary>
         /// Creates test profiles.
         /// </summary>
-        /// <param name="manager">The <see cref="IProfileManager"/> instance.</param>
-        private static void CreateDeviceProfileTemplates(IProfileManager manager)
+        /// <param name="manager">The <see cref="IDeviceProfileManager"/> instance.</param>
+        private static void CreateDeviceProfileTemplates(IDeviceProfileManager manager)
         {
             manager.AddProfile(
                 new DeviceProfile

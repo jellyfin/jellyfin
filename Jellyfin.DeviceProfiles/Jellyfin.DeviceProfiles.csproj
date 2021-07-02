@@ -21,10 +21,15 @@
 
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
-    <PackageId>Jellyfin.Profiles.Model</PackageId>
+    <PackageId>Jellyfin.DeviceProfiles</PackageId>
     <VersionPrefix>10.8.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants />
   </PropertyGroup>
 
   <ItemGroup>

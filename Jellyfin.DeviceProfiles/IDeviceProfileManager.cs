@@ -4,12 +4,12 @@ using System.Net;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Profiles
+namespace Jellyfin.DeviceProfiles
 {
     /// <summary>
-    /// Defines the <see cref="IProfileManager"/>.
+    /// Defines the <see cref="IDeviceProfileManager"/>.
     /// </summary>
-    public interface IProfileManager
+    public interface IDeviceProfileManager
     {
         /// <summary>
         /// Gets the device profiles.
@@ -52,46 +52,44 @@ namespace Jellyfin.Profiles
 
         /// <summary>
         /// Retrieves a profile with the id of <paramref name="id"/>.
-        /// If the setting MonitorProfiles is set, the value returned is read directly from the disk. (pre 10.8 compatibility).
         /// </summary>
         /// <param name="id">The profile identifier to locate.</param>
-        /// <param name="attemptToRefreshFromDisk">Implies that, if enabled, this profile should be refreshed.</param>
+        /// <param name="noProfileRefresh">The profile should not be refreshed from disk.</param>
         /// <returns>The <see cref="DeviceProfile"/>.</returns>
-        DeviceProfile? GetProfile(Guid id, bool attemptToRefreshFromDisk);
+        DeviceProfile? GetProfile(Guid id, bool noProfileRefresh);
 
         /// <summary>
-        /// Retrieves a profile based upon the information in <paramref name="deviceInfo"/>.
+        /// Retrieves an override profile based upon the information in <paramref name="deviceProfile"/>.
         /// </summary>
-        /// <param name="deviceInfo">The device information in a <see cref="DeviceDetails"/>.</param>
+        /// <param name="deviceProfile">The device information in a <see cref="DeviceIdentification"/>.</param>
         /// <param name="address">Optional: The <see cref="IPAddress"/> of the device.</param>
         /// <returns>The <see cref="DeviceProfile"/>.</returns>
-        DeviceProfile GetProfile(DeviceDetails deviceInfo, IPAddress? address = null);
+        DeviceProfile GetOverrideProfile(DeviceProfile deviceProfile, IPAddress? address = null);
 
         /// <summary>
-        /// Retrieves or creates a profile based upon the information in <paramref name="deviceInfo"/>.
+        /// Retrieves or creates a profile based upon the information in <paramref name="deviceIdentification"/>.
         /// </summary>
-        /// <param name="deviceInfo">The device information in a <see cref="DeviceDetails"/>.</param>
+        /// <param name="deviceIdentification">The device information in a <see cref="DeviceIdentification"/>.</param>
         /// <param name="address">Optional: The <see cref="IPAddress"/> of the device.</param>
         /// <returns>The <see cref="DeviceProfile"/>.</returns>
-        DeviceProfile GetOrCreateProfile(DeviceDetails deviceInfo, IPAddress? address = null);
+        DeviceProfile GetOrCreateProfile(DeviceIdentification deviceIdentification, IPAddress? address = null);
 
         /// <summary>
         /// Gets the profile based on the request headers. If no match is found, the default profile is returned.
         /// </summary>
         /// <param name="headers">The <see cref="IHeaderDictionary"/> instance.</param>
         /// <param name="address">The <see cref="IPAddress"/> of the connection.</param>
-        /// <param name="caps">Optional. The device's <see cref="DeviceProfile"/> to use if not found.</param>
+        /// <param name="deviceCapabilities">The device's <see cref="DeviceProfile"/> to use if not found.</param>
         /// <returns>The <see cref="DeviceProfile"/>.</returns>
-        DeviceProfile GetProfile(IHeaderDictionary headers, IPAddress address, DeviceProfile? caps = null);
+        DeviceProfile GetProfile(IHeaderDictionary headers, IPAddress address, DeviceProfile? deviceCapabilities);
 
         /// <summary>
         /// Gets or creates a profile based the request headers. If no match is found, a custom profile is generated from the default profile.
         /// </summary>
         /// <param name="headers">The <see cref="IHeaderDictionary"/> instance.</param>
         /// <param name="address">The <see cref="IPAddress"/> of the connection.</param>
-        /// <param name="caps">Optional. The device's <see cref="DeviceProfile"/> to use if not found.</param>
         /// <returns>The <see cref="DeviceProfile"/>.</returns>
-        DeviceProfile GetOrCreateProfile(IHeaderDictionary headers, IPAddress address, DeviceProfile? caps = null);
+        DeviceProfile GetOrCreateProfile(IHeaderDictionary headers, IPAddress address);
 
         /// <summary>
         /// Retrieves the list of profiles.
@@ -104,5 +102,15 @@ namespace Jellyfin.Profiles
         /// </summary>
         /// <param name="profile">The <see cref="DeviceProfile"/> instance.</param>
         void SaveProfileToDisk(DeviceProfile profile);
+
+        /// <summary>
+        /// Returns a unique name.
+        /// </summary>
+        /// <remarks>
+        /// Attempt to increment the last number. eg. Profile1 becomes Profile2, Profile9 becomes Profile10, Profile becomes Profile1.
+        /// </remarks>
+        /// <param name="name">Original name.</param>
+        /// <returns>A pretty unique name.</returns>
+        string GetUniqueProfileName(string name);
     }
 }

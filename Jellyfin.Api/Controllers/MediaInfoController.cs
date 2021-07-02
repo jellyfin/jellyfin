@@ -9,7 +9,7 @@ using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.MediaInfoDtos;
-using Jellyfin.Profiles;
+using Jellyfin.DeviceProfiles;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -37,7 +37,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IAuthorizationContext _authContext;
         private readonly ILogger<MediaInfoController> _logger;
         private readonly MediaInfoHelper _mediaInfoHelper;
-        private readonly IProfileManager _profileManager;
+        private readonly IDeviceProfileManager _profileManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MediaInfoController"/> class.
@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{MediaInfoController}"/> interface.</param>
         /// <param name="mediaInfoHelper">Instance of the <see cref="MediaInfoHelper"/>.</param>
-        /// <param name="profileManager">Instance of the <see cref="IProfileManager"/>.</param>
+        /// <param name="profileManager">Instance of the <see cref="IDeviceProfileManager"/>.</param>
         public MediaInfoController(
             IMediaSourceManager mediaSourceManager,
             IDeviceManager deviceManager,
@@ -56,7 +56,7 @@ namespace Jellyfin.Api.Controllers
             IAuthorizationContext authContext,
             ILogger<MediaInfoController> logger,
             MediaInfoHelper mediaInfoHelper,
-            IProfileManager profileManager)
+            IDeviceProfileManager profileManager)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
@@ -131,7 +131,7 @@ namespace Jellyfin.Api.Controllers
         {
             var authInfo = _authContext.GetAuthorizationInfo(Request);
 
-            var profile = _profileManager.GetProfile(
+            var profile = _profileManager.GetOverrideProfile(
                 playbackInfoDto?.DeviceProfile ?? _deviceManager.GetCapabilities(authInfo.DeviceId).DeviceProfile,
                 Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
 
@@ -264,7 +264,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableDirectPlay,
             [FromQuery] bool? enableDirectStream)
         {
-            var profile = _profileManager.GetProfile(
+            var profile = _profileManager.GetOverrideProfile(
                 openLiveStreamDto?.DeviceProfile ?? _profileManager.DefaultProfile(),
                 Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
 

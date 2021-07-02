@@ -325,13 +325,6 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(string source, out int? port)
-        {
-            _ = IPHost.TryParse(source, out IPHost? host, _ipClassType);
-            return GetBindInterface(host, out port);
-        }
-
-        /// <inheritdoc/>
         public string GetBindInterface(IPAddress source, out int? port)
         {
             return GetBindInterface(new IPNetAddress(source), out port);
@@ -395,6 +388,10 @@ namespace Jellyfin.Networking.Manager
                     return result;
                 }
             }
+            else if (_bindAddresses.Length > 0)
+            {
+                return _bindAddresses[0].Address.ToString();
+            }
 
             // Get the first LAN interface address that isn't a loopback.
             var interfaces = CreateCollection(_interfaceAddresses
@@ -455,7 +452,7 @@ namespace Jellyfin.Networking.Manager
                 return _internalInterfaces.ToArray();
             }
 
-            return _bindAddresses.Where(IsInLocalNetwork).ToArray();
+            return _bindAddresses.Where(p => IsInLocalNetwork(p)).ToArray();
         }
 
         /// <inheritdoc/>
@@ -627,15 +624,15 @@ namespace Jellyfin.Networking.Manager
                     _interfaceNames[parts[2]] = Math.Abs(index);
                 }
 
-                if (IpClassType == IpClassType.Ip4Only)
-                {
-                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
-                }
+                // if (IpClassType == IpClassType.Ip4Only)
+                // {
+                //     _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback, false);
+                // }
 
-                if (IpClassType == IpClassType.Ip6Only)
-                {
-                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
-                }
+                // if (IpClassType == IpClassType.Ip6Only)
+                // {
+                //     _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback, false);
+                // }
             }
 
             InitialiseLan(config);

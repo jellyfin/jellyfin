@@ -71,7 +71,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="source">Source of the request.</param>
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(IPNetAddress source, out int? port);
+        string GetBindInterface(IPNetAddress? source, out int? port);
 
         /// <summary>
         /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
@@ -92,16 +92,6 @@ namespace MediaBrowser.Common.Net
         /// <param name="port">Optional port returned, if it's part of an override.</param>
         /// <returns>IP Address to use, or loopback address if all else fails.</returns>
         string GetBindInterface(IPAddress source, out int? port);
-
-        /// <summary>
-        /// Retrieves the bind address to use in system url's. (Server Discovery, PlayTo, LiveTV, SystemInfo)
-        /// If no bind addresses are specified, an internal interface address is selected.
-        /// (See <see cref="GetBindInterface(IPNetAddress, out int?)"/>.
-        /// </summary>
-        /// <param name="source">Source of the request.</param>
-        /// <param name="port">Optional port returned, if it's part of an override.</param>
-        /// <returns>IP Address to use, or loopback address if all else fails.</returns>
-        string GetBindInterface(string source, out int? port);
 
         /// <summary>
         /// Get a list of all the MAC addresses associated with active interfaces.

@@ -41,10 +41,10 @@ using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.DeviceProfiles;
 using Jellyfin.Networking.AutoDiscovery;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
-using Jellyfin.Profiles;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -83,7 +83,6 @@ using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -677,7 +676,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddScoped<DynamicHlsHelper>();
 
             ServiceCollection.AddSingleton<IDirectoryService, DirectoryService>();
-            ServiceCollection.AddSingleton<IProfileManager, ProfileManager>();
+            ServiceCollection.AddSingleton<IDeviceProfileManager, DeviceProfileManager>();
         }
 
         /// <summary>
@@ -1138,17 +1137,17 @@ namespace Emby.Server.Implementations
         {
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                return PublishedServerUrl;
+                return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(new IPNetAddress(ipAddress), out int? port);
+            string smart = NetManager.GetBindInterface(ipAddress, out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart.TrimEnd('/');
+                return smart.Trim('/');
             }
 
-            return GetLocalApiUrl(smart.TrimEnd('/'), null, port);
+            return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
         /// <inheritdoc/>
@@ -1156,17 +1155,17 @@ namespace Emby.Server.Implementations
         {
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                return PublishedServerUrl;
+                return PublishedServerUrl.Trim('/');
             }
 
             string smart = NetManager.GetBindInterface(request, out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart.TrimEnd('/');
+                return smart.Trim('/');
             }
 
-            return GetLocalApiUrl(smart.TrimEnd('/'), request.Scheme, port);
+            return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
         }
 
         /// <inheritdoc/>

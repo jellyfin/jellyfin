@@ -99,40 +99,6 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Tests the ability of the system to ignore interfaces specified, returning local interfaces.
-        /// This functionality is used to filter out virtual interfaces. <see cref="NetworkConfiguration.VirtualInterfaceNames"/>.
-        /// </summary>
-        /// <param name="interfaces">Mock network setup (see remarks above).</param>
-        /// <param name="lan">LAN address range.</param>
-        /// <param name="value">Interface addresses after filter..</param>
-        [Theory]
-        // All valid
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.0/24", "[192.168.1.208/24,200.200.200.200/24]")]
-        // eth16 only
-        [InlineData("192.168.1.208/24,-16,eth16|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.208/24]")]
-        // All interfaces excluded. (including loopbacks)
-        [InlineData("192.168.1.208/24,-16,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[]")]
-        // vEthernet1 and vEthernet212 should be excluded.
-        [InlineData("192.168.1.200/24,-20,vEthernet1|192.168.2.208/24,-16,vEthernet212|200.200.200.200/24,11,eth11", "192.168.1.0/24;200.200.200.200/24", "[200.200.200.200/24]")]
-        // Overlapping interface,
-        [InlineData("192.168.1.110/24,-20,br0|192.168.1.10/24,-16,br1|200.200.200.200/24,11,eth11", "192.168.1.0/24", "[192.168.1.110/24,192.168.1.10/24]")]
-        public void IgnoreVirtualInterfaces(string interfaces, string lan, string value)
-        {
-            var conf = new NetworkConfiguration()
-            {
-                EnableIPV6 = true,
-                EnableIPV4 = true,
-                LocalNetworkSubnets = lan?.Split(';') ?? throw new ArgumentNullException(nameof(lan))
-            };
-
-            NetworkManager.MockNetworkSettings = interfaces;
-            using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
-            NetworkManager.MockNetworkSettings = string.Empty;
-
-            Assert.Equal(value, nm.GetInternalBindAddresses().AsString());
-        }
-
-        /// <summary>
         /// Validates that the address is a valid host string.
         /// </summary>
         /// <param name="address">IP Address.</param>
@@ -545,7 +511,8 @@ namespace Jellyfin.Networking.Tests
             if (resultObj != null && host?.HasAddress == true)
             {
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
-                var intf = nm.GetBindInterface(source, out _);
+                _ = IPHost.TryParse(source, out IPHost? sourceIp, IpClassType.IpBoth);
+                var intf = nm.GetBindInterface(sourceIp, out _);
 
                 Assert.Equal(result, intf);
             }
@@ -612,7 +579,8 @@ namespace Jellyfin.Networking.Tests
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
             }
 
-            var intf = nm.GetBindInterface(source, out int? _);
+            _ = IPHost.TryParse(source, out IPHost? sourceIp, IpClassType.IpBoth);
+            var intf = nm.GetBindInterface(sourceIp, out _);
 
             Assert.Equal(result, intf);
         }
@@ -674,8 +642,9 @@ namespace Jellyfin.Networking.Tests
             NetworkManager.MockNetworkSettings = interfaces;
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            var interfaceToUse = nm.GetBindInterface(string.Empty, out _);
-
+            // Work around for a bug in the compiler attempting to select the wrong method.
+            IPNetAddress? net = null;
+            var interfaceToUse = nm.GetBindInterface(net, out _);
             Assert.Equal(result, interfaceToUse);
         }
 
@@ -698,7 +667,8 @@ namespace Jellyfin.Networking.Tests
             NetworkManager.MockNetworkSettings = interfaces;
             using var nm = new NetworkManager(GetMockConfig(conf), new NullLogger<NetworkManager>());
 
-            var interfaceToUse = nm.GetBindInterface(source, out _);
+            _ = IPHost.TryParse(source, out IPHost? host, IpClassType.IpBoth);
+            var interfaceToUse = nm.GetBindInterface(host, out _);
 
             Assert.Equal(result, interfaceToUse);
         }

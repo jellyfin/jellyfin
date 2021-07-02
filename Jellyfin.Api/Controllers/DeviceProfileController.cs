@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Jellyfin.Api;
 using Jellyfin.Api.Constants;
-using Jellyfin.Profiles;
+using Jellyfin.DeviceProfiles;
 using MediaBrowser.Model.Dlna;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,13 +16,13 @@ namespace Jellyfin.Api
     [Authorize(Policy = Policies.RequiresElevation)]
     public class DeviceProfileController : BaseJellyfinApiController
     {
-        private readonly IProfileManager _profileManager;
+        private readonly IDeviceProfileManager _profileManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceProfileController"/> class.
         /// </summary>
-        /// <param name="profileManager">Instance of the <see cref="IProfileManager"/> interface.</param>
-        public DeviceProfileController(IProfileManager profileManager) => _profileManager = profileManager;
+        /// <param name="profileManager">Instance of the <see cref="IDeviceProfileManager"/> interface.</param>
+        public DeviceProfileController(IDeviceProfileManager profileManager) => _profileManager = profileManager;
 
         /// <summary>
         /// Gets the default profile.
@@ -74,7 +73,7 @@ namespace Jellyfin.Api
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceProfile> GetProfile([FromRoute, Required] Guid profileId)
         {
-            var profile = _profileManager.GetProfile(profileId, true);
+            var profile = _profileManager.GetProfile(profileId, false);
             if (profile == null)
             {
                 return NotFound();
