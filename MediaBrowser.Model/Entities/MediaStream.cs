@@ -471,62 +471,31 @@ namespace MediaBrowser.Model.Entities
 
         private string GetResolutionText()
         {
-            var i = this;
-
-            if (i.Width.HasValue && i.Height.HasValue)
+            if (!this.Width.HasValue || !this.Height.HasValue)
             {
-                var width = i.Width.Value;
-                var height = i.Height.Value;
-
-                if (width >= 3800 || height >= 2000)
-                {
-                    return "4K";
-                }
-
-                if (width >= 2500)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "1440i";
-                    }
-
-                    return "1440p";
-                }
-
-                if (width >= 1900 || height >= 1000)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "1080i";
-                    }
-
-                    return "1080p";
-                }
-
-                if (width >= 1260 || height >= 700)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "720i";
-                    }
-
-                    return "720p";
-                }
-
-                if (width >= 700 || height >= 440)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "480i";
-                    }
-
-                    return "480p";
-                }
-
-                return "SD";
+                return null;
             }
 
-            return null;
+            var width = this.Width.Value;
+            var height = this.Height.Value;
+
+            return width switch
+            {
+                <= 720 when height <= 480 => this.IsInterlaced ? "480i" : "480p",
+                // 720x576 (PAL) (768 when rescaled for square pixels)
+                <= 768 when height <= 576 => this.IsInterlaced ? "576i" : "576p",
+                // 960x540 (sometimes 544 which is multiple of 16)
+                <= 960 when height <= 544 => this.IsInterlaced ? "540i" : "540p",
+                // 1280x720
+                <= 1280 when height <= 962 => this.IsInterlaced ? "720i" : "720p",
+                // 1920x1080
+                <= 1920 when height <= 1440 => this.IsInterlaced ? "1080i" : "1080p",
+                // 4K
+                <= 4096 when height <= 3072 => "4K",
+                // 8K
+                <= 8192 when height <= 6144 => "8K",
+                _ => null
+            };
         }
 
         public static bool IsTextFormat(string format)
