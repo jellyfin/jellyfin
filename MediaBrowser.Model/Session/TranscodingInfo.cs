@@ -34,6 +34,8 @@ namespace MediaBrowser.Model.Session
 
         public int? AudioChannels { get; set; }
 
+        public bool IsHardwareEncode { get; set; }
+
         public TranscodeReason[] TranscodeReasons { get; set; }
     }
 }

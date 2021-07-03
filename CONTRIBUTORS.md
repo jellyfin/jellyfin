@@ -212,3 +212,4 @@
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
  - [olsh](https://github.com/olsh)
+ - [gnuyent](https://github.com/gnuyent)
