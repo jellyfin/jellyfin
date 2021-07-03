@@ -149,6 +149,9 @@ namespace Jellyfin.Drawing.Skia
 
             canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
 
+            paintColor.Dispose();
+            textPaint.Dispose();
+
             return bitmap;
         }
 
