@@ -21,7 +21,7 @@ namespace Jellyfin.Profiles.Tests
             pm.DeleteProfile(userProfile.Id);
 
             // profile should no longer exist.
-            Assert.True(pm.GetProfile(userProfile.Id, false) == null);
+            Assert.True(pm.GetProfile(userProfile.Id) == null);
         }
 
         [Fact]
@@ -55,25 +55,26 @@ namespace Jellyfin.Profiles.Tests
             }
 
             // profile should no longer exist.
-            Assert.True(pm.GetProfile(systemTemplate.Id, false) != null);
+            Assert.True(pm.GetProfile(systemTemplate.Id) != null);
         }
 
         [Fact]
         public void Update_UserTemplate()
         {
             var pm = ProfileTestingHelper.CreateProfileManager(true);
-            var userProfile = pm.Profiles.First();
+            var userProfile = pm.Profiles.First(p => !p.Id.Equals(Guid.Empty));
 
             // Simulate a name change.
             var updatedProfile = new DeviceProfile(userProfile);
             updatedProfile.Name = "I changed the name.";
+            updatedProfile.ProfileType = DeviceProfileType.Profile;
 
             Assert.True(userProfile.Id != updatedProfile.Id);
 
             // Update the profile.
-            pm.UpdateProfile(userProfile.Id, updatedProfile);
+            pm.UpdateProfile(userProfile.Id, updatedProfile, false);
 
-            var newProfile = pm.GetProfile(userProfile.Id, false);
+            var newProfile = pm.GetProfile(userProfile.Id);
             Assert.NotNull(newProfile);
 
             Assert.Equal("I changed the name.", newProfile!.Name);
@@ -97,9 +98,9 @@ namespace Jellyfin.Profiles.Tests
             Assert.True(systemTemplate.Id != updatedProfile.Id);
 
             // Update the profile.
-            pm.UpdateProfile(systemTemplate.Id, updatedProfile);
+            pm.UpdateProfile(systemTemplate.Id, updatedProfile, false);
 
-            systemTemplate = pm.GetProfile(systemTemplate.Id, false);
+            systemTemplate = pm.GetProfile(systemTemplate.Id);
             Assert.NotNull(systemTemplate);
 
             // Template should still exist.

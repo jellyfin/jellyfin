@@ -220,31 +220,9 @@ namespace Jellyfin.DeviceProfiles
         }
 
         /// <inheritdoc/>
-        public DeviceProfile? GetProfile(Guid id, bool noProfileRefresh)
+        public DeviceProfile? GetProfile(Guid id)
         {
-            var profile = Profiles.FirstOrDefault(i => i.Id.Equals(id));
-
-            if (profile == null || (profile.ProfileType != DeviceProfileType.UserTemplate) || noProfileRefresh)
-            {
-                return profile;
-            }
-
-            // When editing user profiles, they are re-read from disk.
-
-            // replace the memory based profile with the disk based one.
-            lock (_profiles)
-            {
-                var diskProfile = ParseProfileFile(profile.Path!, profile.ProfileType);
-                _profiles.Remove(profile);
-
-                if (diskProfile != null)
-                {
-                    // if it still exists, re-add the disk version.
-                    _profiles.Add(diskProfile);
-                }
-
-                return diskProfile;
-            }
+            return Profiles.FirstOrDefault(i => i.Id.Equals(id));
         }
 
         /// <inheritdoc/>
@@ -301,14 +279,14 @@ namespace Jellyfin.DeviceProfiles
         }
 
         /// <inheritdoc/>
-        public bool UpdateProfile(Guid profileId, DeviceProfile newProfile)
+        public bool UpdateProfile(Guid profileId, DeviceProfile newProfile, bool saveToDisk = false)
         {
             if (newProfile == null)
             {
                 throw new ArgumentNullException(nameof(newProfile));
             }
 
-            var currentProfile = GetProfile(profileId, true);
+            var currentProfile = GetProfile(profileId);
             if ((currentProfile == null) || (currentProfile.ProfileType == DeviceProfileType.Profile))
             {
                 // Can only update a template.
@@ -322,10 +300,9 @@ namespace Jellyfin.DeviceProfiles
 
             newProfile.ProfileType = DeviceProfileType.UserTemplate;
 
-            if (currentProfile.ProfileType != DeviceProfileType.UserTemplate)
+            if (currentProfile.ProfileType == DeviceProfileType.SystemTemplate)
             {
-                AddProfile(newProfile);
-                SaveProfileToDisk(newProfile);
+                AddProfile(newProfile, saveToDisk);
                 return true;
             }
 
@@ -346,7 +323,11 @@ namespace Jellyfin.DeviceProfiles
                 _profiles.Add(newProfile);
             }
 
-            SaveProfileToDisk(newProfile);
+            if (saveToDisk)
+            {
+                SaveProfileToDisk(newProfile);
+            }
+
             return true;
         }
 

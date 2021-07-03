@@ -40,8 +40,9 @@ namespace Jellyfin.DeviceProfiles
         /// </summary>
         /// <param name="profileId">The current <see cref="DeviceProfile"/> instance.</param>
         /// <param name="newProfile">The new <see cref="DeviceProfile"/> instance.</param>
+        /// <param name="saveToDisk">Optional: Saves the profile to disk.</param>
         /// <returns>Boolean value representing the success of the operation.</returns>
-        bool UpdateProfile(Guid profileId, DeviceProfile newProfile);
+        bool UpdateProfile(Guid profileId, DeviceProfile newProfile, bool saveToDisk = false);
 
         /// <summary>
         /// Deletes the profile with the id of <paramref name="id"/>.
@@ -54,9 +55,8 @@ namespace Jellyfin.DeviceProfiles
         /// Retrieves a profile with the id of <paramref name="id"/>.
         /// </summary>
         /// <param name="id">The profile identifier to locate.</param>
-        /// <param name="noProfileRefresh">The profile should not be refreshed from disk.</param>
         /// <returns>The <see cref="DeviceProfile"/>.</returns>
-        DeviceProfile? GetProfile(Guid id, bool noProfileRefresh);
+        DeviceProfile? GetProfile(Guid id);
 
         /// <summary>
         /// Retrieves an override profile based upon the information in <paramref name="deviceProfile"/>.

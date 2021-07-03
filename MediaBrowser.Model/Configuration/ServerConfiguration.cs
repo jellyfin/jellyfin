@@ -463,6 +463,6 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether unknown profiles should be created for devices that are unidentified. (Useful for device building).
         /// </summary>
-        public bool SaveUnknownDeviceProfilesToDisk { get; set; } = true;
+        public bool SaveUnknownDeviceProfilesToDisk { get; set; } = false;
     }
 }

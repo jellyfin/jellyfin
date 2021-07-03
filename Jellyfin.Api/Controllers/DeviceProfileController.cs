@@ -73,7 +73,7 @@ namespace Jellyfin.Api
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceProfile> GetProfile([FromRoute, Required] Guid profileId)
         {
-            var profile = _profileManager.GetProfile(profileId, false);
+            var profile = _profileManager.GetProfile(profileId);
             if (profile == null)
             {
                 return NotFound();
