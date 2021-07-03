@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Json.Converters;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 

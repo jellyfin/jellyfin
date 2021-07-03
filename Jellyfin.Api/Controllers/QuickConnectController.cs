@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -30,13 +31,12 @@ namespace Jellyfin.Api.Controllers
         /// Gets the current quick connect state.
         /// </summary>
         /// <response code="200">Quick connect state returned.</response>
-        /// <returns>The current <see cref="QuickConnectState"/>.</returns>
-        [HttpGet("Status")]
+        /// <returns>Whether Quick Connect is enabled on the server or not.</returns>
+        [HttpGet("Enabled")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QuickConnectState> GetStatus()
+        public ActionResult<bool> GetEnabled()
         {
-            _quickConnect.ExpireRequests();
-            return _quickConnect.State;
+            return _quickConnect.IsEnabled;
         }
 
         /// <summary>
@@ -49,7 +49,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QuickConnectResult> Initiate()
         {
-            return _quickConnect.TryConnect();
+            try
+            {
+                return _quickConnect.TryConnect();
+            }
+            catch (AuthenticationException)
+            {
+                return Unauthorized("Quick connect is disabled");
+            }
         }
 
         /// <summary>
@@ -72,42 +79,10 @@ namespace Jellyfin.Api.Controllers
             {
                 return NotFound("Unknown secret");
             }
-        }
-
-        /// <summary>
-        /// Temporarily activates quick connect for five minutes.
-        /// </summary>
-        /// <response code="204">Quick connect has been temporarily activated.</response>
-        /// <response code="403">Quick connect is unavailable on this server.</response>
-        /// <returns>An <see cref="NoContentResult"/> on success.</returns>
-        [HttpPost("Activate")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult Activate()
-        {
-            if (_quickConnect.State == QuickConnectState.Unavailable)
+            catch (AuthenticationException)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, "Quick connect is unavailable");
+                return Unauthorized("Quick connect is disabled");
             }
-
-            _quickConnect.Activate();
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Enables or disables quick connect.
-        /// </summary>
-        /// <param name="status">New <see cref="QuickConnectState"/>.</param>
-        /// <response code="204">Quick connect state set successfully.</response>
-        /// <returns>An <see cref="NoContentResult"/> on success.</returns>
-        [HttpPost("Available")]
-        [Authorize(Policy = Policies.RequiresElevation)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Available([FromQuery] QuickConnectState status = QuickConnectState.Available)
-        {
-            _quickConnect.SetState(status);
-            return NoContent();
         }
 
         /// <summary>
@@ -129,26 +104,14 @@ namespace Jellyfin.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, "Unknown user id");
             }
 
-            return _quickConnect.AuthorizeRequest(userId.Value, code);
-        }
-
-        /// <summary>
-        /// Deauthorize all quick connect devices for the current user.
-        /// </summary>
-        /// <response code="200">All quick connect devices were deleted.</response>
-        /// <returns>The number of devices that were deleted.</returns>
-        [HttpPost("Deauthorize")]
-        [Authorize(Policy = Policies.DefaultAuthorization)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<int> Deauthorize()
-        {
-            var userId = ClaimHelpers.GetUserId(Request.HttpContext.User);
-            if (!userId.HasValue)
+            try
             {
-                return 0;
+                return _quickConnect.AuthorizeRequest(userId.Value, code);
             }
-
-            return _quickConnect.DeleteAllDevices(userId.Value);
+            catch (AuthenticationException)
+            {
+                return Unauthorized("Quick connect is disabled");
+            }
         }
     }
 }

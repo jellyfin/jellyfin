@@ -1,5 +1,5 @@
 using System.Net.Mime;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api

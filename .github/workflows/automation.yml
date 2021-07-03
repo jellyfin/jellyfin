@@ -11,6 +11,7 @@ jobs:
   label:
     name: Labeling
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
     steps:
       - name: Apply label
         uses: eps1lon/actions-label-merge-conflict@v2.0.1
@@ -22,6 +23,7 @@ jobs:
   project:
     name: Project board
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
     steps:
       - name: Remove from 'Current Release' project
         uses: alex-page/github-project-automation-plus@v0.7.1
