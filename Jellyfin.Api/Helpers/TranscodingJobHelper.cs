@@ -444,6 +444,8 @@ namespace Jellyfin.Api.Helpers
             {
                 var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
+                var hardwareAccelerationType = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
+                hardwareAccelerationType = string.IsNullOrEmpty(hardwareAccelerationType) ? "none" : hardwareAccelerationType;
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {
@@ -458,7 +460,7 @@ namespace Jellyfin.Api.Helpers
                     AudioChannels = state.OutputAudioChannels,
                     IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
                     IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
-                    IsHardwareEncode = !string.IsNullOrEmpty(_serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType),
+                    HardwareAccelerationType = hardwareAccelerationType,
                     TranscodeReasons = state.TranscodeReasons
                 });
             }
