@@ -471,29 +471,26 @@ namespace MediaBrowser.Model.Entities
 
         private string GetResolutionText()
         {
-            if (!this.Width.HasValue || !this.Height.HasValue)
+            if (!Width.HasValue || !Height.HasValue)
             {
                 return null;
             }
 
-            var width = this.Width.Value;
-            var height = this.Height.Value;
-
-            return width switch
+            return Width switch
             {
-                <= 720 when height <= 480 => this.IsInterlaced ? "480i" : "480p",
+                <= 720 when Height <= 480 => IsInterlaced ? "480i" : "480p",
                 // 720x576 (PAL) (768 when rescaled for square pixels)
-                <= 768 when height <= 576 => this.IsInterlaced ? "576i" : "576p",
+                <= 768 when Height <= 576 => IsInterlaced ? "576i" : "576p",
                 // 960x540 (sometimes 544 which is multiple of 16)
-                <= 960 when height <= 544 => this.IsInterlaced ? "540i" : "540p",
+                <= 960 when Height <= 544 => IsInterlaced ? "540i" : "540p",
                 // 1280x720
-                <= 1280 when height <= 962 => this.IsInterlaced ? "720i" : "720p",
+                <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
                 // 1920x1080
-                <= 1920 when height <= 1440 => this.IsInterlaced ? "1080i" : "1080p",
+                <= 1920 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
                 // 4K
-                <= 4096 when height <= 3072 => "4K",
+                <= 4096 when Height <= 3072 => "4K",
                 // 8K
-                <= 8192 when height <= 6144 => "8K",
+                <= 8192 when Height <= 6144 => "8K",
                 _ => null
             };
         }
