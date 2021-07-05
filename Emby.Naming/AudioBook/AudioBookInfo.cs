@@ -15,7 +15,7 @@ namespace Emby.Naming.AudioBook
         /// <param name="files">List of files composing the actual audiobook.</param>
         /// <param name="extras">List of extra files.</param>
         /// <param name="alternateVersions">Alternative version of files.</param>
-        public AudioBookInfo(string name, int? year, List<AudioBookFileInfo> files, List<AudioBookFileInfo> extras, List<AudioBookFileInfo> alternateVersions)
+        public AudioBookInfo(string name, int? year, IReadOnlyList<AudioBookFileInfo> files, IReadOnlyList<AudioBookFileInfo> extras, IReadOnlyList<AudioBookFileInfo> alternateVersions)
         {
             Name = name;
             Year = year;
@@ -39,18 +39,18 @@ namespace Emby.Naming.AudioBook
         /// Gets or sets the files.
         /// </summary>
         /// <value>The files.</value>
-        public List<AudioBookFileInfo> Files { get; set; }
+        public IReadOnlyList<AudioBookFileInfo> Files { get; set; }
 
         /// <summary>
         /// Gets or sets the extras.
         /// </summary>
         /// <value>The extras.</value>
-        public List<AudioBookFileInfo> Extras { get; set; }
+        public IReadOnlyList<AudioBookFileInfo> Extras { get; set; }
 
         /// <summary>
         /// Gets or sets the alternate versions.
         /// </summary>
         /// <value>The alternate versions.</value>
-        public List<AudioBookFileInfo> AlternateVersions { get; set; }
+        public IReadOnlyList<AudioBookFileInfo> AlternateVersions { get; set; }
     }
 }
