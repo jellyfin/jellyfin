@@ -242,7 +242,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, cancellationToken);
+            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, cancellationToken).ConfigureAwait(false);
             if (group != null)
             {
                 var season = group.Groups.Find(s => s.Order == seasonNumber);
