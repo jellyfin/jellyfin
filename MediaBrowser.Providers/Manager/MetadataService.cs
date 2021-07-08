@@ -617,7 +617,7 @@ namespace MediaBrowser.Providers.Manager
             MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
-            List<IMetadataProvider> providers,
+            ICollection<IMetadataProvider> providers,
             ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {

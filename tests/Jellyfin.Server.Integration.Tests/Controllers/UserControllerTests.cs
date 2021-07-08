@@ -8,7 +8,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.UserDtos;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Model.Dto;
 using Xunit;
 using Xunit.Priority;

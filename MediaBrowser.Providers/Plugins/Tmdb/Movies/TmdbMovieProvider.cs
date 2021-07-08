@@ -154,7 +154,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
                 if (movieResultFromImdbId?.MovieResults.Count > 0)
                 {
-                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString();
+                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 

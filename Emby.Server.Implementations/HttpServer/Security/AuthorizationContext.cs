@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
