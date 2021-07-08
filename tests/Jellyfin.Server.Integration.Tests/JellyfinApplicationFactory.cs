@@ -44,10 +44,7 @@ namespace Jellyfin.Server.Integration.Tests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             // Specify the startup command line options
-            var commandLineOpts = new StartupOptions
-            {
-                NoWebClient = true
-            };
+            var commandLineOpts = new StartupOptions();
 
             // Use a temporary directory for the application paths
             var webHostPathRoot = Path.Combine(_testPathRoot, "test-host-" + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
