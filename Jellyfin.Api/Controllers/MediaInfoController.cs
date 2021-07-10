@@ -302,27 +302,12 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="size">The bitrate. Defaults to 102400.</param>
         /// <response code="200">Test buffer returned.</response>
-        /// <response code="400">Size has to be a numer between 0 and 10,000,000.</response>
         /// <returns>A <see cref="FileResult"/> with specified bitrate.</returns>
         [HttpGet("Playback/BitrateTest")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Produces(MediaTypeNames.Application.Octet)]
         [ProducesFile(MediaTypeNames.Application.Octet)]
-        public ActionResult GetBitrateTestBytes([FromQuery] int size = 102400)
+        public ActionResult GetBitrateTestBytes([FromQuery][Range(1, 100_000_000, ErrorMessage = "The requested size must be greater than or equal to {1} and less than or equal to {2}")] int size = 102400)
         {
-            const int MaxSize = 10_000_000;
-
-            if (size <= 0)
-            {
-                return BadRequest($"The requested size ({size}) is equal to or smaller than 0.");
-            }
-
-            if (size > MaxSize)
-            {
-                return BadRequest($"The requested size ({size}) is larger than the max allowed value ({MaxSize}).");
-            }
-
             byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
             try
             {
