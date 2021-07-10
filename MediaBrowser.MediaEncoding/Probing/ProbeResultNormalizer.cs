@@ -39,7 +39,16 @@ namespace MediaBrowser.MediaEncoding.Probing
             _localization = localization;
         }
 
-        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[] { "AC/DC" };
+        private IReadOnlyList<string> SplitWhitelist => _splitWhiteList ??= new string[]
+        {
+            "AC/DC",
+            "Au/Ra",
+            "이달의 소녀 1/3",
+            "LOONA 1/3",
+            "LOONA / yyxy",
+            "LOONA / ODD EYE CIRCLE",
+            "KD/A"
+        };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
         {
