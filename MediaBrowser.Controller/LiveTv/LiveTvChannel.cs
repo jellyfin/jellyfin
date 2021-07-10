@@ -82,7 +82,7 @@ namespace MediaBrowser.Controller.LiveTv
             return "TvChannel";
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        public IEnumerable<BaseItem> GetTaggedItems()
         {
             return new List<BaseItem>();
         }
