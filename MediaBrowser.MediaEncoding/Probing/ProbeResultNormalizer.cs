@@ -146,6 +146,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // Several different forms of retail/premiere date
             info.PremiereDate =
+                FFProbeHelpers.GetDictionaryDateTime(tags, "originaldate") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retaildate") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail date") ??
                 FFProbeHelpers.GetDictionaryDateTime(tags, "retail_date") ??

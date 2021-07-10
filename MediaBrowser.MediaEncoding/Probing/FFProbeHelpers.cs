@@ -93,9 +93,11 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            if (DateTime.TryParse(val, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AssumeUniversal, out var i))
+            DateTime date;
+            if (DateTime.TryParse(val, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AssumeUniversal, out date) ||
+                DateTime.TryParseExact(val, "yyyy", DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AssumeUniversal, out date))
             {
-                return i.ToUniversalTime();
+                return date.ToUniversalTime();
             }
 
             return null;
