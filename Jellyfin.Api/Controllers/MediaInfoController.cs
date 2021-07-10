@@ -306,7 +306,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Playback/BitrateTest")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile(MediaTypeNames.Application.Octet)]
-        public ActionResult GetBitrateTestBytes([FromQuery][Range(1, 100_000_000, ErrorMessage = "The requested size must be greater than 0 and less than 100,000,000")] int size = 102400)
+        public ActionResult GetBitrateTestBytes([FromQuery][Range(1, 100_000_000, ErrorMessage = "The requested size must be greater than or equal to {1} and less than or equal to {2}")] int size = 102400)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
             try
