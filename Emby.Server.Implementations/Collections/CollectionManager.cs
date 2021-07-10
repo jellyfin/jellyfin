@@ -164,7 +164,7 @@ namespace Emby.Server.Implementations.Collections
                     DateCreated = DateTime.UtcNow
                 };
 
-                parentFolder.AddChild(collection, CancellationToken.None);
+                parentFolder.AddChild(collection);
 
                 if (options.ItemIdList.Count > 0)
                 {

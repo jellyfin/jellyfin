@@ -1692,7 +1692,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             return 128000;
         }
 
-        public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions, bool isHls)
+        public string GetAudioFilterParam(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var channels = state.OutputAudioChannels;
 
@@ -3836,7 +3836,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture);
             }
 
-            args += GetAudioFilterParam(state, encodingOptions, false);
+            args += GetAudioFilterParam(state, encodingOptions);
 
             return args;
         }

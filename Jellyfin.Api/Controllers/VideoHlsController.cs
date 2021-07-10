@@ -485,7 +485,7 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return args;
         }
