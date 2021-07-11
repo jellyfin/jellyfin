@@ -8,41 +8,41 @@
         /// <summary>
         /// AMD AMF
         /// </summary>
-        AMF,
+        AMF = 0,
 
         /// <summary>
         /// Intel Quick Sync Video
         /// </summary>
-        QSV,
+        QSV = 1,
 
         /// <summary>
         /// NVIDIA NVENC
         /// </summary>
-        NVENC,
+        NVENC = 2,
 
         /// <summary>
         /// OpenMax OMX
         /// </summary>
-        OMX,
+        OMX = 3,
 
         /// <summary>
         /// Exynos V4L2 MFC
         /// </summary>
-        V4L2M2M,
+        V4L2M2M = 4,
 
         /// <summary>
         /// MediaCodec Android
         /// </summary>
-        MediaCodec,
+        MediaCodec = 5,
 
         /// <summary>
         /// Video Acceleration API (VAAPI)
         /// </summary>
-        VAAPI,
+        VAAPI = 6,
 
         /// <summary>
         /// Video ToolBox
         /// </summary>
-        VideoToolBox
+        VideoToolBox = 7
     }
 }
