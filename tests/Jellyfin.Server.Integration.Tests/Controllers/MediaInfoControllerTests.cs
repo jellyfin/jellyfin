@@ -26,6 +26,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Octet, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotNull(response.Content.Headers.ContentLength);
         }
 
         [Theory]
@@ -39,6 +40,8 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Application.Octet, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotNull(response.Content.Headers.ContentLength);
+            Assert.InRange(response.Content.Headers.ContentLength!.Value, size, long.MaxValue);
         }
 
         [Theory]
