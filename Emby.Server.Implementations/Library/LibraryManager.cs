@@ -2540,9 +2540,10 @@ namespace Emby.Server.Implementations.Library
             {
                 episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming);
                 // Resolve from parent folder if it's not the Season folder
-                if (episodeInfo == null && episode.Parent.GetType() == typeof(Folder))
+                var parent = episode.GetParent();
+                if (episodeInfo == null && parent.GetType() == typeof(Folder))
                 {
-                    episodeInfo = resolver.Resolve(episode.Parent.Path, true, null, null, isAbsoluteNaming);
+                    episodeInfo = resolver.Resolve(parent.Path, true, null, null, isAbsoluteNaming);
                     if (episodeInfo != null)
                     {
                         // add the container

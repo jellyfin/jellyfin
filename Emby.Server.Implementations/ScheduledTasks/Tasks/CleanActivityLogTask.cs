@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                 throw new Exception($"Activity Log Retention days must be at least 0. Currently: {retentionDays}");
             }
 
-            var startDate = DateTime.UtcNow.AddDays(retentionDays.Value * -1);
+            var startDate = DateTime.UtcNow.AddDays(-retentionDays.Value);
             return _activityManager.CleanAsync(startDate);
         }
 
