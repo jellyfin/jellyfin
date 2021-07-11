@@ -47,7 +47,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             "LOONA 1/3",
             "LOONA / yyxy",
             "LOONA / ODD EYE CIRCLE",
-            "KD/A"
+            "K/DA"
         };
 
         public MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType? videoType, bool isAudio, string path, MediaProtocol protocol)
