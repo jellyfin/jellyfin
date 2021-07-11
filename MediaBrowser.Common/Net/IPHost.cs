@@ -79,16 +79,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         public override byte PrefixLength
         {
-            get
-            {
-                return (byte)(ResolveHost() ? 128 : 32);
-            }
+            get => (byte)(ResolveHost() ? 128 : 32);
 
-            set
-            {
-                // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
-                // which is automatically determined by it's IP type. Anything else is meaningless.
-            }
+            // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
+            // which is automatically determined by it's IP type. Anything else is meaningless.
+            set => throw new NotImplementedException();
         }
 
         /// <summary>
