@@ -130,6 +130,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
+        [Obsolete("This should be handled by the package manager")]
         public bool HasUpdateAvailable { get; set; }
 
         public FFmpegLocation EncoderLocation { get; set; }
