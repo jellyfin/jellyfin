@@ -89,9 +89,9 @@ namespace Jellyfin.Server
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
             }
 
-            if (PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl);
+                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.TrimEnd('/'));
             }
 
             if (FFmpegPath != null)

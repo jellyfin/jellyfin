@@ -325,12 +325,6 @@ namespace Jellyfin.Networking.Manager
         }
 
         /// <inheritdoc/>
-        public string GetBindInterface(IPAddress source, out int? port)
-        {
-            return GetBindInterface(new IPNetAddress(source), out port);
-        }
-
-        /// <inheritdoc/>
         public string GetBindInterface(HttpRequest source, out int? port)
         {
             string result;

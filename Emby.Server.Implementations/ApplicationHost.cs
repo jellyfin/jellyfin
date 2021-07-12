@@ -232,7 +232,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the value of the PublishedServerUrl setting.
         /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey]?.Trim('/');
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -1135,64 +1135,39 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
+        public string GetSmartApiUrl(IPAddress ipAddress)
         {
-            // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
+                return PublishedServerUrl;
             }
 
-            string smart = NetManager.GetBindInterface(ipAddress, out port);
+            string smart = NetManager.GetBindInterface(new IPNetAddress(ipAddress), out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart.Trim('/');
+                return smart.TrimEnd('/');
             }
 
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(smart.TrimEnd('/'), null, port);
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(HttpRequest request, int? port = null)
+        public string GetSmartApiUrl(HttpRequest request)
         {
-            // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
+                return PublishedServerUrl;
             }
 
-            string smart = NetManager.GetBindInterface(request, out port);
+            string smart = NetManager.GetBindInterface(request, out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return smart.Trim('/');
+                return smart.TrimEnd('/');
             }
 
-            return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
-        }
-
-        /// <inheritdoc/>
-        public string GetSmartApiUrl(string hostname, int? port = null)
-        {
-            // Published server ends with a /
-            if (!string.IsNullOrEmpty(PublishedServerUrl))
-            {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
-            }
-
-            string smart = NetManager.GetBindInterface(hostname, out port);
-
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            return GetLocalApiUrl(smart.TrimEnd('/'), request.Scheme, port);
         }
 
         /// <inheritdoc/>
