@@ -103,7 +103,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
@@ -150,13 +149,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (OperatingSystem.Id == OperatingSystemId.Windows
-                    || OperatingSystem.Id == OperatingSystemId.Darwin)
-                {
-                    return true;
-                }
-
-                return false;
+                return OperatingSystem.IsWindows() || OperatingSystem.IsMacOS();
             }
         }
 
@@ -721,7 +714,7 @@ namespace Emby.Server.Implementations
 
             logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
+            logger.LogInformation("Operating system: {OS}", MediaBrowser.Common.System.OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -1098,8 +1091,8 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                OperatingSystem = OperatingSystem.Id.ToString(),
-                OperatingSystemDisplayName = OperatingSystem.Name,
+                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
+                OperatingSystemDisplayName = MediaBrowser.Common.System.OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
@@ -1124,7 +1117,7 @@ namespace Emby.Server.Implementations
                 Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
-                OperatingSystem = OperatingSystem.Id.ToString(),
+                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
                 StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
