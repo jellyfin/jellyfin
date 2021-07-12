@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Tevékenységnapló törlése",
     "Undefined": "Meghatározatlan",
     "Forced": "Kényszerített",
-    "Default": "Alapértelmezett"
+    "Default": "Alapértelmezett",
+    "TaskOptimizeDatabaseDescription": "Tömöríti az adatbázist és csonkolja a szabad helyet. A feladat futtatása a könyvtár beolvasása után, vagy egyéb, adatbázis-módosítást igénylő változtatások végrehajtása javíthatja a teljesítményt.",
+    "TaskOptimizeDatabase": "Adatbázis optimalizálása"
 }
