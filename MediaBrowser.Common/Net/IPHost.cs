@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -11,28 +12,28 @@ namespace MediaBrowser.Common.Net
     /// <summary>
     /// Object that holds a host name.
     /// </summary>
-    public class IPHost : IPObject
+    public class IPHost : IPNetAddress
     {
         /// <summary>
         /// Gets or sets timeout value before resolve required, in minutes.
         /// </summary>
-        public const int Timeout = 30;
+        private const int Timeout = 30;
 
-        /// <summary>
-        /// Represents an IPHost that has no value.
-        /// </summary>
-        public static readonly IPHost None = new IPHost(string.Empty, IPAddress.None);
+        private readonly string _hostName;
 
         /// <summary>
         /// Time when last resolved in ticks.
         /// </summary>
-        private DateTime? _lastResolved = null;
+        private DateTime? _lastResolved;
 
         /// <summary>
         /// Gets the IP Addresses, attempting to resolve the name, if there are none.
         /// </summary>
         private IPAddress[] _addresses;
 
+        private IpClassType _ipType = IpClassType.IpBoth;
+
+#pragma warning disable CS8618 // Reason: _hostName is set via HostName property.
         /// <summary>
         /// Initializes a new instance of the <see cref="IPHost"/> class.
         /// </summary>
@@ -42,6 +43,7 @@ namespace MediaBrowser.Common.Net
             HostName = name ?? throw new ArgumentNullException(nameof(name));
             _addresses = Array.Empty<IPAddress>();
             Resolved = false;
+            _lastResolved = null;
         }
 
         /// <summary>
@@ -52,42 +54,45 @@ namespace MediaBrowser.Common.Net
         private IPHost(string name, IPAddress address)
         {
             HostName = name ?? throw new ArgumentNullException(nameof(name));
-            _addresses = new IPAddress[] { address ?? throw new ArgumentNullException(nameof(address)) };
-            Resolved = !address.Equals(IPAddress.None);
+            Resolved = true;
+            _lastResolved = DateTime.UtcNow;
+            _addresses = new[] { address ?? throw new ArgumentNullException(nameof(address)) };
         }
+#pragma warning restore CS8618
 
         /// <summary>
-        /// Gets or sets the object's first IP address.
+        /// Gets the object's first IP address.
         /// </summary>
         public override IPAddress Address
         {
             get
             {
-                return ResolveHost() ? this[0] : IPAddress.None;
-            }
-
-            set
-            {
-                // Not implemented, as a host's address is determined by DNS.
-                throw new NotImplementedException("The address of a host is determined by DNS.");
+                return HasAddress ? this[0] : IPAddress.None;
             }
         }
 
         /// <summary>
-        /// Gets or sets the object's first IP's subnet prefix.
+        /// Gets the object's first IP's subnet prefix.
         /// The setter does nothing, but shouldn't raise an exception.
         /// </summary>
         public override byte PrefixLength
         {
             get
             {
-                return (byte)(ResolveHost() ? 128 : 32);
+                ResolveHost();
+                return Address.AddressFamily switch
+                {
+                    AddressFamily.InterNetwork => 32,
+                    AddressFamily.InterNetworkV6 => 128,
+                    _ => 255
+                };
             }
 
-            set
+            protected init
             {
                 // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
                 // which is automatically determined by it's IP type. Anything else is meaningless.
+                throw new NotImplementedException();
             }
         }
 
@@ -99,7 +104,18 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Gets the host name of this object.
         /// </summary>
-        public string HostName { get; }
+        public string HostName
+        {
+            get => _hostName;
+
+            init
+            {
+                char[] separators = { '/', '%' };
+                var i = value.IndexOfAny(separators);
+
+                _hostName = i != -1 ? value.Substring(0, i) : value;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this host has attempted to be resolved.
@@ -115,7 +131,7 @@ namespace MediaBrowser.Common.Net
             get
             {
                 ResolveHost();
-                return index >= 0 && index < _addresses.Length ? _addresses[index] : IPAddress.None;
+                return _addresses[index];
             }
         }
 
@@ -124,68 +140,74 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         /// <param name="host">Host name to parse.</param>
         /// <param name="hostObj">Object representing the string, if it has successfully been parsed.</param>
+        /// <param name="ipType"><see cref="IpClassType"/> to filter on.</param>
         /// <returns><c>true</c> if the parsing is successful, <c>false</c> if not.</returns>
-        public static bool TryParse(string host, out IPHost hostObj)
+        public static bool TryParse(string? host, [NotNullWhen(true)] out IPHost? hostObj, IpClassType ipType)
         {
             if (string.IsNullOrWhiteSpace(host))
             {
-                hostObj = IPHost.None;
+                hostObj = null;
                 return false;
             }
 
+            host = host.Trim();
+
             // See if it's an IPv6 with port address e.g. [::1] or [::1]:120.
-            int i = host.IndexOf(']', StringComparison.Ordinal);
-            if (i != -1)
+            if (host[0] == '[')
             {
-                return TryParse(host.Remove(i - 1).TrimStart(' ', '['), out hostObj);
+                int i = host.IndexOf(']', StringComparison.Ordinal);
+                if (i != -1)
+                {
+                    return TryParse(host.Remove(i)[1..], out hostObj, ipType);
+                }
+
+                hostObj = null;
+                return false;
             }
 
-            if (IPNetAddress.TryParse(host, out var netAddress))
-            {
-                // Host name is an ip address, so fake resolve.
-                hostObj = new IPHost(host, netAddress.Address);
-                return true;
-            }
-
-            // Is it a host, IPv4/6 with/out port?
             string[] hosts = host.Split(':');
 
             if (hosts.Length <= 2)
             {
-                // This is either a hostname: port, or an IP4:port.
-                host = hosts[0];
+                // Use regular expression as CheckHostName isn't RFC5892 compliant.
+                // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
+                string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)(:(\d){1,5}){0,1}$";
 
-                if (string.Equals("localhost", host, StringComparison.OrdinalIgnoreCase))
+                // Is hostname or hostname:port
+                if (Regex.IsMatch(hosts[0], pattern))
                 {
-                    hostObj = new IPHost(host);
+                    hostObj = new IPHost(hosts[0])
+                    {
+                        _ipType = ipType
+                    };
                     return true;
                 }
 
-                if (IPAddress.TryParse(host, out var netIP))
+                // Is an IP4 or IP4:port
+                host = hosts[0].Split(':')[0];
+
+                if (IPAddress.TryParse(host, out var netAddress))
                 {
-                    // Host name is an ip address, so fake resolve.
-                    hostObj = new IPHost(host, netIP);
+                    if (((netAddress.AddressFamily == AddressFamily.InterNetwork) && ipType == IpClassType.Ip6Only) ||
+                        ((netAddress.AddressFamily == AddressFamily.InterNetworkV6) && ipType == IpClassType.Ip4Only))
+                    {
+                        hostObj = null;
+                        return false;
+                    }
+
+                    // Host name is an ip4 address, so fake resolve.
+                    hostObj = new IPHost(host, netAddress);
                     return true;
                 }
             }
-            else
+            else if (hosts.Length <= 9 && IPNetAddress.TryParse(host, out var netAddress, ipType)) // 8 octets + port
             {
-                // Invalid host name, as it cannot contain :
-                hostObj = new IPHost(string.Empty, IPAddress.None);
-                return false;
-            }
-
-            // Use regular expression as CheckHostName isn't RFC5892 compliant.
-            // Modified from gSkinner's expression at https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation
-            string pattern = @"(?im)^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){0,127}(?![0-9]*$)[a-z0-9-]+\.?)$";
-
-            if (Regex.IsMatch(host, pattern))
-            {
-                hostObj = new IPHost(host);
+                // Host name is an ip6 address, so fake resolve.
+                hostObj = new (host, netAddress.Address);
                 return true;
             }
 
-            hostObj = IPHost.None;
+            hostObj = null;
             return false;
         }
 
@@ -193,36 +215,12 @@ namespace MediaBrowser.Common.Net
         /// Attempts to parse the host string.
         /// </summary>
         /// <param name="host">Host name to parse.</param>
+        /// <param name="type">A <see cref="IpClassType"/> to filter on.</param>
         /// <returns>Object representing the string, if it has successfully been parsed.</returns>
-        public static IPHost Parse(string host)
+        public static new IPHost Parse(string? host, IpClassType type = IpClassType.IpBoth)
         {
-            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost res))
+            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost? res, type))
             {
-                return res;
-            }
-
-            throw new InvalidCastException("Host does not contain a valid value. {host}");
-        }
-
-        /// <summary>
-        /// Attempts to parse the host string, ensuring that it resolves only to a specific IP type.
-        /// </summary>
-        /// <param name="host">Host name to parse.</param>
-        /// <param name="family">Addressfamily filter.</param>
-        /// <returns>Object representing the string, if it has successfully been parsed.</returns>
-        public static IPHost Parse(string host, AddressFamily family)
-        {
-            if (!string.IsNullOrEmpty(host) && IPHost.TryParse(host, out IPHost res))
-            {
-                if (family == AddressFamily.InterNetwork)
-                {
-                    res.Remove(AddressFamily.InterNetworkV6);
-                }
-                else
-                {
-                    res.Remove(AddressFamily.InterNetwork);
-                }
-
                 return res;
             }
 
@@ -242,19 +240,16 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         public override bool Contains(IPAddress address)
         {
-            if (address != null && !Address.Equals(IPAddress.None))
+            if (address.IsIPv4MappedToIPv6)
             {
-                if (address.IsIPv4MappedToIPv6)
-                {
-                    address = address.MapToIPv4();
-                }
+                address = address.MapToIPv4();
+            }
 
-                foreach (var addr in GetAddresses())
+            foreach (var addr in GetAddresses())
+            {
+                if (address.Equals(addr))
                 {
-                    if (address.Equals(addr))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -262,7 +257,7 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <inheritdoc/>
-        public override bool Equals(IPObject? other)
+        public override bool Equals(IPNetAddress other)
         {
             if (other is IPHost otherObj)
             {
@@ -294,59 +289,28 @@ namespace MediaBrowser.Common.Net
         }
 
         /// <inheritdoc/>
-        public override bool IsIP6()
-        {
-            // Returns true if interfaces are only IP6.
-            if (ResolveHost())
-            {
-                foreach (IPAddress i in _addresses)
-                {
-                    if (i.AddressFamily != AddressFamily.InterNetworkV6)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc/>
         public override string ToString()
         {
             // StringBuilder not optimum here.
-            string output = string.Empty;
-            if (_addresses.Length > 0)
+            if (GetAddresses().Length > 0)
             {
-                bool moreThanOne = _addresses.Length > 1;
-                if (moreThanOne)
-                {
-                    output = "[";
-                }
-
+                string output = HostName + " [";
                 foreach (var i in _addresses)
                 {
-                    if (Address.Equals(IPAddress.None) && Address.AddressFamily == AddressFamily.Unspecified)
+                    if (i.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        output += HostName + ",";
+                        if (i.Equals(IPAddress.Any))
+                        {
+                            output += "Any IP4 Address,";
+                        }
+                        else
+                        {
+                            output += $"{i}/32,";
+                        }
                     }
-                    else if (i.Equals(IPAddress.Any))
-                    {
-                        output += "Any IP4 Address,";
-                    }
-                    else if (Address.Equals(IPAddress.IPv6Any))
+                    else if (i.Equals(IPAddress.IPv6Any))
                     {
                         output += "Any IP6 Address,";
-                    }
-                    else if (i.Equals(IPAddress.Broadcast))
-                    {
-                        output += "Any Address,";
-                    }
-                    else if (i.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        output += $"{i}/32,";
                     }
                     else
                     {
@@ -354,42 +318,17 @@ namespace MediaBrowser.Common.Net
                     }
                 }
 
-                output = output[0..^1];
-
-                if (moreThanOne)
-                {
-                    output += "]";
-                }
-            }
-            else
-            {
-                output = HostName;
+                return output[..^1] + ']';
             }
 
-            return output;
+            return string.IsNullOrEmpty(HostName) ? "None" : HostName;
         }
 
         /// <inheritdoc/>
-        public override void Remove(AddressFamily family)
+        public override bool Contains(IPNetAddress ip)
         {
-            if (ResolveHost())
-            {
-                _addresses = _addresses.Where(p => p.AddressFamily != family).ToArray();
-            }
-        }
-
-        /// <inheritdoc/>
-        public override bool Contains(IPObject address)
-        {
-            // An IPHost cannot contain another IPObject, it can only be equal.
-            return Equals(address);
-        }
-
-        /// <inheritdoc/>
-        protected override IPObject CalculateNetworkAddress()
-        {
-            var (address, prefixLength) = NetworkAddressOf(this[0], PrefixLength);
-            return new IPNetAddress(address, prefixLength);
+            // An IPHost cannot contain another IPNetAddress, it can only be equal.
+            return Equals(ip);
         }
 
         /// <summary>
@@ -405,8 +344,18 @@ namespace MediaBrowser.Common.Net
             if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
             {
                 _lastResolved = DateTime.UtcNow;
-                ResolveHostInternal().GetAwaiter().GetResult();
-                Resolved = true;
+                if (ResolveHostInternal().GetAwaiter().GetResult())
+                {
+                    Resolved = true;
+                    if (_ipType == IpClassType.Ip4Only)
+                    {
+                        _addresses = _addresses.Where(p => p.AddressFamily == AddressFamily.InterNetwork).ToArray();
+                    }
+                    else if (_ipType == IpClassType.Ip6Only)
+                    {
+                        _addresses = _addresses.Where(p => p.AddressFamily == AddressFamily.InterNetworkV6).ToArray();
+                    }
+                }
             }
 
             return _addresses.Length > 0;
@@ -416,15 +365,15 @@ namespace MediaBrowser.Common.Net
         /// Task that looks up a Host name and returns its IP addresses.
         /// </summary>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private async Task ResolveHostInternal()
+        private async Task<bool> ResolveHostInternal()
         {
             if (!string.IsNullOrEmpty(HostName))
             {
                 // Resolves the host name - so save a DNS lookup.
                 if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
-                    return;
+                    _addresses = new[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
+                    return true;
                 }
 
                 if (Uri.CheckHostName(HostName).Equals(UriHostNameType.Dns))
@@ -433,6 +382,7 @@ namespace MediaBrowser.Common.Net
                     {
                         IPHostEntry ip = await Dns.GetHostEntryAsync(HostName).ConfigureAwait(false);
                         _addresses = ip.AddressList;
+                        return true;
                     }
                     catch (SocketException ex)
                     {
@@ -441,6 +391,8 @@ namespace MediaBrowser.Common.Net
                     }
                 }
             }
+
+            return false;
         }
     }
 }

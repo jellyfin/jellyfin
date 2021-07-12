@@ -17,7 +17,6 @@ using Jellyfin.Api.Models.StreamingDtos;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -45,7 +44,6 @@ namespace Jellyfin.Api.Controllers
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IDlnaManager _dlnaManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -63,7 +61,6 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
@@ -77,7 +74,6 @@ namespace Jellyfin.Api.Controllers
         public DynamicHlsController(
             ILibraryManager libraryManager,
             IUserManager userManager,
-            IDlnaManager dlnaManager,
             IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
@@ -91,7 +87,6 @@ namespace Jellyfin.Api.Controllers
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
-            _dlnaManager = dlnaManager;
             _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
@@ -1120,7 +1115,6 @@ namespace Jellyfin.Api.Controllers
                     _serverConfigurationManager,
                     _mediaEncoder,
                     _encodingHelper,
-                    _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,
@@ -1204,7 +1198,6 @@ namespace Jellyfin.Api.Controllers
                     _serverConfigurationManager,
                     _mediaEncoder,
                     _encodingHelper,
-                    _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,

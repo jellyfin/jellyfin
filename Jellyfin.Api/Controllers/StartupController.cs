@@ -92,7 +92,6 @@ namespace Jellyfin.Api.Controllers
         {
             NetworkConfiguration settings = _config.GetNetworkConfiguration();
             settings.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
-            settings.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
             _config.SaveConfiguration("network", settings);
             return NoContent();
         }

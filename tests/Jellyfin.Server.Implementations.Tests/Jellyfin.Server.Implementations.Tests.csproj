@@ -43,6 +43,7 @@
     <ProjectReference Include="..\..\Emby.Server.Implementations\Emby.Server.Implementations.csproj" />
     <ProjectReference Include="..\..\Jellyfin.Server.Implementations\Jellyfin.Server.Implementations.csproj" />
     <ProjectReference Include="..\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj" />
+    <ProjectReference Include="..\Jellyfin.Profiles.Tests\Jellyfin.Profiles.Tests.csproj" />
   </ItemGroup>
 
 </Project>

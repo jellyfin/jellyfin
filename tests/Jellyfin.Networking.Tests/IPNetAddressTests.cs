@@ -23,15 +23,15 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.2/255.255.255.0")]
         [InlineData("192.168.1.2/24")]
         public static void TryParse_ValidIPStrings_True(string address)
-            => Assert.True(IPNetAddress.TryParse(address, out _));
+            => Assert.True(IPNetAddress.TryParse(address, out _, IpClassType.IpBoth));
 
         [Property]
         public static Property TryParse_IPv4Address_True(IPv4Address address)
-            => IPNetAddress.TryParse(address.Item.ToString(), out _).ToProperty();
+            => IPNetAddress.TryParse(address.Item.ToString(), out _, IpClassType.Ip4Only).ToProperty();
 
         [Property]
         public static Property TryParse_IPv6Address_True(IPv6Address address)
-            => IPNetAddress.TryParse(address.Item.ToString(), out _).ToProperty();
+            => IPNetAddress.TryParse(address.Item.ToString(), out _, IpClassType.Ip6Only).ToProperty();
 
         /// <summary>
         /// All should be invalid address strings.
@@ -44,6 +44,6 @@ namespace Jellyfin.Networking.Tests
         [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
         [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
         public static void TryParse_InvalidAddressString_False(string address)
-            => Assert.False(IPNetAddress.TryParse(address, out _));
+            => Assert.False(IPNetAddress.TryParse(address, out _, IpClassType.IpBoth));
     }
 }

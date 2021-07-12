@@ -11,7 +11,10 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Udp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -25,10 +28,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     public class HdHomerunUdpStream : LiveStream, IDirectStreamProvider
     {
         private const int RtpHeaderBytes = 12;
-
+        private readonly NetworkConfiguration _config;
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
+        private readonly INetworkManager _networkManager;
 
         public HdHomerunUdpStream(
             MediaSourceInfo mediaSource,
@@ -40,34 +44,17 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
+            INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
+            _config = configurationManager.GetNetworkConfiguration();
             _appHost = appHost;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
             EnableStreamSharing = true;
-        }
-
-        /// <summary>
-        /// Returns an unused UDP port number in the range specified.
-        /// Temporarily placed here until future network PR merged.
-        /// </summary>
-        /// <param name="range">Upper and Lower boundary of ports to select.</param>
-        /// <returns>System.Int32.</returns>
-        private static int GetUdpPortFromRange((int Min, int Max) range)
-        {
-            var properties = IPGlobalProperties.GetIPGlobalProperties();
-
-            // Get active udp listeners.
-            var udpListenerPorts = properties.GetActiveUdpListeners()
-                        .Where(n => n.Port >= range.Min && n.Port <= range.Max)
-                        .Select(n => n.Port);
-
-            return Enumerable
-                .Range(range.Min, range.Max)
-                .FirstOrDefault(i => !udpListenerPorts.Contains(i));
+            _networkManager = networkManager;
         }
 
         public override async Task Open(CancellationToken openCancellationToken)
@@ -77,20 +64,23 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             var mediaSource = OriginalMediaSource;
 
             var uri = new Uri(mediaSource.Path);
-            // Temporary code to reduce PR size. This will be updated by a future network pr.
-            var localPort = GetUdpPortFromRange((49152, 65535));
+            var localPort = UdpHelper.GetPort(_config.HDHomerunPortRange);
+            Logger.LogDebug("Using udp port {Port}", localPort);
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
             Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
 
-            var remoteAddress = IPAddress.Parse(uri.Host);
+            var remote = IPHost.Parse(uri.Host, _config.HDHomeRunIP6 ? IpClassType.Ip6Only : IpClassType.Ip4Only);
+
+            Logger.LogDebug("Parsed host from {Host} as {Remote}", uri.Host, remote);
+
             IPAddress localAddress = null;
             using (var tcpClient = new TcpClient())
             {
                 try
                 {
-                    await tcpClient.ConnectAsync(remoteAddress, HdHomerunManager.HdHomeRunPort, openCancellationToken).ConfigureAwait(false);
+                    await tcpClient.ConnectAsync(remote.Address, _config.HDHomeRunPort, openCancellationToken).ConfigureAwait(false);
                     localAddress = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Address;
                     tcpClient.Close();
                 }
@@ -101,18 +91,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (localAddress.IsIPv4MappedToIPv6) {
-                localAddress = localAddress.MapToIPv4();
-            }
-
-            var udpClient = new UdpClient(localPort, AddressFamily.InterNetwork);
-            var hdHomerunManager = new HdHomerunManager();
+            var udpClient = new UdpClient(localPort, _networkManager.IpClassType == IpClassType.Ip4Only ? AddressFamily.InterNetwork : AddressFamily.InterNetworkV6);
+            var hdHomerunManager = new HdHomerunManager(_config.HDHomeRunPort);
 
             try
             {
+                Logger.LogDebug("Starting streaming to {0}/{1} -> {1}", localAddress, localPort, remote.Address);
                 // send url to start streaming
                 await hdHomerunManager.StartStreaming(
-                    remoteAddress,
+                    remote.Address,
                     localAddress,
                     localPort,
                     _channelCommands,
@@ -138,7 +125,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _ = StartStreaming(
                 udpClient,
                 hdHomerunManager,
-                remoteAddress,
+                remote.Address,
                 taskCompletionSource,
                 LiveStreamCancellationTokenSource.Token);
 
@@ -146,7 +133,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetUrlForUseByHttpApi() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;

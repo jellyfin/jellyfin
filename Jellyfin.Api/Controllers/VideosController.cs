@@ -12,11 +12,11 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.StreamingDtos;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -44,7 +44,6 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDtoService _dtoService;
-        private readonly IDlnaManager _dlnaManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -62,7 +61,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
@@ -75,7 +73,6 @@ namespace Jellyfin.Api.Controllers
             ILibraryManager libraryManager,
             IUserManager userManager,
             IDtoService dtoService,
-            IDlnaManager dlnaManager,
             IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
@@ -88,7 +85,6 @@ namespace Jellyfin.Api.Controllers
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dtoService = dtoService;
-            _dlnaManager = dlnaManager;
             _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
@@ -317,6 +313,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
+        /// <param name="ext">Optional. The stream's original extension.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("{itemId}/stream")]
@@ -374,7 +371,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
-            [FromQuery] Dictionary<string, string> streamOptions)
+            [FromQuery] Dictionary<string, string> streamOptions,
+            [FromQuery] string? ext)
         {
             var isHeadRequest = Request.Method == System.Net.WebRequestMethods.Http.Head;
             // CTS lifecycle is managed internally.
@@ -431,7 +429,8 @@ namespace Jellyfin.Api.Controllers
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
                 Context = context ?? EncodingContext.Streaming,
-                StreamOptions = streamOptions
+                StreamOptions = streamOptions,
+                OriginalExtension = ext
             };
 
             using var state = await StreamingHelpers.GetStreamingState(
@@ -444,7 +443,6 @@ namespace Jellyfin.Api.Controllers
                     _serverConfigurationManager,
                     _mediaEncoder,
                     _encodingHelper,
-                    _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
                     _transcodingJobType,
@@ -453,7 +451,16 @@ namespace Jellyfin.Api.Controllers
 
             if (@static.HasValue && @static.Value && state.DirectStreamProvider != null)
             {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
+                StreamingHelpers.StreamEvent?.Invoke(this, new StreamEventArgs()
+                {
+                    Type = StreamEventType.OnStreamStart,
+                    State = state,
+                    ResponseHeaders = Response.Headers,
+                    IsStaticallyStreamed = true,
+                    StartTimeTicks = startTimeTicks,
+                    Request = Request,
+                    StreamingRequest = streamingRequest
+                });
 
                 await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
                     {
@@ -468,7 +475,16 @@ namespace Jellyfin.Api.Controllers
             // Static remote stream
             if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
             {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
+                StreamingHelpers.StreamEvent?.Invoke(this, new StreamEventArgs()
+                {
+                    Type = StreamEventType.OnStreamStart,
+                    State = state,
+                    ResponseHeaders = Response.Headers,
+                    IsStaticallyStreamed = true,
+                    StartTimeTicks = startTimeTicks,
+                    Request = Request,
+                    StreamingRequest = streamingRequest,
+                });
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
                 return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, HttpContext).ConfigureAwait(false);
@@ -485,7 +501,16 @@ namespace Jellyfin.Api.Controllers
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
             var isTranscodeCached = outputPathExists && transcodingJob != null;
 
-            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, startTimeTicks, Request, _dlnaManager);
+            StreamingHelpers.StreamEvent?.Invoke(this, new StreamEventArgs()
+            {
+                Type = StreamEventType.OnStreamStart,
+                State = state,
+                ResponseHeaders = Response.Headers,
+                IsStaticallyStreamed = (@static.HasValue && @static.Value) || isTranscodeCached,
+                StartTimeTicks = startTimeTicks,
+                Request = Request,
+                StreamingRequest = streamingRequest
+            });
 
             // Static stream
             if (@static.HasValue && @static.Value)
@@ -577,6 +602,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
         /// <param name="streamOptions">Optional. The streaming options.</param>
+        /// <param name="ext">Optional. The stream's original extension.</param>
         /// <response code="200">Video stream returned.</response>
         /// <returns>A <see cref="FileResult"/> containing the audio file.</returns>
         [HttpGet("{itemId}/stream.{container}")]
@@ -634,7 +660,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
             [FromQuery] EncodingContext? context,
-            [FromQuery] Dictionary<string, string> streamOptions)
+            [FromQuery] Dictionary<string, string> streamOptions,
+            [FromQuery] string? ext)
         {
             return GetVideoStream(
                 itemId,
@@ -687,7 +714,8 @@ namespace Jellyfin.Api.Controllers
                 audioStreamIndex,
                 videoStreamIndex,
                 context,
-                streamOptions);
+                streamOptions,
+                ext);
         }
     }
 }

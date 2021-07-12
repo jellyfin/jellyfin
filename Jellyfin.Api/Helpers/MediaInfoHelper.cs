@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -348,9 +348,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         streamInfo.PlaySessionId = playSessionId;
                         streamInfo.StartPositionTicks = startTimeTicks;
-                        mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
-                        mediaSource.TranscodingUrl += "&allowVideoStreamCopy=false";
-                        mediaSource.TranscodingUrl += "&allowAudioStreamCopy=false";
+                        mediaSource.TranscodingUrl = streamInfo.ToUrl(null, auth.Token, "&allowVideoStreamCopy=false&allowAudioStreamCopy=false");
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
 
@@ -368,7 +366,7 @@ namespace Jellyfin.Api.Helpers
                         if (streamInfo.PlayMethod == PlayMethod.Transcode)
                         {
                             streamInfo.StartPositionTicks = startTimeTicks;
-                            mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+                            mediaSource.TranscodingUrl = streamInfo.ToUrl(null, auth.Token);
 
                             if (!allowVideoStreamCopy)
                             {
@@ -526,7 +524,7 @@ namespace Jellyfin.Api.Helpers
         /// <param name="mediaSource">Media source.</param>
         /// <param name="profile">Device profile.</param>
         /// <param name="type">Dlna profile type.</param>
-        public void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile profile, DlnaProfileType type)
+        public void NormalizeMediaSourceContainer(MediaSourceInfo mediaSource, DeviceProfile? profile, DlnaProfileType type)
         {
             mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(mediaSource.Container, profile, type);
         }

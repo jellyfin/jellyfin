@@ -31,21 +31,9 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("mimeType")]
         public string MimeType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the container(s) which this profile will be applied to.
+        /// </summary>
         public ProfileCondition[] Conditions { get; set; }
-
-        public string[] GetContainers()
-        {
-            return ContainerProfile.SplitValue(Container);
-        }
-
-        public string[] GetAudioCodecs()
-        {
-            return ContainerProfile.SplitValue(AudioCodec);
-        }
-
-        public string[] GetVideoCodecs()
-        {
-            return ContainerProfile.SplitValue(VideoCodec);
-        }
     }
 }

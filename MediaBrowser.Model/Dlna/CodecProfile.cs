@@ -1,70 +1,72 @@
-#nullable disable
-#pragma warning disable CS1591
-
+#pragma warning disable CA1819 // Properties should not return arrays
 using System;
-using System.Linq;
 using System.Xml.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="CodecProfile"/>.
+    /// </summary>
     public class CodecProfile
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CodecProfile"/> class.
+        /// </summary>
         public CodecProfile()
         {
             Conditions = Array.Empty<ProfileCondition>();
             ApplyConditions = Array.Empty<ProfileCondition>();
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DlnaProfileType"/> which this container must meet.
+        /// </summary>
         [XmlAttribute("type")]
         public CodecType Type { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of <see cref="ProfileCondition"/> which this profile must meet.
+        /// </summary>
         public ProfileCondition[] Conditions { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of <see cref="ProfileCondition"/> to apply if this profile is met.
+        /// </summary>
         public ProfileCondition[] ApplyConditions { get; set; }
 
+        /// <summary>
+        /// Gets or sets the codec(s) that this profile applies to.
+        /// </summary>
         [XmlAttribute("codec")]
-        public string Codec { get; set; }
+        public string? Codec { get; set; }
 
+        /// <summary>
+        /// Gets or sets the container(s) which this profile will be applied to.
+        /// </summary>
         [XmlAttribute("container")]
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
-        public string[] GetCodecs()
+        /// <summary>
+        /// Checks to see whether the codecs and containers contain the given parameters.
+        /// </summary>
+        /// <param name="codec">The codec to match.</param>
+        /// <param name="container">The container to match.</param>
+        /// <returns>True if both conditions are met.</returns>
+        public bool ContainsAnyCodec(string? codec, string container)
         {
-            return ContainerProfile.SplitValue(Codec);
+            return Container.ContainsContainer(false, container) && Codec.ContainsContainer(false, codec);
         }
 
-        private bool ContainsContainer(string container)
+        /// <summary>
+        /// Checks to see whether the codecs and containers contain the given parameters.
+        /// </summary>
+        /// <param name="codec">The codec to match.</param>
+        /// <param name="container">The container to match.</param>
+        /// <returns>True if both conditions are met.</returns>
+        public bool ContainsAnyCodec(ReadOnlySpan<char> codec, string container)
         {
-            return ContainerProfile.ContainsContainer(Container, container);
-        }
-
-        public bool ContainsAnyCodec(string codec, string container)
-        {
-            return ContainsAnyCodec(ContainerProfile.SplitValue(codec), container);
-        }
-
-        public bool ContainsAnyCodec(string[] codec, string container)
-        {
-            if (!ContainsContainer(container))
-            {
-                return false;
-            }
-
-            var codecs = GetCodecs();
-            if (codecs.Length == 0)
-            {
-                return true;
-            }
-
-            foreach (var val in codec)
-            {
-                if (codecs.Contains(val, StringComparer.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return Container.ContainsContainer(false, container) && Codec.ContainsContainer(false, codec);
         }
     }
 }

@@ -1,9 +1,8 @@
 #nullable disable
 #pragma warning disable CS1591
 
-using System;
-using System.Linq;
 using System.Xml.Serialization;
+using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -24,11 +23,6 @@ namespace MediaBrowser.Model.Dlna
         [XmlAttribute("container")]
         public string Container { get; set; }
 
-        public string[] GetLanguages()
-        {
-            return ContainerProfile.SplitValue(Language);
-        }
-
         public bool SupportsLanguage(string subLanguage)
         {
             if (string.IsNullOrEmpty(Language))
@@ -41,8 +35,7 @@ namespace MediaBrowser.Model.Dlna
                 subLanguage = "und";
             }
 
-            var languages = GetLanguages();
-            return languages.Length == 0 || languages.Contains(subLanguage, StringComparer.OrdinalIgnoreCase);
+            return Language.ContainsContainer(subLanguage);
         }
     }
 }

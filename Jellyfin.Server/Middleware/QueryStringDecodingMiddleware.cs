@@ -1,6 +1,8 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Server.Middleware
 {
@@ -15,7 +17,8 @@ namespace Jellyfin.Server.Middleware
         /// Initializes a new instance of the <see cref="QueryStringDecodingMiddleware"/> class.
         /// </summary>
         /// <param name="next">The next delegate in the pipeline.</param>
-        public QueryStringDecodingMiddleware(RequestDelegate next)
+        public QueryStringDecodingMiddleware(
+            RequestDelegate next)
         {
             _next = next;
         }

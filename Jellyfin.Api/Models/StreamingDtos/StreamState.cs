@@ -30,11 +30,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         }
 
         /// <summary>
-        /// Gets or sets the requested url.
-        /// </summary>
-        public string? RequestedUrl { get; set; }
-
-        /// <summary>
         /// Gets or sets the request.
         /// </summary>
         public StreamingRequestDto Request
@@ -126,6 +121,11 @@ namespace Jellyfin.Api.Models.StreamingDtos
         }
 
         /// <summary>
+        /// Gets or sets the stream's extension.
+        /// </summary>
+        public string? Extension { get; set; }
+
+        /// <summary>
         /// Gets or sets the user agent.
         /// </summary>
         public string? UserAgent { get; set; }
@@ -139,11 +139,6 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// Gets or sets the transcode seek info.
         /// </summary>
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to enable dlna headers.
-        /// </summary>
-        public bool EnableDlnaHeaders { get; set; }
 
         /// <summary>
         /// Gets or sets the device profile.

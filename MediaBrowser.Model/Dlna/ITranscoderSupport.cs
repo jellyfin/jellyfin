@@ -1,8 +1,10 @@
-#nullable disable
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Dlna
 {
+    /// <summary>
+    /// Defines the <see cref="ITranscoderSupport"/> interface.
+    /// </summary>
     public interface ITranscoderSupport
     {
         bool CanEncodeToAudioCodec(string codec);
@@ -10,23 +12,5 @@ namespace MediaBrowser.Model.Dlna
         bool CanEncodeToSubtitleCodec(string codec);
 
         bool CanExtractSubtitles(string codec);
-    }
-
-    public class FullTranscoderSupport : ITranscoderSupport
-    {
-        public bool CanEncodeToAudioCodec(string codec)
-        {
-            return true;
-        }
-
-        public bool CanEncodeToSubtitleCodec(string codec)
-        {
-            return true;
-        }
-
-        public bool CanExtractSubtitles(string codec)
-        {
-            return true;
-        }
     }
 }

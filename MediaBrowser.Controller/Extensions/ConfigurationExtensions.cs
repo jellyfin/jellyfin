@@ -50,6 +50,11 @@ namespace MediaBrowser.Controller.Extensions
         public const string UnixSocketPathKey = "kestrel:socketPath";
 
         /// <summary>
+        /// The key for a setting that overrides the address used in responses.
+        /// </summary>
+        public const string AddressOverrideConfigKey = "PublishedServerUrl";
+
+        /// <summary>
         /// Gets a value indicating whether the application should host static web content from the <see cref="IConfiguration"/>.
         /// </summary>
         /// <param name="configuration">The configuration to retrieve the value from.</param>

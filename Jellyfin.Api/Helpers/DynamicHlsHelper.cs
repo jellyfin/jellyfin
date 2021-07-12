@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -12,7 +12,6 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
@@ -35,7 +34,6 @@ namespace Jellyfin.Api.Helpers
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly IDlnaManager _dlnaManager;
         private readonly IAuthorizationContext _authContext;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IServerConfigurationManager _serverConfigurationManager;
@@ -52,7 +50,6 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="dlnaManager">Instance of the <see cref="IDlnaManager"/> interface.</param>
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="mediaSourceManager">Instance of the <see cref="IMediaSourceManager"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
@@ -66,7 +63,6 @@ namespace Jellyfin.Api.Helpers
         public DynamicHlsHelper(
             ILibraryManager libraryManager,
             IUserManager userManager,
-            IDlnaManager dlnaManager,
             IAuthorizationContext authContext,
             IMediaSourceManager mediaSourceManager,
             IServerConfigurationManager serverConfigurationManager,
@@ -80,7 +76,6 @@ namespace Jellyfin.Api.Helpers
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
-            _dlnaManager = dlnaManager;
             _authContext = authContext;
             _mediaSourceManager = mediaSourceManager;
             _serverConfigurationManager = serverConfigurationManager;
@@ -138,7 +133,6 @@ namespace Jellyfin.Api.Helpers
                     _serverConfigurationManager,
                     _mediaEncoder,
                     _encodingHelper,
-                    _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
                     transcodingJobType,
@@ -185,7 +179,7 @@ namespace Jellyfin.Api.Helpers
                 .Where(i => i.IsTextSubtitleStream)
                 .ToList();
 
-            var subtitleGroup = subtitleStreams.Count > 0 && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Hls || state.VideoRequest!.EnableSubtitlesInManifest)
+            var subtitleGroup = (subtitleStreams.Count > 0) && (state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Hls || state.VideoRequest!.EnableSubtitlesInManifest)
                 ? "subs"
                 : null;
 

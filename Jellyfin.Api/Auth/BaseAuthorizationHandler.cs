@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
@@ -35,6 +35,16 @@ namespace Jellyfin.Api.Auth
             _networkManager = networkManager;
             _httpContextAccessor = httpContextAccessor;
         }
+
+        /// <summary>
+        /// Gets a value indicating <see cref="INetworkManager"/> being used.
+        /// </summary>
+        protected INetworkManager NetworkManager => _networkManager;
+
+        /// <summary>
+        /// Gets a value indicating the <see cref="HttpContextAccessor"/> being used.
+        /// </summary>
+        protected IHttpContextAccessor HttpContextAccessor => _httpContextAccessor;
 
         /// <summary>
         /// Validate authenticated claims.

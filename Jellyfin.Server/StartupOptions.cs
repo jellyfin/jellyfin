@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.Udp;
 using MediaBrowser.Controller.Extensions;
 
 namespace Jellyfin.Server
@@ -89,9 +88,9 @@ namespace Jellyfin.Server
                 config.Add(ConfigurationExtensions.HostWebClientKey, bool.FalseString);
             }
 
-            if (PublishedServerUrl != null)
+            if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl);
+                config.Add(ConfigurationExtensions.AddressOverrideConfigKey, PublishedServerUrl.TrimEnd('/'));
             }
 
             if (FFmpegPath != null)

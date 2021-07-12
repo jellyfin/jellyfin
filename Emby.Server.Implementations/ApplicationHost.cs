@@ -14,9 +14,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Dlna;
-using Emby.Dlna.Main;
-using Emby.Dlna.Ssdp;
 using Emby.Drawing;
 using Emby.Notifications;
 using Emby.Photos;
@@ -33,7 +30,6 @@ using Emby.Server.Implementations.IO;
 using Emby.Server.Implementations.Library;
 using Emby.Server.Implementations.LiveTv;
 using Emby.Server.Implementations.Localization;
-using Emby.Server.Implementations.Net;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
@@ -43,9 +39,10 @@ using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
 using Emby.Server.Implementations.TV;
-using Emby.Server.Implementations.Udp;
 using Emby.Server.Implementations.Updates;
 using Jellyfin.Api.Helpers;
+using Jellyfin.DeviceProfiles;
+using Jellyfin.Networking.AutoDiscovery;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using MediaBrowser.Common;
@@ -60,7 +57,6 @@ using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -84,11 +80,9 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.Model.Cryptography;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -113,6 +107,11 @@ namespace Emby.Server.Implementations
     /// </summary>
     public abstract class ApplicationHost : IServerApplicationHost, IDisposable
     {
+        /// <summary>
+        /// Address Override Configuration Key.
+        /// </summary>
+        private const string AddressOverrideConfigKey = "PublishedServerUrl";
+
         /// <summary>
         /// The environment variable prefixes to log at server startup.
         /// </summary>
@@ -232,7 +231,13 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the value of the PublishedServerUrl setting.
         /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[AddressOverrideConfigKey]?.Trim('/');
+
+        /// <summary>
+        /// Gets the server configuration manager.
+        /// </summary>
+        /// <value>The server configuration manager.</value>
+        public IServerConfigurationManager ServerConfigurationManager => (IServerConfigurationManager)ConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -574,6 +579,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<TmdbClientManager>();
 
             ServiceCollection.AddSingleton(NetManager);
+            ServiceCollection.AddSingleton<ZeroConf>();
 
             ServiceCollection.AddSingleton<ITaskManager, TaskManager>();
 
@@ -583,15 +589,12 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
 
-            ServiceCollection.AddSingleton<ISocketFactory, SocketFactory>();
-
             ServiceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
             ServiceCollection.AddSingleton<IZipClient, ZipClient>();
 
             ServiceCollection.AddSingleton<IServerApplicationHost>(this);
             ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
-
             ServiceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
             ServiceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
@@ -640,8 +643,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            ServiceCollection.AddSingleton<IDlnaManager, DlnaManager>();
-
             ServiceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
             ServiceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
@@ -654,8 +655,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
             ServiceCollection.AddSingleton<INotificationManager, NotificationManager>();
-
-            ServiceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
             ServiceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
@@ -677,6 +676,7 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddScoped<DynamicHlsHelper>();
 
             ServiceCollection.AddSingleton<IDirectoryService, DirectoryService>();
+            ServiceCollection.AddSingleton<IDeviceProfileManager, DeviceProfileManager>();
         }
 
         /// <summary>
@@ -1054,9 +1054,6 @@ namespace Emby.Server.Implementations
             // MediaEncoding
             yield return typeof(MediaBrowser.MediaEncoding.Encoder.MediaEncoder).Assembly;
 
-            // Dlna
-            yield return typeof(DlnaEntryPoint).Assembly;
-
             // Local metadata
             yield return typeof(BoxSetXmlSaver).Assembly;
 
@@ -1082,7 +1079,7 @@ namespace Emby.Server.Implementations
         /// </summary>
         /// <param name="source">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(HttpRequest source)
         {
             return new SystemInfo
             {
@@ -1117,7 +1114,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(HttpRequest source)
         {
             return new PublicSystemInfo
             {
@@ -1135,16 +1132,14 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
+        public string GetSmartApiUrl(IPAddress ipAddress)
         {
-            // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(ipAddress, out port);
+            string smart = NetManager.GetBindInterface(ipAddress, out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -1155,16 +1150,14 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(HttpRequest request, int? port = null)
+        public string GetSmartApiUrl(HttpRequest request)
         {
-            // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
-                // Published server ends with a '/', so we need to remove it.
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(request, out port);
+            string smart = NetManager.GetBindInterface(request, out int? port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -1175,35 +1168,13 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(string hostname, int? port = null)
+        public string GetUrlForUseByHttpApi()
         {
-            // Published server ends with a /
-            if (!string.IsNullOrEmpty(PublishedServerUrl))
-            {
-                // Published server ends with a '/', so we need to remove it.
-                return PublishedServerUrl.Trim('/');
-            }
+            // GetBindInterfaces will return an interface.
+            var bind = NetManager.GetInternalBindAddresses().FirstOrDefault() ??
+                NetManager.GetAllBindInterfaces(true).First();
 
-            string smart = NetManager.GetBindInterface(hostname, out port);
-
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
-        }
-
-        /// <inheritdoc/>
-        public string GetLoopbackHttpApiUrl()
-        {
-            if (NetManager.IsIP6Enabled)
-            {
-                return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
-            }
-
-            return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
+            return GetLocalApiUrl(bind.Address.ToString(), Uri.UriSchemeHttp);
         }
 
         /// <inheritdoc/>
