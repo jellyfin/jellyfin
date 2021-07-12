@@ -118,5 +118,7 @@
     "TaskCleanActivityLogDescription": "删除早于设置时间的活动日志条目。",
     "Undefined": "未定义",
     "Forced": "强制的",
-    "Default": "默认"
+    "Default": "默认",
+    "TaskOptimizeDatabaseDescription": "压缩数据库并优化可用空间，在扫描库或执行其他数据库修改后运行此任务可能会提高性能。",
+    "TaskOptimizeDatabase": "优化数据库"
 }
