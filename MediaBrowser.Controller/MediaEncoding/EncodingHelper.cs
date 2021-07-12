@@ -143,8 +143,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             }
 
             // Hybrid VPP tonemapping for QSV with VAAPI
-            var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-            if (isLinux && string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
+            if (OperatingSystem.IsLinux() && string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
                 // Limited to HEVC for now since the filter doesn't accept master data from VP9.
                 return IsColorDepth10(state)
@@ -503,9 +502,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isQsvEncoder = outputVideoCodec.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
             var isNvdecDecoder = videoDecoder.Contains("cuda", StringComparison.OrdinalIgnoreCase);
             var isCuvidHevcDecoder = videoDecoder.Contains("hevc_cuvid", StringComparison.OrdinalIgnoreCase);
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-            var isMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            var isWindows = OperatingSystem.IsWindows();
+            var isLinux = OperatingSystem.IsLinux();
+            var isMacOS = OperatingSystem.IsMacOS();
             var isTonemappingSupported = IsTonemappingSupported(state, encodingOptions);
             var isVppTonemappingSupported = IsVppTonemappingSupported(state, encodingOptions);
 
@@ -1983,7 +1982,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var videoSizeParam = string.Empty;
             var videoDecoder = GetHardwareAcceleratedVideoDecoder(state, options) ?? string.Empty;
-            var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isLinux = OperatingSystem.IsLinux();
 
             var isVaapiDecoder = videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isVaapiH264Encoder = outputVideoCodec.IndexOf("h264_vaapi", StringComparison.OrdinalIgnoreCase) != -1;
@@ -2528,7 +2527,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isCuvidHevcDecoder = videoDecoder.Contains("hevc_cuvid", StringComparison.OrdinalIgnoreCase);
             var isLibX264Encoder = outputVideoCodec.IndexOf("libx264", StringComparison.OrdinalIgnoreCase) != -1;
             var isLibX265Encoder = outputVideoCodec.IndexOf("libx265", StringComparison.OrdinalIgnoreCase) != -1;
-            var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isLinux = OperatingSystem.IsLinux();
             var isColorDepth10 = IsColorDepth10(state);
             var isTonemappingSupported = IsTonemappingSupported(state, options);
             var isVppTonemappingSupported = IsVppTonemappingSupported(state, options);
@@ -3572,8 +3571,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         public string GetHwaccelType(EncodingJobInfo state, EncodingOptions options, string videoCodec, bool isColorDepth10)
         {
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            var isWindows = OperatingSystem.IsWindows();
+            var isLinux = OperatingSystem.IsLinux();
             var isWindows8orLater = Environment.OSVersion.Version.Major > 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor > 1);
             var isDxvaSupported = _mediaEncoder.SupportsHwaccel("dxva2") || _mediaEncoder.SupportsHwaccel("d3d11va");
             var isCodecAvailable = options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase);
