@@ -1102,7 +1102,6 @@ namespace Emby.Server.Implementations
                 OperatingSystemDisplayName = OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
-                HasUpdateAvailable = HasUpdateAvailable,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
@@ -1251,26 +1250,6 @@ namespace Emby.Server.Implementations
         }
 
         protected abstract void ShutdownInternal();
-
-        public event EventHandler HasUpdateAvailableChanged;
-
-        private bool _hasUpdateAvailable;
-
-        public bool HasUpdateAvailable
-        {
-            get => _hasUpdateAvailable;
-            set
-            {
-                var fireEvent = value && !_hasUpdateAvailable;
-
-                _hasUpdateAvailable = value;
-
-                if (fireEvent)
-                {
-                    HasUpdateAvailableChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
 
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
