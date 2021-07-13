@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Dtos;
 using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Queries;
 using MediaBrowser.Controller.Devices;
@@ -105,9 +106,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateDeviceOptions(
             [FromQuery, Required] string id,
-            [FromBody, Required] DeviceOptions deviceOptions)
+            [FromBody, Required] DeviceOptionsDto deviceOptions)
         {
-            await _deviceManager.UpdateDeviceOptions(id, deviceOptions).ConfigureAwait(false);
+            await _deviceManager.UpdateDeviceOptions(id, deviceOptions.CustomName).ConfigureAwait(false);
             return NoContent();
         }
 

@@ -70,7 +70,7 @@ namespace MediaBrowser.Controller.Devices
         /// </summary>
         bool CanAccessDevice(User user, string deviceId);
 
-        Task UpdateDeviceOptions(string deviceId, DeviceOptions options);
+        Task UpdateDeviceOptions(string deviceId, string deviceName);
 
         Task<DeviceOptions> GetDeviceOptions(string deviceId);
     }

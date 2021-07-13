@@ -46,7 +46,7 @@ namespace Jellyfin.Server.Implementations.Devices
         }
 
         /// <inheritdoc />
-        public async Task UpdateDeviceOptions(string deviceId, DeviceOptions options)
+        public async Task UpdateDeviceOptions(string deviceId, string deviceName)
         {
             await using var dbContext = _dbProvider.CreateContext();
             var deviceOptions = await dbContext.DeviceOptions.AsQueryable().FirstOrDefaultAsync(dev => dev.DeviceId == deviceId).ConfigureAwait(false);
@@ -56,10 +56,10 @@ namespace Jellyfin.Server.Implementations.Devices
                 dbContext.DeviceOptions.Add(deviceOptions);
             }
 
-            deviceOptions.CustomName = options.CustomName;
+            deviceOptions.CustomName = deviceName;
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>(new Tuple<string, DeviceOptions>(deviceId, options)));
+            DeviceOptionsUpdated?.Invoke(this, new GenericEventArgs<Tuple<string, DeviceOptions>>(new Tuple<string, DeviceOptions>(deviceId, deviceOptions)));
         }
 
         /// <inheritdoc />
