@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Počisti dnevnik aktivnosti",
     "Undefined": "Nedoločen",
     "Forced": "Prisilno",
-    "Default": "Privzeto"
+    "Default": "Privzeto",
+    "TaskOptimizeDatabaseDescription": "Stisne bazo podatkov in uredi prazen prostor. Zagon tega opravila po iskanju predstavnosti ali drugih spremembah ki vplivajo na bazo podatkov lahko izboljša hitrost delovanja.",
+    "TaskOptimizeDatabase": "Optimiziraj bazo podatkov"
 }
