@@ -118,5 +118,7 @@
     "TaskCleanActivityLogDescription": "Elimina gli inserimenti nel registro delle attività più vecchie dell’età configurata.",
     "Undefined": "Non Definito",
     "Forced": "Forzato",
-    "Default": "Predefinito"
+    "Default": "Predefinito",
+    "TaskOptimizeDatabaseDescription": "Compatta Database e tronca spazi liberi. Eseguire questa azione dopo la scansione o dopo aver fatto altri cambiamenti inerenti il database potrebbe aumentarne la performance.",
+    "TaskOptimizeDatabase": "Ottimizza Database"
 }
