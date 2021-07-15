@@ -388,6 +388,13 @@ namespace MediaBrowser.Controller.Library
         bool IsAudioFile(string path);
 
         /// <summary>
+        /// Gets the series name from path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>ItemInfo.</returns>
+        ItemLookupInfo GetSeriesFromPath(string path);
+
+        /// <summary>
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>

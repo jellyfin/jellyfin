@@ -186,9 +186,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             if (string.IsNullOrEmpty(tmdbId))
             {
                 result.QueriedById = false;
-                // ParseName is required here.
-                // Caller provides the filename with extension stripped and NOT the parsed filename
-                var parsedName = _libraryManager.ParseName(info.Name);
+                ItemLookupInfo parsedName;
+                // Try getting series name from the path
+                var seriesName = _libraryManager.GetSeriesFromPath(info.Path);
+                if (seriesName != null)
+                {
+                    parsedName = seriesName;
+                } else
+                {
+                    // ParseName is required here.
+                    // Caller provides the filename with extension stripped and NOT the parsed filename
+                    parsedName = _libraryManager.ParseName(info.Name);
+                }
+
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
                 var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, info.MetadataLanguage, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
 

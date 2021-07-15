@@ -2699,6 +2699,21 @@ namespace Emby.Server.Implementations.Library
             return _namingOptions;
         }
 
+        public ItemLookupInfo GetSeriesFromPath(string path)
+        {
+            var episodeParser = new EpisodeResolver(new NamingOptions());
+            var episodeInfo = episodeParser.Resolve(path, true, true, false, false, true);
+            if (episodeInfo == null || string.IsNullOrEmpty(episodeInfo.SeriesName))
+            {
+                return null;
+            }
+
+            return new ItemLookupInfo
+            {
+                Name = episodeInfo.SeriesName.Replace(".", " ", true, CultureInfo.InvariantCulture)
+            };
+        }
+
         public ItemLookupInfo ParseName(string name)
         {
             var namingOptions = GetNamingOptions();
