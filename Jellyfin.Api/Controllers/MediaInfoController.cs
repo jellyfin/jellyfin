@@ -161,6 +161,11 @@ namespace Jellyfin.Api.Controllers
                     liveStreamId)
                 .ConfigureAwait(false);
 
+            if (info.ErrorCode != null)
+            {
+                return info;
+            }
+
             if (profile != null)
             {
                 // set device specific data
