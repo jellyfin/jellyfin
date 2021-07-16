@@ -1,0 +1,93 @@
+name: '🔍 Run SonarScan'
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request_target:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  sonar:
+    name: JF Sonar
+    runs-on: windows-latest
+# https://www.codewrecks.com/post/github/github-sonarcloud-codecoverage/
+#    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v1
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarCloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v1
+        with:
+          path: .\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarCloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          New-Item -Path .\.sonar\scanner -ItemType Directory
+          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+
+      - name: Set Envs
+        shell: bash
+        run: |
+          BRANCH="${{ github.ref }}"
+          echo "VERSION=$(cat build.yaml | sed -En 's/^version: "(.+)"$/\1/p')" >> $GITHUB_ENV
+          echo "BRANCH=${BRANCH#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin `
+            -o:"h1dden-da3m0n" `
+            -k:"h1dden-da3m0n_jellyfin" `
+            -v:"${{ env.VERSION }}" `
+            -d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
+            -d:sonar.host.url="https://sonarcloud.io" `
+            -d:sonar.cs.vstest.reportsPaths=TestResults/*.trx `
+            -d:sonar.cs.opencover.reportsPaths=TestResults/*/coverage.opencover.xml `
+            -d:sonar.coverage.exclusions="**Test*.cs" `
+            -d:sonar.branch.name="${{ env.BRANCH }}"
+
+          foreach ($testProj in Get-ChildItem -Path "./tests/" -Recurse -Filter "*Tests.csproj") {
+            dotnet test $testProj.FullName `
+              --configuration Release `
+              --collect:"XPlat Code Coverage" `
+              --results-directory TestResults/ `
+              --settings tests/coverletArgs.runsettings `
+              --verbosity minimal `
+              --nologo
+          }
+
+          .\.sonar\scanner\dotnet-sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"

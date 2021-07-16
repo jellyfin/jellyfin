@@ -20,7 +20,7 @@ max_line_length = off
 indent_size = 2
 
 # XML indentation
-[*.{csproj,xml}]
+[*.{csproj,xml,props}]
 indent_size = 2
 
 ###############################
