@@ -316,8 +316,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("MusicGenres/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Obsolete("Use GetInstantMixFromMusicGenres instead")]
-        public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById2(
+        public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById(
             [FromQuery, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
