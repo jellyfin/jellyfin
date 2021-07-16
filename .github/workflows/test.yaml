@@ -1,0 +1,62 @@
+name: '🔬 Run Tests'
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request_target:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: JF Tests
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Get Date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u "+%Y%W")"
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ steps.get-date.outputs.date }}
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Run Tests
+        shell: bash
+        run: |-
+          for testProj in tests/*/*Tests.csproj; do
+            dotnet test ${testProj} \
+              --configuration Release \
+              --collect:"XPlat Code Coverage" \
+              --results-directory TestResults/ \
+              --settings tests/coverletArgs.runsettings \
+              --verbosity minimal \
+              --nologo
+          done
+
+      - name: Publish Test Reults
+        uses: dorny/test-reporter@v1
+        if: ${{ success() || failure() }}
+        with:
+          name: Jellyfin Tests (${{ matrix.os }})
+          path: TestResults/**/*.trx
+          reporter: dotnet-trx
