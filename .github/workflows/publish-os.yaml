@@ -1,0 +1,94 @@
+name: '🚀 Publish OS Packages'
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-packages:
+    name: Build Server Packages
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      matrix:
+        build-config:
+          - centos.amd64
+          - fedora.amd64
+          - debian.amd64
+          - debian.arm64
+          - debian.armhf
+          - ubuntu.amd64
+          - ubuntu.arm64
+          - ubuntu.armhf
+          - linux.amd64
+          - linux.amd64-musl
+          - linux.arm64
+          - linux.armhf
+          - windows.amd64
+          - macos
+          - portable
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Build Packaging Container
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: jellyfin-server
+          tags: ${{ matrix.build-config }}
+          oci: true
+          dockerfiles: deployment/Dockerfile.${{ matrix.build-config }}
+
+      - name: Run Packaging Container (stable)
+        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        run: |-
+          mkdir -p deployment/dist
+          podman run --rm \
+            -v $(pwd)/deployment/dist:/dist \
+            -v $(pwd):/jellyfin \
+            -e IS_UNSTABLE="no" \
+            -e BUILD_ID=${{ github.run_id }} \
+            jellyfin-server:${{ matrix.build-config }}
+
+      - name: Run Packaging Container (unstable)
+        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+        run: |-
+          mkdir -p deployment/dist
+          podman run --rm \
+            -v $(pwd)/deployment/dist:/dist \
+            -v $(pwd):/jellyfin \
+            -e IS_UNSTABLE="yes" \
+            -e BUILD_ID=${{ github.run_id }} \
+            jellyfin-server:${{ matrix.build-config }}
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: jellyfin-server-${{ matrix.build-config }}
+          path: deployment/dist
+
+      - name: Create Target Directory on Repository Server
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          envs: JELLYFIN_VERSION
+          script_stop: true
+          script: mkdir -p /srv/repository/incoming/gh-actions/${{ github.run_id }}/${{ matrix.build-config }}
+
+      - name: Upload Packaging Artifacts to Repository Server
+        uses: burnett01/rsync-deployments@4.1
+        with:
+          switches: -vrptz
+          path: deployment/dist/
+          remote_path: /srv/repository/incoming/gh-actions/${{ github.run_id }}/${{ matrix.build-config }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_KEY }}
