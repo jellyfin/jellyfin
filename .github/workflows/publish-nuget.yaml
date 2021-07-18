@@ -1,0 +1,107 @@
+name: '🚀 Publish NuGet Packages'
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    # TODO: add bool input to overwrite and publish stable (probably needs a version param too)
+
+jobs:
+  nuget:
+    name: Build Server NuGets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Setup Variables
+        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        run: |
+          TAG=${GITHUB_REF#refs/tags/v}
+          echo "SEMVER=${TAG}" >> $GITHUB_ENV
+
+      - name: Build NuGet Packages (stable)
+        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        run: |-
+          mkdir nuget-artifacts
+          for nugetProj in Jellyfin.Data/Jellyfin.Data.csproj \
+              MediaBrowser.Common/MediaBrowser.Common.csproj \
+              MediaBrowser.Controller/MediaBrowser.Controller.csproj \
+              MediaBrowser.Model/MediaBrowser.Model.csproj \
+              Emby.Naming/Emby.Naming.csproj; do
+            dotnet pack ${nugetProj} \
+              --configuration Release \
+              -p:Version=${SEMVER} \
+              -o nuget-artifacts \
+              --verbosity minimal \
+              --nologo
+          done
+
+      - name: Build NuGet Packages (unstable)
+        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+        run: |-
+          mkdir nuget-artifacts
+          for nugetProj in Jellyfin.Data/Jellyfin.Data.csproj \
+              MediaBrowser.Common/MediaBrowser.Common.csproj \
+              MediaBrowser.Controller/MediaBrowser.Controller.csproj \
+              MediaBrowser.Model/MediaBrowser.Model.csproj \
+              Emby.Naming/Emby.Naming.csproj; do
+            dotnet pack ${nugetProj} \
+              --configuration Release \
+              --version-suffix ${{ github.run_id }} \
+              -p:Stability=Unstable \
+              -o nuget-artifacts \
+              --verbosity minimal \
+              --nologo
+          done
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: jellyfin-nuget-packages
+          path: nuget-artifacts
+
+      - name: Push NuGet Packages (stable - NuGet.org)
+        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        run: |-
+          dotnet nuget push nuget-artifacts/**/*.nupkg \
+            --api-key ${{ secrets.NuGetAPI }} \
+            --skip-duplicate \
+            --source nuget.org
+
+      - name: Push NuGet Packages (stable - GitHub.com)
+        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        run: |-
+          dotnet nuget push nuget-artifacts/**/*.nupkg \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --skip-duplicate \
+            --source github
+
+      - name: Push NuGet Packages (unstable - NuGet.org)
+        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        run: |-
+          dotnet nuget push nuget-artifacts/**/*.nupkg \
+            --api-key ${{ secrets.NuGetAPI }} \
+            --skip-duplicate \
+            --source nuget.org
+
+      - name: Push NuGet Packages (unstable - GitHub.com)
+        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        run: |-
+          dotnet nuget push nuget-artifacts/**/*.nupkg \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --skip-duplicate \
+            --source github
