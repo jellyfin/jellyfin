@@ -3,6 +3,7 @@ After=network.target
 Description=Jellyfin is a free software media system that puts you in control of managing and streaming your media.
 
 [Service]
+AmbientCapabilities=CAP_NET_BIND_SERVICE
 EnvironmentFile=/etc/sysconfig/jellyfin
 WorkingDirectory=/var/lib/jellyfin
 ExecStart=/usr/bin/jellyfin ${JELLYFIN_WEB_OPT} ${JELLYFIN_RESTART_OPT} ${JELLYFIN_FFMPEG_OPT} ${JELLYFIN_SERVICE_OPT} ${JELLYFIN_NOWEBAPP_OPT}
