@@ -21,7 +21,8 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("[Baz-Bar]Foo - [1080p][Multiple Subtitle]/[Baz-Bar] Foo - 05 [1080p][Multiple Subtitle].mkv", "Foo", null, 5)]
         [InlineData(@"/Foo/The.Series.Name.S01E04.WEBRip.x264-Baz[Bar]/the.series.name.s01e04.webrip.x264-Baz[Bar].mkv", "The.Series.Name", 1, 4)]
         [InlineData(@"Love.Death.and.Robots.S01.1080p.NF.WEB-DL.DDP5.1.x264-NTG/Love.Death.and.Robots.S01E01.Sonnies.Edge.1080p.NF.WEB-DL.DDP5.1.x264-NTG.mkv", "Love.Death.and.Robots", 1, 1)]
-        // TODO: [InlineData("[Baz-Bar]Foo - 01 - 12[1080p][Multiple Subtitle]/[Baz-Bar] Foo - 05 [1080p][Multiple Subtitle].mkv", "Foo", null, 5)]
+        [InlineData("[YuiSubs] Tensura Nikki - Tensei Shitara Slime Datta Ken/[YuiSubs] Tensura Nikki - Tensei Shitara Slime Datta Ken - 12 (NVENC H.265 1080p).mkv", "Tensura Nikki - Tensei Shitara Slime Datta Ken", null, 12)]
+        [InlineData("[Baz-Bar]Foo - 01 - 12[1080p][Multiple Subtitle]/[Baz-Bar] Foo - 05 [1080p][Multiple Subtitle].mkv", "Foo", null, 5)]
         // TODO: [InlineData("E:\\Anime\\Yahari Ore no Seishun Love Comedy wa Machigatteiru\\Yahari Ore no Seishun Love Comedy wa Machigatteiru. Zoku\\Oregairu Zoku 11 - Hayama Hayato Always Renconds to Everyone's Expectations..mkv", "Yahari Ore no Seishun Love Comedy wa Machigatteiru", null, 11)]
         // TODO: [InlineData(@"/Library/Series/The Grand Tour (2016)/Season 1/S01E01 The Holy Trinity.mkv", "The Grand Tour", 1, 1)]
         public void TestSimple(string path, string seriesName, int? seasonNumber, int? episodeNumber)
