@@ -206,9 +206,8 @@ namespace MediaBrowser.Controller.Entities
         /// Adds the child.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="InvalidOperationException">Unable to add  + item.Name.</exception>
-        public void AddChild(BaseItem item, CancellationToken cancellationToken)
+        public void AddChild(BaseItem item)
         {
             item.SetParent(this);
 
@@ -1383,18 +1382,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets allowed recursive children of an item.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
-        {
-            return GetRecursiveChildren(user, null);
         }
 
         public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)

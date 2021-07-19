@@ -187,7 +187,7 @@ namespace MediaBrowser.Providers.TV
                 SeriesName = series.Name
             };
 
-            series.AddChild(season, cancellationToken);
+            series.AddChild(season);
 
             await season.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
 

@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.Playlists
 
                 playlist.SetMediaType(options.MediaType);
 
-                parentFolder.AddChild(playlist, CancellationToken.None);
+                parentFolder.AddChild(playlist);
 
                 await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
