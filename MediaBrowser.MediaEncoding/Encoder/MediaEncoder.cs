@@ -67,6 +67,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
 
+        private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
         private int threads;
@@ -131,6 +132,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
                 SetAvailableHwaccels(validator.GetHwaccels());
+                SetMediaEncoderVersion(validator);
                 threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
@@ -278,6 +280,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _hwaccels = list.ToList();
         }
 
+        public void SetMediaEncoderVersion(EncoderValidator validator)
+        {
+            _ffmpegVersion = validator.GetFFmpegVersion();
+        }
+
         public bool SupportsEncoder(string encoder)
         {
             return _encoders.Contains(encoder, StringComparer.OrdinalIgnoreCase);
@@ -302,6 +309,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return false;
+        }
+
+        public Version GetMediaEncoderVersion()
+        {
+            return _ffmpegVersion;
         }
 
         public bool CanEncodeToAudioCodec(string codec)
