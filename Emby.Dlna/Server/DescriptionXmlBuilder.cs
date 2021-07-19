@@ -46,24 +46,15 @@ namespace Emby.Dlna.Server
 
             builder.Append("<?xml version=\"1.0\"?>");
 
-            builder.Append("<root");
+            builder.Append("<root xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\" xmlns=\"urn:schemas-upnp-org:device-1-0\"");
 
-            var attributes = _profile.XmlRootAttributes.ToList();
-
-            attributes.Insert(0, new XmlAttribute
+            if (_profile.XmlRootAttributes != null)
             {
-                Name = "xmlns:dlna",
-                Value = "urn:schemas-dlna-org:device-1-0"
-            });
-            attributes.Insert(0, new XmlAttribute
-            {
-                Name = "xmlns",
-                Value = "urn:schemas-upnp-org:device-1-0"
-            });
-
-            foreach (var att in attributes)
-            {
-                builder.AppendFormat(CultureInfo.InvariantCulture, " {0}=\"{1}\"", att.Name, att.Value);
+                var attributes = _profile.XmlRootAttributes.ToList();
+                foreach (var att in attributes)
+                {
+                    builder.AppendFormat(CultureInfo.InvariantCulture, " {0}=\"{1}\"", att.Name, att.Value);
+                }
             }
 
             builder.Append('>');

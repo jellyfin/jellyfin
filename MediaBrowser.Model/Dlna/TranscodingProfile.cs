@@ -1,7 +1,7 @@
 #pragma warning disable CS1591
 
+using System;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
@@ -61,10 +61,5 @@ namespace MediaBrowser.Model.Dlna
         [DefaultValue(false)]
         [XmlAttribute("breakOnNonKeyFrames")]
         public bool BreakOnNonKeyFrames { get; set; }
-
-        public string[] GetAudioCodecs()
-        {
-            return ContainerProfile.SplitValue(AudioCodec);
-        }
     }
 }
