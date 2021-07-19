@@ -277,7 +277,7 @@ namespace Emby.Naming.Common
                     IsNamed = true
                 },
 
-                new EpisodeExpression("[\\\\/\\._ \\[\\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([^\\\\/]*)$")
+                new EpisodeExpression(@"[\\\/\._ \[\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\.[1-9])(?![0-9]))?)([^\\\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
@@ -304,6 +304,12 @@ namespace Emby.Naming.Common
                 },
 
                 // *** End Kodi Standard Naming
+
+                // "Episode 16", "Episode 16 - Title"
+                new EpisodeExpression(@"[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))?[^\\\/]*$")
+                {
+                    IsNamed = true
+                },
 
                 new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
@@ -362,12 +368,6 @@ namespace Emby.Naming.Common
                     IsOptimistic = true,
                     IsNamed = true
                 },
-                // "Episode 16", "Episode 16 - Title"
-                new EpisodeExpression(@".*[\\\/][^\\\/]* (?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*[^\\\/]*$")
-                {
-                    IsOptimistic = true,
-                    IsNamed = true
-                }
             };
 
             EpisodeWithoutSeasonExpressions = new[]
