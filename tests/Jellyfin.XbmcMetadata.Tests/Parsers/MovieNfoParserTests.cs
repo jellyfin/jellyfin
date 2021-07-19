@@ -59,7 +59,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             _localImageFileMetadata = new FileSystemMetadata()
             {
                 Exists = true,
-                FullName = MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows ?
+                FullName = OperatingSystem.IsWindows() ?
                     "C:\\media\\movies\\Justice League (2017).jpg"
                     : "/media/movies/Justice League (2017).jpg"
             };

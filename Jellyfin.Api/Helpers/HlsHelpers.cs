@@ -99,8 +99,7 @@ namespace Jellyfin.Api.Helpers
                 return fmp4InitFileName;
             }
 
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (isWindows)
+            if (OperatingSystem.IsWindows())
             {
                 // on Windows
                 // #EXT-X-MAP:URI="X:\transcodes\prefix-1.mp4"
