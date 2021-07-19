@@ -34,7 +34,7 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Checks that thge given IP address is not in the network provided.
+        /// Checks that the given IP address is not in the network provided.
         /// </summary>
         /// <param name="network">Network address(es).</param>
         /// <param name="value">The IP to check.</param>
