@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
         {
-            var authInfo = _authContext.GetAuthorizationInfo(Request);
+            var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             var profile = playbackInfoDto?.DeviceProfile;
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);

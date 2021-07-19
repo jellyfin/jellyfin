@@ -16,6 +16,11 @@ namespace MediaBrowser.Model.Devices
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the access token.
+        /// </summary>
+        public string AccessToken { get; set; }
+
+        /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
         /// <value>The identifier.</value>

@@ -17,9 +17,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -101,7 +99,7 @@ namespace Jellyfin.Api.Helpers
                 EnableDlnaHeaders = enableDlnaHeaders
             };
 
-            var auth = authorizationContext.GetAuthorizationInfo(httpRequest);
+            var auth = await authorizationContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
             if (!auth.UserId.Equals(Guid.Empty))
             {
                 state.User = userManager.GetUserById(auth.UserId);

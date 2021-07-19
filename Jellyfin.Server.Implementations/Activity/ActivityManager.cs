@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Implementations.Activity
             return new QueryResult<ActivityLogEntry>
             {
                 Items = await entries
-                    .Skip(query.StartIndex ?? 0)
+                    .Skip(query.Skip ?? 0)
                     .Take(query.Limit ?? 100)
                     .AsAsyncEnumerable()
                     .Select(ConvertToOldModel)

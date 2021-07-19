@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,12 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+
+        public virtual DbSet<ApiKey> ApiKeys { get; set; }
+
+        public virtual DbSet<Device> Devices { get; set; }
+
+        public virtual DbSet<DeviceOptions> DeviceOptions { get; set; }
 
         public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
 
@@ -196,8 +203,28 @@ namespace Jellyfin.Server.Implementations
 
             // Indexes
 
+            modelBuilder.Entity<ApiKey>()
+                .HasIndex(entity => entity.AccessToken)
+                .IsUnique();
+
             modelBuilder.Entity<User>()
                 .HasIndex(entity => entity.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<Device>()
+                .HasIndex(entity => new { entity.DeviceId, entity.DateLastActivity });
+
+            modelBuilder.Entity<Device>()
+                .HasIndex(entity => new { entity.AccessToken, entity.DateLastActivity });
+
+            modelBuilder.Entity<Device>()
+                .HasIndex(entity => new { entity.UserId, entity.DeviceId });
+
+            modelBuilder.Entity<Device>()
+                .HasIndex(entity => entity.DeviceId);
+
+            modelBuilder.Entity<DeviceOptions>()
+                .HasIndex(entity => entity.DeviceId)
                 .IsUnique();
 
             modelBuilder.Entity<DisplayPreferences>()

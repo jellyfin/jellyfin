@@ -97,7 +97,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromQuery] int? index = null)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromRoute] int index)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the image.");
             }
@@ -190,7 +190,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromQuery] int? index = null)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }
@@ -234,7 +234,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] ImageType imageType,
             [FromRoute] int index)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to delete the image.");
             }

@@ -361,7 +361,7 @@ namespace Jellyfin.Api.Controllers
 
             long positionTicks = 0;
 
-            var accessToken = _authContext.GetAuthorizationInfo(Request).Token;
+            var accessToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
 
             while (positionTicks < runtime)
             {
