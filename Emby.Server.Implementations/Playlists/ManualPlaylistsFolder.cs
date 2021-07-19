@@ -49,5 +49,10 @@ namespace Emby.Server.Implementations.Playlists
             query.Parent = null;
             return LibraryManager.GetItemsResult(query);
         }
+
+        public override string GetClientTypeName()
+        {
+            return "ManualPlaylistsFolder";
+        }
     }
 }
