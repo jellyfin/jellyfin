@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Implementations.Events
         public void Publish<T>(T eventArgs)
             where T : EventArgs
         {
-            PublishInternal(eventArgs).GetAwaiter().GetResult();
+            PublishInternal(eventArgs).Wait();
         }
 
         /// <inheritdoc />
