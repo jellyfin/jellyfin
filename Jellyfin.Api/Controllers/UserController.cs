@@ -89,18 +89,18 @@ namespace Jellyfin.Api.Controllers
         /// Gets a list of publicly visible users for display on a login screen.
         /// </summary>
         /// <response code="200">Public users returned.</response>
-        /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the public users.</returns>
+        /// <returns>An <see cref="IEnumerable{PublicUserDto}"/> containing the public users.</returns>
         [HttpGet("Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<UserDto>> GetPublicUsers()
+        public ActionResult<IEnumerable<PublicUserDto>> GetPublicUsers()
         {
             // If the startup wizard hasn't been completed then just return all users
             if (!_config.Configuration.IsStartupWizardCompleted)
             {
-                return Ok(Get(false, false, false, false));
+                return Ok(Get(false, false, false, false).Select(user => new PublicUserDto(user)));
             }
 
-            return Ok(Get(false, false, true, true));
+            return Ok(Get(false, false, true, true).Select(user => new PublicUserDto(user)));
         }
 
         /// <summary>
