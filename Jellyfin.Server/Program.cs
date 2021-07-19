@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
+using Jellyfin.Server.Migrations;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -158,6 +159,9 @@ namespace Jellyfin.Server
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
             PerformStaticInitialization();
+
+            MigrationRunner.RunSettingsMigration(appPaths, _loggerFactory.CreateLogger<MigrationRunner>());
+
             var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
