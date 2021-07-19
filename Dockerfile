@@ -60,7 +60,7 @@ RUN apt-get update \
  && dpkg -i *.deb \
  && cd .. \
  && rm -rf intel-compute-runtime \
- && apt-get remove gnupg wget apt-transport-https -y \
+ && apt-get remove gnupg apt-transport-https -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
