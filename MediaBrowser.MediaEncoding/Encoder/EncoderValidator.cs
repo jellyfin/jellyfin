@@ -156,7 +156,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Work out what the version under test is
-            var version = GetFFmpegVersion(versionOutput);
+            var version = GetFFmpegVersionInternal(versionOutput);
 
             _logger.LogInformation("Found ffmpeg version {Version}", version != null ? version.ToString() : "unknown");
 
@@ -200,6 +200,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public IEnumerable<string> GetHwaccels() => GetHwaccelTypes();
 
+        public Version? GetFFmpegVersion()
+        {
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-version");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating encoder");
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                _logger.LogError("FFmpeg validation: The process returned no result");
+                return null;
+            }
+
+            _logger.LogDebug("ffmpeg output: {Output}", output);
+
+            return GetFFmpegVersionInternal(output);
+        }
+
         /// <summary>
         /// Using the output from "ffmpeg -version" work out the FFmpeg version.
         /// For pre-built binaries the first line should contain a string like "ffmpeg version x.y", which is easy
@@ -208,7 +232,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         /// <param name="output">The output from "ffmpeg -version".</param>
         /// <returns>The FFmpeg version.</returns>
-        internal Version? GetFFmpegVersion(string output)
+        internal Version? GetFFmpegVersionInternal(string output)
         {
             // For pre-built binaries the FFmpeg version should be mentioned at the very start of the output
             var match = Regex.Match(output, @"^ffmpeg version n?((?:[0-9]+\.?)+)");

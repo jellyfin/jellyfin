@@ -60,6 +60,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool SupportsFilter(string filter, string option);
 
         /// <summary>
+        /// Get the version of media encoder.
+        /// </summary>
+        /// <returns>The version of media encoder.</returns>
+        Version GetMediaEncoderVersion();
+
+        /// <summary>
         /// Extracts the audio image.
         /// </summary>
         /// <param name="path">The path.</param>

@@ -739,6 +739,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.BitDepth = streamInfo.BitsPerRawSample;
                 }
 
+                if (!stream.BitDepth.HasValue)
+                {
+                    if (!string.IsNullOrEmpty(streamInfo.PixelFormat)
+                        && streamInfo.PixelFormat.Contains("p10", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stream.BitDepth = 10;
+                    }
+
+                    if (!string.IsNullOrEmpty(streamInfo.Profile)
+                        && (streamInfo.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase)
+                            || streamInfo.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase)
+                            || streamInfo.Profile.Contains("Profile 2", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        stream.BitDepth = 10;
+                    }
+                }
+
                 // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
