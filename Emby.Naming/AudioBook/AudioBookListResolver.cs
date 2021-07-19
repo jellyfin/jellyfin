@@ -87,7 +87,7 @@ namespace Emby.Naming.AudioBook
                         foreach (var audioFile in group)
                         {
                             var name = Path.GetFileNameWithoutExtension(audioFile.Path);
-                            if (name.Equals("audiobook") ||
+                            if (name.Equals("audiobook", StringComparison.OrdinalIgnoreCase) ||
                                 name.Contains(nameParserResult.Name, StringComparison.OrdinalIgnoreCase) ||
                                 name.Contains(nameWithReplacedDots, StringComparison.OrdinalIgnoreCase))
                             {
