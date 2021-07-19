@@ -12,7 +12,7 @@ ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
 RUN apt-get update \
- && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv
+ && apt-get install -y debhelper gnupg wget devscripts mmv
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
