@@ -68,6 +68,9 @@ RUN apt-get update \
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
+# copy Noto CJK fonts
+COPY assets/NotoSansCJK-Bold/NotoSansCJK-Bold.ttc /usr/share/fonts/NotoSansCJK-Bold/NotoSansCJK-Bold.ttc
+
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
