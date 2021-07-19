@@ -75,6 +75,27 @@ namespace Jellyfin.Api.Helpers
                 return new OkResult();
             }
 
+            // Handle symbolic links as source file:
+            //
+            // When replaying content via DLNA 'Microsoft.AspNetCore.Http.SendFileResponseExtensions.SendFileAsyncCore'
+            // validates the length of the sent information. Unfortuanately the check fails for source files
+            // which are symbolic links (aka ReparsePoint's). In this case the size of the filename of the referenced
+            // file is reported instead of the size of the content of this file.
+            //
+            // * To fix this in AspNetCore.Http would be best, but is out of scope.
+            // * Second best would be, to resolve the symbolic link target and return this as PhysicalFileResult. This
+            //   would require to add Mono.Posix to this project, which would add another Assembly and which is - as far
+            //   as I know - not portable to Windows and therefore would require conditional compilation.
+            // * The third way is to use FileStreamResult for files known to be symbolic links, as it correctly reports
+            //   the size of the open file. For all other files PhysicalFileResult is kept, as other parts of this
+            //   project may rely on using it's properties.
+            var fileInfo = System.IO.File.GetAttributes(path);
+            if (fileInfo.HasFlag(FileAttributes.ReparsePoint))
+            {
+                var stream = File.OpenRead(path);
+                return new FileStreamResult(stream, contentType) { EnableRangeProcessing = true };
+            }
+
             return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
 
