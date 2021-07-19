@@ -6,6 +6,11 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Controller.Resolvers;
+using System.Collections.Generic;
+using MediaBrowser.Model.IO;
+using Emby.Naming.Video;
+using MediaBrowser.Controller.Providers;
 
 namespace Emby.Server.Implementations.Library.Resolvers.TV
 {
@@ -49,7 +54,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                  args.HasParent<Series>())
                 && (parent is Series || !BaseItem.AllExtrasTypesFolderNames.Contains(parent.Name, StringComparer.OrdinalIgnoreCase)))
             {
-                var episode = ResolveVideo<Episode>(args, false);
+                var episode = ResolveEpisode(args);
 
                 if (episode != null)
                 {
@@ -78,6 +83,44 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             }
 
             return null;
+        }
+
+        private Episode ResolveEpisode(ItemResolveArgs args)
+        {
+            if (args.IsDirectory)
+            {
+                // Normally, ResolveVideo handles directories internally, testing if they are a BluRay or DVD directory. This strategy doesn't support that case, but it probably doesn't exist.
+                var resolverResult = VideoListResolver.Resolve(args.FileSystemChildren.ToList(), LibraryManager.GetNamingOptions(), true).ToList();
+
+                if (resolverResult.Count != 1)
+                {
+                    // Returning null here just means that LibraryManager.ResolvePaths will recurse into the directory. Any other videos will then get found by Resolve() above.
+                    return null;
+                }
+
+                // TODO: handle owned photos
+                // TODO: handle extras for the episode
+
+                var info = resolverResult[0];
+                var firstFile = info.Files[0];
+                var item = new Episode
+                {
+                    Path = firstFile.Path,
+                    ProductionYear = info.Year,
+                    Name = info.Name,
+                    AdditionalParts = info.Files.Skip(1).Select(i => i.Path).ToArray(), // What does this do? MovieResolver does it.
+                    LocalAlternateVersions = info.AlternateVersions.Select(i => i.Path).ToArray() // What does this do? MovieResolver does it.
+                };
+
+                SetVideoType(item, firstFile);
+                Set3DFormat(item, firstFile);
+
+                return item;
+            }
+            else
+            {
+                return ResolveVideo<Episode>(args, false);
+            }
         }
     }
 }
