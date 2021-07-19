@@ -102,7 +102,7 @@ namespace Emby.Drawing
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
 
-            using (var fileStream = new FileStream(file.Item1, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true))
+            using (var fileStream = new FileStream(file.Item1, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }

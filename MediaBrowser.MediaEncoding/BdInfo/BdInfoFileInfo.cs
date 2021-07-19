@@ -24,7 +24,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
         public bool IsDir => _impl.IsDirectory;
 
-        public System.IO.Stream OpenRead()
+        public Stream OpenRead()
         {
             return new FileStream(
                 FullName,
@@ -33,9 +33,9 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 FileShare.Read);
         }
 
-        public System.IO.StreamReader OpenText()
+        public StreamReader OpenText()
         {
-            return new System.IO.StreamReader(OpenRead());
+            return new StreamReader(OpenRead());
         }
     }
 }

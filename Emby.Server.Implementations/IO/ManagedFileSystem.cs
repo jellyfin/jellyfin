@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         try
                         {
-                            using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                            using (Stream thisFileStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
                             {
                                 result.Length = thisFileStream.Length;
                             }

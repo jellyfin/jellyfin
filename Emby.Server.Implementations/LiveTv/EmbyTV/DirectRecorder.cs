@@ -48,7 +48,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
             {
                 onStarted();
 
@@ -74,7 +74,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, AsyncFile.UseAsyncIO);
 
             onStarted();
 
