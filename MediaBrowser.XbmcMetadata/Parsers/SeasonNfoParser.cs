@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities.TV;
@@ -13,6 +12,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class SeasonNfoParser : BaseNfoParser<Season>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonNfoParser"/> class.
         /// </summary>
@@ -31,6 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -38,22 +40,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "seasonnumber":
-                    {
-                        var number = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(number))
-                        {
-                            if (int.TryParse(number, NumberStyles.Integer, CultureInfo.InvariantCulture, out var num))
-                            {
-                                item.IndexNumber = num;
-                            }
-                        }
-
-                        break;
-                    }
+                    item.IndexNumber = parserHelpers.ReadIntFromNfo(reader) ?? item.IndexNumber;
+                    break;
 
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);

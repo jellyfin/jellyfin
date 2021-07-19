@@ -1,13 +1,9 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -17,6 +13,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class MovieNfoParser : BaseNfoParser<Video>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieNfoParser"/> class.
         /// </summary>
@@ -35,6 +33,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -45,140 +44,39 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "id":
-                    {
-                        // get ids from attributes
-                        string? imdbId = reader.GetAttribute("IMDB");
-                        string? tmdbId = reader.GetAttribute("TMDB");
-
-                        // read id from content
-                        var contentId = reader.ReadElementContentAsString();
-                        if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
-                        {
-                            imdbId = contentId;
-                        }
-                        else if (string.IsNullOrEmpty(tmdbId))
-                        {
-                            tmdbId = contentId;
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(imdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tmdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-                        }
-
-                        break;
-                    }
+                    parserHelpers.SetMovieids(reader, item);
+                    break;
 
                 case "set":
-                    {
-                        var movie = item as Movie;
-
-                        var tmdbcolid = reader.GetAttribute("tmdbcolid");
-                        if (!string.IsNullOrWhiteSpace(tmdbcolid) && movie != null)
-                        {
-                            movie.SetProviderId(MetadataProvider.TmdbCollection, tmdbcolid);
-                        }
-
-                        var val = reader.ReadInnerXml();
-
-                        if (!string.IsNullOrWhiteSpace(val) && movie != null)
-                        {
-                            // TODO Handle this better later
-                            if (!val.Contains('<', StringComparison.Ordinal))
-                            {
-                                movie.CollectionName = val;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    ParseSetXml(val, movie);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Logger.LogError(ex, "Error parsing set node");
-                                }
-                            }
-                        }
-
-                        break;
-                    }
+                    NfoSubtreeParsers<Video>.ReadSetNode(reader, (Movie)item);
+                    break;
 
                 case "artist":
+                    var artist = parserHelpers.ReadStringFromNfo(reader);
+                    if (!string.IsNullOrWhiteSpace(artist) && item is MusicVideo musicVideo)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val) && item is MusicVideo movie)
-                        {
-                            var list = movie.Artists.ToList();
-                            list.Add(val);
-                            movie.Artists = list.ToArray();
-                        }
-
-                        break;
+                        musicVideo.Artists = new string[] { artist };
                     }
+
+                    break;
 
                 case "album":
+                    var album = parserHelpers.ReadStringFromNfo(reader);
+                    if (!string.IsNullOrWhiteSpace(album) && item is MusicVideo)
                     {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val) && item is MusicVideo movie)
-                        {
-                            movie.Album = val;
-                        }
-
-                        break;
+                        item.Album = album;
                     }
+
+                    break;
 
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
-            }
-        }
-
-        private void ParseSetXml(string xml, Movie movie)
-        {
-            // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-            try
-            {
-                using (var stringReader = new StringReader("<set>" + xml + "</set>"))
-                using (var reader = XmlReader.Create(stringReader, GetXmlReaderSettings()))
-                {
-                    reader.MoveToContent();
-                    reader.Read();
-
-                    // Loop through each element
-                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-                    {
-                        if (reader.NodeType == XmlNodeType.Element)
-                        {
-                            switch (reader.Name)
-                            {
-                                case "name":
-                                    movie.CollectionName = reader.ReadElementContentAsString();
-                                    break;
-                                default:
-                                    reader.Skip();
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            reader.Read();
-                        }
-                    }
-                }
-            }
-            catch (XmlException)
-            {
             }
         }
     }

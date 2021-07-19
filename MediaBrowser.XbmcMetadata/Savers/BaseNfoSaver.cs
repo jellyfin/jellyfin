@@ -30,6 +30,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         public const string YouTubeWatchUrl = "https://www.youtube.com/watch?v=";
 
+        public const string KodiYouTubeWatchUrl = "plugin://plugin.video.youtube/?action=play_video&videoid=";
+
         // filters control characters but allows only properly-formed surrogate sequences
         private const string _invalidXMLCharsRegex = @"(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F\uFEFF\uFFFE\uFFFF]";
 
@@ -812,7 +814,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         private string GetOutputTrailerUrl(string url)
         {
             // This is what xbmc expects
-            return url.Replace(YouTubeWatchUrl, "plugin://plugin.video.youtube/?action=play_video&videoid=", StringComparison.OrdinalIgnoreCase);
+            return url.Replace(YouTubeWatchUrl, KodiYouTubeWatchUrl, StringComparison.OrdinalIgnoreCase);
         }
 
         private void AddImages(BaseItem item, XmlWriter writer, ILibraryManager libraryManager)

@@ -14,6 +14,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
     /// </summary>
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
+        private readonly ILogger _logger;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesNfoParser"/> class.
         /// </summary>
@@ -32,6 +34,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             IDirectoryService directoryService)
             : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -42,73 +45,30 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
             var item = itemResult.Item;
 
+            var parserHelpers = new NfoParserHelpers(_logger);
+
             switch (reader.Name)
             {
                 case "id":
-                    {
-                        string? imdbId = reader.GetAttribute("IMDB");
-                        string? tmdbId = reader.GetAttribute("TMDB");
-                        string? tvdbId = reader.GetAttribute("TVDB");
-
-                        if (string.IsNullOrWhiteSpace(tvdbId))
-                        {
-                            tvdbId = reader.ReadElementContentAsString();
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(imdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tmdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(tvdbId))
-                        {
-                            item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
-                        }
-
-                        break;
-                    }
+                    parserHelpers.SetSeriesIds(reader, item);
+                    break;
 
                 case "airs_dayofweek":
-                    {
-                        item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
-                        break;
-                    }
+                    item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
+                    break;
 
                 case "airs_time":
-                    {
-                        var val = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(val))
-                        {
-                            item.AirTime = val;
-                        }
-
-                        break;
-                    }
+                    item.AirTime = parserHelpers.ReadStringFromNfo(reader) ?? item.AirTime;
+                    break;
 
                 case "status":
+                    var status = parserHelpers.ReadStringFromNfo(reader);
+                    if (Enum.TryParse(status, true, out SeriesStatus parsedStatus))
                     {
-                        var status = reader.ReadElementContentAsString();
-
-                        if (!string.IsNullOrWhiteSpace(status))
-                        {
-                            if (Enum.TryParse(status, true, out SeriesStatus seriesStatus))
-                            {
-                                item.Status = seriesStatus;
-                            }
-                            else
-                            {
-                                Logger.LogInformation("Unrecognized series status: " + status);
-                            }
-                        }
-
-                        break;
+                        item.Status = parsedStatus;
                     }
+
+                    break;
 
                 default:
                     base.FetchDataFromXmlNode(reader, itemResult);
