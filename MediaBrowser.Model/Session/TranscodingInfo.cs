@@ -34,6 +34,8 @@ namespace MediaBrowser.Model.Session
 
         public int? AudioChannels { get; set; }
 
+        public HardwareEncodingType? HardwareAccelerationType { get; set; }
+
         public TranscodeReason[] TranscodeReasons { get; set; }
     }
 }
