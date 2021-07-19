@@ -1,6 +1,9 @@
 #pragma warning disable CS1591
 
+using System.Threading;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -18,10 +21,22 @@ namespace MediaBrowser.Providers.Movies
             ILogger<MovieMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
+            UserManager = userManager;
+            UserDataManager = userDataManager;
         }
+
+        // Provide UserManager to enable update of user data in base class.
+        // ImportUserData() depends on a valid UserManager.
+        protected override IUserManager UserManager { get; }
+
+        // Provide UserDataManager to enable update of user data in base class.
+        // ImportUserData() depends on a valid UserDataManager.
+        protected override IUserDataManager UserDataManager { get; }
 
         /// <inheritdoc />
         protected override bool IsFullLocalMetadata(Movie item)

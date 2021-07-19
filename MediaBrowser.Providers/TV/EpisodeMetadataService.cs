@@ -19,10 +19,22 @@ namespace MediaBrowser.Providers.TV
             ILogger<EpisodeMetadataService> logger,
             IProviderManager providerManager,
             IFileSystem fileSystem,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager)
             : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
+            UserManager = userManager;
+            UserDataManager = userDataManager;
         }
+
+        // Provide UserManager to enable update of user data in base class.
+        // ImportUserData() depends on a valid UserManager.
+        protected override IUserManager UserManager { get; }
+
+        // Provide UserDataManager to enable update of user data in base class.
+        // ImportUserData() depends on a valid UserDataManager.
+        protected override IUserDataManager UserDataManager { get; }
 
         /// <inheritdoc />
         protected override ItemUpdateType BeforeSaveInternal(Episode item, bool isFullRefresh, ItemUpdateType currentUpdateType)

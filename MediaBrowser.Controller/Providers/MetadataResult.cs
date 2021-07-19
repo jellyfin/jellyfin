@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.Providers
             }
         }
 
-        public UserItemData GetOrAddUserData(string userId)
+        public UserItemData GetOrAddUserData(Guid userId)
         {
             UserDataList ??= new List<UserItemData>();
 
@@ -77,9 +77,10 @@ namespace MediaBrowser.Controller.Providers
 
             foreach (var i in UserDataList)
             {
-                if (string.Equals(userId, i.UserId.ToString("N", CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
+                if (userId == i.UserId)
                 {
                     userData = i;
+                    break;
                 }
             }
 
@@ -87,7 +88,7 @@ namespace MediaBrowser.Controller.Providers
             {
                 userData = new UserItemData()
                 {
-                    UserId = new Guid(userId)
+                    UserId = userId
                 };
 
                 UserDataList.Add(userData);

@@ -21,7 +21,12 @@ namespace MediaBrowser.Providers.Manager
         where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
         where TIdType : ItemLookupInfo, new()
     {
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger<MetadataService<TItemType, TIdType>> logger, IProviderManager providerManager, IFileSystem fileSystem, ILibraryManager libraryManager)
+        protected MetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<MetadataService<TItemType, TIdType>> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -42,6 +47,10 @@ namespace MediaBrowser.Providers.Manager
         protected IFileSystem FileSystem { get; }
 
         protected ILibraryManager LibraryManager { get; }
+
+        protected virtual IUserManager UserManager => null;
+
+        protected virtual IUserDataManager UserDataManager => null;
 
         protected virtual bool EnableUpdatingPremiereDateFromChildren => false;
 
@@ -748,9 +757,28 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            // ImportUserData(item, userDataList, cancellationToken);
+            ImportUserData(item, userDataList, cancellationToken);
 
             return refreshResult;
+        }
+
+        protected virtual void ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)
+        {
+            if (UserManager == null)
+            {
+                return;
+            }
+
+            if (UserDataManager == null)
+            {
+                return;
+            }
+
+            foreach (var userData in userDataList)
+            {
+                var user = UserManager.GetUserById(userData.UserId);
+                UserDataManager.SaveUserData(user, item, userData, UserDataSaveReason.Import, cancellationToken);
+            }
         }
 
         protected virtual bool IsFullLocalMetadata(TItemType item)
