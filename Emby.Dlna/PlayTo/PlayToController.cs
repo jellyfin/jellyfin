@@ -503,7 +503,7 @@ namespace Emby.Dlna.PlayTo
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
 
-            playlistItem.StreamUrl = DidlBuilder.NormalizeDlnaMediaUrl(playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken));
+            playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken, "&dlnaheaders=true");
 
             var itemXml = new DidlBuilder(
                 profile,

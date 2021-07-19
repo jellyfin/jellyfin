@@ -81,11 +81,6 @@ namespace Emby.Dlna.Didl
             _libraryManager = libraryManager;
         }
 
-        public static string NormalizeDlnaMediaUrl(string url)
-        {
-            return url + "&dlnaheaders=true";
-        }
-
         public string GetItemDidl(BaseItem item, User user, BaseItem context, string deviceId, Filter filter, StreamInfo streamInfo)
         {
             var settings = new XmlWriterSettings
@@ -311,7 +306,7 @@ namespace Emby.Dlna.Didl
         {
             writer.WriteStartElement(string.Empty, "res", NsDidl);
 
-            var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
+            var url = streamInfo.ToUrl(_serverAddress, _accessToken, "&dlnaheaders=true");
 
             var mediaSource = streamInfo.MediaSource;
 
@@ -546,7 +541,7 @@ namespace Emby.Dlna.Didl
                 });
             }
 
-            var url = NormalizeDlnaMediaUrl(streamInfo.ToUrl(_serverAddress, _accessToken));
+            var url = streamInfo.ToUrl(_serverAddress, _accessToken, "&dlnaheaders=true");
 
             var mediaSource = streamInfo.MediaSource;
 
