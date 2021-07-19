@@ -1,5 +1,5 @@
 [Unit]
-After=network.target
+After=network-online.target
 Description=Jellyfin is a free software media system that puts you in control of managing and streaming your media.
 
 [Service]
