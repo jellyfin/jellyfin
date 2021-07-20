@@ -469,7 +469,7 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
         public bool? IsAnamorphic { get; set; }
 
-        private string GetResolutionText()
+        internal string GetResolutionText()
         {
             if (!Width.HasValue || !Height.HasValue)
             {
