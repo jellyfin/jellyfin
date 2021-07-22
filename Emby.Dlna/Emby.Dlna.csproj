@@ -30,9 +30,6 @@
     <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-  </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Images\logo120.jpg" />
     <EmbeddedResource Include="Images\logo120.png" />
