@@ -14,6 +14,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>CA2016</NoWarn>
   </PropertyGroup>
 
 </Project>
