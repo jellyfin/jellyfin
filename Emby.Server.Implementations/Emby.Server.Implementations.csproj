@@ -44,12 +44,10 @@
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors Condition=" '$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
-    <Nullable>enable</Nullable>
     <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->
     <NoWarn>AD0001</NoWarn>
-    <AnalysisMode Condition=" '$(Configuration)' == 'Debug' ">AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

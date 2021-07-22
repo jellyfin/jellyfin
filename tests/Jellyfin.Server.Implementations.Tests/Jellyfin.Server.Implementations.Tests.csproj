@@ -8,9 +8,6 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Nullable>enable</Nullable>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisRuleSet>../jellyfin-tests.ruleset</CodeAnalysisRuleSet>
     <RootNamespace>Jellyfin.Server.Implementations.Tests</RootNamespace>
   </PropertyGroup>
