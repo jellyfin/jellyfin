@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CS1591, SA1300
 
 using System;
 using System.Collections.Generic;

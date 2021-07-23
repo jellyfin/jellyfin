@@ -536,6 +536,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
             }
+
             // We always want to use prefetched images
             return false;
         }
