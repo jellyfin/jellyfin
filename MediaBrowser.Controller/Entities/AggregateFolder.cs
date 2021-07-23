@@ -57,7 +57,6 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
-
         protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
             return CreateResolveArgs(directoryService, true).FileSystemChildren;
