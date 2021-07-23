@@ -31,6 +31,9 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Queues the refresh.
         /// </summary>
+        /// <param name="itemId">Item ID.</param>
+        /// <param name="options">MetadataRefreshOptions for operation.</param>
+        /// <param name="priority">RefreshPriority for operation.</param>
         void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority);
 
         /// <summary>
@@ -85,6 +88,13 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Saves the image.
         /// </summary>
+        /// <param name="item">Image to save.</param>
+        /// <param name="source">Source of image.</param>
+        /// <param name="mimeType">Mime type image.</param>
+        /// <param name="type">Type of image.</param>
+        /// <param name="imageIndex">Index of image.</param>
+        /// <param name="saveLocallyWithMedia">Option to save locally.</param>
+        /// <param name="cancellationToken">CancellationToken to use with operation.</param>
         /// <returns>Task.</returns>
         Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
 
@@ -93,6 +103,11 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
+        /// <param name="imageProviders">Image providers to use.</param>
+        /// <param name="metadataServices">Metadata services to use.</param>
+        /// <param name="metadataProviders">Metadata providers to use.</param>
+        /// <param name="metadataSavers">Metadata savers to use.</param>
+        /// <param name="externalIds">External IDs to use.</param>
         void AddParts(
             IEnumerable<IImageProvider> imageProviders,
             IEnumerable<IMetadataService> metadataServices,
