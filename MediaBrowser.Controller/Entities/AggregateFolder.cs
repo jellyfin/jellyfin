@@ -26,7 +26,6 @@ namespace MediaBrowser.Controller.Entities
         private Guid[] _childrenIds = null;
         private readonly object _childIdsLock = new object();
 
-
         public AggregateFolder()
         {
             PhysicalLocationsList = Array.Empty<string>();
