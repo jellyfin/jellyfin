@@ -577,6 +577,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
         }
 
+#pragma warning disable CA1034
         /// <summary>Describes OMDB rating.</summary>
         public class OmdbRating
         {

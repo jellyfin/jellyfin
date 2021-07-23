@@ -1,4 +1,4 @@
-#pragma warning disable CS1591, SA1300
+#pragma warning disable CA1002, CS1591, SA1300
 
 using System;
 using System.Collections.Generic;
@@ -30,9 +30,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
-#pragma warning disable SA1401
+#pragma warning disable SA1401, CA2211
         public static AudioDbAlbumProvider Current;
-#pragma warning restore SA1401
+#pragma warning restore SA1401, CA2211
 
         public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
@@ -204,6 +204,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             throw new NotImplementedException();
         }
 
+#pragma warning disable CA1034, CA2227
         public class Album
         {
             public string idAlbum { get; set; }

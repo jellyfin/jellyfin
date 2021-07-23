@@ -252,8 +252,14 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    (exs ??= new List<Exception>()).Add(ex);
-                }
+#pragma warning disable CA1508
+                    exs ??= new List<Exception>()
+                            {
+                                ex
+                            };
+#pragma warning restore CA1508
+
+            }
                 finally
                 {
                     _monitor.ReportFileSystemChangeComplete(savePath, false);

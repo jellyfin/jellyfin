@@ -1,4 +1,4 @@
-#pragma warning disable CS1591, SA1300
+#pragma warning disable CA1034, CS1591, CA1002, SA1028, SA1300
 
 using System;
 using System.Collections.Generic;
@@ -274,6 +274,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strLocked { get; set; }
         }
 
+#pragma warning disable CA2227
         public class RootObject
         {
             public List<Artist> artists { get; set; }

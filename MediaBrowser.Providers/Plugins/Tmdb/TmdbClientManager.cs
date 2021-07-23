@@ -18,7 +18,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// <summary>
     /// Manager class for abstracting the TMDb API client library.
     /// </summary>
-    public class TmdbClientManager
+    public class TmdbClientManager : IDisposable
     {
         private const int CacheDurationInHours = 1;
 
@@ -531,6 +531,24 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private Task EnsureClientConfigAsync()
         {
             return !_tmDbClient.HasConfig ? _tmDbClient.GetConfigAsync() : Task.CompletedTask;
+        }
+
+        /// <summary>Dispose method.</summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>IDispose implementation.</summary>
+        /// <param name="disposing">Specify true to dispose.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _memoryCache?.Dispose();
+                _tmDbClient?.Dispose();
+            }
         }
     }
 }

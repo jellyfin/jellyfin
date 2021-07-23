@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Music
 {
-    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder
+    public class MusicBrainzAlbumProvider : IRemoteMetadataProvider<MusicAlbum, AlbumInfo>, IHasOrder, IDisposable
     {
         /// <summary>
         /// For each single MB lookup/search, this is the maximum number of
@@ -590,6 +590,21 @@ namespace MediaBrowser.Providers.Music
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _apiRequestLock?.Dispose();
+            }
+        }
+
+        /// <summary>IDisposable implementation.</summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private class ReleaseResult
