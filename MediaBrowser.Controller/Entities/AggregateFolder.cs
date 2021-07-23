@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1819, CS1591
 
 using System;
 using System.Collections.Concurrent;
@@ -23,6 +23,9 @@ namespace MediaBrowser.Controller.Entities
     public class AggregateFolder : Folder
     {
         private bool _requiresRefresh;
+        private Guid[] _childrenIds = null;
+        private readonly object _childIdsLock = new object();
+
 
         public AggregateFolder()
         {
@@ -31,11 +34,6 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public override bool IsPhysicalRoot => true;
-
-        public override bool CanDelete()
-        {
-            return false;
-        }
 
         [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
@@ -55,14 +53,16 @@ namespace MediaBrowser.Controller.Entities
         public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public string[] PhysicalLocationsList { get; set; }
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
 
         protected override FileSystemMetadata[] GetFileSystemChildren(IDirectoryService directoryService)
         {
             return CreateResolveArgs(directoryService, true).FileSystemChildren;
         }
-
-        private Guid[] _childrenIds = null;
-        private readonly object _childIdsLock = new object();
 
         protected override List<BaseItem> LoadChildren()
         {

@@ -16,6 +16,20 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Person : BaseItem, IItemByName, IHasLookupInfo<PersonLookupInfo>
     {
+        /// <summary>
+        /// Gets the folder containing the item.
+        /// If the item is a folder, it returns the folder itself.
+        /// </summary>
+        /// <value>The containing folder path.</value>
+        [JsonIgnore]
+        public override string ContainingFolderPath => Path;
+
+        /// <summary>
+        /// Gets a value indicating whether to enable alpha numeric sorting.
+        /// </summary>
+        [JsonIgnore]
+        public override bool EnableAlphaNumericSorting => false;
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
@@ -49,14 +63,6 @@ namespace MediaBrowser.Controller.Entities
             return LibraryManager.GetItemList(query);
         }
 
-        /// <summary>
-        /// Gets the folder containing the item.
-        /// If the item is a folder, it returns the folder itself.
-        /// </summary>
-        /// <value>The containing folder path.</value>
-        [JsonIgnore]
-        public override string ContainingFolderPath => Path;
-
         public override bool CanDelete()
         {
             return false;
@@ -66,12 +72,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether to enable alpha numeric sorting.
-        /// </summary>
-        [JsonIgnore]
-        public override bool EnableAlphaNumericSorting => false;
 
         [JsonIgnore]
         public override bool SupportsPeople => false;

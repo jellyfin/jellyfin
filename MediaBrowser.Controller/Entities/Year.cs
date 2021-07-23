@@ -15,6 +15,17 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Year : BaseItem, IItemByName
     {
+        [JsonIgnore]
+        public override bool SupportsAncestors => false;
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
@@ -37,14 +48,6 @@ namespace MediaBrowser.Controller.Entities
             value /= 3;
 
             return value;
-        }
-
-        [JsonIgnore]
-        public override bool SupportsAncestors => false;
-
-        public override bool CanDelete()
-        {
-            return false;
         }
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -75,9 +78,6 @@ namespace MediaBrowser.Controller.Entities
 
             return null;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {

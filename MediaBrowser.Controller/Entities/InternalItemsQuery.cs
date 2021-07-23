@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1819, CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,15 @@ namespace MediaBrowser.Controller.Entities
 {
     public class InternalItemsQuery
     {
+        public InternalItemsQuery(User? user)
+            : this()
+        {
+            if (user != null)
+            {
+                SetUser(user);
+            }
+        }
+
         public bool Recursive { get; set; }
 
         public int? StartIndex { get; set; }
@@ -186,23 +195,6 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid[] TopParentIds { get; set; }
 
-        public BaseItem? Parent
-        {
-            set
-            {
-                if (value == null)
-                {
-                    ParentId = Guid.Empty;
-                    ParentType = null;
-                }
-                else
-                {
-                    ParentId = value.Id;
-                    ParentType = value.GetType().Name;
-                }
-            }
-        }
-
         public string[] PresetViews { get; set; }
 
         public TrailerType[] TrailerTypes { get; set; }
@@ -270,6 +262,23 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         public bool? DisplayAlbumFolders { get; set; }
 
+        public BaseItem? Parent
+        {
+            set
+            {
+                if (value == null)
+                {
+                    ParentId = Guid.Empty;
+                    ParentType = null;
+                }
+                else
+                {
+                    ParentId = value.Id;
+                    ParentType = value.GetType().Name;
+                }
+            }
+        }
+
         public InternalItemsQuery()
         {
             AlbumArtistIds = Array.Empty<Guid>();
@@ -308,15 +317,6 @@ namespace MediaBrowser.Controller.Entities
             TrailerTypes = Array.Empty<TrailerType>();
             VideoTypes = Array.Empty<VideoType>();
             Years = Array.Empty<int>();
-        }
-
-        public InternalItemsQuery(User? user)
-            : this()
-        {
-            if (user != null)
-            {
-                SetUser(user);
-            }
         }
 
         public void SetUser(User user)
