@@ -30,6 +30,12 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool EnableAlphaNumericSorting => false;
 
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        [JsonIgnore]
+        public override bool SupportsAncestors => false;
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
@@ -72,12 +78,6 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        [JsonIgnore]
-        public override bool SupportsAncestors => false;
 
         public static string GetPath(string name)
         {

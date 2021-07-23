@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1724, CS1591
 
 using System;
 using System.Text.Json.Serialization;

@@ -1,4 +1,4 @@
-#pragma warning disable CA1819, CA2227, CS1591
+#pragma warning disable CA1044, CA1819, CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,46 @@ namespace MediaBrowser.Controller.Entities
 {
     public class InternalItemsQuery
     {
+        public InternalItemsQuery()
+        {
+            AlbumArtistIds = Array.Empty<Guid>();
+            AlbumIds = Array.Empty<Guid>();
+            AncestorIds = Array.Empty<Guid>();
+            ArtistIds = Array.Empty<Guid>();
+            BlockUnratedItems = Array.Empty<UnratedItem>();
+            BoxSetLibraryFolders = Array.Empty<Guid>();
+            ChannelIds = Array.Empty<Guid>();
+            ContributingArtistIds = Array.Empty<Guid>();
+            DtoOptions = new DtoOptions();
+            EnableTotalRecordCount = true;
+            ExcludeArtistIds = Array.Empty<Guid>();
+            ExcludeInheritedTags = Array.Empty<string>();
+            ExcludeItemIds = Array.Empty<Guid>();
+            ExcludeItemTypes = Array.Empty<string>();
+            ExcludeTags = Array.Empty<string>();
+            GenreIds = Array.Empty<Guid>();
+            Genres = Array.Empty<string>();
+            GroupByPresentationUniqueKey = true;
+            ImageTypes = Array.Empty<ImageType>();
+            IncludeItemTypes = Array.Empty<string>();
+            ItemIds = Array.Empty<Guid>();
+            MediaTypes = Array.Empty<string>();
+            MinSimilarityScore = 20;
+            OfficialRatings = Array.Empty<string>();
+            OrderBy = Array.Empty<ValueTuple<string, SortOrder>>();
+            PersonIds = Array.Empty<Guid>();
+            PersonTypes = Array.Empty<string>();
+            PresetViews = Array.Empty<string>();
+            SeriesStatuses = Array.Empty<SeriesStatus>();
+            SourceTypes = Array.Empty<SourceType>();
+            StudioIds = Array.Empty<Guid>();
+            Tags = Array.Empty<string>();
+            TopParentIds = Array.Empty<Guid>();
+            TrailerTypes = Array.Empty<TrailerType>();
+            VideoTypes = Array.Empty<VideoType>();
+            Years = Array.Empty<int>();
+        }
+
         public InternalItemsQuery(User? user)
             : this()
         {
@@ -279,63 +319,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public InternalItemsQuery()
-        {
-            AlbumArtistIds = Array.Empty<Guid>();
-            AlbumIds = Array.Empty<Guid>();
-            AncestorIds = Array.Empty<Guid>();
-            ArtistIds = Array.Empty<Guid>();
-            BlockUnratedItems = Array.Empty<UnratedItem>();
-            BoxSetLibraryFolders = Array.Empty<Guid>();
-            ChannelIds = Array.Empty<Guid>();
-            ContributingArtistIds = Array.Empty<Guid>();
-            DtoOptions = new DtoOptions();
-            EnableTotalRecordCount = true;
-            ExcludeArtistIds = Array.Empty<Guid>();
-            ExcludeInheritedTags = Array.Empty<string>();
-            ExcludeItemIds = Array.Empty<Guid>();
-            ExcludeItemTypes = Array.Empty<string>();
-            ExcludeTags = Array.Empty<string>();
-            GenreIds = Array.Empty<Guid>();
-            Genres = Array.Empty<string>();
-            GroupByPresentationUniqueKey = true;
-            ImageTypes = Array.Empty<ImageType>();
-            IncludeItemTypes = Array.Empty<string>();
-            ItemIds = Array.Empty<Guid>();
-            MediaTypes = Array.Empty<string>();
-            MinSimilarityScore = 20;
-            OfficialRatings = Array.Empty<string>();
-            OrderBy = Array.Empty<ValueTuple<string, SortOrder>>();
-            PersonIds = Array.Empty<Guid>();
-            PersonTypes = Array.Empty<string>();
-            PresetViews = Array.Empty<string>();
-            SeriesStatuses = Array.Empty<SeriesStatus>();
-            SourceTypes = Array.Empty<SourceType>();
-            StudioIds = Array.Empty<Guid>();
-            Tags = Array.Empty<string>();
-            TopParentIds = Array.Empty<Guid>();
-            TrailerTypes = Array.Empty<TrailerType>();
-            VideoTypes = Array.Empty<VideoType>();
-            Years = Array.Empty<int>();
-        }
-
-        public void SetUser(User user)
-        {
-            MaxParentalRating = user.MaxParentalAgeRating;
-
-            if (MaxParentalRating.HasValue)
-            {
-                string other = UnratedItem.Other.ToString();
-                BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
-                    .Where(i => i != other)
-                    .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
-            }
-
-            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
-
-            User = user;
-        }
-
         public Dictionary<string, string>? HasAnyProviderId { get; set; }
 
         public Guid[] AlbumArtistIds { get; set; }
@@ -361,5 +344,22 @@ namespace MediaBrowser.Controller.Entities
         public string? SearchTerm { get; set; }
 
         public string? SeriesTimerId { get; set; }
+
+        public void SetUser(User user)
+        {
+            MaxParentalRating = user.MaxParentalAgeRating;
+
+            if (MaxParentalRating.HasValue)
+            {
+                string other = UnratedItem.Other.ToString();
+                BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems)
+                    .Where(i => i != other)
+                    .Select(e => Enum.Parse<UnratedItem>(e, true)).ToArray();
+            }
+
+            ExcludeInheritedTags = user.GetPreference(PreferenceKind.BlockedTags);
+
+            User = user;
+        }
     }
 }

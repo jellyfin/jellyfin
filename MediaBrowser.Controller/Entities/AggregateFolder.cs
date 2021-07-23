@@ -22,25 +22,19 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class AggregateFolder : Folder
     {
-        private bool _requiresRefresh;
-        private Guid[] _childrenIds = null;
         private readonly object _childIdsLock = new object();
-
-        public AggregateFolder()
-        {
-            PhysicalLocationsList = Array.Empty<string>();
-        }
-
-        [JsonIgnore]
-        public override bool IsPhysicalRoot => true;
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
 
         /// <summary>
         /// The _virtual children.
         /// </summary>
         private readonly ConcurrentBag<BaseItem> _virtualChildren = new ConcurrentBag<BaseItem>();
+        private bool _requiresRefresh;
+        private Guid[] _childrenIds = null;
+
+        public AggregateFolder()
+        {
+            PhysicalLocationsList = Array.Empty<string>();
+        }
 
         /// <summary>
         /// Gets the virtual children.
@@ -49,9 +43,16 @@ namespace MediaBrowser.Controller.Entities
         public ConcurrentBag<BaseItem> VirtualChildren => _virtualChildren;
 
         [JsonIgnore]
+        public override bool IsPhysicalRoot => true;
+
+        [JsonIgnore]
+        public override bool SupportsPlayedStatus => false;
+
+        [JsonIgnore]
         public override string[] PhysicalLocations => PhysicalLocationsList;
 
         public string[] PhysicalLocationsList { get; set; }
+
         public override bool CanDelete()
         {
             return false;
@@ -167,7 +168,7 @@ namespace MediaBrowser.Controller.Entities
         /// Adds the virtual child.
         /// </summary>
         /// <param name="child">The child.</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if child is null.</exception>
         public void AddVirtualChild(BaseItem child)
         {
             if (child == null)

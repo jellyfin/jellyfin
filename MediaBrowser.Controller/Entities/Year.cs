@@ -18,21 +18,8 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override bool SupportsAncestors => false;
 
-        public override bool CanDelete()
-        {
-            return false;
-        }
-
         [JsonIgnore]
         public override bool SupportsPeople => false;
-
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            list.Insert(0, "Year-" + Name);
-            return list;
-        }
 
         /// <summary>
         /// Gets the folder containing the item.
@@ -41,6 +28,19 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The containing folder path.</value>
         [JsonIgnore]
         public override string ContainingFolderPath => Path;
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "Year-" + Name);
+            return list;
+        }
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {

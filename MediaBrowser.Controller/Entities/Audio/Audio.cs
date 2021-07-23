@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CA1724, CA1826, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -25,6 +25,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
+        public Audio()
+        {
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
+        }
+
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<string> Artists { get; set; }
@@ -32,17 +38,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<string> AlbumArtists { get; set; }
-
-        public Audio()
-        {
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-        }
-
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
-        }
 
         [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
@@ -62,11 +57,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
 
-        public override bool CanDownload()
-        {
-            return IsFileProtocol;
-        }
-
         [JsonIgnore]
         public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
 
@@ -76,6 +66,16 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <value>The type of the media.</value>
         [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Audio;
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
+        public override bool CanDownload()
+        {
+            return IsFileProtocol;
+        }
 
         /// <summary>
         /// Creates the name of the sort.

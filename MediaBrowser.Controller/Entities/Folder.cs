@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CA1721, CA1819, CS1591
+#pragma warning disable CA1002, CA1721, CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -165,6 +165,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public static ICollectionManager CollectionManager { get; set; }
+
         public override bool CanDelete()
         {
             if (IsRoot)
@@ -258,6 +260,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this synchronous.
         /// </summary>
+        /// <returns>Returns cached children</returns>
         protected virtual List<BaseItem> LoadChildren()
         {
             // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
@@ -642,6 +645,8 @@ namespace MediaBrowser.Controller.Entities
         /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <param name="directoryService">The directory service to use for operation.</param>
+        /// <returns>Returns set of base items.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             var collectionType = LibraryManager.GetContentType(this);
@@ -997,8 +1002,6 @@ namespace MediaBrowser.Controller.Entities
 
             return PostFilterAndSort(items, query, true);
         }
-
-        public static ICollectionManager CollectionManager { get; set; }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
         {
