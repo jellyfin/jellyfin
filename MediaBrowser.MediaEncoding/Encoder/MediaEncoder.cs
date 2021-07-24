@@ -66,7 +66,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _encoders = new List<string>();
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
+        private List<string> _filters = new List<string>();
+        private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
         private int threads;
@@ -130,7 +133,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
+                SetAvailableFilters(validator.GetFilters());
+                SetAvailableFiltersWithOption(validator.GetFiltersWithOption());
                 SetAvailableHwaccels(validator.GetHwaccels());
+                SetMediaEncoderVersion(validator);
+
                 threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
@@ -278,6 +285,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             _hwaccels = list.ToList();
         }
 
+        public void SetAvailableFilters(IEnumerable<string> list)
+        {
+            _filters = list.ToList();
+        }
+
+        public void SetAvailableFiltersWithOption(IDictionary<int, bool> dict)
+        {
+            _filtersWithOption = dict;
+        }
+
+        public void SetMediaEncoderVersion(EncoderValidator validator)
+        {
+            _ffmpegVersion = validator.GetFFmpegVersion();
+        }
+
         public bool SupportsEncoder(string encoder)
         {
             return _encoders.Contains(encoder, StringComparer.OrdinalIgnoreCase);
@@ -293,15 +315,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool SupportsFilter(string filter, string option)
+        public bool SupportsFilter(string filter)
         {
-            if (_ffmpegPath != null)
+            return _filters.Contains(filter, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool SupportsFilterWithOption(FilterOptionType option)
+        {
+            if (_filtersWithOption.TryGetValue((int)option, out var val))
             {
-                var validator = new EncoderValidator(_logger, _ffmpegPath);
-                return validator.CheckFilter(filter, option);
+                return val;
             }
 
             return false;
+        }
+
+        public Version GetMediaEncoderVersion()
+        {
+            return _ffmpegVersion;
         }
 
         public bool CanEncodeToAudioCodec(string codec)

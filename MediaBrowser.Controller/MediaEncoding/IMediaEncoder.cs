@@ -55,9 +55,21 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Whether given filter is supported.
         /// </summary>
         /// <param name="filter">The filter.</param>
+        /// <returns><c>true</c> if the filter is supported, <c>false</c> otherwise.</returns>
+        bool SupportsFilter(string filter);
+
+        /// <summary>
+        /// Whether filter is supported with the given option.
+        /// </summary>
         /// <param name="option">The option.</param>
         /// <returns><c>true</c> if the filter is supported, <c>false</c> otherwise.</returns>
-        bool SupportsFilter(string filter, string option);
+        bool SupportsFilterWithOption(FilterOptionType option);
+
+        /// <summary>
+        /// Get the version of media encoder.
+        /// </summary>
+        /// <returns>The version of media encoder.</returns>
+        Version GetMediaEncoderVersion();
 
         /// <summary>
         /// Extracts the audio image.
