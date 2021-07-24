@@ -14,7 +14,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AnalysisMode>AllDisabledByDefault</AnalysisMode>
-    <Nullable>Disable</Nullable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
 </Project>
