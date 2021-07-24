@@ -2,6 +2,30 @@ namespace Jellyfin.MediaEncoding.Tests
 {
     internal static class EncoderValidatorTestsData
     {
+        public const string FFmpegV44Output = @"ffmpeg version 4.4-Jellyfin Copyright (c) 2000-2021 the FFmpeg developers
+built with gcc 10.3.0 (Rev5, Built by MSYS2 project)
+configuration:  --disable-static --enable-shared --extra-version=Jellyfin --disable-ffplay --disable-debug --enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-zlib --enable-sdl2 --enable-fontconfig --enable-gmp --enable-libass --enable-libzimg --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libtheora --enable-libvorbis --enable-libwebp --enable-libvpx --enable-libx264 --enable-libx265 --enable-libdav1d --enable-opencl --enable-dxva2 --enable-d3d11va --enable-amf --enable-libmfx --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvenc --enable-nvdec --enable-ffnvcodec --enable-gnutls
+libavutil      56. 70.100 / 56. 70.100
+libavcodec     58.134.100 / 58.134.100
+libavformat    58. 76.100 / 58. 76.100
+libavdevice    58. 13.100 / 58. 13.100
+libavfilter     7.110.100 /  7.110.100
+libswscale      5.  9.100 /  5.  9.100
+libswresample   3.  9.100 /  3.  9.100
+libpostproc    55.  9.100 / 55.  9.100";
+
+        public const string FFmpegV432Output = @"ffmpeg version n4.3.2-Jellyfin Copyright (c) 2000-2021 the FFmpeg developers
+built with gcc 10.2.0 (Rev9, Built by MSYS2 project)
+configuration:  --disable-static --enable-shared --cc='ccache gcc' --cxx='ccache g++' --extra-version=Jellyfin --disable-ffplay --disable-debug --enable-lto --enable-gpl --enable-version3 --enable-bzlib --enable-iconv --enable-lzma --enable-zlib --enable-sdl2 --enable-fontconfig --enable-gmp --enable-libass --enable-libzimg --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libtheora --enable-libvorbis --enable-libwebp --enable-libvpx --enable-libx264 --enable-libx265 --enable-libdav1d --enable-opencl --enable-dxva2 --enable-d3d11va --enable-amf --enable-libmfx --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvenc --enable-nvdec --enable-ffnvcodec --enable-gnutls
+libavutil      56. 51.100 / 56. 51.100
+libavcodec     58. 91.100 / 58. 91.100
+libavformat    58. 45.100 / 58. 45.100
+libavdevice    58. 10.100 / 58. 10.100
+libavfilter     7. 85.100 /  7. 85.100
+libswscale      5.  7.100 /  5.  7.100
+libswresample   3.  7.100 /  3.  7.100
+libpostproc    55.  7.100 / 55.  7.100";
+
         public const string FFmpegV431Output = @"ffmpeg version n4.3.1 Copyright (c) 2000-2020 the FFmpeg developers
 built with gcc 10.1.0 (GCC)
 configuration: --prefix=/usr --disable-debug --disable-static --disable-stripping --enable-avisynth --enable-fontconfig --enable-gmp --enable-gnutls --enable-gpl --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libdav1d --enable-libdrm --enable-libfreetype --enable-libfribidi --enable-libgsm --enable-libiec61883 --enable-libjack --enable-libmfx --enable-libmodplug --enable-libmp3lame --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libopenjpeg --enable-libopus --enable-libpulse --enable-librav1e --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libv4l2 --enable-libvidstab --enable-libvmaf --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxcb --enable-libxml2 --enable-libxvid --enable-nvdec --enable-nvenc --enable-omx --enable-shared --enable-version3
