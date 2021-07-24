@@ -10,7 +10,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->
     <NoWarn>AD0001</NoWarn>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisMode>AllDisabledByDefault</AnalysisMode>
   </PropertyGroup>
 
   <ItemGroup>
