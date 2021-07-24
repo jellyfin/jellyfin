@@ -60,6 +60,7 @@ namespace Jellyfin.Model.Tests.Entities
         [InlineData(3840, 1606, false, "4K")]
         [InlineData(3840, 1608, false, "4K")]
         [InlineData(3840, 2160, false, "4K")]
+        [InlineData(7680, 4320, false, "8K")]
         public void GetResolutionText_Valid(int? width, int? height, bool interlaced, string expected)
         {
             var mediaStream = new MediaStream()
