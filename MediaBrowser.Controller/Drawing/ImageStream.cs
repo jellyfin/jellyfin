@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1711, CS1591
 
 using System;
 using System.IO;

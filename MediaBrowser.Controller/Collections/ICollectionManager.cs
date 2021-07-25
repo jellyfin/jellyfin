@@ -32,6 +32,7 @@ namespace MediaBrowser.Controller.Collections
         /// Creates the collection.
         /// </summary>
         /// <param name="options">The options.</param>
+        /// <returns>BoxSet wrapped in an awaitable task.</returns>
         Task<BoxSet> CreateCollectionAsync(CollectionCreationOptions options);
 
         /// <summary>
