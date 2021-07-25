@@ -124,12 +124,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            return (string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+            return options.EnableTonemapping
+                   && (string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(videoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
                    && IsColorDepth10(state)
                    && _mediaEncoder.SupportsHwaccel("opencl")
-                   && _mediaEncoder.SupportsFilter("tonemap_opencl")
-                   && options.EnableTonemapping;
+                   && _mediaEncoder.SupportsFilter("tonemap_opencl");
         }
 
         private bool IsCudaTonemappingSupported(EncodingJobInfo state, EncodingOptions options)
@@ -140,12 +140,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return false;
             }
 
-            return (string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+            return options.EnableTonemapping
+                   && (string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
                        || string.Equals(videoStream.ColorTransfer, "arib-std-b67", StringComparison.OrdinalIgnoreCase))
                    && IsColorDepth10(state)
                    && _mediaEncoder.SupportsHwaccel("cuda")
-                   && _mediaEncoder.SupportsFilterWithOption(FilterOptionType.TonemapCudaName)
-                   && options.EnableTonemapping;
+                   && _mediaEncoder.SupportsFilterWithOption(FilterOptionType.TonemapCudaName);
         }
 
         private bool IsVppTonemappingSupported(EncodingJobInfo state, EncodingOptions options)
@@ -161,25 +161,25 @@ namespace MediaBrowser.Controller.MediaEncoding
             if (string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
             {
                 // Limited to HEVC for now since the filter doesn't accept master data from VP9.
-                return string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                return options.EnableVppTonemapping
+                       && string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
                        && IsColorDepth10(state)
                        && string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
                        && _mediaEncoder.SupportsHwaccel("vaapi")
-                       && _mediaEncoder.SupportsFilter("tonemap_vaapi")
-                       && options.EnableVppTonemapping;
+                       && _mediaEncoder.SupportsFilter("tonemap_vaapi");
             }
 
             // Hybrid VPP tonemapping for QSV with VAAPI
             if (OperatingSystem.IsLinux() && string.Equals(options.HardwareAccelerationType, "qsv", StringComparison.OrdinalIgnoreCase))
             {
                 // Limited to HEVC for now since the filter doesn't accept master data from VP9.
-                return string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
+                return options.EnableVppTonemapping
+                       && string.Equals(videoStream.ColorTransfer, "smpte2084", StringComparison.OrdinalIgnoreCase)
                        && IsColorDepth10(state)
                        && string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
                        && _mediaEncoder.SupportsHwaccel("vaapi")
                        && _mediaEncoder.SupportsFilter("tonemap_vaapi")
-                       && _mediaEncoder.SupportsHwaccel("qsv")
-                       && options.EnableVppTonemapping;
+                       && _mediaEncoder.SupportsHwaccel("qsv");
             }
 
             // Native VPP tonemapping may come to QSV in the future.
@@ -2155,7 +2155,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else
                 {
-                    retStr = !outputSizeParam.IsEmpty
+                    retStr = outputSizeParam.IsEmpty
                         ? " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}][sub]overlay,format=nv12|yuv420p,hwupload_cuda\""
                         : " -filter_complex \"[{0}:{1}]{4}[sub];[0:{2}]{3}[base];[base][sub]overlay,format=nv12|yuv420p,hwupload_cuda\"";
                 }
