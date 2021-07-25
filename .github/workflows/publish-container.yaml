@@ -1,0 +1,125 @@
+name: '🚀 Publish Container Images'
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  docker:
+    name: Build Container Images
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image-tag: amd64
+            image-config: amd64
+            build-config: linux-x64
+          - image-tag: arm64
+            image-config: arm64
+            build-config: linux-arm64
+          - image-tag: armhf
+            image-config: arm32
+            build-config: linux-arm
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Get Date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u "+%Y%W")"
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ steps.get-date.outputs.date }}
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.9.8
+
+      - name: Install qemu dependency
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      - name: Setup Variables
+        run: |
+          if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
+            STAGE='stable'
+          fi
+
+          VERSION=`yq e '.version' build.yaml`
+          echo "STAGE=${STAGE:-unstable}" >> $GITHUB_ENV
+          echo "MAJOR_MINOR=${VERSION%.*}" >> $GITHUB_ENV
+          echo "SEMVER=${VERSION}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
+
+      - name: Build Server against OS arch
+        run: |-
+          mkdir -p ci-artifact
+          dotnet publish Jellyfin.Server \
+            --nologo \
+            --disable-parallel \
+            --configuration Release \
+            --output ci-artifact \
+            --self-contained \
+            --runtime ${{ matrix.build-config }} \
+            "-p:DebugSymbols=false;DebugType=none"
+
+      - name: Build Server Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: jellyfin-server
+          tags: >-
+            ${{ env.STAGE }}-${{ matrix.image-tag }}
+            ${{ env.STAGE }}-${{ env.MAJOR_MINOR }}-${{ matrix.image-tag }}
+            ${{ env.STAGE }}-${{ env.SEMVER }}-${{ matrix.image-tag }}
+            ${{ env.SHORT_SHA }}-${{ matrix.image-tag }}
+          oci: true
+          arch: ${{ matrix.image-config }}
+          dockerfiles: deployment/Dockerfile.docker.${{ matrix.image-tag }}
+          context: ci-artifact
+          build-args: |-
+            JELLYFIN_VERSION=${{ env.SEMVER }}
+
+      - name: Publish Server Image to ghcr.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: ghcr.io/${{ github.repository_owner }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Publish Server Image to quay.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: quay.io/jellyfin
+          username: jellyfin+github_actions
+          password: ${{ secrets.RH_TOKEN }}
+
+      - name: Publish Server Image to docker.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: docker.io/jellyfin
+          username: jellyfin
+          password: ${{ secrets.DH_TOKEN }}

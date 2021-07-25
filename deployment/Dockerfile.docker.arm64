@@ -1,15 +1,52 @@
-ARG DOTNET_VERSION=5.0
+ARG JELLYFIN_VERSION
+FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
+FROM mcr.microsoft.com/dotnet/runtime:5.0-buster-slim-arm64v8
 
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-buster-slim
+COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
 
-ARG SOURCE_DIR=/src
-ARG ARTIFACT_DIR=/jellyfin
+# Default environment variables for the Jellyfin invocation
+ENV DOTNET_CLI_TELEMETRY_OPTOUT="true" \
+    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT="true" \
+    LC_ALL="en_US.UTF-8" \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US:en" \
+    JELLYFIN_VERSION="${JELLYFIN_VERSION:-10.8.0}" \
+    JELLYFIN_MEDIA_DIR="/media" \
+    JELLYFIN_DATA_DIR="/config" \
+    JELLYFIN_CACHE_DIR="/cache" \
+    JELLYFIN_CONFIG_DIR="/config/config" \
+    JELLYFIN_LOG_DIR="/config/log" \
+    JELLYFIN_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg"
 
-WORKDIR ${SOURCE_DIR}
-COPY . .
+# Open Container Initiative metadata labels
+LABEL \
+    org.opencontainers.image.vendor="Jellyfin project" \
+    org.opencontainers.image.title="Official Jellyfin server Docker image" \
+    org.opencontainers.image.description="Jellyfin - The Free Software Media System" \
+    org.opencontainers.image.version="${JELLYFIN_VERSION}" \
+    org.opencontainers.image.url="https://jellyfin.org/" \
+    org.opencontainers.image.source="https://github.com/jellyfin/jellyfin" \
+    org.opencontainers.image.licenses="GPL-2.0"
 
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+# Install dependencies:
+#   libomxil-bellagio0: needed for OpenMax IL
+RUN apt-get update -qyy \
+    && apt-get install -qyy --no-install-recommends --no-install-suggests ca-certificates gnupg wget apt-transport-https \
+    && wget -qO - https://repo.jellyfin.org/jellyfin_team.gpg.key | apt-key add - \
+    && echo 'deb [arch=arm64] https://repo.jellyfin.org/debian buster main' > /etc/apt/sources.list.d/jellyfin.list \
+    && apt-get update -qyy \
+    && apt-get install -qyy --no-install-recommends --no-install-suggests libomxil-bellagio0 libomxil-bellagio-bin jellyfin-ffmpeg openssl locales libfontconfig1 libfreetype6 \
+    && apt-get remove -qyy gnupg wget apt-transport-https \
+    && apt-get clean autoclean -qyy \
+    && apt-get autoremove -qyy \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${JELLYFIN_MEDIA_DIR} ${JELLYFIN_DATA_DIR} ${JELLYFIN_CACHE_DIR} \
+    && chmod 777 ${JELLYFIN_MEDIA_DIR} ${JELLYFIN_DATA_DIR} ${JELLYFIN_CACHE_DIR} \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
-# because of changes in docker and systemd we need to not build in parallel at the moment
-# see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
-RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="${ARTIFACT_DIR}" --self-contained --runtime linux-arm64 "-p:DebugSymbols=false;DebugType=none"
+COPY . /opt/jellyfin
+
+EXPOSE 8096/tcp
+VOLUME [ "${JELLYFIN_MEDIA_DIR}", "${JELLYFIN_DATA_DIR}", "${JELLYFIN_CACHE_DIR}" ]
+ENTRYPOINT [ "/opt/jellyfin/jellyfin" ]
+CMD [ "--nowebclient" ]
