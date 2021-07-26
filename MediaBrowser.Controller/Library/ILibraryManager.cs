@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets a Person.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the person.</param>
         /// <returns>Task{Person}.</returns>
         Person GetPerson(string name);
 
