@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets a Studio.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the studio.</param>
         /// <returns>Task{Studio}.</returns>
         Studio GetStudio(string name);
 
