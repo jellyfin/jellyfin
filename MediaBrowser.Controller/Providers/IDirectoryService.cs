@@ -1,4 +1,4 @@
-#pragma warning disable CA1819, CS1591
+#pragma warning disable CA1002, CA1819, CS1591
 
 using System.Collections.Generic;
 using MediaBrowser.Model.IO;

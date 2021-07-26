@@ -318,8 +318,8 @@ namespace Jellyfin.Server
                         }
                     }
 
-                    // Bind to unix socket (only on macOS and Linux)
-                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    // Bind to unix socket (only on unix systems)
+                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
                         var socketPath = startupConfig.GetUnixSocketPath();
                         if (string.IsNullOrEmpty(socketPath))
@@ -404,7 +404,7 @@ namespace Jellyfin.Server
                 {
                     if (options.DataDir != null
                         || Directory.Exists(Path.Combine(dataDir, "config"))
-                        || RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        || OperatingSystem.IsWindows())
                     {
                         // Hang config folder off already set dataDir
                         configDir = Path.Combine(dataDir, "config");
@@ -442,7 +442,7 @@ namespace Jellyfin.Server
 
                 if (string.IsNullOrEmpty(cacheDir))
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (OperatingSystem.IsWindows())
                     {
                         // Hang cache folder off already set dataDir
                         cacheDir = Path.Combine(dataDir, "cache");

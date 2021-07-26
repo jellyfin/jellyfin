@@ -13,14 +13,12 @@ namespace MediaBrowser.Controller.Security
         /// Creates the specified information.
         /// </summary>
         /// <param name="info">The information.</param>
-        /// <returns>Task.</returns>
         void Create(AuthenticationInfo info);
 
         /// <summary>
         /// Updates the specified information.
         /// </summary>
         /// <param name="info">The information.</param>
-        /// <returns>Task.</returns>
         void Update(AuthenticationInfo info);
 
         /// <summary>
