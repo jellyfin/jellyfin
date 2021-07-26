@@ -98,7 +98,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the artist.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the artist.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
 
