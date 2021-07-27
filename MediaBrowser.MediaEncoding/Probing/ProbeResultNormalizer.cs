@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
@@ -1108,6 +1109,26 @@ namespace MediaBrowser.MediaEncoding.Probing
                 foreach (var person in Split(lyricist, false))
                 {
                     people.Add(new BaseItemPerson { Name = person, Type = PersonType.Lyricist });
+                }
+            }
+
+            if (tags.TryGetValue("performer", out var performer) && !string.IsNullOrWhiteSpace(performer))
+            {
+                foreach (var person in Split(performer, false))
+                {
+                    Regex pattern = new Regex(@"(?<name>.*) \((?<instrument>.*)\)");
+                    Match match = pattern.Match(person);
+
+                    // If the performer doesn't have any instrument/role associated, it won't match. In that case, chances are it's simply a band name, so we skip it.
+                    if (match.Success)
+                    {
+                        people.Add(new BaseItemPerson
+                        {
+                            Name = match.Groups["name"].Value,
+                            Type = PersonType.Actor,
+                            Role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
+                        });
+                    }
                 }
             }
 
