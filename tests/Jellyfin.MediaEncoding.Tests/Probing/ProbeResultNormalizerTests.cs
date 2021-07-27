@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.MediaEncoding.Probing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -90,6 +91,33 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Contains("Ambient", res.Genres);
             Assert.Contains("Pop", res.Genres);
             Assert.Contains("Jazz", res.Genres);
+        }
+
+        [Fact]
+        public void GetMediaInfo_Music_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/music_metadata.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, null, true, "Test Data/Probing/music.flac", MediaProtocol.File);
+
+            Assert.Equal("UP NO MORE", res.Name);
+            Assert.Single(res.Artists);
+            Assert.Equal("TWICE", res.Artists[0]);
+            Assert.Equal("Eyes wide open", res.Album);
+            Assert.Equal(2020, res.ProductionYear);
+            Assert.True(res.PremiereDate.HasValue);
+            Assert.Equal(DateTime.Parse("2020-10-26T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+            Assert.NotEmpty(res.People);
+            Assert.Equal("Krysta Youngs", res.People[0].Name);
+            Assert.Equal(PersonType.Composer, res.People[0].Type);
+            Assert.Equal("Julia Ross", res.People[1].Name);
+            Assert.Equal(PersonType.Composer, res.People[1].Type);
+            Assert.Equal("Yiwoomin", res.People[2].Name);
+            Assert.Equal(PersonType.Composer, res.People[2].Type);
+            Assert.Equal("Ji-hyo Park", res.People[3].Name);
+            Assert.Equal(PersonType.Lyricist, res.People[3].Type);
+            Assert.NotEmpty(res.Genres);
+            Assert.Equal(new string[] { "Electronic", "Trance", "Dance", "Jazz" }, res.Genres);
         }
     }
 }
