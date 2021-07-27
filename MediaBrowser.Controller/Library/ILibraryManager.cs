@@ -121,7 +121,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the genre.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the music genre.</param>
         /// <returns>Task{MusicGenre}.</returns>
         MusicGenre GetMusicGenre(string name);
 
