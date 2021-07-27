@@ -107,7 +107,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal(2020, res.ProductionYear);
             Assert.True(res.PremiereDate.HasValue);
             Assert.Equal(DateTime.Parse("2020-10-26T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
-            Assert.Equal(18, res.People.Length);
+            Assert.Equal(22, res.People.Length);
             Assert.Equal("Krysta Youngs", res.People[0].Name);
             Assert.Equal(PersonType.Composer, res.People[0].Type);
             Assert.Equal("Julia Ross", res.People[1].Name);

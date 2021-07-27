@@ -1132,12 +1132,44 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            // Check for writer some music is tagged that way as alternative to composer/lyricist
+            // In cases where there isn't sufficient information as to which role a writer performed on a recording, tagging software uses the "writer" tag.
             if (tags.TryGetValue("writer", out var writer) && !string.IsNullOrWhiteSpace(writer))
             {
                 foreach (var person in Split(writer, false))
                 {
                     people.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
+                }
+            }
+
+            if (tags.TryGetValue("arranger", out var arranger) && !string.IsNullOrWhiteSpace(arranger))
+            {
+                foreach (var person in Split(arranger, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Arranger });
+                }
+            }
+
+            if (tags.TryGetValue("engineer", out var engineer) && !string.IsNullOrWhiteSpace(engineer))
+            {
+                foreach (var person in Split(engineer, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Engineer });
+                }
+            }
+
+            if (tags.TryGetValue("mixer", out var mixer) && !string.IsNullOrWhiteSpace(mixer))
+            {
+                foreach (var person in Split(mixer, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Mixer });
+                }
+            }
+
+            if (tags.TryGetValue("remixer", out var remixer) && !string.IsNullOrWhiteSpace(remixer))
+            {
+                foreach (var person in Split(remixer, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Remixer });
                 }
             }
 
