@@ -1,4 +1,5 @@
 <Project>
+  <!-- Sets defaults for all projects in the repo -->
 
   <PropertyGroup>
     <Nullable>enable</Nullable>
