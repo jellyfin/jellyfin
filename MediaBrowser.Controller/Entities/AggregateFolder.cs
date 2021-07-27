@@ -18,7 +18,7 @@ namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Specialized folder that can have items added to it's children by external entities.
-    /// Used for our RootFolder so plug-ins can add items.
+    /// Used for our RootFolder so plugins can add items.
     /// </summary>
     public class AggregateFolder : Folder
     {
