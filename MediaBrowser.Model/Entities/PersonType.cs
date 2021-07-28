@@ -41,12 +41,12 @@ namespace MediaBrowser.Model.Entities
         public const string Conductor = "Conductor";
 
         /// <summary>
-        /// The lyricist.
+        /// A person who writes the words to a song or musical.
         /// </summary>
         public const string Lyricist = "Lyricist";
 
         /// <summary>
-        /// A person who writes the words to a song or musical.
+        /// A person who adapts a musical composition for performance.
         /// </summary>
         public const string Arranger = "Arranger";
 
