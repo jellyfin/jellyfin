@@ -46,11 +46,7 @@ namespace Emby.Dlna.Service
                 writer.WriteEndDocument();
             }
 
-            return new ControlResponse
-            {
-                Xml = builder.ToString(),
-                IsSuccessful = false
-            };
+            return new ControlResponse(builder.ToString(), false);
         }
     }
 }

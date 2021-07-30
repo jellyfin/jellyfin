@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -140,7 +138,7 @@ namespace Emby.Dlna.ContentDirectory
         /// </summary>
         /// <param name="profile">The <see cref="DeviceProfile"/>.</param>
         /// <returns>The <see cref="User"/>.</returns>
-        private User GetUser(DeviceProfile profile)
+        private User? GetUser(DeviceProfile profile)
         {
             if (!string.IsNullOrEmpty(profile.UserId))
             {
