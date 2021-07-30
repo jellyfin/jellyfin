@@ -13,7 +13,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>AllDisabledByDefault</AnalysisMode>
+    <Nullable>disable</Nullable>
+    <NoWarn>CA2016</NoWarn>
   </PropertyGroup>
 
 </Project>

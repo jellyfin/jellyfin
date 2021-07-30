@@ -95,11 +95,7 @@ namespace Emby.Dlna.Service
 
             var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=", StringComparison.Ordinal);
 
-            var controlResponse = new ControlResponse
-            {
-                Xml = xml,
-                IsSuccessful = true
-            };
+            var controlResponse = new ControlResponse(xml, true);
 
             controlResponse.Headers.Add("EXT", string.Empty);
 

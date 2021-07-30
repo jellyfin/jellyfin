@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
@@ -8,8 +6,10 @@ namespace Emby.Dlna
 {
     public class EventSubscriptionResponse
     {
-        public EventSubscriptionResponse()
+        public EventSubscriptionResponse(string content, string contentType)
         {
+            Content = content;
+            ContentType = contentType;
             Headers = new Dictionary<string, string>();
         }
 
