@@ -5,8 +5,9 @@ on:
     branches:
       - master
       - main
-    tags:
-      - 'v*'
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 jobs:
@@ -36,6 +37,10 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
+      - name: Setup Env
+        run: |-
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build Packaging Container
         id: build-image
         uses: redhat-actions/buildah-build@v2
@@ -46,25 +51,25 @@ jobs:
           dockerfiles: deployment/Dockerfile.${{ matrix.build-config }}
 
       - name: Run Packaging Container (stable)
-        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        if: ${{ github.event_name == 'release' }}
         run: |-
           mkdir -p deployment/dist
           podman run --rm \
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="no" \
-            -e BUILD_ID=${{ github.run_id }} \
+            -e BUILD_ID=${{ env.SHORT_SHA }} \
             jellyfin-server:${{ matrix.build-config }}
 
       - name: Run Packaging Container (unstable)
-        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+        if: ${{ github.event_name != 'release' }}
         run: |-
           mkdir -p deployment/dist
           podman run --rm \
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="yes" \
-            -e BUILD_ID=${{ github.run_id }} \
+            -e BUILD_ID=${{ env.SHORT_SHA }} \
             jellyfin-server:${{ matrix.build-config }}
 
       - name: Publish Artifacts
@@ -73,22 +78,25 @@ jobs:
           name: jellyfin-server-${{ matrix.build-config }}
           path: deployment/dist
 
+
+      # TODO: migrate bits of 'collect-server-artefacts' script into this ci
       - name: Create Target Directory on Repository Server
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
-          envs: JELLYFIN_VERSION
           script_stop: true
-          script: mkdir -p /srv/repository/incoming/gh-actions/${{ github.run_id }}/${{ matrix.build-config }}
+          script: mkdir -p /srv/repository/incoming/gh-actions/${{ env.SHORT_SHA }}/${{ matrix.build-config }}
 
       - name: Upload Packaging Artifacts to Repository Server
         uses: burnett01/rsync-deployments@4.1
         with:
           switches: -vrptz
           path: deployment/dist/
-          remote_path: /srv/repository/incoming/gh-actions/${{ github.run_id }}/${{ matrix.build-config }}
+          remote_path: /srv/repository/incoming/gh-actions/${{ env.SHORT_SHA }}/${{ matrix.build-config }}
           remote_host: ${{ secrets.DEPLOY_HOST }}
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_KEY }}
+
+    # TODO: add stage tat dls all artifacts and publishes them to a GH release + SHA256sum collection file

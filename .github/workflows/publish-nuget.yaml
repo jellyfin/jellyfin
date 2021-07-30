@@ -5,10 +5,10 @@ on:
     branches:
       - master
       - main
-    tags:
-      - 'v*'
+  release:
+    types:
+      - published
   workflow_dispatch:
-    # TODO: add bool input to overwrite and publish stable (probably needs a version param too)
 
 jobs:
   nuget:
@@ -24,13 +24,15 @@ jobs:
           dotnet-version: '5.0.x'
 
       - name: Setup Variables
-        if: ${{ contains(github.ref, 'refs/tags/v') }}
-        run: |
-          TAG=${GITHUB_REF#refs/tags/v}
-          echo "SEMVER=${TAG}" >> $GITHUB_ENV
+        run: |-
+          if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
+            TAG=${GITHUB_REF#refs/tags/v}
+            echo "SEMVER=${TAG}" >> $GITHUB_ENV
+          fi
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Build NuGet Packages (stable)
-        if: ${{ contains(github.ref, 'refs/tags/v') }}
+        if: ${{ github.event_name == 'release' }}
         run: |-
           mkdir nuget-artifacts
           for nugetProj in Jellyfin.Data/Jellyfin.Data.csproj \
@@ -40,14 +42,14 @@ jobs:
               Emby.Naming/Emby.Naming.csproj; do
             dotnet pack ${nugetProj} \
               --configuration Release \
-              -p:Version=${SEMVER} \
-              -o nuget-artifacts \
+              -p:Version=${{ env.SEMVER }} \
+              --output nuget-artifacts \
               --verbosity minimal \
               --nologo
           done
 
       - name: Build NuGet Packages (unstable)
-        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+        if: ${{ github.event_name != 'release' }}
         run: |-
           mkdir nuget-artifacts
           for nugetProj in Jellyfin.Data/Jellyfin.Data.csproj \
@@ -57,9 +59,9 @@ jobs:
               Emby.Naming/Emby.Naming.csproj; do
             dotnet pack ${nugetProj} \
               --configuration Release \
-              --version-suffix ${{ github.run_id }} \
+              --version-suffix ${{ env.SHORT_SHA }} \
               -p:Stability=Unstable \
-              -o nuget-artifacts \
+              --output nuget-artifacts \
               --verbosity minimal \
               --nologo
           done
@@ -70,8 +72,7 @@ jobs:
           name: jellyfin-nuget-packages
           path: nuget-artifacts
 
-      - name: Push NuGet Packages (stable - NuGet.org)
-        if: ${{ contains(github.ref, 'refs/tags/v') }}
+      - name: Push NuGet Packages (NuGet.org)
         continue-on-error: true
         run: |-
           dotnet nuget push nuget-artifacts/**/*.nupkg \
@@ -79,26 +80,7 @@ jobs:
             --skip-duplicate \
             --source nuget.org
 
-      - name: Push NuGet Packages (stable - GitHub.com)
-        if: ${{ contains(github.ref, 'refs/tags/v') }}
-        continue-on-error: true
-        run: |-
-          dotnet nuget push nuget-artifacts/**/*.nupkg \
-            --api-key ${{ secrets.GITHUB_TOKEN }} \
-            --skip-duplicate \
-            --source github
-
-      - name: Push NuGet Packages (unstable - NuGet.org)
-        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
-        continue-on-error: true
-        run: |-
-          dotnet nuget push nuget-artifacts/**/*.nupkg \
-            --api-key ${{ secrets.NuGetAPI }} \
-            --skip-duplicate \
-            --source nuget.org
-
-      - name: Push NuGet Packages (unstable - GitHub.com)
-        if: ${{ ! contains(github.ref, 'refs/tags/v') }}
+      - name: Push NuGet Packages (GitHub.com)
         continue-on-error: true
         run: |-
           dotnet nuget push nuget-artifacts/**/*.nupkg \

@@ -5,8 +5,9 @@ on:
     branches:
       - master
       - main
-    tags:
-      - 'v*'
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 jobs:
@@ -31,16 +32,6 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
-      - name: Get Date
-        id: get-date
-        shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u "+%Y%W")"
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ steps.get-date.outputs.date }}
-
       - name: Setup .Net
         uses: actions/setup-dotnet@v1
         with:
@@ -57,7 +48,7 @@ jobs:
           sudo apt-get install -y qemu-user-static
 
       - name: Setup Variables
-        run: |
+        run: |-
           if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
             STAGE='stable'
           fi
@@ -66,7 +57,15 @@ jobs:
           echo "STAGE=${STAGE:-unstable}" >> $GITHUB_ENV
           echo "MAJOR_MINOR=${VERSION%.*}" >> $GITHUB_ENV
           echo "SEMVER=${VERSION}" >> $GITHUB_ENV
-          echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "YEAR_WEEK=$(date -u '+%Y%W')" >> $GITHUB_ENV
+
+      - name: Setup build dependencies chache
+        uses: actions/cache@v2
+        if: ${{ github.event_name != 'release' }}
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ env.YEAR_WEEK }}
 
       - name: Build Server against OS arch
         run: |-
@@ -96,6 +95,8 @@ jobs:
           context: ci-artifact
           build-args: |-
             JELLYFIN_VERSION=${{ env.SEMVER }}
+
+      # UpForDiscussion: Scan Image here and fail build if critical vulnerability is found?
 
       - name: Publish Server Image to ghcr.io
         uses: redhat-actions/push-to-registry@v2
