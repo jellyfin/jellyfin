@@ -1,0 +1,135 @@
+name: '🚀 Publish OpenAPI Spec'
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  open-api:
+    name: Generate and Publish OpenAPI Spec
+    runs-on: ubuntu-latest
+    outputs:
+      version: steps.variables.outputs.version
+      short-sha: steps.variables.outputs.short-sha
+      unstable: steps.variables.outputs.unstable
+      has-diff: steps.diff.outputs.has-diff
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.9.8
+
+      - name: Setup Variables
+        id: variables
+        run: |-
+          if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
+            UNSTABLE='false'
+            STAGE='stable'
+          fi
+
+          VERSION=`yq e '.version' build.yaml`
+          echo "::set-output name=version::${VERSION}"
+          echo "::set-output name=short-sha::${GITHUB_SHA::7}"
+          echo "::set-output name=unstable::${UNSTABLE:-true}"
+          echo "STAGE=${STAGE:-unstable}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Generate OpenAPI spec
+        run: |-
+          mkdir openApi-artifacts
+          dotnet test tests/Jellyfin.Server.Integration.Tests/*.csproj \
+            --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests" \
+            --configuration Release \
+            -o openApi-artifacts \
+            --verbosity minimal \
+            --nologo
+
+      - name: Check diff to published
+        id: diff
+        run: |-
+          curl -fsSL https://api.jellyfin.org/openapi/jellyfin-openapi-${{ env.STAGE }}.json -o jellyfin-openapi-${{ env.STAGE }}.json
+          if ! diff -qiwB openApi-artifacts/openapi.json jellyfin-openapi-${{ env.STAGE }}.json &>/dev/null; then
+            echo "::set-output name=has-diff::true"
+          else
+            echo "::set-output name=has-diff::false"
+          fi
+          mv openApi-artifacts/openapi.json openApi-artifacts/jellyfin-openapi-${{ env.VERSION }}.json
+
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: jellyfin-openapi-spec
+          path: openApi-artifacts/jellyfin-openapi-${{ env.VERSION }}.json
+
+      - name: Upload OpenAPI spec to repository server
+        uses: burnett01/rsync-deployments@4.1
+        if: ${{ needs.open-api.outputs.has-diff == 'true' }}
+        with:
+          switches: -vrptz
+          path: openApi-artifacts/jellyfin-openapi-${{ env.VERSION }}.json
+          remote_path: /srv/repository/releases/openapi/${{ env.STAGE }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Create update symlink + mirrors
+        uses: appleboy/ssh-action@v0.1.4
+        if: ${{ needs.open-api.outputs.has-diff == 'true' }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script_stop: true
+          script: |-
+            api_root="/srv/repository/releases/openapi"
+            api_dir="${api_root}/${{ env.STAGE }}"
+            link_name="jellyfin-openapi-${{ env.STAGE }}"
+
+            if [[ -L ${api_root}/${link_name}.json ]]; then
+                rm -f ${api_root}/${link_name}_previous.json
+                mv ${api_root}/${link_name}.json ${api_root}/${link_name}_previous.json
+            fi
+            ln -s ${api_dir}/jellyfin-openapi-${{ env.VERSION }}.json ${api_root}/${link_name}.json
+
+            mirrorbits refresh
+
+  trigger-API-cis:
+    needs:
+      - open-api
+    name: Trigger API repo CI's
+    runs-on: ubuntu-latest
+    if: ${{ needs.open-api.outputs.has-diff == 'true' }}
+    continue-on-error: true
+    strategy:
+      matrix:
+        api-repo:
+          - jellyfin-client-axios
+          - jellyfin-sdk-csharp
+    steps:
+      - name: Trigger API client or SDK update
+        uses: peter-evans/repository-dispatch@v1
+        continue-on-error: true
+        with:
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          repository: jellyfin/${{ matrix.api-repo }}
+          event-type: trigger-update
+          client-payload: |-
+            {
+              "version": "${{ needs.open-api.outputs.version }}",
+              "server-sha": "${{ needs.open-api.outputs.short-sha }}",
+              "unstable": ${{ needs.open-api.outputs.unstable }}
+            }
