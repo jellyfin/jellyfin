@@ -191,8 +191,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     return true;
                 }
             }
-            catch (RateLimitExceededException)
+            catch (RateLimitExceededException ex)
             {
+                _logger.LogError(ex, "Rate limit exceeded");
             }
             catch (Exception ex)
             {
