@@ -5,12 +5,13 @@ on:
     branches:
       - master
       - main
-    tags:
-      - 'v*'
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 jobs:
-  open-api:
+  openapi:
     name: Generate and Publish OpenAPI Spec
     runs-on: ubuntu-latest
     outputs:
@@ -119,6 +120,8 @@ jobs:
         api-repo:
           - jellyfin-client-axios
           - jellyfin-sdk-csharp
+          - jellyfin-sdk-swift
+          - jellyfin-sdk-kotlin
     steps:
       - name: Trigger API client or SDK update
         uses: peter-evans/repository-dispatch@v1
