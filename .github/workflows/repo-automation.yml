@@ -1,4 +1,4 @@
-name: Automation
+name: '🤖 Automation'
 
 on:
   push:

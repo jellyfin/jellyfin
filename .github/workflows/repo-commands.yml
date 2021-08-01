@@ -1,4 +1,4 @@
-name: Commands
+name: '📟 Commands'
 on:
   issue_comment:
     types:
@@ -84,7 +84,7 @@ jobs:
           output="$( grep -v 'hint:'  output.txt )"
           output="${output//'%'/'%25'}"
           output="${output//$'\n'/'%0A'}"
-          output="${output//$'\r'/'%0D'}" 
+          output="${output//$'\r'/'%0D'}"
           echo ::set-output name=output::$output
           exit ${retcode}
 
