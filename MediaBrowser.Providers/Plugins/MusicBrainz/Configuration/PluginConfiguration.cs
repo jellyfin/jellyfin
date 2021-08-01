@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CS1591
 
 using MediaBrowser.Model.Plugins;
+using MetaBrainz.MusicBrainz;
 
 namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
@@ -8,7 +9,7 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
     {
         private string _server = Plugin.DefaultServer;
 
-        private long _rateLimit = Plugin.DefaultRateLimit;
+        private double _rateLimit = Plugin.DefaultRateLimit;
 
         public string Server
         {
@@ -20,10 +21,11 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             set
             {
                 _server = value.TrimEnd('/');
+                Query.DefaultWebSite = _server;
             }
         }
 
-        public long RateLimit
+        public double RateLimit
         {
             get
             {
@@ -40,6 +42,8 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
                 {
                     _rateLimit = value;
                 }
+
+                Query.DelayBetweenRequests = _rateLimit;
             }
         }
 
