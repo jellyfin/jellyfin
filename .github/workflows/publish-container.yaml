@@ -14,6 +14,7 @@ jobs:
   docker:
     name: Build Container Images
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
@@ -95,8 +96,6 @@ jobs:
           context: ci-artifact
           build-args: |-
             JELLYFIN_VERSION=${{ env.SEMVER }}
-
-      # UpForDiscussion: Scan Image here and fail build if critical vulnerability is found?
 
       - name: Publish Server Image to ghcr.io
         uses: redhat-actions/push-to-registry@v2

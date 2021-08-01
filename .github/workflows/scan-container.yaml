@@ -1,0 +1,83 @@
+name: '🔬 Run Container Scan'
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - deployment/Dockerfile.docker.*
+
+  pull_request:
+    branches:
+      - master
+    paths:
+      - deployment/Dockerfile.docker.*
+
+  workflow_dispatch:
+
+jobs:
+  scan-container:
+    name: Scan Container Image
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.9.8
+
+      - name: Setup Variables
+        run: |-
+          VERSION=`yq e '.version' build.yaml`
+          echo "SEMVER=${VERSION}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "YEAR_WEEK=$(date -u '+%Y%W')" >> $GITHUB_ENV
+
+      - name: Setup build dependencies chache
+        uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ env.YEAR_WEEK }}
+
+      - name: Build Server
+        run: |-
+          mkdir -p ci-artifact
+          dotnet publish Jellyfin.Server \
+            --nologo \
+            --disable-parallel \
+            --configuration Release \
+            --output ci-artifact \
+            --self-contained \
+            --runtime linux-x64 \
+            "-p:DebugSymbols=false;DebugType=none"
+
+      - name: Build Server Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: jellyfin-server
+          tags: >-
+            unstable-${{ env.SHORT_SHA }}-amd64
+          oci: true
+          dockerfiles: deployment/Dockerfile.docker.amd64
+          context: ci-artifact
+          build-args: |-
+            JELLYFIN_VERSION=${{ env.SEMVER }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.0.19
+        with:
+          image-ref: jellyfin-server:unstable-${{ env.SHORT_SHA }}-amd64
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'

@@ -1,0 +1,38 @@
+name: '🔬 Run Container Scan'
+
+on:
+  schedule:
+    - cron: '0 0 */14 * *'
+
+  workflow_dispatch:
+
+jobs:
+  scan-container:
+    name: Scan Live Container Images
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        stage:
+          - stable
+          - unstable
+        arch:
+          - amd64
+          - arm64
+          - armhf
+
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.0.19
+        with:
+          image-ref: ghcr.io/${{ github.repository_owner }}/jellyfin-server:${{ matrix.stage }}-${{ matrix.arch }}
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: '${{ matrix.stage }}-${{ matrix.arch }}_trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: '${{ matrix.stage }}-${{ matrix.arch }}_trivy-results.sarif'
