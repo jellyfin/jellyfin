@@ -1,0 +1,108 @@
+name: '🧪 Run ABI Compatibility Test'
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request_target:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build-config:
+          - Release
+          - Debug
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup variables
+        run: |-
+          echo "YEAR_WEEK=$(date -u '+%Y%W')" >> $GITHUB_ENV
+
+      - name: Cache NuGet dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ env.YEAR_WEEK }}
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Run build
+        shell: bash
+        run: |-
+          mkdir -p ci-artifact
+          dotnet publish Jellyfin.Server/Jellyfin.Server.csproj \
+            --configuration ${{ matrix.build-config }} \
+            --output ci-artifact \
+            --nologo
+
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.build-config == 'Release' }}
+        with:
+          name: server-artifacts
+          path: |-
+            ci-artifact/Emby.Naming.dll
+            ci-artifact/MediaBrowser.Controller.dll
+            ci-artifact/MediaBrowser.Model.dll
+            ci-artifact/MediaBrowser.Common.dll
+
+  abi:
+    name: ABI Check
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request_target' }}
+    needs:
+      - build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        assembly-file:
+          - Emby.Naming.dll
+          - MediaBrowser.Controller.dll
+          - MediaBrowser.Model.dll
+          - MediaBrowser.Common.dll
+
+    steps:
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Setup ABI CompatibilityChecker
+        run: dotnet tool update compatibilitychecker --global
+
+      - name: Download draft artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: server-artifacts
+          path: draft-artifacts
+
+      - name: Download reference artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: check-compatibility.yaml
+          branch: master
+          name: server-artifacts
+          path: reference-artifacts
+
+      - name: Run ABI CompatibilityChecker
+        run: |-
+          dotnet compat \
+            reference-artifacts/${{ matrix.assembly-file }} \
+            draft-artifacts/${{ matrix.assembly-file }}
