@@ -1,4 +1,4 @@
-name: '🔍 Run SonarScan'
+name: '🔬 Run SonarCloud Scan'
 
 on:
   push:
@@ -13,10 +13,9 @@ on:
 
 jobs:
   sonar:
-    name: JF Sonar
+    name: Sonar Scan
     runs-on: windows-latest
-# https://www.codewrecks.com/post/github/github-sonarcloud-codecoverage/
-#    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
