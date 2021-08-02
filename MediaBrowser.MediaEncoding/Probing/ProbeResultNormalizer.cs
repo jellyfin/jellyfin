@@ -28,7 +28,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly Regex _performerPattern = new (@"(?<name>.*) \((?<instrument>.*)\)");
+
+        private readonly CultureInfo _usCulture = new ("en-US");
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
@@ -1116,8 +1118,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 foreach (var person in Split(performer, false))
                 {
-                    Regex pattern = new Regex(@"(?<name>.*) \((?<instrument>.*)\)");
-                    Match match = pattern.Match(person);
+                    Match match = _performerPattern.Match(person);
 
                     // If the performer doesn't have any instrument/role associated, it won't match. In that case, chances are it's simply a band name, so we skip it.
                     if (match.Success)
