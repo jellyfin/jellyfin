@@ -20,8 +20,9 @@ jobs:
     name: Scan Container Image
     runs-on: ubuntu-latest
     if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup .Net
@@ -59,13 +60,11 @@ jobs:
             --runtime linux-x64 \
             "-p:DebugSymbols=false;DebugType=none"
 
-      - name: Build Server Image
-        id: build-image
+      - name: Build headles Server Image
         uses: redhat-actions/buildah-build@v2
         with:
           image: jellyfin-server
-          tags: >-
-            unstable-${{ env.SHORT_SHA }}-amd64
+          tags: unstable-${{ env.SHORT_SHA }}-amd64
           oci: true
           dockerfiles: deployment/Dockerfile.docker.amd64
           context: ci-artifact
@@ -75,7 +74,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.0.19
         with:
-          image-ref: jellyfin-server:unstable-${{ env.SHORT_SHA }}-amd64
+          image-ref: localhost/jellyfin-server:unstable-${{ env.SHORT_SHA }}-amd64
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true

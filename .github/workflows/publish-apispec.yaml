@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - main
   release:
     types:
       - published
@@ -14,13 +13,16 @@ jobs:
   openapi:
     name: Generate and Publish OpenAPI Spec
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
     outputs:
       version: steps.variables.outputs.version
       short-sha: steps.variables.outputs.short-sha
       unstable: steps.variables.outputs.unstable
       has-diff: steps.diff.outputs.has-diff
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup .Net
@@ -33,7 +35,7 @@ jobs:
         with:
           yq-version: v4.9.8
 
-      - name: Setup Variables
+      - name: Setup variables
         id: variables
         run: |-
           if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
@@ -76,6 +78,8 @@ jobs:
           name: jellyfin-openapi-spec
           path: openApi-artifacts/jellyfin-openapi-${{ env.VERSION }}.json
 
+#     TODO: Upload Spec to release?
+
       - name: Upload OpenAPI spec to repository server
         uses: burnett01/rsync-deployments@4.1
         if: ${{ needs.open-api.outputs.has-diff == 'true' }}
@@ -109,19 +113,21 @@ jobs:
             mirrorbits refresh
 
   trigger-API-cis:
-    needs:
-      - open-api
     name: Trigger API repo CI's
     runs-on: ubuntu-latest
     if: ${{ needs.open-api.outputs.has-diff == 'true' }}
-    continue-on-error: true
+    needs:
+      - open-api
+
     strategy:
+      fail-fast: false
       matrix:
         api-repo:
           - jellyfin-client-axios
           - jellyfin-sdk-csharp
           - jellyfin-sdk-swift
           - jellyfin-sdk-kotlin
+
     steps:
       - name: Trigger API client or SDK update
         uses: peter-evans/repository-dispatch@v1

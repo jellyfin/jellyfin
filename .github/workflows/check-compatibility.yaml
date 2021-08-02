@@ -24,7 +24,7 @@ jobs:
           - Debug
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup variables

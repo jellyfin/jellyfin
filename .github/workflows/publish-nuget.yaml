@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - main
   release:
     types:
       - published
@@ -14,8 +13,10 @@ jobs:
   nuget:
     name: Build Server NuGets
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup .Net
@@ -23,7 +24,7 @@ jobs:
         with:
           dotnet-version: '5.0.x'
 
-      - name: Setup Variables
+      - name: Setup variables
         run: |-
           if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
             TAG=${GITHUB_REF#refs/tags/v}
@@ -31,7 +32,7 @@ jobs:
           fi
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: Build NuGet Packages (stable)
+      - name: Build NuGet packages (stable)
         if: ${{ github.event_name == 'release' }}
         run: |-
           mkdir nuget-artifacts
@@ -48,7 +49,7 @@ jobs:
               --nologo
           done
 
-      - name: Build NuGet Packages (unstable)
+      - name: Build NuGet packages (unstable)
         if: ${{ github.event_name != 'release' }}
         run: |-
           mkdir nuget-artifacts
@@ -66,13 +67,13 @@ jobs:
               --nologo
           done
 
-      - name: Publish Artifacts
+      - name: Publish artifacts
         uses: actions/upload-artifact@v2
         with:
           name: jellyfin-nuget-packages
           path: nuget-artifacts
 
-      - name: Push NuGet Packages (NuGet.org)
+      - name: Push NuGet packages (NuGet.org)
         continue-on-error: true
         run: |-
           dotnet nuget push nuget-artifacts/**/*.nupkg \
@@ -80,7 +81,7 @@ jobs:
             --skip-duplicate \
             --source nuget.org
 
-      - name: Push NuGet Packages (GitHub.com)
+      - name: Push NuGet packages (GitHub.com)
         continue-on-error: true
         run: |-
           dotnet nuget push nuget-artifacts/**/*.nupkg \

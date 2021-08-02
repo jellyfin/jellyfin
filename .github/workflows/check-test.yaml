@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - main
   pull_request_target:
     branches:
       - master
@@ -12,35 +11,38 @@ on:
 
 jobs:
   test:
-    name: JF Tests
+    name: Tests
+    runs-on: ${{ matrix.os }}
+
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
           - windows-latest
           - macos-latest
-    runs-on: ${{ matrix.os }}
-    continue-on-error: true
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get Date
-        id: get-date
+      - name: Setup variables
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u "+%Y%W")"
+        run: |-
+          echo "YEAR_WEEK=$(date -u '+%Y%W')" >> $GITHUB_ENV
 
-      - uses: actions/cache@v2
+      - name: Cache NuGet dependencies
+        uses: actions/cache@v2
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ steps.get-date.outputs.date }}
+          key: ${{ runner.os }}-nuget-${{ env.YEAR_WEEK }}
 
       - name: Setup .Net
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
 
-      - name: Run Tests
+      - name: Run tests
         shell: bash
         run: |-
           for testProj in tests/*/*Tests.csproj; do
@@ -53,7 +55,7 @@ jobs:
               --nologo
           done
 
-      - name: Publish Test Reults
+      - name: Publish test reults
         uses: dorny/test-reporter@v1
         if: ${{ success() || failure() }}
         with:

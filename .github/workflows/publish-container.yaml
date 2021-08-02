@@ -4,16 +4,16 @@ on:
   push:
     branches:
       - master
-      - main
   release:
     types:
       - published
   workflow_dispatch:
 
 jobs:
-  docker:
+  container-image:
     name: Build Container Images
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
 
     strategy:
       fail-fast: false
@@ -30,7 +30,7 @@ jobs:
             build-config: linux-arm
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Setup .Net
@@ -48,7 +48,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
 
-      - name: Setup Variables
+      - name: Setup sariables
         run: |-
           if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
             STAGE='stable'
@@ -68,7 +68,7 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ env.YEAR_WEEK }}
 
-      - name: Build Server against OS arch
+      - name: Build server against OS arch
         run: |-
           mkdir -p ci-artifact
           dotnet publish Jellyfin.Server \
@@ -80,7 +80,7 @@ jobs:
             --runtime ${{ matrix.build-config }} \
             "-p:DebugSymbols=false;DebugType=none"
 
-      - name: Build Server Image
+      - name: Build headles server image
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
@@ -97,7 +97,7 @@ jobs:
           build-args: |-
             JELLYFIN_VERSION=${{ env.SEMVER }}
 
-      - name: Publish Server Image to ghcr.io
+      - name: Publish headles server image to ghcr.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}
@@ -106,7 +106,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Publish Server Image to quay.io
+      - name: Publish headles server image to quay.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}
@@ -115,7 +115,7 @@ jobs:
           username: jellyfin+github_actions
           password: ${{ secrets.RH_TOKEN }}
 
-      - name: Publish Server Image to docker.io
+      - name: Publish headles server image to docker.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}

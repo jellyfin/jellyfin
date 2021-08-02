@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - master
-      - main
   pull_request_target:
     branches:
       - master
-      - main
   workflow_dispatch:
 
 jobs:
@@ -16,8 +14,9 @@ jobs:
     name: Sonar Scan
     runs-on: windows-latest
     if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -55,7 +54,7 @@ jobs:
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
 
-      - name: Set Envs
+      - name: Set variables
         shell: bash
         run: |
           BRANCH="${{ github.ref }}"

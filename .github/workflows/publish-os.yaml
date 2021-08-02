@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - main
   release:
     types:
       - published
@@ -14,8 +13,10 @@ jobs:
   build-packages:
     name: Build Server Packages
     runs-on: ubuntu-latest
-    continue-on-error: true
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
     strategy:
+      fail-fast: false
       matrix:
         build-config:
           - centos.amd64
@@ -33,16 +34,16 @@ jobs:
           - windows.amd64
           - macos
           - portable
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Setup Env
+      - name: Setup variables
         run: |-
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: Build Packaging Container
-        id: build-image
+      - name: Build packaging container
         uses: redhat-actions/buildah-build@v2
         with:
           image: jellyfin-server
@@ -50,7 +51,7 @@ jobs:
           oci: true
           dockerfiles: deployment/Dockerfile.${{ matrix.build-config }}
 
-      - name: Run Packaging Container (stable)
+      - name: Run packaging container (stable)
         if: ${{ github.event_name == 'release' }}
         run: |-
           mkdir -p deployment/dist
@@ -61,7 +62,7 @@ jobs:
             -e BUILD_ID=${{ env.SHORT_SHA }} \
             jellyfin-server:${{ matrix.build-config }}
 
-      - name: Run Packaging Container (unstable)
+      - name: Run packaging container (unstable)
         if: ${{ github.event_name != 'release' }}
         run: |-
           mkdir -p deployment/dist
@@ -72,7 +73,7 @@ jobs:
             -e BUILD_ID=${{ env.SHORT_SHA }} \
             jellyfin-server:${{ matrix.build-config }}
 
-      - name: Publish Artifacts
+      - name: Publish artifacts
         uses: actions/upload-artifact@v2
         with:
           name: jellyfin-server-${{ matrix.build-config }}
