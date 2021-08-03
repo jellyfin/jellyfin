@@ -250,6 +250,8 @@ namespace Emby.Naming.Common
                 },
                 // <!-- foo.ep01, foo.EP_01 -->
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
+                // <!-- foo.E01., foo.e01. -->
+                new EpisodeExpression(@"[^\\/]*?()\.?[Ee]([0-9]+)\.([^\\/]*)$"),
                 new EpisodeExpression("(?<year>[0-9]{4})[\\.-](?<month>[0-9]{2})[\\.-](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
