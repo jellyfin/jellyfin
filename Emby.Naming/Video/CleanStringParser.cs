@@ -25,26 +25,54 @@ namespace Emby.Naming.Video
                 return false;
             }
 
-            var len = expressions.Count;
-            for (int i = 0; i < len; i++)
+            // Iteratively remove extra cruft until we're left with the string
+            // we want.
+            newName = ReadOnlySpan<char>.Empty;
+            const int maxTries = 100;       // This is just a precautionary
+                                            // measure. Should not be neccesary.
+            var loopCounter = 0;
+            for (; loopCounter < maxTries; loopCounter++)
             {
-                if (TryClean(name, expressions[i], out newName))
+                bool cleaned = false;
+                var len = expressions.Count;
+                for (int i = 0; i < len; i++)
                 {
-                    return true;
+                    if (TryClean(name, expressions[i], out newName))
+                    {
+                        cleaned = true;
+                        name = newName.ToString();
+                        break;
+                    }
+                }
+
+                if (!cleaned)
+                {
+                    break;
                 }
             }
 
-            newName = ReadOnlySpan<char>.Empty;
-            return false;
+            if (loopCounter > 0)
+            {
+                newName = name.AsSpan();
+            }
+
+            return newName != ReadOnlySpan<char>.Empty;
         }
 
         private static bool TryClean(string name, Regex expression, out ReadOnlySpan<char> newName)
         {
             var match = expression.Match(name);
             int index = match.Index;
-            if (match.Success && index != 0)
+            if (match.Success)
             {
-                newName = name.AsSpan().Slice(0, match.Index);
+                var found = match.Groups.TryGetValue("cleaned", out var cleaned);
+                if (!found || cleaned == null)
+                {
+                    newName = ReadOnlySpan<char>.Empty;
+                    return false;
+                }
+
+                newName = name.AsSpan().Slice(cleaned.Index, cleaned.Length);
                 return true;
             }
 

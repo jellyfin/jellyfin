@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Xunit;
@@ -23,6 +23,12 @@ namespace Jellyfin.Naming.Tests.Video
         [InlineData("Crouching.Tiger.Hidden.Dragon.BDrip.mkv", "Crouching.Tiger.Hidden.Dragon")]
         [InlineData("Crouching.Tiger.Hidden.Dragon.BDrip-HDC.mkv", "Crouching.Tiger.Hidden.Dragon")]
         [InlineData("Crouching.Tiger.Hidden.Dragon.4K.UltraHD.HDR.BDrip-HDC.mkv", "Crouching.Tiger.Hidden.Dragon")]
+        [InlineData("[HorribleSubs] Made in Abyss - 13 [720p].mkv", "Made in Abyss")]
+        [InlineData("[Tsundere] Kore wa Zombie Desu ka of the Dead [BDRip h264 1920x1080 FLAC]", "Kore wa Zombie Desu ka of the Dead")]
+        [InlineData("[Erai-raws] Jujutsu Kaisen - 03 [720p][Multiple Subtitle].mkv", "Jujutsu Kaisen")]
+        [InlineData("[OCN] 애타는 로맨스 720p-NEXT", "애타는 로맨스")]
+        [InlineData("[tvN] 혼술남녀.E01-E16.720p-NEXT", "혼술남녀")]
+        [InlineData("[tvN] 연애말고 결혼 E01~E16 END HDTV.H264.720p-WITH", "연애말고 결혼")]
         // FIXME: [InlineData("After The Sunset - [0004].mkv", "After The Sunset")]
         public void CleanStringTest_NeedsCleaning_Success(string input, string expectedName)
         {
