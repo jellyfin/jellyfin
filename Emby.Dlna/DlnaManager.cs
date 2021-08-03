@@ -1,7 +1,4 @@
-#nullable disable
-
 #pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -96,12 +93,14 @@ namespace Emby.Dlna
             }
         }
 
+        /// <inheritdoc />
         public DeviceProfile GetDefaultProfile()
         {
             return new DefaultProfile();
         }
 
-        public DeviceProfile GetProfile(DeviceIdentification deviceInfo)
+        /// <inheritdoc />
+        public DeviceProfile? GetProfile(DeviceIdentification deviceInfo)
         {
             if (deviceInfo == null)
             {
@@ -111,13 +110,13 @@ namespace Emby.Dlna
             var profile = GetProfiles()
                 .FirstOrDefault(i => i.Identification != null && IsMatch(deviceInfo, i.Identification));
 
-            if (profile != null)
+            if (profile == null)
             {
-                _logger.LogDebug("Found matching device profile: {ProfileName}", profile.Name);
+                LogUnmatchedProfile(deviceInfo);
             }
             else
             {
-                LogUnmatchedProfile(deviceInfo);
+                _logger.LogDebug("Found matching device profile: {ProfileName}", profile.Name);
             }
 
             return profile;
@@ -187,7 +186,8 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile GetProfile(IHeaderDictionary headers)
+        /// <inheritdoc />
+        public DeviceProfile? GetProfile(IHeaderDictionary headers)
         {
             if (headers == null)
             {
@@ -195,15 +195,13 @@ namespace Emby.Dlna
             }
 
             var profile = GetProfiles().FirstOrDefault(i => i.Identification != null && IsMatch(headers, i.Identification));
-
-            if (profile != null)
+            if (profile == null)
             {
-                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
+                _logger.LogDebug("No matching device profile found. {@Headers}", headers);
             }
             else
             {
-                var headerString = string.Join(", ", headers.Select(i => string.Format(CultureInfo.InvariantCulture, "{0}={1}", i.Key, i.Value)));
-                _logger.LogDebug("No matching device profile found. {0}", headerString);
+                _logger.LogDebug("Found matching device profile: {0}", profile.Name);
             }
 
             return profile;
@@ -253,19 +251,19 @@ namespace Emby.Dlna
                 return xmlFies
                     .Select(i => ParseProfileFile(i, type))
                     .Where(i => i != null)
-                    .ToList();
+                    .ToList()!; // We just filtered out all the nulls
             }
             catch (IOException)
             {
-                return new List<DeviceProfile>();
+                return Array.Empty<DeviceProfile>();
             }
         }
 
-        private DeviceProfile ParseProfileFile(string path, DeviceProfileType type)
+        private DeviceProfile? ParseProfileFile(string path, DeviceProfileType type)
         {
             lock (_profiles)
             {
-                if (_profiles.TryGetValue(path, out Tuple<InternalProfileInfo, DeviceProfile> profileTuple))
+                if (_profiles.TryGetValue(path, out Tuple<InternalProfileInfo, DeviceProfile>? profileTuple))
                 {
                     return profileTuple.Item2;
                 }
@@ -293,7 +291,8 @@ namespace Emby.Dlna
             }
         }
 
-        public DeviceProfile GetProfile(string id)
+        /// <inheritdoc />
+        public DeviceProfile? GetProfile(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -322,6 +321,7 @@ namespace Emby.Dlna
             }
         }
 
+        /// <inheritdoc />
         public IEnumerable<DeviceProfileInfo> GetProfileInfos()
         {
             return GetProfileInfosInternal().Select(i => i.Info);
@@ -329,17 +329,14 @@ namespace Emby.Dlna
 
         private InternalProfileInfo GetInternalProfileInfo(FileSystemMetadata file, DeviceProfileType type)
         {
-            return new InternalProfileInfo
-            {
-                Path = file.FullName,
-
-                Info = new DeviceProfileInfo
+            return new InternalProfileInfo(
+                new DeviceProfileInfo
                 {
                     Id = file.FullName.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture),
                     Name = _fileSystem.GetFileNameWithoutExtension(file),
                     Type = type
-                }
-            };
+                },
+                file.FullName);
         }
 
         private async Task ExtractSystemProfilesAsync()
@@ -359,7 +356,8 @@ namespace Emby.Dlna
                     systemProfilesPath,
                     Path.GetFileName(name.AsSpan()).Slice(namespaceName.Length));
 
-                using (var stream = _assembly.GetManifestResourceStream(name))
+                // The stream should exist as we just got its name from GetManifestResourceNames
+                using (var stream = _assembly.GetManifestResourceStream(name)!)
                 {
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
@@ -380,6 +378,7 @@ namespace Emby.Dlna
             Directory.CreateDirectory(UserProfilesPath);
         }
 
+        /// <inheritdoc />
         public void DeleteProfile(string id)
         {
             var info = GetProfileInfosInternal().First(i => string.Equals(id, i.Info.Id, StringComparison.OrdinalIgnoreCase));
@@ -397,6 +396,7 @@ namespace Emby.Dlna
             }
         }
 
+        /// <inheritdoc />
         public void CreateProfile(DeviceProfile profile)
         {
             profile = ReserializeProfile(profile);
@@ -412,6 +412,7 @@ namespace Emby.Dlna
             SaveProfile(profile, path, DeviceProfileType.User);
         }
 
+        /// <inheritdoc />
         public void UpdateProfile(DeviceProfile profile)
         {
             profile = ReserializeProfile(profile);
@@ -470,9 +471,11 @@ namespace Emby.Dlna
 
             var json = JsonSerializer.Serialize(profile, _jsonOptions);
 
-            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions);
+            // Output can't be null if the input isn't null
+            return JsonSerializer.Deserialize<DeviceProfile>(json, _jsonOptions)!;
         }
 
+        /// <inheritdoc />
         public string GetServerDescriptionXml(IHeaderDictionary headers, string serverUuId, string serverAddress)
         {
             var profile = GetDefaultProfile();
@@ -482,6 +485,7 @@ namespace Emby.Dlna
             return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverId).GetXml();
         }
 
+        /// <inheritdoc />
         public ImageStream GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
@@ -499,9 +503,15 @@ namespace Emby.Dlna
 
         private class InternalProfileInfo
         {
-            internal DeviceProfileInfo Info { get; set; }
+            internal InternalProfileInfo(DeviceProfileInfo info, string path)
+            {
+                Info = info;
+                Path = path;
+            }
 
-            internal string Path { get; set; }
+            internal DeviceProfileInfo Info { get; }
+
+            internal string Path { get; }
         }
     }
 
