@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -45,8 +44,8 @@ namespace MediaBrowser.Providers.Music
 
         private readonly string _musicBrainzBaseUrl;
 
-        private SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
-        private Stopwatch _stopWatchMusicBrainz = new Stopwatch();
+        private readonly SemaphoreSlim _apiRequestLock = new SemaphoreSlim(1, 1);
+        private readonly Stopwatch _stopWatchMusicBrainz = new Stopwatch();
 
         public MusicBrainzAlbumProvider(
             IHttpClientFactory httpClientFactory,
@@ -310,7 +309,7 @@ namespace MediaBrowser.Providers.Music
             public string Overview;
             public int? Year;
 
-            public List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
+            public readonly List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
 
             public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
             {

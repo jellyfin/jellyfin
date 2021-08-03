@@ -34,8 +34,8 @@ namespace MediaBrowser.Providers.MediaInfo
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
             IEnumerable<string> languages,
-            string[] disabledSubtitleFetchers,
-            string[] subtitleFetcherOrder,
+            IEnumerable<string> disabledSubtitleFetchers,
+            IEnumerable<string> subtitleFetcherOrder,
             CancellationToken cancellationToken)
         {
             var downloadedLanguages = new List<string>();
@@ -69,8 +69,8 @@ namespace MediaBrowser.Providers.MediaInfo
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
             string lang,
-            string[] disabledSubtitleFetchers,
-            string[] subtitleFetcherOrder,
+            IEnumerable<string> disabledSubtitleFetchers,
+            IEnumerable<string> subtitleFetcherOrder,
             CancellationToken cancellationToken)
         {
             if (video.VideoType != VideoType.VideoFile)
@@ -119,8 +119,8 @@ namespace MediaBrowser.Providers.MediaInfo
             bool skipIfAudioTrackMatches,
             bool requirePerfectMatch,
             string language,
-            string[] disabledSubtitleFetchers,
-            string[] subtitleFetcherOrder,
+            IEnumerable<string> disabledSubtitleFetchers,
+            IEnumerable<string> subtitleFetcherOrder,
             VideoContentType mediaType,
             CancellationToken cancellationToken)
         {

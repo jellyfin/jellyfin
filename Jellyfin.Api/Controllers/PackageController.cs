@@ -145,7 +145,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<RepositoryInfo>> GetRepositories()
         {
-            return _serverConfigurationManager.Configuration.PluginRepositories;
+            return _serverConfigurationManager.Configuration.PluginRepositories.ToList();
         }
 
         /// <summary>

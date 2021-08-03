@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1307
+#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -695,11 +695,15 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // TODO: fix this at some point
-            user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
+            var blockUnratedItems = policy.BlockUnratedItems == null
+                ? Enumerable.Empty<string>()
+                : policy.BlockUnratedItems.Select(bui => bui.ToString());
+
+            user.SetPreference(PreferenceKind.BlockUnratedItems, blockUnratedItems);
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
+            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels.Select(ec => ec.ToString()));
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
+            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders.Select(ef => ef.ToString()));
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);

@@ -39,9 +39,9 @@ namespace MediaBrowser.Controller.Subtitles
 
         public bool SearchAllProviders { get; set; }
 
-        public string[] DisabledSubtitleFetchers { get; set; }
+        public IEnumerable<string> DisabledSubtitleFetchers { get; set; }
 
-        public string[] SubtitleFetcherOrder { get; set; }
+        public IEnumerable<string> SubtitleFetcherOrder { get; set; }
 
         public SubtitleSearchRequest()
         {

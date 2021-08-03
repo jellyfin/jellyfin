@@ -72,31 +72,28 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 var libraryOptions = _libraryManager.GetLibraryOptions(library);
 
-                string[] subtitleDownloadLanguages;
+                IEnumerable<string> subtitleDownloadLanguages;
                 bool skipIfEmbeddedSubtitlesPresent;
                 bool skipIfAudioTrackMatches;
-                bool requirePerfectMatch;
 
                 if (libraryOptions.SubtitleDownloadLanguages == null)
                 {
                     subtitleDownloadLanguages = options.DownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
-                    requirePerfectMatch = options.RequirePerfectMatch;
                 }
                 else
                 {
                     subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                    requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
                 }
 
                 foreach (var lang in subtitleDownloadLanguages)
                 {
                     var query = new InternalItemsQuery
                     {
-                        MediaTypes = new string[] { MediaType.Video },
+                        MediaTypes = new [] { MediaType.Video },
                         IsVirtualItem = false,
                         IncludeItemTypes = types,
                         DtoOptions = new DtoOptions(true),
@@ -160,13 +157,13 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private async Task<bool> DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
+        private async Task DownloadSubtitles(Video video, SubtitleOptions options, CancellationToken cancellationToken)
         {
             var mediaStreams = video.GetMediaStreams();
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
-            string[] subtitleDownloadLanguages;
+            IEnumerable<string> subtitleDownloadLanguages;
             bool skipIfEmbeddedSubtitlesPresent;
             bool skipIfAudioTrackMatches;
             bool requirePerfectMatch;
@@ -203,10 +200,7 @@ namespace MediaBrowser.Providers.MediaInfo
             if (downloadedLanguages.Count > 0)
             {
                 await video.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-                return false;
             }
-
-            return true;
         }
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()

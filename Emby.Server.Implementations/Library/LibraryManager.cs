@@ -3165,7 +3165,7 @@ namespace Emby.Server.Implementations.Library
             var topLibraryFolders = GetUserRootFolder().Children.ToList();
             var info = GetVirtualFolderInfo(virtualFolderPath, topLibraryFolders, null);
 
-            if (info.Locations.Length > 0 && info.Locations.Length != options.PathInfos.Length)
+            if (info.Locations.Length > 0 && info.Locations.Length != options.PathInfos.Count())
             {
                 var list = options.PathInfos.ToList();
 

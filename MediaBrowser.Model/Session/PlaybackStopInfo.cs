@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Model.Session
@@ -63,6 +64,6 @@ namespace MediaBrowser.Model.Session
 
         public string PlaylistItemId { get; set; }
 
-        public QueueItem[] NowPlayingQueue { get; set; }
+        public IEnumerable<QueueItem> NowPlayingQueue { get; set; }
     }
 }

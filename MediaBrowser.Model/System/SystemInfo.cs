@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MediaBrowser.Model.Updates;
 
@@ -35,7 +36,7 @@ namespace MediaBrowser.Model.System
         /// </summary>
         public SystemInfo()
         {
-            CompletedInstallations = Array.Empty<InstallationInfo>();
+            CompletedInstallations = new List<InstallationInfo>();
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace MediaBrowser.Model.System
         /// Gets or sets the completed installations.
         /// </summary>
         /// <value>The completed installations.</value>
-        public InstallationInfo[] CompletedInstallations { get; set; }
+        public IEnumerable<InstallationInfo> CompletedInstallations { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can self restart.

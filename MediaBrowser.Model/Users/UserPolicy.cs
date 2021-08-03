@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using Jellyfin.Data.Enums;
 using AccessSchedule = Jellyfin.Data.Entities.AccessSchedule;
@@ -15,7 +16,7 @@ namespace MediaBrowser.Model.Users
             IsHidden = true;
 
             EnableContentDeletion = false;
-            EnableContentDeletionFromFolders = Array.Empty<string>();
+            EnableContentDeletionFromFolders = new List<string>();
 
             EnableSyncTranscoding = true;
             EnableMediaConversion = true;
@@ -34,24 +35,24 @@ namespace MediaBrowser.Model.Users
 
             EnableSharedDeviceControl = true;
 
-            BlockedTags = Array.Empty<string>();
-            BlockUnratedItems = Array.Empty<UnratedItem>();
+            BlockedTags = new List<string>();
+            BlockUnratedItems = new List<UnratedItem>();
 
             EnableUserPreferenceAccess = true;
 
-            AccessSchedules = Array.Empty<AccessSchedule>();
+            AccessSchedules = new List<AccessSchedule>();
 
             LoginAttemptsBeforeLockout = -1;
 
             MaxActiveSessions = 0;
 
             EnableAllChannels = true;
-            EnabledChannels = Array.Empty<Guid>();
+            EnabledChannels = new List<Guid>();
 
             EnableAllFolders = true;
-            EnabledFolders = Array.Empty<Guid>();
+            EnabledFolders = new List<Guid>();
 
-            EnabledDevices = Array.Empty<string>();
+            EnabledDevices = new List<string>();
             EnableAllDevices = true;
 
             EnableContentDownloading = true;
@@ -84,13 +85,13 @@ namespace MediaBrowser.Model.Users
         /// <value>The max parental rating.</value>
         public int? MaxParentalRating { get; set; }
 
-        public string[] BlockedTags { get; set; }
+        public IEnumerable<string> BlockedTags { get; set; }
 
         public bool EnableUserPreferenceAccess { get; set; }
 
-        public AccessSchedule[] AccessSchedules { get; set; }
+        public IEnumerable<AccessSchedule> AccessSchedules { get; set; }
 
-        public UnratedItem[] BlockUnratedItems { get; set; }
+        public IEnumerable<UnratedItem> BlockUnratedItems { get; set; }
 
         public bool EnableRemoteControlOfOtherUsers { get; set; }
 
@@ -114,7 +115,7 @@ namespace MediaBrowser.Model.Users
 
         public bool EnableContentDeletion { get; set; }
 
-        public string[] EnableContentDeletionFromFolders { get; set; }
+        public IEnumerable<string> EnableContentDeletionFromFolders { get; set; }
 
         public bool EnableContentDownloading { get; set; }
 
@@ -126,15 +127,15 @@ namespace MediaBrowser.Model.Users
 
         public bool EnableMediaConversion { get; set; }
 
-        public string[] EnabledDevices { get; set; }
+        public IEnumerable<string> EnabledDevices { get; set; }
 
         public bool EnableAllDevices { get; set; }
 
-        public Guid[] EnabledChannels { get; set; }
+        public IEnumerable<Guid> EnabledChannels { get; set; }
 
         public bool EnableAllChannels { get; set; }
 
-        public Guid[] EnabledFolders { get; set; }
+        public IEnumerable<Guid> EnabledFolders { get; set; }
 
         public bool EnableAllFolders { get; set; }
 

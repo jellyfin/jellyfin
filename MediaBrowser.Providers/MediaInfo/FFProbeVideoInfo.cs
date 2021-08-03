@@ -518,7 +518,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
-            string[] subtitleDownloadLanguages;
+            IEnumerable<string> subtitleDownloadLanguages;
             bool skipIfEmbeddedSubtitlesPresent;
             bool skipIfAudioTrackMatches;
             bool requirePerfectMatch;

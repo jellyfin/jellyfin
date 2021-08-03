@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Configuration
 {
@@ -9,10 +10,10 @@ namespace MediaBrowser.Model.Configuration
     {
         public LibraryOptions()
         {
-            TypeOptions = Array.Empty<TypeOptions>();
-            DisabledSubtitleFetchers = Array.Empty<string>();
-            SubtitleFetcherOrder = Array.Empty<string>();
-            DisabledLocalMetadataReaders = Array.Empty<string>();
+            TypeOptions = new List<TypeOptions>();
+            DisabledSubtitleFetchers = new List<string>();
+            SubtitleFetcherOrder = new List<string>();
+            DisabledLocalMetadataReaders = new List<string>();
 
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
@@ -20,7 +21,7 @@ namespace MediaBrowser.Model.Configuration
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             EnableRealtimeMonitor = true;
-            PathInfos = Array.Empty<MediaPathInfo>();
+            PathInfos = new List<MediaPathInfo>();
             EnableInternetProviders = true;
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
@@ -34,7 +35,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool ExtractChapterImagesDuringLibraryScan { get; set; }
 
-        public MediaPathInfo[] PathInfos { get; set; }
+        public IEnumerable<MediaPathInfo> PathInfos { get; set; }
 
         public bool SaveLocalMetadata { get; set; }
 
@@ -62,27 +63,27 @@ namespace MediaBrowser.Model.Configuration
 
         public string SeasonZeroDisplayName { get; set; }
 
-        public string[] MetadataSavers { get; set; }
+        public IEnumerable<string> MetadataSavers { get; set; }
 
-        public string[] DisabledLocalMetadataReaders { get; set; }
+        public IEnumerable<string> DisabledLocalMetadataReaders { get; set; }
 
         public string[] LocalMetadataReaderOrder { get; set; }
 
-        public string[] DisabledSubtitleFetchers { get; set; }
+        public IEnumerable<string> DisabledSubtitleFetchers { get; set; }
 
-        public string[] SubtitleFetcherOrder { get; set; }
+        public IEnumerable<string> SubtitleFetcherOrder { get; set; }
 
         public bool SkipSubtitlesIfEmbeddedSubtitlesPresent { get; set; }
 
         public bool SkipSubtitlesIfAudioTrackMatches { get; set; }
 
-        public string[] SubtitleDownloadLanguages { get; set; }
+        public IEnumerable<string> SubtitleDownloadLanguages { get; set; }
 
         public bool RequirePerfectSubtitleMatch { get; set; }
 
         public bool SaveSubtitlesWithMedia { get; set; }
 
-        public TypeOptions[] TypeOptions { get; set; }
+        public IEnumerable<TypeOptions> TypeOptions { get; set; }
 
         public TypeOptions GetTypeOptions(string type)
         {

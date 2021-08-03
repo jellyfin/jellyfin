@@ -430,7 +430,7 @@ namespace Jellyfin.Data.Entities
         /// </summary>
         /// <param name="preference">The preference kind.</param>
         /// <param name="values">The values.</param>
-        public void SetPreference(PreferenceKind preference, string[] values)
+        public void SetPreference(PreferenceKind preference, IEnumerable<string> values)
         {
             Preferences.First(p => p.Kind == preference).Value
                 = string.Join(Delimiter, values);

@@ -129,7 +129,7 @@ namespace Emby.Server.Implementations.Channels
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
             if (internalChannel == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentException("internalChannel is null", nameof(item));
             }
 
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
@@ -138,7 +138,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (supportsDelete == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentException("supportsDelete is null", nameof(Channels));
             }
 
             return supportsDelete.DeleteItem(item.ExternalId, CancellationToken.None);
@@ -591,7 +591,7 @@ namespace Emby.Server.Implementations.Channels
                 CanFilter = !features.MaxPageSize.HasValue,
                 CanSearch = provider is ISearchableChannel,
                 ContentTypes = features.ContentTypes.ToArray(),
-                DefaultSortFields = features.DefaultSortFields.ToArray(),
+                DefaultSortFields = features.DefaultSortFields,
                 MaxPageSize = features.MaxPageSize,
                 MediaTypes = features.MediaTypes.ToArray(),
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
@@ -1079,11 +1079,11 @@ namespace Emby.Server.Implementations.Channels
 
             // was used for status
             // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
-            //{
+            // {
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;
             //    _logger.LogDebug("Forcing update due to ExternalEtag {0}", item.Name);
-            //}
+            // }
 
             if (!internalChannelId.Equals(item.ChannelId))
             {
