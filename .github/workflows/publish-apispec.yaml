@@ -78,7 +78,13 @@ jobs:
           name: jellyfin-openapi-spec
           path: openApi-artifacts/jellyfin-openapi-${{ env.VERSION }}.json
 
-#     TODO: Upload Spec to release?
+      - name: Add OpenAPI spec to release
+        uses: shogo82148/actions-upload-release-asset@v1
+        if: ${{ github.event_name == 'release' }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: openApi-artifacts/jellyfin-openapi-stable.json
+          asset_name: jellyfin-openapi-${{ env.VERSION }}.json
 
       - name: Upload OpenAPI spec to repository server
         uses: burnett01/rsync-deployments@4.1
