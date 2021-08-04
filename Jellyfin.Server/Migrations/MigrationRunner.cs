@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Migrations
                 .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
                 .OfType<IMigrationRoutine>()
                 .ToArray();
-            var migrationOptions = ((IConfigurationManager)host.ConfigurationManager).GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
+            var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
             if (!host.ConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Count == 0)
             {

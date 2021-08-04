@@ -92,7 +92,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     if (entry[6].SQLiteType != SQLiteType.Null && !Guid.TryParse(entry[6].ToString(), out guid))
                     {
                         // This is not a valid Guid, see if it is an internal ID from an old Emby schema
-                        _logger.LogWarning("Invalid Guid in UserId column: ", entry[6].ToString());
+                        _logger.LogWarning("Invalid Guid in UserId column: {Guid}", entry[6].ToString());
 
                         using var statement = userDbConnection.PrepareStatement("SELECT guid FROM LocalUsersv2 WHERE Id=@Id");
                         statement.TryBind("@Id", entry[6].ToString());

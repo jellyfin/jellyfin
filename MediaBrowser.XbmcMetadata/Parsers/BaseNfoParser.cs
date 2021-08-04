@@ -1205,7 +1205,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "name":
-                            name = reader.ReadElementContentAsString() ?? string.Empty;
+                            name = reader.ReadElementContentAsString();
                             break;
 
                         case "role":
