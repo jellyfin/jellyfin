@@ -195,7 +195,7 @@ namespace MediaBrowser.Common.Net
                 return res;
             }
 
-            throw new InvalidCastException("Host does not contain a valid value. {host}");
+            throw new InvalidCastException($"Host does not contain a valid value. {host}");
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace MediaBrowser.Common.Net
                 return res;
             }
 
-            throw new InvalidCastException("Host does not contain a valid value. {host}");
+            throw new InvalidCastException($"Host does not contain a valid value. {host}");
         }
 
         /// <summary>
@@ -433,7 +433,7 @@ namespace MediaBrowser.Common.Net
                 catch (SocketException ex)
                 {
                     // Log and then ignore socket errors, as the result value will just be an empty array.
-                    Debug.WriteLine("GetHostEntryAsync failed with {Message}.", ex.Message);
+                    Debug.WriteLine("GetHostAddresses failed with {Message}.", ex.Message);
                 }
             }
         }
