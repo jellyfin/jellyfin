@@ -1,10 +1,15 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Net;
 using System.Text;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;
 using MediaBrowser.Common.Configuration;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -13,20 +18,63 @@ namespace Jellyfin.Server.Tests
 {
     public class ParseNetworkTests
     {
-        /// <summary>
-        /// Order of the result has always got to be hosts, then networks.
-        /// </summary>
-        /// <param name="ip4">IP4 enabled.</param>
-        /// <param name="ip6">IP6 enabled.</param>
-        /// <param name="hostList">List to parse.</param>
-        /// <param name="match">What it should match.</param>
+        public static TheoryData<bool, bool, string[], IPAddress[], IPNetwork[]> TestNetworks_TestData()
+        {
+            var data = new TheoryData<bool, bool, string[], IPAddress[], IPNetwork[]>();
+            data.Add(
+                true,
+                true,
+                new string[] { "192.168.t", "127.0.0.1", "1234.1232.12.1234" },
+                new IPAddress[] { IPAddress.Loopback.MapToIPv6() },
+                Array.Empty<IPNetwork>());
+
+            data.Add(
+                true,
+                false,
+                new string[] { "192.168.x", "127.0.0.1", "1234.1232.12.1234" },
+                new IPAddress[] { IPAddress.Loopback },
+                Array.Empty<IPNetwork>());
+
+            data.Add(
+                true,
+                true,
+                new string[] { "::1" },
+                Array.Empty<IPAddress>(),
+                new IPNetwork[] { new IPNetwork(IPAddress.IPv6Loopback, 128) });
+
+            data.Add(
+                false,
+                false,
+                new string[] { "localhost" },
+                Array.Empty<IPAddress>(),
+                Array.Empty<IPNetwork>());
+
+            data.Add(
+                true,
+                false,
+                new string[] { "localhost" },
+                new IPAddress[] { IPAddress.Loopback },
+                Array.Empty<IPNetwork>());
+
+            data.Add(
+                false,
+                true,
+                new string[] { "localhost" },
+                Array.Empty<IPAddress>(),
+                new IPNetwork[] { new IPNetwork(IPAddress.IPv6Loopback, 128) });
+
+            data.Add(
+                true,
+                true,
+                new string[] { "localhost" },
+                new IPAddress[] { IPAddress.Loopback.MapToIPv6() },
+                new IPNetwork[] { new IPNetwork(IPAddress.IPv6Loopback, 128) });
+            return data;
+        }
+
         [Theory]
-        // [InlineData(true, true, "192.168.0.0/16,www.yahoo.co.uk", "::ffff:212.82.100.150,::ffff:192.168.0.0/16")]  <- fails on Max. www.yahoo.co.uk resolves to a different ip address.
-        // [InlineData(true, false, "192.168.0.0/16,www.yahoo.co.uk", "212.82.100.150,192.168.0.0/16")]
-        [InlineData(true, true, "192.168.t,127.0.0.1,1234.1232.12.1234", "::ffff:127.0.0.1")]
-        [InlineData(true, false, "192.168.x,127.0.0.1,1234.1232.12.1234", "127.0.0.1")]
-        [InlineData(true, true, "::1", "::1/128")]
-        public void TestNetworks(bool ip4, bool ip6, string hostList, string match)
+        [MemberData(nameof(TestNetworks_TestData))]
+        public void TestNetworks(bool ip4, bool ip6, string[] hostList, IPAddress[] knownProxies, IPNetwork[] knownNetworks)
         {
             using var nm = CreateNetworkManager();
 
@@ -36,31 +84,25 @@ namespace Jellyfin.Server.Tests
                 EnableIPV6 = ip6
             };
 
-            var result = match + ",";
             ForwardedHeadersOptions options = new ForwardedHeadersOptions();
 
             // Need this here as ::1 and 127.0.0.1 are in them by default.
             options.KnownProxies.Clear();
             options.KnownNetworks.Clear();
 
-            ApiServiceCollectionExtensions.AddProxyAddresses(settings, hostList.Split(','), options);
+            ApiServiceCollectionExtensions.AddProxyAddresses(settings, hostList, options);
 
-            var sb = new StringBuilder();
-            foreach (var item in options.KnownProxies)
+            Assert.Equal(knownProxies.Length, options.KnownProxies.Count);
+            foreach (var item in knownProxies)
             {
-                sb.Append(item)
-                    .Append(',');
+                Assert.True(options.KnownProxies.Contains(item));
             }
 
-            foreach (var item in options.KnownNetworks)
+            Assert.Equal(knownNetworks.Length, options.KnownNetworks.Count);
+            foreach (var item in knownNetworks)
             {
-                sb.Append(item.Prefix)
-                    .Append('/')
-                    .Append(item.PrefixLength.ToString(CultureInfo.InvariantCulture))
-                    .Append(',');
+                Assert.NotNull(options.KnownNetworks.FirstOrDefault(x => x.Prefix.Equals(item.Prefix) && x.PrefixLength == item.PrefixLength));
             }
-
-            Assert.Equal(sb.ToString(), result);
         }
 
         private static IConfigurationManager GetMockConfig(NetworkConfiguration conf)
