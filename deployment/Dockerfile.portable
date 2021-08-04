@@ -11,8 +11,9 @@ ENV IS_DOCKER=YES
 # Prepare Debian build environment
 RUN apt-get update -yqq \
   && apt-get install -yqq --no-install-recommends \
-    apt-transport-https debhelper gnupg wget \
-    devscripts mmv libc6-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
+    apt-transport-https debhelper gnupg devscripts \
+    mmv libcurl4-openssl-dev libfontconfig1-dev \
+    libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
 
 # Link to docker-build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.portable /build.sh
