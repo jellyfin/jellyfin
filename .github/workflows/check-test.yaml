@@ -45,15 +45,13 @@ jobs:
       - name: Run tests
         shell: bash
         run: |-
-          for testProj in tests/*/*Tests.csproj; do
-            dotnet test ${testProj} \
-              --configuration Release \
-              --collect:"XPlat Code Coverage" \
-              --results-directory TestResults/ \
-              --settings tests/coverletArgs.runsettings \
-              --verbosity minimal \
-              --nologo
-          done
+          dotnet test \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults/ \
+            --settings tests/coverletArgs.runsettings \
+            --verbosity minimal \
+            --nologo
 
       - name: Publish test reults
         uses: dorny/test-reporter@v1
