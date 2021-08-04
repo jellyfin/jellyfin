@@ -321,7 +321,9 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] ImageFetcherOrder { get; set; }
 
+#pragma warning disable CA1721 // Property names should not match get methods
         public ImageOption[] ImageOptions { get; set; }
+#pragma warning restore CA1721 // Property names should not match get methods
 
         public ImageOption GetImageOptions(ImageType type)
         {

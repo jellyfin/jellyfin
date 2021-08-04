@@ -1,5 +1,7 @@
 #pragma warning disable CS1591
 
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace MediaBrowser.Model.Drawing
@@ -7,7 +9,7 @@ namespace MediaBrowser.Model.Drawing
     /// <summary>
     /// Struct ImageDimensions.
     /// </summary>
-    public readonly struct ImageDimensions
+    public readonly struct ImageDimensions : IEquatable<ImageDimensions>
     {
         public ImageDimensions(int width, int height)
         {
@@ -27,9 +29,34 @@ namespace MediaBrowser.Model.Drawing
         /// <value>The width.</value>
         public int Width { get; }
 
-        public bool Equals(ImageDimensions size)
+        public static bool operator ==(ImageDimensions left, ImageDimensions right)
         {
-            return Width.Equals(size.Width) && Height.Equals(size.Height);
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ImageDimensions left, ImageDimensions right)
+        {
+            return !(left == right);
+        }
+
+        public override bool Equals([AllowNull] object obj)
+        {
+            if (obj == null)
+            {
+                return false;
+            }
+
+            if (this.GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return Equals((ImageDimensions)obj);
+        }
+
+        public bool Equals(ImageDimensions other)
+        {
+            return Width.Equals(other.Width) && Height.Equals(other.Height);
         }
 
         /// <inheritdoc />
@@ -40,6 +67,11 @@ namespace MediaBrowser.Model.Drawing
                 "{0}-{1}",
                 Width,
                 Height);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Height.GetHashCode() * 17) + Width.GetHashCode();
         }
     }
 }
