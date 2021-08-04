@@ -65,7 +65,6 @@ jobs:
         with:
           image: jellyfin-server
           tags: unstable-${{ env.SHORT_SHA }}-amd64
-          oci: true
           dockerfiles: deployment/Dockerfile.docker.amd64
           context: ci-artifact
           build-args: |-
@@ -74,7 +73,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.0.19
         with:
-          image-ref: localhost/jellyfin-server:unstable-${{ env.SHORT_SHA }}-amd64
+          image-ref: jellyfin-server:unstable-${{ env.SHORT_SHA }}-amd64
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
