@@ -11,13 +11,14 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -770,19 +771,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public Guid ParentId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the parent.
-        /// </summary>
-        /// <value>The parent.</value>
-        [JsonIgnore]
-        public Folder Parent
-        {
-            get => GetParent() as Folder;
-            set
-            {
-            }
-        }
-
         public void SetParent(Folder parent)
         {
             ParentId = parent == null ? Guid.Empty : parent.Id;
@@ -821,8 +809,7 @@ namespace MediaBrowser.Controller.Entities
         {
             foreach (var parent in GetParents())
             {
-                var item = parent as T;
-                if (item != null)
+                if (parent is T item)
                 {
                     return item;
                 }

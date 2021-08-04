@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace MediaBrowser.Controller.Providers
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the original title
+        /// Gets or sets the original title.
         /// </summary>
         /// <value>The original title of the item.</value>
         public string OriginalTitle { get; set; }

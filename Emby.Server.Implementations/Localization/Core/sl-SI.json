@@ -16,7 +16,7 @@
     "Folders": "Mape",
     "Genres": "Zvrsti",
     "HeaderAlbumArtists": "Izvajalci albuma",
-    "HeaderContinueWatching": "Nadaljuj z ogledom",
+    "HeaderContinueWatching": "Nadaljuj ogled",
     "HeaderFavoriteAlbums": "Priljubljeni albumi",
     "HeaderFavoriteArtists": "Priljubljeni izvajalci",
     "HeaderFavoriteEpisodes": "Priljubljene epizode",
@@ -90,7 +90,7 @@
     "UserStartedPlayingItemWithValues": "{0} predvaja {1} na {2}",
     "UserStoppedPlayingItemWithValues": "{0} je nehal predvajati {1} na {2}",
     "ValueHasBeenAddedToLibrary": "{0} je bil dodan vaši knjižnici",
-    "ValueSpecialEpisodeName": "Posebna - {0}",
+    "ValueSpecialEpisodeName": "Bonus - {0}",
     "VersionNumber": "Različica {0}",
     "TaskDownloadMissingSubtitles": "Prenesi manjkajoče podnapise",
     "TaskRefreshChannelsDescription": "Osveži podatke spletnih kanalov.",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Počisti dnevnik aktivnosti",
     "Undefined": "Nedoločen",
     "Forced": "Prisilno",
-    "Default": "Privzeto"
+    "Default": "Privzeto",
+    "TaskOptimizeDatabaseDescription": "Stisne bazo podatkov in uredi prazen prostor. Zagon tega opravila po iskanju predstavnosti ali drugih spremembah ki vplivajo na bazo podatkov lahko izboljša hitrost delovanja.",
+    "TaskOptimizeDatabase": "Optimiziraj bazo podatkov"
 }

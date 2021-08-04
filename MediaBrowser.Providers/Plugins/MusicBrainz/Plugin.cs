@@ -11,6 +11,12 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
+            : base(applicationPaths, xmlSerializer)
+        {
+            Instance = this;
+        }
+
         public static Plugin Instance { get; private set; }
 
         public override Guid Id => new Guid("8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a");
@@ -25,12 +31,6 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
         // TODO remove when plugin removed from server.
         public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";
-
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
-            : base(applicationPaths, xmlSerializer)
-        {
-            Instance = this;
-        }
 
         public IEnumerable<PluginPageInfo> GetPages()
         {

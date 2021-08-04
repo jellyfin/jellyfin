@@ -70,7 +70,8 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("Log Horizon 2/[HorribleSubs] Log Horizon 2 - 03 [720p].mkv", 3)] // digit in series name
         [InlineData("Season 1/seriesname 05.mkv", 5)] // no hyphen between series name and episode number
         [InlineData("[BBT-RMX] Ranma ½ - 154 [50AC421A].mkv", 154)] // hyphens in the pre-name info, triple digit episode number
-        // TODO: [InlineData("Case Closed (1996-2007)/Case Closed - 317.mkv", 317)] // triple digit episode number
+        [InlineData("Season 2/Episode 21 - 94 Meetings.mp4", 21)] // Title starts with a number
+        // [InlineData("Case Closed (1996-2007)/Case Closed - 317.mkv", 317)] // triple digit episode number
         // TODO: [InlineData("Season 2/16 12 Some Title.avi", 16)]
         // TODO: [InlineData("/The.Legend.of.Condor.Heroes.2017.V2.web-dl.1080p.h264.aac-hdctv/The.Legend.of.Condor.Heroes.2017.E07.V2.web-dl.1080p.h264.aac-hdctv.mkv", 7)]
         // TODO: [InlineData("Season 4/Uchuu.Senkan.Yamato.2199.E03.avi", 3)]

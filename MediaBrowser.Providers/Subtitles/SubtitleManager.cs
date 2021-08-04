@@ -370,15 +370,15 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem video)
+        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem item)
         {
             VideoContentType mediaType;
 
-            if (video is Episode)
+            if (item is Episode)
             {
                 mediaType = VideoContentType.Episode;
             }
-            else if (video is Movie)
+            else if (item is Movie)
             {
                 mediaType = VideoContentType.Movie;
             }

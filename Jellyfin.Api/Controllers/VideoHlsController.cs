@@ -366,8 +366,7 @@ namespace Jellyfin.Api.Controllers
             else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 var outputFmp4HeaderArg = string.Empty;
-                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                if (isWindows)
+                if (OperatingSystem.IsWindows())
                 {
                     // on Windows, the path of fmp4 header file needs to be configured
                     outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
@@ -485,7 +484,7 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return args;
         }

@@ -55,7 +55,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             result.Item = new Season
             {
                 IndexNumber = seasonNumber,
-                Overview = seasonResult?.Overview
+                Overview = seasonResult.Overview
             };
 
             if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))

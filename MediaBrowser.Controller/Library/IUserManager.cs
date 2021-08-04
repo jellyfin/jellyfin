@@ -38,6 +38,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Initializes the user manager and ensures that a user exists.
         /// </summary>
+        /// <returns>Awaitable task.</returns>
         Task InitializeAsync();
 
         /// <summary>
@@ -109,17 +110,22 @@ namespace MediaBrowser.Controller.Library
         /// Resets the easy password.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
         void ResetEasyPassword(User user);
 
         /// <summary>
         /// Changes the password.
         /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">New password to use.</param>
+        /// <returns>Awaitable task.</returns>
         Task ChangePassword(User user, string newPassword);
 
         /// <summary>
         /// Changes the easy password.
         /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">New password to use.</param>
+        /// <param name="newPasswordSha1">Hash of new password.</param>
         void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
 
         /// <summary>
@@ -133,6 +139,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Authenticates the user.
         /// </summary>
+        /// <param name="username">The user.</param>
+        /// <param name="password">The password to use.</param>
+        /// <param name="passwordSha1">Hash of password.</param>
+        /// <param name="remoteEndPoint">Remove endpoint to use.</param>
+        /// <param name="isUserSession">Specifies if a user session.</param>
+        /// <returns>User wrapped in awaitable task.</returns>
         Task<User> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
 
         /// <summary>

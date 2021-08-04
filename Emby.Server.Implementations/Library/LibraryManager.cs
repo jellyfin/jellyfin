@@ -21,6 +21,7 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -2539,9 +2540,10 @@ namespace Emby.Server.Implementations.Library
             {
                 episodeInfo = resolver.Resolve(episode.Path, isFolder, null, null, isAbsoluteNaming);
                 // Resolve from parent folder if it's not the Season folder
-                if (episodeInfo == null && episode.Parent.GetType() == typeof(Folder))
+                var parent = episode.GetParent();
+                if (episodeInfo == null && parent.GetType() == typeof(Folder))
                 {
-                    episodeInfo = resolver.Resolve(episode.Parent.Path, true, null, null, isAbsoluteNaming);
+                    episodeInfo = resolver.Resolve(parent.Path, true, null, null, isAbsoluteNaming);
                     if (episodeInfo != null)
                     {
                         // add the container

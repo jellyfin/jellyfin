@@ -469,64 +469,30 @@ namespace MediaBrowser.Model.Entities
         /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
         public bool? IsAnamorphic { get; set; }
 
-        private string GetResolutionText()
+        internal string GetResolutionText()
         {
-            var i = this;
-
-            if (i.Width.HasValue && i.Height.HasValue)
+            if (!Width.HasValue || !Height.HasValue)
             {
-                var width = i.Width.Value;
-                var height = i.Height.Value;
-
-                if (width >= 3800 || height >= 2000)
-                {
-                    return "4K";
-                }
-
-                if (width >= 2500)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "1440i";
-                    }
-
-                    return "1440p";
-                }
-
-                if (width >= 1900 || height >= 1000)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "1080i";
-                    }
-
-                    return "1080p";
-                }
-
-                if (width >= 1260 || height >= 700)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "720i";
-                    }
-
-                    return "720p";
-                }
-
-                if (width >= 700 || height >= 440)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "480i";
-                    }
-
-                    return "480p";
-                }
-
-                return "SD";
+                return null;
             }
 
-            return null;
+            return Width switch
+            {
+                <= 720 when Height <= 480 => IsInterlaced ? "480i" : "480p",
+                // 720x576 (PAL) (768 when rescaled for square pixels)
+                <= 768 when Height <= 576 => IsInterlaced ? "576i" : "576p",
+                // 960x540 (sometimes 544 which is multiple of 16)
+                <= 960 when Height <= 544 => IsInterlaced ? "540i" : "540p",
+                // 1280x720
+                <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
+                // 1920x1080
+                <= 1920 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
+                // 4K
+                <= 4096 when Height <= 3072 => "4K",
+                // 8K
+                <= 8192 when Height <= 6144 => "8K",
+                _ => null
+            };
         }
 
         public static bool IsTextFormat(string format)

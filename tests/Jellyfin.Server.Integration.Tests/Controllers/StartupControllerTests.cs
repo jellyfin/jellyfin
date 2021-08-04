@@ -6,7 +6,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Xunit;
 using Xunit.Priority;
 

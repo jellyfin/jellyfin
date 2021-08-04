@@ -6,12 +6,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -24,7 +23,7 @@ namespace Emby.Server.Implementations.IO
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
-        private static readonly bool _isEnvironmentCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
 
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
@@ -402,7 +401,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -426,7 +425,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }

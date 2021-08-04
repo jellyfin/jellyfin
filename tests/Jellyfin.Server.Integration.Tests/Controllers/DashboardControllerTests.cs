@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
