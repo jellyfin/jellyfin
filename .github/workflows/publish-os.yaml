@@ -10,10 +10,42 @@ on:
   workflow_dispatch:
 
 jobs:
+  setup-vars:
+    name: Setup Variables
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
+    outputs:
+      short-sha: steps.variables.outputs.short-sha
+      version: steps.variables.outputs.version
+      stage: steps.variables.outputs.stage
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.9.8
+
+      - name: Setup variables
+        id: variables
+        run: |-
+          if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
+            STAGE='stable'
+          fi
+
+          VERSION=`yq e '.version' build.yaml`
+          echo "::set-output name=version::${VERSION}"
+          echo "::set-output name=stage::${STAGE:-unstable}"
+          echo "::set-output name=short-sha::${GITHUB_SHA::7}"
+
   build-packages:
     name: Build Server Packages
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    needs:
+      - setup-vars
 
     strategy:
       fail-fast: false
@@ -35,13 +67,12 @@ jobs:
           - macos
           - portable
 
+    env:
+      SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Setup variables
-        run: |-
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Build packaging container
         uses: redhat-actions/buildah-build@v2
@@ -79,8 +110,6 @@ jobs:
           name: jellyfin-server-${{ matrix.build-config }}
           path: deployment/dist
 
-
-      # TODO: migrate bits of 'collect-server-artefacts' script into this ci
       - name: Create Target Directory on Repository Server
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -100,4 +129,32 @@ jobs:
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_KEY }}
 
-    # TODO: add stage tat dls all artifacts and publishes them to a GH release + SHA256sum collection file
+  trigger-meta:
+    name: Triger Meta Package builds
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - setup-vars
+      - build-packages
+
+    env:
+      SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
+      VERSION: ${{ needs.setup-vars.outputs.version }}
+      STAGE: ${{ needs.setup-vars.outputs.stage }}
+
+    steps:
+      - name: Run OS package collect script
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script_stop: true
+          script: |-
+            nohup sudo /srv/repository/collect-server.os-packs.sh \
+              /srv/repository/incoming/gh-actions \
+              ${{ env.SHORT_SHA }} \
+              ${{ env.VERSION }} \
+              ${{ env.STAGE }} &
+
+  # UpForDiscussion: add stage that dls all artifacts and publishes them to a GH release + SHA256sum collection file

@@ -10,10 +10,46 @@ on:
   workflow_dispatch:
 
 jobs:
+  setup-vars:
+    name: Setup Variables
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+
+    outputs:
+      stage: steps.variables.outputs.stage
+      short-sha: steps.variables.outputs.short-sha
+      major-minor: steps.variables.outputs.major-minor
+      version: steps.variables.outputs.version
+      year-week: steps.variables.outputs.year-week
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup YQ
+        uses: chrisdickinson/setup-yq@latest
+        with:
+          yq-version: v4.9.8
+
+      - name: Setup sariables
+        id: variables
+        run: |-
+          if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
+            STAGE='stable'
+          fi
+
+          VERSION=`yq e '.version' build.yaml`
+          echo "::set-output name=stage::${STAGE:-unstable}"
+          echo "::set-output name=short-sha::${GITHUB_SHA::7}"
+          echo "::set-output name=major-minor::${VERSION%.*}"
+          echo "::set-output name=version::${VERSION}"
+          echo "::set-output name=year-week::$(date -u '+%Y%W')"
+
   container-image:
     name: Build Container Images
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'jellyfin/jellyfin' }}
+    needs:
+      - setup-vars
 
     strategy:
       fail-fast: false
@@ -29,6 +65,13 @@ jobs:
             image-config: arm32
             build-config: linux-arm
 
+    env:
+      STAGE: ${{ needs.setup-vars.outputs.stage }}
+      SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
+      MAJOR_MINOR: ${{ needs.setup-vars.outputs.major-minor }}
+      SEMVER: ${{ needs.setup-vars.outputs.version }}
+      YEAR_WEEK: ${{ needs.setup-vars.outputs.year-week }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -38,28 +81,10 @@ jobs:
         with:
           dotnet-version: '5.0.x'
 
-      - name: Setup YQ
-        uses: chrisdickinson/setup-yq@latest
-        with:
-          yq-version: v4.9.8
-
       - name: Install qemu dependency
         run: |-
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
-
-      - name: Setup sariables
-        run: |-
-          if [[ "${GITHUB_REF}" =~ '^refs/tags/v.*$' ]]; then
-            STAGE='stable'
-          fi
-
-          VERSION=`yq e '.version' build.yaml`
-          echo "STAGE=${STAGE:-unstable}" >> $GITHUB_ENV
-          echo "MAJOR_MINOR=${VERSION%.*}" >> $GITHUB_ENV
-          echo "SEMVER=${VERSION}" >> $GITHUB_ENV
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "YEAR_WEEK=$(date -u '+%Y%W')" >> $GITHUB_ENV
 
       - name: Setup build dependencies chache
         uses: actions/cache@v2
@@ -123,3 +148,32 @@ jobs:
           registry: docker.io/jellyfin
           username: jellyfin
           password: ${{ secrets.DH_TOKEN }}
+
+  trigger-meta:
+    name: Triger Meta Container Image builds
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - setup-vars
+      - container-image
+
+    env:
+      SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
+      MAJOR_MINOR: ${{ needs.setup-vars.outputs.major-minor }}
+      SEMVER: ${{ needs.setup-vars.outputs.version }}
+      STAGE: ${{ needs.setup-vars.outputs.stage }}
+
+    steps:
+      - name: Run OS package collect script
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script_stop: true
+          script: |-
+            nohup sudo /srv/repository/collect-server.container.sh \
+              ${{ env.SHORT_SHA }} \
+              ${{ env.MAJOR_MINOR }} \
+              ${{ env.SEMVER }} \
+              ${{ env.STAGE }} &
