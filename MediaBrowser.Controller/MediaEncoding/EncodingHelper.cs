@@ -3575,7 +3575,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     && IsVppTonemappingSupported(state, encodingOptions))
                 {
                     var outputVideoCodec = GetVideoEncoder(state, encodingOptions) ?? string.Empty;
-                    var isQsvEncoder = outputVideoCodec.IndexOf("qsv", StringComparison.OrdinalIgnoreCase) != -1;
+                    var isQsvEncoder = outputVideoCodec.Contains("qsv", StringComparison.OrdinalIgnoreCase);
                     if (isQsvEncoder)
                     {
                         // Since tonemap_vaapi only support HEVC for now, no need to check the codec again.
