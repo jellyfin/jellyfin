@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-  pull_request_target:
+  pull_request:
     branches:
       - master
   workflow_dispatch:
@@ -50,23 +50,37 @@ jobs:
       - name: Install SonarCloud scanner
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
-        run: |
+        run: |-
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
 
-      - name: Set variables
+      - name: Set variables (branch)
+        if: ${{ github.event_name != 'pull_request' }}
         shell: bash
-        run: |
+        run: |-
           BRANCH="${{ github.ref }}"
           echo "VERSION=$(cat build.yaml | sed -En 's/^version: "(.+)"$/\1/p')" >> $GITHUB_ENV
           echo "BRANCH=${BRANCH#refs/heads/}" >> $GITHUB_ENV
 
-      - name: Build and analyze
+
+      - name: Set variables (PullRequest)
+        if: ${{ github.event_name == 'pull_request' }}
+        shell: bash
+        run: |-
+          SRC_BRANCH="${{ github.head_ref }}"
+          TGT_BRANCH="${{ github.base_ref }}"
+          echo "VERSION=$(cat build.yaml | sed -En 's/^version: "(.+)"$/\1/p')" >> $GITHUB_ENV
+          echo "PR_NR=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "SRC_BRANCH=${SRC_BRANCH#refs/heads/}" >> $GITHUB_ENV
+          echo "TGT_BRANCH=${TGT_BRANCH#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Build and analyze (branch)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
-        run: |
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |-
           .\.sonar\scanner\dotnet-sonarscanner begin `
             -o:"h1dden-da3m0n" `
             -k:"h1dden-da3m0n_jellyfin" `
@@ -78,14 +92,42 @@ jobs:
             -d:sonar.coverage.exclusions="**Test*.cs" `
             -d:sonar.branch.name="${{ env.BRANCH }}"
 
-          foreach ($testProj in Get-ChildItem -Path "./tests/" -Recurse -Filter "*Tests.csproj") {
-            dotnet test $testProj.FullName `
-              --configuration Release `
-              --collect:"XPlat Code Coverage" `
-              --results-directory TestResults/ `
-              --settings tests/coverletArgs.runsettings `
-              --verbosity minimal `
-              --nologo
-          }
+          dotnet test `
+            --configuration Release `
+            --collect:"XPlat Code Coverage" `
+            --results-directory TestResults/ `
+            --settings tests/coverletArgs.runsettings `
+            --verbosity minimal `
+            --nologo
+
+          .\.sonar\scanner\dotnet-sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Build and analyze (PullRequest)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: powershell
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |-
+          .\.sonar\scanner\dotnet-sonarscanner begin `
+            -o:"h1dden-da3m0n" `
+            -k:"h1dden-da3m0n_jellyfin" `
+            -v:"${{ env.VERSION }}" `
+            -d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
+            -d:sonar.host.url="https://sonarcloud.io" `
+            -d:sonar.cs.vstest.reportsPaths=TestResults/*.trx `
+            -d:sonar.cs.opencover.reportsPaths=TestResults/*/coverage.opencover.xml `
+            -d:sonar.coverage.exclusions="**Test*.cs" `
+            -d:sonar.pullrequest.key="${{ env.PR_NR }}" `
+            -d:sonar.pullrequest.branch="${{ env.SRC_BRANCH }}" `
+            -d:sonar.pullrequest.base="${{ env.TGT_BRANCH }}"
+
+          dotnet test `
+            --configuration Release `
+            --collect:"XPlat Code Coverage" `
+            --results-directory TestResults/ `
+            --settings tests/coverletArgs.runsettings `
+            --verbosity minimal `
+            --nologo
 
           .\.sonar\scanner\dotnet-sonarscanner end -d:sonar.login="${{ secrets.SONAR_TOKEN }}"
