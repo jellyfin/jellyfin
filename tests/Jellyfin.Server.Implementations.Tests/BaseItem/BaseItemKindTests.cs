@@ -25,14 +25,9 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
         public void GetBaseKindEnumTest(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);
-
-            Assert.NotNull(defaultConstructor);
-            if (defaultConstructor != null)
-            {
-                var instance = (MediaBrowser.Controller.Entities.BaseItem)defaultConstructor.Invoke(null);
-                var exception = Record.Exception(() => instance.GetBaseItemKind());
-                Assert.Null(exception);
-            }
+            var instance = (MediaBrowser.Controller.Entities.BaseItem)defaultConstructor!.Invoke(null);
+            var exception = Record.Exception(() => instance.GetBaseItemKind());
+            Assert.Null(exception);
         }
 
         private class GetBaseItemDescendants : IEnumerable<object?[]>
