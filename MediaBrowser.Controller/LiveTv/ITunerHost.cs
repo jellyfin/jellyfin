@@ -30,6 +30,8 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the channels.
         /// </summary>
+        /// <param name="enableCache">Option to enable using cache.</param>
+        /// <param name="cancellationToken">The CancellationToken for this operation.</param>
         /// <returns>Task&lt;IEnumerable&lt;ChannelInfo&gt;&gt;.</returns>
         Task<List<ChannelInfo>> GetChannels(bool enableCache, CancellationToken cancellationToken);
 
@@ -47,6 +49,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="streamId">The stream identifier.</param>
         /// <param name="currentLiveStreams">The current live streams.</param>
         /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>Live stream wrapped in a task.</returns>
         Task<ILiveStream> GetChannelStream(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
 
         /// <summary>
