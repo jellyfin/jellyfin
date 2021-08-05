@@ -37,7 +37,7 @@ namespace Emby.Naming.Video
             }
 
             newName = cleaned ? name.AsSpan() : ReadOnlySpan<char>.Empty;
-            return newName != ReadOnlySpan<char>.Empty;
+            return cleaned;
         }
 
         private static bool TryClean(string name, Regex expression, out ReadOnlySpan<char> newName)
