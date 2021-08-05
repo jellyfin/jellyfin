@@ -83,9 +83,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 try
                 {
                     var channels = await GetChannels(host, enableCache, cancellationToken).ConfigureAwait(false);
-                    var newChannels = channels.Where(i => !list.Any(l => string.Equals(i.Id, l.Id, StringComparison.OrdinalIgnoreCase))).ToList();
 
-                    list.AddRange(newChannels);
+                    list.AddRange(channels);
 
                     if (!enableCache)
                     {

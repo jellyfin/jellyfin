@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
@@ -44,22 +43,28 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            if (info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            if (info == null)
             {
-                using var requestMessage = new HttpRequestMessage(HttpMethod.Get, info.Url);
-                if (!string.IsNullOrEmpty(info.UserAgent))
-                {
-                    requestMessage.Headers.UserAgent.TryParseAdd(info.UserAgent);
-                }
-
-                var response = await _httpClientFactory.CreateClient(NamedClient.Default)
-                    .SendAsync(requestMessage, cancellationToken)
-                    .ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                throw new ArgumentNullException(nameof(info));
             }
 
-            return File.OpenRead(info.Url);
+            if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return File.OpenRead(info.Url);
+            }
+
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, info.Url);
+            if (!string.IsNullOrEmpty(info.UserAgent))
+            {
+                requestMessage.Headers.UserAgent.TryParseAdd(info.UserAgent);
+            }
+
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStreamAsync(cancellationToken);
         }
 
         private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
@@ -83,7 +88,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 if (trimmedLine.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     extInf = trimmedLine.Substring(ExtInfPrefix.Length).Trim();
-                    _logger.LogInformation("Found m3u channel: {0}", extInf);
                 }
                 else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
@@ -99,6 +103,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     channel.Path = trimmedLine;
                     channels.Add(channel);
+                    _logger.LogInformation("Parsed channel: {0}", channel.Name);
                     extInf = string.Empty;
                 }
             }
