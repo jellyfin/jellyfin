@@ -25,37 +25,18 @@ namespace Emby.Naming.Video
                 return false;
             }
 
-            // Iteratively remove extra cruft until we're left with the string
-            // we want.
-            newName = ReadOnlySpan<char>.Empty;
-            const int maxTries = 100;       // This is just a precautionary
-                                            // measure. Should not be neccesary.
-            var loopCounter = 0;
-            for (; loopCounter < maxTries; loopCounter++)
+            // Iteratively apply the regexps to clean the string.
+            bool cleaned = false;
+            for (int i = 0; i < expressions.Count; i++)
             {
-                bool cleaned = false;
-                var len = expressions.Count;
-                for (int i = 0; i < len; i++)
+                if (TryClean(name, expressions[i], out newName))
                 {
-                    if (TryClean(name, expressions[i], out newName))
-                    {
-                        cleaned = true;
-                        name = newName.ToString();
-                        break;
-                    }
-                }
-
-                if (!cleaned)
-                {
-                    break;
+                    cleaned = true;
+                    name = newName.ToString();
                 }
             }
 
-            if (loopCounter > 0)
-            {
-                newName = name.AsSpan();
-            }
-
+            newName = cleaned ? name.AsSpan() : ReadOnlySpan<char>.Empty;
             return newName != ReadOnlySpan<char>.Empty;
         }
 
