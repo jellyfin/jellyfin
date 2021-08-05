@@ -40,7 +40,7 @@ namespace MediaBrowser.Common.Extensions
 
             // Add an event handler for the process exit event
             var tcs = new TaskCompletionSource<bool>();
-            process.Exited += (sender, args) => tcs.TrySetResult(true);
+            process.Exited += (_, _) => tcs.TrySetResult(true);
 
             // Return immediately if the process has already exited
             if (process.HasExitedSafe())

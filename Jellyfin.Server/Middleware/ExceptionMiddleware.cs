@@ -137,11 +137,6 @@ namespace Jellyfin.Server.Middleware
 
         private string NormalizeExceptionMessage(string msg)
         {
-            if (msg == null)
-            {
-                return string.Empty;
-            }
-
             // Strip any information we don't want to reveal
             return msg.Replace(
                     _configuration.ApplicationPaths.ProgramSystemPath,

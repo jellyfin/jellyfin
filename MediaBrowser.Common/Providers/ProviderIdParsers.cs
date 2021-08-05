@@ -18,7 +18,7 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text to parse.</param>
         /// <param name="imdbId">The parsed IMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryFindImdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> imdbId)
+        public static bool TryFindImdbId(ReadOnlySpan<char> text, out ReadOnlySpan<char> imdbId)
         {
             // imdb id is at least 9 chars (tt + 7 numbers)
             while (text.Length >= 2 + ImdbMinNumbers)
@@ -62,7 +62,7 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tmdbId">The parsed TMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryFindTmdbMovieId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> tmdbId)
+        public static bool TryFindTmdbMovieId(ReadOnlySpan<char> text, out ReadOnlySpan<char> tmdbId)
             => TryFindProviderId(text, "themoviedb.org/movie/", out tmdbId);
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tmdbId">The parsed TMDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryFindTmdbSeriesId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> tmdbId)
+        public static bool TryFindTmdbSeriesId(ReadOnlySpan<char> text, out ReadOnlySpan<char> tmdbId)
             => TryFindProviderId(text, "themoviedb.org/tv/", out tmdbId);
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace MediaBrowser.Common.Providers
         /// <param name="text">The text with the url to parse.</param>
         /// <param name="tvdbId">The parsed TVDb id.</param>
         /// <returns>True if parsing was successful, false otherwise.</returns>
-        public static bool TryFindTvdbId(ReadOnlySpan<char> text, [NotNullWhen(true)] out ReadOnlySpan<char> tvdbId)
+        public static bool TryFindTvdbId(ReadOnlySpan<char> text, out ReadOnlySpan<char> tvdbId)
             => TryFindProviderId(text, "thetvdb.com/?tab=series&id=", out tvdbId);
 
         private static bool TryFindProviderId(ReadOnlySpan<char> text, ReadOnlySpan<char> searchString, [NotNullWhen(true)] out ReadOnlySpan<char> providerId)
