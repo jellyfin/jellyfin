@@ -16,11 +16,11 @@ jobs:
     if: ${{ github.repository == 'jellyfin/jellyfin' }}
 
     outputs:
-      stage: steps.variables.outputs.stage
-      short-sha: steps.variables.outputs.short-sha
-      major-minor: steps.variables.outputs.major-minor
-      version: steps.variables.outputs.version
-      year-week: steps.variables.outputs.year-week
+      stage: ${{ steps.variables.outputs.stage }}
+      short-sha: ${{ steps.variables.outputs.short-sha }}
+      major-minor: ${{ steps.variables.outputs.major-minor }}
+      version: ${{ steps.variables.outputs.version }}
+      year-week: ${{ steps.variables.outputs.year-week }}
 
     steps:
       - name: Checkout repository
@@ -105,7 +105,7 @@ jobs:
             --runtime ${{ matrix.build-config }} \
             "-p:DebugSymbols=false;DebugType=none"
 
-      - name: Build headles server image
+      - name: Build headless server image
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
@@ -122,7 +122,7 @@ jobs:
           build-args: |-
             JELLYFIN_VERSION=${{ env.SEMVER }}
 
-      - name: Publish headles server image to ghcr.io
+      - name: Publish headless server image to ghcr.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}
@@ -131,7 +131,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Publish headles server image to quay.io
+      - name: Publish headless server image to quay.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}
@@ -140,7 +140,7 @@ jobs:
           username: jellyfin+github_actions
           password: ${{ secrets.RH_TOKEN }}
 
-      - name: Publish headles server image to docker.io
+      - name: Publish headless server image to docker.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: ${{ steps.build-image.outputs.image }}

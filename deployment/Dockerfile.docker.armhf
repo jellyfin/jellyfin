@@ -32,17 +32,17 @@ LABEL \
 #   libomxil-bellagio0: needed for OpenMax IL
 #   libraspberrypi0: needed for MMAL component of ffmpeg (from Raspberry Pi)
 #   libva2: needed for VAAPI
-RUN apt-get update -qyy \
-    && apt-get install -qyy --no-install-recommends --no-install-suggests ca-certificates gnupg wget apt-transport-https \
+RUN apt-get update -yqq \
+    && apt-get install -yqq --no-install-recommends --no-install-suggests ca-certificates gnupg wget apt-transport-https \
     && wget -qO - https://repo.jellyfin.org/jellyfin_team.gpg.key | apt-key add - \
     && wget -qO - https://keyserver.ubuntu.com/pks/lookup?op=get\&search=0x6587ffd6536b8826e88a62547876ae518cbcf2f2 | apt-key add - \
     && echo 'deb [arch=armhf] https://repo.jellyfin.org/debian buster main' > /etc/apt/sources.list.d/jellyfin.list \
     && echo 'deb http://ppa.launchpad.net/ubuntu-raspi2/ppa-nightly/ubuntu focal main'>> /etc/apt/sources.list.d/raspbins.list \
-    && apt-get update -qyy \
-    && apt-get install -qyy --no-install-recommends --no-install-suggests libva2 vainfo libraspberrypi0 libomxil-bellagio0 libomxil-bellagio-bin jellyfin-ffmpeg openssl locales libfontconfig1 libfreetype6 \
-    && apt-get remove -qyy gnupg wget apt-transport-https \
-    && apt-get clean autoclean -qyy \
-    && apt-get autoremove -qyy \
+    && apt-get update -yqq \
+    && apt-get install -yqq --no-install-recommends --no-install-suggests libva2 vainfo libraspberrypi0 libomxil-bellagio0 libomxil-bellagio-bin jellyfin-ffmpeg openssl locales libfontconfig1 libfreetype6 \
+    && apt-get remove -yqq gnupg wget apt-transport-https \
+    && apt-get clean autoclean -yqq \
+    && apt-get autoremove -yqq \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${JELLYFIN_MEDIA_DIR} ${JELLYFIN_DATA_DIR} ${JELLYFIN_CACHE_DIR} \
     && chmod 777 ${JELLYFIN_MEDIA_DIR} ${JELLYFIN_DATA_DIR} ${JELLYFIN_CACHE_DIR} \
