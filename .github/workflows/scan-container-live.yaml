@@ -1,4 +1,4 @@
-name: '🔬 Run Container Scan'
+name: '🔬 Run Live Container Scan'
 
 on:
   schedule:

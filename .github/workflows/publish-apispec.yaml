@@ -16,10 +16,10 @@ jobs:
     if: ${{ github.repository == 'jellyfin/jellyfin' }}
 
     outputs:
-      version: steps.variables.outputs.version
-      short-sha: steps.variables.outputs.short-sha
-      unstable: steps.variables.outputs.unstable
-      has-diff: steps.diff.outputs.has-diff
+      version: ${{ steps.variables.outputs.version }}
+      short-sha: ${{ steps.variables.outputs.short-sha }}
+      unstable: ${{ steps.variables.outputs.unstable }}
+      has-diff: ${{ steps.diff.outputs.has-diff }}
 
     steps:
       - name: Checkout repository
@@ -123,7 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.open-api.outputs.has-diff == 'true' }}
     needs:
-      - open-api
+      - openapi
 
     strategy:
       fail-fast: false

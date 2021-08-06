@@ -16,9 +16,9 @@ jobs:
     if: ${{ github.repository == 'jellyfin/jellyfin' }}
 
     outputs:
-      short-sha: steps.variables.outputs.short-sha
-      version: steps.variables.outputs.version
-      stage: steps.variables.outputs.stage
+      short-sha: ${{ steps.variables.outputs.short-sha }}
+      version: ${{ steps.variables.outputs.version }}
+      stage: ${{ steps.variables.outputs.stage }}
 
     steps:
       - name: Checkout repository
@@ -69,6 +69,7 @@ jobs:
 
     env:
       SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
+      VERSION: ${{ needs.setup-vars.outputs.version }}
 
     steps:
       - name: Checkout repository
@@ -90,9 +91,10 @@ jobs:
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="no" \
-            -e BUILD_ID=${{ env.SHORT_SHA }} \
+            -e BUILD_ID=${{ env.VERSION }} \
             jellyfin-server:${{ matrix.build-config }}
 
+      # TODO: either pass x.y.hash as BUILD_ID or ask what that number should be ideally
       - name: Run packaging container (unstable)
         if: ${{ github.event_name != 'release' }}
         run: |-
@@ -101,7 +103,7 @@ jobs:
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="yes" \
-            -e BUILD_ID=${{ env.SHORT_SHA }} \
+            -e BUILD_ID=${{ env.VERSION }} \
             jellyfin-server:${{ matrix.build-config }}
 
       - name: Publish artifacts
