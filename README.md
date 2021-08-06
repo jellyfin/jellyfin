@@ -68,6 +68,8 @@ Check out our <a href="https://translate.jellyfin.org">Weblate instance</a> to h
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
 </a>
 
+---
+
 ## Jellyfin Server
 
 This repository contains the code for Jellyfin's backend server. Note that this is only one of many projects under the Jellyfin GitHub [organization](https://github.com/jellyfin/) on GitHub. If you want to contribute, you can start by checking out our [documentation](https://jellyfin.org/docs/general/contributing/index.html) to see what to work on.
@@ -162,3 +164,13 @@ switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
 
 **NOTE:** The setup wizard can not be run if the web client is hosted separately.
+
+---
+<p align="center">
+This project is supported by:
+<br/>
+<br/>
+<a href="https://www.digitalocean.com"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" height="50px" alt="DigitalOcean"></a>
+    &nbsp;
+<a href="https://www.jetbrains.com"><img src="https://gist.githubusercontent.com/anthonylavado/e8b2403deee9581e0b4cb8cd675af7db/raw/fa104b7d73f759d7262794b94569f1b89df41c0b/jetbrains.svg" height="50px" alt="JetBrains logo"></a>
+</p>
