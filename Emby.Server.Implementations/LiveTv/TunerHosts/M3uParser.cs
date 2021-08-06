@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                     channel.Path = trimmedLine;
                     channels.Add(channel);
-                    _logger.LogInformation("Parsed channel: {0}", channel.Name);
+                    _logger.LogInformation("Parsed channel: {ChannelName}", channel.Name);
                     extInf = string.Empty;
                 }
             }
