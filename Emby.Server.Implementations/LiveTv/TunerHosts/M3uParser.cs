@@ -59,6 +59,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 requestMessage.Headers.UserAgent.TryParseAdd(info.UserAgent);
             }
 
+            // Set HttpCompletionOption.ResponseHeadersRead to prevent timeouts on larger files
             var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
