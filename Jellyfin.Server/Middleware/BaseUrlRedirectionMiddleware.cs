@@ -59,7 +59,7 @@ namespace Jellyfin.Server.Middleware
                 }
 
                 if (!startsWithBaseUrl
-                    || localPath.Equals(baseUrlPrefix, StringComparison.OrdinalIgnoreCase)
+                    || localPath.Length == baseUrlPrefix.Length
                     // Local path is /baseUrl/
                     || (localPath.Length == baseUrlPrefix.Length + 1 && localPath[^1] == '/'))
                 {
