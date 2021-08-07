@@ -71,5 +71,25 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.True(res.PremiereDate.HasValue);
             Assert.Equal(DateTime.Parse("2021-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
         }
+
+        [Fact]
+        public void GetMediaInfo_Music_Year_Only_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/music_year_only_metadata.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, null, true, "Test Data/Probing/music.flac", MediaProtocol.File);
+
+            Assert.Equal("Baker Street", res.Name);
+            Assert.Single(res.Artists);
+            Assert.Equal("Gerry Rafferty", res.Artists[0]);
+            Assert.Equal("City to City", res.Album);
+            Assert.Equal(1978, res.ProductionYear);
+            Assert.True(res.PremiereDate.HasValue);
+            Assert.Equal(DateTime.Parse("1978-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+            Assert.Contains("Electronic", res.Genres);
+            Assert.Contains("Ambient", res.Genres);
+            Assert.Contains("Pop", res.Genres);
+            Assert.Contains("Jazz", res.Genres);
+        }
     }
 }
