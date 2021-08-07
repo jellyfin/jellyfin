@@ -77,17 +77,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Model.Tests", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Networking.Tests", "tests\Jellyfin.Networking.Tests\Jellyfin.Networking.Tests.csproj", "{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Tests", "tests\Jellyfin.Server.Tests\Jellyfin.Server.Tests.csproj", "{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{68B0B823-A5AC-4E8B-82EA-965AAC7BF76E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Server.Integration.Tests", "tests\Jellyfin.Server.Integration.Tests\Jellyfin.Server.Integration.Tests.csproj", "{68B0B823-A5AC-4E8B-82EA-965AAC7BF76E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Providers.Tests", "tests\Jellyfin.Providers.Tests\Jellyfin.Providers.Tests.csproj", "{A964008C-2136-4716-B6CB-B3426C22320A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Providers.Tests", "tests\Jellyfin.Providers.Tests\Jellyfin.Providers.Tests.csproj", "{A964008C-2136-4716-B6CB-B3426C22320A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Extensions", "src\Jellyfin.Extensions\Jellyfin.Extensions.csproj", "{750B8757-BE3D-4F8C-941A-FBAD94904ADA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Extensions", "src\Jellyfin.Extensions\Jellyfin.Extensions.csproj", "{750B8757-BE3D-4F8C-941A-FBAD94904ADA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Extensions.Tests", "tests\Jellyfin.Extensions.Tests\Jellyfin.Extensions.Tests.csproj", "{332A5C7A-F907-47CA-910E-BE6F7371B9E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jellyfin.Extensions.Tests", "tests\Jellyfin.Extensions.Tests\Jellyfin.Extensions.Tests.csproj", "{332A5C7A-F907-47CA-910E-BE6F7371B9E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Server.Implementations.Tests", "tests\Emby.Server.Implementations.Tests\Emby.Server.Implementations.Tests.csproj", "{3FF50D0E-DA00-42B5-8742-55F2EA34C0EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -219,10 +221,6 @@ Global
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42816EA8-4511-4CBF-A9C7-7791D5DDDAE6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25E40B0B-7C89-4230-8911-CBBBCE83FC5B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3ADBCD8C-C0F2-4956-8FDC-35D686B74CF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -243,6 +241,10 @@ Global
 		{332A5C7A-F907-47CA-910E-BE6F7371B9E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{332A5C7A-F907-47CA-910E-BE6F7371B9E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{332A5C7A-F907-47CA-910E-BE6F7371B9E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FF50D0E-DA00-42B5-8742-55F2EA34C0EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FF50D0E-DA00-42B5-8742-55F2EA34C0EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FF50D0E-DA00-42B5-8742-55F2EA34C0EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FF50D0E-DA00-42B5-8742-55F2EA34C0EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -263,6 +265,7 @@ Global
 		{A964008C-2136-4716-B6CB-B3426C22320A} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 		{750B8757-BE3D-4F8C-941A-FBAD94904ADA} = {C9F0AB5D-F4D7-40C8-A353-3305C86D6D4C}
 		{332A5C7A-F907-47CA-910E-BE6F7371B9E0} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
+		{3FF50D0E-DA00-42B5-8742-55F2EA34C0EA} = {FBBB5129-006E-4AD7-BAD5-8B7CA1D10ED6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3448830C-EBDC-426C-85CD-7BBB9651A7FE}
