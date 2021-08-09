@@ -25,7 +25,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
                 Assert.Equal(expected, cmp.Compare(x, y));
                 if (expected == 1)
                 {
-                    Assert.Equal(expected * -1, cmp.Compare(y, x));
+                    Assert.Equal(-expected, cmp.Compare(y, x));
                 }
             }
         }
