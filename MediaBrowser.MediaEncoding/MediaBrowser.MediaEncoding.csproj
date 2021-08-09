@@ -26,7 +26,7 @@
     <PackageReference Include="libse" Version="3.6.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
-    <PackageReference Include="UTF.Unknown" Version="2.3.0" />
+    <PackageReference Include="UTF.Unknown" Version="2.4.0" />
   </ItemGroup>
 
   <!-- Code Analyzers-->
