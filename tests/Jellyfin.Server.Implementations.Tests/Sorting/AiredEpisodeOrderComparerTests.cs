@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
     {
         [Theory]
         [ClassData(typeof(EpisodeTestData))]
-        public void Test1(BaseItem x, BaseItem y, int expected, bool err)
+        public void AiredEpisodeOrderCompareTest(BaseItem x, BaseItem y, int expected, bool err)
         {
             var cmp = new AiredEpisodeOrderComparer();
             if (err == true)
