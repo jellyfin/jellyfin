@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Localization;
 using MediaBrowser.Controller.Configuration;
@@ -23,11 +24,11 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             Assert.Equal(139, countryInfos.Count);
 
-            var germany = countryInfos.FirstOrDefault(x => x.Name == "DE");
+            var germany = countryInfos.FirstOrDefault(x => x.Name.Equals("DE", StringComparison.Ordinal));
             Assert.NotNull(germany);
             Assert.Equal("Germany", germany!.DisplayName);
-            Assert.Equal("DEU", germany!.ThreeLetterISORegionName);
-            Assert.Equal("DE", germany!.TwoLetterISORegionName);
+            Assert.Equal("DEU", germany.ThreeLetterISORegionName);
+            Assert.Equal("DE", germany.TwoLetterISORegionName);
         }
 
         [Fact]
@@ -45,10 +46,10 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName == "de");
             Assert.NotNull(germany);
             Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
-            Assert.Equal("German", germany!.DisplayName);
-            Assert.Equal("German", germany!.Name);
-            Assert.Contains("deu", germany!.ThreeLetterISOLanguageNames);
-            Assert.Contains("ger", germany!.ThreeLetterISOLanguageNames);
+            Assert.Equal("German", germany.DisplayName);
+            Assert.Equal("German", germany.Name);
+            Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
+            Assert.Contains("ger", germany.ThreeLetterISOLanguageNames);
         }
 
         [Theory]
@@ -66,11 +67,11 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var germany = localizationManager.FindLanguageInfo(identifier);
             Assert.NotNull(germany);
 
-            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
-            Assert.Equal("German", germany!.DisplayName);
-            Assert.Equal("German", germany!.Name);
-            Assert.Contains("deu", germany!.ThreeLetterISOLanguageNames);
-            Assert.Contains("ger", germany!.ThreeLetterISOLanguageNames);
+            Assert.Equal("ger", germany.ThreeLetterISOLanguageName);
+            Assert.Equal("German", germany.DisplayName);
+            Assert.Equal("German", germany.Name);
+            Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
+            Assert.Contains("ger", germany.ThreeLetterISOLanguageNames);
         }
 
         [Fact]
