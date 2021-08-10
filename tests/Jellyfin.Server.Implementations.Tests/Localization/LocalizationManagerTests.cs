@@ -19,12 +19,11 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             {
                 UICulture = "de-DE"
             });
-            var countries = localizationManager.GetCountries();
-            var countryInfos = countries.ToList();
+            var countries = localizationManager.GetCountries().ToList();
 
-            Assert.Equal(139, countryInfos.Count);
+            Assert.Equal(139, countries.Count);
 
-            var germany = countryInfos.FirstOrDefault(x => x.Name.Equals("DE", StringComparison.Ordinal));
+            var germany = countries.FirstOrDefault(x => x.Name.Equals("DE", StringComparison.Ordinal));
             Assert.NotNull(germany);
             Assert.Equal("Germany", germany!.DisplayName);
             Assert.Equal("DEU", germany.ThreeLetterISORegionName);
@@ -43,7 +42,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             Assert.Equal(189, cultures.Count);
 
-            var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName == "de");
+            var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName.Equals("de", StringComparison.Ordinal));
             Assert.NotNull(germany);
             Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
@@ -86,7 +85,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             Assert.Equal(23, ratings.Count);
 
-            var tvma = ratings.FirstOrDefault(x => x.Name == "TV-MA");
+            var tvma = ratings.FirstOrDefault(x => x.Name.Equals("TV-MA", StringComparison.Ordinal));
             Assert.NotNull(tvma);
             Assert.Equal(9, tvma!.Value);
         }
@@ -103,7 +102,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
 
             Assert.Equal(10, ratings.Count);
 
-            var fsk = ratings.FirstOrDefault(x => x.Name == "FSK-12");
+            var fsk = ratings.FirstOrDefault(x => x.Name.Equals("FSK-12", StringComparison.Ordinal));
             Assert.NotNull(fsk);
             Assert.Equal(7, fsk!.Value);
         }
