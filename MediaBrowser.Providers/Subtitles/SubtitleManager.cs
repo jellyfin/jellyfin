@@ -252,6 +252,7 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
+// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
 #pragma warning disable CA1508
                     exs ??= new List<Exception>()
                             {

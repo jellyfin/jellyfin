@@ -533,7 +533,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             return !_tmDbClient.HasConfig ? _tmDbClient.GetConfigAsync() : Task.CompletedTask;
         }
 
-        /// <summary>Dispose method.</summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);

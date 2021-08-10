@@ -600,7 +600,7 @@ namespace MediaBrowser.Providers.Music
             }
         }
 
-        /// <summary>IDisposable implementation.</summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
