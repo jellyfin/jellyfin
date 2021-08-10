@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -10,9 +11,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
@@ -366,7 +367,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
             var prefix = "file";
-            if (mediaSource.VideoType == VideoType.BluRay)
+            if (mediaSource.VideoType == VideoType.BluRay
+                || mediaSource.IsoType == IsoType.BluRay)
             {
                 prefix = "bluray";
             }

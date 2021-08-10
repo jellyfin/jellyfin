@@ -111,6 +111,11 @@ namespace MediaBrowser.Providers.MediaInfo
                 audio.Name = data.Name;
             }
 
+            if (!string.IsNullOrEmpty(data.ForcedSortName))
+            {
+                audio.ForcedSortName = data.ForcedSortName;
+            }
+
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))
             {
                 var people = new List<PersonInfo>();

@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Vyčistiť log aktivít",
     "Undefined": "Nedefinované",
     "Forced": "Vynútené",
-    "Default": "Predvolené"
+    "Default": "Predvolené",
+    "TaskOptimizeDatabaseDescription": "Zmenší databázu a odstráni prázdne miesto. Spustenie tejto úlohy po skenovaní knižnice alebo po iných zmenách zahŕňajúcich úpravy databáze môže zlepšiť výkon.",
+    "TaskOptimizeDatabase": "Optimalizovať databázu"
 }

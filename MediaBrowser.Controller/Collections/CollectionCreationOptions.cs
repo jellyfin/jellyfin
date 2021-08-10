@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -25,8 +25,8 @@ namespace MediaBrowser.Controller.Collections
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
-        public string[] ItemIdList { get; set; }
+        public IReadOnlyList<string> ItemIdList { get; set; }
 
-        public Guid[] UserIds { get; set; }
+        public IReadOnlyList<Guid> UserIds { get; set; }
     }
 }

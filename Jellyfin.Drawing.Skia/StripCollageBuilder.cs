@@ -68,7 +68,7 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="outputPath">The path at which to place the resulting collage image.</param>
         /// <param name="width">The desired width of the collage.</param>
         /// <param name="height">The desired height of the collage.</param>
-        public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
+        public void BuildSquareCollage(IReadOnlyList<string> paths, string outputPath, int width, int height)
         {
             using var bitmap = BuildSquareCollageBitmap(paths, width, height);
             using var outputStream = new SKFileWStream(outputPath);
@@ -84,7 +84,7 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="width">The desired width of the collage.</param>
         /// <param name="height">The desired height of the collage.</param>
         /// <param name="libraryName">The name of the library to draw on the collage.</param>
-        public void BuildThumbCollage(string[] paths, string outputPath, int width, int height, string? libraryName)
+        public void BuildThumbCollage(IReadOnlyList<string> paths, string outputPath, int width, int height, string? libraryName)
         {
             using var bitmap = BuildThumbCollageBitmap(paths, width, height, libraryName);
             using var outputStream = new SKFileWStream(outputPath);
@@ -92,7 +92,7 @@ namespace Jellyfin.Drawing.Skia
             pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
-        private SKBitmap BuildThumbCollageBitmap(string[] paths, int width, int height, string? libraryName)
+        private SKBitmap BuildThumbCollageBitmap(IReadOnlyList<string> paths, int width, int height, string? libraryName)
         {
             var bitmap = new SKBitmap(width, height);
 
@@ -152,14 +152,14 @@ namespace Jellyfin.Drawing.Skia
             return bitmap;
         }
 
-        private SKBitmap? GetNextValidImage(string[] paths, int currentIndex, out int newIndex)
+        private SKBitmap? GetNextValidImage(IReadOnlyList<string> paths, int currentIndex, out int newIndex)
         {
             var imagesTested = new Dictionary<int, int>();
             SKBitmap? bitmap = null;
 
-            while (imagesTested.Count < paths.Length)
+            while (imagesTested.Count < paths.Count)
             {
-                if (currentIndex >= paths.Length)
+                if (currentIndex >= paths.Count)
                 {
                     currentIndex = 0;
                 }
@@ -180,7 +180,7 @@ namespace Jellyfin.Drawing.Skia
             return bitmap;
         }
 
-        private SKBitmap BuildSquareCollageBitmap(string[] paths, int width, int height)
+        private SKBitmap BuildSquareCollageBitmap(IReadOnlyList<string> paths, int width, int height)
         {
             var bitmap = new SKBitmap(width, height);
             var imageIndex = 0;

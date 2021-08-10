@@ -38,6 +38,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Initializes the user manager and ensures that a user exists.
         /// </summary>
+        /// <returns>Awaitable task.</returns>
         Task InitializeAsync();
 
         /// <summary>
@@ -61,16 +62,16 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <param name="newName">The new name.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">If user is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If the provided user doesn't exist.</exception>
         Task RenameUser(User user, string newName);
 
         /// <summary>
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <exception cref="ArgumentNullException">user</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException">If user is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If the provided user doesn't exist.</exception>
         void UpdateUser(User user);
 
         /// <summary>
@@ -87,8 +88,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="name">The name of the new user.</param>
         /// <returns>The created user.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
+        /// <exception cref="ArgumentException"><paramref name="name"/> already exists.</exception>
         Task<User> CreateUserAsync(string name);
 
         /// <summary>
@@ -109,17 +110,22 @@ namespace MediaBrowser.Controller.Library
         /// Resets the easy password.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
         void ResetEasyPassword(User user);
 
         /// <summary>
         /// Changes the password.
         /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">New password to use.</param>
+        /// <returns>Awaitable task.</returns>
         Task ChangePassword(User user, string newPassword);
 
         /// <summary>
         /// Changes the easy password.
         /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">New password to use.</param>
+        /// <param name="newPasswordSha1">Hash of new password.</param>
         void ChangeEasyPassword(User user, string newPassword, string newPasswordSha1);
 
         /// <summary>
@@ -133,6 +139,12 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Authenticates the user.
         /// </summary>
+        /// <param name="username">The user.</param>
+        /// <param name="password">The password to use.</param>
+        /// <param name="passwordSha1">Hash of password.</param>
+        /// <param name="remoteEndPoint">Remove endpoint to use.</param>
+        /// <param name="isUserSession">Specifies if a user session.</param>
+        /// <returns>User wrapped in awaitable task.</returns>
         Task<User> AuthenticateUser(string username, string password, string passwordSha1, string remoteEndPoint, bool isUserSession);
 
         /// <summary>

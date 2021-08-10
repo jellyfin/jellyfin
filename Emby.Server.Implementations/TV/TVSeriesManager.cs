@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -152,7 +154,7 @@ namespace Emby.Server.Implementations.TV
                         return i.Item1 != DateTime.MinValue;
                     }
 
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    if (alwaysEnableFirstEpisode || (i.Item1 != DateTime.MinValue && i.Item1.Date >= request.NextUpDateCutoff))
                     {
                         anyFound = true;
                         return true;

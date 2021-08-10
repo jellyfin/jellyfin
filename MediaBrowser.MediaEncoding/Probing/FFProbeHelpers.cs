@@ -20,7 +20,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 throw new ArgumentNullException(nameof(result));
             }
 
-            if (result.Format != null && result.Format.Tags != null)
+            if (result.Format?.Tags != null)
             {
                 result.Format.Tags = ConvertDictionaryToCaseInsensitive(result.Format.Tags);
             }
@@ -39,38 +39,16 @@ namespace MediaBrowser.MediaEncoding.Probing
         }
 
         /// <summary>
-        /// Gets a string from an FFProbeResult tags dictionary.
-        /// </summary>
-        /// <param name="tags">The tags.</param>
-        /// <param name="key">The key.</param>
-        /// <returns>System.String.</returns>
-        public static string GetDictionaryValue(IReadOnlyDictionary<string, string> tags, string key)
-        {
-            if (tags == null)
-            {
-                return null;
-            }
-
-            tags.TryGetValue(key, out var val);
-            return val;
-        }
-
-        /// <summary>
         /// Gets an int from an FFProbeResult tags dictionary.
         /// </summary>
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
-        public static int? GetDictionaryNumericValue(Dictionary<string, string> tags, string key)
+        public static int? GetDictionaryNumericValue(IReadOnlyDictionary<string, string> tags, string key)
         {
-            var val = GetDictionaryValue(tags, key);
-
-            if (!string.IsNullOrEmpty(val))
+            if (tags.TryGetValue(key, out var val) && int.TryParse(val, out var i))
             {
-                if (int.TryParse(val, out var i))
-                {
-                    return i;
-                }
+                return i;
             }
 
             return null;
@@ -82,18 +60,12 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="tags">The tags.</param>
         /// <param name="key">The key.</param>
         /// <returns>System.Nullable{DateTime}.</returns>
-        public static DateTime? GetDictionaryDateTime(Dictionary<string, string> tags, string key)
+        public static DateTime? GetDictionaryDateTime(IReadOnlyDictionary<string, string> tags, string key)
         {
-            var val = GetDictionaryValue(tags, key);
-
-            if (string.IsNullOrEmpty(val))
+            if (tags.TryGetValue(key, out var val)
+                && DateTime.TryParse(val, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AssumeUniversal, out var dateTime))
             {
-                return null;
-            }
-
-            if (DateTime.TryParse(val, DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AssumeUniversal, out var i))
-            {
-                return i.ToUniversalTime();
+                return dateTime.ToUniversalTime();
             }
 
             return null;

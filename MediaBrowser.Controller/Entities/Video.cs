@@ -482,7 +482,8 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!IsInMixedFolder)
             {
-                return new[] {
+                return new[]
+                {
                     new FileSystemMetadata
                     {
                         FullName = ContainingFolderPath,

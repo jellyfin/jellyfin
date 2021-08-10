@@ -51,11 +51,7 @@ namespace Emby.Dlna.Eventing
                 return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
             }
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
@@ -103,20 +99,12 @@ namespace Emby.Dlna.Eventing
 
             _subscriptions.TryRemove(subscriptionId, out _);
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
-            var response = new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            var response = new EventSubscriptionResponse(string.Empty, "text/plain");
 
             response.Headers["SID"] = subscriptionId;
             response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;

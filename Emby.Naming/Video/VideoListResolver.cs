@@ -12,31 +12,19 @@ namespace Emby.Naming.Video
     /// <summary>
     /// Resolves alternative versions and extras from list of video files.
     /// </summary>
-    public class VideoListResolver
+    public static class VideoListResolver
     {
-        private readonly NamingOptions _options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoListResolver"/> class.
-        /// </summary>
-        /// <param name="options"><see cref="NamingOptions"/> object containing CleanStringRegexes and VideoFlagDelimiters and passes options to <see cref="StackResolver"/> and <see cref="VideoResolver"/>.</param>
-        public VideoListResolver(NamingOptions options)
-        {
-            _options = options;
-        }
-
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
         /// <param name="files">List of related video files.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
-        public IEnumerable<VideoInfo> Resolve(List<FileSystemMetadata> files, bool supportMultiVersion = true)
+        public static IEnumerable<VideoInfo> Resolve(List<FileSystemMetadata> files, NamingOptions namingOptions, bool supportMultiVersion = true)
         {
-            var videoResolver = new VideoResolver(_options);
-
             var videoInfos = files
-                .Select(i => videoResolver.Resolve(i.FullName, i.IsDirectory))
+                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, namingOptions))
                 .OfType<VideoFileInfo>()
                 .ToList();
 
@@ -46,7 +34,7 @@ namespace Emby.Naming.Video
                 .Where(i => i.ExtraType == null)
                 .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
 
-            var stackResult = new StackResolver(_options)
+            var stackResult = new StackResolver(namingOptions)
                 .Resolve(nonExtras).ToList();
 
             var remainingFiles = videoInfos
@@ -59,23 +47,17 @@ namespace Emby.Naming.Video
             {
                 var info = new VideoInfo(stack.Name)
                 {
-                    Files = stack.Files.Select(i => videoResolver.Resolve(i, stack.IsDirectoryStack))
+                    Files = stack.Files.Select(i => VideoResolver.Resolve(i, stack.IsDirectoryStack, namingOptions))
                         .OfType<VideoFileInfo>()
                         .ToList()
                 };
 
                 info.Year = info.Files[0].Year;
 
-                var extraBaseNames = new List<string> { stack.Name, Path.GetFileNameWithoutExtension(stack.Files[0]) };
-
-                var extras = GetExtras(remainingFiles, extraBaseNames);
+                var extras = ExtractExtras(remainingFiles, stack.Name, Path.GetFileNameWithoutExtension(stack.Files[0].AsSpan()), namingOptions.VideoFlagDelimiters);
 
                 if (extras.Count > 0)
                 {
-                    remainingFiles = remainingFiles
-                        .Except(extras)
-                        .ToList();
-
                     info.Extras = extras;
                 }
 
@@ -88,15 +70,12 @@ namespace Emby.Naming.Video
 
             foreach (var media in standaloneMedia)
             {
-                var info = new VideoInfo(media.Name) { Files = new List<VideoFileInfo> { media } };
+                var info = new VideoInfo(media.Name) { Files = new[] { media } };
 
                 info.Year = info.Files[0].Year;
 
-                var extras = GetExtras(remainingFiles, new List<string> { media.FileNameWithoutExtension });
-
-                remainingFiles = remainingFiles
-                    .Except(extras.Concat(new[] { media }))
-                    .ToList();
+                remainingFiles.Remove(media);
+                var extras = ExtractExtras(remainingFiles, media.FileNameWithoutExtension, namingOptions.VideoFlagDelimiters);
 
                 info.Extras = extras;
 
@@ -105,8 +84,7 @@ namespace Emby.Naming.Video
 
             if (supportMultiVersion)
             {
-                list = GetVideosGroupedByVersion(list)
-                    .ToList();
+                list = GetVideosGroupedByVersion(list, namingOptions);
             }
 
             // If there's only one resolved video, use the folder name as well to find extras
@@ -114,19 +92,14 @@ namespace Emby.Naming.Video
             {
                 var info = list[0];
                 var videoPath = list[0].Files[0].Path;
-                var parentPath = Path.GetDirectoryName(videoPath);
+                var parentPath = Path.GetDirectoryName(videoPath.AsSpan());
 
-                if (!string.IsNullOrEmpty(parentPath))
+                if (!parentPath.IsEmpty)
                 {
                     var folderName = Path.GetFileName(parentPath);
-                    if (!string.IsNullOrEmpty(folderName))
+                    if (!folderName.IsEmpty)
                     {
-                        var extras = GetExtras(remainingFiles, new List<string> { folderName });
-
-                        remainingFiles = remainingFiles
-                            .Except(extras)
-                            .ToList();
-
+                        var extras = ExtractExtras(remainingFiles, folderName, namingOptions.VideoFlagDelimiters);
                         extras.AddRange(info.Extras);
                         info.Extras = extras;
                     }
@@ -164,96 +137,168 @@ namespace Emby.Naming.Video
             // Whatever files are left, just add them
             list.AddRange(remainingFiles.Select(i => new VideoInfo(i.Name)
             {
-                Files = new List<VideoFileInfo> { i },
+                Files = new[] { i },
                 Year = i.Year
             }));
 
             return list;
         }
 
-        private IEnumerable<VideoInfo> GetVideosGroupedByVersion(List<VideoInfo> videos)
+        private static List<VideoInfo> GetVideosGroupedByVersion(List<VideoInfo> videos, NamingOptions namingOptions)
         {
             if (videos.Count == 0)
             {
                 return videos;
             }
 
-            var list = new List<VideoInfo>();
+            var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path.AsSpan()));
 
-            var folderName = Path.GetFileName(Path.GetDirectoryName(videos[0].Files[0].Path));
-
-            if (!string.IsNullOrEmpty(folderName)
-                && folderName.Length > 1
-                && videos.All(i => i.Files.Count == 1
-                    && IsEligibleForMultiVersion(folderName, i.Files[0].Path))
-                    && HaveSameYear(videos))
+            if (folderName.Length <= 1 || !HaveSameYear(videos))
             {
-                var ordered = videos.OrderBy(i => i.Name).ToList();
-
-                list.Add(ordered[0]);
-
-                var alternateVersionsLen = ordered.Count - 1;
-                var alternateVersions = new VideoFileInfo[alternateVersionsLen];
-                for (int i = 0; i < alternateVersionsLen; i++)
-                {
-                    alternateVersions[i] = ordered[i + 1].Files[0];
-                }
-
-                list[0].AlternateVersions = alternateVersions;
-                list[0].Name = folderName;
-                var extras = ordered.Skip(1).SelectMany(i => i.Extras).ToList();
-                extras.AddRange(list[0].Extras);
-                list[0].Extras = extras;
-
-                return list;
+                return videos;
             }
 
-            return videos;
-        }
-
-        private bool HaveSameYear(List<VideoInfo> videos)
-        {
-            return videos.Select(i => i.Year ?? -1).Distinct().Count() < 2;
-        }
-
-        private bool IsEligibleForMultiVersion(string folderName, string testFilePath)
-        {
-            string testFilename = Path.GetFileNameWithoutExtension(testFilePath);
-            if (testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
+            // Cannot use Span inside local functions and delegates thus we cannot use LINQ here nor merge with the above [if]
+            for (var i = 0; i < videos.Count; i++)
             {
-                // Remove the folder name before cleaning as we don't care about cleaning that part
-                if (folderName.Length <= testFilename.Length)
+                var video = videos[i];
+                if (!IsEligibleForMultiVersion(folderName, video.Files[0].Path, namingOptions))
                 {
-                    testFilename = testFilename.Substring(folderName.Length).Trim();
+                    return videos;
                 }
-
-                if (CleanStringParser.TryClean(testFilename, _options.CleanStringRegexes, out var cleanName))
-                {
-                    testFilename = cleanName.Trim().ToString();
-                }
-
-                // The CleanStringParser should have removed common keywords etc.
-                return string.IsNullOrEmpty(testFilename)
-                       || testFilename[0] == '-'
-                       || Regex.IsMatch(testFilename, @"^\[([^]]*)\]");
             }
 
-            return false;
-        }
+            // The list is created and overwritten in the caller, so we are allowed to do in-place sorting
+            videos.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.Ordinal));
 
-        private List<VideoFileInfo> GetExtras(IEnumerable<VideoFileInfo> remainingFiles, List<string> baseNames)
-        {
-            foreach (var name in baseNames.ToList())
+            var list = new List<VideoInfo>
             {
-                var trimmedName = name.TrimEnd().TrimEnd(_options.VideoFlagDelimiters).TrimEnd();
-                baseNames.Add(trimmedName);
+                videos[0]
+            };
+
+            var alternateVersionsLen = videos.Count - 1;
+            var alternateVersions = new VideoFileInfo[alternateVersionsLen];
+            var extras = new List<VideoFileInfo>(list[0].Extras);
+            for (int i = 0; i < alternateVersionsLen; i++)
+            {
+                var video = videos[i + 1];
+                alternateVersions[i] = video.Files[0];
+                extras.AddRange(video.Extras);
             }
 
-            return remainingFiles
-                .Where(i => i.ExtraType != null)
-                .Where(i => baseNames.Any(b =>
-                    i.FileNameWithoutExtension.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
-                .ToList();
+            list[0].AlternateVersions = alternateVersions;
+            list[0].Name = folderName.ToString();
+            list[0].Extras = extras;
+
+            return list;
+        }
+
+        private static bool HaveSameYear(IReadOnlyList<VideoInfo> videos)
+        {
+            if (videos.Count == 1)
+            {
+                return true;
+            }
+
+            var firstYear = videos[0].Year ?? -1;
+            for (var i = 1; i < videos.Count; i++)
+            {
+                if ((videos[i].Year ?? -1) != firstYear)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsEligibleForMultiVersion(ReadOnlySpan<char> folderName, string testFilePath, NamingOptions namingOptions)
+        {
+            var testFilename = Path.GetFileNameWithoutExtension(testFilePath.AsSpan());
+            if (!testFilename.StartsWith(folderName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            // Remove the folder name before cleaning as we don't care about cleaning that part
+            if (folderName.Length <= testFilename.Length)
+            {
+                testFilename = testFilename[folderName.Length..].Trim();
+            }
+
+            // There are no span overloads for regex unfortunately
+            var tmpTestFilename = testFilename.ToString();
+            if (CleanStringParser.TryClean(tmpTestFilename, namingOptions.CleanStringRegexes, out var cleanName))
+            {
+                tmpTestFilename = cleanName.Trim().ToString();
+            }
+
+            // The CleanStringParser should have removed common keywords etc.
+            return string.IsNullOrEmpty(tmpTestFilename)
+                   || testFilename[0] == '-'
+                   || Regex.IsMatch(tmpTestFilename, @"^\[([^]]*)\]", RegexOptions.Compiled);
+        }
+
+        private static ReadOnlySpan<char> TrimFilenameDelimiters(ReadOnlySpan<char> name, ReadOnlySpan<char> videoFlagDelimiters)
+        {
+            return name.IsEmpty ? name : name.TrimEnd().TrimEnd(videoFlagDelimiters).TrimEnd();
+        }
+
+        private static bool StartsWith(ReadOnlySpan<char> fileName, ReadOnlySpan<char> baseName, ReadOnlySpan<char> trimmedBaseName)
+        {
+            if (baseName.IsEmpty)
+            {
+                return false;
+            }
+
+            return fileName.StartsWith(baseName, StringComparison.OrdinalIgnoreCase)
+                   || (!trimmedBaseName.IsEmpty && fileName.StartsWith(trimmedBaseName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Finds similar filenames to that of [baseName] and removes any matches from [remainingFiles].
+        /// </summary>
+        /// <param name="remainingFiles">The list of remaining filenames.</param>
+        /// <param name="baseName">The base name to use for the comparison.</param>
+        /// <param name="videoFlagDelimiters">The video flag delimiters.</param>
+        /// <returns>A list of video extras for [baseName].</returns>
+        private static List<VideoFileInfo> ExtractExtras(IList<VideoFileInfo> remainingFiles, ReadOnlySpan<char> baseName, ReadOnlySpan<char> videoFlagDelimiters)
+        {
+            return ExtractExtras(remainingFiles, baseName, ReadOnlySpan<char>.Empty, videoFlagDelimiters);
+        }
+
+        /// <summary>
+        /// Finds similar filenames to that of [firstBaseName] and [secondBaseName] and removes any matches from [remainingFiles].
+        /// </summary>
+        /// <param name="remainingFiles">The list of remaining filenames.</param>
+        /// <param name="firstBaseName">The first base name to use for the comparison.</param>
+        /// <param name="secondBaseName">The second base name to use for the comparison.</param>
+        /// <param name="videoFlagDelimiters">The video flag delimiters.</param>
+        /// <returns>A list of video extras for [firstBaseName] and [secondBaseName].</returns>
+        private static List<VideoFileInfo> ExtractExtras(IList<VideoFileInfo> remainingFiles, ReadOnlySpan<char> firstBaseName, ReadOnlySpan<char> secondBaseName, ReadOnlySpan<char> videoFlagDelimiters)
+        {
+            var trimmedFirstBaseName = TrimFilenameDelimiters(firstBaseName, videoFlagDelimiters);
+            var trimmedSecondBaseName = TrimFilenameDelimiters(secondBaseName, videoFlagDelimiters);
+
+            var result = new List<VideoFileInfo>();
+            for (var pos = remainingFiles.Count - 1; pos >= 0; pos--)
+            {
+                var file = remainingFiles[pos];
+                if (file.ExtraType == null)
+                {
+                    continue;
+                }
+
+                var filename = file.FileNameWithoutExtension;
+                if (StartsWith(filename, firstBaseName, trimmedFirstBaseName)
+                    || StartsWith(filename, secondBaseName, trimmedSecondBaseName))
+                {
+                    result.Add(file);
+                    remainingFiles.RemoveAt(pos);
+                }
+            }
+
+            return result;
         }
     }
 }

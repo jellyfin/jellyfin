@@ -268,6 +268,7 @@ doc/
 # Deployment artifacts
 dist
 *.exe
+*.dll
 
 # BenchmarkDotNet artifacts
 BenchmarkDotNet.Artifacts

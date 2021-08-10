@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,11 @@ namespace MediaBrowser.Controller.Providers
 {
     public class EpisodeInfo : ItemLookupInfo
     {
+        public EpisodeInfo()
+        {
+            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         public Dictionary<string, string> SeriesProviderIds { get; set; }
 
         public int? IndexNumberEnd { get; set; }
@@ -16,10 +21,5 @@ namespace MediaBrowser.Controller.Providers
         public bool IsMissingEpisode { get; set; }
 
         public string SeriesDisplayOrder { get; set; }
-
-        public EpisodeInfo()
-        {
-            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }

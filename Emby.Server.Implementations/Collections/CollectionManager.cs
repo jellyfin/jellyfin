@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -80,12 +82,10 @@ namespace Emby.Server.Implementations.Collections
 
         internal async Task<Folder> EnsureLibraryFolder(string path, bool createIfNeeded)
         {
-            var existingFolders = FindFolders(path)
-                .ToList();
-
-            if (existingFolders.Count > 0)
+            var existingFolder = FindFolders(path).FirstOrDefault();
+            if (existingFolder != null)
             {
-                return existingFolders[0];
+                return existingFolder;
             }
 
             if (!createIfNeeded)
@@ -162,9 +162,9 @@ namespace Emby.Server.Implementations.Collections
                     DateCreated = DateTime.UtcNow
                 };
 
-                parentFolder.AddChild(collection, CancellationToken.None);
+                parentFolder.AddChild(collection);
 
-                if (options.ItemIdList.Length > 0)
+                if (options.ItemIdList.Count > 0)
                 {
                     await AddToCollectionAsync(
                         collection.Id,
@@ -248,11 +248,7 @@ namespace Emby.Server.Implementations.Collections
 
                 if (fireEvent)
                 {
-                    ItemsAddedToCollection?.Invoke(this, new CollectionModifiedEventArgs
-                    {
-                        Collection = collection,
-                        ItemsChanged = itemList
-                    });
+                    ItemsAddedToCollection?.Invoke(this, new CollectionModifiedEventArgs(collection, itemList));
                 }
             }
         }
@@ -304,11 +300,7 @@ namespace Emby.Server.Implementations.Collections
                 },
                 RefreshPriority.High);
 
-            ItemsRemovedFromCollection?.Invoke(this, new CollectionModifiedEventArgs
-            {
-                Collection = collection,
-                ItemsChanged = itemList
-            });
+            ItemsRemovedFromCollection?.Invoke(this, new CollectionModifiedEventArgs(collection, itemList));
         }
 
         /// <inheritdoc />

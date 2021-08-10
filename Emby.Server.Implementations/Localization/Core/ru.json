@@ -39,7 +39,7 @@
     "MixedContent": "Смешанное содержимое",
     "Movies": "Кино",
     "Music": "Музыка",
-    "MusicVideos": "Музыкальные клипы",
+    "MusicVideos": "Муз. видео",
     "NameInstallFailed": "Установка {0} неудачна",
     "NameSeasonNumber": "Сезон {0}",
     "NameSeasonUnknown": "Сезон неопознан",
@@ -75,7 +75,7 @@
     "StartupEmbyServerIsLoading": "Jellyfin Server загружается. Повторите попытку в ближайшее время.",
     "SubtitleDownloadFailureForItem": "Субтитры к {0} не удалось загрузить",
     "SubtitleDownloadFailureFromForItem": "Субтитры к {1} не удалось загрузить с {0}",
-    "Sync": "Синхронизация",
+    "Sync": "Синхро",
     "System": "Система",
     "TvShows": "ТВ",
     "User": "Пользователь",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Очистить журнал активности",
     "Undefined": "Не определено",
     "Forced": "Форсир-ые",
-    "Default": "По умолчанию"
+    "Default": "По умолчанию",
+    "TaskOptimizeDatabaseDescription": "Сжимает базу данных и обрезает свободное место. Выполнение этой задачи после сканирования библиотеки или внесения других изменений, предполагающих модификации базы данных, может повысить производительность.",
+    "TaskOptimizeDatabase": "Оптимизировать базу данных"
 }

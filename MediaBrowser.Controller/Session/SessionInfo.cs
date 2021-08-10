@@ -54,7 +54,7 @@ namespace MediaBrowser.Controller.Session
         public string RemoteEndPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the playable media types.
+        /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
         public IReadOnlyList<string> PlayableMediaTypes
@@ -230,7 +230,7 @@ namespace MediaBrowser.Controller.Session
         public string UserPrimaryImageTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the supported commands.
+        /// Gets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
         public IReadOnlyList<GeneralCommandType> SupportedCommands

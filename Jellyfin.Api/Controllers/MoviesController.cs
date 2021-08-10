@@ -18,6 +18,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -300,9 +301,8 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<string> GetActors(IEnumerable<BaseItem> items)
         {
-            var people = _libraryManager.GetPeople(new InternalPeopleQuery
+            var people = _libraryManager.GetPeople(new InternalPeopleQuery(Array.Empty<string>(), new[] { PersonType.Director })
             {
-                ExcludePersonTypes = new[] { PersonType.Director },
                 MaxListOrder = 3
             });
 
@@ -316,10 +316,9 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<string> GetDirectors(IEnumerable<BaseItem> items)
         {
-            var people = _libraryManager.GetPeople(new InternalPeopleQuery
-            {
-                PersonTypes = new[] { PersonType.Director }
-            });
+            var people = _libraryManager.GetPeople(new InternalPeopleQuery(
+                new[] { PersonType.Director },
+                Array.Empty<string>()));
 
             var itemIds = items.Select(i => i.Id).ToList();
 

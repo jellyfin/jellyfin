@@ -144,9 +144,9 @@ namespace MediaBrowser.Controller.Entities.Movies
         }
 
         /// <inheritdoc />
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!ProductionYear.HasValue)
             {

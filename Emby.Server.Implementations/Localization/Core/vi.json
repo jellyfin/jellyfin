@@ -117,5 +117,7 @@
     "TaskCleanActivityLog": "Xóa Nhật Ký Hoạt Động",
     "Undefined": "Không Xác Định",
     "Forced": "Bắt Buộc",
-    "Default": "Mặc Định"
+    "Default": "Mặc Định",
+    "TaskOptimizeDatabaseDescription": "Thu gọn cơ sở dữ liệu và cắt bớt dung lượng trống. Chạy tác vụ này sau khi quét thư viện hoặc thực hiện các thay đổi khác ngụ ý sửa đổi cơ sở dữ liệu có thể cải thiện hiệu suất.",
+    "TaskOptimizeDatabase": "Tối ưu hóa cơ sở dữ liệu"
 }

@@ -6,11 +6,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -23,7 +23,7 @@ namespace Emby.Server.Implementations.IO
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
-        private static readonly bool _isEnvironmentCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
 
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
@@ -61,7 +61,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentNullException">filename</exception>
-        public virtual string ResolveShortcut(string filename)
+        public virtual string? ResolveShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -243,8 +243,8 @@ namespace Emby.Server.Implementations.IO
                 {
                     result.Length = fileInfo.Length;
 
-                    // Issue #2354 get the size of files behind symbolic links
-                    if (fileInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                    // Issue #2354 get the size of files behind symbolic links. Also Enum.HasFlag is bad as it boxes!
+                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
                     {
                         try
                         {
@@ -401,7 +401,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -425,7 +425,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -601,7 +601,7 @@ namespace Emby.Server.Implementations.IO
             return GetFiles(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -618,13 +618,13 @@ namespace Emby.Server.Implementations.IO
             {
                 files = files.Where(i =>
                 {
-                    var ext = i.Extension;
-                    if (ext == null)
+                    var ext = i.Extension.AsSpan();
+                    if (ext.IsEmpty)
                     {
                         return false;
                     }
 
-                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                    return extensions.Contains(ext, StringComparison.OrdinalIgnoreCase);
                 });
             }
 
@@ -636,8 +636,7 @@ namespace Emby.Server.Implementations.IO
             var directoryInfo = new DirectoryInfo(path);
             var enumerationOptions = GetEnumerationOptions(recursive);
 
-            return ToMetadata(directoryInfo.EnumerateDirectories("*", enumerationOptions))
-                .Concat(ToMetadata(directoryInfo.EnumerateFiles("*", enumerationOptions)));
+            return ToMetadata(directoryInfo.EnumerateFileSystemInfos("*", enumerationOptions));
         }
 
         private IEnumerable<FileSystemMetadata> ToMetadata(IEnumerable<FileSystemInfo> infos)
@@ -655,7 +654,7 @@ namespace Emby.Server.Implementations.IO
             return GetFilePaths(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<string> GetFilePaths(string path, string[]? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
             var enumerationOptions = GetEnumerationOptions(recursive);
 
@@ -672,13 +671,13 @@ namespace Emby.Server.Implementations.IO
             {
                 files = files.Where(i =>
                 {
-                    var ext = Path.GetExtension(i);
-                    if (ext == null)
+                    var ext = Path.GetExtension(i.AsSpan());
+                    if (ext.IsEmpty)
                     {
                         return false;
                     }
 
-                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+                    return extensions.Contains(ext, StringComparison.OrdinalIgnoreCase);
                 });
             }
 

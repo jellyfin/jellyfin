@@ -81,7 +81,7 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// This Episode's Series Instance.
+        /// Gets this Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -122,7 +122,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 var series = Series;
                 if (series != null)
                 {
-                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
+                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
                 }
             }
 
@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
+            return IndexNumber != null ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : Name;
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
@@ -242,9 +242,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
             {

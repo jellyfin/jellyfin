@@ -82,9 +82,9 @@ namespace Emby.Server.Implementations.Collections
                     return null;
                 })
                 .Where(i => i != null)
-                .GroupBy(x => x.Id)
+                .GroupBy(x => x!.Id) // We removed the null values
                 .Select(x => x.First())
-                .ToList();
+                .ToList()!; // Again... the list doesn't contain any null values
         }
 
         /// <inheritdoc />

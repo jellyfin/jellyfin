@@ -39,7 +39,7 @@
     "MixedContent": "Smíšený obsah",
     "Movies": "Filmy",
     "Music": "Hudba",
-    "MusicVideos": "Hudební klipy",
+    "MusicVideos": "Hudební videa",
     "NameInstallFailed": "Instalace {0} selhala",
     "NameSeasonNumber": "Sezóna {0}",
     "NameSeasonUnknown": "Neznámá sezóna",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Smazat záznam aktivity",
     "Undefined": "Nedefinované",
     "Forced": "Vynucené",
-    "Default": "Výchozí"
+    "Default": "Výchozí",
+    "TaskOptimizeDatabaseDescription": "Zmenší databázi a odstraní prázdné místo. Spuštění této úlohy po skenování knihovny či jiných změnách databáze může zlepšit výkon.",
+    "TaskOptimizeDatabase": "Optimalizovat databázi"
 }
