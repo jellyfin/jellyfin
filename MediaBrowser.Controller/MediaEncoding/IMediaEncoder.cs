@@ -71,13 +71,42 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Extracts the video image.
         /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="container">Video container type.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="videoStream">Media stream information.</param>
+        /// <param name="threedFormat">Video 3D format.</param>
+        /// <param name="offset">Time offset.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>Location of video image.</returns>
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Extracts the video image.
+        /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="container">Video container type.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="imageStream">Media stream information.</param>
+        /// <param name="imageStreamIndex">Time offset.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>Location of video image.</returns>
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video images on interval.
         /// </summary>
+        /// <param name="inputFile">Input file.</param>
+        /// <param name="container">Video container type.</param>
+        /// <param name="videoStream">Media stream information.</param>
+        /// <param name="mediaSource">Media source information.</param>
+        /// <param name="threedFormat">Video 3D format.</param>
+        /// <param name="interval">Time interval.</param>
+        /// <param name="targetDirectory">Directory to write images.</param>
+        /// <param name="filenamePrefix">Filename prefix to use.</param>
+        /// <param name="maxWidth">Maximum width of image.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>A task.</returns>
         Task ExtractVideoImagesOnInterval(
             string inputFile,
             string container,
@@ -122,10 +151,24 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <returns>System.String.</returns>
         string EscapeSubtitleFilterPath(string path);
 
+        /// <summary>
+        /// Sets the path to find FFmpeg.
+        /// </summary>
         void SetFFmpegPath();
 
+        /// <summary>
+        /// Updated the encoder path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="pathType">The type of path.</param>
         void UpdateEncoderPath(string path, string pathType);
 
+        /// <summary>
+        /// Gets the primary playlist of .vob files.
+        /// </summary>
+        /// <param name="path">The to the .vob files.</param>
+        /// <param name="titleNumber">The title number to start with.</param>
+        /// <returns>A playlist.</returns>
         IEnumerable<string> GetPrimaryPlaylistVobFiles(string path, uint? titleNumber);
     }
 }
