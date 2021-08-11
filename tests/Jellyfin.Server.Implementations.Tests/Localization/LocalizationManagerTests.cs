@@ -55,7 +55,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("de")]
         [InlineData("ger")]
         [InlineData("german")]
-        public async Task FindLanguage_Valid_Success(string identifier)
+        public async Task FindLanguageInfo_Valid_Success(string identifier)
         {
             var localizationManager = Setup(new ServerConfiguration
             {
@@ -74,7 +74,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Fact]
-        public async Task ParentalRatings_Default_Success()
+        public async Task GetParentalRatings_Default_Success()
         {
             var localizationManager = Setup(new ServerConfiguration
             {
@@ -91,7 +91,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Fact]
-        public async Task ParentalRatings_ConfiguredCountryCode_Success()
+        public async Task GetParentalRatings_ConfiguredCountryCode_Success()
         {
             var localizationManager = Setup(new ServerConfiguration()
             {
@@ -115,7 +115,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         [InlineData("TV-MA", "US", 9)]
         [InlineData("XXX", "asdf", 100)]
         [InlineData("Germany: FSK-18", "DE", 9)]
-        public async Task GetRatingLevelFromString_Valid_Success(string value, string countryCode, int expectedLevel)
+        public async Task GetRatingLevel_GivenValidString_Success(string value, string countryCode, int expectedLevel)
         {
             var localizationManager = Setup(new ServerConfiguration()
             {
@@ -128,7 +128,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
         }
 
         [Fact]
-        public async Task GetRatingLevelFromString_Unrated_Success()
+        public async Task GetRatingLevel_GivenUnratedString_Success()
         {
             var localizationManager = Setup(new ServerConfiguration()
             {
