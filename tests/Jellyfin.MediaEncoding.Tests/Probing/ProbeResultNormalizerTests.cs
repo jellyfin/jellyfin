@@ -73,7 +73,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         }
 
         [Fact]
-        public void GetMediaInfo_Music_Year_Only_Success()
+        public void GetMediaInfo_GivenOriginalDateContainsOnlyYear_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/Probing/music_year_only_metadata.json");
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
