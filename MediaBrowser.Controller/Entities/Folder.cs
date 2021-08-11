@@ -260,7 +260,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this synchronous.
         /// </summary>
-        /// <returns>Returns cached children</returns>
+        /// <returns>Returns children.</returns>
         protected virtual List<BaseItem> LoadChildren()
         {
             // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
