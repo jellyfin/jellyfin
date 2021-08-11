@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="container">Video container type.</param>
         /// <param name="mediaSource">Media source information.</param>
         /// <param name="imageStream">Media stream information.</param>
-        /// <param name="imageStreamIndex">Time offset.</param>
+        /// <param name="imageStreamIndex">Index of the stream to extract from.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>Location of video image.</returns>
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
@@ -157,7 +157,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         void SetFFmpegPath();
 
         /// <summary>
-        /// Updated the encoder path.
+        /// Updates the encoder path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="pathType">The type of path.</param>
