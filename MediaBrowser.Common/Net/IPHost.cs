@@ -348,7 +348,7 @@ namespace MediaBrowser.Common.Net
                     }
                 }
 
-                output = output[0..^1];
+                output = output[..^1];
 
                 if (moreThanOne)
                 {
@@ -428,7 +428,7 @@ namespace MediaBrowser.Common.Net
             {
                 try
                 {
-                    _addresses = Dns.GetHostAddresses(hostName);
+                    _addresses = Dns.GetHostEntry(hostName).AddressList;
                 }
                 catch (SocketException ex)
                 {
