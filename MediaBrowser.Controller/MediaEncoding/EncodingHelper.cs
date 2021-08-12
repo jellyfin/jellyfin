@@ -161,6 +161,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the name of the output video codec.
         /// </summary>
+        /// <param name="state">Encording state.</param>
+        /// <param name="encodingOptions">Encoding options.</param>
+        /// <returns>Encoder string.</returns>
         public string GetVideoEncoder(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var codec = state.OutputVideoCodec;
@@ -315,6 +318,11 @@ namespace MediaBrowser.Controller.MediaEncoding
             return container;
         }
 
+        /// <summary>
+        /// Gets decoder from a codec.
+        /// </summary>
+        /// <param name="codec">Codec to use.</param>
+        /// <returns>Decoder string.</returns>
         public string GetDecoderFromCodec(string codec)
         {
             // For these need to find out the ffmpeg names
@@ -344,6 +352,8 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Infers the audio codec based on the url.
         /// </summary>
+        /// <param name="container">Container to use.</param>
+        /// <returns>Codec string.</returns>
         public string InferAudioCodec(string container)
         {
             var ext = "." + (container ?? string.Empty);
@@ -489,6 +499,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the input argument.
         /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="encodingOptions">Encoding options.</param>
+        /// <returns>Input arguments.</returns>
         public string GetInputArgument(EncodingJobInfo state, EncodingOptions encodingOptions)
         {
             var arg = new StringBuilder();
@@ -965,6 +978,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the video bitrate to specify on the command line.
         /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="videoEncoder">Video encoder to use.</param>
+        /// <param name="encodingOptions">Encoding options.</param>
+        /// <param name="defaultPreset">Default present to use for encoding.</param>
+        /// <returns>Video bitrate.</returns>
         public string GetVideoQualityParam(EncodingJobInfo state, string videoEncoder, EncodingOptions encodingOptions, string defaultPreset)
         {
             var param = string.Empty;
@@ -1966,8 +1984,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
-        /// Gets the graphical subtitle param.
+        /// Gets the graphical subtitle parameter.
         /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="outputVideoCodec">Video codec to use.</param>
+        /// <returns>Graphical subtitle parameter.</returns>
         public string GetGraphicalSubtitleParam(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -2485,6 +2507,13 @@ namespace MediaBrowser.Controller.MediaEncoding
             return string.Format(CultureInfo.InvariantCulture, filter, widthParam, heightParam);
         }
 
+        /// <summary>
+        /// Gets the output size parameter.
+        /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="outputVideoCodec">Video codec to use.</param>
+        /// <returns>The output size parameter.</returns>
         public string GetOutputSizeParam(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -2495,8 +2524,13 @@ namespace MediaBrowser.Controller.MediaEncoding
         }
 
         /// <summary>
+        /// Gets the output size parameter.
         /// If we're going to put a fixed size on the command line, this will calculate it.
         /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="outputVideoCodec">Video codec to use.</param>
+        /// <returns>The output size parameter.</returns>
         public string GetOutputSizeParamInternal(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -2908,6 +2942,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the number of threads.
         /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="encodingOptions">Encoding options.</param>
+        /// <param name="outputVideoCodec">Video codec to use.</param>
+        /// <returns>Number of threads.</returns>
 #nullable enable
         public static int GetNumberOfThreads(EncodingJobInfo? state, EncodingOptions encodingOptions, string? outputVideoCodec)
         {
@@ -3551,6 +3589,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets a hw decoder name.
         /// </summary>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="decoder">Decoder to use.</param>
+        /// <param name="videoCodec">Video codec to use.</param>
+        /// <param name="isColorDepth10">Specifies if color depth 10.</param>
+        /// <returns>Hardware decoder name.</returns>
         public string GetHwDecoderName(EncodingOptions options, string decoder, string videoCodec, bool isColorDepth10)
         {
             var isCodecAvailable = _mediaEncoder.SupportsDecoder(decoder) && options.HardwareDecodingCodecs.Contains(videoCodec, StringComparer.OrdinalIgnoreCase);
@@ -3569,6 +3612,11 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets a hwaccel type to use as a hardware decoder(dxva/vaapi) depending on the system.
         /// </summary>
+        /// <param name="state">Encoding state.</param>
+        /// <param name="options">Encoding options.</param>
+        /// <param name="videoCodec">Video codec to use.</param>
+        /// <param name="isColorDepth10">Specifies if color depth 10.</param>
+        /// <returns>Hardware accelerator type.</returns>
         public string GetHwaccelType(EncodingJobInfo state, EncodingOptions options, string videoCodec, bool isColorDepth10)
         {
             var isWindows = OperatingSystem.IsWindows();
