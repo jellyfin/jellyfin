@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Buidar Registre d'Activitat",
     "Undefined": "Indefinit",
     "Forced": "Forçat",
-    "Default": "Defecto"
+    "Default": "Defecto",
+    "TaskOptimizeDatabaseDescription": "Compacta la base de dades i trunca l'espai lliure. Executar aquesta tasca després d’escanejar la biblioteca o fer altres canvis que impliquin modificacions a la base de dades pot millorar el rendiment.",
+    "TaskOptimizeDatabase": "Optimitzar la base de dades"
 }

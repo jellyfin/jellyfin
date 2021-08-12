@@ -118,5 +118,6 @@
     "TaskCleanActivityLog": "Czyść dziennik aktywności",
     "Undefined": "Nieustalony",
     "Forced": "Wymuszony",
-    "Default": "Domyślne"
+    "Default": "Domyślne",
+    "TaskOptimizeDatabase": "Optymalizuj bazę danych"
 }

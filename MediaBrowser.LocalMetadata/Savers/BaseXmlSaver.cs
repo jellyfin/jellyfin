@@ -33,16 +33,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BaseXmlSaver}"/> interface.</param>
-        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
+        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             LibraryManager = libraryManager;
-            UserManager = userManager;
-            UserDataManager = userDataManager;
             Logger = logger;
         }
 
@@ -60,16 +56,6 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// Gets the library manager.
         /// </summary>
         protected ILibraryManager LibraryManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user manager.
-        /// </summary>
-        protected IUserManager UserManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user data manager.
-        /// </summary>
-        protected IUserDataManager UserDataManager { get; private set; }
 
         /// <summary>
         /// Gets the logger.
@@ -334,7 +320,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (runTimeTicks.HasValue)
             {
-                var timespan = TimeSpan.FromTicks(runTimeTicks!.Value);
+                var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
                 writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(_usCulture));
             }
