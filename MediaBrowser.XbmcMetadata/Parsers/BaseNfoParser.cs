@@ -787,6 +787,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "fanart":
+                    {
+                        var subtree = reader.ReadSubtree();
+                        subtree.ReadToDescendant("thumb");
+                        FetchThumbNode(subtree, itemResult);
+                        break;
+                    }
+
                 default:
                     string readerName = reader.Name;
                     if (_validProviderIds.TryGetValue(readerName, out string? providerIdValue))
@@ -811,11 +819,17 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             var artType = reader.GetAttribute("aspect");
             var val = reader.ReadElementContentAsString();
 
+            // artType is null if the thumb node is a child of the fanart tag
+            // -> set image type to fanart
+            if (string.IsNullOrWhiteSpace(artType))
+            {
+                artType = "fanart";
+            }
+
             // skip:
-            // - empty aspect tag
             // - empty uri
             // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
-            if (string.IsNullOrEmpty(artType) || string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
             {
                 return;
             }
