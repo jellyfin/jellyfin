@@ -118,5 +118,6 @@
     "Undefined": "Udefinert",
     "Forced": "Tvunget",
     "Default": "Standard",
-    "TaskCleanActivityLogDescription": "Sletter oppføringer i aktivitetsloggen som er eldre enn den konfigurerte alderen."
+    "TaskCleanActivityLogDescription": "Sletter oppføringer i aktivitetsloggen som er eldre enn den konfigurerte alderen.",
+    "TaskOptimizeDatabase": "Optimiser database"
 }

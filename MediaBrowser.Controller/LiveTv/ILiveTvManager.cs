@@ -22,11 +22,21 @@ namespace MediaBrowser.Controller.LiveTv
     /// </summary>
     public interface ILiveTvManager
     {
+        event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
+
+        event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
+
+        event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
+
+        event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
+
         /// <summary>
         /// Gets the services.
         /// </summary>
         /// <value>The services.</value>
         IReadOnlyList<ILiveTvService> Services { get; }
+
+        IListingsProvider[] ListingProviders { get; }
 
         /// <summary>
         /// Gets the new timer defaults asynchronous.
@@ -86,6 +96,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="options">The options.</param>
+        /// <returns>A recording.</returns>
         QueryResult<BaseItemDto> GetRecordings(RecordingQuery query, DtoOptions options);
 
         /// <summary>
@@ -176,11 +187,16 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Recommended programs.</returns>
         QueryResult<BaseItemDto> GetRecommendedPrograms(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recommended programs internal.
         /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Recommended programs.</returns>
         QueryResult<BaseItem> GetRecommendedProgramsInternal(InternalItemsQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
@@ -202,6 +218,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the live tv folder.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Live TV folder.</returns>
         Folder GetInternalLiveTvFolder(CancellationToken cancellationToken);
 
         /// <summary>
@@ -213,11 +230,18 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the internal channels.
         /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="dtoOptions">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Internal channels.</returns>
         QueryResult<BaseItem> GetInternalChannels(LiveTvChannelQuery query, DtoOptions dtoOptions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel media sources.
         /// </summary>
+        /// <param name="item">Item to search for.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>Channel media sources wrapped in a task.</returns>
         Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(BaseItem item, CancellationToken cancellationToken);
 
         /// <summary>
@@ -232,6 +256,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Saves the tuner host.
         /// </summary>
+        /// <param name="info">Turner host to save.</param>
+        /// <param name="dataSourceChanged">Option to specify that data source has changed.</param>
+        /// <returns>Tuner host information wrapped in a task.</returns>
         Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info, bool dataSourceChanged = true);
 
         /// <summary>
@@ -271,19 +298,9 @@ namespace MediaBrowser.Controller.LiveTv
 
         Task<List<ChannelInfo>> GetChannelsFromListingsProviderData(string id, CancellationToken cancellationToken);
 
-        IListingsProvider[] ListingProviders { get; }
-
         List<NameIdPair> GetTunerHostTypes();
 
         Task<List<TunerHostInfo>> DiscoverTuners(bool newDevicesOnly, CancellationToken cancellationToken);
-
-        event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCancelled;
-
-        event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCancelled;
-
-        event EventHandler<GenericEventArgs<TimerEventInfo>> TimerCreated;
-
-        event EventHandler<GenericEventArgs<TimerEventInfo>> SeriesTimerCreated;
 
         string GetEmbyTvActiveRecordingPath(string id);
 

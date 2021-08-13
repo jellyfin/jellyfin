@@ -13,19 +13,8 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && npm ci --no-audit --unsafe-perm \
  && mv dist /dist
 
-
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} as builder
-WORKDIR /repo
-COPY . .
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-# Discard objs - may cause failures if exists
-RUN find . -type d -name obj | xargs -r rm -r
-# Build
-RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:DebugSymbols=false;DebugType=none"
-
-
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM arm32v7/debian:buster-slim
+FROM arm32v7/debian:buster-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -61,13 +50,24 @@ RUN apt-get update \
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
-COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web
-
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} as builder
+WORKDIR /repo
+COPY . .
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+# Discard objs - may cause failures if exists
+RUN find . -type d -name obj | xargs -r rm -r
+# Build
+RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" --self-contained --runtime linux-arm "-p:DebugSymbols=false;DebugType=none"
+
+FROM app
+
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media

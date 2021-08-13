@@ -82,12 +82,10 @@ namespace Emby.Server.Implementations.Collections
 
         internal async Task<Folder> EnsureLibraryFolder(string path, bool createIfNeeded)
         {
-            var existingFolders = FindFolders(path)
-                .ToList();
-
-            if (existingFolders.Count > 0)
+            var existingFolder = FindFolders(path).FirstOrDefault();
+            if (existingFolder != null)
             {
-                return existingFolders[0];
+                return existingFolder;
             }
 
             if (!createIfNeeded)

@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 namespace Emby.Dlna.Configuration
@@ -74,7 +72,7 @@ namespace Emby.Dlna.Configuration
         /// <summary>
         /// Gets or sets the default user account that the dlna server uses.
         /// </summary>
-        public string DefaultUserId { get; set; }
+        public string? DefaultUserId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether playTo device profiles should be created.
