@@ -15,19 +15,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Studio : BaseItem, IItemByName
     {
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
-            return list;
-        }
-
-        public override string CreatePresentationUniqueKey()
-        {
-            return GetUserDataKeys()[0];
-        }
-
         /// <summary>
         /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
@@ -41,6 +28,22 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public override bool SupportsAncestors => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
+            return list;
+        }
+
+        public override string CreatePresentationUniqueKey()
+        {
+            return GetUserDataKeys()[0];
+        }
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -66,9 +69,6 @@ namespace MediaBrowser.Controller.Entities
 
             return LibraryManager.GetItemList(query);
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {
