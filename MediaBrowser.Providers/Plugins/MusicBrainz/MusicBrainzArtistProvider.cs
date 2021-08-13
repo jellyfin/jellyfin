@@ -22,6 +22,8 @@ namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
+        public string Name => "MusicBrainz";
+
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -261,8 +263,6 @@ namespace MediaBrowser.Providers.Music
         {
             return WebUtility.UrlEncode(name);
         }
-
-        public string Name => "MusicBrainz";
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

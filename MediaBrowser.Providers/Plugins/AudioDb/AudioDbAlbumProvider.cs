@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591, SA1300
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +9,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
@@ -30,7 +30,9 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
+#pragma warning disable SA1401, CA2211
         public static AudioDbAlbumProvider Current;
+#pragma warning restore SA1401, CA2211
 
         public AudioDbAlbumProvider(IServerConfigurationManager config, IFileSystem fileSystem, IHttpClientFactory httpClientFactory)
         {
@@ -196,6 +198,13 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return Path.Combine(dataPath, "album.json");
         }
 
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+#pragma warning disable CA1034, CA2227
         public class Album
         {
             public string idAlbum { get; set; }
@@ -278,12 +287,6 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
         public class RootObject
         {
             public List<Album> album { get; set; }
-        }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }
