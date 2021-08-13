@@ -118,5 +118,6 @@
     "TaskCleanActivityLog": "Rensa Aktivitets Logg",
     "Undefined": "odefinierad",
     "Forced": "Tvingad",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskOptimizeDatabase": "Optimera databasen"
 }
