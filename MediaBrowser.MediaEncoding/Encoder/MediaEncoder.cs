@@ -503,15 +503,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
 
-            if (isAudio)
-            {
-                if (imageStreamIndex.HasValue && imageStreamIndex.Value > 0)
-                {
-                    // It seems for audio files we need to subtract 1 (for the audio stream??)
-                    imageStreamIndex = imageStreamIndex.Value - 1;
-                }
-            }
-            else
+            if (!isAudio)
             {
                 // The failure of HDR extraction usually occurs when using custom ffmpeg that does not contain the zscale filter.
                 try
@@ -582,7 +574,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ => string.Empty
             };
 
-            var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
+            var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             var enableHdrExtraction = allowTonemap && string.Equals(videoStream?.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase);
             if (enableHdrExtraction)
