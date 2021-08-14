@@ -99,11 +99,9 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">Device Id.</param>
         /// <param name="deviceOptions">Device Options.</param>
         /// <response code="204">Device options updated.</response>
-        /// <response code="404">Device not found.</response>
-        /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Options")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UpdateDeviceOptions(
             [FromQuery, Required] string id,
             [FromBody, Required] DeviceOptionsDto deviceOptions)
