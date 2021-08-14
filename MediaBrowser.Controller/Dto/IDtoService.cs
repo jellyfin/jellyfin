@@ -1,4 +1,5 @@
 #nullable disable
+#pragma warning disable CA1002
 
 using System.Collections.Generic;
 using Jellyfin.Data.Entities;

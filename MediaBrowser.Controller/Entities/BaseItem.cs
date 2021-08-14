@@ -771,19 +771,6 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public Guid ParentId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the parent.
-        /// </summary>
-        /// <value>The parent.</value>
-        [JsonIgnore]
-        public Folder Parent
-        {
-            get => GetParent() as Folder;
-            set
-            {
-            }
-        }
-
         public void SetParent(Folder parent)
         {
             ParentId = parent == null ? Guid.Empty : parent.Id;
@@ -822,8 +809,7 @@ namespace MediaBrowser.Controller.Entities
         {
             foreach (var parent in GetParents())
             {
-                var item = parent as T;
-                if (item != null)
+                if (parent is T item)
                 {
                     return item;
                 }

@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CS1591, SA1300
 
 using System;
 using System.Collections.Generic;
@@ -9,9 +9,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using Jellyfin.Extensions.Json;
-using Jellyfin.Extensions.Json.Converters;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;

@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CA1721, CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -165,6 +165,8 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        public static ICollectionManager CollectionManager { get; set; }
+
         public override bool CanDelete()
         {
             if (IsRoot)
@@ -206,9 +208,8 @@ namespace MediaBrowser.Controller.Entities
         /// Adds the child.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="InvalidOperationException">Unable to add  + item.Name.</exception>
-        public void AddChild(BaseItem item, CancellationToken cancellationToken)
+        public void AddChild(BaseItem item)
         {
             item.SetParent(this);
 
@@ -259,6 +260,7 @@ namespace MediaBrowser.Controller.Entities
         /// Loads our children.  Validation will occur externally.
         /// We want this synchronous.
         /// </summary>
+        /// <returns>Returns children.</returns>
         protected virtual List<BaseItem> LoadChildren()
         {
             // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
@@ -643,6 +645,8 @@ namespace MediaBrowser.Controller.Entities
         /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <param name="directoryService">The directory service to use for operation.</param>
+        /// <returns>Returns set of base items.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             var collectionType = LibraryManager.GetContentType(this);
@@ -998,8 +1002,6 @@ namespace MediaBrowser.Controller.Entities
 
             return PostFilterAndSort(items, query, true);
         }
-
-        public static ICollectionManager CollectionManager { get; set; }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
         {
@@ -1383,18 +1385,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets allowed recursive children of an item.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
-        {
-            return GetRecursiveChildren(user, null);
         }
 
         public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)

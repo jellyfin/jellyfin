@@ -22,6 +22,8 @@ namespace MediaBrowser.Providers.Music
 {
     public class MusicBrainzArtistProvider : IRemoteMetadataProvider<MusicArtist, ArtistInfo>
     {
+        public string Name => "MusicBrainz";
+
         /// <inheritdoc />
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ArtistInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -215,18 +217,19 @@ namespace MediaBrowser.Providers.Music
             return result;
         }
 
-        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo id, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task<MetadataResult<MusicArtist>> GetMetadata(ArtistInfo info, CancellationToken cancellationToken)
         {
             var result = new MetadataResult<MusicArtist>
             {
                 Item = new MusicArtist()
             };
 
-            var musicBrainzId = id.GetMusicBrainzArtistId();
+            var musicBrainzId = info.GetMusicBrainzArtistId();
 
             if (string.IsNullOrWhiteSpace(musicBrainzId))
             {
-                var searchResults = await GetSearchResults(id, cancellationToken).ConfigureAwait(false);
+                var searchResults = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
 
                 var singleResult = searchResults.FirstOrDefault();
 
@@ -260,8 +263,6 @@ namespace MediaBrowser.Providers.Music
         {
             return WebUtility.UrlEncode(name);
         }
-
-        public string Name => "MusicBrainz";
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {

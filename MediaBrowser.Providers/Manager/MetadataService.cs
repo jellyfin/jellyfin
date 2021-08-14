@@ -505,6 +505,11 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
+        /// <param name="item">A media item.</param>
+        /// <param name="libraryOptions">The LibraryOptions to use.</param>
+        /// <param name="options">The MetadataRefreshOptions to use.</param>
+        /// <param name="isFirstRefresh">Specifies first refresh mode.</param>
+        /// <param name="requiresRefresh">Specifies refresh mode.</param>
         /// <returns>IEnumerable{`0}.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
@@ -617,7 +622,7 @@ namespace MediaBrowser.Providers.Manager
             MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
-            List<IMetadataProvider> providers,
+            ICollection<IMetadataProvider> providers,
             ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {

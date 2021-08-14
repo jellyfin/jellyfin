@@ -86,15 +86,12 @@ namespace Jellyfin.Server.Implementations.Activity
 
         private static ActivityLogEntry ConvertToOldModel(ActivityLog entry)
         {
-            return new ActivityLogEntry
+            return new ActivityLogEntry(entry.Name, entry.Type, entry.UserId)
             {
                 Id = entry.Id,
-                Name = entry.Name,
                 Overview = entry.Overview,
                 ShortOverview = entry.ShortOverview,
-                Type = entry.Type,
                 ItemId = entry.ItemId,
-                UserId = entry.UserId,
                 Date = entry.DateCreated,
                 Severity = entry.LogSeverity
             };

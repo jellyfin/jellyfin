@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CA1707, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -42,6 +42,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="user">User to use.</param>
+        /// <returns>User data dto.</returns>
         UserItemDataDto GetUserDataDto(BaseItem item, User user);
 
         UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions dto_options);
@@ -64,6 +67,10 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion.
         /// </summary>
+        /// <param name="item">Item to update.</param>
+        /// <param name="data">Data to update.</param>
+        /// <param name="positionTicks">New playstate.</param>
+        /// <returns>True if playstate was updated.</returns>
         bool UpdatePlayState(BaseItem item, UserItemData data, long? positionTicks);
     }
 }

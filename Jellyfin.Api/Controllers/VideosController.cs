@@ -296,6 +296,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startTimeTicks">Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms.</param>
         /// <param name="width">Optional. The fixed horizontal resolution of the encoded video.</param>
         /// <param name="height">Optional. The fixed vertical resolution of the encoded video.</param>
+        /// <param name="maxWidth">Optional. The maximum horizontal resolution of the encoded video.</param>
+        /// <param name="maxHeight">Optional. The maximum vertical resolution of the encoded video.</param>
         /// <param name="videoBitRate">Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults.</param>
         /// <param name="subtitleStreamIndex">Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.</param>
         /// <param name="subtitleMethod">Optional. Specify the subtitle delivery method.</param>
@@ -352,6 +354,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] long? startTimeTicks,
             [FromQuery] int? width,
             [FromQuery] int? height,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
@@ -407,6 +411,8 @@ namespace Jellyfin.Api.Controllers
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
+                MaxWidth = maxWidth,
+                MaxHeight = maxHeight,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
                 SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
@@ -550,6 +556,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startTimeTicks">Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms.</param>
         /// <param name="width">Optional. The fixed horizontal resolution of the encoded video.</param>
         /// <param name="height">Optional. The fixed vertical resolution of the encoded video.</param>
+        /// <param name="maxWidth">Optional. The maximum horizontal resolution of the encoded video.</param>
+        /// <param name="maxHeight">Optional. The maximum vertical resolution of the encoded video.</param>
         /// <param name="videoBitRate">Optional. Specify a video bitrate to encode to, e.g. 500000. If omitted this will be left to encoder defaults.</param>
         /// <param name="subtitleStreamIndex">Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.</param>
         /// <param name="subtitleMethod">Optional. Specify the subtitle delivery method.</param>
@@ -606,6 +614,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] long? startTimeTicks,
             [FromQuery] int? width,
             [FromQuery] int? height,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
@@ -657,6 +667,8 @@ namespace Jellyfin.Api.Controllers
                 startTimeTicks,
                 width,
                 height,
+                maxWidth,
+                maxHeight,
                 videoBitRate,
                 subtitleStreamIndex,
                 subtitleMethod,

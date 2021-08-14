@@ -10,7 +10,7 @@ parameters:
   default: "tests/**/*Tests.csproj"
 - name: DotNetSdkVersion
   type: string
-  default: 5.0.103
+  default: 5.0.302
 
 jobs:
   - job: Test

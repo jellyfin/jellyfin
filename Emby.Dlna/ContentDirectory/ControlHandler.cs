@@ -288,21 +288,14 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The xml feature list.</returns>
         private static string WriteFeatureListXml()
         {
-            // TODO: clean this up
-            var builder = new StringBuilder();
-
-            builder.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            builder.Append("<Features xmlns=\"urn:schemas-upnp-org:av:avs\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd\">");
-
-            builder.Append("<Feature name=\"samsung.com_BASICVIEW\" version=\"1\">");
-            builder.Append("<container id=\"I\" type=\"object.item.imageItem\"/>");
-            builder.Append("<container id=\"A\" type=\"object.item.audioItem\"/>");
-            builder.Append("<container id=\"V\" type=\"object.item.videoItem\"/>");
-            builder.Append("</Feature>");
-
-            builder.Append("</Features>");
-
-            return builder.ToString();
+            return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<Features xmlns=\"urn:schemas-upnp-org:av:avs\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd\">"
+                + "<Feature name=\"samsung.com_BASICVIEW\" version=\"1\">"
+                + "<container id=\"I\" type=\"object.item.imageItem\"/>"
+                + "<container id=\"A\" type=\"object.item.audioItem\"/>"
+                + "<container id=\"V\" type=\"object.item.videoItem\"/>"
+                + "</Feature>"
+                + "</Features>";
         }
 
         /// <summary>
