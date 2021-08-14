@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Jellyfin.Server.Implementations.Migrations
 {
     [DbContext(typeof(JellyfinDb))]
-    [Migration("20210602224232_AddDevices")]
+    [Migration("20210814002109_AddDevices")]
     partial class AddDevices
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,7 +19,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("jellyfin")
-                .HasAnnotation("ProductVersion", "5.0.6");
+                .HasAnnotation("ProductVersion", "5.0.7");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -342,7 +342,8 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("AccessToken")
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateCreated")
@@ -388,6 +389,9 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("DateLastActivity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateModified")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DeviceId")

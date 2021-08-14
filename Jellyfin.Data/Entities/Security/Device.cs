@@ -2,13 +2,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Security
 {
     /// <summary>
     /// An entity representing a device.
     /// </summary>
-    public class Device
+    public class Device : IAuditableEntity
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Device"/> class.
@@ -28,6 +29,7 @@ namespace Jellyfin.Data.Entities.Security
 
             AccessToken = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             DateCreated = DateTime.UtcNow;
+            DateModified = DateCreated;
             DateLastActivity = DateCreated;
 
             // Non-nullable for EF Core, as this is a required relationship.
@@ -83,10 +85,11 @@ namespace Jellyfin.Data.Entities.Security
         /// </summary>
         public bool IsActive { get; set; }
 
-        /// <summary>
-        /// Gets or sets the date this device was created.
-        /// </summary>
+        /// <inheritdoc />
         public DateTime DateCreated { get; set; }
+
+        /// <inheritdoc />
+        public DateTime DateModified { get; set; }
 
         /// <summary>
         /// Gets or sets the date of last activity.
