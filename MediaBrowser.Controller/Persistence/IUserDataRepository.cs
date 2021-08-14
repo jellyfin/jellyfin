@@ -18,7 +18,6 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="key">The key.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         void SaveUserData(long userId, string key, UserItemData userData, CancellationToken cancellationToken);
 
         /// <summary>
