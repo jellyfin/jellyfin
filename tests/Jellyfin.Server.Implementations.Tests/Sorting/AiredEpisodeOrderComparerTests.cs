@@ -37,7 +37,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
             public IEnumerator<object?[]> GetEnumerator()
             {
                 yield return new object?[] { null, new Episode() };
-                yield return new object?[] { new Episode() };
+                yield return new object?[] { new Episode(), null };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
