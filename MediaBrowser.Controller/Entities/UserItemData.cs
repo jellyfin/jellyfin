@@ -12,12 +12,12 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserItemData
     {
+        public const double MinLikeValue = 6.5;
+
         /// <summary>
         /// The _rating.
         /// </summary>
         private double? _rating;
-
-        public const double MinLikeValue = 6.5;
 
         /// <summary>
         /// Gets or sets the user id.
