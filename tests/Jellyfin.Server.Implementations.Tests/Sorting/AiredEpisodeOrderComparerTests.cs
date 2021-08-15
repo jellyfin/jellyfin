@@ -47,34 +47,134 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
         {
             public IEnumerator<object?[]> GetEnumerator()
             {
-                yield return new object?[] { new Movie(), new Movie(), 0 };
-                yield return new object?[] { new Movie(), new Episode(), 1 };
+                yield return new object?[]
+                {
+                    new Movie(),
+                    new Movie(),
+                    0
+                };
+                yield return new object?[]
+                {
+                    new Movie(),
+                    new Episode(),
+                    1
+                };
                 // Good cases
-                yield return new object?[] { new Episode(), new Episode(), 0 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, 0 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 2 }, new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 2, IndexNumber = 1 }, new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode(),
+                    new Episode(),
+                    0
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    0
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 2 },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 2, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    1
+                };
                 // Good Specials
-                yield return new object?[] { new Episode { ParentIndexNumber = 0, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1 }, 0 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 0, IndexNumber = 2 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1 },
+                    0
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 2 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1 },
+                    1
+                };
 
                 // Specials to Episodes
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 2 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 2 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 2 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 2 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1 },
+                    1
+                };
 
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 2 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 2 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 2 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 2 },
+                    1
+                };
 
-                yield return new object?[] { new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsAfterSeasonNumber = 1 }, new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 3, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsAfterSeasonNumber = 1 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsAfterSeasonNumber = 1 },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 3, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsAfterSeasonNumber = 1 },
+                    1
+                };
 
-                yield return new object?[] { new Episode { ParentIndexNumber = 3, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsAfterSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 3, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsAfterSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 },
+                    1
+                };
 
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 2 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 }, 1 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 }, 0 };
-                yield return new object?[] { new Episode { ParentIndexNumber = 1, IndexNumber = 3 }, new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 }, 1 };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 2 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 },
+                    1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 },
+                    0
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 3 },
+                    new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 },
+                    1
+                };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
