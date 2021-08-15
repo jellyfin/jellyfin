@@ -26,10 +26,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
             var cmp = new AiredEpisodeOrderComparer();
 
             Assert.Equal(expected, cmp.Compare(x, y));
-            if (expected == 1)
-            {
-                Assert.Equal(-expected, cmp.Compare(y, x));
-            }
+            Assert.Equal(-expected, cmp.Compare(y, x));
         }
 
         private class EpisodeBadData : IEnumerable<object?[]>
