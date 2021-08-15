@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
     {
         [Theory]
         [ClassData(typeof(EpisodeBadData))]
-        public void AiredEpisodeOrderCompareErrorTest(BaseItem x, BaseItem y)
+        public void Compare_GivenNull_ThrowsArgumentNullException(BaseItem x, BaseItem y)
         {
             var cmp = new AiredEpisodeOrderComparer();
             Assert.Throws<ArgumentNullException>(() => cmp.Compare(x, y));
