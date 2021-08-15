@@ -74,5 +74,11 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="options">The options to use when creating the collage.</param>
         /// <param name="libraryName">Optional. </param>
         void CreateImageCollage(ImageCollageOptions options, string? libraryName);
+
+        /// <summary>
+        /// Creates a splashscreen image.
+        /// </summary>
+        /// <param name="options">The options to use when creating the splashscreen.</param>
+        void CreateSplashscreen(SplashscreenOptions options);
     }
 }

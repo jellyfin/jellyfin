@@ -44,6 +44,12 @@ namespace Emby.Drawing
         }
 
         /// <inheritdoc />
+        public void CreateSplashscreen(SplashscreenOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
         public string GetImageBlurHash(int xComp, int yComp, string path)
         {
             throw new NotImplementedException();

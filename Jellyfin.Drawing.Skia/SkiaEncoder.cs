@@ -492,6 +492,13 @@ namespace Jellyfin.Drawing.Skia
             }
         }
 
+        /// <inheritdoc/>
+        public void CreateSplashscreen(SplashscreenOptions options)
+        {
+            var splashBuilder = new SplashscreenBuilder(this);
+            splashBuilder.GenerateSplash(options);
+        }
+
         private void DrawIndicator(SKCanvas canvas, int imageWidth, int imageHeight, ImageProcessingOptions options)
         {
             try
