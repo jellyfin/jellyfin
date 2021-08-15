@@ -105,6 +105,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
+        /// <param name="replaceAllMetadata"><c>true</c> to replace all metadata, <c>false</c> to not.</param>
+        /// <returns><c>true</c> if changes were made, <c>false</c> if not.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);

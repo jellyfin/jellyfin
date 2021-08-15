@@ -1669,7 +1669,6 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
-        /// <returns>Task.</returns>
         public override void MarkPlayed(
             User user,
             DateTime? datePlayed,
@@ -1711,7 +1710,6 @@ namespace MediaBrowser.Controller.Entities
         /// Marks the unplayed.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
         public override void MarkUnplayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery
