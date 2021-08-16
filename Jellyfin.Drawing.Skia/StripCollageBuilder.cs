@@ -68,13 +68,15 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="outputPath">The path at which to place the resulting collage image.</param>
         /// <param name="width">The desired width of the collage.</param>
         /// <param name="height">The desired height of the collage.</param>
-        public void BuildSquareCollage(IReadOnlyList<string> paths, string outputPath, int width, int height)
+        /// <param name="itemName">The name of the library to draw on the collage.</param>
+        public void BuildSquareCollage(IReadOnlyList<string> paths, string outputPath, int width, int height, string? itemName)
         {
-            using var bitmap = BuildSquareCollageBitmap(paths, width, height);
+            using var bitmap = BuildCollageBitmap(paths, width, height, itemName);
             using var outputStream = new SKFileWStream(outputPath);
             using var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
             pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
+
 
         /// <summary>
         /// Create a thumb collage.
@@ -83,16 +85,32 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="outputPath">The path at which to place the resulting image.</param>
         /// <param name="width">The desired width of the collage.</param>
         /// <param name="height">The desired height of the collage.</param>
-        /// <param name="libraryName">The name of the library to draw on the collage.</param>
-        public void BuildThumbCollage(IReadOnlyList<string> paths, string outputPath, int width, int height, string? libraryName)
+        /// <param name="itemName">The name of the library to draw on the collage.</param>
+        public void BuildThumbCollage(IReadOnlyList<string> paths, string outputPath, int width, int height, string? itemName)
         {
-            using var bitmap = BuildThumbCollageBitmap(paths, width, height, libraryName);
+            using var bitmap = BuildCollageBitmap(paths, width, height, itemName);
             using var outputStream = new SKFileWStream(outputPath);
             using var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
             pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
-        private SKBitmap BuildThumbCollageBitmap(IReadOnlyList<string> paths, int width, int height, string? libraryName)
+        /// <summary>
+        /// Create a poster collage.
+        /// </summary>
+        /// <param name="paths">The paths of the images to use in the collage.</param>
+        /// <param name="outputPath">The path at which to place the resulting collage image.</param>
+        /// <param name="width">The desired width of the collage.</param>
+        /// <param name="height">The desired height of the collage.</param>
+        /// <param name="itemName">The name of the library to draw on the collage.</param>
+        public void BuildPosterCollage(IReadOnlyList<string> paths, string outputPath, int width, int height, string? itemName)
+        {
+            using var bitmap = BuildCollageBitmap(paths, width, height, itemName);
+            using var outputStream = new SKFileWStream(outputPath);
+            using var pixmap = new SKPixmap(new SKImageInfo(width, height), bitmap.GetPixels());
+            pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
+        }
+
+        private SKBitmap BuildCollageBitmap(IReadOnlyList<string> paths, int width, int height, string? itemName)
         {
             var bitmap = new SKBitmap(width, height);
 
@@ -105,25 +123,41 @@ namespace Jellyfin.Drawing.Skia
                 return bitmap;
             }
 
-            // resize to the same aspect as the original
-            var backdropHeight = Math.Abs(width * backdrop.Height / backdrop.Width);
-            using var residedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(width, backdropHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
-            // draw the backdrop
-            canvas.DrawImage(residedBackdrop, 0, 0);
+            // Resize the image to fill the canvas
+            var ratioW = width / backdrop.Width;
+            var ratioH = height / backdrop.Height;
+            var ratio = ratioW < ratioH ? ratioW : ratioH;
+
+            var newWidth = backdrop.Width * ratio;
+            var newHeight = backdrop.Height * ratio;
+
+            using var resizedBackdrop = SkiaEncoder.ResizeImage(backdrop, new SKImageInfo(newWidth, newHeight, backdrop.ColorType, backdrop.AlphaType, backdrop.ColorSpace));
+
+            // Draw the original image in the center of the canvas
+            canvas.DrawImage(resizedBackdrop, (width / 2) - (resizedBackdrop.Width / 2), (height / 2) - (resizedBackdrop.Height / 2));
 
             // draw shadow rectangle
             using var paintColor = new SKPaint
             {
-                Color = SKColors.Black.WithAlpha(0x78),
-                Style = SKPaintStyle.Fill
+                Color = new SKColor(53, 40, 77),
+                Style = SKPaintStyle.Fill,
+                BlendMode = SKBlendMode.Color
             };
             canvas.DrawRect(0, 0, width, height, paintColor);
+
+            // Darken the image for text readability
+            var darkenColor = new SKPaint
+            {
+                Color = SKColors.Black.WithAlpha(0x7D),
+                Style = SKPaintStyle.Fill
+            };
+            canvas.DrawRect(0, 0, width, height, darkenColor);
 
             var typeFace = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
 
             // use the system fallback to find a typeface for the given CJK character
             var nonCjkPattern = @"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]";
-            var filteredName = Regex.Replace(libraryName ?? string.Empty, nonCjkPattern, string.Empty);
+            var filteredName = Regex.Replace(itemName ?? string.Empty, nonCjkPattern, string.Empty);
             if (!string.IsNullOrEmpty(filteredName))
             {
                 typeFace = SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, filteredName[0]);
@@ -141,13 +175,13 @@ namespace Jellyfin.Drawing.Skia
             };
 
             // scale down text to 90% of the width if text is larger than 95% of the width
-            var textWidth = textPaint.MeasureText(libraryName);
+            var textWidth = textPaint.MeasureText(itemName);
             if (textWidth > width * 0.95)
             {
                 textPaint.TextSize = 0.9f * width * textPaint.TextSize / textWidth;
             }
 
-            canvas.DrawText(libraryName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
+            canvas.DrawText(itemName, width / 2f, (height / 2f) + (textPaint.FontMetrics.XHeight / 2), textPaint);
 
             return bitmap;
         }
@@ -177,40 +211,6 @@ namespace Jellyfin.Drawing.Skia
             }
 
             newIndex = currentIndex;
-            return bitmap;
-        }
-
-        private SKBitmap BuildSquareCollageBitmap(IReadOnlyList<string> paths, int width, int height)
-        {
-            var bitmap = new SKBitmap(width, height);
-            var imageIndex = 0;
-            var cellWidth = width / 2;
-            var cellHeight = height / 2;
-
-            using var canvas = new SKCanvas(bitmap);
-            for (var x = 0; x < 2; x++)
-            {
-                for (var y = 0; y < 2; y++)
-                {
-                    using var currentBitmap = GetNextValidImage(paths, imageIndex, out int newIndex);
-                    imageIndex = newIndex;
-
-                    if (currentBitmap == null)
-                    {
-                        continue;
-                    }
-
-                    // Scale image. The FromBitmap creates a copy
-                    var imageInfo = new SKImageInfo(cellWidth, cellHeight, currentBitmap.ColorType, currentBitmap.AlphaType, currentBitmap.ColorSpace);
-                    using var resizedBitmap = SKBitmap.FromImage(SkiaEncoder.ResizeImage(currentBitmap, imageInfo));
-
-                    // draw this image into the strip at the next position
-                    var xPos = x * cellWidth;
-                    var yPos = y * cellHeight;
-                    canvas.DrawBitmap(resizedBitmap, xPos, yPos);
-                }
-            }
-
             return bitmap;
         }
     }

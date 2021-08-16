@@ -133,32 +133,17 @@ namespace Emby.Server.Implementations.Images
             return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
 
-        protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
+        protected virtual IEnumerable<string> GetCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
             var useBackdrop = primaryItem is CollectionFolder;
             return items
                 .Select(i =>
                 {
-                    // Use Backdrop instead of Primary image for Library images.
-                    if (useBackdrop)
+                    // Always use backdrop images, as they look nicer with the format.
+                    var backdrop = i.GetImageInfo(ImageType.Backdrop, 0);
+                    if (backdrop != null && backdrop.IsLocalFile)
                     {
-                        var backdrop = i.GetImageInfo(ImageType.Backdrop, 0);
-                        if (backdrop != null && backdrop.IsLocalFile)
-                        {
-                            return backdrop.Path;
-                        }
-                    }
-
-                    var image = i.GetImageInfo(ImageType.Primary, 0);
-                    if (image != null && image.IsLocalFile)
-                    {
-                        return image.Path;
-                    }
-
-                    image = i.GetImageInfo(ImageType.Thumb, 0);
-                    if (image != null && image.IsLocalFile)
-                    {
-                        return image.Path;
+                        return backdrop.Path;
                     }
 
                     return null;
@@ -168,12 +153,12 @@ namespace Emby.Server.Implementations.Images
 
         protected string CreatePosterCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
-            return CreateCollage(primaryItem, items, outputPath, 400, 600);
+            return CreateCollage(primaryItem, items, outputPath, 1000, 1500);
         }
 
         protected string CreateSquareCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath)
         {
-            return CreateCollage(primaryItem, items, outputPath, 600, 600);
+            return CreateCollage(primaryItem, items, outputPath, 1000, 1000);
         }
 
         protected string CreateThumbCollage(BaseItem primaryItem, IEnumerable<BaseItem> items, string outputPath, int width, int height)
@@ -190,7 +175,7 @@ namespace Emby.Server.Implementations.Images
                 Height = height,
                 Width = width,
                 OutputPath = outputPath,
-                InputPaths = GetStripCollageImagePaths(primaryItem, items).ToArray()
+                InputPaths = GetCollageImagePaths(primaryItem, items).ToArray()
             };
 
             if (options.InputPaths.Count == 0)

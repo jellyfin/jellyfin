@@ -38,7 +38,7 @@ namespace Emby.Drawing
         }
 
         /// <inheritdoc />
-        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
+        public void CreateImageCollage(ImageCollageOptions options, string? itemName)
         {
             throw new NotImplementedException();
         }

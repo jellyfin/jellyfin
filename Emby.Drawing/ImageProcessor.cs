@@ -545,11 +545,11 @@ namespace Emby.Drawing
         }
 
         /// <inheritdoc />
-        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
+        public void CreateImageCollage(ImageCollageOptions options, string? itemName)
         {
             _logger.LogInformation("Creating image collage and saving to {Path}", options.OutputPath);
 
-            _imageEncoder.CreateImageCollage(options, libraryName);
+            _imageEncoder.CreateImageCollage(options, itemName);
 
             _logger.LogInformation("Completed creation of image collage and saved to {Path}", options.OutputPath);
         }

@@ -473,22 +473,21 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc/>
-        public void CreateImageCollage(ImageCollageOptions options, string? libraryName)
+        public void CreateImageCollage(ImageCollageOptions options, string? itemName)
         {
             double ratio = (double)options.Width / options.Height;
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, libraryName);
+                new StripCollageBuilder(this).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, itemName);
             }
             else if (ratio >= .9)
             {
-                new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, itemName);
             }
             else
             {
-                // TODO: Create Poster collage capability
-                new StripCollageBuilder(this).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height);
+                new StripCollageBuilder(this).BuildPosterCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, itemName);
             }
         }
 

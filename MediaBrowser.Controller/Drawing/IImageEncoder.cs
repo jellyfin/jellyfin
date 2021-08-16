@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.Drawing
         /// Create an image collage.
         /// </summary>
         /// <param name="options">The options to use when creating the collage.</param>
-        /// <param name="libraryName">Optional. </param>
-        void CreateImageCollage(ImageCollageOptions options, string? libraryName);
+        /// <param name="itemName">The item name to draw onto the collage.</param>
+        void CreateImageCollage(ImageCollageOptions options, string? itemName);
     }
 }

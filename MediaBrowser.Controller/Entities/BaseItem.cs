@@ -2374,7 +2374,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Music albums usually don't have dedicated backdrops, so return one from the artist instead
-            if (GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
+            if ((GetType() == typeof(MusicAlbum) || GetType() == typeof(Audio.Audio)) && imageType == ImageType.Backdrop)
             {
                 var artist = FindParent<MusicArtist>();
 
