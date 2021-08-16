@@ -52,8 +52,6 @@ namespace Jellyfin.Api.Controllers
         /// Generates or gets the splashscreen.
         /// </summary>
         /// <param name="darken">Darken the generated image.</param>
-        /// <param name="width">The image width.</param>
-        /// <param name="height">The image height.</param>
         /// <param name="regenerate">Whether to regenerate the image, regardless if one already exists.</param>
         /// <returns>The splashscreen.</returns>
         [HttpGet]
@@ -62,11 +60,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesImageFile]
         public ActionResult GetSplashscreen(
             [FromQuery] bool? darken = false,
-            [FromQuery] int? width = 1920,
-            [FromQuery] int? height = 1080,
             [FromQuery] bool? regenerate = false)
         {
-            var outputPath = Path.Combine(_appPaths.DataPath, $"splashscreen-{width}x{height}-{darken}.jpg");
+            var outputPath = Path.Combine(_appPaths.DataPath, $"splashscreen-{darken}.jpg");
 
             if (!System.IO.File.Exists(outputPath) || (regenerate ?? false))
             {
@@ -74,11 +70,13 @@ namespace Jellyfin.Api.Controllers
                 var landscape = GetItemsWithImageType(ImageType.Thumb).Select(x => x.GetImages(ImageType.Thumb).First().Path).ToList();
                 if (landscape.Count == 0)
                 {
+                    // Thumb images fit better because they include the title in the image but are not provided with TMDb.
+                    // Using backdrops as a fallback to generate an image at all
                     _logger.LogDebug("No thumb images found. Using backdrops to generate splashscreen.");
                     landscape = GetItemsWithImageType(ImageType.Backdrop).Select(x => x.GetImages(ImageType.Backdrop).First().Path).ToList();
                 }
 
-                _imageEncoder.CreateSplashscreen(new SplashscreenOptions(posters, landscape, outputPath, width!.Value, height!.Value, darken!.Value));
+                _imageEncoder.CreateSplashscreen(new SplashscreenOptions(posters, landscape, outputPath, darken!.Value));
             }
 
             return PhysicalFile(outputPath, MimeTypes.GetMimeType(outputPath));
@@ -86,13 +84,16 @@ namespace Jellyfin.Api.Controllers
 
         private IReadOnlyList<BaseItem> GetItemsWithImageType(ImageType imageType)
         {
+            // todo make included libraries configurable
             return _itemRepository.GetItemList(new InternalItemsQuery
             {
                 CollapseBoxSetItems = false,
                 Recursive = true,
                 DtoOptions = new DtoOptions(false),
                 ImageTypes = new ImageType[] { imageType },
-                Limit = 8,
+                Limit = 30,
+                // todo max parental rating configurable
+                MaxParentalRating = 10,
                 OrderBy = new ValueTuple<string, SortOrder>[]
                 {
                     new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending)

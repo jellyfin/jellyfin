@@ -10,14 +10,17 @@ namespace Jellyfin.Drawing.Skia
     /// </summary>
     public class SplashscreenBuilder
     {
+        private const int FinalWidth = 1920;
+        private const int FinalHeight = 1080;
+        // generated collage resolution should be higher than the final resolution
+        private const int WallWidth = FinalWidth * 3;
+        private const int WallHeight = FinalHeight * 2;
         private const int Rows = 6;
         private const int Spacing = 20;
 
         private readonly SkiaEncoder _skiaEncoder;
 
         private Random? _random;
-        private int _finalWidth;
-        private int _finalHeight;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SplashscreenBuilder"/> class.
@@ -34,13 +37,11 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="options">The options to generate the splashscreen.</param>
         public void GenerateSplash(SplashscreenOptions options)
         {
-            _finalWidth = options.Width;
-            _finalHeight = options.Height;
             var wall = GenerateCollage(options.PortraitInputPaths, options.LandscapeInputPaths, options.ApplyFilter);
             var transformed = Transform3D(wall);
 
             using var outputStream = new SKFileWStream(options.OutputPath);
-            using var pixmap = new SKPixmap(new SKImageInfo(_finalWidth, _finalHeight), transformed.GetPixels());
+            using var pixmap = new SKPixmap(new SKImageInfo(FinalWidth, FinalHeight), transformed.GetPixels());
             pixmap.Encode(outputStream, StripCollageBuilder.GetEncodedFormat(options.OutputPath), 90);
         }
 
@@ -58,12 +59,11 @@ namespace Jellyfin.Drawing.Skia
             var posterIndex = 0;
             var backdropIndex = 0;
 
-            // use higher resolution than final image
-            var bitmap = new SKBitmap(_finalWidth * 3, _finalHeight * 2);
+            var bitmap = new SKBitmap(WallWidth, WallHeight);
             using var canvas = new SKCanvas(bitmap);
             canvas.Clear(SKColors.Black);
 
-            int posterHeight = _finalHeight * 2 / 6;
+            int posterHeight = WallHeight / 6;
 
             for (int i = 0; i < Rows; i++)
             {
@@ -71,7 +71,7 @@ namespace Jellyfin.Drawing.Skia
                 int currentWidthPos = i * 75;
                 int currentHeight = i * (posterHeight + Spacing);
 
-                while (currentWidthPos < _finalWidth * 3)
+                while (currentWidthPos < WallWidth)
                 {
                     SKBitmap? currentImage;
 
@@ -124,7 +124,7 @@ namespace Jellyfin.Drawing.Skia
                     Color = SKColors.Black.WithAlpha(0x50),
                     Style = SKPaintStyle.Fill
                 };
-                canvas.DrawRect(0, 0, _finalWidth * 3, _finalHeight * 2, paintColor);
+                canvas.DrawRect(0, 0, WallWidth, WallHeight, paintColor);
             }
 
             return bitmap;
@@ -137,7 +137,7 @@ namespace Jellyfin.Drawing.Skia
         /// <returns>The transformed image.</returns>
         private SKBitmap Transform3D(SKBitmap input)
         {
-            var bitmap = new SKBitmap(_finalWidth, _finalHeight);
+            var bitmap = new SKBitmap(FinalWidth, FinalHeight);
             using var canvas = new SKCanvas(bitmap);
             canvas.Clear(SKColors.Black);
             var matrix = new SKMatrix

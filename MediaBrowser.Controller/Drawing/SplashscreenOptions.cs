@@ -16,13 +16,11 @@ namespace MediaBrowser.Controller.Drawing
         /// <param name="width">Optional. The image width.</param>
         /// <param name="height">Optional. The image height.</param>
         /// <param name="applyFilter">Optional. Apply a darkening filter.</param>
-        public SplashscreenOptions(IReadOnlyList<string> portraitInputPaths, IReadOnlyList<string> landscapeInputPaths, string outputPath, int width = 1920, int height = 1080, bool applyFilter = false)
+        public SplashscreenOptions(IReadOnlyList<string> portraitInputPaths, IReadOnlyList<string> landscapeInputPaths, string outputPath, bool applyFilter = false)
         {
             PortraitInputPaths = portraitInputPaths;
             LandscapeInputPaths = landscapeInputPaths;
             OutputPath = outputPath;
-            Width = width;
-            Height = height;
             ApplyFilter = applyFilter;
         }
 
@@ -40,16 +38,6 @@ namespace MediaBrowser.Controller.Drawing
         /// Gets or sets the output path.
         /// </summary>
         public string OutputPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets the width.
-        /// </summary>
-        public int Width { get; set; }
-
-        /// <summary>
-        /// Gets or sets the height.
-        /// </summary>
-        public int Height { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to apply a darkening filter at the end.
