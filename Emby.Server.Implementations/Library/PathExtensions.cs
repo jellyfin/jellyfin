@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using MediaBrowser.Common.Providers;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -9,44 +8,6 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public static class PathExtensions
     {
-        /// <summary>
-        /// Gets the attribute value.
-        /// </summary>
-        /// <param name="str">The STR.</param>
-        /// <param name="attribute">The attrib.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentException"><paramref name="str" /> or <paramref name="attribute" /> is empty.</exception>
-        public static string? GetAttributeValue(this string str, string attribute)
-        {
-            if (str.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(str));
-            }
-
-            if (attribute.Length == 0)
-            {
-                throw new ArgumentException("String can't be empty.", nameof(attribute));
-            }
-
-            string srch = "[" + attribute + "=";
-            int start = str.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-            if (start != -1)
-            {
-                start += srch.Length;
-                int end = str.IndexOf(']', start);
-                return str.Substring(start, end - start);
-            }
-
-            // for imdbid we also accept pattern matching
-            if (string.Equals(attribute, "imdbid", StringComparison.OrdinalIgnoreCase))
-            {
-                var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
-                return match ? imdbId.ToString() : null;
-            }
-
-            return null;
-        }
-
         /// <summary>
         /// Replaces a sub path with another sub path and normalizes the final path.
         /// </summary>

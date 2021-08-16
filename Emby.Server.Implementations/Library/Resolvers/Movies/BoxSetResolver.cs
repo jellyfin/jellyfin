@@ -45,34 +45,5 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
             return null;
         }
-
-        /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(BoxSet item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
-
-            SetProviderIdFromPath(item);
-        }
-
-        /// <summary>
-        /// Sets the provider id from path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        private static void SetProviderIdFromPath(BaseItem item)
-        {
-            // we need to only look at the name of this actual item (not parents)
-            var justName = Path.GetFileName(item.Path);
-
-            var id = justName.GetAttributeValue("tmdbid");
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                item.SetProviderId(MetadataProvider.Tmdb, id);
-            }
-        }
     }
 }

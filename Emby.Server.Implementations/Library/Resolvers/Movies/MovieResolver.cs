@@ -323,53 +323,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         }
 
         /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(Video item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
-
-            SetProviderIdsFromPath(item);
-        }
-
-        /// <summary>
-        /// Sets the provider id from path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        private static void SetProviderIdsFromPath(Video item)
-        {
-            if (item is Movie || item is MusicVideo)
-            {
-                // We need to only look at the name of this actual item (not parents)
-                var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(item.ContainingFolderPath);
-
-                if (!string.IsNullOrEmpty(justName))
-                {
-                    // check for tmdb id
-                    var tmdbid = justName.GetAttributeValue("tmdbid");
-
-                    if (!string.IsNullOrWhiteSpace(tmdbid))
-                    {
-                        item.SetProviderId(MetadataProvider.Tmdb, tmdbid);
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(item.Path))
-                {
-                    // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
-                    var imdbid = item.Path.GetAttributeValue("imdbid");
-
-                    if (!string.IsNullOrWhiteSpace(imdbid))
-                    {
-                        item.SetProviderId(MetadataProvider.Imdb, imdbid);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Finds a movie based on a child file system entries.
         /// </summary>
         /// <returns>Movie.</returns>

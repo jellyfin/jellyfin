@@ -160,34 +160,5 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
             return seasonNumber.HasValue;
         }
-
-        /// <summary>
-        /// Sets the initial item values.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="args">The args.</param>
-        protected override void SetInitialItemValues(Series item, ItemResolveArgs args)
-        {
-            base.SetInitialItemValues(item, args);
-
-            SetProviderIdFromPath(item, args.Path);
-        }
-
-        /// <summary>
-        /// Sets the provider id from path.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="path">The path.</param>
-        private static void SetProviderIdFromPath(Series item, string path)
-        {
-            var justName = Path.GetFileName(path);
-
-            var id = justName.GetAttributeValue("tvdbid");
-
-            if (!string.IsNullOrEmpty(id))
-            {
-                item.SetProviderId(MetadataProvider.Tvdb, id);
-            }
-        }
     }
 }
