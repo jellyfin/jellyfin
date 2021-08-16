@@ -41,6 +41,9 @@
 <a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
 <img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
 </a>
+<a href="https://lgtm.com/projects/g/jellyfin/jellyfin/alerts/">
+<img alt="Total LGTM alerts" src="https://img.shields.io/lgtm/alerts/g/jellyfin/jellyfin.svg?logo=lgtm&logoWidth=18"/>
+</a>
 </p>
 
 ---
