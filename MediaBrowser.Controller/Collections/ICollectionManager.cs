@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -16,17 +14,17 @@ namespace MediaBrowser.Controller.Collections
         /// <summary>
         /// Occurs when [collection created].
         /// </summary>
-        event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+        event EventHandler<CollectionCreatedEventArgs>? CollectionCreated;
 
         /// <summary>
         /// Occurs when [items added to collection].
         /// </summary>
-        event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+        event EventHandler<CollectionModifiedEventArgs>? ItemsAddedToCollection;
 
         /// <summary>
         /// Occurs when [items removed from collection].
         /// </summary>
-        event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+        event EventHandler<CollectionModifiedEventArgs>? ItemsRemovedFromCollection;
 
         /// <summary>
         /// Creates the collection.

@@ -66,7 +66,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             var germany = localizationManager.FindLanguageInfo(identifier);
             Assert.NotNull(germany);
 
-            Assert.Equal("ger", germany.ThreeLetterISOLanguageName);
+            Assert.Equal("ger", germany!.ThreeLetterISOLanguageName);
             Assert.Equal("German", germany.DisplayName);
             Assert.Equal("German", germany.Name);
             Assert.Contains("deu", germany.ThreeLetterISOLanguageNames);
