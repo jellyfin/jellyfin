@@ -1764,9 +1764,7 @@ namespace Jellyfin.Api.Controllers
             {
                 Image = new ItemImageInfo
                 {
-                    Path = splashscreenPath,
-                    Height = 1080,
-                    Width = 1920
+                    Path = splashscreenPath
                 },
                 Height = height,
                 MaxHeight = maxHeight,
@@ -1791,11 +1789,15 @@ namespace Jellyfin.Api.Controllers
         /// Uploads a custom splashscreen.
         /// </summary>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <response code="204">Sucessfully uploaded new splashscreen.</response>
+        /// <response code="400">Error reading MimeType from uploaded image.</response>
+        /// <response code="403">User does not have permission to upload splashscreen..</response>
         /// <exception cref="ArgumentException">Error reading the image format.</exception>
         [HttpPost("Branding/Splashscreen")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [AcceptsImageFile]
         public async Task<ActionResult> UploadCustomSplashscreen()
         {
@@ -1806,7 +1808,7 @@ namespace Jellyfin.Api.Controllers
 
             if (mimeType == null)
             {
-                throw new ArgumentException("Error reading mimetype from uploaded image!");
+                return BadRequest("Error reading mimetype from uploaded image");
             }
 
             var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + MimeTypes.ToExtension(mimeType));
