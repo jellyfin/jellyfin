@@ -1,3 +1,5 @@
+using System.Xml.Serialization;
+
 #pragma warning disable CS1591
 
 namespace MediaBrowser.Model.Branding
@@ -15,5 +17,11 @@ namespace MediaBrowser.Model.Branding
         /// </summary>
         /// <value>The custom CSS.</value>
         public string? CustomCss { get; set; }
+
+        /// <summary>
+        /// Gets or sets the splashscreen location on disk.
+        /// </summary>
+        /// <value>The location of the user splashscreen.</value>
+        public string? SplashscreenLocation { get; set; }
     }
 }

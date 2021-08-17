@@ -11,12 +11,14 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Branding;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -44,6 +46,8 @@ namespace Jellyfin.Api.Controllers
         private readonly IAuthorizationContext _authContext;
         private readonly ILogger<ImageController> _logger;
         private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly IApplicationPaths _appPaths;
+        private readonly IImageGenerator _imageGenerator;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -56,6 +60,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+        /// <param name="imageGenerator">Instance of the <see cref="IImageGenerator"/> interface.</param>
         public ImageController(
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -64,7 +70,9 @@ namespace Jellyfin.Api.Controllers
             IFileSystem fileSystem,
             IAuthorizationContext authContext,
             ILogger<ImageController> logger,
-            IServerConfigurationManager serverConfigurationManager)
+            IServerConfigurationManager serverConfigurationManager,
+            IApplicationPaths appPaths,
+            IImageGenerator imageGenerator)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -74,6 +82,8 @@ namespace Jellyfin.Api.Controllers
             _authContext = authContext;
             _logger = logger;
             _serverConfigurationManager = serverConfigurationManager;
+            _appPaths = appPaths;
+            _imageGenerator = imageGenerator;
         }
 
         /// <summary>
@@ -1692,6 +1702,130 @@ namespace Jellyfin.Api.Controllers
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Generates or gets the splashscreen.
+        /// </summary>
+        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
+        /// <param name="maxWidth">The maximum image width to return.</param>
+        /// <param name="maxHeight">The maximum image height to return.</param>
+        /// <param name="width">The fixed image width to return.</param>
+        /// <param name="height">The fixed image height to return.</param>
+        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
+        /// <param name="fillWidth">Width of box to fill.</param>
+        /// <param name="fillHeight">Height of box to fill.</param>
+        /// <param name="blur">Optional. Blur image.</param>
+        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <param name="darken">Darken the generated image.</param>
+        /// <response code="200">Splashscreen returned successfully.</response>
+        /// <returns>The splashscreen.</returns>
+        [HttpGet("Branding/Splashscreen")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesImageFile]
+        public async Task<ActionResult> GetSplashscreen(
+            [FromQuery] string? tag,
+            [FromQuery] ImageFormat? format,
+            [FromQuery] int? maxWidth,
+            [FromQuery] int? maxHeight,
+            [FromQuery] int? width,
+            [FromQuery] int? height,
+            [FromQuery] int? quality,
+            [FromQuery] int? fillWidth,
+            [FromQuery] int? fillHeight,
+            [FromQuery] int? blur,
+            [FromQuery] string? backgroundColor,
+            [FromQuery] string? foregroundLayer,
+            [FromQuery] bool? darken = false)
+        {
+            string splashscreenPath;
+            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            if (!string.IsNullOrWhiteSpace(brandingOptions.SplashscreenLocation))
+            {
+                splashscreenPath = brandingOptions.SplashscreenLocation!;
+            }
+            else
+            {
+                var filename = darken!.Value ? "splashscreen-darken.webp" : "splashscreen.webp";
+                splashscreenPath = Path.Combine(_appPaths.DataPath, filename);
+
+                if (!System.IO.File.Exists(splashscreenPath) && _imageGenerator.GetSupportedImages().Contains(GeneratedImages.Splashscreen))
+                {
+                    _imageGenerator.GenerateSplashscreen(new SplashscreenOptions(splashscreenPath, darken.Value));
+                }
+            }
+
+            var outputFormats = GetOutputFormats(format);
+
+            TimeSpan? cacheDuration = null;
+            if (!string.IsNullOrEmpty(tag))
+            {
+                cacheDuration = TimeSpan.FromDays(365);
+            }
+
+            var options = new ImageProcessingOptions
+            {
+                Image = new ItemImageInfo
+                {
+                    Path = splashscreenPath,
+                    Height = 1080,
+                    Width = 1920
+                },
+                Height = height,
+                MaxHeight = maxHeight,
+                MaxWidth = maxWidth,
+                FillHeight = fillHeight,
+                FillWidth = fillWidth,
+                Quality = quality ?? 100,
+                Width = width,
+                Blur = blur,
+                BackgroundColor = backgroundColor,
+                ForegroundLayer = foregroundLayer,
+                SupportedOutputFormats = outputFormats
+            };
+            return await GetImageResult(
+                options,
+                cacheDuration,
+                new Dictionary<string, string>(),
+                Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Uploads a custom splashscreen.
+        /// </summary>
+        /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
+        /// <exception cref="ArgumentException">Error reading the image format.</exception>
+        [HttpPost("Branding/Splashscreen")]
+        [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [AcceptsImageFile]
+        public async Task<ActionResult> UploadCustomSplashscreen()
+        {
+            await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
+
+            // Handle image/png; charset=utf-8
+            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+
+            if (mimeType == null)
+            {
+                throw new ArgumentException("Error reading mimetype from uploaded image!");
+            }
+
+            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + MimeTypes.ToExtension(mimeType));
+            var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
+            brandingOptions.SplashscreenLocation = filePath;
+            _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
+
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            await using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+            {
+                await memoryStream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
+            }
+
+            return NoContent();
+        }
+
         private static async Task<MemoryStream> GetMemoryStream(Stream inputStream)
         {
             using var reader = new StreamReader(inputStream);
@@ -1823,25 +1957,35 @@ namespace Jellyfin.Api.Controllers
                 { "realTimeInfo.dlna.org", "DLNA.ORG_TLAG=*" }
             };
 
+            if (!imageInfo.IsLocalFile && item != null)
+            {
+                imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, imageIndex ?? 0).ConfigureAwait(false);
+            }
+
+            var options = new ImageProcessingOptions
+            {
+                Height = height,
+                ImageIndex = imageIndex ?? 0,
+                Image = imageInfo,
+                Item = item,
+                ItemId = itemId,
+                MaxHeight = maxHeight,
+                MaxWidth = maxWidth,
+                FillHeight = fillHeight,
+                FillWidth = fillWidth,
+                Quality = quality ?? 100,
+                Width = width,
+                AddPlayedIndicator = addPlayedIndicator ?? false,
+                PercentPlayed = percentPlayed ?? 0,
+                UnplayedCount = unplayedCount,
+                Blur = blur,
+                BackgroundColor = backgroundColor,
+                ForegroundLayer = foregroundLayer,
+                SupportedOutputFormats = outputFormats
+            };
+
             return await GetImageResult(
-                item,
-                itemId,
-                imageIndex,
-                width,
-                height,
-                maxWidth,
-                maxHeight,
-                fillWidth,
-                fillHeight,
-                quality,
-                addPlayedIndicator,
-                percentPlayed,
-                unplayedCount,
-                blur,
-                backgroundColor,
-                foregroundLayer,
-                imageInfo,
-                outputFormats,
+                options,
                 cacheDuration,
                 responseHeaders,
                 isHeadRequest).ConfigureAwait(false);
@@ -1922,56 +2066,12 @@ namespace Jellyfin.Api.Controllers
         }
 
         private async Task<ActionResult> GetImageResult(
-            BaseItem? item,
-            Guid itemId,
-            int? index,
-            int? width,
-            int? height,
-            int? maxWidth,
-            int? maxHeight,
-            int? fillWidth,
-            int? fillHeight,
-            int? quality,
-            bool? addPlayedIndicator,
-            double? percentPlayed,
-            int? unplayedCount,
-            int? blur,
-            string? backgroundColor,
-            string? foregroundLayer,
-            ItemImageInfo imageInfo,
-            IReadOnlyCollection<ImageFormat> supportedFormats,
+            ImageProcessingOptions imageProcessingOptions,
             TimeSpan? cacheDuration,
             IDictionary<string, string> headers,
             bool isHeadRequest)
         {
-            if (!imageInfo.IsLocalFile && item != null)
-            {
-                imageInfo = await _libraryManager.ConvertImageToLocal(item, imageInfo, index ?? 0).ConfigureAwait(false);
-            }
-
-            var options = new ImageProcessingOptions
-            {
-                Height = height,
-                ImageIndex = index ?? 0,
-                Image = imageInfo,
-                Item = item,
-                ItemId = itemId,
-                MaxHeight = maxHeight,
-                MaxWidth = maxWidth,
-                FillHeight = fillHeight,
-                FillWidth = fillWidth,
-                Quality = quality ?? 100,
-                Width = width,
-                AddPlayedIndicator = addPlayedIndicator ?? false,
-                PercentPlayed = percentPlayed ?? 0,
-                UnplayedCount = unplayedCount,
-                Blur = blur,
-                BackgroundColor = backgroundColor,
-                ForegroundLayer = foregroundLayer,
-                SupportedOutputFormats = supportedFormats
-            };
-
-            var (imagePath, imageContentType, dateImageModified) = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
+            var (imagePath, imageContentType, dateImageModified) = await _imageProcessor.ProcessImage(imageProcessingOptions).ConfigureAwait(false);
 
             var disableCaching = Request.Headers[HeaderNames.CacheControl].Contains("no-cache");
             var parsingSuccessful = DateTime.TryParse(Request.Headers[HeaderNames.IfModifiedSince], out var ifModifiedSinceHeader);
