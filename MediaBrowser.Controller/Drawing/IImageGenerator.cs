@@ -1,5 +1,8 @@
 namespace MediaBrowser.Controller.Drawing
 {
+    /// <summary>
+    /// Interface for an image generator.
+    /// </summary>
     public interface IImageGenerator
     {
         /// <summary>
