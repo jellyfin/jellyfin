@@ -1,5 +1,5 @@
 {
-    "Albums": "Άλμπουμς",
+    "Albums": "Άλμπουμ",
     "AppDeviceValues": "Εφαρμογή: {0}, Συσκευή: {1}",
     "Application": "Εφαρμογή",
     "Artists": "Καλλιτέχνες",
@@ -15,7 +15,7 @@
     "Favorites": "Αγαπημένα",
     "Folders": "Φάκελοι",
     "Genres": "Είδη",
-    "HeaderAlbumArtists": "Καλλιτέχνες του Άλμπουμ",
+    "HeaderAlbumArtists": "Άλμπουμ Καλλιτέχνη",
     "HeaderContinueWatching": "Συνεχίστε την παρακολούθηση",
     "HeaderFavoriteAlbums": "Αγαπημένα Άλμπουμ",
     "HeaderFavoriteArtists": "Αγαπημένοι Καλλιτέχνες",
