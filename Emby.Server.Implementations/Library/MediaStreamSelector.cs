@@ -57,14 +57,18 @@ namespace Emby.Server.Implementations.Library
             {
                 // Prefer embedded metadata over smart logic
 
-                stream = streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
-                    streams.FirstOrDefault(s => s.IsForced) ??
-                    streams.FirstOrDefault(s => s.IsDefault);
+                stream = streams.FirstOrDefault(s => s.IsExternal && s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                         streams.FirstOrDefault(s => s.IsExternal && s.IsForced) ??
+                         streams.FirstOrDefault(s => s.IsExternal && s.IsDefault) ??
+                         streams.FirstOrDefault(s => s.IsExternal) ??
+                         streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                         streams.FirstOrDefault(s => s.IsForced) ??
+                         streams.FirstOrDefault(s => s.IsDefault);
 
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
                 if (stream == null && !preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
                 {
-                    stream = streams.Where(s => !s.IsForced).FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
+                    stream = streams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Smart)
@@ -74,24 +78,30 @@ namespace Emby.Server.Implementations.Library
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
                 if (!preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
                 {
-                    stream = streams.Where(s => !s.IsForced).FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase)) ??
-                        streams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
+                    stream = streams.FirstOrDefault(s => s.IsExternal && !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase)) ??
+                             streams.FirstOrDefault(s => s.IsExternal && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase)) ??
+                             streams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase)) ??
+                             streams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)
             {
                 // always load the most suitable full subtitles
-                stream = streams.FirstOrDefault(s => !s.IsForced);
+                stream = streams.FirstOrDefault(s => s.IsExternal && !s.IsForced) ??
+                         streams.FirstOrDefault(s => !s.IsForced);
             }
             else if (mode == SubtitlePlaybackMode.OnlyForced)
             {
                 // always load the most suitable full subtitles
-                stream = streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
-                    streams.FirstOrDefault(s => s.IsForced);
+                stream = streams.FirstOrDefault(s => s.IsExternal && s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                         streams.FirstOrDefault(s => s.IsExternal && s.IsForced) ??
+                         streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                         streams.FirstOrDefault(s => s.IsForced);
             }
 
             // load forced subs if we have found no suitable full subtitles
-            stream ??= streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
+            stream ??= streams.FirstOrDefault(s => s.IsExternal && s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase)) ??
+                       streams.FirstOrDefault(s => s.IsForced && string.Equals(s.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase));
 
             if (stream != null)
             {
