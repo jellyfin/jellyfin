@@ -2,9 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
@@ -21,16 +24,26 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// </summary>
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
+        private readonly IImageGenerator _imageGenerator;
+        private readonly IApplicationPaths _applicationPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        /// <param name="localization">The localization manager.</param>
-        public RefreshMediaLibraryTask(ILibraryManager libraryManager, ILocalizationManager localization)
+        /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="imageGenerator">Instance of the <see cref="IImageGenerator"/> interface.</param>
+        /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+        public RefreshMediaLibraryTask(
+            ILibraryManager libraryManager,
+            ILocalizationManager localization,
+            IImageGenerator imageGenerator,
+            IApplicationPaths applicationPaths)
         {
             _libraryManager = libraryManager;
             _localization = localization;
+            _imageGenerator = imageGenerator;
+            _applicationPaths = applicationPaths;
         }
 
         /// <inheritdoc />
@@ -69,6 +82,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             cancellationToken.ThrowIfCancellationRequested();
 
             progress.Report(0);
+
+            _imageGenerator.GenerateSplashscreen(Path.Combine(_applicationPaths.DataPath, "splashscreen.webp"));
 
             return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }
