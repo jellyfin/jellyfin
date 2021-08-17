@@ -1717,7 +1717,6 @@ namespace Jellyfin.Api.Controllers
         /// <param name="blur">Optional. Blur image.</param>
         /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
         /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
-        /// <param name="darken">Darken the generated image.</param>
         /// <response code="200">Splashscreen returned successfully.</response>
         /// <returns>The splashscreen.</returns>
         [HttpGet("Branding/Splashscreen")]
@@ -1735,8 +1734,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? fillHeight,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer,
-            [FromQuery] bool? darken = false)
+            [FromQuery] string? foregroundLayer)
         {
             string splashscreenPath;
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
@@ -1746,12 +1744,11 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                var filename = darken!.Value ? "splashscreen-darken.webp" : "splashscreen.webp";
-                splashscreenPath = Path.Combine(_appPaths.DataPath, filename);
+                splashscreenPath = Path.Combine(_appPaths.DataPath, "splashscreen.webp");
 
                 if (!System.IO.File.Exists(splashscreenPath) && _imageGenerator.GetSupportedImages().Contains(GeneratedImages.Splashscreen))
                 {
-                    _imageGenerator.GenerateSplashscreen(new SplashscreenOptions(splashscreenPath, darken.Value));
+                    _imageGenerator.GenerateSplashscreen(splashscreenPath);
                 }
             }
 

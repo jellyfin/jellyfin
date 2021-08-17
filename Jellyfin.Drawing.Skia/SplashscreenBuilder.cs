@@ -36,10 +36,9 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="posters">The poster paths.</param>
         /// <param name="backdrop">The landscape paths.</param>
         /// <param name="outputPath">The output path.</param>
-        /// <param name="applyFilter">Whether to apply the darkening filter.</param>
-        public void GenerateSplash(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop, string outputPath, bool applyFilter)
+        public void GenerateSplash(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop, string outputPath)
         {
-            var wall = GenerateCollage(posters, backdrop, applyFilter);
+            var wall = GenerateCollage(posters, backdrop);
             var transformed = Transform3D(wall);
 
             using var outputStream = new SKFileWStream(outputPath);
@@ -52,9 +51,8 @@ namespace Jellyfin.Drawing.Skia
         /// </summary>
         /// <param name="posters">The poster paths.</param>
         /// <param name="backdrop">The landscape paths.</param>
-        /// <param name="applyFilter">Whether to apply the darkening filter.</param>
         /// <returns>The created collage as a bitmap.</returns>
-        private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop, bool applyFilter)
+        private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop)
         {
             _random = new Random();
 
@@ -117,16 +115,6 @@ namespace Jellyfin.Drawing.Skia
                         imageCounter++;
                     }
                 }
-            }
-
-            if (applyFilter)
-            {
-                var paintColor = new SKPaint
-                {
-                    Color = SKColors.Black.WithAlpha(0x50),
-                    Style = SKPaintStyle.Fill
-                };
-                canvas.DrawRect(0, 0, WallWidth, WallHeight, paintColor);
             }
 
             return bitmap;

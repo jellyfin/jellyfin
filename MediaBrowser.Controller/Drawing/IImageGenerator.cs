@@ -11,7 +11,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Generates a splashscreen.
         /// </summary>
-        /// <param name="generationOptions">The options used to generate the splashscreen.</param>
-        void GenerateSplashscreen(SplashscreenOptions generationOptions);
+        /// <param name="outputPath">The path where the splashscreen should be saved.</param>
+        void GenerateSplashscreen(string outputPath);
     }
 }

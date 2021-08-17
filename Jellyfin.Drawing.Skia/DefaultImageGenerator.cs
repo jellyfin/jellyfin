@@ -44,7 +44,7 @@ namespace Jellyfin.Drawing.Skia
         }
 
         /// <inheritdoc/>
-        public void GenerateSplashscreen(SplashscreenOptions generationOptions)
+        public void GenerateSplashscreen(string outputPath)
         {
             var posters = GetItemsWithImageType(ImageType.Primary).Select(x => x.GetImages(ImageType.Primary).First().Path).ToList();
             var landscape = GetItemsWithImageType(ImageType.Thumb).Select(x => x.GetImages(ImageType.Thumb).First().Path).ToList();
@@ -57,7 +57,7 @@ namespace Jellyfin.Drawing.Skia
             }
 
             var splashBuilder = new SplashscreenBuilder((SkiaEncoder)_imageEncoder);
-            splashBuilder.GenerateSplash(posters, landscape, generationOptions.OutputPath, generationOptions.ApplyFilter);
+            splashBuilder.GenerateSplash(posters, landscape, outputPath);
         }
 
         private IReadOnlyList<BaseItem> GetItemsWithImageType(ImageType imageType)
