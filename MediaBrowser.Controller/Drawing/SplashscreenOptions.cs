@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace MediaBrowser.Controller.Drawing
 {
     /// <summary>
@@ -10,29 +8,13 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Initializes a new instance of the <see cref="SplashscreenOptions"/> class.
         /// </summary>
-        /// <param name="portraitInputPaths">The portrait input paths.</param>
-        /// <param name="landscapeInputPaths">The landscape input paths.</param>
         /// <param name="outputPath">The output path.</param>
-        /// <param name="width">Optional. The image width.</param>
-        /// <param name="height">Optional. The image height.</param>
         /// <param name="applyFilter">Optional. Apply a darkening filter.</param>
-        public SplashscreenOptions(IReadOnlyList<string> portraitInputPaths, IReadOnlyList<string> landscapeInputPaths, string outputPath, bool applyFilter = false)
+        public SplashscreenOptions(string outputPath, bool applyFilter = false)
         {
-            PortraitInputPaths = portraitInputPaths;
-            LandscapeInputPaths = landscapeInputPaths;
             OutputPath = outputPath;
             ApplyFilter = applyFilter;
         }
-
-        /// <summary>
-        /// Gets or sets the poster input paths.
-        /// </summary>
-        public IReadOnlyList<string> PortraitInputPaths { get; set; }
-
-        /// <summary>
-        /// Gets or sets the landscape input paths.
-        /// </summary>
-        public IReadOnlyList<string> LandscapeInputPaths { get; set; }
 
         /// <summary>
         /// Gets or sets the output path.

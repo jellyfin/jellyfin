@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Controller.Drawing;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
@@ -34,25 +33,28 @@ namespace Jellyfin.Drawing.Skia
         /// <summary>
         /// Generate a splashscreen.
         /// </summary>
-        /// <param name="options">The options to generate the splashscreen.</param>
-        public void GenerateSplash(SplashscreenOptions options)
+        /// <param name="posters">The poster paths.</param>
+        /// <param name="backdrop">The landscape paths.</param>
+        /// <param name="outputPath">The output path.</param>
+        /// <param name="applyFilter">Whether to apply the darkening filter.</param>
+        public void GenerateSplash(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop, string outputPath, bool applyFilter)
         {
-            var wall = GenerateCollage(options.PortraitInputPaths, options.LandscapeInputPaths, options.ApplyFilter);
+            var wall = GenerateCollage(posters, backdrop, applyFilter);
             var transformed = Transform3D(wall);
 
-            using var outputStream = new SKFileWStream(options.OutputPath);
+            using var outputStream = new SKFileWStream(outputPath);
             using var pixmap = new SKPixmap(new SKImageInfo(FinalWidth, FinalHeight), transformed.GetPixels());
-            pixmap.Encode(outputStream, StripCollageBuilder.GetEncodedFormat(options.OutputPath), 90);
+            pixmap.Encode(outputStream, StripCollageBuilder.GetEncodedFormat(outputPath), 90);
         }
 
         /// <summary>
         /// Generates a collage of posters and landscape pictures.
         /// </summary>
-        /// <param name="poster">The poster paths.</param>
+        /// <param name="posters">The poster paths.</param>
         /// <param name="backdrop">The landscape paths.</param>
         /// <param name="applyFilter">Whether to apply the darkening filter.</param>
         /// <returns>The created collage as a bitmap.</returns>
-        private SKBitmap GenerateCollage(IReadOnlyList<string> poster, IReadOnlyList<string> backdrop, bool applyFilter)
+        private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop, bool applyFilter)
         {
             _random = new Random();
 
@@ -80,7 +82,7 @@ namespace Jellyfin.Drawing.Skia
                         case 0:
                         case 2:
                         case 3:
-                            currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, poster, posterIndex, out int newPosterIndex);
+                            currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, posters, posterIndex, out int newPosterIndex);
                             posterIndex = newPosterIndex;
                             break;
                         default:
