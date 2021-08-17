@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 
 #pragma warning disable CS1591
@@ -21,7 +22,17 @@ namespace MediaBrowser.Model.Branding
         /// <summary>
         /// Gets or sets the splashscreen location on disk.
         /// </summary>
-        /// <value>The location of the user splashscreen.</value>
+        /// <remarks>
+        /// Not served via the API.
+        /// Only used to save the custom uploaded user splashscreen in the configuration file.
+        /// </remarks>
+        [JsonIgnore]
         public string? SplashscreenLocation { get; set; }
+
+        /// <summary>
+        /// Gets the splashscreen url.
+        /// </summary>
+        [XmlIgnore]
+        public string SplashscreenUrl => "/Branding/Splashscreen";
     }
 }
