@@ -880,7 +880,7 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
-        private async Task CacheResponse(object result, string path)
+        private async Task CacheResponse(ChannelItemResult result, string path)
         {
             try
             {

@@ -8,15 +8,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && npm ci --no-audit --unsafe-perm \
  && mv dist /dist
 
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} as builder
-WORKDIR /repo
-COPY . .
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-# because of changes in docker and systemd we need to not build in parallel at the moment
-# see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
-RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=false;DebugType=none"
-
-FROM debian:buster-slim
+FROM debian:buster-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -24,9 +16,6 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 # https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
-
-COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 # https://github.com/intel/compute-runtime/releases
 ARG GMMLIB_VERSION=20.3.2
@@ -72,6 +61,19 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} as builder
+WORKDIR /repo
+COPY . .
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+# because of changes in docker and systemd we need to not build in parallel at the moment
+# see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
+RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=false;DebugType=none"
+
+FROM app
+
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media

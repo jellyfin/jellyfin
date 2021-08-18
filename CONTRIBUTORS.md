@@ -213,3 +213,4 @@
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
  - [olsh](https://github.com/olsh)
  - [lbenini](https://github.com/lbenini)
+ - [gnuyent](https://github.com/gnuyent)

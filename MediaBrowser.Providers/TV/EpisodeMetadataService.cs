@@ -25,46 +25,46 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override ItemUpdateType BeforeSaveInternal(Episode item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType BeforeSaveInternal(Episode item, bool isFullRefresh, ItemUpdateType updateType)
         {
-            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+            var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
             var seriesName = item.FindSeriesName();
             if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
             {
                 item.SeriesName = seriesName;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seasonName = item.FindSeasonName();
             if (!string.Equals(item.SeasonName, seasonName, StringComparison.Ordinal))
             {
                 item.SeasonName = seasonName;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seriesId = item.FindSeriesId();
             if (!item.SeriesId.Equals(seriesId))
             {
                 item.SeriesId = seriesId;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seasonId = item.FindSeasonId();
             if (!item.SeasonId.Equals(seasonId))
             {
                 item.SeasonId = seasonId;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seriesPresentationUniqueKey = item.FindSeriesPresentationUniqueKey();
             if (!string.Equals(item.SeriesPresentationUniqueKey, seriesPresentationUniqueKey, StringComparison.Ordinal))
             {
                 item.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
-            return updateType;
+            return updatedType;
         }
 
         /// <inheritdoc />

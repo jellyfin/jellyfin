@@ -141,7 +141,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 }
 
                 // Temporary. TODO - allow clients to specify that the token has been shared with a casting device
-                var allowTokenInfoUpdate = authInfo.Client == null || authInfo.Client.IndexOf("chromecast", StringComparison.OrdinalIgnoreCase) == -1;
+                var allowTokenInfoUpdate = authInfo.Client == null || !authInfo.Client.Contains("chromecast", StringComparison.OrdinalIgnoreCase);
 
                 if (string.IsNullOrWhiteSpace(authInfo.Device))
                 {

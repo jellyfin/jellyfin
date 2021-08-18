@@ -148,80 +148,76 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 return;
             }
 
-            using (var fileStream = File.OpenRead(metadataFile))
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+            item.ResetPeople();
+
+            // Need to handle a url after the xml data
+            // http://kodi.wiki/view/NFO_files/movies
+
+            var xml = File.ReadAllText(metadataFile);
+
+            // Find last closing Tag
+            // Need to do this in two steps to account for random > characters after the closing xml
+            var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
+
+            // If closing tag exists, move to end of Tag
+            if (index != -1)
             {
-                item.ResetPeople();
+                index = xml.IndexOf('>', index);
+            }
 
-                // Need to handle a url after the xml data
-                // http://kodi.wiki/view/NFO_files/movies
+            if (index != -1)
+            {
+                var endingXml = xml.AsSpan().Slice(index);
 
-                var xml = streamReader.ReadToEnd();
+                ParseProviderLinks(item.Item, endingXml);
 
-                // Find last closing Tag
-                // Need to do this in two steps to account for random > characters after the closing xml
-                var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
-
-                // If closing tag exists, move to end of Tag
-                if (index != -1)
+                // If the file is just an imdb url, don't go any further
+                if (index == 0)
                 {
-                    index = xml.IndexOf('>', index);
-                }
-
-                if (index != -1)
-                {
-                    var endingXml = xml.Substring(index);
-
-                    ParseProviderLinks(item.Item, endingXml);
-
-                    // If the file is just an imdb url, don't go any further
-                    if (index == 0)
-                    {
-                        return;
-                    }
-
-                    xml = xml.Substring(0, index + 1);
-                }
-                else
-                {
-                    // If the file is just provider urls, handle that
-                    ParseProviderLinks(item.Item, xml);
-
                     return;
                 }
 
-                // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                try
+                xml = xml.Substring(0, index + 1);
+            }
+            else
+            {
+                // If the file is just provider urls, handle that
+                ParseProviderLinks(item.Item, xml);
+
+                return;
+            }
+
+            // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+            try
+            {
+                using (var stringReader = new StringReader(xml))
+                using (var reader = XmlReader.Create(stringReader, settings))
                 {
-                    using (var stringReader = new StringReader(xml))
-                    using (var reader = XmlReader.Create(stringReader, settings))
+                    reader.MoveToContent();
+                    reader.Read();
+
+                    // Loop through each element
+                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
-                        reader.MoveToContent();
-                        reader.Read();
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        if (reader.NodeType == XmlNodeType.Element)
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                FetchDataFromXmlNode(reader, item);
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
+                            FetchDataFromXmlNode(reader, item);
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                     }
                 }
-                catch (XmlException)
-                {
-                }
+            }
+            catch (XmlException)
+            {
             }
         }
 
-        protected void ParseProviderLinks(T item, string xml)
+        protected void ParseProviderLinks(T item, ReadOnlySpan<char> xml)
         {
             if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
             {
@@ -1205,7 +1201,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "name":
-                            name = reader.ReadElementContentAsString() ?? string.Empty;
+                            name = reader.ReadElementContentAsString();
                             break;
 
                         case "role":

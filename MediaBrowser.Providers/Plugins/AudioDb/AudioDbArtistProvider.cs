@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1034, CS1591, CA1002, SA1028, SA1300
 
 using System;
 using System.Collections.Generic;
@@ -8,9 +8,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
@@ -183,6 +183,12 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             return Path.Combine(dataPath, "artist.json");
         }
 
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         public class Artist
         {
             public string idArtist { get; set; }
@@ -268,15 +274,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             public string strLocked { get; set; }
         }
 
+#pragma warning disable CA2227
         public class RootObject
         {
             public List<Artist> artists { get; set; }
-        }
-
-        /// <inheritdoc />
-        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }
