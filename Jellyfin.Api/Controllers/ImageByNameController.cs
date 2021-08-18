@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -65,19 +66,25 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<FileStreamResult> GetGeneralImage([FromRoute, Required] string? name, [FromRoute, Required] string? type)
+        [ProducesImageFile]
+        public ActionResult GetGeneralImage([FromRoute, Required] string name, [FromRoute, Required] string type)
         {
             var filename = string.Equals(type, "primary", StringComparison.OrdinalIgnoreCase)
                 ? "folder"
                 : type;
 
             var path = BaseItem.SupportedImageExtensions
-                .Select(i => Path.Combine(_applicationPaths.GeneralPath, name, filename + i))
+                .Select(i => Path.GetFullPath(Path.Combine(_applicationPaths.GeneralPath, name, filename + i)))
                 .FirstOrDefault(System.IO.File.Exists);
 
             if (path == null)
             {
                 return NotFound();
+            }
+
+            if (!path.StartsWith(_applicationPaths.GeneralPath))
+            {
+                return BadRequest("Invalid image path.");
             }
 
             var contentType = MimeTypes.GetMimeType(path);
@@ -110,9 +117,10 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<FileStreamResult> GetRatingImage(
-            [FromRoute, Required] string? theme,
-            [FromRoute, Required] string? name)
+        [ProducesImageFile]
+        public ActionResult GetRatingImage(
+            [FromRoute, Required] string theme,
+            [FromRoute, Required] string name)
         {
             return GetImageFile(_applicationPaths.RatingsPath, theme, name);
         }
@@ -143,9 +151,10 @@ namespace Jellyfin.Api.Controllers
         [Produces(MediaTypeNames.Application.Octet)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<FileStreamResult> GetMediaInfoImage(
-            [FromRoute, Required] string? theme,
-            [FromRoute, Required] string? name)
+        [ProducesImageFile]
+        public ActionResult GetMediaInfoImage(
+            [FromRoute, Required] string theme,
+            [FromRoute, Required] string name)
         {
             return GetImageFile(_applicationPaths.MediaInfoImagesPath, theme, name);
         }
@@ -157,9 +166,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="theme">Theme to search.</param>
         /// <param name="name">File name to search for.</param>
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
-        private ActionResult<FileStreamResult> GetImageFile(string basePath, string? theme, string? name)
+        private ActionResult GetImageFile(string basePath, string theme, string? name)
         {
-            var themeFolder = Path.Combine(basePath, theme);
+            var themeFolder = Path.GetFullPath(Path.Combine(basePath, theme));
+
             if (Directory.Exists(themeFolder))
             {
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(themeFolder, name + i))
@@ -167,12 +177,18 @@ namespace Jellyfin.Api.Controllers
 
                 if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                 {
+                    if (!path.StartsWith(basePath))
+                    {
+                        return BadRequest("Invalid image path.");
+                    }
+
                     var contentType = MimeTypes.GetMimeType(path);
-                    return File(System.IO.File.OpenRead(path), contentType);
+
+                    return PhysicalFile(path, contentType);
                 }
             }
 
-            var allFolder = Path.Combine(basePath, "all");
+            var allFolder = Path.GetFullPath(Path.Combine(basePath, "all"));
             if (Directory.Exists(allFolder))
             {
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, name + i))
@@ -180,8 +196,13 @@ namespace Jellyfin.Api.Controllers
 
                 if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                 {
+                    if (!path.StartsWith(basePath))
+                    {
+                        return BadRequest("Invalid image path.");
+                    }
+
                     var contentType = MimeTypes.GetMimeType(path);
-                    return File(System.IO.File.OpenRead(path), contentType);
+                    return PhysicalFile(path, contentType);
                 }
             }
 

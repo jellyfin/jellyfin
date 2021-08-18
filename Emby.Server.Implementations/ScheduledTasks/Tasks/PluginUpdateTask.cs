@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
-using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -33,6 +33,27 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _installationManager = installationManager;
             _localization = localization;
         }
+
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskUpdatePlugins");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksApplicationCategory");
+
+        /// <inheritdoc />
+        public string Key => "PluginUpdates";
+
+        /// <inheritdoc />
+        public bool IsHidden => false;
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
+        public bool IsLogged => true;
 
         /// <summary>
         /// Creates the triggers that define when the task will run.
@@ -80,7 +101,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         throw;
                     }
                 }
-                catch (HttpException ex)
+                catch (HttpRequestException ex)
                 {
                     _logger.LogError(ex, "Error downloading {0}", package.Name);
                 }
@@ -98,26 +119,5 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             progress.Report(100);
         }
-
-        /// <inheritdoc />
-        public string Name => _localization.GetLocalizedString("TaskUpdatePlugins");
-
-        /// <inheritdoc />
-        public string Description => _localization.GetLocalizedString("TaskUpdatePluginsDescription");
-
-        /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksApplicationCategory");
-
-        /// <inheritdoc />
-        public string Key => "PluginUpdates";
-
-        /// <inheritdoc />
-        public bool IsHidden => false;
-
-        /// <inheritdoc />
-        public bool IsEnabled => true;
-
-        /// <inheritdoc />
-        public bool IsLogged => true;
     }
 }

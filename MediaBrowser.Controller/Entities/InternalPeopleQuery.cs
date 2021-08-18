@@ -1,11 +1,26 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
+using Jellyfin.Data.Entities;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class InternalPeopleQuery
     {
+        public InternalPeopleQuery()
+         : this(Array.Empty<string>(), Array.Empty<string>())
+        {
+        }
+
+        public InternalPeopleQuery(IReadOnlyList<string> personTypes, IReadOnlyList<string> excludePersonTypes)
+        {
+            PersonTypes = personTypes;
+            ExcludePersonTypes = excludePersonTypes;
+        }
+
         /// <summary>
         /// Gets or sets the maximum number of items the query should return.
         /// </summary>
@@ -13,9 +28,9 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid ItemId { get; set; }
 
-        public string[] PersonTypes { get; set; }
+        public IReadOnlyList<string> PersonTypes { get; }
 
-        public string[] ExcludePersonTypes { get; set; }
+        public IReadOnlyList<string> ExcludePersonTypes { get; }
 
         public int? MaxListOrder { get; set; }
 
@@ -23,10 +38,8 @@ namespace MediaBrowser.Controller.Entities
 
         public string NameContains { get; set; }
 
-        public InternalPeopleQuery()
-        {
-            PersonTypes = Array.Empty<string>();
-            ExcludePersonTypes = Array.Empty<string>();
-        }
+        public User User { get; set; }
+
+        public bool? IsFavorite { get; set; }
     }
 }

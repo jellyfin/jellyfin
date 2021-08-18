@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Model.Session
 {
     /// <summary>
@@ -46,6 +44,10 @@ namespace MediaBrowser.Model.Session
         /// The fast forward.
         /// </summary>
         FastForward,
+
+        /// <summary>
+        /// The play pause.
+        /// </summary>
         PlayPause
     }
 }

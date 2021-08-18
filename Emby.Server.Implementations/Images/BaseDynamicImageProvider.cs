@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -133,9 +135,20 @@ namespace Emby.Server.Implementations.Images
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(BaseItem primaryItem, IEnumerable<BaseItem> items)
         {
+            var useBackdrop = primaryItem is CollectionFolder;
             return items
                 .Select(i =>
                 {
+                    // Use Backdrop instead of Primary image for Library images.
+                    if (useBackdrop)
+                    {
+                        var backdrop = i.GetImageInfo(ImageType.Backdrop, 0);
+                        if (backdrop != null && backdrop.IsLocalFile)
+                        {
+                            return backdrop.Path;
+                        }
+                    }
+
                     var image = i.GetImageInfo(ImageType.Primary, 0);
                     if (image != null && image.IsLocalFile)
                     {
@@ -180,7 +193,7 @@ namespace Emby.Server.Implementations.Images
                 InputPaths = GetStripCollageImagePaths(primaryItem, items).ToArray()
             };
 
-            if (options.InputPaths.Length == 0)
+            if (options.InputPaths.Count == 0)
             {
                 return null;
             }
@@ -190,7 +203,7 @@ namespace Emby.Server.Implementations.Images
                 return null;
             }
 
-            ImageProcessor.CreateImageCollage(options);
+            ImageProcessor.CreateImageCollage(options, primaryItem.Name);
             return outputPath;
         }
 

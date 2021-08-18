@@ -10,7 +10,7 @@ namespace MediaBrowser.Model.Channels
     public class ChannelQuery
     {
         /// <summary>
-        /// Fields to return within the items, in addition to basic information.
+        /// Gets or sets the fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
@@ -28,13 +28,13 @@ namespace MediaBrowser.Model.Channels
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        /// Gets or sets the start index. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return.
+        /// Gets or sets the maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }

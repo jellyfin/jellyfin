@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -143,12 +145,22 @@ namespace Emby.Server.Implementations.Data
         public IStatement PrepareStatement(IDatabaseConnection connection, string sql)
             => connection.PrepareStatement(sql);
 
-        public IEnumerable<IStatement> PrepareAll(IDatabaseConnection connection, IEnumerable<string> sql)
-            => sql.Select(connection.PrepareStatement);
+        public IStatement[] PrepareAll(IDatabaseConnection connection, IReadOnlyList<string> sql)
+        {
+            int len = sql.Count;
+            IStatement[] statements = new IStatement[len];
+            for (int i = 0; i < len; i++)
+            {
+                statements[i] = connection.PrepareStatement(sql[i]);
+            }
+
+            return statements;
+        }
 
         protected bool TableExists(ManagedConnection connection, string name)
         {
-            return connection.RunInTransaction(db =>
+            return connection.RunInTransaction(
+            db =>
             {
                 using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
                 {
@@ -171,11 +183,9 @@ namespace Emby.Server.Implementations.Data
 
             foreach (var row in connection.Query("PRAGMA table_info(" + table + ")"))
             {
-                if (row[1].SQLiteType != SQLiteType.Null)
+                if (row.TryGetString(1, out var columnName))
                 {
-                    var name = row[1].ToString();
-
-                    columnNames.Add(name);
+                    columnNames.Add(columnName);
                 }
             }
 

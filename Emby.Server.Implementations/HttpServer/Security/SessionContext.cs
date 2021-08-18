@@ -2,11 +2,11 @@
 
 using System;
 using Jellyfin.Data.Entities;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
-using MediaBrowser.Model.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace Emby.Server.Implementations.HttpServer.Security
 {
@@ -23,35 +23,29 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _sessionManager = sessionManager;
         }
 
-        public SessionInfo GetSession(IRequest requestContext)
+        public SessionInfo GetSession(HttpContext requestContext)
         {
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
             var user = authorization.User;
-            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.RemoteIp, user);
-        }
-
-        private AuthenticationInfo GetTokenInfo(IRequest request)
-        {
-            request.Items.TryGetValue("OriginalAuthenticationInfo", out var info);
-            return info as AuthenticationInfo;
+            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.GetNormalizedRemoteIp().ToString(), user);
         }
 
         public SessionInfo GetSession(object requestContext)
         {
-            return GetSession((IRequest)requestContext);
+            return GetSession((HttpContext)requestContext);
         }
 
-        public User GetUser(IRequest requestContext)
+        public User? GetUser(HttpContext requestContext)
         {
             var session = GetSession(requestContext);
 
             return session == null || session.UserId.Equals(Guid.Empty) ? null : _userManager.GetUserById(session.UserId);
         }
 
-        public User GetUser(object requestContext)
+        public User? GetUser(object requestContext)
         {
-            return GetUser((IRequest)requestContext);
+            return GetUser(((HttpRequest)requestContext).HttpContext);
         }
     }
 }

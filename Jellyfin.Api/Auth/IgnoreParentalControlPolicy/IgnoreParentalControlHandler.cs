@@ -29,13 +29,15 @@ namespace Jellyfin.Api.Auth.IgnoreParentalControlPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, IgnoreParentalControlRequirement requirement)
         {
             var validated = ValidateClaims(context.User, ignoreSchedule: true);
-            if (!validated)
+            if (validated)
+            {
+                context.Succeed(requirement);
+            }
+            else
             {
                 context.Fail();
-                return Task.CompletedTask;
             }
 
-            context.Succeed(requirement);
             return Task.CompletedTask;
         }
     }

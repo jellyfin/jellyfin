@@ -3,25 +3,19 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Net;
+using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.Movies;
-using Microsoft.Extensions.Logging;
+using TMDbLib.Objects.Find;
+using TMDbLib.Objects.Search;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 {
@@ -30,369 +24,315 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
     /// </summary>
     public class TmdbMovieProvider : IRemoteMetadataProvider<Movie, MovieInfo>, IHasOrder
     {
-        private const string TmdbConfigUrl = TmdbUtils.BaseTmdbApiUrl + "3/configuration?api_key={0}";
-        private const string GetMovieInfo3 = TmdbUtils.BaseTmdbApiUrl + @"3/movie/{0}?api_key={1}&append_to_response=casts,releases,images,keywords,trailers";
-
-        internal static TmdbMovieProvider Current { get; private set; }
-
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _configurationManager;
-        private readonly ILogger<TmdbMovieProvider> _logger;
         private readonly ILibraryManager _libraryManager;
-        private readonly IApplicationHost _appHost;
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private readonly TmdbClientManager _tmdbClientManager;
 
         public TmdbMovieProvider(
-            IJsonSerializer jsonSerializer,
-            IHttpClientFactory httpClientFactory,
-            IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager,
-            ILogger<TmdbMovieProvider> logger,
             ILibraryManager libraryManager,
-            IApplicationHost appHost)
+            TmdbClientManager tmdbClientManager,
+            IHttpClientFactory httpClientFactory)
         {
-            _jsonSerializer = jsonSerializer;
-            _httpClientFactory = httpClientFactory;
-            _fileSystem = fileSystem;
-            _configurationManager = configurationManager;
-            _logger = logger;
             _libraryManager = libraryManager;
-            _appHost = appHost;
-            Current = this;
+            _tmdbClientManager = tmdbClientManager;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
-        {
-            return GetMovieSearchResults(searchInfo, cancellationToken);
-        }
+        public string Name => TmdbUtils.ProviderName;
 
-        public async Task<IEnumerable<RemoteSearchResult>> GetMovieSearchResults(ItemLookupInfo searchInfo, CancellationToken cancellationToken)
-        {
-            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
+        /// <inheritdoc />
+        public int Order => 1;
 
-            if (!string.IsNullOrEmpty(tmdbId))
+        public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
+        {
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var id))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await EnsureMovieInfo(tmdbId, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                var dataFilePath = GetDataFilePath(tmdbId, searchInfo.MetadataLanguage);
-
-                var obj = _jsonSerializer.DeserializeFromFile<MovieResult>(dataFilePath);
-
-                var tmdbSettings = await GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
+                var movie = await _tmdbClientManager
+                    .GetMovieAsync(
+                        int.Parse(id, CultureInfo.InvariantCulture),
+                        searchInfo.MetadataLanguage,
+                        TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage),
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 var remoteResult = new RemoteSearchResult
                 {
-                    Name = obj.GetTitle(),
+                    Name = movie.Title ?? movie.OriginalTitle,
                     SearchProviderName = Name,
-                    ImageUrl = string.IsNullOrWhiteSpace(obj.Poster_Path) ? null : tmdbImageUrl + obj.Poster_Path
+                    ImageUrl = _tmdbClientManager.GetPosterUrl(movie.PosterPath),
+                    Overview = movie.Overview
                 };
 
-                if (!string.IsNullOrWhiteSpace(obj.Release_Date))
+                if (movie.ReleaseDate != null)
                 {
-                    // These dates are always in this exact format
-                    if (DateTime.TryParse(obj.Release_Date, _usCulture, DateTimeStyles.None, out var r))
-                    {
-                        remoteResult.PremiereDate = r.ToUniversalTime();
-                        remoteResult.ProductionYear = remoteResult.PremiereDate.Value.Year;
-                    }
+                    var releaseDate = movie.ReleaseDate.Value.ToUniversalTime();
+                    remoteResult.PremiereDate = releaseDate;
+                    remoteResult.ProductionYear = releaseDate.Year;
                 }
 
-                remoteResult.SetProviderId(MetadataProvider.Tmdb, obj.Id.ToString(_usCulture));
+                remoteResult.SetProviderId(MetadataProvider.Tmdb, movie.Id.ToString(CultureInfo.InvariantCulture));
 
-                if (!string.IsNullOrWhiteSpace(obj.Imdb_Id))
+                if (!string.IsNullOrWhiteSpace(movie.ImdbId))
                 {
-                    remoteResult.SetProviderId(MetadataProvider.Imdb, obj.Imdb_Id);
+                    remoteResult.SetProviderId(MetadataProvider.Imdb, movie.ImdbId);
                 }
 
                 return new[] { remoteResult };
             }
 
-            return await new TmdbSearch(_logger, _jsonSerializer, _libraryManager).GetMovieSearchResults(searchInfo, cancellationToken).ConfigureAwait(false);
-        }
-
-        public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
-        {
-            return GetItemMetadata<Movie>(info, cancellationToken);
-        }
-
-        public Task<MetadataResult<T>> GetItemMetadata<T>(ItemLookupInfo id, CancellationToken cancellationToken)
-            where T : BaseItem, new()
-        {
-            var movieDb = new GenericTmdbMovieInfo<T>(_logger, _jsonSerializer, _libraryManager, _fileSystem);
-
-            return movieDb.GetMetadata(id, cancellationToken);
-        }
-
-        public string Name => TmdbUtils.ProviderName;
-
-        /// <summary>
-        /// The _TMDB settings task.
-        /// </summary>
-        private TmdbSettingsResult _tmdbSettings;
-
-        /// <summary>
-        /// Gets the TMDB settings.
-        /// </summary>
-        /// <returns>Task{TmdbSettingsResult}.</returns>
-        internal async Task<TmdbSettingsResult> GetTmdbSettings(CancellationToken cancellationToken)
-        {
-            if (_tmdbSettings != null)
+            IReadOnlyList<SearchMovie> movieResults;
+            if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out id))
             {
-                return _tmdbSettings;
+                var result = await _tmdbClientManager.FindByExternalIdAsync(
+                    id,
+                    FindExternalSource.Imdb,
+                    TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage),
+                    cancellationToken).ConfigureAwait(false);
+                movieResults = result.MovieResults;
+            }
+            else if (searchInfo.TryGetProviderId(MetadataProvider.Tvdb, out id))
+            {
+                var result = await _tmdbClientManager.FindByExternalIdAsync(
+                    id,
+                    FindExternalSource.TvDb,
+                    TmdbUtils.GetImageLanguagesParam(searchInfo.MetadataLanguage),
+                    cancellationToken).ConfigureAwait(false);
+                movieResults = result.MovieResults;
+            }
+            else
+            {
+                movieResults = await _tmdbClientManager
+                    .SearchMovieAsync(searchInfo.Name, searchInfo.Year ?? 0, searchInfo.MetadataLanguage, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, string.Format(CultureInfo.InvariantCulture, TmdbConfigUrl, TmdbUtils.ApiKey));
-            foreach (var header in TmdbUtils.AcceptHeaders)
+            var len = movieResults.Count;
+            var remoteSearchResults = new RemoteSearchResult[len];
+            for (var i = 0; i < len; i++)
             {
-                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
+                var movieResult = movieResults[i];
+                var remoteSearchResult = new RemoteSearchResult
+                {
+                    Name = movieResult.Title ?? movieResult.OriginalTitle,
+                    ImageUrl = _tmdbClientManager.GetPosterUrl(movieResult.PosterPath),
+                    Overview = movieResult.Overview,
+                    SearchProviderName = Name
+                };
+
+                var releaseDate = movieResult.ReleaseDate?.ToUniversalTime();
+                remoteSearchResult.PremiereDate = releaseDate;
+                remoteSearchResult.ProductionYear = releaseDate?.Year;
+
+                remoteSearchResult.SetProviderId(MetadataProvider.Tmdb, movieResult.Id.ToString(CultureInfo.InvariantCulture));
+                remoteSearchResults[i] = remoteSearchResult;
             }
 
-            using var response = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            _tmdbSettings = await _jsonSerializer.DeserializeFromStreamAsync<TmdbSettingsResult>(stream).ConfigureAwait(false);
-            return _tmdbSettings;
+            return remoteSearchResults;
         }
 
-        /// <summary>
-        /// Gets the movie data path.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="tmdbId">The TMDB id.</param>
-        /// <returns>System.String.</returns>
-        internal static string GetMovieDataPath(IApplicationPaths appPaths, string tmdbId)
+        public async Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
-            var dataPath = GetMoviesDataPath(appPaths);
+            var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
+            var imdbId = info.GetProviderId(MetadataProvider.Imdb);
 
-            return Path.Combine(dataPath, tmdbId);
-        }
-
-        internal static string GetMoviesDataPath(IApplicationPaths appPaths)
-        {
-            var dataPath = Path.Combine(appPaths.CachePath, "tmdb-movies2");
-
-            return dataPath;
-        }
-
-        /// <summary>
-        /// Downloads the movie info.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="preferredMetadataLanguage">The preferred metadata language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        internal async Task DownloadMovieInfo(string id, string preferredMetadataLanguage, CancellationToken cancellationToken)
-        {
-            var mainResult = await FetchMainResult(id, true, preferredMetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-            if (mainResult == null)
+            if (string.IsNullOrEmpty(tmdbId) && string.IsNullOrEmpty(imdbId))
             {
-                return;
+                // ParseName is required here.
+                // Caller provides the filename with extension stripped and NOT the parsed filename
+                var parsedName = _libraryManager.ParseName(info.Name);
+                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
+                var searchResults = await _tmdbClientManager.SearchMovieAsync(cleanedName,  info.Year ?? parsedName.Year ?? 0, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+
+                if (searchResults.Count > 0)
+                {
+                    tmdbId = searchResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                }
             }
 
-            var dataFilePath = GetDataFilePath(id, preferredMetadataLanguage);
+            if (string.IsNullOrEmpty(tmdbId) && !string.IsNullOrEmpty(imdbId))
+            {
+                var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (movieResultFromImdbId?.MovieResults.Count > 0)
+                {
+                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString(CultureInfo.InvariantCulture);
+                }
+            }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(dataFilePath));
-
-            _jsonSerializer.SerializeToFile(mainResult, dataFilePath);
-        }
-
-        internal Task EnsureMovieInfo(string tmdbId, string language, CancellationToken cancellationToken)
-        {
             if (string.IsNullOrEmpty(tmdbId))
             {
-                throw new ArgumentNullException(nameof(tmdbId));
+                return new MetadataResult<Movie>();
             }
 
-            var path = GetDataFilePath(tmdbId, language);
+            var movieResult = await _tmdbClientManager
+                .GetMovieAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .ConfigureAwait(false);
 
-            var fileInfo = _fileSystem.GetFileSystemInfo(path);
-
-            if (fileInfo.Exists)
+            if (movieResult == null)
             {
-                // If it's recent or automatic updates are enabled, don't re-download
-                if ((DateTime.UtcNow - _fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays <= 2)
+                return new MetadataResult<Movie>();
+            }
+
+            var movie = new Movie
+            {
+                Name = movieResult.Title ?? movieResult.OriginalTitle,
+                OriginalTitle = movieResult.OriginalTitle,
+                Overview = movieResult.Overview?.Replace("\n\n", "\n", StringComparison.InvariantCulture),
+                Tagline = movieResult.Tagline,
+                ProductionLocations = movieResult.ProductionCountries.Select(pc => pc.Name).ToArray()
+            };
+            var metadataResult = new MetadataResult<Movie>
+            {
+                HasMetadata = true,
+                ResultLanguage = info.MetadataLanguage,
+                Item = movie
+            };
+
+            movie.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+            movie.SetProviderId(MetadataProvider.Imdb, movieResult.ImdbId);
+            if (movieResult.BelongsToCollection != null)
+            {
+                movie.SetProviderId(MetadataProvider.TmdbCollection, movieResult.BelongsToCollection.Id.ToString(CultureInfo.InvariantCulture));
+                movie.CollectionName = movieResult.BelongsToCollection.Name;
+            }
+
+            movie.CommunityRating = Convert.ToSingle(movieResult.VoteAverage);
+
+            if (movieResult.Releases?.Countries != null)
+            {
+                var releases = movieResult.Releases.Countries.Where(i => !string.IsNullOrWhiteSpace(i.Certification)).ToList();
+
+                var ourRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, info.MetadataCountryCode, StringComparison.OrdinalIgnoreCase));
+                var usRelease = releases.FirstOrDefault(c => string.Equals(c.Iso_3166_1, "US", StringComparison.OrdinalIgnoreCase));
+
+                if (ourRelease != null)
                 {
-                    return Task.CompletedTask;
+                    movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
+                }
+                else if (usRelease != null)
+                {
+                    movie.OfficialRating = usRelease.Certification;
                 }
             }
 
-            return DownloadMovieInfo(tmdbId, language, cancellationToken);
-        }
+            movie.PremiereDate = movieResult.ReleaseDate;
+            movie.ProductionYear = movieResult.ReleaseDate?.Year;
 
-        internal string GetDataFilePath(string tmdbId, string preferredLanguage)
-        {
-            if (string.IsNullOrEmpty(tmdbId))
+            if (movieResult.ProductionCompanies != null)
             {
-                throw new ArgumentNullException(nameof(tmdbId));
+                movie.SetStudios(movieResult.ProductionCompanies.Select(c => c.Name));
             }
 
-            var path = GetMovieDataPath(_configurationManager.ApplicationPaths, tmdbId);
+            var genres = movieResult.Genres;
 
-            if (string.IsNullOrWhiteSpace(preferredLanguage))
+            foreach (var genre in genres.Select(g => g.Name))
             {
-                preferredLanguage = "alllang";
+                movie.AddGenre(genre);
             }
 
-            var filename = string.Format(CultureInfo.InvariantCulture, "all-{0}.json", preferredLanguage);
-
-            return Path.Combine(path, filename);
-        }
-
-        public static string GetImageLanguagesParam(string preferredLanguage)
-        {
-            var languages = new List<string>();
-
-            if (!string.IsNullOrEmpty(preferredLanguage))
+            if (movieResult.Keywords?.Keywords != null)
             {
-                preferredLanguage = NormalizeLanguage(preferredLanguage);
-
-                languages.Add(preferredLanguage);
-
-                if (preferredLanguage.Length == 5) // like en-US
+                for (var i = 0; i < movieResult.Keywords.Keywords.Count; i++)
                 {
-                    // Currenty, TMDB supports 2-letter language codes only
-                    // They are planning to change this in the future, thus we're
-                    // supplying both codes if we're having a 5-letter code.
-                    languages.Add(preferredLanguage.Substring(0, 2));
+                    movie.AddTag(movieResult.Keywords.Keywords[i].Name);
                 }
             }
 
-            languages.Add("null");
-
-            if (!string.Equals(preferredLanguage, "en", StringComparison.OrdinalIgnoreCase))
+            if (movieResult.Credits?.Cast != null)
             {
-                languages.Add("en");
-            }
-
-            return string.Join(",", languages);
-        }
-
-        public static string NormalizeLanguage(string language)
-        {
-            if (!string.IsNullOrEmpty(language))
-            {
-                // They require this to be uppercase
-                // Everything after the hyphen must be written in uppercase due to a way TMDB wrote their api.
-                // See here: https://www.themoviedb.org/talk/5119221d760ee36c642af4ad?page=3#56e372a0c3a3685a9e0019ab
-                var parts = language.Split('-');
-
-                if (parts.Length == 2)
+                // TODO configurable
+                foreach (var actor in movieResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
                 {
-                    language = parts[0] + "-" + parts[1].ToUpperInvariant();
+                    var personInfo = new PersonInfo
+                    {
+                        Name = actor.Name.Trim(),
+                        Role = actor.Character,
+                        Type = PersonType.Actor,
+                        SortOrder = actor.Order
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(actor.ProfilePath))
+                    {
+                        personInfo.ImageUrl = _tmdbClientManager.GetProfileUrl(actor.ProfilePath);
+                    }
+
+                    if (actor.Id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, actor.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    metadataResult.AddPerson(personInfo);
                 }
             }
 
-            return language;
-        }
-
-        public static string AdjustImageLanguage(string imageLanguage, string requestLanguage)
-        {
-            if (!string.IsNullOrEmpty(imageLanguage)
-                && !string.IsNullOrEmpty(requestLanguage)
-                && requestLanguage.Length > 2
-                && imageLanguage.Length == 2
-                && requestLanguage.StartsWith(imageLanguage, StringComparison.OrdinalIgnoreCase))
+            if (movieResult.Credits?.Crew != null)
             {
-                return requestLanguage;
-            }
-
-            return imageLanguage;
-        }
-
-        /// <summary>
-        /// Fetches the main result.
-        /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="isTmdbId">if set to <c>true</c> [is TMDB identifier].</param>
-        /// <param name="language">The language.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{CompleteMovieData}.</returns>
-        internal async Task<MovieResult> FetchMainResult(string id, bool isTmdbId, string language, CancellationToken cancellationToken)
-        {
-            var url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey);
-
-            if (!string.IsNullOrEmpty(language))
-            {
-                url += string.Format(CultureInfo.InvariantCulture, "&language={0}", NormalizeLanguage(language));
-
-                // Get images in english and with no language
-                url += "&include_image_language=" + GetImageLanguagesParam(language);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-            foreach (var header in TmdbUtils.AcceptHeaders)
-            {
-                requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
-            }
-
-            using var mainResponse = await GetMovieDbResponse(requestMessage).ConfigureAwait(false);
-            if (mainResponse.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-
-            await using var stream = await mainResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            var mainResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(stream).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // If the language preference isn't english, then have the overview fallback to english if it's blank
-            if (mainResult != null &&
-                string.IsNullOrEmpty(mainResult.Overview) &&
-                !string.IsNullOrEmpty(language) &&
-                !string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogInformation("MovieDbProvider couldn't find meta for language " + language + ". Trying English...");
-
-                url = string.Format(CultureInfo.InvariantCulture, GetMovieInfo3, id, TmdbUtils.ApiKey) + "&language=en";
-
-                if (!string.IsNullOrEmpty(language))
+                var keepTypes = new[]
                 {
-                    // Get images in english and with no language
-                    url += "&include_image_language=" + GetImageLanguagesParam(language);
+                    PersonType.Director,
+                    PersonType.Writer,
+                    PersonType.Producer
+                };
+
+                foreach (var person in movieResult.Credits.Crew)
+                {
+                    // Normalize this
+                    var type = TmdbUtils.MapCrewToPersonType(person);
+
+                    if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
+                        !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    var personInfo = new PersonInfo
+                    {
+                        Name = person.Name.Trim(),
+                        Role = person.Job,
+                        Type = type
+                    };
+
+                    if (!string.IsNullOrWhiteSpace(person.ProfilePath))
+                    {
+                        personInfo.ImageUrl = _tmdbClientManager.GetPosterUrl(person.ProfilePath);
+                    }
+
+                    if (person.Id > 0)
+                    {
+                        personInfo.SetProviderId(MetadataProvider.Tmdb, person.Id.ToString(CultureInfo.InvariantCulture));
+                    }
+
+                    metadataResult.AddPerson(personInfo);
+                }
+            }
+
+            if (movieResult.Videos?.Results != null)
+            {
+                var trailers = new List<MediaUrl>();
+                for (var i = 0; i < movieResult.Videos.Results.Count; i++)
+                {
+                    var video = movieResult.Videos.Results[0];
+                    if (!TmdbUtils.IsTrailerType(video))
+                    {
+                        continue;
+                    }
+
+                    trailers.Add(new MediaUrl
+                    {
+                        Url = string.Format(CultureInfo.InvariantCulture, "https://www.youtube.com/watch?v={0}", video.Key),
+                        Name = video.Name
+                    });
                 }
 
-                using var langRequestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-                foreach (var header in TmdbUtils.AcceptHeaders)
-                {
-                    langRequestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(header));
-                }
-
-                using var langResponse = await GetMovieDbResponse(langRequestMessage).ConfigureAwait(false);
-
-                await using var langStream = await langResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                var langResult = await _jsonSerializer.DeserializeFromStreamAsync<MovieResult>(stream).ConfigureAwait(false);
-                mainResult.Overview = langResult.Overview;
+                movie.RemoteTrailers = trailers;
             }
 
-            return mainResult;
+            return metadataResult;
         }
-
-        /// <summary>
-        /// Gets the movie db response.
-        /// </summary>
-        internal Task<HttpResponseMessage> GetMovieDbResponse(HttpRequestMessage message)
-        {
-            message.Headers.UserAgent.ParseAdd(_appHost.ApplicationUserAgent);
-            return _httpClientFactory.CreateClient().SendAsync(message);
-        }
-
-        /// <inheritdoc />
-        public int Order => 1;
 
         /// <inheritdoc />
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

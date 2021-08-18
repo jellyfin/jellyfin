@@ -1,5 +1,8 @@
+#nullable disable
+
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -78,11 +81,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 return new MusicArtist();
             }
 
-            if (_config.Configuration.EnableSimpleArtistDetection)
-            {
-                return null;
-            }
-
             // Avoid mis-identifying top folders
             if (args.Parent.IsRoot)
             {
@@ -94,7 +92,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             var albumResolver = new MusicAlbumResolver(_logger, _fileSystem, _libraryManager);
 
             // If we contain an album assume we are an artist folder
-            return args.FileSystemChildren.Where(i => i.IsDirectory).Any(i => albumResolver.IsMusicAlbum(i.FullName, directoryService)) ? new MusicArtist() : null;
+            var directories = args.FileSystemChildren.Where(i => i.IsDirectory);
+
+            var result = Parallel.ForEach(directories, (fileSystemInfo, state) =>
+            {
+                if (albumResolver.IsMusicAlbum(fileSystemInfo.FullName, directoryService))
+                {
+                    // stop once we see a music album
+                    state.Stop();
+                }
+            });
+
+            return !result.IsCompleted ? new MusicArtist() : null;
         }
     }
 }

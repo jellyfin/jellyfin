@@ -6,19 +6,23 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/netcoreapp3.1/jellyfin.dll",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net5.0/jellyfin.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Jellyfin.Server",
             "console": "internalConsole",
             "stopAtEntry": false,
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "Overriding address\\(es\\) \\'(https?:\\S+)\\'",
+            }
         },
         {
             "name": ".NET Core Launch (nowebclient)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/netcoreapp3.1/jellyfin.dll",
+            "program": "${workspaceFolder}/Jellyfin.Server/bin/Debug/net5.0/jellyfin.dll",
             "args": ["--nowebclient"],
             "cwd": "${workspaceFolder}/Jellyfin.Server",
             "console": "internalConsole",

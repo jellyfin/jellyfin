@@ -1,4 +1,4 @@
-using MediaBrowser.Model.Configuration;
+#nullable disable
 
 namespace MediaBrowser.Common.Configuration
 {
@@ -17,8 +17,7 @@ namespace MediaBrowser.Common.Configuration
         /// Gets the path to the web UI resources folder.
         /// </summary>
         /// <remarks>
-        /// This value is not relevant if the server is configured to not host any static web content. Additionally,
-        /// the value for <see cref="ServerConfiguration.DashboardSourcePath"/> takes precedence over this one.
+        /// This value is not relevant if the server is configured to not host any static web content.
         /// </remarks>
         string WebPath { get; }
 

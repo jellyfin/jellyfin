@@ -16,8 +16,9 @@ namespace Jellyfin.Server.Formatters
         /// </summary>
         public XmlOutputFormatter()
         {
+            SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add(MediaTypeNames.Text.Xml);
-            SupportedMediaTypes.Add("text/xml;charset=UTF-8");
+
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
         }
@@ -25,7 +26,8 @@ namespace Jellyfin.Server.Formatters
         /// <inheritdoc />
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
-            return context.HttpContext.Response.WriteAsync(context.Object?.ToString());
+            var stringResponse = context.Object?.ToString();
+            return stringResponse == null ? Task.CompletedTask : context.HttpContext.Response.WriteAsync(stringResponse);
         }
     }
 }

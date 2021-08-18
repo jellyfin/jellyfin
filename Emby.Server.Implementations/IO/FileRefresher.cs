@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -149,7 +151,7 @@ namespace Emby.Server.Implementations.IO
                     continue;
                 }
 
-                _logger.LogInformation("{name} ({path}) will be refreshed.", item.Name, item.Path);
+                _logger.LogInformation("{Name} ({Path}) will be refreshed.", item.Name, item.Path);
 
                 try
                 {
@@ -160,11 +162,11 @@ namespace Emby.Server.Implementations.IO
                     // For now swallow and log.
                     // Research item: If an IOException occurs, the item may be in a disconnected state (media unavailable)
                     // Should we remove it from it's parent?
-                    _logger.LogError(ex, "Error refreshing {name}", item.Name);
+                    _logger.LogError(ex, "Error refreshing {Name}", item.Name);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error refreshing {name}", item.Name);
+                    _logger.LogError(ex, "Error refreshing {Name}", item.Name);
                 }
             }
         }
@@ -214,6 +216,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             _disposed = true;

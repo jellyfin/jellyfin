@@ -1,11 +1,12 @@
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Globalization;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -14,26 +15,29 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IApplicationHost _appHost;
 
-        public OmdbImageProvider(IJsonSerializer jsonSerializer, IApplicationHost appHost, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbImageProvider(IApplicationHost appHost, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
-            _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
             _appHost = appHost;
         }
+
+        public string Name => "The Open Movie Database";
+
+        // After other internet providers, because they're better
+        // But before fallback providers like screengrab
+        public int Order => 90;
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
@@ -49,7 +53,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var list = new List<RemoteImageInfo>();
 
-            var provider = new OmdbProvider(_jsonSerializer, _httpClientFactory, _fileSystem, _appHost, _configurationManager);
+            var provider = new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager);
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {
@@ -82,18 +86,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
-
-        public string Name => "The Open Movie Database";
 
         public bool Supports(BaseItem item)
         {
             return item is Movie || item is Trailer || item is Episode;
         }
-
-        // After other internet providers, because they're better
-        // But before fallback providers like screengrab
-        public int Order => 90;
     }
 }

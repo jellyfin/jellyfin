@@ -74,7 +74,7 @@ namespace Jellyfin.Naming.Tests.TV
             var result = new EpisodePathParser(options)
                 .Parse(filename, false);
 
-            Assert.Equal(result.EndingEpsiodeNumber, endingEpisodeNumber);
+            Assert.Equal(result.EndingEpisodeNumber, endingEpisodeNumber);
         }
     }
 }

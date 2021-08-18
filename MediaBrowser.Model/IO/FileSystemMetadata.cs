@@ -38,12 +38,6 @@ namespace MediaBrowser.Model.IO
         public long Length { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the directory.
-        /// </summary>
-        /// <value>The name of the directory.</value>
-        public string DirectoryName { get; set; }
-
-        /// <summary>
         /// Gets or sets the last write time UTC.
         /// </summary>
         /// <value>The last write time UTC.</value>
@@ -56,7 +50,7 @@ namespace MediaBrowser.Model.IO
         public DateTime CreationTimeUtc { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is directory.
+        /// Gets or sets a value indicating whether this instance is directory.
         /// </summary>
         /// <value><c>true</c> if this instance is directory; otherwise, <c>false</c>.</value>
         public bool IsDirectory { get; set; }

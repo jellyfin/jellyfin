@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.EntryPoints;
 using Emby.Server.Implementations.Udp;
-using Emby.Server.Implementations.Updates;
 using MediaBrowser.Controller.Extensions;
 
 namespace Jellyfin.Server
@@ -64,10 +61,6 @@ namespace Jellyfin.Server
         public bool IsService { get; set; }
 
         /// <inheritdoc />
-        [Option("noautorunwebapp", Required = false, HelpText = "Run headless if startup wizard is complete.")]
-        public bool NoAutoRunWebApp { get; set; }
-
-        /// <inheritdoc />
         [Option("package-name", Required = false, HelpText = "Used when packaging Jellyfin (example, synology).")]
         public string? PackageName { get; set; }
 
@@ -81,7 +74,7 @@ namespace Jellyfin.Server
 
         /// <inheritdoc />
         [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
-        public Uri? PublishedServerUrl { get; set; }
+        public string? PublishedServerUrl { get; set; }
 
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
@@ -98,7 +91,7 @@ namespace Jellyfin.Server
 
             if (PublishedServerUrl != null)
             {
-                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl.ToString());
+                config.Add(UdpServer.AddressOverrideConfigKey, PublishedServerUrl);
             }
 
             if (FFmpegPath != null)

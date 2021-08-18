@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Emby.Server.Implementations.HttpServer;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Emby.Server.Implementations
@@ -15,10 +14,10 @@ namespace Emby.Server.Implementations
         public static Dictionary<string, string> DefaultConfiguration => new Dictionary<string, string>
         {
             { HostWebClientKey, bool.TrueString },
-            { HttpListenerHost.DefaultRedirectKey, "web/index.html" },
+            { DefaultRedirectKey, "web/index.html" },
             { FfmpegProbeSizeKey, "1G" },
             { FfmpegAnalyzeDurationKey, "200M" },
-            { PlaylistsAllowDuplicatesKey, bool.TrueString },
+            { PlaylistsAllowDuplicatesKey, bool.FalseString },
             { BindToUnixSocketKey, bool.FalseString }
         };
     }

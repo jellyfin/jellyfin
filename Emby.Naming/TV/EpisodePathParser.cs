@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,15 +6,32 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
 {
+    /// <summary>
+    /// Used to parse information about episode from path.
+    /// </summary>
     public class EpisodePathParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodePathParser"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing EpisodeExpressions and MultipleEpisodeExpressions.</param>
         public EpisodePathParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Parses information about episode from path.
+        /// </summary>
+        /// <param name="path">Path.</param>
+        /// <param name="isDirectory">Is path for a directory or file.</param>
+        /// <param name="isNamed">Do we want to use IsNamed expressions.</param>
+        /// <param name="isOptimistic">Do we want to use Optimistic expressions.</param>
+        /// <param name="supportsAbsoluteNumbers">Do we want to use expressions supporting absolute episode numbers.</param>
+        /// <param name="fillExtendedInfo">Should we attempt to retrieve extended information.</param>
+        /// <returns>Returns <see cref="EpisodePathParserResult"/> object.</returns>
         public EpisodePathParserResult Parse(
             string path,
             bool isDirectory,
@@ -146,7 +160,7 @@ namespace Emby.Naming.TV
                         {
                             if (int.TryParse(endingNumberGroup.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out num))
                             {
-                                result.EndingEpsiodeNumber = num;
+                                result.EndingEpisodeNumber = num;
                             }
                         }
                     }
@@ -186,7 +200,7 @@ namespace Emby.Naming.TV
 
         private void FillAdditional(string path, EpisodePathParserResult info)
         {
-            var expressions = _options.MultipleEpisodeExpressions.ToList();
+            var expressions = _options.MultipleEpisodeExpressions.Where(i => i.IsNamed).ToList();
 
             if (string.IsNullOrEmpty(info.SeriesName))
             {
@@ -200,11 +214,6 @@ namespace Emby.Naming.TV
         {
             foreach (var i in expressions)
             {
-                if (!i.IsNamed)
-                {
-                    continue;
-                }
-
                 var result = Parse(path, i);
 
                 if (!result.Success)
@@ -217,13 +226,13 @@ namespace Emby.Naming.TV
                     info.SeriesName = result.SeriesName;
                 }
 
-                if (!info.EndingEpsiodeNumber.HasValue && info.EpisodeNumber.HasValue)
+                if (!info.EndingEpisodeNumber.HasValue && info.EpisodeNumber.HasValue)
                 {
-                    info.EndingEpsiodeNumber = result.EndingEpsiodeNumber;
+                    info.EndingEpisodeNumber = result.EndingEpisodeNumber;
                 }
 
                 if (!string.IsNullOrEmpty(info.SeriesName)
-                    && (!info.EpisodeNumber.HasValue || info.EndingEpsiodeNumber.HasValue))
+                    && (!info.EpisodeNumber.HasValue || info.EndingEpisodeNumber.HasValue))
                 {
                     break;
                 }

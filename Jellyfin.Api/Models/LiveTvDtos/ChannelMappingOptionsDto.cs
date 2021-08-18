@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
@@ -25,8 +26,7 @@ namespace Jellyfin.Api.Models.LiveTvDtos
         /// <summary>
         /// Gets or sets list of mappings.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1819:DontReturnArrays", MessageId = "Mappings", Justification = "Imported from ServiceStack")]
-        public NameValuePair[] Mappings { get; set; } = null!;
+        public IReadOnlyList<NameValuePair> Mappings { get; set; } = Array.Empty<NameValuePair>();
 
         /// <summary>
         /// Gets or sets provider name.

@@ -1,6 +1,7 @@
+#nullable disable
+
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Common.Json.Converters;
 
 namespace MediaBrowser.MediaEncoding.Probing
 {
@@ -281,6 +282,20 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <value>The disposition.</value>
         [JsonPropertyName("disposition")]
         public IReadOnlyDictionary<string, int> Disposition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color range.
+        /// </summary>
+        /// <value>The color range.</value>
+        [JsonPropertyName("color_range")]
+        public string ColorRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
+        [JsonPropertyName("color_space")]
+        public string ColorSpace { get; set; }
 
         /// <summary>
         /// Gets or sets the color transfer.

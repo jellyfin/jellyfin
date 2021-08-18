@@ -16,7 +16,6 @@
     "Folders": "Folders",
     "Genres": "Genres",
     "HeaderAlbumArtists": "Album Artists",
-    "HeaderCameraUploads": "Camera Uploads",
     "HeaderContinueWatching": "Continue Watching",
     "HeaderFavoriteAlbums": "Favourite Albums",
     "HeaderFavoriteArtists": "Favourite Artists",
@@ -114,5 +113,12 @@
     "TasksChannelsCategory": "Internet Channels",
     "TasksApplicationCategory": "Application",
     "TasksLibraryCategory": "Library",
-    "TasksMaintenanceCategory": "Maintenance"
+    "TasksMaintenanceCategory": "Maintenance",
+    "TaskCleanActivityLogDescription": "Deletes activity log entries older than the configured age.",
+    "TaskCleanActivityLog": "Clean Activity Log",
+    "Undefined": "Undefined",
+    "Forced": "Forced",
+    "Default": "Default",
+    "TaskOptimizeDatabaseDescription": "Compacts database and truncates free space. Running this task after scanning the library or doing other changes that imply database modifications might improve performance.",
+    "TaskOptimizeDatabase": "Optimise database"
 }

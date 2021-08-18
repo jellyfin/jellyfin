@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -47,6 +49,11 @@ namespace MediaBrowser.Controller.Session
         event EventHandler<SessionEventArgs> SessionActivity;
 
         /// <summary>
+        /// Occurs when [session controller connected].
+        /// </summary>
+        event EventHandler<SessionEventArgs> SessionControllerConnected;
+
+        /// <summary>
         /// Occurs when [capabilities changed].
         /// </summary>
         event EventHandler<SessionEventArgs> CapabilitiesChanged;
@@ -76,7 +83,14 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
+        /// <returns>Session information.</returns>
         SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
+
+        /// <summary>
+        /// Used to report that a session controller has connected.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        void OnSessionControllerConnected(SessionInfo session);
 
         void UpdateDeviceName(string sessionId, string reportedDeviceName);
 
@@ -92,7 +106,7 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if an argument is null.</exception>
         Task OnPlaybackProgress(PlaybackProgressInfo info);
 
         Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated);
@@ -102,14 +116,13 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="info">The info.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if an argument is null.</exception>
         Task OnPlaybackStopped(PlaybackStopInfo info);
 
         /// <summary>
         /// Reports the session ended.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
-        /// <returns>Task.</returns>
         void ReportSessionEnded(string sessionId);
 
         /// <summary>
@@ -143,22 +156,23 @@ namespace MediaBrowser.Controller.Session
         Task SendPlayCommand(string controllingSessionId, string sessionId, PlayRequest command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the SyncPlayCommand.
+        /// Sends a SyncPlayCommand to a session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="session">The session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken);
+        Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sends the SyncPlayGroupUpdate.
+        /// Sends a SyncPlayGroupUpdate to a session.
         /// </summary>
-        /// <param name="sessionId">The session id.</param>
+        /// <param name="session">The session.</param>
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <typeparam name="T">Type of group.</typeparam>
         /// <returns>Task.</returns>
-        Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
+        Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.
@@ -183,32 +197,45 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends the message to admin sessions.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="name">The name.</param>
+        /// <typeparam name="T">Type of data.</typeparam>
+        /// <param name="name">Message type name.</param>
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToAdminSessions<T>(string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToAdminSessions<T>(SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user sessions.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type of data.</typeparam>
+        /// <param name="userIds">Users to send messages to.</param>
+        /// <param name="name">Message type name.</param>
+        /// <param name="data">The data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, T data, CancellationToken cancellationToken);
 
-        Task SendMessageToUserSessions<T>(List<Guid> userIds, string name, Func<T> dataFn, CancellationToken cancellationToken);
+        /// <summary>
+        /// Sends the message to user sessions.
+        /// </summary>
+        /// <typeparam name="T">Type of data.</typeparam>
+        /// <param name="userIds">Users to send messages to.</param>
+        /// <param name="name">Message type name.</param>
+        /// <param name="dataFn">Data function.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task SendMessageToUserSessions<T>(List<Guid> userIds, SessionMessageType name, Func<T> dataFn, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the message to user device sessions.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">Type of data.</typeparam>
         /// <param name="deviceId">The device identifier.</param>
-        /// <param name="name">The name.</param>
+        /// <param name="name">Message type name.</param>
         /// <param name="data">The data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendMessageToUserDeviceSessions<T>(string deviceId, string name, T data, CancellationToken cancellationToken);
+        Task SendMessageToUserDeviceSessions<T>(string deviceId, SessionMessageType name, T data, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the restart required message.
@@ -265,6 +292,14 @@ namespace MediaBrowser.Controller.Session
         /// <param name="request">The request.</param>
         /// <returns>Task{SessionInfo}.</returns>
         Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
+
+        /// <summary>
+        /// Authenticates a new session with quick connect.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="token">Quick connect access token.</param>
+        /// <returns>Task{SessionInfo}.</returns>
+        Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token);
 
         /// <summary>
         /// Creates the new session.
@@ -325,21 +360,21 @@ namespace MediaBrowser.Controller.Session
         /// Logouts the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        /// <returns>Task.</returns>
         void Logout(string accessToken);
+
         void Logout(AuthenticationInfo accessToken);
 
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
-        /// <returns>Task.</returns>
+        /// <param name="userId">User ID.</param>
+        /// <param name="currentAccessToken">Current access token.</param>
         void RevokeUserTokens(Guid userId, string currentAccessToken);
 
         /// <summary>
         /// Revokes the token.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <returns>Task.</returns>
         void RevokeToken(string id);
 
         void CloseIfNeeded(SessionInfo session);

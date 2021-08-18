@@ -1,22 +1,19 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a group.
     /// </summary>
-    public partial class Group : IHasPermissions, ISavingChanges
+    public class Group : IHasPermissions, IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Group"/> class.
-        /// Public constructor with required data.
         /// </summary>
         /// <param name="name">The name of the group.</param>
         public Group(string name)
@@ -30,34 +27,16 @@ namespace Jellyfin.Data.Entities
             Id = Guid.NewGuid();
 
             Permissions = new HashSet<Permission>();
-            ProviderMappings = new HashSet<ProviderMapping>();
             Preferences = new HashSet<Preference>();
-
-            Init();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Group"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Group()
-        {
-            Init();
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Gets or sets the id of this group.
+        /// Gets the id of this group.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [Key]
-        [Required]
-        public Guid Id { get; protected set; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the group's name.
@@ -65,47 +44,23 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets the row version.
-        /// </summary>
-        /// <remarks>
-        /// Required, Concurrency Token.
-        /// </remarks>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
-        public uint RowVersion { get; set; }
-
-        public void OnSavingChanges()
-        {
-            RowVersion++;
-        }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
-
-        [ForeignKey("Permission_GroupPermissions_Id")]
-        public virtual ICollection<Permission> Permissions { get; protected set; }
-
-        [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
-
-        [ForeignKey("Preference_Preferences_Id")]
-        public virtual ICollection<Preference> Preferences { get; protected set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
+        /// Gets a collection containing the group's permissions.
         /// </summary>
-        /// <param name="name">The name of this group.</param>
-        public static Group Create(string name)
-        {
-            return new Group(name);
-        }
+        public virtual ICollection<Permission> Permissions { get; private set; }
+
+        /// <summary>
+        /// Gets a collection containing the group's preferences.
+        /// </summary>
+        public virtual ICollection<Preference> Preferences { get; private set; }
 
         /// <inheritdoc/>
         public bool HasPermission(PermissionKind kind)
@@ -119,6 +74,10 @@ namespace Jellyfin.Data.Entities
             Permissions.First(p => p.Kind == kind).Value = value;
         }
 
-        partial void Init();
+        /// <inheritdoc />
+        public void OnSavingChanges()
+        {
+            RowVersion++;
+        }
     }
 }

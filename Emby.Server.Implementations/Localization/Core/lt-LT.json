@@ -16,7 +16,6 @@
     "Folders": "Katalogai",
     "Genres": "Žanrai",
     "HeaderAlbumArtists": "Albumo atlikėjai",
-    "HeaderCameraUploads": "Kameros",
     "HeaderContinueWatching": "Žiūrėti toliau",
     "HeaderFavoriteAlbums": "Mėgstami Albumai",
     "HeaderFavoriteArtists": "Mėgstami Atlikėjai",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Internetiniai Kanalai",
     "TasksApplicationCategory": "Programa",
     "TasksLibraryCategory": "Mediateka",
-    "TasksMaintenanceCategory": "Priežiūra"
+    "TasksMaintenanceCategory": "Priežiūra",
+    "TaskCleanActivityLog": "Išvalyti veiklos žurnalą",
+    "Undefined": "Neapibrėžtas",
+    "Forced": "Priverstas",
+    "Default": "Numatytas",
+    "TaskCleanActivityLogDescription": "Ištrina veiklos žuranlo įrašus, kurie yra senesni nei nustatytas amžius."
 }

@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Channels
 
             var uninstalledChannels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Channel).Name },
+                IncludeItemTypes = new[] { nameof(Channel) },
                 ExcludeItemIds = installedChannelIds.ToArray()
             });
 

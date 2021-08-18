@@ -91,7 +91,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Person).Name },
+                IncludeItemTypes = new[] { nameof(Person) },
                 IsDeadPerson = true,
                 IsLocked = false
             });

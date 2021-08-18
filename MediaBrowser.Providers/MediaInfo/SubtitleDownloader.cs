@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +43,16 @@ namespace MediaBrowser.Providers.MediaInfo
 
             foreach (var lang in languages)
             {
-                var downloaded = await DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent,
-                    skipIfAudioTrackMatches, requirePerfectMatch, lang, disabledSubtitleFetchers, subtitleFetcherOrder, cancellationToken).ConfigureAwait(false);
+                var downloaded = await DownloadSubtitles(
+                    video,
+                    mediaStreams,
+                    skipIfEmbeddedSubtitlesPresent,
+                    skipIfAudioTrackMatches,
+                    requirePerfectMatch,
+                    lang,
+                    disabledSubtitleFetchers,
+                    subtitleFetcherOrder,
+                    cancellationToken).ConfigureAwait(false);
 
                 if (downloaded)
                 {
@@ -54,7 +63,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return downloadedLanguages;
         }
 
-        public Task<bool> DownloadSubtitles(Video video,
+        public Task<bool> DownloadSubtitles(
+            Video video,
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
@@ -90,11 +100,21 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Task.FromResult(false);
             }
 
-            return DownloadSubtitles(video, mediaStreams, skipIfEmbeddedSubtitlesPresent, skipIfAudioTrackMatches,
-                requirePerfectMatch, lang, disabledSubtitleFetchers, subtitleFetcherOrder, mediaType, cancellationToken);
+            return DownloadSubtitles(
+                video,
+                mediaStreams,
+                skipIfEmbeddedSubtitlesPresent,
+                skipIfAudioTrackMatches,
+                requirePerfectMatch,
+                lang,
+                disabledSubtitleFetchers,
+                subtitleFetcherOrder,
+                mediaType,
+                cancellationToken);
         }
 
-        private async Task<bool> DownloadSubtitles(Video video,
+        private async Task<bool> DownloadSubtitles(
+            Video video,
             List<MediaStream> mediaStreams,
             bool skipIfEmbeddedSubtitlesPresent,
             bool skipIfAudioTrackMatches,
@@ -153,9 +173,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 SubtitleFetcherOrder = subtitleFetcherOrder
             };
 
-            var episode = video as Episode;
-
-            if (episode != null)
+            if (video is Episode episode)
             {
                 request.IndexNumberEnd = episode.IndexNumberEnd;
                 request.SeriesName = episode.SeriesName;

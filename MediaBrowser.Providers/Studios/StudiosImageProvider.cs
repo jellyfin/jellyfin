@@ -8,6 +8,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -31,6 +33,8 @@ namespace MediaBrowser.Providers.Studios
         }
 
         public string Name => "Emby Designs";
+
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -118,11 +122,9 @@ namespace MediaBrowser.Providers.Studios
             return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
-        public int Order => 0;
-
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
             return httpClient.GetAsync(url, cancellationToken);
         }
 
@@ -140,10 +142,10 @@ namespace MediaBrowser.Providers.Studios
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
-                var httpClient = _httpClientFactory.CreateClient();
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
-                await using var response = await httpClient.GetStreamAsync(url).ConfigureAwait(false);
+                await using var response = await httpClient.GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
                 await using var fileStream = new FileStream(file, FileMode.Create);
                 await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
@@ -160,35 +162,29 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetComparableName(string name)
         {
-            return name.Replace(" ", string.Empty)
-                .Replace(".", string.Empty)
-                .Replace("&", string.Empty)
-                .Replace("!", string.Empty)
-                .Replace(",", string.Empty)
-                .Replace("/", string.Empty);
+            return name.Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace(".", string.Empty, StringComparison.Ordinal)
+                .Replace("&", string.Empty, StringComparison.Ordinal)
+                .Replace("!", string.Empty, StringComparison.Ordinal)
+                .Replace(",", string.Empty, StringComparison.Ordinal)
+                .Replace("/", string.Empty, StringComparison.Ordinal);
         }
 
         public IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var reader = new StreamReader(fileStream);
+            var lines = new List<string>();
+
+            foreach (var line in reader.ReadAllLines())
             {
-                using (var reader = new StreamReader(fileStream))
+                if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var lines = new List<string>();
-
-                    while (!reader.EndOfStream)
-                    {
-                        var text = reader.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            lines.Add(text);
-                        }
-                    }
-
-                    return lines;
+                    lines.Add(line);
                 }
             }
+
+            return lines;
         }
     }
 }

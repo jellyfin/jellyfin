@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,17 +8,18 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -26,26 +29,24 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly ILogger _logger;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
+        private readonly IServerConfigurationManager _serverConfigurationManager;
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private bool _hasExited;
         private Stream _logFileStream;
         private string _targetPath;
         private Process _process;
-        private readonly IJsonSerializer _json;
-        private readonly TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
-        private readonly IServerConfigurationManager _config;
 
         public EncodedRecorder(
             ILogger logger,
             IMediaEncoder mediaEncoder,
             IServerApplicationPaths appPaths,
-            IJsonSerializer json,
-            IServerConfigurationManager config)
+            IServerConfigurationManager serverConfigurationManager)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
             _appPaths = appPaths;
-            _json = json;
-            _config = config;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         private static bool CopySubtitles => false;
@@ -58,20 +59,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         public async Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             // The media source is infinite so we need to handle stopping ourselves
-            var durationToken = new CancellationTokenSource(duration);
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+            using var durationToken = new CancellationTokenSource(duration);
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationToken).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
 
-        private EncodingOptions GetEncodingOptions()
-        {
-            return _config.GetConfiguration<EncodingOptions>("encoding");
-        }
-
-        private Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -100,15 +96,15 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
 
-            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(_json.SerializeToString(mediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
-            _logFileStream.Write(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length);
+            await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
 
             _process = new Process
             {
                 StartInfo = processStartInfo,
                 EnableRaisingEvents = true
             };
-            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process, inputFile);
+            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process);
 
             _process.Start();
 
@@ -120,8 +116,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _ = StartStreamingLog(_process.StandardError.BaseStream, _logFileStream);
 
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
-
-            return _taskCompletionSource.Task;
         }
 
         private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
@@ -189,15 +183,17 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             var outputParam = string.Empty;
 
+            var threads = EncodingHelper.GetNumberOfThreads(null, _serverConfigurationManager.GetEncodingOptions(), null);
             var commandLineArgs = string.Format(
                 CultureInfo.InvariantCulture,
-                "-i \"{0}\" {2} -map_metadata -1 -threads 0 {3}{4}{5} -y \"{1}\"",
+                "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
                 targetFile,
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,
-                outputParam);
+                outputParam,
+                threads);
 
             return inputModifier + " " + commandLineArgs;
         }
@@ -221,20 +217,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         }
 
         protected string GetOutputSizeParam()
-        {
-            var filters = new List<string>();
-
-            filters.Add("yadif=0:-1:0");
-
-            var output = string.Empty;
-
-            if (filters.Count > 0)
-            {
-                output += string.Format(CultureInfo.InvariantCulture, " -vf \"{0}\"", string.Join(",", filters.ToArray()));
-            }
-
-            return output;
-        }
+            => "-vf \"yadif=0:-1:0\"";
 
         private void Stop()
         {
@@ -291,7 +274,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Processes the exited.
         /// </summary>
-        private void OnFfMpegProcessExited(Process process, string inputFile)
+        private void OnFfMpegProcessExited(Process process)
         {
             using (process)
             {
@@ -327,13 +310,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }

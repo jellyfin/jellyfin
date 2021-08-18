@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1721, CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -14,14 +16,14 @@ namespace MediaBrowser.Controller.Library
     /// These are arguments relating to the file system that are collected once and then referred to
     /// whenever needed.  Primarily for entity resolution.
     /// </summary>
-    public class ItemResolveArgs : EventArgs
+    public class ItemResolveArgs
     {
         /// <summary>
         /// The _app paths.
         /// </summary>
         private readonly IServerApplicationPaths _appPaths;
 
-        public IDirectoryService DirectoryService { get; private set; }
+        private LibraryOptions _libraryOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemResolveArgs" /> class.
@@ -34,17 +36,18 @@ namespace MediaBrowser.Controller.Library
             DirectoryService = directoryService;
         }
 
+        public IDirectoryService DirectoryService { get; }
+
         /// <summary>
-        /// Gets the file system children.
+        /// Gets or sets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
         public FileSystemMetadata[] FileSystemChildren { get; set; }
 
-        public LibraryOptions LibraryOptions { get; set; }
-
-        public LibraryOptions GetLibraryOptions()
+        public LibraryOptions LibraryOptions
         {
-            return LibraryOptions ?? (LibraryOptions = Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent));
+            get => _libraryOptions ??= Parent == null ? new LibraryOptions() : BaseItem.LibraryManager.GetLibraryOptions(Parent);
+            set => _libraryOptions = value;
         }
 
         /// <summary>
@@ -60,10 +63,10 @@ namespace MediaBrowser.Controller.Library
         public FileSystemMetadata FileInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the path.
+        /// Gets the path.
         /// </summary>
         /// <value>The path.</value>
-        public string Path { get; set; }
+        public string Path => FileInfo.FullName;
 
         /// <summary>
         /// Gets a value indicating whether this instance is directory.
@@ -106,6 +109,21 @@ namespace MediaBrowser.Controller.Library
         /// <value>The additional locations.</value>
         private List<string> AdditionalLocations { get; set; }
 
+        /// <summary>
+        /// Gets the physical locations.
+        /// </summary>
+        /// <value>The physical locations.</value>
+        public string[] PhysicalLocations
+        {
+            get
+            {
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
+                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
+            }
+        }
+
+        public string CollectionType { get; set; }
+
         public bool HasParent<T>()
             where T : Folder
         {
@@ -136,10 +154,20 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
+        /// Determines whether the specified <see cref="object" /> is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ItemResolveArgs);
+        }
+
+        /// <summary>
         /// Adds the additional location.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c> or empty.</exception>
         public void AddAdditionalLocation(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -147,34 +175,18 @@ namespace MediaBrowser.Controller.Library
                 throw new ArgumentException("The path was empty or null.", nameof(path));
             }
 
-            if (AdditionalLocations == null)
-            {
-                AdditionalLocations = new List<string>();
-            }
-
+            AdditionalLocations ??= new List<string>();
             AdditionalLocations.Add(path);
         }
 
         // REVIEW: @bond
-        /// <summary>
-        /// Gets the physical locations.
-        /// </summary>
-        /// <value>The physical locations.</value>
-        public string[] PhysicalLocations
-        {
-            get
-            {
-                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
-            }
-        }
 
         /// <summary>
         /// Gets the name of the file system entry by.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is <c>null</c> or empty.</exception>
         public FileSystemMetadata GetFileSystemEntryByName(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -190,7 +202,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if path is invalid.</exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -224,32 +236,20 @@ namespace MediaBrowser.Controller.Library
             return CollectionType;
         }
 
-        public string CollectionType { get; set; }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="object" /> is equal to this instance.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as ItemResolveArgs);
-        }
-
         /// <summary>
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         public override int GetHashCode()
         {
-            return Path.GetHashCode();
+            return Path.GetHashCode(StringComparison.Ordinal);
         }
 
         /// <summary>
         /// Equals the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if the arguments are the same, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
             if (args != null)

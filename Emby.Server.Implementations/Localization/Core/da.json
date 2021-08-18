@@ -1,5 +1,5 @@
 {
-    "Albums": "Albums",
+    "Albums": "Albummer",
     "AppDeviceValues": "App: {0}, Enhed: {1}",
     "Application": "Applikation",
     "Artists": "Kunstnere",
@@ -16,7 +16,6 @@
     "Folders": "Mapper",
     "Genres": "Genrer",
     "HeaderAlbumArtists": "Albumkunstnere",
-    "HeaderCameraUploads": "Kamera Uploads",
     "HeaderContinueWatching": "Fortsæt Afspilning",
     "HeaderFavoriteAlbums": "Favoritalbummer",
     "HeaderFavoriteArtists": "Favoritkunstnere",
@@ -40,7 +39,7 @@
     "MixedContent": "Blandet indhold",
     "Movies": "Film",
     "Music": "Musik",
-    "MusicVideos": "Musikvideoer",
+    "MusicVideos": "Musik videoer",
     "NameInstallFailed": "{0} installationen mislykkedes",
     "NameSeasonNumber": "Sæson {0}",
     "NameSeasonUnknown": "Ukendt Sæson",
@@ -114,5 +113,12 @@
     "TaskCleanTranscodeDescription": "Fjern transcode filer som er mere end en dag gammel.",
     "TaskCleanTranscode": "Rengør Transcode Mappen",
     "TaskRefreshPeople": "Genopfrisk Personer",
-    "TaskRefreshPeopleDescription": "Opdatere metadata for skuespillere og instruktører i dit bibliotek."
+    "TaskRefreshPeopleDescription": "Opdatere metadata for skuespillere og instruktører i dit bibliotek.",
+    "TaskCleanActivityLogDescription": "Sletter linjer i aktivitetsloggen ældre end den konfigureret alder.",
+    "TaskCleanActivityLog": "Ryd Aktivitetslog",
+    "Undefined": "Udefineret",
+    "Forced": "Tvunget",
+    "Default": "Standard",
+    "TaskOptimizeDatabaseDescription": "Kompakter database og forkorter fri plads. Ved at køre denne proces efter at scanne biblioteket eller efter at ændre noget som kunne have indflydelse på databasen, kan forbedre ydeevne.",
+    "TaskOptimizeDatabase": "Optimér database"
 }

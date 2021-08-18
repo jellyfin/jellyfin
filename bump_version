@@ -49,7 +49,6 @@ sed -i "s/${old_version_sed}/${new_version}/g" ${build_file}
 
 # update nuget package version
 for subproject in ${jellyfin_subprojects[@]}; do
-do
     echo ${subproject}
     # Parse the version from the *.csproj file
     old_version="$(

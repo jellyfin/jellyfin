@@ -26,14 +26,14 @@ namespace MediaBrowser.Model.SyncPlay
         GroupLeft,
 
         /// <summary>
-        /// The group-wait update. Tells members of the group that a user is buffering.
+        /// The group-state update. Tells members of the group that the state changed.
         /// </summary>
-        GroupWait,
+        StateUpdate,
 
         /// <summary>
-        /// The prepare-session update. Tells a user to load some content.
+        /// The play-queue update. Tells a user the playing queue of the group.
         /// </summary>
-        PrepareSession,
+        PlayQueue,
 
         /// <summary>
         /// The not-in-group error. Tells a user that they don't belong to a group.

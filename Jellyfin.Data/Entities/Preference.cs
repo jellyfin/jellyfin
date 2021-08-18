@@ -2,13 +2,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a preference attached to a user or group.
     /// </summary>
-    public class Preference : ISavingChanges
+    public class Preference : IHasConcurrencyToken
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Preference"/> class.
@@ -23,36 +24,26 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Preference"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected Preference()
-        {
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
-
-        /// <summary>
-        /// Gets or sets the id of this preference.
+        /// Gets the id of this preference.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [Key]
-        [Required]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
-        /// Gets or sets the type of this preference.
+        /// Gets or sets the id of the associated user.
+        /// </summary>
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets the type of this preference.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
-        public PreferenceKind Kind { get; protected set; }
+        public PreferenceKind Kind { get; private set; }
 
         /// <summary>
         /// Gets or sets the value of this preference.
@@ -60,31 +51,13 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
-        [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Value { get; set; }
 
-        /// <summary>
-        /// Gets or sets the row version.
-        /// </summary>
-        /// <remarks>
-        /// Required, ConcurrencyToken.
-        /// </remarks>
+        /// <inheritdoc/>
         [ConcurrencyCheck]
-        [Required]
-        public uint RowVersion { get; set; }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="kind">The preference kind.</param>
-        /// <param name="value">The value.</param>
-        /// <returns>The new instance.</returns>
-        public static Preference Create(PreferenceKind kind, string value)
-        {
-            return new Preference(kind, value);
-        }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()

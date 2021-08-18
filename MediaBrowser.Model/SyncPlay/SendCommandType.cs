@@ -6,9 +6,9 @@ namespace MediaBrowser.Model.SyncPlay
     public enum SendCommandType
     {
         /// <summary>
-        /// The play command. Instructs users to start playback.
+        /// The unpause command. Instructs users to unpause playback.
         /// </summary>
-        Play = 0,
+        Unpause = 0,
 
         /// <summary>
         /// The pause command. Instructs users to pause playback.
@@ -16,8 +16,13 @@ namespace MediaBrowser.Model.SyncPlay
         Pause = 1,
 
         /// <summary>
+        /// The stop command. Instructs users to stop playback.
+        /// </summary>
+        Stop = 2,
+
+        /// <summary>
         /// The seek command. Instructs users to seek to a specified time.
         /// </summary>
-        Seek = 2
+        Seek = 3
     }
 }

@@ -1,8 +1,9 @@
-﻿using System;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Configuration;
@@ -54,12 +55,19 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.mp3", Name = "GetHlsAudioSegmentLegacyMp3")]
         [HttpGet("Audio/{itemId}/hls/{segmentId}/stream.aac", Name = "GetHlsAudioSegmentLegacyAac")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesAudioFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
-        public ActionResult GetHlsAudioSegmentLegacy([FromRoute] string itemId, [FromRoute] string segmentId)
+        public ActionResult GetHlsAudioSegmentLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string segmentId)
         {
             // TODO: Deprecate with new iOS app
             var file = segmentId + Path.GetExtension(Request.Path);
-            file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
+            var transcodePath = _serverConfigurationManager.GetTranscodePath();
+            file = Path.GetFullPath(Path.Combine(transcodePath, file));
+            var fileDir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath))
+            {
+                return BadRequest("Invalid segment.");
+            }
 
             return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file)!, false, HttpContext);
         }
@@ -74,11 +82,18 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Videos/{itemId}/hls/{playlistId}/stream.m3u8")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesPlaylistFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
-        public ActionResult GetHlsPlaylistLegacy([FromRoute] string itemId, [FromRoute] string playlistId)
+        public ActionResult GetHlsPlaylistLegacy([FromRoute, Required] string itemId, [FromRoute, Required] string playlistId)
         {
             var file = playlistId + Path.GetExtension(Request.Path);
-            file = Path.Combine(_serverConfigurationManager.GetTranscodePath(), file);
+            var transcodePath = _serverConfigurationManager.GetTranscodePath();
+            file = Path.GetFullPath(Path.Combine(transcodePath, file));
+            var fileDir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath) || Path.GetExtension(file) != ".m3u8")
+            {
+                return BadRequest("Invalid segment.");
+            }
 
             return GetFileResult(file, file);
         }
@@ -93,7 +108,9 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Videos/ActiveEncodings")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult StopEncodingProcess([FromQuery] string deviceId, [FromQuery] string playSessionId)
+        public ActionResult StopEncodingProcess(
+            [FromQuery, Required] string deviceId,
+            [FromQuery, Required] string playSessionId)
         {
             _transcodingJobHelper.KillTranscodingJobs(deviceId, playSessionId, path => true);
             return NoContent();
@@ -107,31 +124,52 @@ namespace Jellyfin.Api.Controllers
         /// <param name="segmentId">The segment id.</param>
         /// <param name="segmentContainer">The segment container.</param>
         /// <response code="200">Hls video segment returned.</response>
+        /// <response code="404">Hls segment not found.</response>
         /// <returns>A <see cref="FileStreamResult"/> containing the video segment.</returns>
         // Can't require authentication just yet due to seeing some requests come from Chrome without full query string
         // [Authenticated]
         [HttpGet("Videos/{itemId}/hls/{playlistId}/{segmentId}.{segmentContainer}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesVideoFile]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "itemId", Justification = "Required for ServiceStack")]
         public ActionResult GetHlsVideoSegmentLegacy(
-            [FromRoute] string itemId,
-            [FromRoute] string playlistId,
-            [FromRoute] string segmentId,
-            [FromRoute] string segmentContainer)
+            [FromRoute, Required] string itemId,
+            [FromRoute, Required] string playlistId,
+            [FromRoute, Required] string segmentId,
+            [FromRoute, Required] string segmentContainer)
         {
             var file = segmentId + Path.GetExtension(Request.Path);
             var transcodeFolderPath = _serverConfigurationManager.GetTranscodePath();
 
-            file = Path.Combine(transcodeFolderPath, file);
+            file = Path.GetFullPath(Path.Combine(transcodeFolderPath, file));
+            var fileDir = Path.GetDirectoryName(file);
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodeFolderPath))
+            {
+                return BadRequest("Invalid segment.");
+            }
 
             var normalizedPlaylistId = playlistId;
 
-            var playlistPath = _fileSystem.GetFilePaths(transcodeFolderPath)
-                .FirstOrDefault(i =>
-                    string.Equals(Path.GetExtension(i), ".m3u8", StringComparison.OrdinalIgnoreCase)
-                    && i.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1);
+            var filePaths = _fileSystem.GetFilePaths(transcodeFolderPath);
+            // Add . to start of segment container for future use.
+            segmentContainer = segmentContainer.Insert(0, ".");
+            string? playlistPath = null;
+            foreach (var path in filePaths)
+            {
+                var pathExtension = Path.GetExtension(path);
+                if ((string.Equals(pathExtension, segmentContainer, StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(pathExtension, ".m3u8", StringComparison.OrdinalIgnoreCase))
+                    && path.IndexOf(normalizedPlaylistId, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    playlistPath = path;
+                    break;
+                }
+            }
 
-            return GetFileResult(file, playlistPath);
+            return playlistPath == null
+                ? NotFound("Hls segment not found.")
+                : GetFileResult(file, playlistPath);
         }
 
         private ActionResult GetFileResult(string path, string playlistPath)

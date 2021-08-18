@@ -43,8 +43,6 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
             }
         }
 
-        public bool Enable { get; set; }
-
         public bool ReplaceArtistName { get; set; }
     }
 }

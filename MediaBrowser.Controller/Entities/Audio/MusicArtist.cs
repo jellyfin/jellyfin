@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,9 +8,9 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -42,6 +44,36 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override bool SupportsPlayedStatus => false;
 
+        /// <summary>
+        /// Gets the folder containing the item.
+        /// If the item is a folder, it returns the folder itself.
+        /// </summary>
+        /// <value>The containing folder path.</value>
+        [JsonIgnore]
+        public override string ContainingFolderPath => Path;
+
+        [JsonIgnore]
+        public override IEnumerable<BaseItem> Children
+        {
+            get
+            {
+                if (IsAccessedByName)
+                {
+                    return new List<BaseItem>();
+                }
+
+                return base.Children;
+            }
+        }
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        public static string GetPath(string name)
+        {
+            return GetPath(name, true);
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
@@ -56,25 +88,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { typeof(Audio).Name, typeof(MusicVideo).Name, typeof(MusicAlbum).Name };
+                query.IncludeItemTypes = new[] { nameof(Audio), nameof(MusicVideo), nameof(MusicAlbum) };
                 query.ArtistIds = new[] { Id };
             }
 
             return LibraryManager.GetItemList(query);
-        }
-
-        [JsonIgnore]
-        public override IEnumerable<BaseItem> Children
-        {
-            get
-            {
-                if (IsAccessedByName)
-                {
-                    return new List<BaseItem>();
-                }
-
-                return base.Children;
-            }
         }
 
         public override int GetChildCount(User user)
@@ -92,7 +110,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.IsSaveLocalMetadataEnabled();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (IsAccessedByName)
             {
@@ -100,7 +118,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return Task.CompletedTask;
             }
 
-            return base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService);
+            return base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken);
         }
 
         public override List<string> GetUserDataKeys()
@@ -110,14 +128,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             list.InsertRange(0, GetUserDataKeys(this));
             return list;
         }
-
-        /// <summary>
-        /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself.
-        /// </summary>
-        /// <value>The containing folder path.</value>
-        [JsonIgnore]
-        public override string ContainingFolderPath => Path;
 
         /// <summary>
         /// Gets the user data key.
@@ -145,7 +155,7 @@ namespace MediaBrowser.Controller.Entities.Audio
 
         protected override bool GetBlockUnratedValue(User user)
         {
-            return user.GetPreference(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music.ToString());
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Music);
         }
 
         public override UnratedItem GetBlockUnratedType()
@@ -163,14 +173,6 @@ namespace MediaBrowser.Controller.Entities.Audio
                 .ToList();
 
             return info;
-        }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
-
-        public static string GetPath(string name)
-        {
-            return GetPath(name, true);
         }
 
         public static string GetPath(string name, bool normalizeName)
@@ -206,9 +208,11 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <param name="replaceAllMetadata">Option to replace metadata.</param>
+        /// <returns>True if metadata changed.</returns>
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (IsAccessedByName)
             {

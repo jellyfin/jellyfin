@@ -1,8 +1,10 @@
-﻿using System;
+using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -71,9 +73,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<UserItemDataDto> MarkPlayedItem(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
-            [FromQuery] DateTime? datePlayed)
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
+            [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
         {
             var user = _userManager.GetUserById(userId);
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -96,7 +98,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute] Guid userId, [FromRoute] Guid itemId)
+        public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
             var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
@@ -150,7 +152,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Playing/Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PingPlaybackSession([FromQuery] string playSessionId)
+        public ActionResult PingPlaybackSession([FromQuery, Required] string playSessionId)
         {
             _transcodingJobHelper.PingTranscodingJob(playSessionId, null);
             return NoContent();
@@ -195,14 +197,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackStart(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? mediaSourceId,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] PlayMethod playMethod,
+            [FromQuery] PlayMethod? playMethod,
             [FromQuery] string? liveStreamId,
-            [FromQuery] string playSessionId,
+            [FromQuery] string? playSessionId,
             [FromQuery] bool canSeek = false)
         {
             var playbackStartInfo = new PlaybackStartInfo
@@ -212,7 +214,7 @@ namespace Jellyfin.Api.Controllers
                 MediaSourceId = mediaSourceId,
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                PlayMethod = playMethod,
+                PlayMethod = playMethod ?? PlayMethod.Transcode,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId
             };
@@ -245,17 +247,17 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackProgress(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? mediaSourceId,
             [FromQuery] long? positionTicks,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? volumeLevel,
-            [FromQuery] PlayMethod playMethod,
+            [FromQuery] PlayMethod? playMethod,
             [FromQuery] string? liveStreamId,
-            [FromQuery] string playSessionId,
-            [FromQuery] RepeatMode repeatMode,
+            [FromQuery] string? playSessionId,
+            [FromQuery] RepeatMode? repeatMode,
             [FromQuery] bool isPaused = false,
             [FromQuery] bool isMuted = false)
         {
@@ -269,10 +271,10 @@ namespace Jellyfin.Api.Controllers
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
                 VolumeLevel = volumeLevel,
-                PlayMethod = playMethod,
+                PlayMethod = playMethod ?? PlayMethod.Transcode,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId,
-                RepeatMode = repeatMode
+                RepeatMode = repeatMode ?? RepeatMode.RepeatNone
             };
 
             playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
@@ -297,8 +299,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [SuppressMessage("Microsoft.Performance", "CA1801:ReviewUnusedParameters", MessageId = "userId", Justification = "Required for ServiceStack")]
         public async Task<ActionResult> OnPlaybackStopped(
-            [FromRoute] Guid userId,
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid userId,
+            [FromRoute, Required] Guid itemId,
             [FromQuery] string? mediaSourceId,
             [FromQuery] string? nextMediaType,
             [FromQuery] long? positionTicks,
@@ -350,7 +352,7 @@ namespace Jellyfin.Api.Controllers
             return _userDataRepository.GetUserDataDto(item, user);
         }
 
-        private PlayMethod ValidatePlayMethod(PlayMethod method, string playSessionId)
+        private PlayMethod ValidatePlayMethod(PlayMethod method, string? playSessionId)
         {
             if (method == PlayMethod.Transcode)
             {

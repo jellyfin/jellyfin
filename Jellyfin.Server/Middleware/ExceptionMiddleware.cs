@@ -125,7 +125,8 @@ namespace Jellyfin.Server.Middleware
             switch (ex)
             {
                 case ArgumentException _: return StatusCodes.Status400BadRequest;
-                case SecurityException _: return StatusCodes.Status401Unauthorized;
+                case AuthenticationException _: return StatusCodes.Status401Unauthorized;
+                case SecurityException _: return StatusCodes.Status403Forbidden;
                 case DirectoryNotFoundException _:
                 case FileNotFoundException _:
                 case ResourceNotFoundException _: return StatusCodes.Status404NotFound;
@@ -136,11 +137,6 @@ namespace Jellyfin.Server.Middleware
 
         private string NormalizeExceptionMessage(string msg)
         {
-            if (msg == null)
-            {
-                return string.Empty;
-            }
-
             // Strip any information we don't want to reveal
             return msg.Replace(
                     _configuration.ApplicationPaths.ProgramSystemPath,

@@ -2,7 +2,7 @@ FROM ubuntu:bionic
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=3.1
+ARG SDK_VERSION=5.0
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -11,15 +11,18 @@ ENV ARCH=amd64
 ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
-RUN apt-get update \
- && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv libc6-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
+    apt-transport-https debhelper gnupg wget ca-certificates devscripts \
+    mmv build-essential libcurl4-openssl-dev libfontconfig1-dev \
+    libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
 
 # Install dotnet repository
 # https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/c1a30ceb-adc2-4244-b24a-06ca29bb1ee9/6df5d856ff1b3e910d283f89690b7cae/dotnet-sdk-3.1.302-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
- && mkdir -p dotnet-sdk \
- && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
- && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/13b9d84c-a35b-4ffe-8f62-447a01403d64/1f9ae31daa0f7d98513e7551246899f2/dotnet-sdk-5.0.400-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+  && mkdir -p dotnet-sdk \
+  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
+  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
 
 # Link to build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.ubuntu.amd64 /build.sh

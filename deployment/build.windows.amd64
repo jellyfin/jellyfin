@@ -23,7 +23,7 @@ fi
 output_dir="dist/jellyfin-server_${version}"
 
 # Build binary
-dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output ${output_dir}/ "-p:GenerateDocumentationFile=false;DebugSymbols=false;DebugType=none;UseAppHost=true"
+dotnet publish Jellyfin.Server --configuration Release --self-contained --runtime win-x64 --output ${output_dir}/ "-p:DebugSymbols=false;DebugType=none;UseAppHost=true"
 
 # Prepare addins
 addin_build_dir="$( mktemp -d )"
@@ -34,10 +34,6 @@ cp ${addin_build_dir}/${NSSM_VERSION}/win64/nssm.exe ${output_dir}/nssm.exe
 unzip ${addin_build_dir}/jellyfin-ffmpeg.zip -d ${addin_build_dir}/jellyfin-ffmpeg
 cp ${addin_build_dir}/jellyfin-ffmpeg/* ${output_dir}
 rm -rf ${addin_build_dir}
-
-# Prepare scripts
-cp ${SOURCE_DIR}/windows/legacy/install-jellyfin.ps1 ${output_dir}/install-jellyfin.ps1
-cp ${SOURCE_DIR}/windows/legacy/install.bat ${output_dir}/install.bat
 
 # Create zip package
 pushd dist

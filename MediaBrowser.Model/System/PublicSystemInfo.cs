@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.System
         public string Version { get; set; }
 
         /// <summary>
-        /// The product name. This is the AssemblyProduct name.
+        /// Gets or sets the product name. This is the AssemblyProduct name.
         /// </summary>
         public string ProductName { get; set; }
 
@@ -39,5 +39,14 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the startup wizard is completed.
+        /// </summary>
+        /// <remarks>
+        /// Nullable for OpenAPI specification only to retain backwards compatibility in apiclients.
+        /// </remarks>
+        /// <value>The startup completion status.</value>]
+        public bool? StartupWizardCompleted { get; set; }
     }
 }

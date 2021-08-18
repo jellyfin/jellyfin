@@ -9,9 +9,9 @@ set -o xtrace
 pushd ${SOURCE_DIR}
 
 if [[ ${IS_DOCKER} == YES ]]; then
-    # Remove build-dep for dotnet-sdk-3.1, since it's installed manually
+    # Remove build-dep for dotnet-sdk-5.0, since it's installed manually
     cp -a debian/control /tmp/control.orig
-    sed -i '/dotnet-sdk-3.1,/d' debian/control
+    sed -i '/dotnet-sdk-5.0,/d' debian/control
 fi
 
 # Modify changelog to unstable configuration if IS_UNSTABLE

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
 {
@@ -25,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Updates
         /// <inheritdoc />
         public async Task OnEvent(InstallationFailedEventArgs eventArgs)
         {
-            await _sessionManager.SendMessageToAdminSessions("PackageInstallationFailed", eventArgs.InstallationInfo, CancellationToken.None).ConfigureAwait(false);
+            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.PackageInstallationFailed, eventArgs.InstallationInfo, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

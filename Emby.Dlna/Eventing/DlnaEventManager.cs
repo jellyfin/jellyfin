@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
@@ -20,13 +23,13 @@ namespace Emby.Dlna.Eventing
             new ConcurrentDictionary<string, EventSubscription>(StringComparer.OrdinalIgnoreCase);
 
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public DlnaEventManager(ILogger logger, IHttpClient httpClient)
+        public DlnaEventManager(ILogger logger, IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
 
@@ -48,11 +51,7 @@ namespace Emby.Dlna.Eventing
                 return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
             }
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
@@ -71,7 +70,8 @@ namespace Emby.Dlna.Eventing
                 Id = id,
                 CallbackUrl = callbackUrl,
                 SubscriptionTime = DateTime.UtcNow,
-                TimeoutSeconds = timeout
+                TimeoutSeconds = timeout,
+                NotificationType = notificationType
             });
 
             return GetEventSubscriptionResponse(id, requestedTimeoutString, timeout);
@@ -82,7 +82,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                header = header.Split('-').Last();
+                header = header.Split('-')[^1];
 
                 if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
                 {
@@ -99,20 +99,12 @@ namespace Emby.Dlna.Eventing
 
             _subscriptions.TryRemove(subscriptionId, out _);
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
-            var response = new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            var response = new EventSubscriptionResponse(string.Empty, "text/plain");
 
             response.Headers["SID"] = subscriptionId;
             response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
@@ -167,24 +159,17 @@ namespace Emby.Dlna.Eventing
 
             builder.Append("</e:propertyset>");
 
-            var options = new HttpRequestOptions
-            {
-                RequestContent = builder.ToString(),
-                RequestContentType = "text/xml",
-                Url = subscription.CallbackUrl,
-                BufferContent = false
-            };
-
-            options.RequestHeaders.Add("NT", subscription.NotificationType);
-            options.RequestHeaders.Add("NTS", "upnp:propchange");
-            options.RequestHeaders.Add("SID", subscription.Id);
-            options.RequestHeaders.Add("SEQ", subscription.TriggerCount.ToString(_usCulture));
+            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"), subscription.CallbackUrl);
+            options.Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml);
+            options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
+            options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
+            options.Headers.TryAddWithoutValidation("SID", subscription.Id);
+            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(_usCulture));
 
             try
             {
-                using (await _httpClient.SendAsync(options, new HttpMethod("NOTIFY")).ConfigureAwait(false))
-                {
-                }
+                using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                    .SendAsync(options, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

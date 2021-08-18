@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -81,11 +83,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
-            [FromQuery, Required] string? searchTerm,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? mediaTypes,
-            [FromQuery] string? parentId,
+            [FromQuery, Required] string searchTerm,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+            [FromQuery] Guid? parentId,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSeries,
             [FromQuery] bool? isNews,
@@ -108,9 +110,9 @@ namespace Jellyfin.Api.Controllers
                 IncludeStudios = includeStudios,
                 StartIndex = startIndex,
                 UserId = userId ?? Guid.Empty,
-                IncludeItemTypes = RequestHelpers.Split(includeItemTypes, ',', true),
-                ExcludeItemTypes = RequestHelpers.Split(excludeItemTypes, ',', true),
-                MediaTypes = RequestHelpers.Split(mediaTypes, ',', true),
+                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                MediaTypes = mediaTypes,
                 ParentId = parentId,
 
                 IsKids = isKids,
@@ -226,10 +228,7 @@ namespace Jellyfin.Api.Controllers
                 itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
-            if (itemWithImage == null)
-            {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Thumb);
-            }
+            itemWithImage ??= GetParentWithImage<BaseItem>(item, ImageType.Thumb);
 
             if (itemWithImage != null)
             {
@@ -260,7 +259,7 @@ namespace Jellyfin.Api.Controllers
             }
         }
 
-        private T GetParentWithImage<T>(BaseItem item, ImageType type)
+        private T? GetParentWithImage<T>(BaseItem item, ImageType type)
             where T : BaseItem
         {
             return item.GetParents().OfType<T>().FirstOrDefault(i => i.HasImage(type));

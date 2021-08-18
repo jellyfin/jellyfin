@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -69,7 +70,7 @@ namespace Jellyfin.Server.Middleware
                 _logger.LogWarning(
                     "Slow HTTP Response from {url} to {remoteIp} in {elapsed:g} with Status Code {statusCode}",
                     context.Request.GetDisplayUrl(),
-                    context.Connection.RemoteIpAddress,
+                    context.GetNormalizedRemoteIp(),
                     watch.Elapsed,
                     context.Response.StatusCode);
             }

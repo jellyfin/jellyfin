@@ -16,7 +16,6 @@
     "Folders": "Pastas",
     "Genres": "Géneros",
     "HeaderAlbumArtists": "Artistas do Álbum",
-    "HeaderCameraUploads": "Envios a partir da câmara",
     "HeaderContinueWatching": "Continuar a Ver",
     "HeaderFavoriteAlbums": "Álbuns Favoritos",
     "HeaderFavoriteArtists": "Artistas Favoritos",
@@ -26,7 +25,7 @@
     "HeaderLiveTV": "TV em Direto",
     "HeaderNextUp": "A Seguir",
     "HeaderRecordingGroups": "Grupos de Gravação",
-    "HomeVideos": "Videos caseiros",
+    "HomeVideos": "Vídeos Caseiros",
     "Inherit": "Herdar",
     "ItemAddedWithName": "{0} foi adicionado à biblioteca",
     "ItemRemovedWithName": "{0} foi removido da biblioteca",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Canais da Internet",
     "TasksApplicationCategory": "Aplicação",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Manutenção"
+    "TasksMaintenanceCategory": "Manutenção",
+    "TaskCleanActivityLogDescription": "Apaga as entradas do registo de atividade anteriores à data configurada.",
+    "TaskCleanActivityLog": "Limpar registo de atividade",
+    "Undefined": "Indefinido",
+    "Forced": "Forçado",
+    "Default": "Padrão"
 }

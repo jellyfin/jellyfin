@@ -1,6 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -16,6 +19,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -43,7 +47,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
         private readonly List<BaseItem> _itemsRemoved = new List<BaseItem>();
         private readonly List<BaseItem> _itemsUpdated = new List<BaseItem>();
-        private readonly Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
+        private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new ConcurrentDictionary<Guid, DateTime>();
 
         public LibraryChangedNotifier(
             ILibraryManager libraryManager,
@@ -97,7 +101,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
             }
 
-            _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
+            _lastProgressMessageTimes.AddOrUpdate(item.Id, key => DateTime.UtcNow, (key, existing) => DateTime.UtcNow);
 
             var dict = new Dictionary<string, string>();
             dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
@@ -105,7 +109,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _sessionManager.SendMessageToAdminSessions("RefreshProgress", dict, CancellationToken.None);
+                _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, dict, CancellationToken.None);
             }
             catch
             {
@@ -123,7 +127,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    _sessionManager.SendMessageToAdminSessions("RefreshProgress", collectionFolderDict, CancellationToken.None);
+                    _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, collectionFolderDict, CancellationToken.None);
                 }
                 catch
                 {
@@ -139,6 +143,8 @@ namespace Emby.Server.Implementations.EntryPoints
         private void OnProviderRefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
         {
             OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
+
+            _lastProgressMessageTimes.TryRemove(e.Argument.Id, out DateTime removed);
         }
 
         private static bool EnableRefreshMessage(BaseItem item)
@@ -345,7 +351,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "LibraryChanged", info, cancellationToken).ConfigureAwait(false);
+                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.LibraryChanged, info, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -59,6 +58,16 @@ namespace MediaBrowser.Providers.Manager
             _logger = logger;
         }
 
+        private bool EnableExtraThumbsDuplication
+        {
+            get
+            {
+                var config = _config.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
+
+                return config.EnableExtraThumbsDuplication;
+            }
+        }
+
         /// <summary>
         /// Saves the image.
         /// </summary>
@@ -69,7 +78,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">mimeType</exception>
+        /// <exception cref="ArgumentNullException">mimeType.</exception>
         public Task SaveImage(BaseItem item, Stream source, string mimeType, ImageType type, int? imageIndex, CancellationToken cancellationToken)
         {
             return SaveImage(item, source, mimeType, type, imageIndex, null, cancellationToken);
@@ -93,10 +102,8 @@ namespace MediaBrowser.Providers.Manager
             {
                 saveLocally = false;
 
-                var season = item as Season;
-
                 // If season is virtual under a physical series, save locally if using compatible convention
-                if (season != null && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
+                if (item is Season season && _config.Configuration.ImageSavingConvention == ImageSavingConvention.Compatible)
                 {
                     var series = season.Series;
 
@@ -129,7 +136,7 @@ namespace MediaBrowser.Providers.Manager
                 var memoryStream = new MemoryStream();
                 await using (source.ConfigureAwait(false))
                 {
-                    await source.CopyToAsync(memoryStream).ConfigureAwait(false);
+                    await source.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
                 }
 
                 source = memoryStream;
@@ -165,7 +172,9 @@ namespace MediaBrowser.Providers.Manager
             SetImagePath(item, type, imageIndex, savedPaths[0]);
 
             // Delete the current path
-            if (currentImageIsLocalFile && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase))
+            if (currentImageIsLocalFile
+                && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase)
+                && (saveLocally || currentImagePath.Contains(_config.ApplicationPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
             {
                 var currentPath = currentImagePath;
 
@@ -254,7 +263,8 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.SetAttributes(path, false, false);
 
-                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 {
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
@@ -312,7 +322,7 @@ namespace MediaBrowser.Providers.Manager
         /// <exception cref="ArgumentNullException">
         /// imageIndex
         /// or
-        /// imageIndex
+        /// imageIndex.
         /// </exception>
         private ItemImageInfo GetCurrentImage(BaseItem item, ImageType type, int imageIndex)
         {
@@ -328,7 +338,8 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="path">The path.</param>
         /// <exception cref="ArgumentNullException">imageIndex
         /// or
-        /// imageIndex</exception>
+        /// imageIndex.
+        /// </exception>
         private void SetImagePath(BaseItem item, ImageType type, int? imageIndex, string path)
         {
             item.SetImagePath(type, imageIndex ?? 0, _fileSystem.GetFileInfo(path));
@@ -346,7 +357,7 @@ namespace MediaBrowser.Providers.Manager
         /// <exception cref="ArgumentNullException">
         /// imageIndex
         /// or
-        /// imageIndex
+        /// imageIndex.
         /// </exception>
         private string GetStandardSavePath(BaseItem item, ImageType type, int? imageIndex, string mimeType, bool saveLocally)
         {
@@ -500,7 +511,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="imageIndex">Index of the image.</param>
         /// <param name="mimeType">Type of the MIME.</param>
         /// <returns>IEnumerable{System.String}.</returns>
-        /// <exception cref="ArgumentNullException">imageIndex</exception>
+        /// <exception cref="ArgumentNullException">imageIndex.</exception>
         private string[] GetCompatibleSavePaths(BaseItem item, ImageType type, int? imageIndex, string mimeType)
         {
             var season = item as Season;
@@ -602,16 +613,6 @@ namespace MediaBrowser.Providers.Manager
 
             // All other paths are the same
             return new[] { GetStandardSavePath(item, type, imageIndex, mimeType, true) };
-        }
-
-        private bool EnableExtraThumbsDuplication
-        {
-            get
-            {
-                var config = _config.GetConfiguration<XbmcMetadataOptions>("xbmcmetadata");
-
-                return config.EnableExtraThumbsDuplication;
-            }
         }
 
         /// <summary>

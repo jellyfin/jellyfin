@@ -26,8 +26,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly Dictionary<Guid, List<BaseItem>> _changedItems = new Dictionary<Guid, List<BaseItem>>();
 
         private readonly object _syncLock = new object();
-        private Timer _updateTimer;
-
+        private Timer? _updateTimer;
 
         public UserDataChangeNotifier(IUserDataManager userDataManager, ISessionManager sessionManager, IUserManager userManager)
         {
@@ -43,7 +42,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return Task.CompletedTask;
         }
 
-        void OnUserDataManagerUserDataSaved(object sender, UserDataSaveEventArgs e)
+        private void OnUserDataManagerUserDataSaved(object? sender, UserDataSaveEventArgs e)
         {
             if (e.SaveReason == UserDataSaveReason.PlaybackProgress)
             {
@@ -65,7 +64,7 @@ namespace Emby.Server.Implementations.EntryPoints
                     _updateTimer.Change(UpdateDuration, Timeout.Infinite);
                 }
 
-                if (!_changedItems.TryGetValue(e.UserId, out List<BaseItem> keys))
+                if (!_changedItems.TryGetValue(e.UserId, out List<BaseItem>? keys))
                 {
                     keys = new List<BaseItem>();
                     _changedItems[e.UserId] = keys;
@@ -88,7 +87,7 @@ namespace Emby.Server.Implementations.EntryPoints
             }
         }
 
-        private void UpdateTimerCallback(object state)
+        private void UpdateTimerCallback(object? state)
         {
             lock (_syncLock)
             {
@@ -116,7 +115,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private Task SendNotifications(Guid userId, List<BaseItem> changedItems, CancellationToken cancellationToken)
         {
-            return _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "UserDataChanged", () => GetUserDataChangeInfo(userId, changedItems), cancellationToken);
+            return _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.UserDataChanged, () => GetUserDataChangeInfo(userId, changedItems), cancellationToken);
         }
 
         private UserDataChangeInfo GetUserDataChangeInfo(Guid userId, List<BaseItem> changedItems)

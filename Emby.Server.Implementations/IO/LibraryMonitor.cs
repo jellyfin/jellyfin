@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -88,7 +90,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in ReportFileSystemChanged for {path}", path);
+                    _logger.LogError(ex, "Error in ReportFileSystemChanged for {Path}", path);
                 }
             }
         }

@@ -17,10 +17,6 @@
                         <div class="fieldDescription">Span of time between requests in milliseconds. The official server is limited to one request every two seconds.</div>
                     </div>
                     <label class="checkboxContainer">
-                        <input is="emby-checkbox" type="checkbox" id="enable" />
-                        <span>Enable this provider for metadata searches on artists and albums.</span>
-                    </label>
-                    <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="replaceArtistName" />
                         <span>When an artist is found during a metadata search, replace the artist name with the value on the server.</span>
                     </label>
@@ -46,7 +42,7 @@
                             bubbles: true,
                             cancelable: false
                         }));
-                        
+
                         var rateLimit = document.querySelector('#rateLimit');
                         rateLimit.value = config.RateLimit;
                         rateLimit.dispatchEvent(new Event('change', {
@@ -54,26 +50,24 @@
                             cancelable: false
                         }));
                         
-                        document.querySelector('#enable').checked = config.Enable;
                         document.querySelector('#replaceArtistName').checked = config.ReplaceArtistName;
 
                         Dashboard.hideLoadingMsg();
                     });
                 });
-            
+
             document.querySelector('.musicBrainzConfigForm')
                 .addEventListener('submit', function (e) {
                     Dashboard.showLoadingMsg();
-    
+
                     ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
                         config.Server = document.querySelector('#server').value;
                         config.RateLimit = document.querySelector('#rateLimit').value;
-                        config.Enable = document.querySelector('#enable').checked;
                         config.ReplaceArtistName = document.querySelector('#replaceArtistName').checked;
-    
+
                         ApiClient.updatePluginConfiguration(MusicBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
-                    
+
                     e.preventDefault();
                     return false;
                 });

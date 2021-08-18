@@ -1,9 +1,12 @@
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ConfigurationDtos;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
@@ -23,7 +26,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IMediaEncoder _mediaEncoder;
 
-        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _serializerOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationController"/> class.
@@ -73,7 +76,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>Configuration.</returns>
         [HttpGet("Configuration/{key}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<object> GetNamedConfiguration([FromRoute] string? key)
+        [ProducesFile(MediaTypeNames.Application.Json)]
+        public ActionResult<object> GetNamedConfiguration([FromRoute, Required] string key)
         {
             return _configurationManager.GetConfiguration(key);
         }
@@ -87,10 +91,15 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Configuration/{key}")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute] string? key)
+        public async Task<ActionResult> UpdateNamedConfiguration([FromRoute, Required] string key)
         {
             var configurationType = _configurationManager.GetConfigurationType(key);
             var configuration = await JsonSerializer.DeserializeAsync(Request.Body, configurationType, _serializerOptions).ConfigureAwait(false);
+            if (configuration == null)
+            {
+                throw new ArgumentException("Body doesn't contain a valid configuration");
+            }
+
             _configurationManager.SaveConfiguration(key, configuration);
             return NoContent();
         }

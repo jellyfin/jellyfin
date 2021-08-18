@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Linq;
-using System.Net.Mime;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -18,6 +17,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -72,7 +72,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute] Guid itemId)
+        public ActionResult<IEnumerable<ExternalIdInfo>> GetExternalIdInfos([FromRoute, Required] Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
             if (item == null)
@@ -238,49 +238,6 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a remote image.
-        /// </summary>
-        /// <param name="imageUrl">The image url.</param>
-        /// <param name="providerName">The provider name.</param>
-        /// <response code="200">Remote image retrieved.</response>
-        /// <returns>
-        /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
-        /// The task result contains an <see cref="FileStreamResult"/> containing the images file stream.
-        /// </returns>
-        [HttpGet("Items/RemoteSearch/Image")]
-        public async Task<ActionResult> GetRemoteSearchImage(
-            [FromQuery, Required] string imageUrl,
-            [FromQuery, Required] string providerName)
-        {
-            var urlHash = imageUrl.GetMD5();
-            var pointerCachePath = GetFullCachePath(urlHash.ToString());
-
-            try
-            {
-                var contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-                if (System.IO.File.Exists(contentPath))
-                {
-                    await using var fileStreamExisting = System.IO.File.OpenRead(pointerCachePath);
-                    return new FileStreamResult(fileStreamExisting, MediaTypeNames.Application.Octet);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                // Means the file isn't cached yet
-            }
-            catch (IOException)
-            {
-                // Means the file isn't cached yet
-            }
-
-            await DownloadImage(providerName, imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-
-            // Read the pointer file again
-            await using var fileStream = System.IO.File.OpenRead(pointerCachePath);
-            return new FileStreamResult(fileStream, MediaTypeNames.Application.Octet);
-        }
-
-        /// <summary>
         /// Applies search criteria to an item and refreshes metadata.
         /// </summary>
         /// <param name="itemId">Item id.</param>
@@ -291,10 +248,11 @@ namespace Jellyfin.Api.Controllers
         /// A <see cref="Task" /> that represents the asynchronous operation to get the remote search results.
         /// The task result contains an <see cref="NoContentResult"/>.
         /// </returns>
-        [HttpPost("Items/RemoteSearch/Apply/{id}")]
+        [HttpPost("Items/RemoteSearch/Apply/{itemId}")]
         [Authorize(Policy = Policies.RequiresElevation)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> ApplySearchCriteria(
-            [FromRoute] Guid itemId,
+            [FromRoute, Required] Guid itemId,
             [FromBody, Required] RemoteSearchResult searchResult,
             [FromQuery] bool replaceAllImages = true)
         {
@@ -320,45 +278,5 @@ namespace Jellyfin.Api.Controllers
 
             return NoContent();
         }
-
-        /// <summary>
-        /// Downloads the image.
-        /// </summary>
-        /// <param name="providerName">Name of the provider.</param>
-        /// <param name="url">The URL.</param>
-        /// <param name="urlHash">The URL hash.</param>
-        /// <param name="pointerCachePath">The pointer cache path.</param>
-        /// <returns>Task.</returns>
-        private async Task DownloadImage(string providerName, string url, Guid urlHash, string pointerCachePath)
-        {
-            using var result = await _providerManager.GetSearchImage(providerName, url, CancellationToken.None).ConfigureAwait(false);
-            var ext = result.Content.Headers.ContentType.MediaType.Split('/')[^1];
-            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(fullCachePath));
-            using (var stream = result.Content)
-            {
-                await using var fileStream = new FileStream(
-                    fullCachePath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.Read,
-                    IODefaults.FileStreamBufferSize,
-                    true);
-
-                await stream.CopyToAsync(fileStream).ConfigureAwait(false);
-            }
-
-            Directory.CreateDirectory(Path.GetDirectoryName(pointerCachePath));
-            await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Gets the full cache path.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <returns>System.String.</returns>
-        private string GetFullCachePath(string filename)
-            => Path.Combine(_appPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
     }
 }

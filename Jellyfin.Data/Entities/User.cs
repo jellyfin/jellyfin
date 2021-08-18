@@ -1,20 +1,19 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities
 {
     /// <summary>
     /// An entity representing a user.
     /// </summary>
-    public partial class User : IHasPermissions, ISavingChanges
+    public class User : IHasPermissions, IHasConcurrencyToken
     {
         /// <summary>
         /// The values being delimited here are Guids, so commas work as they do not appear in Guids.
@@ -50,6 +49,7 @@ namespace Jellyfin.Data.Entities
             PasswordResetProviderId = passwordResetProviderId;
 
             AccessSchedules = new HashSet<AccessSchedule>();
+            DisplayPreferences = new HashSet<DisplayPreferences>();
             ItemDisplayPreferences = new HashSet<ItemDisplayPreferences>();
             // Groups = new HashSet<Group>();
             Permissions = new HashSet<Permission>();
@@ -70,25 +70,8 @@ namespace Jellyfin.Data.Entities
             EnableAutoLogin = false;
             PlayDefaultAudioTrack = true;
             SubtitleMode = SubtitlePlaybackMode.Default;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
-
-            AddDefaultPermissions();
-            AddDefaultPreferences();
-            Init();
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="User"/> class.
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </summary>
-        protected User()
-        {
-            Init();
-        }
-
-        /*************************************************************************
-         * Properties
-         *************************************************************************/
 
         /// <summary>
         /// Gets or sets the Id of the user.
@@ -96,8 +79,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
-        [Key]
-        [Required]
         [JsonIgnore]
         public Guid Id { get; set; }
 
@@ -107,7 +88,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string Username { get; set; }
@@ -120,7 +100,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         /// <summary>
         /// Gets or sets the user's easy password, or <c>null</c> if none is set.
@@ -130,7 +110,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(65535)]
         [StringLength(65535)]
-        public string EasyPassword { get; set; }
+        public string? EasyPassword { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the user must update their password.
@@ -138,7 +118,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool MustUpdatePassword { get; set; }
 
         /// <summary>
@@ -149,7 +128,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string AudioLanguagePreference { get; set; }
+        public string? AudioLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets the authentication provider id.
@@ -157,7 +136,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string AuthenticationProviderId { get; set; }
@@ -168,7 +146,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required, Max length = 255.
         /// </remarks>
-        [Required]
         [MaxLength(255)]
         [StringLength(255)]
         public string PasswordResetProviderId { get; set; }
@@ -179,7 +156,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public int InvalidLoginAttemptCount { get; set; }
 
         /// <summary>
@@ -198,12 +174,16 @@ namespace Jellyfin.Data.Entities
         public int? LoginAttemptsBeforeLockout { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum number of active sessions the user can have at once.
+        /// </summary>
+        public int MaxActiveSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the subtitle mode.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public SubtitlePlaybackMode SubtitleMode { get; set; }
 
         /// <summary>
@@ -212,7 +192,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool PlayDefaultAudioTrack { get; set; }
 
         /// <summary>
@@ -223,7 +202,7 @@ namespace Jellyfin.Data.Entities
         /// </remarks>
         [MaxLength(255)]
         [StringLength(255)]
-        public string SubtitleLanguagePreference { get; set; }
+        public string? SubtitleLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether missing episodes should be displayed.
@@ -231,7 +210,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool DisplayMissingEpisodes { get; set; }
 
         /// <summary>
@@ -240,7 +218,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool DisplayCollectionsView { get; set; }
 
         /// <summary>
@@ -249,7 +226,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableLocalPassword { get; set; }
 
         /// <summary>
@@ -258,7 +234,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool HidePlayedInLatest { get; set; }
 
         /// <summary>
@@ -267,7 +242,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool RememberAudioSelections { get; set; }
 
         /// <summary>
@@ -276,7 +250,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool RememberSubtitleSelections { get; set; }
 
         /// <summary>
@@ -285,7 +258,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableNextEpisodeAutoPlay { get; set; }
 
         /// <summary>
@@ -294,7 +266,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableAutoLogin { get; set; }
 
         /// <summary>
@@ -303,7 +274,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public bool EnableUserPreferenceAccess { get; set; }
 
         /// <summary>
@@ -321,90 +291,63 @@ namespace Jellyfin.Data.Entities
         /// This is a temporary stopgap for until the library db is migrated.
         /// This corresponds to the value of the index of this user in the library db.
         /// </summary>
-        [Required]
         public long InternalId { get; set; }
 
         /// <summary>
         /// Gets or sets the user's profile image. Can be <c>null</c>.
         /// </summary>
         // [ForeignKey("UserId")]
-        public virtual ImageInfo ProfileImage { get; set; }
+        public virtual ImageInfo? ProfileImage { get; set; }
 
         /// <summary>
-        /// Gets or sets the user's display preferences.
+        /// Gets the user's display preferences.
         /// </summary>
-        /// <remarks>
-        /// Required.
-        /// </remarks>
-        [Required]
-        public virtual DisplayPreferences DisplayPreferences { get; set; }
-
-        [Required]
-        public SyncPlayAccess SyncPlayAccess { get; set; }
+        public virtual ICollection<DisplayPreferences> DisplayPreferences { get; private set; }
 
         /// <summary>
-        /// Gets or sets the row version.
+        /// Gets or sets the level of sync play permissions this user has.
         /// </summary>
-        /// <remarks>
-        /// Required, Concurrency Token.
-        /// </remarks>
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
+
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        [Required]
-        public uint RowVersion { get; set; }
-
-        /*************************************************************************
-         * Navigation properties
-         *************************************************************************/
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Gets or sets the list of access schedules this user has.
+        /// Gets the list of access schedules this user has.
         /// </summary>
-        public virtual ICollection<AccessSchedule> AccessSchedules { get; protected set; }
+        public virtual ICollection<AccessSchedule> AccessSchedules { get; private set; }
 
         /// <summary>
-        /// Gets or sets the list of item display preferences.
+        /// Gets the list of item display preferences.
         /// </summary>
-        public virtual ICollection<ItemDisplayPreferences> ItemDisplayPreferences { get; protected set; }
+        public virtual ICollection<ItemDisplayPreferences> ItemDisplayPreferences { get; private set; }
 
         /*
         /// <summary>
-        /// Gets or sets the list of groups this user is a member of.
+        /// Gets the list of groups this user is a member of.
         /// </summary>
-        [ForeignKey("Group_Groups_Guid")]
-        public virtual ICollection<Group> Groups { get; protected set; }
+        public virtual ICollection<Group> Groups { get; private set; }
         */
 
         /// <summary>
-        /// Gets or sets the list of permissions this user has.
+        /// Gets the list of permissions this user has.
         /// </summary>
         [ForeignKey("Permission_Permissions_Guid")]
-        public virtual ICollection<Permission> Permissions { get; protected set; }
+        public virtual ICollection<Permission> Permissions { get; private set; }
 
         /*
         /// <summary>
-        /// Gets or sets the list of provider mappings this user has.
+        /// Gets the list of provider mappings this user has.
         /// </summary>
-        [ForeignKey("ProviderMapping_ProviderMappings_Id")]
-        public virtual ICollection<ProviderMapping> ProviderMappings { get; protected set; }
+        public virtual ICollection<ProviderMapping> ProviderMappings { get; private set; }
         */
 
         /// <summary>
-        /// Gets or sets the list of preferences this user has.
+        /// Gets the list of preferences this user has.
         /// </summary>
         [ForeignKey("Preference_Preferences_Guid")]
-        public virtual ICollection<Preference> Preferences { get; protected set; }
-
-        /// <summary>
-        /// Static create function (for use in LINQ queries, etc.)
-        /// </summary>
-        /// <param name="username">The username for the created user.</param>
-        /// <param name="authenticationProviderId">The Id of the user's authentication provider.</param>
-        /// <param name="passwordResetProviderId">The Id of the user's password reset provider.</param>
-        /// <returns>The created instance.</returns>
-        public static User Create(string username, string authenticationProviderId, string passwordResetProviderId)
-        {
-            return new User(username, authenticationProviderId, passwordResetProviderId);
-        }
+        public virtual ICollection<Preference> Preferences { get; private set; }
 
         /// <inheritdoc/>
         public void OnSavingChanges()
@@ -445,6 +388,44 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
+        /// Gets the user's preferences for the given preference kind.
+        /// </summary>
+        /// <param name="preference">The preference kind.</param>
+        /// <typeparam name="T">Type of preference.</typeparam>
+        /// <returns>A {T} array containing the user's preference.</returns>
+        public T[] GetPreferenceValues<T>(PreferenceKind preference)
+        {
+            var val = Preferences.First(p => p.Kind == preference).Value;
+            if (string.IsNullOrEmpty(val))
+            {
+                return Array.Empty<T>();
+            }
+
+            // Convert array of {string} to array of {T}
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+            var stringValues = val.Split(Delimiter);
+            var convertedCount = 0;
+            var parsedValues = new T[stringValues.Length];
+            for (var i = 0; i < stringValues.Length; i++)
+            {
+                try
+                {
+                    var parsedValue = converter.ConvertFromString(stringValues[i].Trim());
+                    if (parsedValue != null)
+                    {
+                        parsedValues[convertedCount++] = (T)parsedValue;
+                    }
+                }
+                catch (FormatException)
+                {
+                    // Unable to convert value
+                }
+            }
+
+            return parsedValues[..convertedCount];
+        }
+
+        /// <summary>
         /// Sets the specified preference to the given value.
         /// </summary>
         /// <param name="preference">The preference kind.</param>
@@ -452,7 +433,19 @@ namespace Jellyfin.Data.Entities
         public void SetPreference(PreferenceKind preference, string[] values)
         {
             Preferences.First(p => p.Kind == preference).Value
-                = string.Join(Delimiter.ToString(CultureInfo.InvariantCulture), values);
+                = string.Join(Delimiter, values);
+        }
+
+        /// <summary>
+        /// Sets the specified preference to the given value.
+        /// </summary>
+        /// <param name="preference">The preference kind.</param>
+        /// <param name="values">The values.</param>
+        /// <typeparam name="T">The type of value.</typeparam>
+        public void SetPreference<T>(PreferenceKind preference, T[] values)
+        {
+            Preferences.First(p => p.Kind == preference).Value
+                = string.Join(Delimiter, values);
         }
 
         /// <summary>
@@ -472,21 +465,14 @@ namespace Jellyfin.Data.Entities
         /// <returns><c>True</c> if the folder is in the user's grouped folders.</returns>
         public bool IsFolderGrouped(Guid id)
         {
-            return GetPreference(PreferenceKind.GroupedFolders).Any(i => new Guid(i) == id);
+            return Array.IndexOf(GetPreferenceValues<Guid>(PreferenceKind.GroupedFolders), id) != -1;
         }
 
-        private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
-        {
-            var localTime = date.ToLocalTime();
-            var hour = localTime.TimeOfDay.TotalHours;
-
-            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
-                   && hour >= schedule.StartHour
-                   && hour <= schedule.EndHour;
-        }
-
+        /// <summary>
+        /// Initializes the default permissions for a user. Should only be called on user creation.
+        /// </summary>
         // TODO: make these user configurable?
-        private void AddDefaultPermissions()
+        public void AddDefaultPermissions()
         {
             Permissions.Add(new Permission(PermissionKind.IsAdministrator, false));
             Permissions.Add(new Permission(PermissionKind.IsDisabled, false));
@@ -511,7 +497,10 @@ namespace Jellyfin.Data.Entities
             Permissions.Add(new Permission(PermissionKind.EnableRemoteControlOfOtherUsers, false));
         }
 
-        private void AddDefaultPreferences()
+        /// <summary>
+        /// Initializes the default preferences. Should only be called on user creation.
+        /// </summary>
+        public void AddDefaultPreferences()
         {
             foreach (var val in Enum.GetValues(typeof(PreferenceKind)).Cast<PreferenceKind>())
             {
@@ -519,6 +508,14 @@ namespace Jellyfin.Data.Entities
             }
         }
 
-        partial void Init();
+        private static bool IsParentalScheduleAllowed(AccessSchedule schedule, DateTime date)
+        {
+            var localTime = date.ToLocalTime();
+            var hour = localTime.TimeOfDay.TotalHours;
+
+            return DayOfWeekHelper.GetDaysOfWeek(schedule.DayOfWeek).Contains(localTime.DayOfWeek)
+                   && hour >= schedule.StartHour
+                   && hour <= schedule.EndHour;
+        }
     }
 }

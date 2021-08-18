@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -69,13 +70,13 @@ namespace MediaBrowser.LocalMetadata.Images
         }
 
         /// <inheritdoc />
-        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var path = item.GetInternalMetadataPath();
 
             if (!Directory.Exists(path))
             {
-                return new List<LocalImageInfo>();
+                return Enumerable.Empty<LocalImageInfo>();
             }
 
             try
@@ -85,7 +86,7 @@ namespace MediaBrowser.LocalMetadata.Images
             catch (IOException ex)
             {
                 _logger.LogError(ex, "Error while getting images for {Library}", item.Name);
-                return new List<LocalImageInfo>();
+                return Enumerable.Empty<LocalImageInfo>();
             }
         }
     }

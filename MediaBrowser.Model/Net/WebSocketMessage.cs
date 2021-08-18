@@ -2,20 +2,21 @@
 #pragma warning disable CS1591
 
 using System;
+using MediaBrowser.Model.Session;
 
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
     /// Class WebSocketMessage.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the data.</typeparam>
     public class WebSocketMessage<T>
     {
         /// <summary>
         /// Gets or sets the type of the message.
         /// </summary>
         /// <value>The type of the message.</value>
-        public string MessageType { get; set; }
+        public SessionMessageType MessageType { get; set; }
 
         public Guid MessageId { get; set; }
 

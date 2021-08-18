@@ -15,6 +15,7 @@ namespace MediaBrowser.Model.Dlna
                 new ResolutionConfiguration(720, 950000),
                 new ResolutionConfiguration(1280, 2500000),
                 new ResolutionConfiguration(1920, 4000000),
+                new ResolutionConfiguration(2560, 20000000),
                 new ResolutionConfiguration(3840, 35000000)
             };
 
@@ -28,7 +29,7 @@ namespace MediaBrowser.Model.Dlna
             int? maxWidth,
             int? maxHeight)
         {
-            // If the bitrate isn't changing, then don't downlscale the resolution
+            // If the bitrate isn't changing, then don't downscale the resolution
             if (inputBitrate.HasValue && outputBitrate >= inputBitrate.Value)
             {
                 if (maxWidth.HasValue || maxHeight.HasValue)
@@ -79,11 +80,11 @@ namespace MediaBrowser.Model.Dlna
 
         private static double GetVideoBitrateScaleFactor(string codec)
         {
-            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
             {
-                return .5;
+                return .6;
             }
 
             return 1;

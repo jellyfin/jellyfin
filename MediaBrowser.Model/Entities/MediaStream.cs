@@ -36,6 +36,18 @@ namespace MediaBrowser.Model.Entities
         public string Language { get; set; }
 
         /// <summary>
+        /// Gets or sets the color range.
+        /// </summary>
+        /// <value>The color range.</value>
+        public string ColorRange { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color space.
+        /// </summary>
+        /// <value>The color space.</value>
+        public string ColorSpace { get; set; }
+
+        /// <summary>
         /// Gets or sets the color transfer.
         /// </summary>
         /// <value>The color transfer.</value>
@@ -46,12 +58,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The color primaries.</value>
         public string ColorPrimaries { get; set; }
-
-        /// <summary>
-        /// Gets or sets the color space.
-        /// </summary>
-        /// <value>The color space.</value>
-        public string ColorSpace { get; set; }
 
         /// <summary>
         /// Gets or sets the comment.
@@ -78,7 +84,7 @@ namespace MediaBrowser.Model.Entities
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the video range.
+        /// Gets the video range.
         /// </summary>
         /// <value>The video range.</value>
         public string VideoRange
@@ -98,15 +104,28 @@ namespace MediaBrowser.Model.Entities
                     return "HDR";
                 }
 
+                // For some Dolby Vision files, no color transfer is provided, so check the codec
+
+                var codecTag = CodecTag;
+
+                if (string.Equals(codecTag, "dva1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvav", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvh1", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dvhe", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codecTag, "dav1", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "HDR";
+                }
+
                 return "SDR";
             }
         }
 
-        public string localizedUndefined { get; set; }
+        public string LocalizedUndefined { get; set; }
 
-        public string localizedDefault { get; set; }
+        public string LocalizedDefault { get; set; }
 
-        public string localizedForced { get; set; }
+        public string LocalizedForced { get; set; }
 
         public string DisplayTitle
         {
@@ -148,7 +167,7 @@ namespace MediaBrowser.Model.Entities
 
                         if (IsDefault)
                         {
-                            attributes.Add(string.IsNullOrEmpty(localizedDefault) ? "Default" : localizedDefault);
+                            attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
                         }
 
                         if (!string.IsNullOrEmpty(Title))
@@ -157,7 +176,7 @@ namespace MediaBrowser.Model.Entities
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }
@@ -185,13 +204,18 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(Codec.ToUpperInvariant());
                         }
 
+                        if (!string.IsNullOrEmpty(VideoRange))
+                        {
+                            attributes.Add(VideoRange.ToUpperInvariant());
+                        }
+
                         if (!string.IsNullOrEmpty(Title))
                         {
                             var result = new StringBuilder(Title);
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }
@@ -200,7 +224,7 @@ namespace MediaBrowser.Model.Entities
                             return result.ToString();
                         }
 
-                        return string.Join(" ", attributes);
+                        return string.Join(' ', attributes);
                     }
 
                     case MediaStreamType.Subtitle:
@@ -218,17 +242,17 @@ namespace MediaBrowser.Model.Entities
                         }
                         else
                         {
-                            attributes.Add(string.IsNullOrEmpty(localizedUndefined) ? "Und" : localizedUndefined);
+                            attributes.Add(string.IsNullOrEmpty(LocalizedUndefined) ? "Und" : LocalizedUndefined);
                         }
 
                         if (IsDefault)
                         {
-                            attributes.Add(string.IsNullOrEmpty(localizedDefault) ? "Default" : localizedDefault);
+                            attributes.Add(string.IsNullOrEmpty(LocalizedDefault) ? "Default" : LocalizedDefault);
                         }
 
                         if (IsForced)
                         {
-                            attributes.Add(string.IsNullOrEmpty(localizedForced) ? "Forced" : localizedForced);
+                            attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
                         }
 
                         if (!string.IsNullOrEmpty(Title))
@@ -253,67 +277,6 @@ namespace MediaBrowser.Model.Entities
                         return null;
                 }
             }
-        }
-
-        private string GetResolutionText()
-        {
-            var i = this;
-
-            if (i.Width.HasValue && i.Height.HasValue)
-            {
-                var width = i.Width.Value;
-                var height = i.Height.Value;
-
-                if (width >= 3800 || height >= 2000)
-                {
-                    return "4K";
-                }
-
-                if (width >= 2500)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "1440i";
-                    }
-
-                    return "1440p";
-                }
-
-                if (width >= 1900 || height >= 1000)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "1080i";
-                    }
-
-                    return "1080p";
-                }
-
-                if (width >= 1260 || height >= 700)
-                {
-                    if (i.IsInterlaced)
-                    {
-                        return "720i";
-                    }
-
-                    return "720p";
-                }
-
-                if (width >= 700 || height >= 440)
-                {
-
-                    if (i.IsInterlaced)
-                    {
-                        return "480i";
-                    }
-
-                    return "480p";
-                }
-
-                return "SD";
-            }
-
-            return null;
         }
 
         public string NalLengthSize { get; set; }
@@ -445,11 +408,13 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The method.</value>
         public SubtitleDeliveryMethod? DeliveryMethod { get; set; }
+
         /// <summary>
         /// Gets or sets the delivery URL.
         /// </summary>
         /// <value>The delivery URL.</value>
         public string DeliveryUrl { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is external URL.
         /// </summary>
@@ -474,15 +439,71 @@ namespace MediaBrowser.Model.Entities
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports external stream].
+        /// </summary>
+        /// <value><c>true</c> if [supports external stream]; otherwise, <c>false</c>.</value>
+        public bool SupportsExternalStream { get; set; }
+
+        /// <summary>
+        /// Gets or sets the filename.
+        /// </summary>
+        /// <value>The filename.</value>
+        public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pixel format.
+        /// </summary>
+        /// <value>The pixel format.</value>
+        public string PixelFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the level.
+        /// </summary>
+        /// <value>The level.</value>
+        public double? Level { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this instance is anamorphic.
+        /// </summary>
+        /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
+        public bool? IsAnamorphic { get; set; }
+
+        internal string GetResolutionText()
+        {
+            if (!Width.HasValue || !Height.HasValue)
+            {
+                return null;
+            }
+
+            return Width switch
+            {
+                <= 720 when Height <= 480 => IsInterlaced ? "480i" : "480p",
+                // 720x576 (PAL) (768 when rescaled for square pixels)
+                <= 768 when Height <= 576 => IsInterlaced ? "576i" : "576p",
+                // 960x540 (sometimes 544 which is multiple of 16)
+                <= 960 when Height <= 544 => IsInterlaced ? "540i" : "540p",
+                // 1280x720
+                <= 1280 when Height <= 962 => IsInterlaced ? "720i" : "720p",
+                // 1920x1080
+                <= 1920 when Height <= 1440 => IsInterlaced ? "1080i" : "1080p",
+                // 4K
+                <= 4096 when Height <= 3072 => "4K",
+                // 8K
+                <= 8192 when Height <= 6144 => "8K",
+                _ => null
+            };
+        }
+
         public static bool IsTextFormat(string format)
         {
             string codec = format ?? string.Empty;
 
             // sub = external .sub file
 
-            return codec.IndexOf("pgs", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   codec.IndexOf("dvd", StringComparison.OrdinalIgnoreCase) == -1 &&
-                   codec.IndexOf("dvbsub", StringComparison.OrdinalIgnoreCase) == -1 &&
+            return !codec.Contains("pgs", StringComparison.OrdinalIgnoreCase) &&
+                   !codec.Contains("dvd", StringComparison.OrdinalIgnoreCase) &&
+                   !codec.Contains("dvbsub", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(codec, "sub", StringComparison.OrdinalIgnoreCase) &&
                    !string.Equals(codec, "dvb_subtitle", StringComparison.OrdinalIgnoreCase);
         }
@@ -520,35 +541,5 @@ namespace MediaBrowser.Model.Entities
 
             return true;
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [supports external stream].
-        /// </summary>
-        /// <value><c>true</c> if [supports external stream]; otherwise, <c>false</c>.</value>
-        public bool SupportsExternalStream { get; set; }
-
-        /// <summary>
-        /// Gets or sets the filename.
-        /// </summary>
-        /// <value>The filename.</value>
-        public string Path { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pixel format.
-        /// </summary>
-        /// <value>The pixel format.</value>
-        public string PixelFormat { get; set; }
-
-        /// <summary>
-        /// Gets or sets the level.
-        /// </summary>
-        /// <value>The level.</value>
-        public double? Level { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is anamorphic.
-        /// </summary>
-        /// <value><c>true</c> if this instance is anamorphic; otherwise, <c>false</c>.</value>
-        public bool? IsAnamorphic { get; set; }
     }
 }

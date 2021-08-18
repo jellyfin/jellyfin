@@ -29,13 +29,15 @@ namespace Jellyfin.Api.Auth.DefaultAuthorizationPolicy
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DefaultAuthorizationRequirement requirement)
         {
             var validated = ValidateClaims(context.User);
-            if (!validated)
+            if (validated)
+            {
+                context.Succeed(requirement);
+            }
+            else
             {
                 context.Fail();
-                return Task.CompletedTask;
             }
 
-            context.Succeed(requirement);
             return Task.CompletedTask;
         }
     }

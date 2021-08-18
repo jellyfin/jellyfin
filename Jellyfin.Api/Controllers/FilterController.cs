@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -49,37 +49,29 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? mediaTypes)
+            [FromQuery] Guid? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
         {
-            var parentItem = string.IsNullOrEmpty(parentId)
-                ? null
-                : _libraryManager.GetItemById(parentId);
-
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            if (string.Equals(includeItemTypes, nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(Playlist), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(Trailer), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, "Program", StringComparison.OrdinalIgnoreCase))
+            BaseItem? item = null;
+            if (includeItemTypes.Length != 1
+                || !(includeItemTypes[0] == BaseItemKind.BoxSet
+                     || includeItemTypes[0] == BaseItemKind.Playlist
+                     || includeItemTypes[0] == BaseItemKind.Trailer
+                     || includeItemTypes[0] == BaseItemKind.Program))
             {
-                parentItem = null;
+                item = _libraryManager.GetParentItem(parentId, user?.Id);
             }
-
-            var item = string.IsNullOrEmpty(parentId)
-                ? user == null
-                    ? _libraryManager.RootFolder
-                    : _libraryManager.GetUserRootFolder()
-                : parentItem;
 
             var query = new InternalItemsQuery
             {
                 User = user,
-                MediaTypes = (mediaTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
-                IncludeItemTypes = (includeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                MediaTypes = mediaTypes,
+                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
                 Recursive = true,
                 EnableTotalRecordCount = false,
                 DtoOptions = new DtoOptions
@@ -90,7 +82,12 @@ namespace Jellyfin.Api.Controllers
                 }
             };
 
-            var itemList = ((Folder)item!).GetItemList(query);
+            if (item is not Folder folder)
+            {
+                return new QueryFiltersLegacy();
+            }
+
+            var itemList = folder.GetItemList(query);
             return new QueryFiltersLegacy
             {
                 Years = itemList.Select(i => i.ProductionYear ?? -1)
@@ -138,8 +135,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,
-            [FromQuery] string? parentId,
-            [FromQuery] string? includeItemTypes,
+            [FromQuery] Guid? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery] bool? isAiring,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSports,
@@ -148,27 +145,28 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isSeries,
             [FromQuery] bool? recursive)
         {
-            var parentItem = string.IsNullOrEmpty(parentId)
-                ? null
-                : _libraryManager.GetItemById(parentId);
-
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            if (string.Equals(includeItemTypes, nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(Playlist), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(Trailer), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, "Program", StringComparison.OrdinalIgnoreCase))
+            BaseItem? parentItem = null;
+            if (includeItemTypes.Length == 1
+                && (includeItemTypes[0] == BaseItemKind.BoxSet
+                    || includeItemTypes[0] == BaseItemKind.Playlist
+                    || includeItemTypes[0] == BaseItemKind.Trailer
+                    || includeItemTypes[0] == BaseItemKind.Program))
             {
                 parentItem = null;
+            }
+            else if (parentId.HasValue)
+            {
+                parentItem = _libraryManager.GetItemById(parentId.Value);
             }
 
             var filters = new QueryFilters();
             var genreQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes =
-                    (includeItemTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
                 DtoOptions = new DtoOptions
                 {
                     Fields = Array.Empty<ItemFields>(),
@@ -192,10 +190,11 @@ namespace Jellyfin.Api.Controllers
                 genreQuery.Parent = parentItem;
             }
 
-            if (string.Equals(includeItemTypes, nameof(MusicAlbum), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(MusicVideo), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(MusicArtist), StringComparison.OrdinalIgnoreCase)
-                || string.Equals(includeItemTypes, nameof(Audio), StringComparison.OrdinalIgnoreCase))
+            if (includeItemTypes.Length == 1
+                && (includeItemTypes[0] == BaseItemKind.MusicAlbum
+                    || includeItemTypes[0] == BaseItemKind.MusicVideo
+                    || includeItemTypes[0] == BaseItemKind.MusicArtist
+                    || includeItemTypes[0] == BaseItemKind.Audio))
             {
                 filters.Genres = _libraryManager.GetMusicGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {

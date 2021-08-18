@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,6 +25,11 @@ namespace Emby.Server.Implementations.AppBase
 
         private readonly ConcurrentDictionary<string, object> _configurations = new ConcurrentDictionary<string, object>();
 
+        /// <summary>
+        /// The _configuration sync lock.
+        /// </summary>
+        private readonly object _configurationSyncLock = new object();
+
         private ConfigurationStore[] _configurationStores = Array.Empty<ConfigurationStore>();
         private IConfigurationFactory[] _configurationFactories = Array.Empty<IConfigurationFactory>();
 
@@ -30,11 +37,6 @@ namespace Emby.Server.Implementations.AppBase
         /// The _configuration loaded.
         /// </summary>
         private bool _configurationLoaded;
-
-        /// <summary>
-        /// The _configuration sync lock.
-        /// </summary>
-        private readonly object _configurationSyncLock = new object();
 
         /// <summary>
         /// The _configuration.
@@ -131,6 +133,33 @@ namespace Emby.Server.Implementations.AppBase
 
                 _configurationLoaded = value != null;
             }
+        }
+
+        /// <summary>
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
+        /// </summary>
+        /// <typeparam name="T">Class to register.</typeparam>
+        public virtual void RegisterConfiguration<T>()
+            where T : IConfigurationFactory
+        {
+            IConfigurationFactory factory = Activator.CreateInstance<T>();
+
+            if (_configurationFactories == null)
+            {
+                _configurationFactories = new[] { factory };
+            }
+            else
+            {
+                var oldLen = _configurationFactories.Length;
+                var arr = new IConfigurationFactory[oldLen + 1];
+                _configurationFactories.CopyTo(arr, 0);
+                arr[oldLen] = factory;
+                _configurationFactories = arr;
+            }
+
+            _configurationStores = _configurationFactories
+                .SelectMany(i => i.GetConfigurations())
+                .ToArray();
         }
 
         /// <summary>
@@ -270,25 +299,29 @@ namespace Emby.Server.Implementations.AppBase
         /// <inheritdoc />
         public object GetConfiguration(string key)
         {
-            return _configurations.GetOrAdd(key, k =>
-            {
-                var file = GetConfigurationFile(key);
-
-                var configurationInfo = _configurationStores
-                    .FirstOrDefault(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
-
-                if (configurationInfo == null)
+            return _configurations.GetOrAdd(
+                key,
+                (k, configurationManager) =>
                 {
-                    throw new ResourceNotFoundException("Configuration with key " + key + " not found.");
-                }
+                    var file = configurationManager.GetConfigurationFile(k);
 
-                var configurationType = configurationInfo.ConfigurationType;
+                    var configurationInfo = Array.Find(
+                        configurationManager._configurationStores,
+                        i => string.Equals(i.Key, k, StringComparison.OrdinalIgnoreCase));
 
-                lock (_configurationSyncLock)
-                {
-                    return LoadConfiguration(file, configurationType);
-                }
-            });
+                    if (configurationInfo == null)
+                    {
+                        throw new ResourceNotFoundException("Configuration with key " + k + " not found.");
+                    }
+
+                    var configurationType = configurationInfo.ConfigurationType;
+
+                    lock (configurationManager._configurationSyncLock)
+                    {
+                        return configurationManager.LoadConfiguration(file, configurationType);
+                    }
+                },
+                this);
         }
 
         private object LoadConfiguration(string path, Type configurationType)
@@ -308,7 +341,7 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading configuration file: {path}", path);
+                Logger.LogError(ex, "Error loading configuration file: {Path}", path);
 
                 return Activator.CreateInstance(configurationType);
             }

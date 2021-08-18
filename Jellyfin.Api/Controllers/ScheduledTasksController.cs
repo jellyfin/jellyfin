@@ -36,7 +36,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The list of scheduled tasks.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IEnumerable<IScheduledTaskWorker> GetTasks(
+        public IEnumerable<TaskInfo> GetTasks(
             [FromQuery] bool? isHidden,
             [FromQuery] bool? isEnabled)
         {
@@ -57,7 +57,7 @@ namespace Jellyfin.Api.Controllers
                     }
                 }
 
-                yield return task;
+                yield return ScheduledTaskHelpers.GetTaskInfo(task);
             }
         }
 
@@ -71,7 +71,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{taskId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<TaskInfo> GetTask([FromRoute, Required] string? taskId)
+        public ActionResult<TaskInfo> GetTask([FromRoute, Required] string taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(i =>
                 string.Equals(i.Id, taskId, StringComparison.OrdinalIgnoreCase));
@@ -94,7 +94,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Running/{taskId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult StartTask([FromRoute] string? taskId)
+        public ActionResult StartTask([FromRoute, Required] string taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
@@ -118,7 +118,7 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete("Running/{taskId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult StopTask([FromRoute, Required] string? taskId)
+        public ActionResult StopTask([FromRoute, Required] string taskId)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>
                 o.Id.Equals(taskId, StringComparison.OrdinalIgnoreCase));
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateTask(
-            [FromRoute, Required] string? taskId,
+            [FromRoute, Required] string taskId,
             [FromBody, Required] TaskTriggerInfo[] triggerInfos)
         {
             var task = _taskManager.ScheduledTasks.FirstOrDefault(o =>

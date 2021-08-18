@@ -28,9 +28,12 @@ namespace MediaBrowser.Providers.TV
         }
 
         /// <inheritdoc />
-        protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override bool EnableUpdatingPremiereDateFromChildren => true;
+
+        /// <inheritdoc />
+        protected override ItemUpdateType BeforeSaveInternal(Season item, bool isFullRefresh, ItemUpdateType updateType)
         {
-            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+            var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
             if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
             {
@@ -39,7 +42,7 @@ namespace MediaBrowser.Providers.TV
                 if (!string.Equals(item.Name, seasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
                 {
                     item.Name = seasonZeroDisplayName;
-                    updateType = updateType | ItemUpdateType.MetadataEdit;
+                    updatedType = updatedType | ItemUpdateType.MetadataEdit;
                 }
             }
 
@@ -47,28 +50,25 @@ namespace MediaBrowser.Providers.TV
             if (!string.Equals(item.SeriesName, seriesName, StringComparison.Ordinal))
             {
                 item.SeriesName = seriesName;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seriesPresentationUniqueKey = item.FindSeriesPresentationUniqueKey();
             if (!string.Equals(item.SeriesPresentationUniqueKey, seriesPresentationUniqueKey, StringComparison.Ordinal))
             {
                 item.SeriesPresentationUniqueKey = seriesPresentationUniqueKey;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
             var seriesId = item.FindSeriesId();
             if (!item.SeriesId.Equals(seriesId))
             {
                 item.SeriesId = seriesId;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
-            return updateType;
+            return updatedType;
         }
-
-        /// <inheritdoc />
-        protected override bool EnableUpdatingPremiereDateFromChildren => true;
 
         /// <inheritdoc />
         protected override IList<BaseItem> GetChildrenForMetadataUpdates(Season item)

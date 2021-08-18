@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -197,7 +199,7 @@ namespace Emby.Server.Implementations.Dto
                 catch (Exception ex)
                 {
                     // Have to use a catch-all unfortunately because some .net image methods throw plain Exceptions
-                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {itemName}", item.Name);
+                    _logger.LogError(ex, "Error generating PrimaryImageAspectRatio for {ItemName}", item.Name);
                 }
             }
 
@@ -249,7 +251,7 @@ namespace Emby.Server.Implementations.Dto
             var activeRecording = liveTvManager.GetActiveRecordingInfo(item.Path);
             if (activeRecording != null)
             {
-                dto.Type = "Recording";
+                dto.Type = BaseItemKind.Recording;
                 dto.CanDownload = false;
                 dto.RunTimeTicks = null;
 
@@ -275,7 +277,7 @@ namespace Emby.Server.Implementations.Dto
                     continue;
                 }
 
-                var containers = container.Split(new[] { ',' });
+                var containers = container.Split(',');
                 if (containers.Length < 2)
                 {
                     continue;
@@ -465,10 +467,9 @@ namespace Emby.Server.Implementations.Dto
             {
                 var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(MusicAlbum).Name },
+                    IncludeItemTypes = new[] { nameof(MusicAlbum) },
                     Name = item.Album,
                     Limit = 1
-
                 });
 
                 if (parentAlbumIds.Count > 0)
@@ -583,7 +584,26 @@ namespace Emby.Server.Implementations.Dto
                 {
                     baseItemPerson.PrimaryImageTag = GetTagAndFillBlurhash(dto, entity, ImageType.Primary);
                     baseItemPerson.Id = entity.Id.ToString("N", CultureInfo.InvariantCulture);
-                    baseItemPerson.ImageBlurHashes = dto.ImageBlurHashes;
+                    if (dto.ImageBlurHashes != null)
+                    {
+                        // Only add BlurHash for the person's image.
+                        baseItemPerson.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
+                        foreach (var (imageType, blurHash) in dto.ImageBlurHashes)
+                        {
+                            if (blurHash != null)
+                            {
+                                baseItemPerson.ImageBlurHashes[imageType] = new Dictionary<string, string>();
+                                foreach (var (imageId, blurHashValue) in blurHash)
+                                {
+                                    if (string.Equals(baseItemPerson.PrimaryImageTag, imageId, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        baseItemPerson.ImageBlurHashes[imageType][imageId] = blurHashValue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     list.Add(baseItemPerson);
                 }
             }
@@ -647,10 +667,7 @@ namespace Emby.Server.Implementations.Dto
             var tag = GetImageCacheTag(item, image);
             if (!string.IsNullOrEmpty(image.BlurHash))
             {
-                if (dto.ImageBlurHashes == null)
-                {
-                    dto.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
-                }
+                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
 
                 if (!dto.ImageBlurHashes.ContainsKey(image.Type))
                 {
@@ -684,10 +701,7 @@ namespace Emby.Server.Implementations.Dto
 
             if (hashes.Count > 0)
             {
-                if (dto.ImageBlurHashes == null)
-                {
-                    dto.ImageBlurHashes = new Dictionary<ImageType, Dictionary<string, string>>();
-                }
+                dto.ImageBlurHashes ??= new Dictionary<ImageType, Dictionary<string, string>>();
 
                 dto.ImageBlurHashes[imageType] = hashes;
             }
@@ -880,13 +894,10 @@ namespace Emby.Server.Implementations.Dto
                     dto.Taglines = new string[] { item.Tagline };
                 }
 
-                if (dto.Taglines == null)
-                {
-                    dto.Taglines = Array.Empty<string>();
-                }
+                dto.Taglines ??= Array.Empty<string>();
             }
 
-            dto.Type = item.GetClientTypeName();
+            dto.Type = item.GetBaseItemKind();
             if ((item.CommunityRating ?? 0) > 0)
             {
                 dto.CommunityRating = item.CommunityRating;
@@ -1139,6 +1150,10 @@ namespace Emby.Server.Implementations.Dto
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
+                        {
+                            AttachPrimaryImageAspectRatio(dto, episodeSeries);
+                        }
                     }
                 }
 
@@ -1185,6 +1200,10 @@ namespace Emby.Server.Implementations.Dto
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
+                        if (dto.ImageTags == null || !dto.ImageTags.ContainsKey(ImageType.Primary))
+                        {
+                            AttachPrimaryImageAspectRatio(dto, series);
+                        }
                     }
                 }
             }
@@ -1431,7 +1450,7 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            return width / height;
+            return (double)width / height;
         }
     }
 }

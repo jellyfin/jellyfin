@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Jellyfin Team <team@jellyfin.org>
 Build-Depends:  debhelper (>= 9),
-                dotnet-sdk-3.1,
+                dotnet-sdk-5.0,
                 libc6-dev,
                 libcurl4-openssl-dev,
                 libfontconfig1-dev,
@@ -20,7 +20,6 @@ Breaks: jellyfin (<<10.6.0)
 Architecture: any
 Depends: at,
          libsqlite3-0,
-         jellyfin-ffmpeg (>= 4.2.1-2),
          libfontconfig1,
          libfreetype6,
          libssl1.1

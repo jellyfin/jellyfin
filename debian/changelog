@@ -1,3 +1,9 @@
+jellyfin-server (10.8.0-1) unstable; urgency=medium
+
+  * Forthcoming stable release
+
+ -- Jellyfin Packaging Team <packaging@jellyfin.org>  Fri, 04 Dec 2020 21:55:12 -0500
+
 jellyfin-server (10.7.0-1) unstable; urgency=medium
 
   * Forthcoming stable release

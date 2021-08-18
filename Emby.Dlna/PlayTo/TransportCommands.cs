@@ -13,12 +13,10 @@ namespace Emby.Dlna.PlayTo
     public class TransportCommands
     {
         private const string CommandBase = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" + "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\" SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">" + "<SOAP-ENV:Body>" + "<m:{0} xmlns:m=\"{1}\">" + "{2}" + "</m:{0}>" + "</SOAP-ENV:Body></SOAP-ENV:Envelope>";
-        private List<StateVariable> _stateVariables = new List<StateVariable>();
-        private List<ServiceAction> _serviceActions = new List<ServiceAction>();
 
-        public List<StateVariable> StateVariables => _stateVariables;
+        public List<StateVariable> StateVariables { get; } = new List<StateVariable>();
 
-        public List<ServiceAction> ServiceActions => _serviceActions;
+        public List<ServiceAction> ServiceActions { get; } = new List<ServiceAction>();
 
         public static TransportCommands Create(XDocument document)
         {
@@ -48,7 +46,7 @@ namespace Emby.Dlna.PlayTo
         {
             var serviceAction = new ServiceAction
             {
-                Name = container.GetValue(UPnpNamespaces.Svc + "name"),
+                Name = container.GetValue(UPnpNamespaces.Svc + "name") ?? string.Empty,
             };
 
             var argumentList = serviceAction.ArgumentList;
@@ -70,15 +68,15 @@ namespace Emby.Dlna.PlayTo
 
             return new Argument
             {
-                Name = container.GetValue(UPnpNamespaces.Svc + "name"),
-                Direction = container.GetValue(UPnpNamespaces.Svc + "direction"),
-                RelatedStateVariable = container.GetValue(UPnpNamespaces.Svc + "relatedStateVariable")
+                Name = container.GetValue(UPnpNamespaces.Svc + "name") ?? string.Empty,
+                Direction = container.GetValue(UPnpNamespaces.Svc + "direction") ?? string.Empty,
+                RelatedStateVariable = container.GetValue(UPnpNamespaces.Svc + "relatedStateVariable") ?? string.Empty
             };
         }
 
         private static StateVariable FromXml(XElement container)
         {
-            var allowedValues = new List<string>();
+            var allowedValues = Array.Empty<string>();
             var element = container.Descendants(UPnpNamespaces.Svc + "allowedValueList")
                 .FirstOrDefault();
 
@@ -86,14 +84,14 @@ namespace Emby.Dlna.PlayTo
             {
                 var values = element.Descendants(UPnpNamespaces.Svc + "allowedValue");
 
-                allowedValues.AddRange(values.Select(child => child.Value));
+                allowedValues = values.Select(child => child.Value).ToArray();
             }
 
             return new StateVariable
             {
-                Name = container.GetValue(UPnpNamespaces.Svc + "name"),
-                DataType = container.GetValue(UPnpNamespaces.Svc + "dataType"),
-                AllowedValues = allowedValues.ToArray()
+                Name = container.GetValue(UPnpNamespaces.Svc + "name") ?? string.Empty,
+                DataType = container.GetValue(UPnpNamespaces.Svc + "dataType") ?? string.Empty,
+                AllowedValues = allowedValues
             };
         }
 
@@ -103,12 +101,12 @@ namespace Emby.Dlna.PlayTo
 
             foreach (var arg in action.ArgumentList)
             {
-                if (arg.Direction == "out")
+                if (string.Equals(arg.Direction, "out", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                if (arg.Name == "InstanceID")
+                if (string.Equals(arg.Name, "InstanceID", StringComparison.Ordinal))
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }
@@ -127,12 +125,12 @@ namespace Emby.Dlna.PlayTo
 
             foreach (var arg in action.ArgumentList)
             {
-                if (arg.Direction == "out")
+                if (string.Equals(arg.Direction, "out", StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                if (arg.Name == "InstanceID")
+                if (string.Equals(arg.Name, "InstanceID", StringComparison.Ordinal))
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }
@@ -151,7 +149,7 @@ namespace Emby.Dlna.PlayTo
 
             foreach (var arg in action.ArgumentList)
             {
-                if (arg.Name == "InstanceID")
+                if (string.Equals(arg.Name, "InstanceID", StringComparison.Ordinal))
                 {
                     stateString += BuildArgumentXml(arg, "0");
                 }
@@ -168,7 +166,7 @@ namespace Emby.Dlna.PlayTo
             return string.Format(CultureInfo.InvariantCulture, CommandBase, action.Name, xmlNamesapce, stateString);
         }
 
-        private string BuildArgumentXml(Argument argument, string value, string commandParameter = "")
+        private string BuildArgumentXml(Argument argument, string? value, string commandParameter = "")
         {
             var state = StateVariables.FirstOrDefault(a => string.Equals(a.Name, argument.RelatedStateVariable, StringComparison.OrdinalIgnoreCase));
 

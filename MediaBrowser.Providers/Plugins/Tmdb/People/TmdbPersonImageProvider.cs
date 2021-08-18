@@ -1,39 +1,36 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.General;
-using MediaBrowser.Providers.Plugins.Tmdb.Models.People;
-using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
 {
     public class TmdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly TmdbClientManager _tmdbClientManager;
 
-        public TmdbPersonImageProvider(IServerConfigurationManager config, IJsonSerializer jsonSerializer, IHttpClientFactory httpClientFactory)
+        public TmdbPersonImageProvider(IHttpClientFactory httpClientFactory, TmdbClientManager tmdbClientManager)
         {
-            _config = config;
-            _jsonSerializer = jsonSerializer;
             _httpClientFactory = httpClientFactory;
+            _tmdbClientManager = tmdbClientManager;
         }
 
-        public string Name => ProviderName;
+        /// <inheritdoc />
+        public string Name => TmdbUtils.ProviderName;
 
-        public static string ProviderName => TmdbUtils.ProviderName;
+        /// <inheritdoc />
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -51,85 +48,41 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var person = (Person)item;
-            var id = person.GetProviderId(MetadataProvider.Tmdb);
 
-            if (!string.IsNullOrEmpty(id))
+            if (!person.TryGetProviderId(MetadataProvider.Tmdb, out var personTmdbId))
             {
-                await TmdbPersonProvider.Current.EnsurePersonInfo(id, cancellationToken).ConfigureAwait(false);
-
-                var dataFilePath = TmdbPersonProvider.GetPersonDataFilePath(_config.ApplicationPaths, id);
-
-                var result = _jsonSerializer.DeserializeFromFile<PersonResult>(dataFilePath);
-
-                var images = result.Images ?? new PersonImages();
-
-                var tmdbSettings = await TmdbMovieProvider.Current.GetTmdbSettings(cancellationToken).ConfigureAwait(false);
-
-                var tmdbImageUrl = tmdbSettings.images.GetImageUrl("original");
-
-                return GetImages(images, item.GetPreferredMetadataLanguage(), tmdbImageUrl);
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            return new List<RemoteImageInfo>();
-        }
-
-        private IEnumerable<RemoteImageInfo> GetImages(PersonImages images, string preferredLanguage, string baseImageUrl)
-        {
-            var list = new List<RemoteImageInfo>();
-
-            if (images.Profiles != null)
+            var language = item.GetPreferredMetadataLanguage();
+            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
+            if (personResult?.Images?.Profiles == null)
             {
-                list.AddRange(images.Profiles.Select(i => new RemoteImageInfo
+                return Enumerable.Empty<RemoteImageInfo>();
+            }
+
+            var remoteImages = new RemoteImageInfo[personResult.Images.Profiles.Count];
+
+            for (var i = 0; i < personResult.Images.Profiles.Count; i++)
+            {
+                var image = personResult.Images.Profiles[i];
+                remoteImages[i] = new RemoteImageInfo
                 {
                     ProviderName = Name,
                     Type = ImageType.Primary,
-                    Width = i.Width,
-                    Height = i.Height,
-                    Language = GetLanguage(i),
-                    Url = baseImageUrl + i.File_Path
-                }));
+                    Width = image.Width,
+                    Height = image.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
+                    Url = _tmdbClientManager.GetProfileUrl(image.FilePath)
+                };
             }
 
-            var language = preferredLanguage;
-
-            var isLanguageEn = string.Equals(language, "en", StringComparison.OrdinalIgnoreCase);
-
-            return list.OrderByDescending(i =>
-            {
-                if (string.Equals(language, i.Language, StringComparison.OrdinalIgnoreCase))
-                {
-                    return 3;
-                }
-
-                if (!isLanguageEn)
-                {
-                    if (string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 2;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(i.Language))
-                {
-                    return isLanguageEn ? 3 : 2;
-                }
-
-                return 0;
-            })
-                .ThenByDescending(i => i.CommunityRating ?? 0)
-                .ThenByDescending(i => i.VoteCount ?? 0);
+            return remoteImages.OrderByLanguageDescending(language);
         }
-
-        private string GetLanguage(Profile profile)
-        {
-            return profile.Iso_639_1?.ToString();
-        }
-
-        public int Order => 0;
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClientFactory.CreateClient().GetAsync(url, cancellationToken);
+            return _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken);
         }
     }
 }

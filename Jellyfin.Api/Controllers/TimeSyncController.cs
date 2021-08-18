@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+using System;
 using MediaBrowser.Model.SyncPlay;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +12,7 @@ namespace Jellyfin.Api.Controllers
     public class TimeSyncController : BaseJellyfinApiController
     {
         /// <summary>
-        /// Gets the current utc time.
+        /// Gets the current UTC time.
         /// </summary>
         /// <response code="200">Time returned.</response>
         /// <returns>An <see cref="UtcTimeResponse"/> to sync the client and server time.</returns>
@@ -22,18 +21,14 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UtcTimeResponse> GetUtcTime()
         {
             // Important to keep the following line at the beginning
-            var requestReceptionTime = DateTime.UtcNow.ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
+            var requestReceptionTime = DateTime.UtcNow.ToUniversalTime();
 
-            var response = new UtcTimeResponse();
-            response.RequestReceptionTime = requestReceptionTime;
-
-            // Important to keep the following two lines at the end
-            var responseTransmissionTime = DateTime.UtcNow.ToUniversalTime().ToString("o", DateTimeFormatInfo.InvariantInfo);
-            response.ResponseTransmissionTime = responseTransmissionTime;
+            // Important to keep the following line at the end
+            var responseTransmissionTime = DateTime.UtcNow.ToUniversalTime();
 
             // Implementing NTP on such a high level results in this useless
             // information being sent. On the other hand it enables future additions.
-            return response;
+            return new UtcTimeResponse(requestReceptionTime, responseTransmissionTime);
         }
     }
 }

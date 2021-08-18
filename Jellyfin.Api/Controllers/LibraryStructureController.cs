@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -74,9 +75,9 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> AddVirtualFolder(
             [FromQuery] string? name,
-            [FromQuery] string? collectionType,
-            [FromQuery] string[] paths,
-            [FromBody] LibraryOptionsDto? libraryOptionsDto,
+            [FromQuery] CollectionTypeOptions? collectionType,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] paths,
+            [FromBody] AddVirtualFolderDto? libraryOptionsDto,
             [FromQuery] bool refreshLibrary = false)
         {
             var libraryOptions = libraryOptionsDto?.LibraryOptions ?? new LibraryOptions();
@@ -240,23 +241,20 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Updates a media path.
         /// </summary>
-        /// <param name="name">The name of the library.</param>
-        /// <param name="pathInfo">The path info.</param>
+        /// <param name="mediaPathRequestDto">The name of the library and path infos.</param>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         /// <response code="204">Media path updated.</response>
         /// <exception cref="ArgumentNullException">The name of the library may not be empty.</exception>
         [HttpPost("Paths/Update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult UpdateMediaPath(
-            [FromQuery] string? name,
-            [FromBody] MediaPathInfo? pathInfo)
+        public ActionResult UpdateMediaPath([FromBody, Required] UpdateMediaPathRequestDto mediaPathRequestDto)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(mediaPathRequestDto.Name))
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(mediaPathRequestDto), "Name must not be null or empty");
             }
 
-            _libraryManager.UpdateMediaPath(name, pathInfo);
+            _libraryManager.UpdateMediaPath(mediaPathRequestDto.Name, mediaPathRequestDto.PathInfo);
             return NoContent();
         }
 
@@ -312,19 +310,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Update library options.
         /// </summary>
-        /// <param name="id">The library name.</param>
-        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="request">The library name and options.</param>
         /// <response code="204">Library updated.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("LibraryOptions")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult UpdateLibraryOptions(
-            [FromQuery] string? id,
-            [FromBody] LibraryOptions? libraryOptions)
+            [FromBody] UpdateLibraryOptionsDto request)
         {
-            var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(id);
+            var collectionFolder = (CollectionFolder)_libraryManager.GetItemById(request.Id);
 
-            collectionFolder.UpdateLibraryOptions(libraryOptions);
+            collectionFolder.UpdateLibraryOptions(request.LibraryOptions);
             return NoContent();
         }
     }

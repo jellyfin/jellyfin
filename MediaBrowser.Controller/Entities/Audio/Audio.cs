@@ -1,7 +1,10 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1002, CA1724, CA1826, CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
@@ -22,6 +25,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
+        public Audio()
+        {
+            Artists = Array.Empty<string>();
+            AlbumArtists = Array.Empty<string>();
+        }
+
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<string> Artists { get; set; }
@@ -29,17 +38,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <inheritdoc />
         [JsonIgnore]
         public IReadOnlyList<string> AlbumArtists { get; set; }
-
-        public Audio()
-        {
-            Artists = Array.Empty<string>();
-            AlbumArtists = Array.Empty<string>();
-        }
-
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
-        }
 
         [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
@@ -59,11 +57,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
 
-        public override bool CanDownload()
-        {
-            return IsFileProtocol;
-        }
-
         [JsonIgnore]
         public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
 
@@ -74,26 +67,35 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Audio;
 
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
+        public override bool CanDownload()
+        {
+            return IsFileProtocol;
+        }
+
         /// <summary>
         /// Creates the name of the sort.
         /// </summary>
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
 
-            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
-
+            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : string.Empty;
 
             if (ParentIndexNumber.HasValue)
             {
-                songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
+                songKey = ParentIndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) + "-" + songKey;
             }
 
             songKey += Name;

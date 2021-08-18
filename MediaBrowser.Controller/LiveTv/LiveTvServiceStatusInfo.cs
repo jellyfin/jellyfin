@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System.Collections.Generic;
@@ -42,6 +44,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The tuners.</value>
         public List<LiveTvTunerInfo> Tuners { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is visible.
         /// </summary>

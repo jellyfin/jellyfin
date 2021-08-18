@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 using MediaBrowser.Model.Tasks;
 
 namespace Jellyfin.Server.Implementations.Events.Consumers.System
@@ -25,7 +26,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.System
         /// <inheritdoc />
         public async Task OnEvent(TaskCompletionEventArgs eventArgs)
         {
-            await _sessionManager.SendMessageToAdminSessions("ScheduledTaskEnded", eventArgs.Result, CancellationToken.None).ConfigureAwait(false);
+            await _sessionManager.SendMessageToAdminSessions(SessionMessageType.ScheduledTaskEnded, eventArgs.Result, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

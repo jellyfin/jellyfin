@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -8,11 +10,29 @@ namespace MediaBrowser.Controller.Providers
 {
     public class ItemLookupInfo : IHasProviderIds
     {
+        public ItemLookupInfo()
+        {
+            IsAutomated = true;
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original title.
+        /// </summary>
+        /// <value>The original title of the item.</value>
+        public string OriginalTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path.
+        /// </summary>
+        /// <value>The path.</value>
+        public string Path { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata language.
@@ -45,11 +65,5 @@ namespace MediaBrowser.Controller.Providers
         public DateTime? PremiereDate { get; set; }
 
         public bool IsAutomated { get; set; }
-
-        public ItemLookupInfo()
-        {
-            IsAutomated = true;
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }

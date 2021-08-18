@@ -16,8 +16,7 @@
     "Folders": "Pastas",
     "Genres": "Gêneros",
     "HeaderAlbumArtists": "Artistas do Álbum",
-    "HeaderCameraUploads": "Envios da Câmera",
-    "HeaderContinueWatching": "Continuar Assistindo",
+    "HeaderContinueWatching": "Continuar assistindo",
     "HeaderFavoriteAlbums": "Álbuns Favoritos",
     "HeaderFavoriteArtists": "Artistas favoritos",
     "HeaderFavoriteEpisodes": "Episódios favoritos",
@@ -114,5 +113,10 @@
     "TasksChannelsCategory": "Canais da Internet",
     "TasksApplicationCategory": "Aplicativo",
     "TasksLibraryCategory": "Biblioteca",
-    "TasksMaintenanceCategory": "Manutenção"
+    "TasksMaintenanceCategory": "Manutenção",
+    "TaskCleanActivityLogDescription": "Apaga o registro de atividades mais antigo que a idade configurada.",
+    "TaskCleanActivityLog": "Limpar Registro de Atividades",
+    "Undefined": "Indefinido",
+    "Forced": "Forçado",
+    "Default": "Padrão"
 }

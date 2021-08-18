@@ -16,7 +16,6 @@
     "Folders": "תיקיות",
     "Genres": "ז'אנרים",
     "HeaderAlbumArtists": "אמני האלבום",
-    "HeaderCameraUploads": "העלאות ממצלמה",
     "HeaderContinueWatching": "המשך לצפות",
     "HeaderFavoriteAlbums": "אלבומים מועדפים",
     "HeaderFavoriteArtists": "אמנים מועדפים",
@@ -114,5 +113,10 @@
     "TaskRefreshChannels": "רענן ערוץ",
     "TaskCleanTranscodeDescription": "מחק קבצי transcode שנוצרו מלפני יותר מיום.",
     "TaskCleanTranscode": "נקה תקיית Transcode",
-    "TaskUpdatePluginsDescription": "הורד והתקן עדכונים עבור תוספים שמוגדרים לעדכון אוטומטי."
+    "TaskUpdatePluginsDescription": "הורד והתקן עדכונים עבור תוספים שמוגדרים לעדכון אוטומטי.",
+    "TaskCleanActivityLogDescription": "מחק רשומת פעילות הישנה יותר מהגיל המוגדר.",
+    "TaskCleanActivityLog": "נקה רשומת פעילות",
+    "Undefined": "לא מוגדר",
+    "Forced": "כפוי",
+    "Default": "ברירת מחדל"
 }

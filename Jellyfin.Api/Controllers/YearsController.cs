@@ -1,14 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
+using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -49,7 +53,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="limit">Optional. The maximum number of records to return.</param>
         /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
         /// <param name="parentId">Specify this to localize the search to a specific item or folder. Omit to use the root.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimited. Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines.</param>
+        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
         /// <param name="excludeItemTypes">Optional. If specified, results will be excluded based on item type. This allows multiple, comma delimited.</param>
         /// <param name="includeItemTypes">Optional. If specified, results will be included based on item type. This allows multiple, comma delimited.</param>
         /// <param name="mediaTypes">Optional. Filter by MediaType. Allows multiple, comma delimited.</param>
@@ -67,53 +71,43 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetYears(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? sortOrder,
-            [FromQuery] string? parentId,
-            [FromQuery] string? fields,
-            [FromQuery] string? excludeItemTypes,
-            [FromQuery] string? includeItemTypes,
-            [FromQuery] string? mediaTypes,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
+            [FromQuery] Guid? parentId,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
-            [FromQuery] string? enableImageTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] Guid? userId,
             [FromQuery] bool recursive = true,
             [FromQuery] bool? enableImages = true)
         {
-            var dtoOptions = new DtoOptions()
-                .AddItemFields(fields)
+            var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             User? user = null;
-            BaseItem parentItem;
+            BaseItem parentItem = _libraryManager.GetParentItem(parentId, userId);
 
             if (userId.HasValue && !userId.Equals(Guid.Empty))
             {
                 user = _userManager.GetUserById(userId.Value);
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.GetUserRootFolder() : _libraryManager.GetItemById(parentId);
-            }
-            else
-            {
-                parentItem = string.IsNullOrEmpty(parentId) ? _libraryManager.RootFolder : _libraryManager.GetItemById(parentId);
             }
 
             IList<BaseItem> items;
 
-            var excludeItemTypesArr = RequestHelpers.Split(excludeItemTypes, ',', true);
-            var includeItemTypesArr = RequestHelpers.Split(includeItemTypes, ',', true);
-            var mediaTypesArr = RequestHelpers.Split(mediaTypes, ',', true);
-
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = excludeItemTypesArr,
-                IncludeItemTypes = includeItemTypesArr,
-                MediaTypes = mediaTypesArr,
+                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                MediaTypes = mediaTypes,
                 DtoOptions = dtoOptions
             };
 
-            bool Filter(BaseItem i) => FilterItem(i, excludeItemTypesArr, includeItemTypesArr, mediaTypesArr);
+            bool Filter(BaseItem i) => FilterItem(i, excludeItemTypes, includeItemTypes, mediaTypes);
 
             if (parentItem.IsFolder)
             {
@@ -179,7 +173,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("{year}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<BaseItemDto> GetYear([FromRoute] int year, [FromQuery] Guid? userId)
+        public ActionResult<BaseItemDto> GetYear([FromRoute, Required] int year, [FromQuery] Guid? userId)
         {
             var item = _libraryManager.GetYear(year);
             if (item == null)
@@ -199,16 +193,17 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private bool FilterItem(BaseItem f, IReadOnlyCollection<string> excludeItemTypes, IReadOnlyCollection<string> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
+        private bool FilterItem(BaseItem f, IReadOnlyCollection<BaseItemKind> excludeItemTypes, IReadOnlyCollection<BaseItemKind> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
         {
+            var baseItemKind = f.GetBaseItemKind();
             // Exclude item types
-            if (excludeItemTypes.Count > 0 && excludeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+            if (excludeItemTypes.Count > 0 && excludeItemTypes.Contains(baseItemKind))
             {
                 return false;
             }
 
             // Include item types
-            if (includeItemTypes.Count > 0 && !includeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+            if (includeItemTypes.Count > 0 && !includeItemTypes.Contains(baseItemKind))
             {
                 return false;
             }

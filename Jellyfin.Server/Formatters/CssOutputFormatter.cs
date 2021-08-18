@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -30,7 +29,8 @@ namespace Jellyfin.Server.Formatters
         /// <returns>Write stream task.</returns>
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
-            return context.HttpContext.Response.WriteAsync(context.Object?.ToString());
+            var stringResponse = context.Object?.ToString();
+            return stringResponse == null ? Task.CompletedTask : context.HttpContext.Response.WriteAsync(stringResponse);
         }
     }
 }

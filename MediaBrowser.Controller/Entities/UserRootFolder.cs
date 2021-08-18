@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -19,8 +21,29 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class UserRootFolder : Folder
     {
-        private List<Guid> _childrenIds = null;
         private readonly object _childIdsLock = new object();
+        private List<Guid> _childrenIds = null;
+
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override bool SupportsPlayedStatus => false;
+
+        [JsonIgnore]
+        protected override bool SupportsShortcutChildren => true;
+
+        [JsonIgnore]
+        public override bool IsPreSorted => true;
+
+        private void ClearCache()
+        {
+            lock (_childIdsLock)
+            {
+                _childrenIds = null;
+            }
+        }
+
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
@@ -33,20 +56,6 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return _childrenIds.Select(LibraryManager.GetItemById).Where(i => i != null).ToList();
-            }
-        }
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override bool SupportsPlayedStatus => false;
-
-        private void ClearCache()
-        {
-            lock (_childIdsLock)
-            {
-                _childrenIds = null;
             }
         }
 
@@ -71,12 +80,6 @@ namespace MediaBrowser.Controller.Entities
             return GetChildren(user, true).Count;
         }
 
-        [JsonIgnore]
-        protected override bool SupportsShortcutChildren => true;
-
-        [JsonIgnore]
-        public override bool IsPreSorted => true;
-
         protected override IEnumerable<BaseItem> GetEligibleChildrenForRecursiveChildren(User user)
         {
             var list = base.GetEligibleChildrenForRecursiveChildren(user).ToList();
@@ -85,10 +88,10 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             ClearCache();
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (string.Equals("default", Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -106,11 +109,11 @@ namespace MediaBrowser.Controller.Entities
             return base.GetNonCachedChildren(directoryService);
         }
 
-        protected override async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             ClearCache();
 
-            await base.ValidateChildrenInternal(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService)
+            await base.ValidateChildrenInternal(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken)
                 .ConfigureAwait(false);
 
             ClearCache();

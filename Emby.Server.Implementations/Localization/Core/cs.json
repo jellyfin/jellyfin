@@ -16,7 +16,6 @@
     "Folders": "Složky",
     "Genres": "Žánry",
     "HeaderAlbumArtists": "Umělci alba",
-    "HeaderCameraUploads": "Nahrané fotografie",
     "HeaderContinueWatching": "Pokračovat ve sledování",
     "HeaderFavoriteAlbums": "Oblíbená alba",
     "HeaderFavoriteArtists": "Oblíbení interpreti",
@@ -40,7 +39,7 @@
     "MixedContent": "Smíšený obsah",
     "Movies": "Filmy",
     "Music": "Hudba",
-    "MusicVideos": "Hudební klipy",
+    "MusicVideos": "Hudební videa",
     "NameInstallFailed": "Instalace {0} selhala",
     "NameSeasonNumber": "Sezóna {0}",
     "NameSeasonUnknown": "Neznámá sezóna",
@@ -114,5 +113,12 @@
     "TasksChannelsCategory": "Internetové kanály",
     "TasksApplicationCategory": "Aplikace",
     "TasksLibraryCategory": "Knihovna",
-    "TasksMaintenanceCategory": "Údržba"
+    "TasksMaintenanceCategory": "Údržba",
+    "TaskCleanActivityLogDescription": "Smazat záznamy o aktivitě, které jsou starší než zadaná doba.",
+    "TaskCleanActivityLog": "Smazat záznam aktivity",
+    "Undefined": "Nedefinované",
+    "Forced": "Vynucené",
+    "Default": "Výchozí",
+    "TaskOptimizeDatabaseDescription": "Zmenší databázi a odstraní prázdné místo. Spuštění této úlohy po skenování knihovny či jiných změnách databáze může zlepšit výkon.",
+    "TaskOptimizeDatabase": "Optimalizovat databázi"
 }

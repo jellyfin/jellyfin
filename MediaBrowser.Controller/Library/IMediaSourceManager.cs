@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -28,12 +30,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="itemId">The item identifier.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         List<MediaStream> GetMediaStreams(Guid itemId);
+
         /// <summary>
         /// Gets the media streams.
         /// </summary>
         /// <param name="mediaSourceId">The media source identifier.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         List<MediaStream> GetMediaStreams(string mediaSourceId);
+
         /// <summary>
         /// Gets the media streams.
         /// </summary>
@@ -58,16 +62,32 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the playack media sources.
         /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="user">User to use for operation.</param>
+        /// <param name="allowMediaProbe">Option to allow media probe.</param>
+        /// <param name="enablePathSubstitution">Option to enable path substitution.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>List of media sources wrapped in an awaitable task.</returns>
         Task<List<MediaSourceInfo>> GetPlaybackMediaSources(BaseItem item, User user, bool allowMediaProbe, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the static media sources.
         /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="enablePathSubstitution">Option to enable path substitution.</param>
+        /// <param name="user">User to use for operation.</param>
+        /// <returns>List of media sources.</returns>
         List<MediaSourceInfo> GetStaticMediaSources(BaseItem item, bool enablePathSubstitution, User user = null);
 
         /// <summary>
         /// Gets the static media source.
         /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="mediaSourceId">Media source to get.</param>
+        /// <param name="liveStreamId">Live stream to use.</param>
+        /// <param name="enablePathSubstitution">Option to enable path substitution.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>The static media source wrapped in an awaitable task.</returns>
         Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId, string liveStreamId, bool enablePathSubstitution, CancellationToken cancellationToken);
 
         /// <summary>
@@ -113,5 +133,7 @@ namespace MediaBrowser.Controller.Library
     public interface IDirectStreamProvider
     {
         Task CopyToAsync(Stream stream, CancellationToken cancellationToken);
+
+        string GetFilePath();
     }
 }

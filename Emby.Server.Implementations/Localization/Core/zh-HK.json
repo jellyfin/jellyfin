@@ -16,7 +16,6 @@
     "Folders": "檔案夾",
     "Genres": "風格",
     "HeaderAlbumArtists": "專輯藝人",
-    "HeaderCameraUploads": "相機上載",
     "HeaderContinueWatching": "繼續觀看",
     "HeaderFavoriteAlbums": "最愛專輯",
     "HeaderFavoriteArtists": "最愛的藝人",
@@ -114,5 +113,9 @@
     "TaskCleanCache": "清理緩存目錄",
     "TasksChannelsCategory": "互聯網頻道",
     "TasksLibraryCategory": "庫",
-    "TaskRefreshPeople": "刷新人物"
+    "TaskRefreshPeople": "刷新人物",
+    "TaskCleanActivityLog": "清理活動記錄",
+    "Undefined": "未定義",
+    "Forced": "強制",
+    "Default": "預設"
 }

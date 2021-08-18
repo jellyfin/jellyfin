@@ -5,6 +5,7 @@ using System.Xml;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Microsoft.Extensions.Logging;
@@ -19,11 +20,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieNfoParser"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">the configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public MovieNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="DirectoryService"/> interface.</param>
+        public MovieNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
         }
 
@@ -39,12 +49,19 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        string imdbId = reader.GetAttribute("IMDB");
-                        string tmdbId = reader.GetAttribute("TMDB");
+                        // get ids from attributes
+                        string? imdbId = reader.GetAttribute("IMDB");
+                        string? tmdbId = reader.GetAttribute("TMDB");
 
-                        if (string.IsNullOrWhiteSpace(imdbId))
+                        // read id from content
+                        var contentId = reader.ReadElementContentAsString();
+                        if (contentId.Contains("tt", StringComparison.Ordinal) && string.IsNullOrEmpty(imdbId))
                         {
-                            imdbId = reader.ReadElementContentAsString();
+                            imdbId = contentId;
+                        }
+                        else if (string.IsNullOrEmpty(tmdbId))
+                        {
+                            tmdbId = contentId;
                         }
 
                         if (!string.IsNullOrWhiteSpace(imdbId))
@@ -75,7 +92,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         if (!string.IsNullOrWhiteSpace(val) && movie != null)
                         {
                             // TODO Handle this better later
-                            if (val.IndexOf('<', StringComparison.Ordinal) == -1)
+                            if (!val.Contains('<', StringComparison.Ordinal))
                             {
                                 movie.CollectionName = val;
                             }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.WebSocketListeners
@@ -34,7 +35,13 @@ namespace Jellyfin.Api.WebSocketListeners
         }
 
         /// <inheritdoc />
-        protected override string Name => "Sessions";
+        protected override SessionMessageType Type => SessionMessageType.Sessions;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StartType => SessionMessageType.SessionsStart;
+
+        /// <inheritdoc />
+        protected override SessionMessageType StopType => SessionMessageType.SessionsStop;
 
         /// <summary>
         /// Gets the data to send.
@@ -59,37 +66,37 @@ namespace Jellyfin.Api.WebSocketListeners
             base.Dispose(dispose);
         }
 
-        private async void OnSessionManagerSessionActivity(object sender, SessionEventArgs e)
+        private async void OnSessionManagerSessionActivity(object? sender, SessionEventArgs e)
         {
             await SendData(false).ConfigureAwait(false);
         }
 
-        private async void OnSessionManagerCapabilitiesChanged(object sender, SessionEventArgs e)
+        private async void OnSessionManagerCapabilitiesChanged(object? sender, SessionEventArgs e)
         {
             await SendData(true).ConfigureAwait(false);
         }
 
-        private async void OnSessionManagerPlaybackProgress(object sender, PlaybackProgressEventArgs e)
+        private async void OnSessionManagerPlaybackProgress(object? sender, PlaybackProgressEventArgs e)
         {
             await SendData(!e.IsAutomated).ConfigureAwait(false);
         }
 
-        private async void OnSessionManagerPlaybackStopped(object sender, PlaybackStopEventArgs e)
+        private async void OnSessionManagerPlaybackStopped(object? sender, PlaybackStopEventArgs e)
         {
             await SendData(true).ConfigureAwait(false);
         }
 
-        private async void OnSessionManagerPlaybackStart(object sender, PlaybackProgressEventArgs e)
+        private async void OnSessionManagerPlaybackStart(object? sender, PlaybackProgressEventArgs e)
         {
             await SendData(true).ConfigureAwait(false);
         }
 
-        private async void OnSessionManagerSessionEnded(object sender, SessionEventArgs e)
+        private async void OnSessionManagerSessionEnded(object? sender, SessionEventArgs e)
         {
             await SendData(true).ConfigureAwait(false);
         }
 
-        private async void OnSessionManagerSessionStarted(object sender, SessionEventArgs e)
+        private async void OnSessionManagerSessionStarted(object? sender, SessionEventArgs e)
         {
             await SendData(true).ConfigureAwait(false);
         }

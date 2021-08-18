@@ -2,7 +2,6 @@
 #pragma warning disable CS1591
 
 using System;
-using MediaBrowser.Model.Services;
 
 namespace MediaBrowser.Model.Session
 {

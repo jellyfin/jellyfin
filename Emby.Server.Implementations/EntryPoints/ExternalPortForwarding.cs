@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using Jellyfin.Networking.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
@@ -56,7 +59,7 @@ namespace Emby.Server.Implementations.EntryPoints
         private string GetConfigIdentifier()
         {
             const char Separator = '|';
-            var config = _config.Configuration;
+            var config = _config.GetNetworkConfiguration();
 
             return new StringBuilder(32)
                 .Append(config.EnableUPnP).Append(Separator)
@@ -93,7 +96,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private void Start()
         {
-            if (!_config.Configuration.EnableUPnP || !_config.Configuration.EnableRemoteAccess)
+            var config = _config.GetNetworkConfiguration();
+            if (!config.EnableUPnP || !config.EnableRemoteAccess)
             {
                 return;
             }
@@ -104,8 +108,6 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.StartDiscovery();
 
             _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-
-            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
         private void Stop()
@@ -116,13 +118,6 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
 
             _timer?.Dispose();
-
-            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
-        }
-
-        private void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
-        {
-            NatUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
         }
 
         private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)
@@ -156,11 +151,12 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private IEnumerable<Task> CreatePortMaps(INatDevice device)
         {
-            yield return CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
+            var config = _config.GetNetworkConfiguration();
+            yield return CreatePortMap(device, _appHost.HttpPort, config.PublicPort);
 
             if (_appHost.ListenWithHttps)
             {
-                yield return CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+                yield return CreatePortMap(device, _appHost.HttpsPort, config.PublicHttpsPort);
             }
         }
 
