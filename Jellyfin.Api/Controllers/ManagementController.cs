@@ -27,6 +27,7 @@ namespace Jellyfin.Api.Controllers
     /// The management controller.
     /// </summary>
     [Management]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ManagementController : BaseJellyfinApiController
     {
         private readonly IServerApplicationHost _appHost;
