@@ -8,13 +8,13 @@ using Jellyfin.Data.Enums;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Jellyfin.Server.Implementations.Tests.BaseItem
+namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
 {
     public class BaseItemKindTests
     {
         [Theory]
         [ClassData(typeof(GetBaseItemDescendants))]
-        public void BaseItemKindEnumTest(Type baseItemType)
+        public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemType)
         {
             var enumValue = Enum.Parse<BaseItemKind>(baseItemType.Name);
             Assert.True(Enum.IsDefined(typeof(BaseItemKind), enumValue));
@@ -22,7 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.BaseItem
 
         [Theory]
         [ClassData(typeof(GetBaseItemDescendants))]
-        public void GetBaseKindEnumTest(Type baseItemDescendantType)
+        public void GetBaseItemKind_WhenCalledAfterDefaultCtor_DoesNotThrow(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);
             var instance = (MediaBrowser.Controller.Entities.BaseItem)defaultConstructor!.Invoke(null);
