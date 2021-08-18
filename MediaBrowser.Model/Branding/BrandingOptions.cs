@@ -33,6 +33,6 @@ namespace MediaBrowser.Model.Branding
         /// Gets the splashscreen url.
         /// </summary>
         [XmlIgnore]
-        public string SplashscreenUrl => "/Branding/Splashscreen";
+        public string? SplashscreenUrl => "/Branding/Splashscreen";
     }
 }

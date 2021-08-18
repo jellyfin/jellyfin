@@ -19,8 +19,6 @@ namespace Jellyfin.Drawing.Skia
 
         private readonly SkiaEncoder _skiaEncoder;
 
-        private Random? _random;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SplashscreenBuilder"/> class.
         /// </summary>
@@ -54,7 +52,7 @@ namespace Jellyfin.Drawing.Skia
         /// <returns>The created collage as a bitmap.</returns>
         private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop)
         {
-            _random = new Random();
+            var random = new Random();
 
             var posterIndex = 0;
             var backdropIndex = 0;
@@ -67,7 +65,7 @@ namespace Jellyfin.Drawing.Skia
 
             for (int i = 0; i < Rows; i++)
             {
-                int imageCounter = _random.Next(0, 5);
+                int imageCounter = random.Next(0, 5);
                 int currentWidthPos = i * 75;
                 int currentHeight = i * (posterHeight + Spacing);
 

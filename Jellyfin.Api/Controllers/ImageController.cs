@@ -1803,15 +1803,14 @@ namespace Jellyfin.Api.Controllers
         {
             await using var memoryStream = await GetMemoryStream(Request.Body).ConfigureAwait(false);
 
-            // Handle image/png; charset=utf-8
-            var mimeType = Request.ContentType.Split(';').FirstOrDefault();
+            var mimeType = MediaTypeHeaderValue.Parse(Request.ContentType).MediaType;
 
-            if (mimeType == null)
+            if (!mimeType.HasValue)
             {
                 return BadRequest("Error reading mimetype from uploaded image");
             }
 
-            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + MimeTypes.ToExtension(mimeType));
+            var filePath = Path.Combine(_appPaths.DataPath, "splashscreen-upload" + MimeTypes.ToExtension(mimeType.Value));
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
             brandingOptions.SplashscreenLocation = filePath;
             _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
