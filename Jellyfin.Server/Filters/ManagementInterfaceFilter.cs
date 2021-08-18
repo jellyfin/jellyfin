@@ -90,6 +90,11 @@ namespace Jellyfin.Server.Filters
 
         private bool IsManagementListenEntrypoint(ActionExecutingContext context)
         {
+            if (context.HttpContext.Connection.LocalIpAddress == null)
+            {
+                return false;
+            }
+
             return managementEndpoints.Contains((context.HttpContext.Connection.LocalIpAddress, context.HttpContext.Connection.LocalPort));
         }
     }
