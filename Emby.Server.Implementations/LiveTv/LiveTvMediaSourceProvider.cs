@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -76,7 +78,6 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             var list = sources.ToList();
-            var serverUrl = await _appHost.GetLocalApiUrl(cancellationToken).ConfigureAwait(false);
 
             foreach (var source in list)
             {
@@ -103,7 +104,7 @@ namespace Emby.Server.Implementations.LiveTv
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
                 {
-                    source.Path = serverUrl;
+                    source.Path = _appHost.GetSmartApiUrl(string.Empty);
                 }
             }
 

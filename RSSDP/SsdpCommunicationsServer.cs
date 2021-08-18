@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -42,7 +43,7 @@ namespace Rssdp.Infrastructure
         private HttpResponseParser _ResponseParser;
         private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
-        private readonly INetworkManager _networkManager;        
+        private readonly INetworkManager _networkManager;
 
         private int _LocalPort;
         private int _MulticastTtl;
@@ -68,7 +69,7 @@ namespace Rssdp.Infrastructure
             INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
-            
+
         }
 
         /// <summary>
@@ -352,17 +353,17 @@ namespace Rssdp.Infrastructure
 
             if (_enableMultiSocketBinding)
             {
-                foreach (var address in _networkManager.GetLocalIpAddresses())
+                foreach (var address in _networkManager.GetInternalBindAddresses())
                 {
                     if (address.AddressFamily == AddressFamily.InterNetworkV6)
                     {
                         // Not support IPv6 right now
                         continue;
-                    }                  
+                    }
 
                     try
                     {
-                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address, _LocalPort));
+                        sockets.Add(_SocketFactory.CreateSsdpUdpSocket(address.Address, _LocalPort));
                     }
                     catch (Exception ex)
                     {
@@ -415,10 +416,7 @@ namespace Rssdp.Infrastructure
             {
                 lock (_SendSocketSynchroniser)
                 {
-                    if (_sendSockets == null)
-                    {
-                        _sendSockets = CreateSocketAndListenForResponsesAsync();
-                    }
+                    _sendSockets ??= CreateSocketAndListenForResponsesAsync();
                 }
             }
         }

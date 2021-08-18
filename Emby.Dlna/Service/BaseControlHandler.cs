@@ -6,9 +6,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Diacritics.Extensions;
 using Emby.Dlna.Didl;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
@@ -47,9 +47,9 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlResponse> ProcessControlRequestInternalAsync(ControlRequest request)
         {
-            ControlRequestInfo requestInfo = null;
+            ControlRequestInfo? requestInfo = null;
 
-            using (var streamReader = new StreamReader(request.InputXml))
+            using (var streamReader = new StreamReader(request.InputXml, Encoding.UTF8))
             {
                 var readerSettings = new XmlReaderSettings()
                 {
@@ -95,11 +95,7 @@ namespace Emby.Dlna.Service
 
             var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=", StringComparison.Ordinal);
 
-            var controlResponse = new ControlResponse
-            {
-                Xml = xml,
-                IsSuccessful = true
-            };
+            var controlResponse = new ControlResponse(xml, true);
 
             controlResponse.Headers.Add("EXT", string.Empty);
 
@@ -151,7 +147,7 @@ namespace Emby.Dlna.Service
 
         private async Task<ControlRequestInfo> ParseBodyTagAsync(XmlReader reader)
         {
-            string namespaceURI = null, localName = null;
+            string? namespaceURI = null, localName = null;
 
             await reader.MoveToContentAsync().ConfigureAwait(false);
             await reader.ReadAsync().ConfigureAwait(false);
@@ -169,6 +165,7 @@ namespace Emby.Dlna.Service
                         var result = new ControlRequestInfo(localName, namespaceURI);
                         using var subReader = reader.ReadSubtree();
                         await ParseFirstBodyChildAsync(subReader, result.Headers).ConfigureAwait(false);
+                        return result;
                     }
                     else
                     {
@@ -209,7 +206,7 @@ namespace Emby.Dlna.Service
             }
         }
 
-        protected abstract void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter);
+        protected abstract void WriteResult(string methodName, IReadOnlyDictionary<string, string> methodParams, XmlWriter xmlWriter);
 
         private void LogRequest(ControlRequest request)
         {

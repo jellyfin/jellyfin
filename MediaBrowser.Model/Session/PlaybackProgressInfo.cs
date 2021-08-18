@@ -111,18 +111,4 @@ namespace MediaBrowser.Model.Session
 
         public string PlaylistItemId { get; set; }
     }
-
-    public enum RepeatMode
-    {
-        RepeatNone = 0,
-        RepeatAll = 1,
-        RepeatOne = 2
-    }
-
-    public class QueueItem
-    {
-        public Guid Id { get; set; }
-
-        public string PlaylistItemId { get; set; }
-    }
 }

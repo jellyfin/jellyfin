@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +55,8 @@ namespace Jellyfin.Server.Implementations.Users
                 SerializablePasswordReset spr;
                 await using (var str = File.OpenRead(resetFile))
                 {
-                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false);
+                    spr = await JsonSerializer.DeserializeAsync<SerializablePasswordReset>(str).ConfigureAwait(false)
+                        ?? throw new ResourceNotFoundException($"Provided path ({resetFile}) is not valid.");
                 }
 
                 if (spr.ExpirationDate < DateTime.UtcNow)
@@ -67,7 +66,7 @@ namespace Jellyfin.Server.Implementations.Users
                 else if (string.Equals(
                     spr.Pin.Replace("-", string.Empty, StringComparison.Ordinal),
                     pin.Replace("-", string.Empty, StringComparison.Ordinal),
-                    StringComparison.InvariantCultureIgnoreCase))
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     var resetUser = userManager.GetUserByName(spr.UserName)
                         ?? throw new ResourceNotFoundException($"User with a username of {spr.UserName} not found");

@@ -1,20 +1,19 @@
-#pragma warning disable CS1591
-#nullable enable
-
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Holder structure for name and year.
+    /// </summary>
     public readonly struct CleanDateTimeResult
     {
-        public CleanDateTimeResult(string name, int? year)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CleanDateTimeResult"/> struct.
+        /// </summary>
+        /// <param name="name">Name of video.</param>
+        /// <param name="year">Year of release.</param>
+        public CleanDateTimeResult(string name, int? year = null)
         {
             Name = name;
             Year = year;
-        }
-
-        public CleanDateTimeResult(string name)
-        {
-            Name = name;
-            Year = null;
         }
 
         /// <summary>

@@ -1,8 +1,10 @@
 using System;
-using System.ComponentModel;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
-using Jellyfin.Api.TypeConverters;
+using System.Text;
+using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Middleware;
@@ -54,7 +56,7 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
-            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.Configuration.KnownProxies);
+            services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
 
             services.AddJellyfinApiSwagger();
 
@@ -66,19 +68,33 @@ namespace Jellyfin.Server
             var productHeader = new ProductInfoHeaderValue(
                 _serverApplicationHost.Name.Replace(' ', '-'),
                 _serverApplicationHost.ApplicationVersionString);
+            var acceptJsonHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json, 1.0);
+            var acceptXmlHeader = new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Xml, 0.9);
+            var acceptAnyHeader = new MediaTypeWithQualityHeaderValue("*/*", 0.8);
+            Func<IServiceProvider, HttpMessageHandler> defaultHttpClientHandlerDelegate = (_) => new SocketsHttpHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.All,
+                RequestHeaderEncodingSelector = (_, _) => Encoding.UTF8
+            };
+
             services
                 .AddHttpClient(NamedClient.Default, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptJsonHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
             services.AddHttpClient(NamedClient.MusicBrainz, c =>
                 {
                     c.DefaultRequestHeaders.UserAgent.Add(productHeader);
                     c.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue($"({_serverApplicationHost.ApplicationUserAgentAddress})"));
+                    c.DefaultRequestHeaders.Accept.Add(acceptXmlHeader);
+                    c.DefaultRequestHeaders.Accept.Add(acceptAnyHeader);
                 })
-                .ConfigurePrimaryHttpMessageHandler(x => new DefaultHttpClientHandler());
+                .ConfigurePrimaryHttpMessageHandler(defaultHttpClientHandlerDelegate);
 
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();
@@ -98,7 +114,8 @@ namespace Jellyfin.Server
             app.UseBaseUrlRedirection();
 
             // Wrap rest of configuration so everything only listens on BaseUrl.
-            app.Map(_serverConfigurationManager.Configuration.BaseUrl, mainApp =>
+            var config = _serverConfigurationManager.GetNetworkConfiguration();
+            app.Map(config.BaseUrl, mainApp =>
             {
                 if (env.IsDevelopment())
                 {
@@ -116,29 +133,34 @@ namespace Jellyfin.Server
 
                 mainApp.UseCors();
 
-                if (_serverConfigurationManager.Configuration.RequireHttps
-                    && _serverApplicationHost.ListenWithHttps)
+                if (config.RequireHttps && _serverApplicationHost.ListenWithHttps)
                 {
                     mainApp.UseHttpsRedirection();
                 }
 
+                // This must be injected before any path related middleware.
+                mainApp.UsePathTrim();
                 mainApp.UseStaticFiles();
                 if (appConfig.HostWebClient())
                 {
                     var extensionProvider = new FileExtensionContentTypeProvider();
 
-                    // subtitles octopus requires .data files.
+                    // subtitles octopus requires .data, .mem files.
                     extensionProvider.Mappings.Add(".data", MediaTypeNames.Application.Octet);
+                    extensionProvider.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
                     mainApp.UseStaticFiles(new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(_serverConfigurationManager.ApplicationPaths.WebPath),
                         RequestPath = "/web",
                         ContentTypeProvider = extensionProvider
                     });
+
+                    mainApp.UseRobotsRedirection();
                 }
 
                 mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
 
@@ -164,9 +186,6 @@ namespace Jellyfin.Server
                     endpoints.MapHealthChecks("/health");
                 });
             });
-
-            // Add type descriptor for legacy datetime parsing.
-            TypeDescriptor.AddAttributes(typeof(DateTime?), new TypeConverterAttribute(typeof(DateTimeTypeConverter)));
         }
     }
 }

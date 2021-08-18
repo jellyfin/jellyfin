@@ -97,6 +97,11 @@ namespace Rssdp.Infrastructure
 
         private async void OnBroadcastTimerCallback(object state)
         {
+            if (IsDisposed)
+            {
+                return;
+            }
+
             StartListeningForNotifications();
             RemoveExpiredDevicesFromCache();
 
@@ -180,8 +185,6 @@ namespace Rssdp.Infrastructure
         /// <exception cref="ObjectDisposedException">Throw if the <see cref="DisposableManagedObjectBase.IsDisposed"/>  ty is true.</exception>
         public void StartListeningForNotifications()
         {
-            ThrowIfDisposed();
-
             _CommunicationsServer.RequestReceived -= CommsServer_RequestReceived;
             _CommunicationsServer.RequestReceived += CommsServer_RequestReceived;
             _CommunicationsServer.BeginListeningForBroadcasts();
@@ -208,7 +211,7 @@ namespace Rssdp.Infrastructure
         /// Raises the <see cref="DeviceAvailable"/> event.
         /// </summary>
         /// <seealso cref="DeviceAvailable"/>
-        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
+        protected virtual void OnDeviceAvailable(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IpAddress)
         {
             if (this.IsDisposed)
             {
@@ -220,7 +223,7 @@ namespace Rssdp.Infrastructure
             {
                 handlers(this, new DeviceAvailableEventArgs(device, isNewDevice)
                 {
-                    LocalIpAddress = localIpAddress
+                    RemoteIpAddress = IpAddress
                 });
             }
         }
@@ -286,7 +289,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress localIpAddress)
+        private void AddOrUpdateDiscoveredDevice(DiscoveredSsdpDevice device, IPAddress IpAddress)
         {
             bool isNewDevice = false;
             lock (_Devices)
@@ -304,17 +307,17 @@ namespace Rssdp.Infrastructure
                 }
             }
 
-            DeviceFound(device, isNewDevice, localIpAddress);
+            DeviceFound(device, isNewDevice, IpAddress);
         }
 
-        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress localIpAddress)
+        private void DeviceFound(DiscoveredSsdpDevice device, bool isNewDevice, IPAddress IpAddress)
         {
             if (!NotificationTypeMatchesFilter(device))
             {
                 return;
             }
 
-            OnDeviceAvailable(device, isNewDevice, localIpAddress);
+            OnDeviceAvailable(device, isNewDevice, IpAddress);
         }
 
         private bool NotificationTypeMatchesFilter(DiscoveredSsdpDevice device)
@@ -347,13 +350,13 @@ namespace Rssdp.Infrastructure
             return _CommunicationsServer.SendMulticastMessage(message, null, cancellationToken);
         }
 
-        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress localIpAddress)
+        private void ProcessSearchResponseMessage(HttpResponseMessage message, IPAddress IpAddress)
         {
             if (!message.IsSuccessStatusCode)
             {
                 return;
             }
-            
+
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
             {
@@ -367,11 +370,11 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, localIpAddress);
+                AddOrUpdateDiscoveredDevice(device, IpAddress);
             }
         }
 
-        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress localIpAddress)
+        private void ProcessNotificationMessage(HttpRequestMessage message, IPAddress IpAddress)
         {
             if (String.Compare(message.Method.Method, "Notify", StringComparison.OrdinalIgnoreCase) != 0)
             {
@@ -381,7 +384,7 @@ namespace Rssdp.Infrastructure
             var notificationType = GetFirstHeaderStringValue("NTS", message);
             if (String.Compare(notificationType, SsdpConstants.SsdpKeepAliveNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
-                ProcessAliveNotification(message, localIpAddress);
+                ProcessAliveNotification(message, IpAddress);
             }
             else if (String.Compare(notificationType, SsdpConstants.SsdpByeByeNotification, StringComparison.OrdinalIgnoreCase) == 0)
             {
@@ -389,7 +392,7 @@ namespace Rssdp.Infrastructure
             }
         }
 
-        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress localIpAddress)
+        private void ProcessAliveNotification(HttpRequestMessage message, IPAddress IpAddress)
         {
             var location = GetFirstHeaderUriValue("Location", message);
             if (location != null)
@@ -404,7 +407,7 @@ namespace Rssdp.Infrastructure
                     ResponseHeaders = message.Headers
                 };
 
-                AddOrUpdateDiscoveredDevice(device, localIpAddress);
+                AddOrUpdateDiscoveredDevice(device, IpAddress);
             }
         }
 
@@ -515,11 +518,6 @@ namespace Rssdp.Infrastructure
 
         private void RemoveExpiredDevicesFromCache()
         {
-            if (this.IsDisposed)
-            {
-                return;
-            }
-
             DiscoveredSsdpDevice[] expiredDevices = null;
             lock (_Devices)
             {
@@ -630,7 +628,7 @@ namespace Rssdp.Infrastructure
 
         private void CommsServer_RequestReceived(object sender, RequestReceivedEventArgs e)
         {
-            ProcessNotificationMessage(e.Message, e.LocalIpAddress);
+            ProcessNotificationMessage(e.Message, e.ReceivedFrom.Address);
         }
     }
 }

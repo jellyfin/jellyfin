@@ -12,7 +12,7 @@ namespace Emby.Naming.Video
         /// Initializes a new instance of the <see cref="VideoInfo" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        public VideoInfo(string name)
+        public VideoInfo(string? name)
         {
             Name = name;
 
@@ -25,7 +25,7 @@ namespace Emby.Naming.Video
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the year.

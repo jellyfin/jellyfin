@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.7.0
+Version:        10.8.0
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -27,8 +27,8 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-3.1, dotnet-sdk-3.1
-Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 10.6, %{name}-web < 10.7
+BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
+Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
 
@@ -40,7 +40,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc libicu
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at
 
 %description server
 The Jellyfin media server backend.
@@ -82,7 +82,6 @@ EOF
 %{_libdir}/jellyfin/*
 # Needs 755 else only root can run it since binary build by dotnet is 722
 %attr(755,root,root) %{_libdir}/jellyfin/jellyfin
-%{_libdir}/jellyfin/SOS_README.md
 %{_unitdir}/jellyfin.service
 %{_libexecdir}/jellyfin/restart.sh
 %{_prefix}/lib/firewalld/services/jellyfin.xml
@@ -138,6 +137,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Fri Dec 04 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
+- Forthcoming stable release
 * Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
 - Forthcoming stable release
 * Mon Mar 23 2020 Jellyfin Packaging Team <packaging@jellyfin.org>

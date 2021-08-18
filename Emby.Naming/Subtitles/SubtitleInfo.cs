@@ -1,9 +1,23 @@
-#pragma warning disable CS1591
-
 namespace Emby.Naming.Subtitles
 {
+    /// <summary>
+    /// Class holding information about subtitle.
+    /// </summary>
     public class SubtitleInfo
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SubtitleInfo"/> class.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <param name="isDefault">Is subtitle default.</param>
+        /// <param name="isForced">Is subtitle forced.</param>
+        public SubtitleInfo(string path, bool isDefault, bool isForced)
+        {
+            Path = path;
+            IsDefault = isDefault;
+            IsForced = isForced;
+        }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
@@ -14,7 +28,7 @@ namespace Emby.Naming.Subtitles
         /// Gets or sets the language.
         /// </summary>
         /// <value>The language.</value>
-        public string Language { get; set; }
+        public string? Language { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is default.

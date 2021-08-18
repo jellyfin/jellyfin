@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -30,7 +32,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Fourth;
+        public override ResolverPriority Priority => ResolverPriority.Fifth;
 
         public MultiItemResolverResult ResolveMultiple(
             Folder parent,
@@ -201,7 +203,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     continue;
                 }
 
-                var firstMedia = resolvedItem.Files.First();
+                if (resolvedItem.Files.Count == 0)
+                {
+                    continue;
+                }
+
+                var firstMedia = resolvedItem.Files[0];
 
                 var libraryItem = new T
                 {

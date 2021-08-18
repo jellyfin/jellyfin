@@ -1,5 +1,5 @@
 {
-    "MusicVideos": "Музичні кліпи",
+    "MusicVideos": "Музичні відеокліпи",
     "Music": "Музика",
     "Movies": "Фільми",
     "MessageApplicationUpdatedTo": "Jellyfin Server оновлено до версії {0}",
@@ -27,7 +27,7 @@
     "Channels": "Канали",
     "CameraImageUploadedFrom": "Нова фотографія завантажена з {0}",
     "Books": "Книги",
-    "AuthenticationSucceededWithUserName": "{0} успішно авторизований",
+    "AuthenticationSucceededWithUserName": "{0} успішно автентифіковано",
     "Artists": "Виконавці",
     "Application": "Додаток",
     "AppDeviceValues": "Додаток: {0}, Пристрій: {1}",
@@ -112,5 +112,10 @@
     "MessageServerConfigurationUpdated": "Конфігурація сервера оновлена",
     "MessageNamedServerConfigurationUpdatedWithValue": "Розділ конфігурації сервера {0} оновлено",
     "Inherit": "Успадкувати",
-    "HeaderRecordingGroups": "Групи запису"
+    "HeaderRecordingGroups": "Групи запису",
+    "Forced": "Форсовані",
+    "TaskCleanActivityLogDescription": "Видаляє старші за встановлений термін записи з журналу активності.",
+    "TaskCleanActivityLog": "Очистити журнал активності",
+    "Undefined": "Не визначено",
+    "Default": "За замовчуванням"
 }

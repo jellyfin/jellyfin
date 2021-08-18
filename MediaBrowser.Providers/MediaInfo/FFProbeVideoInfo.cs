@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1068, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -111,12 +111,9 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                if (streamFileNames == null)
-                {
-                    streamFileNames = Array.Empty<string>();
-                }
+                streamFileNames ??= Array.Empty<string>();
 
-                mediaInfoResult = await GetMediaInfo(item, streamFileNames, cancellationToken).ConfigureAwait(false);
+                mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
@@ -128,7 +125,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(
             Video item,
-            string[] streamFileNames,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -145,14 +141,14 @@ namespace MediaBrowser.Providers.MediaInfo
             return _mediaEncoder.GetMediaInfo(
                 new MediaInfoRequest
                 {
-                    PlayableStreamFileNames = streamFileNames,
                     ExtractChapters = true,
                     MediaType = DlnaProfileType.Video,
                     MediaSource = new MediaSourceInfo
                     {
                         Path = path,
                         Protocol = protocol,
-                        VideoType = item.VideoType
+                        VideoType = item.VideoType,
+                        IsoType = item.IsoType
                     }
                 },
                 cancellationToken);
@@ -396,6 +392,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (video is MusicVideo musicVideo)
+            {
+                musicVideo.Album = data.Album;
+                musicVideo.Artists = data.Artists;
+            }
+
             if (data.ProductionYear.HasValue)
             {
                 if (!video.ProductionYear.HasValue || isFullRefresh)
@@ -437,6 +439,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         video.Name = data.Name;
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(data.ForcedSortName))
+                {
+                    video.ForcedSortName = data.ForcedSortName;
                 }
             }
 
@@ -621,7 +628,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 item.RunTimeTicks = GetRuntime(primaryTitle);
             }
 
-            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, null, titleNumber)
+            return _mediaEncoder.GetPrimaryPlaylistVobFiles(item.Path, titleNumber)
                 .Select(Path.GetFileName)
                 .ToArray();
         }

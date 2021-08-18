@@ -33,6 +33,11 @@ JELLYFIN_FFMPEG_OPT="--ffmpeg=/usr/lib/jellyfin-ffmpeg/ffmpeg"
 # [OPTIONAL] run Jellyfin without the web app
 #JELLYFIN_NOWEBAPP_OPT="--nowebclient"
 
+# [OPTIONAL] run Jellyfin with ASP.NET Server Garbage Collection (uses more RAM and less CPU than Workstation GC)
+# 0 = Workstation
+# 1 = Server
+#COMPlus_gcServer=1
+
 #
 # SysV init/Upstart options
 #

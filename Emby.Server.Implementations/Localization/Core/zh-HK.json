@@ -113,5 +113,9 @@
     "TaskCleanCache": "清理緩存目錄",
     "TasksChannelsCategory": "互聯網頻道",
     "TasksLibraryCategory": "庫",
-    "TaskRefreshPeople": "刷新人物"
+    "TaskRefreshPeople": "刷新人物",
+    "TaskCleanActivityLog": "清理活動記錄",
+    "Undefined": "未定義",
+    "Forced": "強制",
+    "Default": "預設"
 }

@@ -26,8 +26,11 @@ namespace Jellyfin.Api.Tests
         {
             var user = new User(
                 "jellyfin",
-                typeof(DefaultAuthenticationProvider).FullName,
-                typeof(DefaultPasswordResetProvider).FullName);
+                typeof(DefaultAuthenticationProvider).FullName!,
+                typeof(DefaultPasswordResetProvider).FullName!);
+
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
 
             // Set administrator flag.
             user.SetPermission(PermissionKind.IsAdministrator, role.Equals(UserRoles.Administrator, StringComparison.OrdinalIgnoreCase));
@@ -45,7 +48,7 @@ namespace Jellyfin.Api.Tests
             {
                 new Claim(ClaimTypes.Role, role),
                 new Claim(ClaimTypes.Name, "jellyfin"),
-                new Claim(InternalClaimTypes.UserId, Guid.Empty.ToString("N", CultureInfo.InvariantCulture)),
+                new Claim(InternalClaimTypes.UserId, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)),
                 new Claim(InternalClaimTypes.DeviceId, Guid.Empty.ToString("N", CultureInfo.InvariantCulture)),
                 new Claim(InternalClaimTypes.Device, "test"),
                 new Claim(InternalClaimTypes.Client, "test"),
@@ -60,7 +63,7 @@ namespace Jellyfin.Api.Tests
                 .Returns(user);
 
             httpContextAccessorMock
-                .Setup(h => h.HttpContext.Connection.RemoteIpAddress)
+                .Setup(h => h.HttpContext!.Connection.RemoteIpAddress)
                 .Returns(new IPAddress(0));
 
             return new ClaimsPrincipal(identity);

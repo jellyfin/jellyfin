@@ -1,13 +1,17 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
+using Jellyfin.Networking.Configuration;
+using Jellyfin.Networking.Manager;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -23,11 +27,9 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
@@ -50,6 +52,8 @@ namespace Emby.Dlna.Main
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
+        private readonly NetworkConfiguration _netConfig;
+        private readonly bool _disabled;
 
         private PlayToManager _manager;
         private SsdpDevicePublisher _publisher;
@@ -120,9 +124,22 @@ namespace Emby.Dlna.Main
                 httpClientFactory,
                 config);
             Current = this;
+
+            _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
+            _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
+
+            if (_disabled && _config.GetDlnaConfiguration().EnableServer)
+            {
+                _logger.LogError("The DLNA specification does not support HTTPS.");
+            }
         }
 
         public static DlnaEntryPoint Current { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the dlna server is enabled.
+        /// </summary>
+        public static bool Enabled { get; private set; }
 
         public IContentDirectory ContentDirectory { get; private set; }
 
@@ -134,28 +151,35 @@ namespace Emby.Dlna.Main
         {
             await ((DlnaManager)_dlnaManager).InitProfilesAsync().ConfigureAwait(false);
 
-            await ReloadComponents().ConfigureAwait(false);
+            if (_disabled)
+            {
+                // No use starting as dlna won't work, as we're running purely on HTTPS.
+                return;
+            }
+
+            ReloadComponents();
 
             _config.NamedConfigurationUpdated += OnNamedConfigurationUpdated;
         }
 
-        private async void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
+        private void OnNamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
         {
             if (string.Equals(e.Key, "dlna", StringComparison.OrdinalIgnoreCase))
             {
-                await ReloadComponents().ConfigureAwait(false);
+                ReloadComponents();
             }
         }
 
-        private async Task ReloadComponents()
+        private void ReloadComponents()
         {
             var options = _config.GetDlnaConfiguration();
+            Enabled = options.EnableServer;
 
             StartSsdpHandler();
 
             if (options.EnableServer)
             {
-                await StartDevicePublisher(options).ConfigureAwait(false);
+                StartDevicePublisher(options);
             }
             else
             {
@@ -178,8 +202,8 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
-                                                   OperatingSystem.Id == OperatingSystemId.Linux;
+                    var enableMultiSocketBinding = OperatingSystem.IsWindows() ||
+                                                   OperatingSystem.IsLinux();
 
                     _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
@@ -204,7 +228,10 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                if (communicationsServer != null)
+                {
+                    ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                }
             }
             catch (Exception ex)
             {
@@ -225,7 +252,7 @@ namespace Emby.Dlna.Main
             }
         }
 
-        public async Task StartDevicePublisher(Configuration.DlnaOptions options)
+        public void StartDevicePublisher(Configuration.DlnaOptions options)
         {
             if (!options.BlastAliveMessages)
             {
@@ -239,13 +266,18 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                _publisher = new SsdpDevicePublisher(
+                    _communicationsServer,
+                    _networkManager,
+                    MediaBrowser.Common.System.OperatingSystem.Name,
+                    Environment.OSVersion.VersionString,
+                    _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     LogFunction = LogMessage,
                     SupportPnpRootDevice = false
                 };
 
-                await RegisterServerEndpoints().ConfigureAwait(false);
+                RegisterServerEndpoints();
 
                 _publisher.StartBroadcastingAliveMessages(TimeSpan.FromSeconds(options.BlastAliveMessageIntervalSeconds));
             }
@@ -255,13 +287,22 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private async Task RegisterServerEndpoints()
+        private void RegisterServerEndpoints()
         {
-            var addresses = await _appHost.GetLocalIpAddresses(CancellationToken.None).ConfigureAwait(false);
-
             var udn = CreateUuid(_appHost.SystemId);
+            var descriptorUri = "/dlna/" + udn + "/description.xml";
 
-            foreach (var address in addresses)
+            var bindAddresses = NetworkManager.CreateCollection(
+                _networkManager.GetInternalBindAddresses()
+                .Where(i => i.AddressFamily == AddressFamily.InterNetwork || (i.AddressFamily == AddressFamily.InterNetworkV6 && i.Address.ScopeId != 0)));
+
+            if (bindAddresses.Count == 0)
+            {
+                // No interfaces returned, so use loopback.
+                bindAddresses = _networkManager.GetLoopbacks();
+            }
+
+            foreach (IPNetAddress address in bindAddresses)
             {
                 if (address.AddressFamily == AddressFamily.InterNetworkV6)
                 {
@@ -270,7 +311,7 @@ namespace Emby.Dlna.Main
                 }
 
                 // Limit to LAN addresses only
-                if (!_networkManager.IsAddressInSubnets(address, true, true))
+                if (!_networkManager.IsInLocalNetwork(address))
                 {
                     continue;
                 }
@@ -279,15 +320,20 @@ namespace Emby.Dlna.Main
 
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
-                var descriptorUri = "/dlna/" + udn + "/description.xml";
-                var uri = new Uri(_appHost.GetLocalApiUrl(address) + descriptorUri);
+                var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
+                if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
+                {
+                    // DLNA will only work over http, so we must reset to http:// : {port}.
+                    uri.Scheme = "http";
+                    uri.Port = _netConfig.HttpServerPortNumber;
+                }
 
                 var device = new SsdpRootDevice
                 {
                     CacheLifetime = TimeSpan.FromSeconds(1800), // How long SSDP clients can cache this info.
-                    Location = uri, // Must point to the URL that serves your devices UPnP description document.
-                    Address = address,
-                    SubnetMask = _networkManager.GetLocalIpSubnetMask(address),
+                    Location = uri.Uri, // Must point to the URL that serves your devices UPnP description document.
+                    Address = address.Address,
+                    PrefixLength = address.PrefixLength,
                     FriendlyName = "Jellyfin",
                     Manufacturer = "Jellyfin",
                     ModelName = "Jellyfin Server",

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
@@ -67,7 +68,7 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="outputPath">The path at which to place the resulting collage image.</param>
         /// <param name="width">The desired width of the collage.</param>
         /// <param name="height">The desired height of the collage.</param>
-        public void BuildSquareCollage(string[] paths, string outputPath, int width, int height)
+        public void BuildSquareCollage(IReadOnlyList<string> paths, string outputPath, int width, int height)
         {
             using var bitmap = BuildSquareCollageBitmap(paths, width, height);
             using var outputStream = new SKFileWStream(outputPath);
@@ -83,7 +84,7 @@ namespace Jellyfin.Drawing.Skia
         /// <param name="width">The desired width of the collage.</param>
         /// <param name="height">The desired height of the collage.</param>
         /// <param name="libraryName">The name of the library to draw on the collage.</param>
-        public void BuildThumbCollage(string[] paths, string outputPath, int width, int height, string? libraryName)
+        public void BuildThumbCollage(IReadOnlyList<string> paths, string outputPath, int width, int height, string? libraryName)
         {
             using var bitmap = BuildThumbCollageBitmap(paths, width, height, libraryName);
             using var outputStream = new SKFileWStream(outputPath);
@@ -91,7 +92,7 @@ namespace Jellyfin.Drawing.Skia
             pixmap.Encode(outputStream, GetEncodedFormat(outputPath), 90);
         }
 
-        private SKBitmap BuildThumbCollageBitmap(string[] paths, int width, int height, string? libraryName)
+        private SKBitmap BuildThumbCollageBitmap(IReadOnlyList<string> paths, int width, int height, string? libraryName)
         {
             var bitmap = new SKBitmap(width, height);
 
@@ -118,6 +119,16 @@ namespace Jellyfin.Drawing.Skia
             };
             canvas.DrawRect(0, 0, width, height, paintColor);
 
+            var typeFace = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
+
+            // use the system fallback to find a typeface for the given CJK character
+            var nonCjkPattern = @"[^\p{IsCJKUnifiedIdeographs}\p{IsCJKUnifiedIdeographsExtensionA}\p{IsKatakana}\p{IsHiragana}\p{IsHangulSyllables}\p{IsHangulJamo}]";
+            var filteredName = Regex.Replace(libraryName ?? string.Empty, nonCjkPattern, string.Empty);
+            if (!string.IsNullOrEmpty(filteredName))
+            {
+                typeFace = SKFontManager.Default.MatchCharacter(null, SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright, null, filteredName[0]);
+            }
+
             // draw library name
             var textPaint = new SKPaint
             {
@@ -125,7 +136,7 @@ namespace Jellyfin.Drawing.Skia
                 Style = SKPaintStyle.Fill,
                 TextSize = 112,
                 TextAlign = SKTextAlign.Center,
-                Typeface = SKTypeface.FromFamilyName("sans-serif", SKFontStyleWeight.Bold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
+                Typeface = typeFace,
                 IsAntialias = true
             };
 
@@ -141,14 +152,14 @@ namespace Jellyfin.Drawing.Skia
             return bitmap;
         }
 
-        private SKBitmap? GetNextValidImage(string[] paths, int currentIndex, out int newIndex)
+        private SKBitmap? GetNextValidImage(IReadOnlyList<string> paths, int currentIndex, out int newIndex)
         {
             var imagesTested = new Dictionary<int, int>();
             SKBitmap? bitmap = null;
 
-            while (imagesTested.Count < paths.Length)
+            while (imagesTested.Count < paths.Count)
             {
-                if (currentIndex >= paths.Length)
+                if (currentIndex >= paths.Count)
                 {
                     currentIndex = 0;
                 }
@@ -169,7 +180,7 @@ namespace Jellyfin.Drawing.Skia
             return bitmap;
         }
 
-        private SKBitmap BuildSquareCollageBitmap(string[] paths, int width, int height)
+        private SKBitmap BuildSquareCollageBitmap(IReadOnlyList<string> paths, int width, int height)
         {
             var bitmap = new SKBitmap(width, height);
             var imageIndex = 0;

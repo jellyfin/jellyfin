@@ -1,6 +1,3 @@
-#nullable enable
-#pragma warning disable CS1591
-
 using System;
 using System.Globalization;
 using System.IO;
@@ -9,15 +6,27 @@ using Emby.Naming.Common;
 
 namespace Emby.Naming.Audio
 {
+    /// <summary>
+    /// Helper class to determine if Album is multipart.
+    /// </summary>
     public class AlbumParser
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlbumParser"/> class.
+        /// </summary>
+        /// <param name="options">Naming options containing AlbumStackingPrefixes.</param>
         public AlbumParser(NamingOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// Function that determines if album is multipart.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <returns>True if album is multipart.</returns>
         public bool IsMultiPart(string path)
         {
             var filename = Path.GetFileName(path);

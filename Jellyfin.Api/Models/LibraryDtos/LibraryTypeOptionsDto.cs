@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 
@@ -17,25 +18,21 @@ namespace Jellyfin.Api.Models.LibraryDtos
         /// <summary>
         /// Gets or sets the metadata fetchers.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "MetadataFetchers", Justification = "Imported from ServiceStack")]
-        public LibraryOptionInfoDto[] MetadataFetchers { get; set; } = null!;
+        public IReadOnlyList<LibraryOptionInfoDto> MetadataFetchers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
         /// <summary>
         /// Gets or sets the image fetchers.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "ImageFetchers", Justification = "Imported from ServiceStack")]
-        public LibraryOptionInfoDto[] ImageFetchers { get; set; } = null!;
+        public IReadOnlyList<LibraryOptionInfoDto> ImageFetchers { get; set; } = Array.Empty<LibraryOptionInfoDto>();
 
         /// <summary>
         /// Gets or sets the supported image types.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "SupportedImageTypes", Justification = "Imported from ServiceStack")]
-        public ImageType[] SupportedImageTypes { get; set; } = null!;
+        public IReadOnlyList<ImageType> SupportedImageTypes { get; set; } = Array.Empty<ImageType>();
 
         /// <summary>
         /// Gets or sets the default image options.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1819:ReturnArrays", MessageId = "DefaultImageOptions", Justification = "Imported from ServiceStack")]
-        public ImageOption[] DefaultImageOptions { get; set; } = null!;
+        public IReadOnlyList<ImageOption> DefaultImageOptions { get; set; } = Array.Empty<ImageOption>();
     }
 }

@@ -88,16 +88,15 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override List<string> GetTagsUsed(BaseItem item)
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "album",
-                "disbanded"
-            });
+                yield return tag;
+            }
 
-            return list;
+            yield return "album";
+            yield return "disbanded";
         }
     }
 }

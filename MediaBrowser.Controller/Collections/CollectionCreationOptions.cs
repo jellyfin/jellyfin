@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -23,8 +25,8 @@ namespace MediaBrowser.Controller.Collections
 
         public Dictionary<string, string> ProviderIds { get; set; }
 
-        public string[] ItemIdList { get; set; }
+        public IReadOnlyList<string> ItemIdList { get; set; }
 
-        public Guid[] UserIds { get; set; }
+        public IReadOnlyList<Guid> UserIds { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using System.Threading;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Api.Models.SessionDtos;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
@@ -152,6 +153,10 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playCommand">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
         /// <param name="itemIds">The ids of the items to play, comma delimited.</param>
         /// <param name="startPositionTicks">The starting position of the first item.</param>
+        /// <param name="mediaSourceId">Optional. The media source id.</param>
+        /// <param name="audioStreamIndex">Optional. The index of the audio stream to play.</param>
+        /// <param name="subtitleStreamIndex">Optional. The index of the subtitle stream to play.</param>
+        /// <param name="startIndex">Optional. The start index.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Playing")]
@@ -160,14 +165,22 @@ namespace Jellyfin.Api.Controllers
         public ActionResult Play(
             [FromRoute, Required] string sessionId,
             [FromQuery, Required] PlayCommand playCommand,
-            [FromQuery, Required] string itemIds,
-            [FromQuery] long? startPositionTicks)
+            [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds,
+            [FromQuery] long? startPositionTicks,
+            [FromQuery] string? mediaSourceId,
+            [FromQuery] int? audioStreamIndex,
+            [FromQuery] int? subtitleStreamIndex,
+            [FromQuery] int? startIndex)
         {
             var playRequest = new PlayRequest
             {
-                ItemIds = RequestHelpers.GetGuids(itemIds),
+                ItemIds = itemIds,
                 StartPositionTicks = startPositionTicks,
-                PlayCommand = playCommand
+                PlayCommand = playCommand,
+                MediaSourceId = mediaSourceId,
+                AudioStreamIndex = audioStreamIndex,
+                SubtitleStreamIndex = subtitleStreamIndex,
+                StartIndex = startIndex
             };
 
             _sessionManager.SendPlayCommand(
@@ -300,9 +313,7 @@ namespace Jellyfin.Api.Controllers
         /// Issues a command to a client to display a message to the user.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="text">The message test.</param>
-        /// <param name="header">The message header.</param>
-        /// <param name="timeoutMs">The message timeout. If omitted the user will have to confirm viewing the message.</param>
+        /// <param name="command">The <see cref="MessageCommand" /> object containing Header, Message Text, and TimeoutMs.</param>
         /// <response code="204">Message sent.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Message")]
@@ -310,16 +321,12 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult SendMessageCommand(
             [FromRoute, Required] string sessionId,
-            [FromQuery, Required] string text,
-            [FromQuery] string? header,
-            [FromQuery] long? timeoutMs)
+            [FromBody, Required] MessageCommand command)
         {
-            var command = new MessageCommand
+            if (string.IsNullOrWhiteSpace(command.Header))
             {
-                Header = string.IsNullOrEmpty(header) ? "Message from Server" : header,
-                TimeoutMs = timeoutMs,
-                Text = text
-            };
+                command.Header = "Message from Server";
+            }
 
             _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, command, CancellationToken.None);
 
@@ -378,8 +385,8 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostCapabilities(
             [FromQuery] string? id,
-            [FromQuery] string? playableMediaTypes,
-            [FromQuery] GeneralCommandType[] supportedCommands,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] playableMediaTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
             [FromQuery] bool supportsMediaControl = false,
             [FromQuery] bool supportsSync = false,
             [FromQuery] bool supportsPersistentIdentifier = true)
@@ -391,7 +398,7 @@ namespace Jellyfin.Api.Controllers
 
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
             {
-                PlayableMediaTypes = RequestHelpers.Split(playableMediaTypes, ',', true),
+                PlayableMediaTypes = playableMediaTypes,
                 SupportedCommands = supportedCommands,
                 SupportsMediaControl = supportsMediaControl,
                 SupportsSync = supportsSync,
@@ -412,14 +419,14 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult PostFullCapabilities(
             [FromQuery] string? id,
-            [FromBody, Required] ClientCapabilities capabilities)
+            [FromBody, Required] ClientCapabilitiesDto capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
             }
 
-            _sessionManager.ReportCapabilities(id, capabilities);
+            _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
 
             return NoContent();
         }

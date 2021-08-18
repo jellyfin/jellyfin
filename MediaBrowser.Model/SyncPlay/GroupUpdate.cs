@@ -1,28 +1,42 @@
-#nullable disable
+using System;
 
 namespace MediaBrowser.Model.SyncPlay
 {
     /// <summary>
     /// Class GroupUpdate.
     /// </summary>
+    /// <typeparam name="T">The type of the data of the message.</typeparam>
     public class GroupUpdate<T>
     {
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Initializes a new instance of the <see cref="GroupUpdate{T}"/> class.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="type">The update type.</param>
+        /// <param name="data">The update data.</param>
+        public GroupUpdate(Guid groupId, GroupUpdateType type, T data)
+        {
+            GroupId = groupId;
+            Type = type;
+            Data = data;
+        }
+
+        /// <summary>
+        /// Gets the group identifier.
         /// </summary>
         /// <value>The group identifier.</value>
-        public string GroupId { get; set; }
+        public Guid GroupId { get; }
 
         /// <summary>
-        /// Gets or sets the update type.
+        /// Gets the update type.
         /// </summary>
         /// <value>The update type.</value>
-        public GroupUpdateType Type { get; set; }
+        public GroupUpdateType Type { get; }
 
         /// <summary>
-        /// Gets or sets the data.
+        /// Gets the update data.
         /// </summary>
-        /// <value>The data.</value>
-        public T Data { get; set; }
+        /// <value>The update data.</value>
+        public T Data { get; }
     }
 }

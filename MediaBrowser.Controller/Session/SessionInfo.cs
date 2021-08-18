@@ -1,6 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -51,10 +54,10 @@ namespace MediaBrowser.Controller.Session
         public string RemoteEndPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the playable media types.
+        /// Gets the playable media types.
         /// </summary>
         /// <value>The playable media types.</value>
-        public string[] PlayableMediaTypes
+        public IReadOnlyList<string> PlayableMediaTypes
         {
             get
             {
@@ -227,10 +230,10 @@ namespace MediaBrowser.Controller.Session
         public string UserPrimaryImageTag { get; set; }
 
         /// <summary>
-        /// Gets or sets the supported commands.
+        /// Gets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>
-        public GeneralCommandType[] SupportedCommands
+        public IReadOnlyList<GeneralCommandType> SupportedCommands
             => Capabilities == null ? Array.Empty<GeneralCommandType>() : Capabilities.SupportedCommands;
 
         public Tuple<ISessionController, bool> EnsureController<T>(Func<SessionInfo, ISessionController> factory)

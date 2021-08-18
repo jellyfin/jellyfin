@@ -5,20 +5,19 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
 using Emby.Server.Implementations.IO;
-using Emby.Server.Implementations.Networking;
-using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.Configuration;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -107,6 +106,10 @@ namespace Jellyfin.Server
             // $JELLYFIN_LOG_DIR needs to be set for the logger configuration manager
             Environment.SetEnvironmentVariable("JELLYFIN_LOG_DIR", appPaths.LogDirectoryPath);
 
+            // Enable cl-va P010 interop for tonemapping on Intel VAAPI
+            Environment.SetEnvironmentVariable("NEOReadDebugKeys", "1");
+            Environment.SetEnvironmentVariable("EnableExtendedVaFormats", "1");
+
             await InitLoggingConfigFile(appPaths).ConfigureAwait(false);
 
             // Create an instance of the application configuration to use for application startup
@@ -118,11 +121,11 @@ namespace Jellyfin.Server
 
             // Log uncaught exceptions to the logging instead of std error
             AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionToConsole;
-            AppDomain.CurrentDomain.UnhandledException += (sender, e)
+            AppDomain.CurrentDomain.UnhandledException += (_, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
             // Intercept Ctrl+C and Ctrl+Break
-            Console.CancelKeyPress += (sender, e) =>
+            Console.CancelKeyPress += (_, e) =>
             {
                 if (_tokenSource.IsCancellationRequested)
                 {
@@ -136,7 +139,7 @@ namespace Jellyfin.Server
             };
 
             // Register a SIGTERM handler
-            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             {
                 if (_tokenSource.IsCancellationRequested)
                 {
@@ -161,8 +164,8 @@ namespace Jellyfin.Server
                 appPaths,
                 _loggerFactory,
                 options,
+                startupConfig,
                 new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                new NetworkManager(_loggerFactory.CreateLogger<NetworkManager>()),
                 serviceCollection);
 
             try
@@ -170,14 +173,14 @@ namespace Jellyfin.Server
                 // If hosting the web client, validate the client content path
                 if (startupConfig.HostWebClient())
                 {
-                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
+                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
                     if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
                     {
                         throw new InvalidOperationException(
                             "The server is expected to host the web client, but the provided content directory is either " +
                             $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
                             "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{MediaBrowser.Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
+                            $"'{ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
                     }
                 }
 
@@ -196,11 +199,11 @@ namespace Jellyfin.Server
                 }
                 catch
                 {
-                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
                 }
 
-                await appHost.RunStartupTasksAsync().ConfigureAwait(false);
+                await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
 
                 stopWatch.Stop();
 
@@ -219,7 +222,15 @@ namespace Jellyfin.Server
             }
             finally
             {
-                appHost?.Dispose();
+                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                // Run before disposing the application
+                using var context = new JellyfinDbProvider(appHost.ServiceProvider, appPaths).CreateContext();
+                if (context.Database.IsSqlite())
+                {
+                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                }
+
+                appHost.Dispose();
             }
 
             if (_restartOnShutdown)
@@ -273,81 +284,42 @@ namespace Jellyfin.Server
             return builder
                 .UseKestrel((builderContext, options) =>
                 {
-                    var addresses = appHost.ServerConfigurationManager
-                        .Configuration
-                        .LocalNetworkAddresses
-                        .Select(x => appHost.NormalizeConfiguredLocalAddress(x))
-                        .Where(i => i != null)
-                        .ToHashSet();
-                    if (addresses.Count > 0 && !addresses.Contains(IPAddress.Any))
-                    {
-                        if (!addresses.Contains(IPAddress.Loopback))
-                        {
-                            // we must listen on loopback for LiveTV to function regardless of the settings
-                            addresses.Add(IPAddress.Loopback);
-                        }
+                    var addresses = appHost.NetManager.GetAllBindInterfaces();
 
-                        foreach (var address in addresses)
-                        {
-                            _logger.LogInformation("Kestrel listening on {IpAddress}", address);
-                            options.Listen(address, appHost.HttpPort);
-                            if (appHost.ListenWithHttps)
-                            {
-                                options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps(appHost.Certificate);
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
-                            }
-                            else if (builderContext.HostingEnvironment.IsDevelopment())
-                            {
-                                try
-                                {
-                                    options.Listen(address, appHost.HttpsPort, listenOptions =>
-                                    {
-                                        listenOptions.UseHttps();
-                                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                    });
-                                }
-                                catch (InvalidOperationException ex)
-                                {
-                                    _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
-                                }
-                            }
-                        }
-                    }
-                    else
+                    bool flagged = false;
+                    foreach (IPObject netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on all interfaces");
-                        options.ListenAnyIP(appHost.HttpPort);
-
+                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
+                        options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
-                            options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                            {
-                                listenOptions.UseHttps(appHost.Certificate);
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                            });
+                            options.Listen(
+                                netAdd.Address,
+                                appHost.HttpsPort,
+                                listenOptions => listenOptions.UseHttps(appHost.Certificate));
                         }
                         else if (builderContext.HostingEnvironment.IsDevelopment())
                         {
                             try
                             {
-                                options.ListenAnyIP(appHost.HttpsPort, listenOptions =>
-                                {
-                                    listenOptions.UseHttps();
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-                                });
+                                options.Listen(
+                                    netAdd.Address,
+                                    appHost.HttpsPort,
+                                    listenOptions => listenOptions.UseHttps());
                             }
-                            catch (InvalidOperationException ex)
+                            catch (InvalidOperationException)
                             {
-                                _logger.LogError(ex, "Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                if (!flagged)
+                                {
+                                    _logger.LogWarning("Failed to listen to HTTPS using the ASP.NET Core HTTPS development certificate. Please ensure it has been installed and set as trusted.");
+                                    flagged = true;
+                                }
                             }
                         }
                     }
 
-                    // Bind to unix socket (only on macOS and Linux)
-                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    // Bind to unix socket (only on unix systems)
+                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
                         var socketPath = startupConfig.GetUnixSocketPath();
                         if (string.IsNullOrEmpty(socketPath))
@@ -465,7 +437,7 @@ namespace Jellyfin.Server
                 {
                     if (options.DataDir != null
                         || Directory.Exists(Path.Combine(dataDir, "config"))
-                        || RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        || OperatingSystem.IsWindows())
                     {
                         // Hang config folder off already set dataDir
                         configDir = Path.Combine(dataDir, "config");
@@ -503,7 +475,7 @@ namespace Jellyfin.Server
 
                 if (string.IsNullOrEmpty(cacheDir))
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (OperatingSystem.IsWindows())
                     {
                         // Hang cache folder off already set dataDir
                         cacheDir = Path.Combine(dataDir, "cache");
@@ -604,7 +576,7 @@ namespace Jellyfin.Server
             // Get a stream of the resource contents
             // NOTE: The .csproj name is used instead of the assembly name in the resource path
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+            await using Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
@@ -668,7 +640,8 @@ namespace Jellyfin.Server
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
                         rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}"))
+                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
+                        encoding: Encoding.UTF8))
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
                     .CreateLogger();
@@ -691,7 +664,7 @@ namespace Jellyfin.Server
             string commandLineArgsString;
             if (options.RestartArgs != null)
             {
-                commandLineArgsString = options.RestartArgs ?? string.Empty;
+                commandLineArgsString = options.RestartArgs;
             }
             else
             {

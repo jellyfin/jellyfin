@@ -2,7 +2,7 @@
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 
-namespace Jellyfin.Data
+namespace Jellyfin.Data.Interfaces
 {
     /// <summary>
     /// An abstraction representing an entity that has permissions.

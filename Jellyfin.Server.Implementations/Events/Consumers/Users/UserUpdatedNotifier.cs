@@ -30,12 +30,12 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Users
         }
 
         /// <inheritdoc />
-        public async Task OnEvent(UserUpdatedEventArgs e)
+        public async Task OnEvent(UserUpdatedEventArgs eventArgs)
         {
             await _sessionManager.SendMessageToUserSessions(
-                new List<Guid> { e.Argument.Id },
+                new List<Guid> { eventArgs.Argument.Id },
                 SessionMessageType.UserUpdated,
-                _userManager.GetUserDto(e.Argument),
+                _userManager.GetUserDto(eventArgs.Argument),
                 CancellationToken.None).ConfigureAwait(false);
         }
     }

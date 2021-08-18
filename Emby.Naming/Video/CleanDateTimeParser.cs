@@ -1,6 +1,3 @@
-#pragma warning disable CS1591
-#nullable enable
-
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -12,9 +9,20 @@ namespace Emby.Naming.Video
     /// </summary>
     public static class CleanDateTimeParser
     {
+        /// <summary>
+        /// Attempts to clean the name.
+        /// </summary>
+        /// <param name="name">Name of video.</param>
+        /// <param name="cleanDateTimeRegexes">Optional list of regexes to clean the name.</param>
+        /// <returns>Returns <see cref="CleanDateTimeResult"/> object.</returns>
         public static CleanDateTimeResult Clean(string name, IReadOnlyList<Regex> cleanDateTimeRegexes)
         {
             CleanDateTimeResult result = new CleanDateTimeResult(name);
+            if (string.IsNullOrEmpty(name))
+            {
+                return result;
+            }
+
             var len = cleanDateTimeRegexes.Count;
             for (int i = 0; i < len; i++)
             {

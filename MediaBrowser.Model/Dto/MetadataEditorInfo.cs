@@ -10,6 +10,15 @@ namespace MediaBrowser.Model.Dto
 {
     public class MetadataEditorInfo
     {
+        public MetadataEditorInfo()
+        {
+            ParentalRatingOptions = Array.Empty<ParentalRating>();
+            Countries = Array.Empty<CountryInfo>();
+            Cultures = Array.Empty<CultureDto>();
+            ExternalIdInfos = Array.Empty<ExternalIdInfo>();
+            ContentTypeOptions = Array.Empty<NameValuePair>();
+        }
+
         public ParentalRating[] ParentalRatingOptions { get; set; }
 
         public CountryInfo[] Countries { get; set; }
@@ -21,14 +30,5 @@ namespace MediaBrowser.Model.Dto
         public string ContentType { get; set; }
 
         public NameValuePair[] ContentTypeOptions { get; set; }
-
-        public MetadataEditorInfo()
-        {
-            ParentalRatingOptions = Array.Empty<ParentalRating>();
-            Countries = Array.Empty<CountryInfo>();
-            Cultures = Array.Empty<CultureDto>();
-            ExternalIdInfos = Array.Empty<ExternalIdInfo>();
-            ContentTypeOptions = Array.Empty<NameValuePair>();
-        }
     }
 }

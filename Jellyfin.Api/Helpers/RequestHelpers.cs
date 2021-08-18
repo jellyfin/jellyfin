@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Http;
 
@@ -22,57 +25,30 @@ namespace Jellyfin.Api.Helpers
         /// <param name="sortBy">Sort By. Comma delimited string.</param>
         /// <param name="requestedSortOrder">Sort Order. Comma delimited string.</param>
         /// <returns>Order By.</returns>
-        public static ValueTuple<string, SortOrder>[] GetOrderBy(string? sortBy, string? requestedSortOrder)
+        public static (string, SortOrder)[] GetOrderBy(IReadOnlyList<string> sortBy, IReadOnlyList<SortOrder> requestedSortOrder)
         {
-            var val = sortBy;
-
-            if (string.IsNullOrEmpty(val))
+            if (sortBy.Count == 0)
             {
                 return Array.Empty<ValueTuple<string, SortOrder>>();
             }
 
-            var vals = val.Split(',');
-            if (string.IsNullOrWhiteSpace(requestedSortOrder))
+            var result = new (string, SortOrder)[sortBy.Count];
+            var i = 0;
+            // Add elements which have a SortOrder specified
+            for (; i < requestedSortOrder.Count; i++)
             {
-                requestedSortOrder = "Ascending";
+                result[i] = (sortBy[i], requestedSortOrder[i]);
             }
 
-            var sortOrders = requestedSortOrder.Split(',');
-
-            var result = new ValueTuple<string, SortOrder>[vals.Length];
-
-            for (var i = 0; i < vals.Length; i++)
+            // Add remaining elements with the first specified SortOrder
+            // or the default one if no SortOrders are specified
+            var order = requestedSortOrder.Count > 0 ? requestedSortOrder[0] : SortOrder.Ascending;
+            for (; i < sortBy.Count; i++)
             {
-                var sortOrderIndex = sortOrders.Length > i ? i : 0;
-
-                var sortOrderValue = sortOrders.Length > sortOrderIndex ? sortOrders[sortOrderIndex] : null;
-                var sortOrder = string.Equals(sortOrderValue, "Descending", StringComparison.OrdinalIgnoreCase)
-                    ? SortOrder.Descending
-                    : SortOrder.Ascending;
-
-                result[i] = new ValueTuple<string, SortOrder>(vals[i], sortOrder);
+                result[i] = (sortBy[i], order);
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Splits a string at a separating character into an array of substrings.
-        /// </summary>
-        /// <param name="value">The string to split.</param>
-        /// <param name="separator">The char that separates the substrings.</param>
-        /// <param name="removeEmpty">Option to remove empty substrings from the array.</param>
-        /// <returns>An array of the substrings.</returns>
-        internal static string[] Split(string? value, char separator, bool removeEmpty)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return Array.Empty<string>();
-            }
-
-            return removeEmpty
-                ? value.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries)
-                : value.Split(separator);
         }
 
         /// <summary>
@@ -108,7 +84,7 @@ namespace Jellyfin.Api.Helpers
                 authorization.Version,
                 authorization.DeviceId,
                 authorization.Device,
-                request.HttpContext.GetNormalizedRemoteIp(),
+                request.HttpContext.GetNormalizedRemoteIp().ToString(),
                 user);
 
             if (session == null)
@@ -119,47 +95,55 @@ namespace Jellyfin.Api.Helpers
             return session;
         }
 
-        /// <summary>
-        /// Get Guid array from string.
-        /// </summary>
-        /// <param name="value">String value.</param>
-        /// <returns>Guid array.</returns>
-        internal static Guid[] GetGuids(string? value)
+        internal static QueryResult<BaseItemDto> CreateQueryResult(
+            QueryResult<(BaseItem, ItemCounts)> result,
+            DtoOptions dtoOptions,
+            IDtoService dtoService,
+            bool includeItemTypes,
+            User? user)
         {
-            if (value == null)
+            var dtos = result.Items.Select(i =>
             {
-                return Array.Empty<Guid>();
-            }
+                var (baseItem, counts) = i;
+                var dto = dtoService.GetItemByNameDto(baseItem, dtoOptions, null, user);
 
-            return Split(value, ',', true)
-                .Select(i => new Guid(i))
-                .ToArray();
+                if (includeItemTypes)
+                {
+                    dto.ChildCount = counts.ItemCount;
+                    dto.ProgramCount = counts.ProgramCount;
+                    dto.SeriesCount = counts.SeriesCount;
+                    dto.EpisodeCount = counts.EpisodeCount;
+                    dto.MovieCount = counts.MovieCount;
+                    dto.TrailerCount = counts.TrailerCount;
+                    dto.AlbumCount = counts.AlbumCount;
+                    dto.SongCount = counts.SongCount;
+                    dto.ArtistCount = counts.ArtistCount;
+                }
+
+                return dto;
+            });
+
+            return new QueryResult<BaseItemDto>
+            {
+                Items = dtos.ToArray(),
+                TotalRecordCount = result.TotalRecordCount
+            };
         }
 
-        /// <summary>
-        /// Gets the item fields.
-        /// </summary>
-        /// <param name="fields">The fields string.</param>
-        /// <returns>IEnumerable{ItemFields}.</returns>
-        internal static ItemFields[] GetItemFields(string? fields)
+        internal static string[] GetItemTypeStrings(IReadOnlyList<BaseItemKind> itemKinds)
         {
-            if (string.IsNullOrEmpty(fields))
+            if (itemKinds.Count == 0)
             {
-                return Array.Empty<ItemFields>();
+                return Array.Empty<string>();
             }
 
-            return Split(fields, ',', true)
-                .Select(v =>
-                {
-                    if (Enum.TryParse(v, true, out ItemFields value))
-                    {
-                        return (ItemFields?)value;
-                    }
+            var itemTypes = new string[itemKinds.Count];
+            for (var i = 0; i < itemKinds.Count; i++)
+            {
+                itemTypes[i] = itemKinds[i].ToString();
+            }
 
-                    return null;
-                }).Where(i => i.HasValue)
-                .Select(i => i!.Value)
-                .ToArray();
+            return itemTypes;
         }
     }
 }

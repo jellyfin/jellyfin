@@ -1,8 +1,10 @@
 #pragma warning disable CS1591
-#pragma warning disable SA1602
 
 namespace Emby.Dlna.ContentDirectory
 {
+    /// <summary>
+    /// Defines the DLNA item types.
+    /// </summary>
     public enum StubType
     {
         Folder = 0,

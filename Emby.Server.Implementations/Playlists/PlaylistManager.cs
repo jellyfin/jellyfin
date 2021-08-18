@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -145,12 +147,12 @@ namespace Emby.Server.Implementations.Playlists
 
                 playlist.SetMediaType(options.MediaType);
 
-                parentFolder.AddChild(playlist, CancellationToken.None);
+                parentFolder.AddChild(playlist);
 
                 await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
 
-                if (options.ItemIdList.Length > 0)
+                if (options.ItemIdList.Count > 0)
                 {
                     await AddToPlaylistInternal(playlist.Id, options.ItemIdList, user, new DtoOptions(false)
                     {
@@ -184,7 +186,7 @@ namespace Emby.Server.Implementations.Playlists
             return Playlist.GetPlaylistItems(playlistMediaType, items, user, options);
         }
 
-        public Task AddToPlaylistAsync(Guid playlistId, ICollection<Guid> itemIds, Guid userId)
+        public Task AddToPlaylistAsync(Guid playlistId, IReadOnlyCollection<Guid> itemIds, Guid userId)
         {
             var user = userId.Equals(Guid.Empty) ? null : _userManager.GetUserById(userId);
 
@@ -194,7 +196,7 @@ namespace Emby.Server.Implementations.Playlists
             });
         }
 
-        private async Task AddToPlaylistInternal(Guid playlistId, ICollection<Guid> newItemIds, User user, DtoOptions options)
+        private async Task AddToPlaylistInternal(Guid playlistId, IReadOnlyCollection<Guid> newItemIds, User user, DtoOptions options)
         {
             // Retrieve the existing playlist
             var playlist = _libraryManager.GetItemById(playlistId) as Playlist
@@ -215,7 +217,7 @@ namespace Emby.Server.Implementations.Playlists
 
             // Create a list of the new linked children to add to the playlist
             var childrenToAdd = newItems
-                .Select(i => LinkedChild.Create(i))
+                .Select(LinkedChild.Create)
                 .ToList();
 
             // Log duplicates that have been ignored, if any

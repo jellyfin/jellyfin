@@ -36,7 +36,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>The list of scheduled tasks.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IEnumerable<IScheduledTaskWorker> GetTasks(
+        public IEnumerable<TaskInfo> GetTasks(
             [FromQuery] bool? isHidden,
             [FromQuery] bool? isEnabled)
         {
@@ -57,7 +57,7 @@ namespace Jellyfin.Api.Controllers
                     }
                 }
 
-                yield return task;
+                yield return ScheduledTaskHelpers.GetTaskInfo(task);
             }
         }
 

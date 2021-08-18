@@ -1,10 +1,11 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -79,7 +80,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(path, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
             {
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);

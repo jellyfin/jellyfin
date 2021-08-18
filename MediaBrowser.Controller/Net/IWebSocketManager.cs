@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
@@ -11,11 +8,6 @@ namespace MediaBrowser.Controller.Net
     /// </summary>
     public interface IWebSocketManager
     {
-        /// <summary>
-        /// Occurs when [web socket connected].
-        /// </summary>
-        event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
-
         /// <summary>
         /// The HTTP request handler.
         /// </summary>

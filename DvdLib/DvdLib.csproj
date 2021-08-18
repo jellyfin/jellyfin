@@ -10,10 +10,11 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>AllDisabledByDefault</AnalysisMode>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
 </Project>

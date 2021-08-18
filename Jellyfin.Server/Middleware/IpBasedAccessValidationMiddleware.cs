@@ -1,8 +1,7 @@
-using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Http;
 
 namespace Jellyfin.Server.Middleware
@@ -28,46 +27,21 @@ namespace Jellyfin.Server.Middleware
         /// </summary>
         /// <param name="httpContext">The current HTTP context.</param>
         /// <param name="networkManager">The network manager.</param>
-        /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <returns>The async task.</returns>
-        public async Task Invoke(HttpContext httpContext, INetworkManager networkManager, IServerConfigurationManager serverConfigurationManager)
+        public async Task Invoke(HttpContext httpContext, INetworkManager networkManager)
         {
             if (httpContext.IsLocal())
             {
+                // Running locally.
                 await _next(httpContext).ConfigureAwait(false);
                 return;
             }
 
-            var remoteIp = httpContext.GetNormalizedRemoteIp();
+            var remoteIp = httpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
 
-            if (serverConfigurationManager.Configuration.EnableRemoteAccess)
+            if (!networkManager.HasRemoteAccess(remoteIp))
             {
-                var addressFilter = serverConfigurationManager.Configuration.RemoteIPFilter.Where(i => !string.IsNullOrWhiteSpace(i)).ToArray();
-
-                if (addressFilter.Length > 0 && !networkManager.IsInLocalNetwork(remoteIp))
-                {
-                    if (serverConfigurationManager.Configuration.IsRemoteIPFilterBlacklist)
-                    {
-                        if (networkManager.IsAddressInSubnets(remoteIp, addressFilter))
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        if (!networkManager.IsAddressInSubnets(remoteIp, addressFilter))
-                        {
-                            return;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (!networkManager.IsInLocalNetwork(remoteIp))
-                {
-                    return;
-                }
+                return;
             }
 
             await _next(httpContext).ConfigureAwait(false);

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -12,8 +14,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Emby.Dlna.Common;
 using Emby.Dlna.Ssdp;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.PlayTo
@@ -221,7 +221,7 @@ namespace Emby.Dlna.PlayTo
         {
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetMute");
             if (command == null)
             {
                 return false;
@@ -237,7 +237,13 @@ namespace Emby.Dlna.PlayTo
             _logger.LogDebug("Setting mute");
             var value = mute ? 1 : 0;
 
-            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType, value))
+            await new SsdpHttpClient(_httpClientFactory)
+                .SendCommandAsync(
+                    Properties.BaseUrl,
+                    service,
+                    command.Name,
+                    rendererCommands.BuildPost(command, service.ServiceType, value),
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             IsMuted = mute;
@@ -255,7 +261,7 @@ namespace Emby.Dlna.PlayTo
         {
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetVolume");
             if (command == null)
             {
                 return;
@@ -272,7 +278,13 @@ namespace Emby.Dlna.PlayTo
             // Remote control will perform better
             Volume = value;
 
-            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, rendererCommands.BuildPost(command, service.ServiceType, value))
+            await new SsdpHttpClient(_httpClientFactory)
+                .SendCommandAsync(
+                    Properties.BaseUrl,
+                    service,
+                    command.Name,
+                    rendererCommands.BuildPost(command, service.ServiceType, value),
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -280,7 +292,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Seek");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Seek");
             if (command == null)
             {
                 return;
@@ -293,7 +305,13 @@ namespace Emby.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"))
+            await new SsdpHttpClient(_httpClientFactory)
+                .SendCommandAsync(
+                    Properties.BaseUrl,
+                    service,
+                    command.Name,
+                    avCommands.BuildPost(command, service.ServiceType, string.Format(CultureInfo.InvariantCulture, "{0:hh}:{0:mm}:{0:ss}", value), "REL_TIME"),
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             RestartTimer(true);
@@ -307,7 +325,7 @@ namespace Emby.Dlna.PlayTo
 
             _logger.LogDebug("{0} - SetAvTransport Uri: {1} DlnaHeaders: {2}", Properties.Name, url, header);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "SetAVTransportURI");
             if (command == null)
             {
                 return;
@@ -327,14 +345,21 @@ namespace Emby.Dlna.PlayTo
             }
 
             var post = avCommands.BuildPost(command, service.ServiceType, url, dictionary);
-            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header: header)
+            await new SsdpHttpClient(_httpClientFactory)
+                .SendCommandAsync(
+                    Properties.BaseUrl,
+                    service,
+                    command.Name,
+                    post,
+                    header: header,
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
-            await Task.Delay(50).ConfigureAwait(false);
+            await Task.Delay(50, cancellationToken).ConfigureAwait(false);
 
             try
             {
-                await SetPlay(avCommands, CancellationToken.None).ConfigureAwait(false);
+                await SetPlay(avCommands, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
@@ -345,7 +370,43 @@ namespace Emby.Dlna.PlayTo
             RestartTimer(true);
         }
 
-        private string CreateDidlMeta(string value)
+        /*
+         * SetNextAvTransport is used to specify to the DLNA device what is the next track to play.
+         * Without that information, the next track command on the device does not work.
+         */
+        public async Task SetNextAvTransport(string url, string header, string metaData, CancellationToken cancellationToken = default)
+        {
+            var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
+
+            url = url.Replace("&", "&amp;", StringComparison.Ordinal);
+
+            _logger.LogDebug("{PropertyName} - SetNextAvTransport Uri: {Url} DlnaHeaders: {Header}", Properties.Name, url, header);
+
+            var command = avCommands.ServiceActions.FirstOrDefault(c => string.Equals(c.Name, "SetNextAVTransportURI", StringComparison.OrdinalIgnoreCase));
+            if (command == null)
+            {
+                return;
+            }
+
+            var dictionary = new Dictionary<string, string>
+            {
+                { "NextURI", url },
+                { "NextURIMetaData", CreateDidlMeta(metaData) }
+            };
+
+            var service = GetAvTransportService();
+
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var post = avCommands.BuildPost(command, service.ServiceType, url, dictionary);
+            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header: header, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        private static string CreateDidlMeta(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -380,6 +441,10 @@ namespace Emby.Dlna.PlayTo
         public async Task SetPlay(CancellationToken cancellationToken)
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
+            if (avCommands == null)
+            {
+                return;
+            }
 
             await SetPlay(avCommands, cancellationToken).ConfigureAwait(false);
 
@@ -390,7 +455,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Stop");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Stop");
             if (command == null)
             {
                 return;
@@ -398,7 +463,13 @@ namespace Emby.Dlna.PlayTo
 
             var service = GetAvTransportService();
 
-            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, 1))
+            await new SsdpHttpClient(_httpClientFactory)
+                .SendCommandAsync(
+                    Properties.BaseUrl,
+                    service,
+                    command.Name,
+                    avCommands.BuildPost(command, service.ServiceType, 1),
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             RestartTimer(true);
@@ -408,7 +479,7 @@ namespace Emby.Dlna.PlayTo
         {
             var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = avCommands.ServiceActions.FirstOrDefault(c => c.Name == "Pause");
+            var command = avCommands?.ServiceActions.FirstOrDefault(c => c.Name == "Pause");
             if (command == null)
             {
                 return;
@@ -416,7 +487,13 @@ namespace Emby.Dlna.PlayTo
 
             var service = GetAvTransportService();
 
-            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, avCommands.BuildPost(command, service.ServiceType, 1))
+            await new SsdpHttpClient(_httpClientFactory)
+                .SendCommandAsync(
+                    Properties.BaseUrl,
+                    service,
+                    command.Name,
+                    avCommands.BuildPost(command, service.ServiceType, 1),
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             TransportState = TransportState.Paused;
@@ -480,7 +557,7 @@ namespace Emby.Dlna.PlayTo
                         return;
                     }
 
-                    // If we're not playing anything make sure we don't get data more often than neccessry to keep the Session alive
+                    // If we're not playing anything make sure we don't get data more often than necessary to keep the Session alive
                     if (transportState.Value == TransportState.Stopped)
                     {
                         RestartTimerInactive();
@@ -530,7 +607,7 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "GetVolume");
             if (command == null)
             {
                 return;
@@ -580,7 +657,7 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
-            var command = rendererCommands.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
+            var command = rendererCommands?.ServiceActions.FirstOrDefault(c => c.Name == "GetMute");
             if (command == null)
             {
                 return;
@@ -667,6 +744,10 @@ namespace Emby.Dlna.PlayTo
             }
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
+            if (rendererCommands == null)
+            {
+                return null;
+            }
 
             var result = await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(
                 Properties.BaseUrl,
@@ -735,6 +816,11 @@ namespace Emby.Dlna.PlayTo
 
             var rendererCommands = await GetRenderingProtocolAsync(cancellationToken).ConfigureAwait(false);
 
+            if (rendererCommands == null)
+            {
+                return (false, null);
+            }
+
             var result = await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(
                 Properties.BaseUrl,
                 service,
@@ -775,7 +861,7 @@ namespace Emby.Dlna.PlayTo
 
             if (track == null)
             {
-                // If track is null, some vendors do this, use GetMediaInfo instead
+                // If track is null, some vendors do this, use GetMediaInfo instead.
                 return (true, null);
             }
 
@@ -812,7 +898,7 @@ namespace Emby.Dlna.PlayTo
 
         private XElement ParseResponse(string xml)
         {
-            // Handle different variations sent back by devices
+            // Handle different variations sent back by devices.
             try
             {
                 return XElement.Parse(xml);
@@ -821,7 +907,7 @@ namespace Emby.Dlna.PlayTo
             {
             }
 
-            // first try to add a root node with a dlna namesapce
+            // first try to add a root node with a dlna namespace.
             try
             {
                 return XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + xml + "</data>")
@@ -916,6 +1002,10 @@ namespace Emby.Dlna.PlayTo
             var httpClient = new SsdpHttpClient(_httpClientFactory);
 
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
+            if (document == null)
+            {
+                return null;
+            }
 
             AvCommands = TransportCommands.Create(document);
             return AvCommands;
@@ -944,6 +1034,10 @@ namespace Emby.Dlna.PlayTo
             var httpClient = new SsdpHttpClient(_httpClientFactory);
             _logger.LogDebug("Dlna Device.GetRenderingProtocolAsync");
             var document = await httpClient.GetDataAsync(url, cancellationToken).ConfigureAwait(false);
+            if (document == null)
+            {
+                return null;
+            }
 
             RendererCommands = TransportCommands.Create(document);
             return RendererCommands;
@@ -962,7 +1056,7 @@ namespace Emby.Dlna.PlayTo
                 url = "/dmr/" + url;
             }
 
-            if (!url.StartsWith("/", StringComparison.Ordinal))
+            if (!url.StartsWith('/'))
             {
                 url = "/" + url;
             }
@@ -975,6 +1069,10 @@ namespace Emby.Dlna.PlayTo
             var ssdpHttpClient = new SsdpHttpClient(httpClientFactory);
 
             var document = await ssdpHttpClient.GetDataAsync(url.ToString(), cancellationToken).ConfigureAwait(false);
+            if (document == null)
+            {
+                return null;
+            }
 
             var friendlyNames = new List<string>();
 
@@ -992,7 +1090,7 @@ namespace Emby.Dlna.PlayTo
 
             var deviceProperties = new DeviceInfo()
             {
-                Name = string.Join(" ", friendlyNames),
+                Name = string.Join(' ', friendlyNames),
                 BaseUrl = string.Format(CultureInfo.InvariantCulture, "http://{0}:{1}", url.Host, url.Port)
             };
 
@@ -1162,10 +1260,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs(mediaInfo));
         }
 
         private void OnPlaybackProgress(UBaseObject mediaInfo)
@@ -1175,27 +1270,17 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs(mediaInfo));
         }
 
         private void OnPlaybackStop(UBaseObject mediaInfo)
         {
-            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs(mediaInfo));
         }
 
         private void OnMediaChanged(UBaseObject old, UBaseObject newMedia)
         {
-            MediaChanged?.Invoke(this, new MediaChangedEventArgs
-            {
-                OldMediaInfo = old,
-                NewMediaInfo = newMedia
-            });
+            MediaChanged?.Invoke(this, new MediaChangedEventArgs(old, newMedia));
         }
 
         /// <inheritdoc />

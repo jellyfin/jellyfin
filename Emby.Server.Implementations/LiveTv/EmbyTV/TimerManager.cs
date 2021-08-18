@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,7 +10,6 @@ using System.Threading;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.LiveTv;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -17,8 +18,8 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly ConcurrentDictionary<string, Timer> _timers = new ConcurrentDictionary<string, Timer>(StringComparer.OrdinalIgnoreCase);
 
-        public TimerManager(IJsonSerializer jsonSerializer, ILogger logger, string dataPath)
-            : base(jsonSerializer, logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
+        public TimerManager(ILogger logger, string dataPath)
+            : base(logger, dataPath, (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase))
         {
         }
 

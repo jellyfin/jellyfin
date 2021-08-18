@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.IO;
 using System.Linq;
@@ -35,7 +33,8 @@ namespace Emby.Server.Implementations.AppBase
             }
             catch (Exception)
             {
-                configuration = Activator.CreateInstance(type);
+                // Note: CreateInstance returns null for Nullable<T>, e.g. CreateInstance(typeof(int?)) returns null.
+                configuration = Activator.CreateInstance(type)!;
             }
 
             using var stream = new MemoryStream(buffer?.Length ?? 0);
@@ -48,10 +47,12 @@ namespace Emby.Server.Implementations.AppBase
             // If the file didn't exist before, or if something has changed, re-save
             if (buffer == null || !newBytes.AsSpan(0, newBytesLen).SequenceEqual(buffer))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
 
+                Directory.CreateDirectory(directory);
                 // Save it after load in case we got new items
-                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+                using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     fs.Write(newBytes, 0, newBytesLen);
                 }

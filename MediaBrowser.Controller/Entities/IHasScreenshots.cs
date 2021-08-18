@@ -1,7 +1,7 @@
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Interface IHasScreenshots.
+    /// The item has screenshots.
     /// </summary>
     public interface IHasScreenshots
     {

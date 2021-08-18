@@ -81,7 +81,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 var id = info.Key + "Id";
                 if (!_validProviderIds.ContainsKey(id))
                 {
-                    _validProviderIds.Add(id, info.Key!);
+                    _validProviderIds.Add(id, info.Key);
                 }
             }
 
@@ -344,8 +344,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var val = reader.ReadElementContentAsString();
 
-                    var hasAspectRatio = item as IHasAspectRatio;
-                    if (!string.IsNullOrWhiteSpace(val) && hasAspectRatio != null)
+                    if (!string.IsNullOrWhiteSpace(val) && item is IHasAspectRatio hasAspectRatio)
                     {
                         hasAspectRatio.AspectRatio = val;
                     }
@@ -469,8 +468,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var val = reader.ReadElementContentAsString();
 
-                    var hasDisplayOrder = item as IHasDisplayOrder;
-                    if (hasDisplayOrder != null)
+                    if (item is IHasDisplayOrder hasDisplayOrder)
                     {
                         if (!string.IsNullOrWhiteSpace(val))
                         {
@@ -683,7 +681,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 default:
                 {
                     string readerName = reader.Name;
-                    if (_validProviderIds!.TryGetValue(readerName, out string providerIdValue))
+                    if (_validProviderIds!.TryGetValue(readerName, out string? providerIdValue))
                     {
                         var id = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(id))
@@ -750,46 +748,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.Shares = list.ToArray();
-        }
-
-        private Share GetShareFromNode(XmlReader reader)
-        {
-            var share = new Share();
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "UserId":
-                        {
-                            share.UserId = reader.ReadElementContentAsString();
-                            break;
-                        }
-
-                        case "CanEdit":
-                        {
-                            share.CanEdit = string.Equals(reader.ReadElementContentAsString(), true.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
-                            break;
-                        }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            return share;
         }
 
         private void FetchFromCountriesNode(XmlReader reader)
@@ -1103,7 +1061,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "Name":
-                            name = reader.ReadElementContentAsString() ?? string.Empty;
+                            name = reader.ReadElementContentAsString();
                             break;
 
                         case "Type":
@@ -1272,12 +1230,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> SplitNames(string value)
         {
-            value ??= string.Empty;
-
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
-            var separator = value.IndexOf('|', StringComparison.Ordinal) == -1
-                            && value.IndexOf(';', StringComparison.Ordinal) == -1 ? new[] { ',' } : new[] { '|', ';' };
+            var separator = !value.Contains('|', StringComparison.Ordinal)
+                            && !value.Contains(';', StringComparison.Ordinal) ? new[] { ',' } : new[] { '|', ';' };
 
             value = value.Trim().Trim(separator);
 

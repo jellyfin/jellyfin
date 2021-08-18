@@ -13,7 +13,7 @@ namespace Emby.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = @"KDL-\d{2}[EHLNPB]X\d[01]\d.*",
+                FriendlyName = @"KDL-[0-9]{2}[EHLNPB]X[0-9][01][0-9].*",
                 Manufacturer = "Sony",
 
                 Headers = new[]
@@ -21,7 +21,7 @@ namespace Emby.Dlna.Profiles
                     new HttpHeaderInfo
                     {
                         Name = "X-AV-Client-Info",
-                        Value = @".*KDL-\d{2}[EHLNPB]X\d[01]\d.*",
+                        Value = @".*KDL-[0-9]{2}[EHLNPB]X[0-9][01][0-9].*",
                         Match = HeaderMatchType.Regex
                     }
                 }

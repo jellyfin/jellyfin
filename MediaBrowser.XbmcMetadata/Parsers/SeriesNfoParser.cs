@@ -17,19 +17,25 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesNfoParser"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="config">the configuration manager.</param>
-        /// <param name="providerManager">The provider manager.</param>
-        public SeriesNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager)
-            : base(logger, config, providerManager)
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        public SeriesNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
         {
         }
 
         /// <inheritdoc />
         protected override bool SupportsUrlAfterClosingXmlTag => true;
-
-        /// <inheritdoc />
-        protected override string MovieDbParserSearchString => "themoviedb.org/tv/";
 
         /// <inheritdoc />
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
@@ -40,9 +46,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        string imdbId = reader.GetAttribute("IMDB");
-                        string tmdbId = reader.GetAttribute("TMDB");
-                        string tvdbId = reader.GetAttribute("TVDB");
+                        string? imdbId = reader.GetAttribute("IMDB");
+                        string? tmdbId = reader.GetAttribute("TMDB");
+                        string? tvdbId = reader.GetAttribute("TVDB");
 
                         if (string.IsNullOrWhiteSpace(tvdbId))
                         {

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -27,6 +29,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
+        private static readonly string[] _disallowedSharedStreamExtensions =
+        {
+            ".mkv",
+            ".mp4",
+            ".m3u8",
+            ".mpd"
+        };
+
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly INetworkManager _networkManager;
@@ -65,7 +75,9 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         {
             var channelIdPrefix = GetFullChannelIdPrefix(info);
 
-            return await new M3uParser(Logger, _httpClientFactory, _appHost).Parse(info.Url, channelIdPrefix, info.Id, cancellationToken).ConfigureAwait(false);
+            return await new M3uParser(Logger, _httpClientFactory)
+                .Parse(info, channelIdPrefix, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
@@ -83,14 +95,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             return Task.FromResult(list);
         }
-
-        private static readonly string[] _disallowedSharedStreamExtensions =
-        {
-            ".mkv",
-            ".mp4",
-            ".m3u8",
-            ".mpd"
-        };
 
         protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, ChannelInfo channelInfo, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
@@ -126,7 +130,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await new M3uParser(Logger, _httpClientFactory, _appHost).GetListingsStream(info.Url, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await new M3uParser(Logger, _httpClientFactory).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
             {
             }
         }

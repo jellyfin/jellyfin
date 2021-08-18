@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -13,6 +15,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using AudioBook = MediaBrowser.Controller.Entities.AudioBook;
 using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Emby.Server.Implementations.Library
@@ -219,7 +222,7 @@ namespace Emby.Server.Implementations.Library
             var hasRuntime = runtimeTicks > 0;
 
             // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime)
+            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
             {
                 var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
@@ -238,11 +241,28 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds && !(item is Book))
+                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;
                     }
+                }
+            }
+            else if (positionTicks > 0 && hasRuntime && item is AudioBook)
+            {
+                var playbackPositionInMinutes = TimeSpan.FromTicks(positionTicks).TotalMinutes;
+                var remainingTimeInMinutes = TimeSpan.FromTicks(runtimeTicks - positionTicks).TotalMinutes;
+
+                if (playbackPositionInMinutes < _config.Configuration.MinAudiobookResume)
+                {
+                    // ignore progress during the beginning
+                    positionTicks = 0;
+                }
+                else if (remainingTimeInMinutes < _config.Configuration.MaxAudiobookResume || positionTicks >= runtimeTicks)
+                {
+                    // mark as completed close to the end
+                    positionTicks = 0;
+                    data.Played = playedToCompletion = true;
                 }
             }
             else if (!hasRuntime)

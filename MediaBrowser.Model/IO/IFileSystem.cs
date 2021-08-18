@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -25,7 +24,7 @@ namespace MediaBrowser.Model.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        string ResolveShortcut(string filename);
+        string? ResolveShortcut(string filename);
 
         /// <summary>
         /// Creates the shortcut.
@@ -118,13 +117,6 @@ namespace MediaBrowser.Model.IO
         bool ContainsSubPath(string parentPath, string path);
 
         /// <summary>
-        /// Determines whether [is root path] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is root path] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsRootPath(string path);
-
-        /// <summary>
         /// Normalizes the path.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -155,16 +147,19 @@ namespace MediaBrowser.Model.IO
         /// Gets the directories.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="recursive">if set to <c>true</c> [recursive].</param>
-        /// <returns>IEnumerable&lt;DirectoryInfo&gt;.</returns>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <returns>All found directories.</returns>
         IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false);
 
         /// <summary>
         /// Gets the files.
         /// </summary>
+        /// <param name="path">The path in which to search.</param>
+        /// <param name="recursive">If set to <c>true</c> also searches in subdirectiories.</param>
+        /// <returns>All found files.</returns>
         IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false);
 
-        IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string> extensions, bool enableCaseSensitiveExtensions, bool recursive);
+        IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entries.
@@ -190,7 +185,7 @@ namespace MediaBrowser.Model.IO
         /// <returns>IEnumerable&lt;System.String&gt;.</returns>
         IEnumerable<string> GetFilePaths(string path, bool recursive = false);
 
-        IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive);
+        IEnumerable<string> GetFilePaths(string path, string[]? extensions, bool enableCaseSensitiveExtensions, bool recursive);
 
         /// <summary>
         /// Gets the file system entry paths.

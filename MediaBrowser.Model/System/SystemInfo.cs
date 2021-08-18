@@ -31,13 +31,21 @@ namespace MediaBrowser.Model.System
     public class SystemInfo : PublicSystemInfo
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="SystemInfo" /> class.
+        /// </summary>
+        public SystemInfo()
+        {
+            CompletedInstallations = Array.Empty<InstallationInfo>();
+        }
+
+        /// <summary>
         /// Gets or sets the display name of the operating system.
         /// </summary>
         /// <value>The display name of the operating system.</value>
         public string OperatingSystemDisplayName { get; set; }
 
         /// <summary>
-        /// Get or sets the package name.
+        /// Gets or sets the package name.
         /// </summary>
         /// <value>The value of the '-package' command line argument.</value>
         public string PackageName { get; set; }
@@ -122,18 +130,11 @@ namespace MediaBrowser.Model.System
         /// Gets or sets a value indicating whether this instance has update available.
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
+        [Obsolete("This should be handled by the package manager")]
         public bool HasUpdateAvailable { get; set; }
 
         public FFmpegLocation EncoderLocation { get; set; }
 
         public Architecture SystemArchitecture { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemInfo" /> class.
-        /// </summary>
-        public SystemInfo()
-        {
-            CompletedInstallations = Array.Empty<InstallationInfo>();
-        }
     }
 }

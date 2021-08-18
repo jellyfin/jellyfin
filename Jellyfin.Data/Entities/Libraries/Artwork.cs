@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -18,8 +16,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="kind">The kind of art.</param>
-        /// <param name="owner">The owner.</param>
-        public Artwork(string path, ArtKind kind, IHasArtwork owner)
+        public Artwork(string path, ArtKind kind)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -28,28 +25,16 @@ namespace Jellyfin.Data.Entities.Libraries
 
             Path = path;
             Kind = kind;
-
-            owner?.Artwork.Add(this);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Artwork"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Artwork()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -57,7 +42,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required, Max length = 65535.
         /// </remarks>
-        [Required]
         [MaxLength(65535)]
         [StringLength(65535)]
         public string Path { get; set; }
@@ -72,7 +56,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Mime;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
@@ -64,9 +64,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Info")]
         [Authorize(Policy = Policies.FirstTimeSetupOrIgnoreParentalControl)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<SystemInfo>> GetSystemInfo()
+        public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return await _appHost.GetSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <summary>
@@ -76,9 +76,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="PublicSystemInfo"/> with public info about the system.</returns>
         [HttpGet("Info/Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PublicSystemInfo>> GetPublicSystemInfo()
+        public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return await _appHost.GetPublicSystemInfo(CancellationToken.None).ConfigureAwait(false);
+            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Jellyfin.Api.Controllers
             // For older files, assume fully static
             var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
             FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare);
-            return File(stream, "text/plain");
+            return File(stream, "text/plain; charset=utf-8");
         }
 
         /// <summary>

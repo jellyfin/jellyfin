@@ -31,7 +31,7 @@ namespace DvdLib.Ifo
                         continue;
                     }
 
-                    var nums = ifo.Name.Split(new[] { '_' }, StringSplitOptions.RemoveEmptyEntries);
+                    var nums = ifo.Name.Split('_', StringSplitOptions.RemoveEmptyEntries);
                     if (nums.Length >= 2 && ushort.TryParse(nums[1], out var ifoNumber))
                     {
                         ReadVTS(ifoNumber, ifo.FullName);

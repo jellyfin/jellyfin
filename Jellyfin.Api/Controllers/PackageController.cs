@@ -45,14 +45,19 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<PackageInfo>> GetPackageInfo(
             [FromRoute, Required] string name,
-            [FromQuery] string? assemblyGuid)
+            [FromQuery] Guid? assemblyGuid)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             var result = _installationManager.FilterPackages(
                     packages,
                     name,
-                    string.IsNullOrEmpty(assemblyGuid) ? default : Guid.Parse(assemblyGuid))
+                    assemblyGuid ?? default)
                 .FirstOrDefault();
+
+            if (result == null)
+            {
+                return NotFound();
+            }
 
             return result;
         }
@@ -87,21 +92,21 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.RequiresElevation)]
         public async Task<ActionResult> InstallPackage(
             [FromRoute, Required] string name,
-            [FromQuery] string? assemblyGuid,
+            [FromQuery] Guid? assemblyGuid,
             [FromQuery] string? version,
             [FromQuery] string? repositoryUrl)
         {
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             if (!string.IsNullOrEmpty(repositoryUrl))
             {
-                packages = packages.Where(p => p.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase))
+                packages = packages.Where(p => p.Versions.Any(q => q.RepositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
             }
 
             var package = _installationManager.GetCompatibleVersions(
                     packages,
                     name,
-                    string.IsNullOrEmpty(assemblyGuid) ? Guid.Empty : Guid.Parse(assemblyGuid),
+                    assemblyGuid ?? Guid.Empty,
                     specificVersion: string.IsNullOrEmpty(version) ? null : Version.Parse(version))
                 .FirstOrDefault();
 
@@ -149,12 +154,13 @@ namespace Jellyfin.Api.Controllers
         /// <param name="repositoryInfos">The list of package repositories.</param>
         /// <response code="204">Package repositories saved.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpOptions("Repositories")]
+        [HttpPost("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)
+        public ActionResult SetRepositories([FromBody, Required] List<RepositoryInfo> repositoryInfos)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
+            _serverConfigurationManager.SaveConfiguration();
             return NoContent();
         }
     }

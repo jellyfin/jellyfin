@@ -15,7 +15,7 @@ namespace Jellyfin.Api.Controllers
     /// <summary>
     /// Devices Controller.
     /// </summary>
-    [Authorize(Policy = Policies.DefaultAuthorization)]
+    [Authorize(Policy = Policies.RequiresElevation)]
     public class DevicesController : BaseJellyfinApiController
     {
         private readonly IDeviceManager _deviceManager;
@@ -46,7 +46,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Devices retrieved.</response>
         /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
         [HttpGet]
-        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
@@ -62,7 +61,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Device not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the device info on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("Info")]
-        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string id)
@@ -84,7 +82,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Device not found.</response>
         /// <returns>An <see cref="OkResult"/> containing the device info on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpGet("Options")]
-        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string id)
@@ -107,7 +104,6 @@ namespace Jellyfin.Api.Controllers
         /// <response code="404">Device not found.</response>
         /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
         [HttpPost("Options")]
-        [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult UpdateDeviceOptions(

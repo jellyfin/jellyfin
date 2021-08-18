@@ -2,15 +2,23 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Generic;
 using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Model.Session
 {
     public class ClientCapabilities
     {
-        public string[] PlayableMediaTypes { get; set; }
+        public ClientCapabilities()
+        {
+            PlayableMediaTypes = Array.Empty<string>();
+            SupportedCommands = Array.Empty<GeneralCommandType>();
+            SupportsPersistentIdentifier = true;
+        }
 
-        public GeneralCommandType[] SupportedCommands { get; set; }
+        public IReadOnlyList<string> PlayableMediaTypes { get; set; }
+
+        public IReadOnlyList<GeneralCommandType> SupportedCommands { get; set; }
 
         public bool SupportsMediaControl { get; set; }
 
@@ -27,12 +35,5 @@ namespace MediaBrowser.Model.Session
         public string AppStoreUrl { get; set; }
 
         public string IconUrl { get; set; }
-
-        public ClientCapabilities()
-        {
-            PlayableMediaTypes = Array.Empty<string>();
-            SupportedCommands = Array.Empty<GeneralCommandType>();
-            SupportsPersistentIdentifier = true;
-        }
     }
 }

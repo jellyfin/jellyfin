@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,6 @@ using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -40,6 +40,9 @@ namespace Jellyfin.Api.Controllers
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class DynamicHlsController : BaseJellyfinApiController
     {
+        private const string DefaultEncoderPreset = "veryfast";
+        private const TranscodingJobType TranscodingJobType = MediaBrowser.Controller.MediaEncoding.TranscodingJobType.Hls;
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -48,15 +51,12 @@ namespace Jellyfin.Api.Controllers
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IFileSystem _fileSystem;
-        private readonly ISubtitleEncoder _subtitleEncoder;
-        private readonly IConfiguration _configuration;
         private readonly IDeviceManager _deviceManager;
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly ILogger<DynamicHlsController> _logger;
         private readonly EncodingHelper _encodingHelper;
         private readonly DynamicHlsHelper _dynamicHlsHelper;
-
-        private readonly TranscodingJobType _transcodingJobType = TranscodingJobType.Hls;
+        private readonly EncodingOptions _encodingOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHlsController"/> class.
@@ -69,12 +69,11 @@ namespace Jellyfin.Api.Controllers
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="mediaEncoder">Instance of the <see cref="IMediaEncoder"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="subtitleEncoder">Instance of the <see cref="ISubtitleEncoder"/> interface.</param>
-        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         /// <param name="deviceManager">Instance of the <see cref="IDeviceManager"/> interface.</param>
         /// <param name="transcodingJobHelper">Instance of the <see cref="TranscodingJobHelper"/> class.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsController}"/> interface.</param>
         /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
+        /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
         public DynamicHlsController(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -84,12 +83,11 @@ namespace Jellyfin.Api.Controllers
             IServerConfigurationManager serverConfigurationManager,
             IMediaEncoder mediaEncoder,
             IFileSystem fileSystem,
-            ISubtitleEncoder subtitleEncoder,
-            IConfiguration configuration,
             IDeviceManager deviceManager,
             TranscodingJobHelper transcodingJobHelper,
             ILogger<DynamicHlsController> logger,
-            DynamicHlsHelper dynamicHlsHelper)
+            DynamicHlsHelper dynamicHlsHelper,
+            EncodingHelper encodingHelper)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -99,14 +97,13 @@ namespace Jellyfin.Api.Controllers
             _serverConfigurationManager = serverConfigurationManager;
             _mediaEncoder = mediaEncoder;
             _fileSystem = fileSystem;
-            _subtitleEncoder = subtitleEncoder;
-            _configuration = configuration;
             _deviceManager = deviceManager;
             _transcodingJobHelper = transcodingJobHelper;
             _logger = logger;
             _dynamicHlsHelper = dynamicHlsHelper;
+            _encodingHelper = encodingHelper;
 
-            _encodingHelper = new EncodingHelper(_mediaEncoder, _fileSystem, _subtitleEncoder, _configuration);
+            _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
 
         /// <summary>
@@ -119,7 +116,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -148,14 +145,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -199,7 +196,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -211,17 +208,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions,
             [FromQuery] bool enableAdaptiveBitrateStreaming = true)
         {
             var streamingRequest = new HlsVideoRequestDto
             {
                 Id = itemId,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -245,33 +242,33 @@ namespace Jellyfin.Api.Controllers
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions,
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -284,7 +281,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -295,6 +292,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -313,14 +311,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -351,6 +349,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -364,7 +363,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -376,17 +375,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions,
             [FromQuery] bool enableAdaptiveBitrateStreaming = true)
         {
             var streamingRequest = new HlsAudioRequestDto
             {
                 Id = itemId,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -403,40 +402,40 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions,
                 EnableAdaptiveBitrateStreaming = enableAdaptiveBitrateStreaming
             };
 
-            return await _dynamicHlsHelper.GetMasterHlsPlaylist(_transcodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
+            return await _dynamicHlsHelper.GetMasterHlsPlaylist(TranscodingJobType, streamingRequest, enableAdaptiveBitrateStreaming).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -449,7 +448,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -478,14 +477,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -527,7 +526,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -539,17 +538,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
+            using var cancellationTokenSource = new CancellationTokenSource();
             var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -573,28 +572,28 @@ namespace Jellyfin.Api.Controllers
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -612,7 +611,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -623,6 +622,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -641,14 +641,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -677,6 +677,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -690,7 +691,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -702,17 +703,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
+            using var cancellationTokenSource = new CancellationTokenSource();
             var streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -729,35 +730,35 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -807,14 +808,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -829,7 +830,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
-            [FromRoute] string container,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -860,7 +861,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -872,17 +873,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
             var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
                 Container = container,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -906,28 +907,28 @@ namespace Jellyfin.Api.Controllers
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -948,7 +949,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -959,6 +960,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="breakOnNonKeyFrames">Optional. Whether to break on non key frames.</param>
         /// <param name="audioSampleRate">Optional. Specify a specific audio sample rate, e.g. 44100.</param>
         /// <param name="maxAudioBitDepth">Optional. The maximum audio bit depth.</param>
+        /// <param name="maxStreamingBitrate">Optional. The maximum streaming bitrate.</param>
         /// <param name="audioBitRate">Optional. Specify an audio bitrate to encode to, e.g. 128000. If omitted this will be left to encoder defaults.</param>
         /// <param name="audioChannels">Optional. Specify a specific number of audio channels to encode to, e.g. 2.</param>
         /// <param name="maxAudioChannels">Optional. Specify a maximum number of audio channels to encode to, e.g. 2.</param>
@@ -977,14 +979,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="maxVideoBitDepth">Optional. The maximum video bit depth.</param>
         /// <param name="requireAvc">Optional. Whether to require avc.</param>
         /// <param name="deInterlace">Optional. Whether to deinterlace the video.</param>
-        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamporphic stream.</param>
+        /// <param name="requireNonAnamorphic">Optional. Whether to require a non anamorphic stream.</param>
         /// <param name="transcodingMaxAudioChannels">Optional. The maximum number of audio channels to transcode.</param>
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
         /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
-        /// <param name="transcodingReasons">Optional. The transcoding reason.</param>
+        /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
         /// <param name="videoStreamIndex">Optional. The index of the video stream to use. If omitted the first video stream will be used.</param>
         /// <param name="context">Optional. The <see cref="EncodingContext"/>.</param>
@@ -999,7 +1001,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid itemId,
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
-            [FromRoute] string container,
+            [FromRoute, Required] string container,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -1017,6 +1019,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? breakOnNonKeyFrames,
             [FromQuery] int? audioSampleRate,
             [FromQuery] int? maxAudioBitDepth,
+            [FromQuery] int? maxStreamingBitrate,
             [FromQuery] int? audioBitRate,
             [FromQuery] int? audioChannels,
             [FromQuery] int? maxAudioChannels,
@@ -1030,7 +1033,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? height,
             [FromQuery] int? videoBitRate,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] SubtitleDeliveryMethod subtitleMethod,
+            [FromQuery] SubtitleDeliveryMethod? subtitleMethod,
             [FromQuery] int? maxRefFrames,
             [FromQuery] int? maxVideoBitDepth,
             [FromQuery] bool? requireAvc,
@@ -1042,17 +1045,17 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableMpegtsM2TsMode,
             [FromQuery] string? videoCodec,
             [FromQuery] string? subtitleCodec,
-            [FromQuery] string? transcodingReasons,
+            [FromQuery] string? transcodeReasons,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? videoStreamIndex,
-            [FromQuery] EncodingContext context,
+            [FromQuery] EncodingContext? context,
             [FromQuery] Dictionary<string, string> streamOptions)
         {
             var streamingRequest = new StreamingRequestDto
             {
                 Id = itemId,
                 Container = container,
-                Static = @static ?? true,
+                Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
                 DeviceProfileId = deviceProfileId,
@@ -1069,35 +1072,35 @@ namespace Jellyfin.Api.Controllers
                 BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                 AudioSampleRate = audioSampleRate,
                 MaxAudioChannels = maxAudioChannels,
-                AudioBitRate = audioBitRate,
+                AudioBitRate = audioBitRate ?? maxStreamingBitrate,
                 MaxAudioBitDepth = maxAudioBitDepth,
                 AudioChannels = audioChannels,
                 Profile = profile,
                 Level = level,
                 Framerate = framerate,
                 MaxFramerate = maxFramerate,
-                CopyTimestamps = copyTimestamps ?? true,
+                CopyTimestamps = copyTimestamps ?? false,
                 StartTimeTicks = startTimeTicks,
                 Width = width,
                 Height = height,
                 VideoBitRate = videoBitRate,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                SubtitleMethod = subtitleMethod,
+                SubtitleMethod = subtitleMethod ?? SubtitleDeliveryMethod.Encode,
                 MaxRefFrames = maxRefFrames,
                 MaxVideoBitDepth = maxVideoBitDepth,
-                RequireAvc = requireAvc ?? true,
-                DeInterlace = deInterlace ?? true,
-                RequireNonAnamorphic = requireNonAnamorphic ?? true,
+                RequireAvc = requireAvc ?? false,
+                DeInterlace = deInterlace ?? false,
+                RequireNonAnamorphic = requireNonAnamorphic ?? false,
                 TranscodingMaxAudioChannels = transcodingMaxAudioChannels,
                 CpuCoreLimit = cpuCoreLimit,
                 LiveStreamId = liveStreamId,
-                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? true,
+                EnableMpegtsM2TsMode = enableMpegtsM2TsMode ?? false,
                 VideoCodec = videoCodec,
                 SubtitleCodec = subtitleCodec,
-                TranscodeReasons = transcodingReasons,
+                TranscodeReasons = transcodeReasons,
                 AudioStreamIndex = audioStreamIndex,
                 VideoStreamIndex = videoStreamIndex,
-                Context = context,
+                Context = context ?? EncodingContext.Streaming,
                 StreamOptions = streamOptions
             };
 
@@ -1116,13 +1119,11 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
-                    _transcodingJobType,
+                    TranscodingJobType,
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
@@ -1130,11 +1131,19 @@ namespace Jellyfin.Api.Controllers
 
             var segmentLengths = GetSegmentLengths(state);
 
-            var builder = new StringBuilder();
+            var segmentContainer = state.Request.SegmentContainer ?? "ts";
+
+            // http://ffmpeg.org/ffmpeg-all.html#toc-hls-2
+            var isHlsInFmp4 = string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase);
+            var hlsVersion = isHlsInFmp4 ? "7" : "3";
+
+            var builder = new StringBuilder(128);
 
             builder.AppendLine("#EXTM3U")
                 .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
-                .AppendLine("#EXT-X-VERSION:3")
+                .Append("#EXT-X-VERSION:")
+                .Append(hlsVersion)
+                .AppendLine()
                 .Append("#EXT-X-TARGETDURATION:")
                 .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
                 .AppendLine()
@@ -1143,6 +1152,18 @@ namespace Jellyfin.Api.Controllers
             var index = 0;
             var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
             var queryString = Request.QueryString;
+
+            if (isHlsInFmp4)
+            {
+                builder.Append("#EXT-X-MAP:URI=\"")
+                    .Append("hls1/")
+                    .Append(name)
+                    .Append("/-1")
+                    .Append(segmentExtension)
+                    .Append(queryString)
+                    .Append('"')
+                    .AppendLine();
+            }
 
             foreach (var length in segmentLengths)
             {
@@ -1169,6 +1190,7 @@ namespace Jellyfin.Api.Controllers
                 throw new ArgumentException("StartTimeTicks is not allowed.");
             }
 
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
@@ -1181,14 +1203,12 @@ namespace Jellyfin.Api.Controllers
                     _libraryManager,
                     _serverConfigurationManager,
                     _mediaEncoder,
-                    _fileSystem,
-                    _subtitleEncoder,
-                    _configuration,
+                    _encodingHelper,
                     _dlnaManager,
                     _deviceManager,
                     _transcodingJobHelper,
-                    _transcodingJobType,
-                    cancellationTokenSource.Token)
+                    TranscodingJobType,
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
@@ -1201,13 +1221,13 @@ namespace Jellyfin.Api.Controllers
 
             if (System.IO.File.Exists(segmentPath))
             {
-                job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+                job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 _logger.LogDebug("returning {0} [it exists, try 1]", segmentPath);
                 return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
             }
 
             var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
-            await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             var released = false;
             var startTranscoding = false;
 
@@ -1215,7 +1235,7 @@ namespace Jellyfin.Api.Controllers
             {
                 if (System.IO.File.Exists(segmentPath))
                 {
-                    job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+                    job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     transcodingLock.Release();
                     released = true;
                     _logger.LogDebug("returning {0} [it exists, try 2]", segmentPath);
@@ -1226,7 +1246,13 @@ namespace Jellyfin.Api.Controllers
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
-                    if (currentTranscodingIndex == null)
+                    if (segmentId == -1)
+                    {
+                        _logger.LogDebug("Starting transcoding because fmp4 init file is being requested");
+                        startTranscoding = true;
+                        segmentId = 0;
+                    }
+                    else if (currentTranscodingIndex == null)
                     {
                         _logger.LogDebug("Starting transcoding because currentTranscodingIndex=null");
                         startTranscoding = true;
@@ -1258,13 +1284,12 @@ namespace Jellyfin.Api.Controllers
                             streamingRequest.StartTimeTicks = GetStartPositionTicks(state, segmentId);
 
                             state.WaitForPath = segmentPath;
-                            var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
                             job = await _transcodingJobHelper.StartFfMpeg(
                                 state,
                                 playlistPath,
-                                GetCommandLineArguments(playlistPath, encodingOptions, state, true, segmentId),
+                                GetCommandLineArguments(playlistPath, state, true, segmentId),
                                 Request,
-                                _transcodingJobType,
+                                TranscodingJobType,
                                 cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
@@ -1277,7 +1302,7 @@ namespace Jellyfin.Api.Controllers
                     }
                     else
                     {
-                        job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+                        job = _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                         if (job?.TranscodingThrottler != null)
                         {
                             await job.TranscodingThrottler.UnpauseTranscoding().ConfigureAwait(false);
@@ -1294,35 +1319,38 @@ namespace Jellyfin.Api.Controllers
             }
 
             _logger.LogDebug("returning {0} [general case]", segmentPath);
-            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, _transcodingJobType);
+            job ??= _transcodingJobHelper.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(state, playlistPath, segmentPath, segmentExtension, segmentId, job, cancellationToken).ConfigureAwait(false);
         }
 
-        private double[] GetSegmentLengths(StreamState state)
+        private static double[] GetSegmentLengths(StreamState state)
+            => GetSegmentLengthsInternal(state.RunTimeTicks ?? 0, state.SegmentLength);
+
+        internal static double[] GetSegmentLengthsInternal(long runtimeTicks, int segmentlength)
         {
-            var result = new List<double>();
+            var segmentLengthTicks = TimeSpan.FromSeconds(segmentlength).Ticks;
+            var wholeSegments = runtimeTicks / segmentLengthTicks;
+            var remainingTicks = runtimeTicks % segmentLengthTicks;
 
-            var ticks = state.RunTimeTicks ?? 0;
-
-            var segmentLengthTicks = TimeSpan.FromSeconds(state.SegmentLength).Ticks;
-
-            while (ticks > 0)
+            var segmentsLen = wholeSegments + (remainingTicks == 0 ? 0 : 1);
+            var segments = new double[segmentsLen];
+            for (int i = 0; i < wholeSegments; i++)
             {
-                var length = ticks >= segmentLengthTicks ? segmentLengthTicks : ticks;
-
-                result.Add(TimeSpan.FromTicks(length).TotalSeconds);
-
-                ticks -= length;
+                segments[i] = segmentlength;
             }
 
-            return result.ToArray();
+            if (remainingTicks != 0)
+            {
+                segments[^1] = TimeSpan.FromTicks(remainingTicks).TotalSeconds;
+            }
+
+            return segments;
         }
 
-        private string GetCommandLineArguments(string outputPath, EncodingOptions encodingOptions, StreamState state, bool isEncoding, int startNumber)
+        private string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding, int startNumber)
         {
-            var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
-
-            var threads = _encodingHelper.GetNumberOfThreads(state, encodingOptions, videoCodec);
+            var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+            var threads = EncodingHelper.GetNumberOfThreads(state, _encodingOptions, videoCodec);
 
             if (state.BaseRequest.BreakOnNonKeyFrames)
             {
@@ -1334,34 +1362,52 @@ namespace Jellyfin.Api.Controllers
                 state.BaseRequest.BreakOnNonKeyFrames = false;
             }
 
-            var inputModifier = _encodingHelper.GetInputModifier(state, encodingOptions);
-
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? startNumber.ToString(CultureInfo.InvariantCulture) : "0";
-
+            var inputModifier = _encodingHelper.GetInputModifier(state, _encodingOptions);
             var mapArgs = state.IsOutputVideo ? _encodingHelper.GetMapArgs(state) : string.Empty;
 
-            var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state.Request.SegmentContainer);
+            var directory = Path.GetDirectoryName(outputPath) ?? throw new ArgumentException($"Provided path ({outputPath}) is not valid.", nameof(outputPath));
+            var outputFileNameWithoutExtension = Path.GetFileNameWithoutExtension(outputPath);
+            var outputPrefix = Path.Combine(directory, outputFileNameWithoutExtension);
+            var outputExtension = GetSegmentFileExtension(state.Request.SegmentContainer);
+            var outputTsArg = outputPrefix + "%d" + outputExtension;
 
-            var segmentFormat = GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
+            var segmentFormat = outputExtension.TrimStart('.');
             if (string.Equals(segmentFormat, "ts", StringComparison.OrdinalIgnoreCase))
             {
                 segmentFormat = "mpegts";
             }
+            else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
+            {
+                var outputFmp4HeaderArg = OperatingSystem.IsWindows() switch
+                {
+                    // on Windows, the path of fmp4 header file needs to be configured
+                    true => " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"",
+                    // on Linux/Unix, ffmpeg generate fmp4 header file to m3u8 output folder
+                    false => " -hls_fmp4_init_filename \"" + outputFileNameWithoutExtension + "-1" + outputExtension + "\""
+                };
 
-            var maxMuxingQueueSize = encodingOptions.MaxMuxingQueueSize > 128
-                ? encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
+                segmentFormat = "fmp4" + outputFmp4HeaderArg;
+            }
+            else
+            {
+                _logger.LogError("Invalid HLS segment container: " + segmentFormat);
+            }
+
+            var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128
+                ? _encodingOptions.MaxMuxingQueueSize.ToString(CultureInfo.InvariantCulture)
                 : "128";
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -individual_header_trailer 0 -hls_segment_type {8} -start_number {9} -hls_segment_filename \"{10}\" -hls_playlist_type vod -hls_list_size 0 -y \"{11}\"",
+                "{0} {1} -map_metadata -1 -map_chapters -1 -threads {2} {3} {4} {5} -copyts -avoid_negative_ts disabled -max_muxing_queue_size {6} -f hls -max_delay 5000000 -hls_time {7} -hls_segment_type {8} -start_number {9} -hls_segment_filename \"{10}\" -hls_playlist_type vod -hls_list_size 0 -y \"{11}\"",
                 inputModifier,
-                _encodingHelper.GetInputArgument(state, encodingOptions),
+                _encodingHelper.GetInputArgument(state, _encodingOptions),
                 threads,
                 mapArgs,
-                GetVideoArguments(state, encodingOptions, startNumber),
-                GetAudioArguments(state, encodingOptions),
+                GetVideoArguments(state, startNumber),
+                GetAudioArguments(state),
                 maxMuxingQueueSize,
                 state.SegmentLength.ToString(CultureInfo.InvariantCulture),
                 segmentFormat,
@@ -1370,50 +1416,63 @@ namespace Jellyfin.Api.Controllers
                 outputPath).Trim();
         }
 
-        private string GetAudioArguments(StreamState state, EncodingOptions encodingOptions)
+        /// <summary>
+        /// Gets the audio arguments for transcoding.
+        /// </summary>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <returns>The command line arguments for audio transcoding.</returns>
+        private string GetAudioArguments(StreamState state)
         {
+            if (state.AudioStream == null)
+            {
+                return string.Empty;
+            }
+
             var audioCodec = _encodingHelper.GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
                 if (EncodingHelper.IsCopyCodec(audioCodec))
                 {
-                    return "-acodec copy";
+                    var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
+
+                    return "-acodec copy -strict -2" + bitStreamArgs;
                 }
 
-                var audioTranscodeParams = new List<string>();
+                var audioTranscodeParams = string.Empty;
 
-                audioTranscodeParams.Add("-acodec " + audioCodec);
+                audioTranscodeParams += "-acodec " + audioCodec;
 
                 if (state.OutputAudioBitrate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ab " + state.OutputAudioBitrate.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioChannels.HasValue)
                 {
-                    audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (state.OutputAudioSampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
+                    audioTranscodeParams += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
                 }
 
-                audioTranscodeParams.Add("-vn");
-                return string.Join(' ', audioTranscodeParams);
+                audioTranscodeParams += " -vn";
+                return audioTranscodeParams;
             }
 
             if (EncodingHelper.IsCopyCodec(audioCodec))
             {
-                var videoCodec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
+                var videoCodec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
+                var bitStreamArgs = EncodingHelper.GetAudioBitStreamArguments(state, state.Request.SegmentContainer, state.MediaSource.Container);
 
                 if (EncodingHelper.IsCopyCodec(videoCodec) && state.EnableBreakOnNonKeyFrames(videoCodec))
                 {
-                    return "-codec:a:0 copy -copypriorss:a:0 0";
+                    return "-codec:a:0 copy -strict -2 -copypriorss:a:0 0" + bitStreamArgs;
                 }
 
-                return "-codec:a:0 copy";
+                return "-codec:a:0 copy -strict -2" + bitStreamArgs;
             }
 
             var args = "-codec:a:0 " + audioCodec;
@@ -1437,94 +1496,89 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += " " + _encodingHelper.GetAudioFilterParam(state, encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return args;
         }
 
-        private string GetVideoArguments(StreamState state, EncodingOptions encodingOptions, int startNumber)
+        /// <summary>
+        /// Gets the video arguments for transcoding.
+        /// </summary>
+        /// <param name="state">The <see cref="StreamState"/>.</param>
+        /// <param name="startNumber">The first number in the hls sequence.</param>
+        /// <returns>The command line arguments for video transcoding.</returns>
+        private string GetVideoArguments(StreamState state, int startNumber)
         {
+            if (state.VideoStream == null)
+            {
+                return string.Empty;
+            }
+
             if (!state.IsOutputVideo)
             {
                 return string.Empty;
             }
 
-            var codec = _encodingHelper.GetVideoEncoder(state, encodingOptions);
+            var codec = _encodingHelper.GetVideoEncoder(state, _encodingOptions);
 
             var args = "-codec:v:0 " + codec;
+
+            // Prefer hvc1 to hev1.
+            if (string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "h265", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(codec, "hevc", StringComparison.OrdinalIgnoreCase))
+            {
+                args += " -tag:v:0 hvc1";
+            }
 
             // if  (state.EnableMpegtsM2TsMode)
             // {
             //     args += " -mpegts_m2ts_mode 1";
             // }
 
-            // See if we can save come cpu cycles by avoiding encoding
+            // See if we can save come cpu cycles by avoiding encoding.
             if (EncodingHelper.IsCopyCodec(codec))
             {
                 if (state.VideoStream != null && !string.Equals(state.VideoStream.NalLengthSize, "0", StringComparison.OrdinalIgnoreCase))
                 {
-                    string bitStreamArgs = _encodingHelper.GetBitStreamArgs(state.VideoStream);
+                    string bitStreamArgs = EncodingHelper.GetBitStreamArgs(state.VideoStream);
                     if (!string.IsNullOrEmpty(bitStreamArgs))
                     {
                         args += " " + bitStreamArgs;
                     }
                 }
 
+                args += " -start_at_zero";
+
                 // args += " -flags -global_header";
             }
             else
             {
-                var gopArg = string.Empty;
-                var keyFrameArg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -force_key_frames:0 \"expr:gte(t,{0}+n_forced*{1})\"",
-                    startNumber * state.SegmentLength,
-                    state.SegmentLength);
+                args += _encodingHelper.GetVideoQualityParam(state, codec, _encodingOptions, DefaultEncoderPreset);
 
-                var framerate = state.VideoStream?.RealFrameRate;
+                // Set the key frame params for video encoding to match the hls segment time.
+                args += _encodingHelper.GetHlsVideoKeyFrameArguments(state, codec, state.SegmentLength, false, startNumber);
 
-                if (framerate.HasValue)
+                // Currenly b-frames in libx265 breaks the FMP4-HLS playback on iOS, disable it for now.
+                if (string.Equals(codec, "libx265", StringComparison.OrdinalIgnoreCase))
                 {
-                    // This is to make sure keyframe interval is limited to our segment,
-                    // as forcing keyframes is not enough.
-                    // Example: we encoded half of desired length, then codec detected
-                    // scene cut and inserted a keyframe; next forced keyframe would
-                    // be created outside of segment, which breaks seeking
-                    // -sc_threshold 0 is used to prevent the hardware encoder from post processing to break the set keyframe
-                    gopArg = string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -g {0} -keyint_min {0} -sc_threshold 0",
-                        Math.Ceiling(state.SegmentLength * framerate.Value));
-                }
-
-                args += " " + _encodingHelper.GetVideoQualityParam(state, codec, encodingOptions, "veryfast");
-
-                // Unable to force key frames using these hw encoders, set key frames by GOP
-                if (string.Equals(codec, "h264_qsv", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_nvenc", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(codec, "h264_amf", StringComparison.OrdinalIgnoreCase))
-                {
-                    args += " " + gopArg;
-                }
-                else
-                {
-                    args += " " + keyFrameArg + gopArg;
+                    args += " -bf 0";
                 }
 
                 // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
-                // This is for graphical subs
                 if (hasGraphicalSubs)
                 {
-                    args += _encodingHelper.GetGraphicalSubtitleParam(state, encodingOptions, codec);
+                    // Graphical subs overlay and resolution params.
+                    args += _encodingHelper.GetGraphicalSubtitleParam(state, _encodingOptions, codec);
                 }
-
-                // Add resolution params, if specified
                 else
                 {
-                    args += _encodingHelper.GetOutputSizeParam(state, encodingOptions, codec);
+                    // Resolution params.
+                    args += _encodingHelper.GetOutputSizeParam(state, _encodingOptions, codec);
                 }
 
                 // -start_at_zero is necessary to use with -ss when seeking,
@@ -1559,8 +1613,7 @@ namespace Jellyfin.Api.Controllers
 
         private string GetSegmentPath(StreamState state, string playlist, int index)
         {
-            var folder = Path.GetDirectoryName(playlist);
-
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException($"Provided path ({playlist}) is not valid.", nameof(playlist));
             var filename = Path.GetFileNameWithoutExtension(playlist);
 
             return Path.Combine(folder, filename + index.ToString(CultureInfo.InvariantCulture) + GetSegmentFileExtension(state.Request.SegmentContainer));
@@ -1685,7 +1738,7 @@ namespace Jellyfin.Api.Controllers
 
         private int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
-            var job = _transcodingJobHelper.GetTranscodingJob(playlist, _transcodingJobType);
+            var job = _transcodingJobHelper.GetTranscodingJob(playlist, TranscodingJobType);
 
             if (job == null || job.HasExited)
             {
@@ -1708,9 +1761,9 @@ namespace Jellyfin.Api.Controllers
 
         private static FileSystemMetadata? GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
         {
-            var folder = Path.GetDirectoryName(playlist);
+            var folder = Path.GetDirectoryName(playlist) ?? throw new ArgumentException("Path can't be a root directory.", nameof(playlist));
 
-            var filePrefix = Path.GetFileNameWithoutExtension(playlist) ?? string.Empty;
+            var filePrefix = Path.GetFileNameWithoutExtension(playlist);
 
             try
             {

@@ -10,6 +10,56 @@ namespace MediaBrowser.Model.Users
 {
     public class UserPolicy
     {
+        public UserPolicy()
+        {
+            IsHidden = true;
+
+            EnableContentDeletion = false;
+            EnableContentDeletionFromFolders = Array.Empty<string>();
+
+            EnableSyncTranscoding = true;
+            EnableMediaConversion = true;
+
+            EnableMediaPlayback = true;
+            EnableAudioPlaybackTranscoding = true;
+            EnableVideoPlaybackTranscoding = true;
+            EnablePlaybackRemuxing = true;
+            ForceRemoteSourceTranscoding = false;
+            EnableLiveTvManagement = true;
+            EnableLiveTvAccess = true;
+
+            // Without this on by default, admins won't be able to do this
+            // Improve in the future
+            EnableLiveTvManagement = true;
+
+            EnableSharedDeviceControl = true;
+
+            BlockedTags = Array.Empty<string>();
+            BlockUnratedItems = Array.Empty<UnratedItem>();
+
+            EnableUserPreferenceAccess = true;
+
+            AccessSchedules = Array.Empty<AccessSchedule>();
+
+            LoginAttemptsBeforeLockout = -1;
+
+            MaxActiveSessions = 0;
+
+            EnableAllChannels = true;
+            EnabledChannels = Array.Empty<Guid>();
+
+            EnableAllFolders = true;
+            EnabledFolders = Array.Empty<Guid>();
+
+            EnabledDevices = Array.Empty<string>();
+            EnableAllDevices = true;
+
+            EnableContentDownloading = true;
+            EnablePublicSharing = true;
+            EnableRemoteAccess = true;
+            SyncPlayAccess = SyncPlayUserAccessType.CreateAndJoinGroups;
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is administrator.
         /// </summary>
@@ -111,56 +161,6 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets a value indicating what SyncPlay features the user can access.
         /// </summary>
         /// <value>Access level to SyncPlay features.</value>
-        public SyncPlayAccess SyncPlayAccess { get; set; }
-
-        public UserPolicy()
-        {
-            IsHidden = true;
-
-            EnableContentDeletion = false;
-            EnableContentDeletionFromFolders = Array.Empty<string>();
-
-            EnableSyncTranscoding = true;
-            EnableMediaConversion = true;
-
-            EnableMediaPlayback = true;
-            EnableAudioPlaybackTranscoding = true;
-            EnableVideoPlaybackTranscoding = true;
-            EnablePlaybackRemuxing = true;
-            ForceRemoteSourceTranscoding = false;
-            EnableLiveTvManagement = true;
-            EnableLiveTvAccess = true;
-
-            // Without this on by default, admins won't be able to do this
-            // Improve in the future
-            EnableLiveTvManagement = true;
-
-            EnableSharedDeviceControl = true;
-
-            BlockedTags = Array.Empty<string>();
-            BlockUnratedItems = Array.Empty<UnratedItem>();
-
-            EnableUserPreferenceAccess = true;
-
-            AccessSchedules = Array.Empty<AccessSchedule>();
-
-            LoginAttemptsBeforeLockout = -1;
-
-            MaxActiveSessions = 0;
-
-            EnableAllChannels = true;
-            EnabledChannels = Array.Empty<Guid>();
-
-            EnableAllFolders = true;
-            EnabledFolders = Array.Empty<Guid>();
-
-            EnabledDevices = Array.Empty<string>();
-            EnableAllDevices = true;
-
-            EnableContentDownloading = true;
-            EnablePublicSharing = true;
-            EnableRemoteAccess = true;
-            SyncPlayAccess = SyncPlayAccess.CreateAndJoinGroups;
-        }
+        public SyncPlayUserAccessType SyncPlayAccess { get; set; }
     }
 }

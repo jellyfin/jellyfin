@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -10,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
@@ -58,8 +61,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The active connections.
         /// </summary>
-        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections =
-            new ConcurrentDictionary<string, SessionInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new (StringComparer.OrdinalIgnoreCase);
 
         private Timer _idleTimer;
 
@@ -129,6 +131,9 @@ namespace Emby.Server.Implementations.Session
         /// <inheritdoc />
         public event EventHandler<SessionEventArgs> SessionActivity;
 
+        /// <inheritdoc />
+        public event EventHandler<SessionEventArgs> SessionControllerConnected;
+
         /// <summary>
         /// Gets all connections.
         /// </summary>
@@ -196,7 +201,7 @@ namespace Emby.Server.Implementations.Session
         {
             if (!string.IsNullOrEmpty(info.DeviceId))
             {
-                var capabilities = GetSavedCapabilities(info.DeviceId);
+                var capabilities = _deviceManager.GetCapabilities(info.DeviceId);
 
                 if (capabilities != null)
                 {
@@ -311,6 +316,19 @@ namespace Emby.Server.Implementations.Session
             }
 
             return session;
+        }
+
+        /// <inheritdoc />
+        public void OnSessionControllerConnected(SessionInfo info)
+        {
+            EventHelper.QueueEventIfNotNull(
+                SessionControllerConnected,
+                this,
+                new SessionEventArgs
+                {
+                    SessionInfo = info
+                },
+                _logger);
         }
 
         /// <inheritdoc />
@@ -1182,18 +1200,16 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken)
         {
             CheckDisposed();
-            var session = GetSessionToRemoteControl(sessionId);
             await SendMessageToSession(session, SessionMessageType.SyncPlayCommand, command, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken)
         {
             CheckDisposed();
-            var session = GetSessionToRemoteControl(sessionId);
             await SendMessageToSession(session, SessionMessageType.SyncPlayGroupUpdate, command, cancellationToken).ConfigureAwait(false);
         }
 
@@ -1297,7 +1313,7 @@ namespace Emby.Server.Implementations.Session
                 }
             }
 
-            return SendMessageToSession(session, SessionMessageType.PlayState, command, cancellationToken);
+            return SendMessageToSession(session, SessionMessageType.Playstate, command, cancellationToken);
         }
 
         private static void AssertCanControl(SessionInfo session, SessionInfo controllingSession)
@@ -1443,7 +1459,12 @@ namespace Emby.Server.Implementations.Session
                 throw new SecurityException("Unknown quick connect token");
             }
 
-            request.UserId = result.Items[0].UserId;
+            var info = result.Items[0];
+            request.UserId = info.UserId;
+
+            // There's no need to keep the quick connect token in the database, as AuthenticateNewSessionInternal() issues a long lived token.
+            _authRepo.Delete(info);
+
             return AuthenticateNewSessionInternal(request, false);
         }
 
@@ -1457,17 +1478,14 @@ namespace Emby.Server.Implementations.Session
                 user = _userManager.GetUserById(request.UserId);
             }
 
-            if (user == null)
-            {
-                user = _userManager.GetUserByName(request.Username);
-            }
+            user ??= _userManager.GetUserByName(request.Username);
 
             if (enforcePassword)
             {
                 user = await _userManager.AuthenticateUser(
                     request.Username,
                     request.Password,
-                    request.PasswordSha1,
+                    null,
                     request.RemoteEndPoint,
                     true).ConfigureAwait(false);
             }
@@ -1525,23 +1543,26 @@ namespace Emby.Server.Implementations.Session
                     Limit = 1
                 }).Items.FirstOrDefault();
 
-            var allExistingForDevice = _authRepo.Get(
-                new AuthenticationInfoQuery
-                {
-                    DeviceId = deviceId
-                }).Items;
-
-            foreach (var auth in allExistingForDevice)
+            if (!string.IsNullOrEmpty(deviceId))
             {
-                if (existing == null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
+                var allExistingForDevice = _authRepo.Get(
+                    new AuthenticationInfoQuery
+                    {
+                        DeviceId = deviceId
+                    }).Items;
+
+                foreach (var auth in allExistingForDevice)
                 {
-                    try
+                    if (existing == null || !string.Equals(auth.AccessToken, existing.AccessToken, StringComparison.Ordinal))
                     {
-                        Logout(auth);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error while logging out.");
+                        try
+                        {
+                            Logout(auth);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error while logging out.");
+                        }
                     }
                 }
             }
@@ -1677,25 +1698,8 @@ namespace Emby.Server.Implementations.Session
                         SessionInfo = session
                     });
 
-                try
-                {
-                    SaveCapabilities(session.DeviceId, capabilities);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Error saving device capabilities", ex);
-                }
+                _deviceManager.SaveCapabilities(session.DeviceId, capabilities);
             }
-        }
-
-        private ClientCapabilities GetSavedCapabilities(string deviceId)
-        {
-            return _deviceManager.GetCapabilities(deviceId);
-        }
-
-        private void SaveCapabilities(string deviceId, ClientCapabilities capabilities)
-        {
-            _deviceManager.SaveCapabilities(deviceId, capabilities);
         }
 
         /// <summary>

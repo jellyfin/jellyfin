@@ -10,10 +10,10 @@ namespace MediaBrowser.Controller.Net
     {
         SessionInfo GetSession(object requestContext);
 
-        User GetUser(object requestContext);
+        User? GetUser(object requestContext);
 
         SessionInfo GetSession(HttpContext requestContext);
 
-        User GetUser(HttpContext requestContext);
+        User? GetUser(HttpContext requestContext);
     }
 }

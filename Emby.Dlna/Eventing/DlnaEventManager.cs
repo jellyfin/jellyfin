@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -49,11 +51,7 @@ namespace Emby.Dlna.Eventing
                 return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
             }
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
@@ -72,7 +70,8 @@ namespace Emby.Dlna.Eventing
                 Id = id,
                 CallbackUrl = callbackUrl,
                 SubscriptionTime = DateTime.UtcNow,
-                TimeoutSeconds = timeout
+                TimeoutSeconds = timeout,
+                NotificationType = notificationType
             });
 
             return GetEventSubscriptionResponse(id, requestedTimeoutString, timeout);
@@ -83,7 +82,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                header = header.Split('-').Last();
+                header = header.Split('-')[^1];
 
                 if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
                 {
@@ -100,20 +99,12 @@ namespace Emby.Dlna.Eventing
 
             _subscriptions.TryRemove(subscriptionId, out _);
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
-            var response = new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            var response = new EventSubscriptionResponse(string.Empty, "text/plain");
 
             response.Headers["SID"] = subscriptionId;
             response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
@@ -168,7 +159,7 @@ namespace Emby.Dlna.Eventing
 
             builder.Append("</e:propertyset>");
 
-            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"),  subscription.CallbackUrl);
+            using var options = new HttpRequestMessage(new HttpMethod("NOTIFY"), subscription.CallbackUrl);
             options.Content = new StringContent(builder.ToString(), Encoding.UTF8, MediaTypeNames.Text.Xml);
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");

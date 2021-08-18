@@ -56,9 +56,9 @@ namespace Jellyfin.Api.WebSocketListeners
             base.Dispose(dispose);
         }
 
-        private void OnEntryCreated(object sender, GenericEventArgs<ActivityLogEntry> e)
+        private void OnEntryCreated(object? sender, GenericEventArgs<ActivityLogEntry> e)
         {
-            SendData(true);
+            SendData(true).GetAwaiter().GetResult();
         }
     }
 }

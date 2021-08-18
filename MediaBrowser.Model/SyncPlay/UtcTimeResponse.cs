@@ -1,4 +1,4 @@
-#nullable disable
+using System;
 
 namespace MediaBrowser.Model.SyncPlay
 {
@@ -8,15 +8,26 @@ namespace MediaBrowser.Model.SyncPlay
     public class UtcTimeResponse
     {
         /// <summary>
-        /// Gets or sets the UTC time when request has been received.
+        /// Initializes a new instance of the <see cref="UtcTimeResponse"/> class.
         /// </summary>
-        /// <value>The UTC time when request has been received.</value>
-        public string RequestReceptionTime { get; set; }
+        /// <param name="requestReceptionTime">The UTC time when request has been received.</param>
+        /// <param name="responseTransmissionTime">The UTC time when response has been sent.</param>
+        public UtcTimeResponse(DateTime requestReceptionTime, DateTime responseTransmissionTime)
+        {
+            RequestReceptionTime = requestReceptionTime;
+            ResponseTransmissionTime = responseTransmissionTime;
+        }
 
         /// <summary>
-        /// Gets or sets the UTC time when response has been sent.
+        /// Gets the UTC time when request has been received.
+        /// </summary>
+        /// <value>The UTC time when request has been received.</value>
+        public DateTime RequestReceptionTime { get; }
+
+        /// <summary>
+        /// Gets the UTC time when response has been sent.
         /// </summary>
         /// <value>The UTC time when response has been sent.</value>
-        public string ResponseTransmissionTime { get; set; }
+        public DateTime ResponseTransmissionTime { get; }
     }
 }

@@ -1,10 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading;
@@ -45,11 +45,11 @@ namespace Emby.Dlna.PlayTo
                     header,
                     cancellationToken)
                 .ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return XDocument.Parse(
-                await reader.ReadToEndAsync().ConfigureAwait(false),
-                LoadOptions.PreserveWhitespace);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            return await XDocument.LoadAsync(
+                stream,
+                LoadOptions.PreserveWhitespace,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
@@ -60,7 +60,7 @@ namespace Emby.Dlna.PlayTo
                 return serviceUrl;
             }
 
-            if (!serviceUrl.StartsWith("/", StringComparison.Ordinal))
+            if (!serviceUrl.StartsWith('/'))
             {
                 serviceUrl = "/" + serviceUrl;
             }
@@ -94,11 +94,18 @@ namespace Emby.Dlna.PlayTo
             options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return XDocument.Parse(
-                await reader.ReadToEndAsync().ConfigureAwait(false),
-                LoadOptions.PreserveWhitespace);
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await XDocument.LoadAsync(
+                    stream,
+                    LoadOptions.PreserveWhitespace,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private async Task<HttpResponseMessage> PostSoapDataAsync(

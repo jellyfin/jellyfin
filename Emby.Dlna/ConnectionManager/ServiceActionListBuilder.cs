@@ -5,9 +5,16 @@ using Emby.Dlna.Common;
 
 namespace Emby.Dlna.ConnectionManager
 {
-    public class ServiceActionListBuilder
+    /// <summary>
+    /// Defines the <see cref="ServiceActionListBuilder" />.
+    /// </summary>
+    public static class ServiceActionListBuilder
     {
-        public IEnumerable<ServiceAction> GetActions()
+        /// <summary>
+        /// Returns an enumerable of the ConnectionManagar:1 DLNA actions.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{ServiceAction}"/>.</returns>
+        public static IEnumerable<ServiceAction> GetActions()
         {
             var list = new List<ServiceAction>
             {
@@ -21,6 +28,10 @@ namespace Emby.Dlna.ConnectionManager
             return list;
         }
 
+        /// <summary>
+        /// Returns the action details for "PrepareForConnection".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction PrepareForConnection()
         {
             var action = new ServiceAction
@@ -80,6 +91,10 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
+        /// <summary>
+        /// Returns the action details for "GetCurrentConnectionInfo".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
         private static ServiceAction GetCurrentConnectionInfo()
         {
             var action = new ServiceAction
@@ -146,7 +161,11 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
-        private ServiceAction GetProtocolInfo()
+        /// <summary>
+        /// Returns the action details for "GetProtocolInfo".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetProtocolInfo()
         {
             var action = new ServiceAction
             {
@@ -170,7 +189,11 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
-        private ServiceAction GetCurrentConnectionIDs()
+        /// <summary>
+        /// Returns the action details for "GetCurrentConnectionIDs".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction GetCurrentConnectionIDs()
         {
             var action = new ServiceAction
             {
@@ -187,7 +210,11 @@ namespace Emby.Dlna.ConnectionManager
             return action;
         }
 
-        private ServiceAction ConnectionComplete()
+        /// <summary>
+        /// Returns the action details for "ConnectionComplete".
+        /// </summary>
+        /// <returns>The <see cref="ServiceAction"/>.</returns>
+        private static ServiceAction ConnectionComplete()
         {
             var action = new ServiceAction
             {

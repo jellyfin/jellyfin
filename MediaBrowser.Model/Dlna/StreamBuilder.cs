@@ -227,7 +227,7 @@ namespace MediaBrowser.Model.Dlna
             }
         }
 
-        public static string NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, string _, DeviceProfile profile, DlnaProfileType type)
+        public static string NormalizeMediaSourceFormatIntoSingleContainer(string inputContainer, DeviceProfile profile, DlnaProfileType type)
         {
             if (string.IsNullOrEmpty(inputContainer))
             {
@@ -274,14 +274,14 @@ namespace MediaBrowser.Model.Dlna
             if (options.ForceDirectPlay)
             {
                 playlistItem.PlayMethod = PlayMethod.DirectPlay;
-                playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, item.Path, options.Profile, DlnaProfileType.Audio);
+                playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Audio);
                 return playlistItem;
             }
 
             if (options.ForceDirectStream)
             {
                 playlistItem.PlayMethod = PlayMethod.DirectStream;
-                playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, item.Path, options.Profile, DlnaProfileType.Audio);
+                playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Audio);
                 return playlistItem;
             }
 
@@ -297,7 +297,7 @@ namespace MediaBrowser.Model.Dlna
             int? inputAudioSampleRate = audioStream?.SampleRate;
             int? inputAudioBitDepth = audioStream?.BitDepth;
 
-            if (directPlayMethods.Count() > 0)
+            if (directPlayMethods.Any())
             {
                 string audioCodec = audioStream?.Codec;
 
@@ -349,7 +349,7 @@ namespace MediaBrowser.Model.Dlna
                         playlistItem.PlayMethod = PlayMethod.DirectStream;
                     }
 
-                    playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, item.Path, options.Profile, DlnaProfileType.Audio);
+                    playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Audio);
 
                     return playlistItem;
                 }
@@ -514,6 +514,8 @@ namespace MediaBrowser.Model.Dlna
 
         private static List<TranscodeReason> GetTranscodeReasonsFromDirectPlayProfile(MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream, IEnumerable<DirectPlayProfile> directPlayProfiles)
         {
+            var mediaType = videoStream == null ? DlnaProfileType.Audio : DlnaProfileType.Video;
+
             var containerSupported = false;
             var audioSupported = false;
             var videoSupported = false;
@@ -521,7 +523,7 @@ namespace MediaBrowser.Model.Dlna
             foreach (var profile in directPlayProfiles)
             {
                 // Check container type
-                if (profile.SupportsContainer(item.Container))
+                if (profile.Type == mediaType && profile.SupportsContainer(item.Container))
                 {
                     containerSupported = true;
 
@@ -674,7 +676,7 @@ namespace MediaBrowser.Model.Dlna
 
             var videoStream = item.VideoStream;
 
-            // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
+            // TODO: This doesn't account for situations where the device is able to handle the media's bitrate, but the connection isn't fast enough
             var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, subtitleStream, options, PlayMethod.DirectPlay);
             var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, subtitleStream, options, PlayMethod.DirectStream);
             bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
@@ -698,7 +700,7 @@ namespace MediaBrowser.Model.Dlna
                 if (directPlay != null)
                 {
                     playlistItem.PlayMethod = directPlay.Value;
-                    playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, item.Path, options.Profile, DlnaProfileType.Video);
+                    playlistItem.Container = NormalizeMediaSourceFormatIntoSingleContainer(item.Container, options.Profile, DlnaProfileType.Video);
 
                     if (subtitleStream != null)
                     {
@@ -872,11 +874,34 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private static int GetDefaultAudioBitrateIfUnknown(MediaStream audioStream)
+        private static int GetDefaultAudioBitrate(string audioCodec, int? audioChannels)
         {
-            if ((audioStream.Channels ?? 0) >= 6)
+            if (!string.IsNullOrEmpty(audioCodec))
             {
-                return 384000;
+                // Default to a higher bitrate for stream copy
+                if (string.Equals(audioCodec, "aac", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "mp3", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "ac3", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "eac3", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((audioChannels ?? 0) < 2)
+                    {
+                        return 128000;
+                    }
+
+                    return (audioChannels ?? 0) >= 6 ? 640000 : 384000;
+                }
+
+                if (string.Equals(audioCodec, "flac", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(audioCodec, "alac", StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((audioChannels ?? 0) < 2)
+                    {
+                        return 768000;
+                    }
+
+                    return (audioChannels ?? 0) >= 6 ? 3584000 : 1536000;
+                }
             }
 
             return 192000;
@@ -897,14 +922,27 @@ namespace MediaBrowser.Model.Dlna
             }
             else
             {
-                if (targetAudioChannels.HasValue && audioStream.Channels.HasValue && targetAudioChannels.Value < audioStream.Channels.Value)
+                if (targetAudioChannels.HasValue
+                    && audioStream.Channels.HasValue
+                    && audioStream.Channels.Value > targetAudioChannels.Value)
                 {
-                    // Reduce the bitrate if we're downmixing
-                    defaultBitrate = targetAudioChannels.Value < 2 ? 128000 : 192000;
+                    // Reduce the bitrate if we're downmixing.
+                    defaultBitrate = GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels);
+                }
+                else if (targetAudioChannels.HasValue
+                         && audioStream.Channels.HasValue
+                         && audioStream.Channels.Value <= targetAudioChannels.Value
+                         && !string.IsNullOrEmpty(audioStream.Codec)
+                         && targetAudioCodecs != null
+                         && targetAudioCodecs.Length > 0
+                         && !Array.Exists(targetAudioCodecs, elem => string.Equals(audioStream.Codec, elem, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Shift the bitrate if we're transcoding to a different audio codec.
+                    defaultBitrate = GetDefaultAudioBitrate(targetAudioCodec, audioStream.Channels.Value);
                 }
                 else
                 {
-                    defaultBitrate = audioStream.BitRate ?? GetDefaultAudioBitrateIfUnknown(audioStream);
+                    defaultBitrate = audioStream.BitRate ?? GetDefaultAudioBitrate(targetAudioCodec, targetAudioChannels);
                 }
 
                 // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate.
@@ -938,8 +976,28 @@ namespace MediaBrowser.Model.Dlna
             {
                 return 448000;
             }
+            else if (totalBitrate <= 4000000)
+            {
+                return 640000;
+            }
+            else if (totalBitrate <= 5000000)
+            {
+                return 768000;
+            }
+            else if (totalBitrate <= 10000000)
+            {
+                return 1536000;
+            }
+            else if (totalBitrate <= 15000000)
+            {
+                return 2304000;
+            }
+            else if (totalBitrate <= 20000000)
+            {
+                return 3584000;
+            }
 
-            return 640000;
+            return 7168000;
         }
 
         private (PlayMethod?, List<TranscodeReason>) GetVideoDirectPlayProfile(
@@ -961,14 +1019,15 @@ namespace MediaBrowser.Model.Dlna
             }
 
             DeviceProfile profile = options.Profile;
+            string container = mediaSource.Container;
 
             // See if it can be direct played
             DirectPlayProfile directPlay = null;
-            foreach (var i in profile.DirectPlayProfiles)
+            foreach (var p in profile.DirectPlayProfiles)
             {
-                if (i.Type == DlnaProfileType.Video && IsVideoDirectPlaySupported(i, mediaSource, videoStream, audioStream))
+                if (p.Type == DlnaProfileType.Video && IsVideoDirectPlaySupported(p, container, videoStream, audioStream))
                 {
-                    directPlay = i;
+                    directPlay = p;
                     break;
                 }
             }
@@ -976,23 +1035,23 @@ namespace MediaBrowser.Model.Dlna
             if (directPlay == null)
             {
                 _logger.LogInformation(
-                    "Profile: {0}, No video direct play profiles found for {1} with codec {2}",
-                    profile.Name ?? "Unknown Profile",
-                    mediaSource.Path ?? "Unknown path",
-                    videoStream.Codec ?? "Unknown codec");
+                    "Container: {Container}, Video: {Video}, Audio: {Audio} cannot be direct played by profile: {Profile} for path: {Path}",
+                    container,
+                    videoStream?.Codec ?? "no video",
+                    audioStream?.Codec ?? "no audio",
+                    profile.Name ?? "unknown profile",
+                    mediaSource.Path ?? "unknown path");
 
                 return (null, GetTranscodeReasonsFromDirectPlayProfile(mediaSource, videoStream, audioStream, profile.DirectPlayProfiles));
             }
 
-            string container = mediaSource.Container;
-
             var conditions = new List<ProfileCondition>();
-            foreach (var i in profile.ContainerProfiles)
+            foreach (var p in profile.ContainerProfiles)
             {
-                if (i.Type == DlnaProfileType.Video
-                    && i.ContainsContainer(container))
+                if (p.Type == DlnaProfileType.Video
+                    && p.ContainsContainer(container))
                 {
-                    foreach (var c in i.Conditions)
+                    foreach (var c in p.Conditions)
                     {
                         conditions.Add(c);
                     }
@@ -1348,7 +1407,9 @@ namespace MediaBrowser.Model.Dlna
             {
                 _logger.LogInformation(
                     "Bitrate exceeds {PlayBackMethod} limit: media bitrate: {MediaBitrate}, max bitrate: {MaxBitrate}",
-                    playMethod, itemBitrate, requestedMaxBitrate);
+                    playMethod,
+                    itemBitrate,
+                    requestedMaxBitrate);
                 return false;
             }
 
@@ -1432,6 +1493,32 @@ namespace MediaBrowser.Model.Dlna
                                 else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
                                 {
                                     item.AudioBitrate = Math.Max(num, item.AudioBitrate ?? num);
+                                }
+                            }
+
+                            break;
+                        }
+
+                    case ProfileConditionValue.AudioSampleRate:
+                        {
+                            if (!enableNonQualifiedConditions)
+                            {
+                                continue;
+                            }
+
+                            if (int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var num))
+                            {
+                                if (condition.Condition == ProfileConditionType.Equals)
+                                {
+                                    item.AudioSampleRate = num;
+                                }
+                                else if (condition.Condition == ProfileConditionType.LessThanEqual)
+                                {
+                                    item.AudioSampleRate = Math.Min(num, item.AudioSampleRate ?? num);
+                                }
+                                else if (condition.Condition == ProfileConditionType.GreaterThanEqual)
+                                {
+                                    item.AudioSampleRate = Math.Max(num, item.AudioSampleRate ?? num);
                                 }
                             }
 
@@ -1647,11 +1734,11 @@ namespace MediaBrowser.Model.Dlna
 
                                 // strip spaces to avoid having to encode
                                 var values = value
-                                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                                    .Split('|', StringSplitOptions.RemoveEmptyEntries);
 
                                 if (condition.Condition == ProfileConditionType.Equals || condition.Condition == ProfileConditionType.EqualsAny)
                                 {
-                                    item.SetOption(qualifier, "profile", string.Join(",", values));
+                                    item.SetOption(qualifier, "profile", string.Join(',', values));
                                 }
                             }
 
@@ -1812,10 +1899,10 @@ namespace MediaBrowser.Model.Dlna
             return true;
         }
 
-        private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, MediaSourceInfo item, MediaStream videoStream, MediaStream audioStream)
+        private bool IsVideoDirectPlaySupported(DirectPlayProfile profile, string container, MediaStream videoStream, MediaStream audioStream)
         {
             // Check container type
-            if (!profile.SupportsContainer(item.Container))
+            if (!profile.SupportsContainer(container))
             {
                 return false;
             }

@@ -92,7 +92,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             }
 
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, info.SeriesDisplayOrder, info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
                 .ConfigureAwait(false);
 
             if (episodeResult == null)
@@ -111,24 +111,31 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var item = new Episode
             {
-                Name = info.Name,
                 IndexNumber = info.IndexNumber,
                 ParentIndexNumber = info.ParentIndexNumber,
-                IndexNumberEnd = info.IndexNumberEnd
+                IndexNumberEnd = info.IndexNumberEnd,
+                Name = episodeResult.Name,
+                PremiereDate = episodeResult.AirDate,
+                ProductionYear = episodeResult.AirDate?.Year,
+                Overview = episodeResult.Overview,
+                CommunityRating = Convert.ToSingle(episodeResult.VoteAverage)
             };
 
-            if (!string.IsNullOrEmpty(episodeResult.ExternalIds?.TvdbId))
+            var externalIds = episodeResult.ExternalIds;
+            if (!string.IsNullOrEmpty(externalIds?.TvdbId))
             {
-                item.SetProviderId(MetadataProvider.Tvdb, episodeResult.ExternalIds.TvdbId);
+                item.SetProviderId(MetadataProvider.Tvdb, externalIds.TvdbId);
             }
 
-            item.PremiereDate = episodeResult.AirDate;
-            item.ProductionYear = episodeResult.AirDate?.Year;
+            if (!string.IsNullOrEmpty(externalIds?.ImdbId))
+            {
+                item.SetProviderId(MetadataProvider.Imdb, externalIds.ImdbId);
+            }
 
-            item.Name = episodeResult.Name;
-            item.Overview = episodeResult.Overview;
-
-            item.CommunityRating = Convert.ToSingle(episodeResult.VoteAverage);
+            if (!string.IsNullOrEmpty(externalIds?.TvrageId))
+            {
+                item.SetProviderId(MetadataProvider.TvRage, externalIds.TvrageId);
+            }
 
             if (episodeResult.Videos?.Results != null)
             {

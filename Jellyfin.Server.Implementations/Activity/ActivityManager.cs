@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>>? EntryCreated;
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
@@ -72,17 +72,26 @@ namespace Jellyfin.Server.Implementations.Activity
             };
         }
 
+        /// <inheritdoc />
+        public async Task CleanAsync(DateTime startDate)
+        {
+            await using var dbContext = _provider.CreateContext();
+            var entries = dbContext.ActivityLogs
+                .AsQueryable()
+                .Where(entry => entry.DateCreated <= startDate);
+
+            dbContext.RemoveRange(entries);
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
         private static ActivityLogEntry ConvertToOldModel(ActivityLog entry)
         {
-            return new ActivityLogEntry
+            return new ActivityLogEntry(entry.Name, entry.Type, entry.UserId)
             {
                 Id = entry.Id,
-                Name = entry.Name,
                 Overview = entry.Overview,
                 ShortOverview = entry.ShortOverview,
-                Type = entry.Type,
                 ItemId = entry.ItemId,
-                UserId = entry.UserId,
                 Date = entry.DateCreated,
                 Severity = entry.LogSeverity
             };

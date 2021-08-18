@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -55,14 +57,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             var typeName = GetType().Name;
             Logger.LogInformation("Opening " + typeName + " Live stream from {0}", url);
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+            // Response stream is disposed manually.
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .GetAsync(url, HttpCompletionOption.ResponseHeadersRead, CancellationToken.None)
                 .ConfigureAwait(false);
 
             var extension = "ts";
             var requiresRemux = false;
 
-            var contentType = response.Content.Headers.ContentType.ToString();
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? string.Empty;
             if (contentType.IndexOf("matroska", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 requiresRemux = true;
@@ -87,8 +90,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             SetTempFilePath(extension);
 
             var taskCompletionSource = new TaskCompletionSource<bool>();
-
-            var now = DateTime.UtcNow;
 
             _ = StartStreaming(response, taskCompletionSource, LiveStreamCancellationTokenSource.Token);
 
@@ -117,8 +118,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (!taskCompletionSource.Task.Result)
             {
                 Logger.LogWarning("Zero bytes copied from stream {0} to {1} but no exception raised", GetType().Name, TempFilePath);
-                throw new EndOfStreamException(String.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
+                throw new EndOfStreamException(string.Format(CultureInfo.InvariantCulture, "Zero bytes copied from stream {0}", GetType().Name));
             }
+        }
+
+        public string GetFilePath()
+        {
+            return TempFilePath;
         }
 
         private Task StartStreaming(HttpResponseMessage response, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -129,7 +135,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     Logger.LogInformation("Beginning {0} stream to {1}", GetType().Name, TempFilePath);
                     using var message = response;
-                    await using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
                     await using var fileStream = new FileStream(TempFilePath, FileMode.Create, FileAccess.Write, FileShare.Read);
                     await StreamHelper.CopyToAsync(
                         stream,
@@ -153,7 +159,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
                 EnableStreamSharing = false;
                 await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
-            });
+            }, CancellationToken.None);
         }
 
         private void Resolve(TaskCompletionSource<bool> openTaskCompletionSource)

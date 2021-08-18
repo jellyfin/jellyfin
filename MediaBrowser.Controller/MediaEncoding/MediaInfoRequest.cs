@@ -1,9 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
-using System;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.IO;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
@@ -14,14 +14,5 @@ namespace MediaBrowser.Controller.MediaEncoding
         public bool ExtractChapters { get; set; }
 
         public DlnaProfileType MediaType { get; set; }
-
-        public IIsoMount MountedIso { get; set; }
-
-        public string[] PlayableStreamFileNames { get; set; }
-
-        public MediaInfoRequest()
-        {
-            PlayableStreamFileNames = Array.Empty<string>();
-        }
     }
 }

@@ -14,18 +14,10 @@ namespace MediaBrowser.Controller.Library
             {
                 new ConfigurationStore
                 {
-                     Key = "metadata",
-                     ConfigurationType = typeof(MetadataConfiguration)
+                    Key = "metadata",
+                    ConfigurationType = typeof(MetadataConfiguration)
                 }
             };
-        }
-    }
-
-    public static class MetadataConfigurationExtensions
-    {
-        public static MetadataConfiguration GetMetadataConfiguration(this IConfigurationManager config)
-        {
-            return config.GetConfiguration<MetadataConfiguration>("metadata");
         }
     }
 }

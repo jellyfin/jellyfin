@@ -1,13 +1,17 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -21,7 +25,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
@@ -44,10 +47,10 @@ namespace Emby.Server.Implementations.Channels
         private readonly ILogger<ChannelManager> _logger;
         private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
-        private readonly IJsonSerializer _jsonSerializer;
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
@@ -59,7 +62,6 @@ namespace Emby.Server.Implementations.Channels
         /// <param name="config">The server configuration manager.</param>
         /// <param name="fileSystem">The filesystem.</param>
         /// <param name="userDataManager">The user data manager.</param>
-        /// <param name="jsonSerializer">The JSON serializer.</param>
         /// <param name="providerManager">The provider manager.</param>
         /// <param name="memoryCache">The memory cache.</param>
         public ChannelManager(
@@ -70,7 +72,6 @@ namespace Emby.Server.Implementations.Channels
             IServerConfigurationManager config,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
-            IJsonSerializer jsonSerializer,
             IProviderManager providerManager,
             IMemoryCache memoryCache)
         {
@@ -81,7 +82,6 @@ namespace Emby.Server.Implementations.Channels
             _config = config;
             _fileSystem = fileSystem;
             _userDataManager = userDataManager;
-            _jsonSerializer = jsonSerializer;
             _providerManager = providerManager;
             _memoryCache = memoryCache;
         }
@@ -250,21 +250,16 @@ namespace Emby.Server.Implementations.Channels
             var all = channels;
             var totalCount = all.Count;
 
-            if (query.StartIndex.HasValue)
+            if (query.StartIndex.HasValue || query.Limit.HasValue)
             {
-                all = all.Skip(query.StartIndex.Value).ToList();
+                int startIndex = query.StartIndex ?? 0;
+                int count = query.Limit == null ? totalCount - startIndex : Math.Min(query.Limit.Value, totalCount - startIndex);
+                all = all.GetRange(startIndex, count);
             }
-
-            if (query.Limit.HasValue)
-            {
-                all = all.Take(query.Limit.Value).ToList();
-            }
-
-            var returnItems = all.ToArray();
 
             if (query.RefreshLatestChannelItems)
             {
-                foreach (var item in returnItems)
+                foreach (var item in all)
                 {
                     RefreshLatestChannelItems(GetChannelProvider(item), CancellationToken.None).GetAwaiter().GetResult();
                 }
@@ -272,7 +267,7 @@ namespace Emby.Server.Implementations.Channels
 
             return new QueryResult<Channel>
             {
-                Items = returnItems,
+                Items = all,
                 TotalRecordCount = totalCount
             };
         }
@@ -342,21 +337,23 @@ namespace Emby.Server.Implementations.Channels
             return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).Result;
         }
 
-        private List<MediaSourceInfo> GetSavedMediaSources(BaseItem item)
+        private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)
         {
             var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
             try
             {
-                return _jsonSerializer.DeserializeFromFile<List<MediaSourceInfo>>(path) ?? new List<MediaSourceInfo>();
+                var bytes = File.ReadAllBytes(path);
+                return JsonSerializer.Deserialize<MediaSourceInfo[]>(bytes, _jsonOptions)
+                    ?? Array.Empty<MediaSourceInfo>();
             }
             catch
             {
-                return new List<MediaSourceInfo>();
+                return Array.Empty<MediaSourceInfo>();
             }
         }
 
-        private void SaveMediaSources(BaseItem item, List<MediaSourceInfo> mediaSources)
+        private async Task SaveMediaSources(BaseItem item, List<MediaSourceInfo> mediaSources)
         {
             var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
@@ -375,7 +372,8 @@ namespace Emby.Server.Implementations.Channels
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            _jsonSerializer.SerializeToFile(mediaSources, path);
+            await using FileStream createStream = File.Create(path);
+            await JsonSerializer.SerializeAsync(createStream, mediaSources, _jsonOptions).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
@@ -543,20 +541,20 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { typeof(Channel).Name },
+                    IncludeItemTypes = new[] { nameof(Channel) },
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
-                }).Select(i => GetChannelFeatures(i.ToString("N", CultureInfo.InvariantCulture))).ToArray();
+                }).Select(i => GetChannelFeatures(i)).ToArray();
         }
 
         /// <inheritdoc />
-        public ChannelFeatures GetChannelFeatures(string id)
+        public ChannelFeatures GetChannelFeatures(Guid? id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (!id.HasValue)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var channel = GetChannel(id);
+            var channel = GetChannel(id.Value);
             var channelProvider = GetChannelProvider(channel);
 
             return GetChannelFeaturesDto(channel, channelProvider, channelProvider.GetChannelFeatures());
@@ -639,7 +637,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var channels = GetAllChannels().Where(i => i is ISupportsLatestMedia).ToArray();
 
-            if (query.ChannelIds.Length > 0)
+            if (query.ChannelIds.Count > 0)
             {
                 // Avoid implicitly captured closure
                 var ids = query.ChannelIds;
@@ -817,7 +815,8 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                    await using FileStream jsonStream = File.OpenRead(cachePath);
+                    var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                     if (cachedResult != null)
                     {
                         return null;
@@ -839,7 +838,8 @@ namespace Emby.Server.Implementations.Channels
                 {
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        var cachedResult = _jsonSerializer.DeserializeFromFile<ChannelItemResult>(cachePath);
+                        await using FileStream jsonStream = File.OpenRead(cachePath);
+                        var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                         if (cachedResult != null)
                         {
                             return null;
@@ -870,7 +870,7 @@ namespace Emby.Server.Implementations.Channels
                     throw new InvalidOperationException("Channel returned a null result from GetChannelItems");
                 }
 
-                CacheResponse(result, cachePath);
+                await CacheResponse(result, cachePath);
 
                 return result;
             }
@@ -880,13 +880,14 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
-        private void CacheResponse(object result, string path)
+        private async Task CacheResponse(ChannelItemResult result, string path)
         {
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-                _jsonSerializer.SerializeToFile(result, path);
+                await using FileStream createStream = File.Create(path);
+                await JsonSerializer.SerializeAsync(createStream, result, _jsonOptions).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1181,11 +1182,11 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (enableMediaProbe && !info.IsLiveStream && item.HasPathProtocol)
                 {
-                    SaveMediaSources(item, new List<MediaSourceInfo>());
+                    await SaveMediaSources(item, new List<MediaSourceInfo>()).ConfigureAwait(false);
                 }
                 else
                 {
-                    SaveMediaSources(item, info.MediaSources);
+                    await SaveMediaSources(item, info.MediaSources).ConfigureAwait(false);
                 }
             }
 

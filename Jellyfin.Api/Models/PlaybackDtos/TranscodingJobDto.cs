@@ -11,7 +11,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
     /// <summary>
     /// Class TranscodingJob.
     /// </summary>
-    public class TranscodingJobDto
+    public class TranscodingJobDto : IDisposable
     {
         /// <summary>
         /// The process lock.
@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// Start kill timer.
         /// </summary>
         /// <param name="callback">Callback action.</param>
-        public void StartKillTimer(Action<object> callback)
+        public void StartKillTimer(Action<object?> callback)
         {
             StartKillTimer(callback, PingTimeout);
         }
@@ -206,7 +206,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// </summary>
         /// <param name="callback">Callback action.</param>
         /// <param name="intervalMs">Callback interval.</param>
-        public void StartKillTimer(Action<object> callback, int intervalMs)
+        public void StartKillTimer(Action<object?> callback, int intervalMs)
         {
             if (HasExited)
             {
@@ -247,6 +247,32 @@ namespace Jellyfin.Api.Models.PlaybackDtos
                     Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose all resources.
+        /// </summary>
+        /// <param name="disposing">Whether to dispose all resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Process?.Dispose();
+                Process = null;
+                KillTimer?.Dispose();
+                KillTimer = null;
+                CancellationTokenSource?.Dispose();
+                CancellationTokenSource = null;
+                TranscodingThrottler?.Dispose();
+                TranscodingThrottler = null;
             }
         }
     }

@@ -6,13 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jellyfin.Networking\Jellyfin.Networking.csproj" />
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisMode>AllDisabledByDefault</AnalysisMode>
+    <Nullable>disable</Nullable>
+    <NoWarn>CA2016</NoWarn>
   </PropertyGroup>
 
 </Project>
