@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -493,7 +493,7 @@ namespace Jellyfin.Api.Helpers
                     authInfo,
                     request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0,
-                    result.MediaSource.Id,
+                    result.MediaSource.Id!,
                     request.AudioStreamIndex,
                     request.SubtitleStreamIndex,
                     request.MaxAudioChannels,

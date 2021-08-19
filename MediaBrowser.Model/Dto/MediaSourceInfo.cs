@@ -1,8 +1,8 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -22,25 +22,26 @@ namespace MediaBrowser.Model.Dto
             SupportsDirectStream = true;
             SupportsDirectPlay = true;
             SupportsProbing = true;
+            TranscodeReasons = Array.Empty<TranscodeReason>();
         }
 
         public MediaProtocol Protocol { get; set; }
 
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string Path { get; set; }
+        public string? Path { get; set; }
 
-        public string EncoderPath { get; set; }
+        public string? EncoderPath { get; set; }
 
         public MediaProtocol? EncoderProtocol { get; set; }
 
         public MediaSourceType Type { get; set; }
 
-        public string Container { get; set; }
+        public string? Container { get; set; }
 
         public long? Size { get; set; }
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the media is remote.
@@ -48,7 +49,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         public bool IsRemote { get; set; }
 
-        public string ETag { get; set; }
+        public string? ETag { get; set; }
 
         public long? RunTimeTicks { get; set; }
 
@@ -70,11 +71,11 @@ namespace MediaBrowser.Model.Dto
 
         public bool RequiresOpening { get; set; }
 
-        public string OpenToken { get; set; }
+        public string? OpenToken { get; set; }
 
         public bool RequiresClosing { get; set; }
 
-        public string LiveStreamId { get; set; }
+        public string? LiveStreamId { get; set; }
 
         public int? BufferMs { get; set; }
 
@@ -100,11 +101,11 @@ namespace MediaBrowser.Model.Dto
 
         public Dictionary<string, string> RequiredHttpHeaders { get; set; }
 
-        public string TranscodingUrl { get; set; }
+        public string? TranscodingUrl { get; set; }
 
-        public string TranscodingSubProtocol { get; set; }
+        public string? TranscodingSubProtocol { get; set; }
 
-        public string TranscodingContainer { get; set; }
+        public string? TranscodingContainer { get; set; }
 
         public int? AnalyzeDurationMs { get; set; }
 
@@ -116,42 +117,25 @@ namespace MediaBrowser.Model.Dto
         public int? DefaultSubtitleStreamIndex { get; set; }
 
         [JsonIgnore]
-        public MediaStream VideoStream
+        public MediaStream? VideoStream
         {
             get
             {
-                foreach (var i in MediaStreams)
-                {
-                    if (i.Type == MediaStreamType.Video)
-                    {
-                        return i;
-                    }
-                }
-
-                return null;
+                return MediaStreams.Find(stream => stream.Type == MediaStreamType.Video);
             }
         }
 
         public void InferTotalBitrate(bool force = false)
         {
-            if (MediaStreams == null)
+            if (MediaStreams == null || (!force && Bitrate.HasValue))
             {
                 return;
             }
 
-            if (!force && Bitrate.HasValue)
-            {
-                return;
-            }
-
-            var bitrate = 0;
-            foreach (var stream in MediaStreams)
-            {
-                if (!stream.IsExternal)
-                {
-                    bitrate += stream.BitRate ?? 0;
-                }
-            }
+            int bitrate = MediaStreams
+                .Where(stream => !stream.IsExternal)
+                .Select(stream => stream.BitRate ?? 0)
+                .Sum();
 
             if (bitrate > 0)
             {
@@ -159,96 +143,65 @@ namespace MediaBrowser.Model.Dto
             }
         }
 
-        public MediaStream GetDefaultAudioStream(int? defaultIndex)
+        public MediaStream? GetDefaultAudioStream(int? defaultIndex)
         {
-            if (defaultIndex.HasValue)
+            MediaStream? firstAudioStreamLabeledDefault = null;
+            MediaStream? firstAudioStream = null;
+            foreach (var i in MediaStreams)
             {
-                var val = defaultIndex.Value;
-
-                foreach (var i in MediaStreams)
+                if (i.Type != MediaStreamType.Audio)
                 {
-                    if (i.Type == MediaStreamType.Audio && i.Index == val)
+                    // Ignore all streams that are not audio
+                    continue;
+                }
+
+                if (defaultIndex != null && i.Index == defaultIndex.Value)
+                {
+                    // A default index override was given and there was a match, so early return.
+                    return i;
+                }
+
+                if (firstAudioStreamLabeledDefault == null && i.IsDefault)
+                {
+                    // Found the first audio stream marked as default
+                    firstAudioStreamLabeledDefault = i;
+
+                    if (defaultIndex == null)
                     {
+                        // Since no overriding default index was given, okay to early return.
                         return i;
                     }
                 }
-            }
 
-            foreach (var i in MediaStreams)
-            {
-                if (i.Type == MediaStreamType.Audio && i.IsDefault)
+                if (firstAudioStream == null)
                 {
-                    return i;
+                    // Found the first audio stream
+                    firstAudioStream = i;
                 }
             }
 
-            foreach (var i in MediaStreams)
-            {
-                if (i.Type == MediaStreamType.Audio)
-                {
-                    return i;
-                }
-            }
-
-            return null;
+            return firstAudioStreamLabeledDefault ?? firstAudioStream;
         }
 
-        public MediaStream GetMediaStream(MediaStreamType type, int index)
+        public MediaStream? GetMediaStream(MediaStreamType type, int index)
         {
-            foreach (var i in MediaStreams)
-            {
-                if (i.Type == type && i.Index == index)
-                {
-                    return i;
-                }
-            }
-
-            return null;
+            return MediaStreams.Find(i => i.Type == type && i.Index == index);
         }
 
         public int? GetStreamCount(MediaStreamType type)
         {
-            int numMatches = 0;
-            int numStreams = 0;
-
-            foreach (var i in MediaStreams)
-            {
-                numStreams++;
-                if (i.Type == type)
-                {
-                    numMatches++;
-                }
-            }
-
-            if (numStreams == 0)
+            if (MediaStreams.Count == 0)
             {
                 return null;
             }
 
-            return numMatches;
+            return MediaStreams.Where(i => i.Type == type).Count();
         }
 
         public bool? IsSecondaryAudio(MediaStream stream)
         {
-            // Look for the first audio track marked as default
-            foreach (var currentStream in MediaStreams)
-            {
-                if (currentStream.Type == MediaStreamType.Audio && currentStream.IsDefault)
-                {
-                    return currentStream.Index != stream.Index;
-                }
-            }
-
-            // Look for the first audio track
-            foreach (var currentStream in MediaStreams)
-            {
-                if (currentStream.Type == MediaStreamType.Audio)
-                {
-                    return currentStream.Index != stream.Index;
-                }
-            }
-
-            return null;
+            MediaStream? defaultAudioStream = GetDefaultAudioStream(null);
+            return defaultAudioStream?.Index.Equals(stream.Index);
         }
     }
 }
