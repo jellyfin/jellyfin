@@ -439,7 +439,9 @@ namespace Jellyfin.Api.Helpers
                     return ".ogv";
                 }
 
-                if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "vp8", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".webm";
                 }
