@@ -1,27 +1,45 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Jellyfin.Data.Enums;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
 {
     public class BaseItemKindTests
     {
-        [Theory]
-        [ClassData(typeof(GetBaseItemDescendants))]
-        public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemType)
+        public static TheoryData<Type> BaseItemKind_TestData()
         {
-            var enumValue = Enum.Parse<BaseItemKind>(baseItemType.Name);
+            var data = new TheoryData<Type>();
+
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in loadedAssemblies)
+            {
+                if (IsProjectAssemblyName(assembly.FullName))
+                {
+                    var baseItemTypes = assembly.GetTypes()
+                        .Where(targetType => targetType.IsClass
+                                             && !targetType.IsAbstract
+                                             && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
+                    foreach (var baseItemType in baseItemTypes)
+                    {
+                        data.Add(baseItemType);
+                    }
+                }
+            }
+
+            return data;
+        }
+
+        [Theory]
+        [MemberData(nameof(BaseItemKind_TestData))]
+        public void EnumParse_GivenValidBaseItemType_ReturnsEnumValue(Type baseItemDescendantType)
+        {
+            var enumValue = Enum.Parse<BaseItemKind>(baseItemDescendantType.Name);
             Assert.True(Enum.IsDefined(typeof(BaseItemKind), enumValue));
         }
 
         [Theory]
-        [ClassData(typeof(GetBaseItemDescendants))]
+        [MemberData(nameof(BaseItemKind_TestData))]
         public void GetBaseItemKind_WhenCalledAfterDefaultCtor_DoesNotThrow(Type baseItemDescendantType)
         {
             var defaultConstructor = baseItemDescendantType.GetConstructor(Type.EmptyTypes);
@@ -30,62 +48,16 @@ namespace Jellyfin.Server.Implementations.Tests.TypedBaseItem
             Assert.Null(exception);
         }
 
-        private class GetBaseItemDescendants : IEnumerable<object?[]>
+        private static bool IsProjectAssemblyName(string? name)
         {
-            private static bool IsProjectAssemblyName(string? name)
+            if (name == null)
             {
-                if (name == null)
-                {
-                    return false;
-                }
-
-                return name.StartsWith("Jellyfin", StringComparison.OrdinalIgnoreCase)
-                       || name.StartsWith("Emby", StringComparison.OrdinalIgnoreCase)
-                       || name.StartsWith("MediaBrowser", StringComparison.OrdinalIgnoreCase);
+                return false;
             }
 
-            public IEnumerator<object?[]> GetEnumerator()
-            {
-                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in loadedAssemblies)
-                {
-                    if (IsProjectAssemblyName(assembly.FullName))
-                    {
-                        var baseItemTypes = assembly.GetTypes()
-                            .Where(targetType => targetType.IsClass
-                                                 && !targetType.IsAbstract
-                                                 && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
-                        foreach (var baseItemType in baseItemTypes)
-                        {
-                            yield return new object?[] { baseItemType };
-                        }
-                    }
-                }
-
-                var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                if (path == null)
-                {
-                    throw new NullException("Assembly location is null");
-                }
-
-                foreach (string dll in Directory.GetFiles(path, "*.dll"))
-                {
-                    var assembly = Assembly.LoadFile(dll);
-                    if (IsProjectAssemblyName(assembly.FullName))
-                    {
-                        var baseItemTypes = assembly.GetTypes()
-                            .Where(targetType => targetType.IsClass
-                                                 && !targetType.IsAbstract
-                                                 && targetType.IsSubclassOf(typeof(MediaBrowser.Controller.Entities.BaseItem)));
-                        foreach (var baseItemType in baseItemTypes)
-                        {
-                            yield return new object?[] { baseItemType };
-                        }
-                    }
-                }
-            }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            return name.StartsWith("Jellyfin", StringComparison.OrdinalIgnoreCase)
+                   || name.StartsWith("Emby", StringComparison.OrdinalIgnoreCase)
+                   || name.StartsWith("MediaBrowser", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
