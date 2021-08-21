@@ -49,5 +49,7 @@
     <EmbeddedResource Include="Plugins\Omdb\Configuration\config.html" />
     <None Remove="Plugins\MusicBrainz\Configuration\config.html" />
     <EmbeddedResource Include="Plugins\MusicBrainz\Configuration\config.html" />
+    <None Remove="Plugins\Tmdb\Configuration\config.html" />
+    <EmbeddedResource Include="Plugins\Tmdb\Configuration\config.html" />
   </ItemGroup>
 </Project>
