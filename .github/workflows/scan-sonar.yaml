@@ -82,8 +82,8 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: |-
           .\.sonar\scanner\dotnet-sonarscanner begin `
-            -o:"h1dden-da3m0n" `
-            -k:"h1dden-da3m0n_jellyfin" `
+            -o:"jellyfin" `
+            -k:"jellyfin_jellyfin" `
             -v:"${{ env.VERSION }}" `
             -d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
             -d:sonar.host.url="https://sonarcloud.io" `
@@ -110,8 +110,8 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         run: |-
           .\.sonar\scanner\dotnet-sonarscanner begin `
-            -o:"h1dden-da3m0n" `
-            -k:"h1dden-da3m0n_jellyfin" `
+            -o:"jellyfin" `
+            -k:"jellyfin_jellyfin" `
             -v:"${{ env.VERSION }}" `
             -d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
             -d:sonar.host.url="https://sonarcloud.io" `
