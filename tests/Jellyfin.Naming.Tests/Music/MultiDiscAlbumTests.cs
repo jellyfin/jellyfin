@@ -40,6 +40,7 @@ namespace Jellyfin.Naming.Tests.Music
         [InlineData(@"D:/Video/MBTestLibrary/VideoTest/music/.38 special/anth/Disc 2", true)]
         [InlineData(@"[1985] Opportunities (Let's make lots of money) (1985)", false)]
         [InlineData(@"Blah 04(Encores and Folk Songs)", false)]
+        [InlineData(@"CD 02: Remixes", true)]
         public void AlbumParser_MultidiscPath_Identifies(string path, bool result)
         {
             var parser = new AlbumParser(_namingOptions);

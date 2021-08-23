@@ -43,6 +43,7 @@ namespace Emby.Naming.Audio
             // Remove whitespace
             filename = filename.Replace('-', ' ');
             filename = filename.Replace('.', ' ');
+            filename = filename.Replace(':', ' ');
             filename = filename.Replace('(', ' ');
             filename = filename.Replace(')', ' ');
             filename = Regex.Replace(filename, @"\s+", " ");
