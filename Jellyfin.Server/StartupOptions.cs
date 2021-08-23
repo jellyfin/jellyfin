@@ -76,6 +76,10 @@ namespace Jellyfin.Server
         [Option("published-server-url", Required = false, HelpText = "Jellyfin Server URL to publish via auto discover process")]
         public string? PublishedServerUrl { get; set; }
 
+        /// <inheritdoc />
+        [Option("disable-openapi-allof", Required = false, HelpText = "Disables allOf output in generated OpenAPI spec")]
+        public bool DisableOpenApiAllOf { get; set; }
+
         /// <summary>
         /// Gets the command line options as a dictionary that can be used in the .NET configuration system.
         /// </summary>

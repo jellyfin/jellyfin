@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Emby.Server.Implementations;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
@@ -30,18 +31,22 @@ namespace Jellyfin.Server
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IServerApplicationHost _serverApplicationHost;
+        private readonly IStartupOptions _startupOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup" /> class.
         /// </summary>
         /// <param name="serverConfigurationManager">The server configuration manager.</param>
         /// <param name="serverApplicationHost">The server application host.</param>
+        /// <param name="startupOptions">The server startup options.</param>
         public Startup(
             IServerConfigurationManager serverConfigurationManager,
-            IServerApplicationHost serverApplicationHost)
+            IServerApplicationHost serverApplicationHost,
+            IStartupOptions startupOptions)
         {
             _serverConfigurationManager = serverConfigurationManager;
             _serverApplicationHost = serverApplicationHost;
+            _startupOptions = startupOptions;
         }
 
         /// <summary>
@@ -58,7 +63,7 @@ namespace Jellyfin.Server
             });
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
 
-            services.AddJellyfinApiSwagger();
+            services.AddJellyfinApiSwagger(_startupOptions.DisableOpenApiAllOf);
 
             // configure custom legacy authentication
             services.AddCustomAuthentication();

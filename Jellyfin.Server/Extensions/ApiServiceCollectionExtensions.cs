@@ -255,8 +255,9 @@ namespace Jellyfin.Server.Extensions
         /// Adds Swagger to the service collection.
         /// </summary>
         /// <param name="serviceCollection">The service collection.</param>
+        /// <param name="disableOpenApiAllOf">Whether to disable allOf generation.</param>
         /// <returns>The updated service collection.</returns>
-        public static IServiceCollection AddJellyfinApiSwagger(this IServiceCollection serviceCollection)
+        public static IServiceCollection AddJellyfinApiSwagger(this IServiceCollection serviceCollection, bool disableOpenApiAllOf)
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
@@ -308,8 +309,12 @@ namespace Jellyfin.Server.Extensions
                                ?? null;
                     });
 
-                // Allow parameters to properly be nullable.
-                c.UseAllOfToExtendReferenceSchemas();
+                if (!disableOpenApiAllOf)
+                {
+                    // Allow parameters to properly be nullable.
+                    c.UseAllOfToExtendReferenceSchemas();
+                }
+
                 c.SupportNonNullableReferenceTypes();
 
                 // TODO - remove when all types are supported in System.Text.Json

@@ -33,5 +33,11 @@ namespace Emby.Server.Implementations
         /// Gets the value of the --published-server-url command line option.
         /// </summary>
         string? PublishedServerUrl { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether allOf output should be disabled.
+        /// Added with the --disable-openapi-allof command line option.
+        /// </summary>
+        public bool DisableOpenApiAllOf { get; }
     }
 }
