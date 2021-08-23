@@ -79,6 +79,16 @@
         Movie,
 
         /// <summary>
+        /// Item is a live tv channel.
+        /// </summary>
+        LiveTvChannel,
+
+        /// <summary>
+        /// Item is a live tv program.
+        /// </summary>
+        LiveTvProgram,
+
+        /// <summary>
         /// Item is music album.
         /// </summary>
         MusicAlbum,
@@ -117,6 +127,11 @@
         /// Item is playlist.
         /// </summary>
         Playlist,
+
+        /// <summary>
+        /// Item is playlist folder.
+        /// </summary>
+        PlaylistsFolder,
 
         /// <summary>
         /// Item is program
