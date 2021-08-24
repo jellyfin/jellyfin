@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -198,6 +200,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 if (resolvedItem.Files.Count > 1)
                 {
                     // For now, until we sort out naming for multi-part books
+                    continue;
+                }
+
+                if (resolvedItem.Files.Count == 0)
+                {
                     continue;
                 }
 

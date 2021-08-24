@@ -25,11 +25,9 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{PlaylistXmlSaver}"/> interface.</param>
-        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<PlaylistXmlSaver> logger)
-            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+        public PlaylistXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger<PlaylistXmlSaver> logger)
+            : base(fileSystem, configurationManager, libraryManager, logger)
         {
         }
 

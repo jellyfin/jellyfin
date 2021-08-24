@@ -1,6 +1,8 @@
+using System;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -17,9 +19,9 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         [Fact]
         public void GetMediaInfo_MetaData_Success()
         {
-            var bytes = File.ReadAllBytes("Test Data/Probing/some_matadata.json");
+            var bytes = File.ReadAllBytes("Test Data/Probing/video_metadata.json");
             var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
-            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/some_matadata.mkv", MediaProtocol.File);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/video_metadata.mkv", MediaProtocol.File);
 
             Assert.Single(res.MediaStreams);
 
@@ -51,6 +53,43 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
 
             Assert.Empty(res.Chapters);
             Assert.Equal("Just color bars", res.Overview);
+        }
+
+        [Fact]
+        public void GetMediaInfo_MusicVideo_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/music_video_metadata.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, VideoType.VideoFile, false, "Test Data/Probing/music_video.mkv", MediaProtocol.File);
+
+            Assert.Equal("The Title", res.Name);
+            Assert.Equal("Title, The", res.ForcedSortName);
+            Assert.Single(res.Artists);
+            Assert.Equal("The Artist", res.Artists[0]);
+            Assert.Equal("Album", res.Album);
+            Assert.Equal(2021, res.ProductionYear);
+            Assert.True(res.PremiereDate.HasValue);
+            Assert.Equal(DateTime.Parse("2021-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+        }
+
+        [Fact]
+        public void GetMediaInfo_GivenOriginalDateContainsOnlyYear_Success()
+        {
+            var bytes = File.ReadAllBytes("Test Data/Probing/music_year_only_metadata.json");
+            var internalMediaInfoResult = JsonSerializer.Deserialize<InternalMediaInfoResult>(bytes, _jsonOptions);
+            MediaInfo res = _probeResultNormalizer.GetMediaInfo(internalMediaInfoResult, null, true, "Test Data/Probing/music.flac", MediaProtocol.File);
+
+            Assert.Equal("Baker Street", res.Name);
+            Assert.Single(res.Artists);
+            Assert.Equal("Gerry Rafferty", res.Artists[0]);
+            Assert.Equal("City to City", res.Album);
+            Assert.Equal(1978, res.ProductionYear);
+            Assert.True(res.PremiereDate.HasValue);
+            Assert.Equal(DateTime.Parse("1978-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+            Assert.Contains("Electronic", res.Genres);
+            Assert.Contains("Ambient", res.Genres);
+            Assert.Contains("Pop", res.Genres);
+            Assert.Contains("Jazz", res.Genres);
         }
     }
 }

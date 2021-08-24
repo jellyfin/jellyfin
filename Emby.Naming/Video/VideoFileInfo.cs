@@ -1,3 +1,4 @@
+using System;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Naming.Video
@@ -106,9 +107,9 @@ namespace Emby.Naming.Video
         /// Gets the file name without extension.
         /// </summary>
         /// <value>The file name without extension.</value>
-        public string FileNameWithoutExtension => !IsDirectory
-            ? System.IO.Path.GetFileNameWithoutExtension(Path)
-            : System.IO.Path.GetFileName(Path);
+        public ReadOnlySpan<char> FileNameWithoutExtension => !IsDirectory
+            ? System.IO.Path.GetFileNameWithoutExtension(Path.AsSpan())
+            : System.IO.Path.GetFileName(Path.AsSpan());
 
         /// <inheritdoc />
         public override string ToString()

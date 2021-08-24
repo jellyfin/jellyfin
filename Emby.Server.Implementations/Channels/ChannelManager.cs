@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -878,7 +880,7 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
-        private async Task CacheResponse(object result, string path)
+        private async Task CacheResponse(ChannelItemResult result, string path)
         {
             try
             {

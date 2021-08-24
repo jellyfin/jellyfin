@@ -117,5 +117,7 @@
     "TaskCleanActivityLog": "アクティビティの履歴を消去",
     "Undefined": "未定義",
     "Forced": "強制",
-    "Default": "デフォルト"
+    "Default": "デフォルト",
+    "TaskOptimizeDatabaseDescription": "データベースをコンパクトにして、空き領域を切り詰めます。メディアライブラリのスキャン後でこのタスクを実行するとパフォーマンスが向上する可能性があります。",
+    "TaskOptimizeDatabase": "データベースの最適化"
 }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -987,10 +989,7 @@ namespace Emby.Server.Implementations.LiveTv
                 var externalProgramId = programTuple.Item2;
                 string externalSeriesId = programTuple.Item3;
 
-                if (timerList == null)
-                {
-                    timerList = (await GetTimersInternal(new TimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
-                }
+                timerList ??= (await GetTimersInternal(new TimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
 
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, externalProgramId, StringComparison.OrdinalIgnoreCase));
                 var foundSeriesTimer = false;
@@ -1018,10 +1017,7 @@ namespace Emby.Server.Implementations.LiveTv
                     continue;
                 }
 
-                if (seriesTimerList == null)
-                {
-                    seriesTimerList = (await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
-                }
+                seriesTimerList ??= (await GetSeriesTimersInternal(new SeriesTimerQuery(), cancellationToken).ConfigureAwait(false)).Items;
 
                 var seriesTimer = seriesTimerList.FirstOrDefault(i => string.Equals(i.SeriesId, externalSeriesId, StringComparison.OrdinalIgnoreCase));
 
@@ -1974,10 +1970,7 @@ namespace Emby.Server.Implementations.LiveTv
                 };
             }
 
-            if (service == null)
-            {
-                service = _services[0];
-            }
+            service ??= _services[0];
 
             var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
 
@@ -2273,7 +2266,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (dataSourceChanged)
             {
-                _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+                _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
             }
 
             return info;
@@ -2316,7 +2309,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             _config.SaveConfiguration("livetv", config);
 
-            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
 
             return info;
         }
@@ -2328,7 +2321,7 @@ namespace Emby.Server.Implementations.LiveTv
             config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(id, i.Id, StringComparison.OrdinalIgnoreCase)).ToArray();
 
             _config.SaveConfiguration("livetv", config);
-            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
         }
 
         public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelId, string providerChannelId)
@@ -2362,7 +2355,7 @@ namespace Emby.Server.Implementations.LiveTv
             var tunerChannelMappings =
                 tunerChannels.Select(i => GetTunerChannelMapping(i, mappings, providerChannels)).ToList();
 
-            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
 
             return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelId, StringComparison.OrdinalIgnoreCase));
         }

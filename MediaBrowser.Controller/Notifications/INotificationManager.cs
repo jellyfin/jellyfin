@@ -19,7 +19,7 @@ namespace MediaBrowser.Controller.Notifications
         /// <returns>Task.</returns>
         Task SendNotification(NotificationRequest request, CancellationToken cancellationToken);
 
-        Task SendNotification(NotificationRequest request, BaseItem relatedItem, CancellationToken cancellationToken);
+        Task SendNotification(NotificationRequest request, BaseItem? relatedItem, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the parts.

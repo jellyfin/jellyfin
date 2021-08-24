@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -56,8 +54,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _udpServer = new UdpServer(_logger, _appHost, _config);
-                _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
+                _udpServer = new UdpServer(_logger, _appHost, _config, PortNumber);
+                _udpServer.Start(_cancellationTokenSource.Token);
             }
             catch (SocketException ex)
             {

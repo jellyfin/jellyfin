@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -9,8 +11,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -307,13 +310,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }

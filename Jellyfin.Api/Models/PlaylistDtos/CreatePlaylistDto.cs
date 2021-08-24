@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Common.Json.Converters;
+using Jellyfin.Extensions.Json.Converters;
 
 namespace Jellyfin.Api.Models.PlaylistDtos
 {

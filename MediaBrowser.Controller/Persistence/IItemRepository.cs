@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -47,21 +49,23 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Gets chapters for an item.
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="id">The item.</param>
+        /// <returns>The list of chapter info.</returns>
         List<ChapterInfo> GetChapters(BaseItem id);
 
         /// <summary>
         /// Gets a single chapter for an item.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="id">The item.</param>
+        /// <param name="index">The chapter index.</param>
+        /// <returns>The chapter info at the specified index.</returns>
         ChapterInfo GetChapter(BaseItem id, int index);
 
         /// <summary>
         /// Saves the chapters.
         /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="chapters">The list of chapters to save.</param>
         void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters);
 
         /// <summary>
@@ -153,8 +157,7 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Updates the inherited values.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        void UpdateInheritedValues(CancellationToken cancellationToken);
+        void UpdateInheritedValues();
 
         int GetCount(InternalItemsQuery query);
 

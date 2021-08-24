@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Controllers
             var dtoOptions = new DtoOptions().AddClientFields(Request);
             var result = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
-                OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
                 MediaTypes = mediaType,
                 IncludeItemTypes = type,
                 IsVirtualItem = false,

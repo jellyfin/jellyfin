@@ -1,9 +1,12 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Video;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -255,10 +258,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            var namingOptions = LibraryManager.GetNamingOptions();
 
-            var resolver = new VideoListResolver(namingOptions);
-            var resolverResult = resolver.Resolve(files, suppportMultiEditions).ToList();
+            var resolverResult = VideoListResolver.Resolve(files, namingOptions, suppportMultiEditions).ToList();
 
             var result = new MultiItemResolverResult
             {
@@ -376,7 +378,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         {
             var multiDiscFolders = new List<FileSystemMetadata>();
 
-            var libraryOptions = args.GetLibraryOptions();
+            var libraryOptions = args.LibraryOptions;
             var supportPhotos = string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && libraryOptions.EnablePhotos;
             var photos = new List<FileSystemMetadata>();
 
@@ -535,7 +537,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             return returnVideo;
         }
 
-        private bool IsInvalid(Folder parent, string collectionType)
+        private bool IsInvalid(Folder parent, ReadOnlySpan<char> collectionType)
         {
             if (parent != null)
             {
@@ -545,12 +547,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            if (string.IsNullOrEmpty(collectionType))
+            if (collectionType.IsEmpty)
             {
                 return false;
             }
 
-            return !_validCollectionTypes.Contains(collectionType, StringComparer.OrdinalIgnoreCase);
+            return !_validCollectionTypes.Contains(collectionType, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

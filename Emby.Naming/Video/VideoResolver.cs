@@ -1,46 +1,36 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Video
 {
     /// <summary>
     /// Resolves <see cref="VideoFileInfo"/> from file path.
     /// </summary>
-    public class VideoResolver
+    public static class VideoResolver
     {
-        private readonly NamingOptions _options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoResolver"/> class.
-        /// </summary>
-        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileExtensions, StubFileExtensions, CleanStringRegexes and CleanDateTimeRegexes
-        /// and passes options in <see cref="StubResolver"/>, <see cref="FlagParser"/>, <see cref="Format3DParser"/> and <see cref="ExtraResolver"/>.</param>
-        public VideoResolver(NamingOptions options)
-        {
-            _options = options;
-        }
-
         /// <summary>
         /// Resolves the directory.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>VideoFileInfo.</returns>
-        public VideoFileInfo? ResolveDirectory(string? path)
+        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions)
         {
-            return Resolve(path, true);
+            return Resolve(path, true, namingOptions);
         }
 
         /// <summary>
         /// Resolves the file.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>VideoFileInfo.</returns>
-        public VideoFileInfo? ResolveFile(string? path)
+        public static VideoFileInfo? ResolveFile(string? path, NamingOptions namingOptions)
         {
-            return Resolve(path, false);
+            return Resolve(path, false, namingOptions);
         }
 
         /// <summary>
@@ -48,10 +38,11 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="isDirectory">if set to <c>true</c> [is folder].</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <param name="parseName">Whether or not the name should be parsed for info.</param>
         /// <returns>VideoFileInfo.</returns>
         /// <exception cref="ArgumentNullException"><c>path</c> is <c>null</c>.</exception>
-        public VideoFileInfo? Resolve(string? path, bool isDirectory, bool parseName = true)
+        public static VideoFileInfo? Resolve(string? path, bool isDirectory, NamingOptions namingOptions, bool parseName = true)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -59,18 +50,18 @@ namespace Emby.Naming.Video
             }
 
             bool isStub = false;
-            string? container = null;
+            ReadOnlySpan<char> container = ReadOnlySpan<char>.Empty;
             string? stubType = null;
 
             if (!isDirectory)
             {
-                var extension = Path.GetExtension(path);
+                var extension = Path.GetExtension(path.AsSpan());
 
                 // Check supported extensions
-                if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     // It's not supported. Check stub extensions
-                    if (!StubResolver.TryResolveFile(path, _options, out stubType))
+                    if (!StubResolver.TryResolveFile(path, namingOptions, out stubType))
                     {
                         return null;
                     }
@@ -81,25 +72,22 @@ namespace Emby.Naming.Video
                 container = extension.TrimStart('.');
             }
 
-            var flags = new FlagParser(_options).GetFlags(path);
-            var format3DResult = new Format3DParser(_options).Parse(flags);
+            var format3DResult = Format3DParser.Parse(path, namingOptions);
 
-            var extraResult = new ExtraResolver(_options).GetExtraInfo(path);
+            var extraResult = new ExtraResolver(namingOptions).GetExtraInfo(path);
 
-            var name = isDirectory
-                ? Path.GetFileName(path)
-                : Path.GetFileNameWithoutExtension(path);
+            var name = Path.GetFileNameWithoutExtension(path);
 
             int? year = null;
 
             if (parseName)
             {
-                var cleanDateTimeResult = CleanDateTime(name);
+                var cleanDateTimeResult = CleanDateTime(name, namingOptions);
                 name = cleanDateTimeResult.Name;
                 year = cleanDateTimeResult.Year;
 
                 if (extraResult.ExtraType == null
-                    && TryCleanString(name, out ReadOnlySpan<char> newName))
+                    && TryCleanString(name, namingOptions, out ReadOnlySpan<char> newName))
                 {
                     name = newName.ToString();
                 }
@@ -107,7 +95,7 @@ namespace Emby.Naming.Video
 
             return new VideoFileInfo(
                 path: path,
-                container: container,
+                container: container.IsEmpty ? null : container.ToString(),
                 isStub: isStub,
                 name: name,
                 year: year,
@@ -123,43 +111,47 @@ namespace Emby.Naming.Video
         /// Determines if path is video file based on extension.
         /// </summary>
         /// <param name="path">Path to file.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>True if is video file.</returns>
-        public bool IsVideoFile(string path)
+        public static bool IsVideoFile(string path, NamingOptions namingOptions)
         {
-            var extension = Path.GetExtension(path);
-            return _options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path.AsSpan());
+            return namingOptions.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Determines if path is video file stub based on extension.
         /// </summary>
         /// <param name="path">Path to file.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>True if is video file stub.</returns>
-        public bool IsStubFile(string path)
+        public static bool IsStubFile(string path, NamingOptions namingOptions)
         {
-            var extension = Path.GetExtension(path);
-            return _options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path.AsSpan());
+            return namingOptions.StubFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Tries to clean name of clutter.
         /// </summary>
         /// <param name="name">Raw name.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <param name="newName">Clean name.</param>
         /// <returns>True if cleaning of name was successful.</returns>
-        public bool TryCleanString([NotNullWhen(true)] string? name, out ReadOnlySpan<char> newName)
+        public static bool TryCleanString([NotNullWhen(true)] string? name, NamingOptions namingOptions, out ReadOnlySpan<char> newName)
         {
-            return CleanStringParser.TryClean(name, _options.CleanStringRegexes, out newName);
+            return CleanStringParser.TryClean(name, namingOptions.CleanStringRegexes, out newName);
         }
 
         /// <summary>
         /// Tries to get name and year from raw name.
         /// </summary>
         /// <param name="name">Raw name.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Returns <see cref="CleanDateTimeResult"/> with name and optional year.</returns>
-        public CleanDateTimeResult CleanDateTime(string name)
+        public static CleanDateTimeResult CleanDateTime(string name, NamingOptions namingOptions)
         {
-            return CleanDateTimeParser.Clean(name, _options.CleanDateTimeRegexes);
+            return CleanDateTimeParser.Clean(name, namingOptions.CleanDateTimeRegexes);
         }
     }
 }

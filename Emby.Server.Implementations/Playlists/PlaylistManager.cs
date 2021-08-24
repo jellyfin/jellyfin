@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -145,7 +147,7 @@ namespace Emby.Server.Implementations.Playlists
 
                 playlist.SetMediaType(options.MediaType);
 
-                parentFolder.AddChild(playlist, CancellationToken.None);
+                parentFolder.AddChild(playlist);
 
                 await playlist.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(_fileSystem)) { ForceSave = true }, CancellationToken.None)
                     .ConfigureAwait(false);
@@ -215,7 +217,7 @@ namespace Emby.Server.Implementations.Playlists
 
             // Create a list of the new linked children to add to the playlist
             var childrenToAdd = newItems
-                .Select(i => LinkedChild.Create(i))
+                .Select(LinkedChild.Create)
                 .ToList();
 
             // Log duplicates that have been ignored, if any

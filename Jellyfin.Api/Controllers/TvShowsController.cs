@@ -6,7 +6,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -65,6 +65,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
         /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
         /// <param name="enableUserData">Optional. Include user data.</param>
+        /// <param name="nextUpDateCutoff">Optional. Starting date of shows to show in Next Up section.</param>
         /// <param name="enableTotalRecordCount">Whether to enable the total records count. Defaults to true.</param>
         /// <param name="disableFirstEpisode">Whether to disable sending the first episode in a series as next up.</param>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the next up episodes.</returns>
@@ -81,6 +82,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
             [FromQuery] bool? enableUserData,
+            [FromQuery] DateTime? nextUpDateCutoff,
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool disableFirstEpisode = false)
         {
@@ -97,7 +99,8 @@ namespace Jellyfin.Api.Controllers
                     StartIndex = startIndex,
                     UserId = userId ?? Guid.Empty,
                     EnableTotalRecordCount = enableTotalRecordCount,
-                    DisableFirstEpisode = disableFirstEpisode
+                    DisableFirstEpisode = disableFirstEpisode,
+                    NextUpDateCutoff = nextUpDateCutoff ?? DateTime.MinValue
                 },
                 options);
 
@@ -155,7 +158,7 @@ namespace Jellyfin.Api.Controllers
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
                 IncludeItemTypes = new[] { nameof(Episode) },
-                OrderBy = new[] { ItemSortBy.PremiereDate, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Ascending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.PremiereDate, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                 MinPremiereDate = minPremiereDate,
                 StartIndex = startIndex,
                 Limit = limit,

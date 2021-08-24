@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -43,13 +41,13 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the title.
@@ -99,12 +97,12 @@ namespace Jellyfin.Data.Entities.Libraries
         public DateTimeOffset? ReleaseDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the date added.
+        /// Gets the date added.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
-        public DateTime DateAdded { get; protected set; }
+        public DateTime DateAdded { get; private set; }
 
         /// <summary>
         /// Gets or sets the date modified.
@@ -114,37 +112,32 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         public DateTime DateModified { get; set; }
 
-        /// <summary>
-        /// Gets or sets the row version.
-        /// </summary>
-        /// <remarks>
-        /// Required, ConcurrencyToken.
-        /// </remarks>
+        /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the person roles for this item.
+        /// Gets a collection containing the person roles for this item.
         /// </summary>
-        public virtual ICollection<PersonRole> PersonRoles { get; protected set; }
+        public virtual ICollection<PersonRole> PersonRoles { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the genres for this item.
+        /// Gets a collection containing the genres for this item.
         /// </summary>
-        public virtual ICollection<Genre> Genres { get; protected set; }
+        public virtual ICollection<Genre> Genres { get; private set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Artwork> Artwork { get; protected set; }
+        public virtual ICollection<Artwork> Artwork { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the ratings for this item.
+        /// Gets a collection containing the ratings for this item.
         /// </summary>
-        public virtual ICollection<Rating> Ratings { get; protected set; }
+        public virtual ICollection<Rating> Ratings { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the metadata sources for this item.
+        /// Gets a collection containing the metadata sources for this item.
         /// </summary>
-        public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
+        public virtual ICollection<MetadataProviderId> Sources { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

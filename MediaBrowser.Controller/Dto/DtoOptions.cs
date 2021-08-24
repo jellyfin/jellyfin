@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -16,6 +18,28 @@ namespace MediaBrowser.Controller.Dto
             ItemFields.RefreshState
         };
 
+        private static readonly ImageType[] AllImageTypes = Enum.GetValues<ImageType>();
+
+        private static readonly ItemFields[] AllItemFields = Enum.GetValues<ItemFields>()
+            .Except(DefaultExcludedFields)
+            .ToArray();
+
+        public DtoOptions()
+            : this(true)
+        {
+        }
+
+        public DtoOptions(bool allFields)
+        {
+            ImageTypeLimit = int.MaxValue;
+            EnableImages = true;
+            EnableUserData = true;
+            AddCurrentProgram = true;
+
+            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
+            ImageTypes = AllImageTypes;
+        }
+
         public IReadOnlyList<ItemFields> Fields { get; set; }
 
         public IReadOnlyList<ImageType> ImageTypes { get; set; }
@@ -30,33 +54,8 @@ namespace MediaBrowser.Controller.Dto
 
         public bool AddCurrentProgram { get; set; }
 
-        public DtoOptions()
-            : this(true)
-        {
-        }
-
-        private static readonly ImageType[] AllImageTypes = Enum.GetNames(typeof(ImageType))
-            .Select(i => (ImageType)Enum.Parse(typeof(ImageType), i, true))
-            .ToArray();
-
-        private static readonly ItemFields[] AllItemFields = Enum.GetNames(typeof(ItemFields))
-            .Select(i => (ItemFields)Enum.Parse(typeof(ItemFields), i, true))
-            .Except(DefaultExcludedFields)
-            .ToArray();
-
         public bool ContainsField(ItemFields field)
             => Fields.Contains(field);
-
-        public DtoOptions(bool allFields)
-        {
-            ImageTypeLimit = int.MaxValue;
-            EnableImages = true;
-            EnableUserData = true;
-            AddCurrentProgram = true;
-
-            Fields = allFields ? AllItemFields : Array.Empty<ItemFields>();
-            ImageTypes = AllImageTypes;
-        }
 
         public int GetImageLimit(ImageType type)
         {

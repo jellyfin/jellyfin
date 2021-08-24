@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -101,7 +103,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
@@ -148,13 +149,7 @@ namespace Emby.Server.Implementations
                     return false;
                 }
 
-                if (OperatingSystem.Id == OperatingSystemId.Windows
-                    || OperatingSystem.Id == OperatingSystemId.Darwin)
-                {
-                    return true;
-                }
-
-                return false;
+                return OperatingSystem.IsWindows() || OperatingSystem.IsMacOS();
             }
         }
 
@@ -335,10 +330,7 @@ namespace Emby.Server.Implementations
         {
             get
             {
-                if (_deviceId == null)
-                {
-                    _deviceId = new DeviceId(ApplicationPaths, LoggerFactory);
-                }
+                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
 
                 return _deviceId.Value;
             }
@@ -370,10 +362,7 @@ namespace Emby.Server.Implementations
         /// <returns>System.Object.</returns>
         protected object CreateInstanceSafe(Type type)
         {
-            if (_creatingInstances == null)
-            {
-                _creatingInstances = new List<Type>();
-            }
+            _creatingInstances ??= new List<Type>();
 
             if (_creatingInstances.IndexOf(type) != -1)
             {
@@ -607,12 +596,8 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
 
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<IDtoService>(provider.GetRequiredService<IDtoService>));
-
-            // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<EncodingHelper>(provider.GetRequiredService<EncodingHelper>));
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
+            ServiceCollection.AddSingleton<EncodingHelper>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
             ServiceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
@@ -677,8 +662,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
-            ServiceCollection.AddSingleton<EncodingHelper>();
-
             ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
             ServiceCollection.AddSingleton<TranscodingJobHelper>();
@@ -731,7 +714,7 @@ namespace Emby.Server.Implementations
 
             logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
+            logger.LogInformation("Operating system: {OS}", MediaBrowser.Common.System.OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -1108,11 +1091,10 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                OperatingSystem = OperatingSystem.Id.ToString(),
-                OperatingSystemDisplayName = OperatingSystem.Name,
+                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
+                OperatingSystemDisplayName = MediaBrowser.Common.System.OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
-                HasUpdateAvailable = HasUpdateAvailable,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
@@ -1128,16 +1110,16 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(IPAddress address)
         {
             return new PublicSystemInfo
             {
                 Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
-                OperatingSystem = OperatingSystem.Id.ToString(),
+                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(source),
+                LocalAddress = GetSmartApiUrl(address),
                 StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
@@ -1146,7 +1128,7 @@ namespace Emby.Server.Implementations
         public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
+        public string GetSmartApiUrl(IPAddress remoteAddr, int? port = null)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -1155,7 +1137,7 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(ipAddress, out port);
+            string smart = NetManager.GetBindInterface(remoteAddr, out port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -1218,14 +1200,14 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(string host, string scheme = null, int? port = null)
+        public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)
         {
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder
             {
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
-                Host = host,
+                Host = hostname,
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
                 Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
@@ -1261,26 +1243,6 @@ namespace Emby.Server.Implementations
         }
 
         protected abstract void ShutdownInternal();
-
-        public event EventHandler HasUpdateAvailableChanged;
-
-        private bool _hasUpdateAvailable;
-
-        public bool HasUpdateAvailable
-        {
-            get => _hasUpdateAvailable;
-            set
-            {
-                var fireEvent = value && !_hasUpdateAvailable;
-
-                _hasUpdateAvailable = value;
-
-                if (fireEvent)
-                {
-                    HasUpdateAvailableChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
 
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {

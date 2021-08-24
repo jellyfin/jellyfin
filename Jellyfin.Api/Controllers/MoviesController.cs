@@ -18,6 +18,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jellyfin.Api.Controllers
@@ -89,7 +90,7 @@ namespace Jellyfin.Api.Controllers
                     // nameof(LiveTvProgram)
                 },
                 // IsMovie = true
-                OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.Random, SortOrder.Descending) },
                 Limit = 7,
                 ParentId = parentIdGuid,
                 Recursive = true,
@@ -110,7 +111,7 @@ namespace Jellyfin.Api.Controllers
             {
                 IncludeItemTypes = itemTypes.ToArray(),
                 IsMovie = true,
-                OrderBy = new[] { ItemSortBy.Random }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray(),
+                OrderBy = new[] { (ItemSortBy.Random, SortOrder.Descending) },
                 Limit = 10,
                 IsFavoriteOrLiked = true,
                 ExcludeItemIds = recentlyPlayedMovies.Select(i => i.Id).ToArray(),
@@ -120,7 +121,7 @@ namespace Jellyfin.Api.Controllers
                 DtoOptions = dtoOptions
             });
 
-            var mostRecentMovies = recentlyPlayedMovies.Take(6).ToList();
+            var mostRecentMovies = recentlyPlayedMovies.GetRange(0, Math.Min(recentlyPlayedMovies.Count, 6));
             // Get recently played directors
             var recentDirectors = GetDirectors(mostRecentMovies)
                 .ToList();
@@ -191,7 +192,8 @@ namespace Jellyfin.Api.Controllers
 
             foreach (var name in names)
             {
-                var items = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                var items = _libraryManager.GetItemList(
+                    new InternalItemsQuery(user)
                     {
                         Person = name,
                         // Account for duplicates by imdb id, since the database doesn't support this yet
@@ -299,9 +301,8 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<string> GetActors(IEnumerable<BaseItem> items)
         {
-            var people = _libraryManager.GetPeople(new InternalPeopleQuery
+            var people = _libraryManager.GetPeople(new InternalPeopleQuery(Array.Empty<string>(), new[] { PersonType.Director })
             {
-                ExcludePersonTypes = new[] { PersonType.Director },
                 MaxListOrder = 3
             });
 
@@ -315,10 +316,9 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<string> GetDirectors(IEnumerable<BaseItem> items)
         {
-            var people = _libraryManager.GetPeople(new InternalPeopleQuery
-            {
-                PersonTypes = new[] { PersonType.Director }
-            });
+            var people = _libraryManager.GetPeople(new InternalPeopleQuery(
+                new[] { PersonType.Director },
+                Array.Empty<string>()));
 
             var itemIds = items.Select(i => i.Id).ToList();
 
