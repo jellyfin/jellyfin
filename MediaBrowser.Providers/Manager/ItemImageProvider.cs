@@ -349,6 +349,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (FileNotFoundException)
                 {
+                    deletedThisIteration = false;
                 }
                 catch (IOException e) when (e.Message.Contains("Read-only file system", StringComparison.OrdinalIgnoreCase))
                 {
@@ -357,7 +358,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 finally
                 {
-                    deleted = deleted || deletedThisIteration;
+                    deleted |= deletedThisIteration;
                 }
             }
 
