@@ -335,6 +335,7 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var image in item.GetImages(type))
             {
+                var deletedThisIteration = false;
                 if (!image.IsLocalFile)
                 {
                     deletedImages.Add(image);
@@ -344,7 +345,7 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     _fileSystem.DeleteFile(image.Path);
-                    deleted = true;
+                    deletedThisIteration = true;
                 }
                 catch (FileNotFoundException)
                 {
@@ -352,6 +353,11 @@ namespace MediaBrowser.Providers.Manager
                 catch (Exception e)
                 {
                     _logger.LogError("Could not delete file ", e.Message);
+                    deletedThisIteration = false;
+                }
+                finally
+                {
+                    deleted = deleted || deletedThisIteration;
                 }
             }
 
