@@ -350,9 +350,9 @@ namespace MediaBrowser.Providers.Manager
                 catch (FileNotFoundException)
                 {
                 }
-                catch (Exception e)
+                catch (IOException e) when (e.Message.Contains("Read-only file system", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogError("Could not delete file ", e.Message);
+                    _logger.LogInformation("Could not delete {provider}, read only file system.", image.Path);
                     deletedThisIteration = false;
                 }
                 finally
