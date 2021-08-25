@@ -76,6 +76,7 @@ COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
+EXPOSE 3702 4025 4024 4022 4020
 VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \

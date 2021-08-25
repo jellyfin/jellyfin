@@ -189,6 +189,11 @@ namespace MediaBrowser.Providers.Manager
                 catch (FileNotFoundException)
                 {
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogInformation("Exception caught: ", ex.Message);
+                    throw;
+                }
                 finally
                 {
                     _libraryMonitor.ReportFileSystemChangeComplete(currentPath, false);
