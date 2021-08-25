@@ -349,6 +349,10 @@ namespace MediaBrowser.Providers.Manager
                 catch (FileNotFoundException)
                 {
                 }
+                catch (Exception e)
+                {
+                    _logger.LogError("Could not delete file ", e.Message);
+                }
             }
 
             item.RemoveImages(deletedImages);
