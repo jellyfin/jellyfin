@@ -190,7 +190,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                 }
                 catch (Exception ex)
-                {
+                { 
                     _logger.LogInformation("Exception caught: ", ex.Message);
                     throw;
                 }
