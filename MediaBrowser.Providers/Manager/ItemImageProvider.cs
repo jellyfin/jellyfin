@@ -335,7 +335,6 @@ namespace MediaBrowser.Providers.Manager
 
             foreach (var image in item.GetImages(type))
             {
-                var deletedThisIteration = false;
                 if (!image.IsLocalFile)
                 {
                     deletedImages.Add(image);
@@ -345,20 +344,14 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     _fileSystem.DeleteFile(image.Path);
-                    deletedThisIteration = true;
+                    deleted = true;
                 }
                 catch (FileNotFoundException)
                 {
-                    deletedThisIteration = false;
                 }
                 catch (IOException e) when (e.Message.Contains("Read-only file system", StringComparison.OrdinalIgnoreCase))
                 {
                     _logger.LogInformation("Could not delete {provider}, read only file system.", image.Path);
-                    deletedThisIteration = false;
-                }
-                finally
-                {
-                    deleted |= deletedThisIteration;
                 }
             }
 
