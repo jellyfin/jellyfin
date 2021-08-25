@@ -189,10 +189,9 @@ namespace MediaBrowser.Providers.Manager
                 catch (FileNotFoundException)
                 {
                 }
-                catch (Exception ex)
+                catch (IOException e) when (e.Message.Contains("Read-only file system", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogInformation("Exception caught: ", ex.Message);
-                    throw;
+                    _logger.LogInformation("Could not delete {currentPath}, read only file system.", currentPath);
                 }
                 finally
                 {
