@@ -68,7 +68,7 @@ COPY . .
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 # because of changes in docker and systemd we need to not build in parallel at the moment
 # see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
-RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=false;DebugType=none"
+RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Debug --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=true;DebugType=Full"
 
 FROM app
 
@@ -76,6 +76,7 @@ COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
+EXPOSE 3702 4025 4024 4022 4020
 VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
