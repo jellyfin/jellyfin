@@ -368,6 +368,20 @@ namespace Emby.Naming.Common
                     IsOptimistic = true,
                     IsNamed = true
                 },
+
+                // Series and season only expression
+                // "the show/season 1", "the show/s01"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)\/[Ss](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
+                {
+                    IsNamed = true
+                },
+
+                // Series and season only expression
+                // "the show S01", "the show season 1"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)[\. _\-]+[sS](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
+                {
+                    IsNamed = true
+                },
             };
 
             EpisodeWithoutSeasonExpressions = new[]
