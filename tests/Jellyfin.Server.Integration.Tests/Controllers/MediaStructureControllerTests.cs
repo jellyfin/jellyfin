@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.LibraryStructureDto;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Model.Configuration;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
@@ -78,14 +79,18 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateMediaPath_EmptyName_ReturnsBadRequest()
+        public async Task UpdateMediaPath_WhiteSpaceName_ReturnsBadRequest()
         {
             var client = _factory.CreateClient();
             client.DefaultRequestHeaders.AddAuthHeader(_accessToken ??= await AuthHelper.CompleteStartupAsync(client).ConfigureAwait(false));
 
             var data = new UpdateMediaPathRequestDto()
             {
-                Name = string.Empty,
+                Name = " ",
+                PathInfo = new MediaPathInfo
+                {
+                    Path = "test"
+                }
             };
 
             using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(data, _jsonOptions));
