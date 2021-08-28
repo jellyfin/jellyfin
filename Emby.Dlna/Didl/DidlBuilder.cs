@@ -748,7 +748,7 @@ namespace Emby.Dlna.Didl
                 AddValue(writer, "upnp", "publisher", studio, NsUpnp);
             }
 
-            if (!(item is Folder))
+            if (item is not Folder)
             {
                 if (filter.Contains("dc:description"))
                 {

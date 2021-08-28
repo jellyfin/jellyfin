@@ -1458,7 +1458,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 if (item.GetType() == typeof(Folder) && string.Equals(item.Path, parentPath, StringComparison.OrdinalIgnoreCase))
                 {
                     var parentItem = item.GetParent();
-                    if (parentItem != null && !(parentItem is AggregateFolder))
+                    if (parentItem != null && parentItem is not AggregateFolder)
                     {
                         item = parentItem;
                     }

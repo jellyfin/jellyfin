@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// <summary>
     /// Resolves a Path into a Video or Video subclass.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of item to resolve.</typeparam>
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
         where T : Video, new()
     {
@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                             break;
                         }
 
-                        if (IsBluRayDirectory(child.FullName, filename, args.DirectoryService))
+                        if (IsBluRayDirectory(filename))
                         {
                             videoInfo = VideoResolver.ResolveDirectory(args.Path, namingOptions);
 
@@ -279,25 +279,13 @@ namespace Emby.Server.Implementations.Library.Resolvers
         }
 
         /// <summary>
-        /// Determines whether [is blu ray directory] [the specified directory name].
+        /// Determines whether [is bluray directory] [the specified directory name].
         /// </summary>
-        protected bool IsBluRayDirectory(string fullPath, string directoryName, IDirectoryService directoryService)
+        /// <param name="directoryName">The directory name.</param>
+        /// <returns>Whether the directory is a bluray directory.</returns>
+        protected bool IsBluRayDirectory(string directoryName)
         {
-            if (!string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return true;
-            // var blurayExtensions = new[]
-            //{
-            //    ".mts",
-            //    ".m2ts",
-            //    ".bdmv",
-            //    ".mpls"
-            //};
-
-            // return directoryService.GetFiles(fullPath).Any(i => blurayExtensions.Contains(i.Extension ?? string.Empty, StringComparer.OrdinalIgnoreCase));
+            return string.Equals(directoryName, "bdmv", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

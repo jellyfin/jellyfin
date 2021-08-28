@@ -287,14 +287,14 @@ namespace Emby.Server.Implementations.Library
 
             if (item is IItemByName)
             {
-                if (!(item is MusicArtist))
+                if (item is not MusicArtist)
                 {
                     return;
                 }
             }
             else if (!item.IsFolder)
             {
-                if (!(item is Video) && !(item is LiveTvChannel))
+                if (item is not Video && item is not LiveTvChannel)
                 {
                     return;
                 }
@@ -866,7 +866,7 @@ namespace Emby.Server.Implementations.Library
         {
             var path = Person.GetPath(name);
             var id = GetItemByNameId<Person>(path);
-            if (!(GetItemById(id) is Person item))
+            if (GetItemById(id) is not Person item)
             {
                 item = new Person
                 {
@@ -2118,7 +2118,7 @@ namespace Emby.Server.Implementations.Library
 
         public LibraryOptions GetLibraryOptions(BaseItem item)
         {
-            if (!(item is CollectionFolder collectionFolder))
+            if (item is not CollectionFolder collectionFolder)
             {
                 // List.Find is more performant than FirstOrDefault due to enumerator allocation
                 collectionFolder = GetCollectionFolders(item)

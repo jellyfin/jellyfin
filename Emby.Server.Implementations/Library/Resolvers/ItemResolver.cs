@@ -9,7 +9,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// <summary>
     /// Class ItemResolver.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of BaseItem.</typeparam>
     public abstract class ItemResolver<T> : IItemResolver
         where T : BaseItem, new()
     {

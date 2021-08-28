@@ -154,11 +154,11 @@ namespace Jellyfin.Api.Controllers
             };
 
             if (!item.IsVirtualItem
-                && !(item is ICollectionFolder)
-                && !(item is UserView)
-                && !(item is AggregateFolder)
-                && !(item is LiveTvChannel)
-                && !(item is IItemByName)
+                && item is not ICollectionFolder
+                && item is not UserView
+                && item is not AggregateFolder
+                && item is not LiveTvChannel
+                && item is not IItemByName
                 && item.SourceType == SourceType.Library)
             {
                 var inheritedContentType = _libraryManager.GetInheritedContentType(item);

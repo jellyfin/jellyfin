@@ -555,7 +555,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
 
             // Series xml saver already saves this
-            if (!(item is Series))
+            if (item is not Series)
             {
                 var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
                 if (!string.IsNullOrEmpty(tvdb))
@@ -582,7 +582,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("countrycode", item.PreferredMetadataCountryCode);
             }
 
-            if (item.PremiereDate.HasValue && !(item is Episode))
+            if (item.PremiereDate.HasValue && item is not Episode)
             {
                 var formatString = options.ReleaseDateFormat;
 
@@ -605,7 +605,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item.EndDate.HasValue)
             {
-                if (!(item is Episode))
+                if (item is not Episode)
                 {
                     var formatString = options.ReleaseDateFormat;
 

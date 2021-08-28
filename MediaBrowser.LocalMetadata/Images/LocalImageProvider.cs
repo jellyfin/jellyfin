@@ -283,7 +283,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 imageFileNames = _seriesImageFileNames;
             }
-            else if (item is Video && !(item is Episode))
+            else if (item is Video && item is not Episode)
             {
                 imageFileNames = _videoImageFileNames;
             }

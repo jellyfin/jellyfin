@@ -24,7 +24,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
-
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
@@ -267,7 +266,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Gets the triggers that define when the task will run.
+        /// Gets or sets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
         /// <exception cref="ArgumentNullException"><c>value</c> is <c>null</c>.</exception>
