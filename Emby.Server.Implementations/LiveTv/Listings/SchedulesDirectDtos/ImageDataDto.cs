@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
 {
+    /// <summary>
+    /// Image data dto.
+    /// </summary>
     public class ImageDataDto
     {
         /// <summary>
