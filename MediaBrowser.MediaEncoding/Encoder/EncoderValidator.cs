@@ -12,8 +12,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public class EncoderValidator
     {
-        private const string DefaultEncoderPath = "ffmpeg";
-
         private static readonly string[] _requiredDecoders = new[]
         {
             "h264",
@@ -124,7 +122,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private readonly string _encoderPath;
 
-        public EncoderValidator(ILogger logger, string encoderPath = DefaultEncoderPath)
+        public EncoderValidator(ILogger logger, string encoderPath)
         {
             _logger = logger;
             _encoderPath = encoderPath;

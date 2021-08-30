@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -536,6 +537,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
             }
+
             // We always want to use prefetched images
             return false;
         }

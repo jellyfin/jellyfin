@@ -8,7 +8,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && npm ci --no-audit --unsafe-perm \
  && mv dist /dist
 
-FROM debian:buster-slim as app
+FROM debian:bullseye-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"

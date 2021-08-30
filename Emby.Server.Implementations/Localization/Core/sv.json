@@ -15,7 +15,7 @@
     "Favorites": "Favoriter",
     "Folders": "Mappar",
     "Genres": "Genrer",
-    "HeaderAlbumArtists": "Albumartister",
+    "HeaderAlbumArtists": "Artistens album",
     "HeaderContinueWatching": "Fortsätt kolla",
     "HeaderFavoriteAlbums": "Favoritalbum",
     "HeaderFavoriteArtists": "Favoritartister",
@@ -25,7 +25,7 @@
     "HeaderLiveTV": "Live-TV",
     "HeaderNextUp": "Nästa",
     "HeaderRecordingGroups": "Inspelningsgrupper",
-    "HomeVideos": "Hemvideor",
+    "HomeVideos": "Hemmavideor",
     "Inherit": "Ärv",
     "ItemAddedWithName": "{0} lades till i biblioteket",
     "ItemRemovedWithName": "{0} togs bort från biblioteket",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Rensa Aktivitets Logg",
     "Undefined": "odefinierad",
     "Forced": "Tvingad",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskOptimizeDatabase": "Optimera databasen",
+    "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna task efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats."
 }
