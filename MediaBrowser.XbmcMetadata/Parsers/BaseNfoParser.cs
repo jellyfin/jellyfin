@@ -779,59 +779,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "thumb":
                     {
-                        var artType = reader.GetAttribute("aspect");
-                        var val = reader.ReadElementContentAsString();
+                        FetchThumbNode(reader, itemResult);
+                        break;
+                    }
 
-                        // skip:
-                        // - empty aspect tag
-                        // - empty uri
-                        // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
-                        if (string.IsNullOrEmpty(artType) || string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
-                        {
-                            break;
-                        }
-
-                        ImageType imageType = GetImageType(artType);
-
-                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
-                        {
-                            Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
-                            break;
-                        }
-
-                        if (uri.IsFile)
-                        {
-                            // only allow one item of each type
-                            if (itemResult.Images.Any(x => x.Type == imageType))
-                            {
-                                break;
-                            }
-
-                            var fileSystemMetadata = _directoryService.GetFile(val);
-                            // non existing file returns null
-                            if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
-                            {
-                                Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, item.Name);
-                                break;
-                            }
-
-                            itemResult.Images.Add(new LocalImageInfo()
-                            {
-                                FileInfo = fileSystemMetadata,
-                                Type = imageType
-                            });
-                        }
-                        else
-                        {
-                            // only allow one item of each type
-                            if (itemResult.RemoteImages.Any(x => x.type == imageType))
-                            {
-                                break;
-                            }
-
-                            itemResult.RemoteImages.Add((uri.ToString(), imageType));
-                        }
-
+                case "fanart":
+                    {
+                        var subtree = reader.ReadSubtree();
+                        subtree.ReadToDescendant("thumb");
+                        FetchThumbNode(subtree, itemResult);
                         break;
                     }
 
@@ -851,6 +807,68 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                     break;
+            }
+        }
+
+        private void FetchThumbNode(XmlReader reader, MetadataResult<T> itemResult)
+        {
+            var artType = reader.GetAttribute("aspect");
+            var val = reader.ReadElementContentAsString();
+
+            // artType is null if the thumb node is a child of the fanart tag
+            // -> set image type to fanart
+            if (string.IsNullOrWhiteSpace(artType))
+            {
+                artType = "fanart";
+            }
+
+            // skip:
+            // - empty uri
+            // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
+            if (string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            ImageType imageType = GetImageType(artType);
+
+            if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
+            {
+                Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, itemResult.Item.Name);
+                return;
+            }
+
+            if (uri.IsFile)
+            {
+                // only allow one item of each type
+                if (itemResult.Images.Any(x => x.Type == imageType))
+                {
+                    return;
+                }
+
+                var fileSystemMetadata = _directoryService.GetFile(val);
+                // non existing file returns null
+                if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                {
+                    Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
+                    return;
+                }
+
+                itemResult.Images.Add(new LocalImageInfo()
+                {
+                    FileInfo = fileSystemMetadata,
+                    Type = imageType
+                });
+            }
+            else
+            {
+                // only allow one item of each type
+                if (itemResult.RemoteImages.Any(x => x.type == imageType))
+                {
+                    return;
+                }
+
+                itemResult.RemoteImages.Add((uri.ToString(), imageType));
             }
         }
 
