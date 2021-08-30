@@ -72,7 +72,6 @@ namespace Emby.Server.Implementations.Data
             _mediaAttachmentInsertPrefix = queryPrefixText.ToString();
         }
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
