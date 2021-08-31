@@ -1073,9 +1073,9 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the system status.
         /// </summary>
-        /// <param name="source">Where this request originated.</param>
+        /// <param name="request">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(HttpRequest request)
         {
             return new SystemInfo
             {
@@ -1097,7 +1097,7 @@ namespace Emby.Server.Implementations
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(source),
+                LocalAddress = GetSmartApiUrl(request),
                 SupportsLibraryMonitor = true,
                 EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
@@ -1110,7 +1110,7 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress address)
+        public PublicSystemInfo GetPublicSystemInfo(HttpRequest request)
         {
             return new PublicSystemInfo
             {
@@ -1119,7 +1119,7 @@ namespace Emby.Server.Implementations
                 Id = SystemId,
                 OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(address),
+                LocalAddress = GetSmartApiUrl(request),
                 StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
@@ -1150,6 +1150,18 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request, int? port = null)
         {
+            // Return the host in the HTTP request as the API url
+            if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
+            {
+                int? requestPort = request.Host.Port;
+                if ((requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase)) || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
+                {
+                    requestPort = -1;
+                }
+
+                return GetLocalApiUrl(request.Host.Host, request.Scheme, requestPort);
+            }
+
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
