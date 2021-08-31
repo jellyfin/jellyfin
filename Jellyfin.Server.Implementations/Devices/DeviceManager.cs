@@ -206,7 +206,7 @@ namespace Jellyfin.Server.Implementations.Devices
         {
             if (user == null)
             {
-                throw new ArgumentException("user not found");
+                throw new ArgumentNullException(nameof(user));
             }
 
             if (string.IsNullOrEmpty(deviceId))
