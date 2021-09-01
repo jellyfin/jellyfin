@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.Collections
 
             var libraryOptions = new LibraryOptions
             {
-                PathInfos = new[] { new MediaPathInfo { Path = path } },
+                PathInfos = new[] { new MediaPathInfo(path) },
                 EnableRealtimeMonitor = false,
                 SaveLocalMetadata = true
             };
