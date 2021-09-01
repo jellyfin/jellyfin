@@ -87,10 +87,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             var data = new UpdateMediaPathRequestDto()
             {
                 Name = " ",
-                PathInfo = new MediaPathInfo
-                {
-                    Path = "test"
-                }
+                PathInfo = new MediaPathInfo("test")
             };
 
             using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(data, _jsonOptions));
