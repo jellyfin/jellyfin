@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var retentionDays = _serverConfigurationManager.Configuration.ActivityLogRetentionDays;
-            if (!retentionDays.HasValue || retentionDays <= 0)
+            if (!retentionDays.HasValue || retentionDays < 0)
             {
                 throw new Exception($"Activity Log Retention days must be at least 0. Currently: {retentionDays}");
             }
