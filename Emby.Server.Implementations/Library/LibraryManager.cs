@@ -3173,10 +3173,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (!list.Any(i => string.Equals(i.Path, location, StringComparison.Ordinal)))
                     {
-                        list.Add(new MediaPathInfo
-                        {
-                            Path = location
-                        });
+                        list.Add(new MediaPathInfo(location));
                     }
                 }
 

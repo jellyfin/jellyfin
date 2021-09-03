@@ -1141,14 +1141,24 @@ namespace Emby.Server.Implementations.Data
                 Path = RestorePath(path.ToString())
             };
 
-            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
+            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks)
+                && ticks >= DateTime.MinValue.Ticks
+                && ticks <= DateTime.MaxValue.Ticks)
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
+            }
+            else
+            {
+                return null;
             }
 
             if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
             {
                 image.Type = type;
+            }
+            else
+            {
+                return null;
             }
 
             // Optional parameters: width*height*blurhash

@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using DiscUtils.Udf;
 using Emby.Naming.Video;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -200,6 +201,22 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 else if (video.Path.Contains("bluray", StringComparison.OrdinalIgnoreCase))
                 {
                     video.IsoType = IsoType.BluRay;
+                }
+                else
+                {
+                    // use disc-utils, both DVDs and BDs use UDF filesystem
+                    using (var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read))
+                    {
+                        UdfReader udfReader = new UdfReader(videoFileStream);
+                        if (udfReader.DirectoryExists("VIDEO_TS"))
+                        {
+                            video.IsoType = IsoType.Dvd;
+                        }
+                        else if (udfReader.DirectoryExists("BDMV"))
+                        {
+                            video.IsoType = IsoType.BluRay;
+                        }
+                    }
                 }
             }
         }
