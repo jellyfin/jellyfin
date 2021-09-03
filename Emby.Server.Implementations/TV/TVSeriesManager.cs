@@ -33,9 +33,9 @@ namespace Emby.Server.Implementations.TV
             _configurationManager = configurationManager;
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(query.UserId);
 
             if (user == null)
             {
@@ -43,9 +43,9 @@ namespace Emby.Server.Implementations.TV
             }
 
             string presentationUniqueKey = null;
-            if (!string.IsNullOrEmpty(request.SeriesId))
+            if (!string.IsNullOrEmpty(query.SeriesId))
             {
-                if (_libraryManager.GetItemById(request.SeriesId) is Series series)
+                if (_libraryManager.GetItemById(query.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                 }
@@ -53,14 +53,14 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(query, user, new[] { presentationUniqueKey }, options), query);
             }
 
             BaseItem[] parents;
 
-            if (request.ParentId.HasValue)
+            if (query.ParentId.HasValue)
             {
-                var parent = _libraryManager.GetItemById(request.ParentId.Value);
+                var parent = _libraryManager.GetItemById(query.ParentId.Value);
 
                 if (parent != null)
                 {
@@ -79,10 +79,10 @@ namespace Emby.Server.Implementations.TV
                    .ToArray();
             }
 
-            return GetNextUp(request, parents, dtoOptions);
+            return GetNextUp(query, parents, options);
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -104,7 +104,7 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, options), request);
             }
 
             if (limit.HasValue)
@@ -128,7 +128,7 @@ namespace Emby.Server.Implementations.TV
                 .Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
+            var episodes = GetNextUpEpisodes(request, user, items, options);
 
             return GetResult(episodes, request);
         }

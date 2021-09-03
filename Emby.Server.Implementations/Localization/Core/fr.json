@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Nettoyer le journal d'activité",
     "Undefined": "Non défini",
     "Forced": "Forcé",
-    "Default": "Par défaut"
+    "Default": "Par défaut",
+    "TaskOptimizeDatabaseDescription": "Réduit les espaces vides/inutiles et compacte la base de données. Utiliser cette fonction après une mise à jour de la bibliothèque ou toute autre modification de la base de données peut améliorer les performances du serveur.",
+    "TaskOptimizeDatabase": "Optimiser la base de données"
 }

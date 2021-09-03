@@ -149,7 +149,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private static bool EnableRefreshMessage(BaseItem item)
         {
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 return false;
             }
@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return false;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 return false;
             }

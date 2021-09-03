@@ -79,16 +79,16 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             return collections;
         }
 
-        public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo id, CancellationToken cancellationToken)
+        public async Task<MetadataResult<BoxSet>> GetMetadata(BoxSetInfo info, CancellationToken cancellationToken)
         {
-            var tmdbId = Convert.ToInt32(id.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
-            var language = id.MetadataLanguage;
+            var tmdbId = Convert.ToInt32(info.GetProviderId(MetadataProvider.Tmdb), CultureInfo.InvariantCulture);
+            var language = info.MetadataLanguage;
             // We don't already have an Id, need to fetch it
             if (tmdbId <= 0)
             {
                 // ParseName is required here.
                 // Caller provides the filename with extension stripped and NOT the parsed filename
-                var parsedName = _libraryManager.ParseName(id.Name);
+                var parsedName = _libraryManager.ParseName(info.Name);
                 var cleanedName = TmdbUtils.CleanName(parsedName.Name);
                 var searchResults = await _tmdbClientManager.SearchCollectionAsync(cleanedName, language, cancellationToken).ConfigureAwait(false);
 

@@ -9,10 +9,6 @@
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Nullable>enable</Nullable>
-    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,8 +18,8 @@
   <ItemGroup>
     <PackageReference Include="BlurHashSharp" Version="1.2.0" />
     <PackageReference Include="BlurHashSharp.SkiaSharp" Version="1.2.0" />
-    <PackageReference Include="SkiaSharp" Version="2.80.2" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.2" />
+    <PackageReference Include="SkiaSharp" Version="2.80.3" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3" />
   </ItemGroup>
 
   <ItemGroup>

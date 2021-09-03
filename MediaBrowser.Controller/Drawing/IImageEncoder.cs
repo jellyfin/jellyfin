@@ -1,7 +1,4 @@
-#nullable disable
-
 #pragma warning disable CS1591
-#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -60,6 +57,15 @@ namespace MediaBrowser.Controller.Drawing
         /// <summary>
         /// Encode an image.
         /// </summary>
+        /// <param name="inputPath">Input path of image.</param>
+        /// <param name="dateModified">Date modified.</param>
+        /// <param name="outputPath">Output path of image.</param>
+        /// <param name="autoOrient">Auto-orient image.</param>
+        /// <param name="orientation">Desired orientation of image.</param>
+        /// <param name="quality">Quality of encoded image.</param>
+        /// <param name="options">Image processing options.</param>
+        /// <param name="outputFormat">Image format of output.</param>
+        /// <returns>Path of encoded image.</returns>
         string EncodeImage(string inputPath, DateTime dateModified, string outputPath, bool autoOrient, ImageOrientation? orientation, int quality, ImageProcessingOptions options, ImageFormat outputFormat);
 
         /// <summary>

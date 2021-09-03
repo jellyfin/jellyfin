@@ -5,7 +5,7 @@
     "Artists": "Artistes",
     "AuthenticationSucceededWithUserName": "{0} s'ha autenticat correctament",
     "Books": "Llibres",
-    "CameraImageUploadedFrom": "Una nova imatge de la càmera ha estat pujada des de {0}",
+    "CameraImageUploadedFrom": "S'ha pujat una nova imatge des de la camera desde {0}",
     "Channels": "Canals",
     "ChapterNameValue": "Capítol {0}",
     "Collections": "Col·leccions",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Buidar Registre d'Activitat",
     "Undefined": "Indefinit",
     "Forced": "Forçat",
-    "Default": "Defecto"
+    "Default": "Defecto",
+    "TaskOptimizeDatabaseDescription": "Compacta la base de dades i trunca l'espai lliure. Executar aquesta tasca després d’escanejar la biblioteca o fer altres canvis que impliquin modificacions a la base de dades pot millorar el rendiment.",
+    "TaskOptimizeDatabase": "Optimitzar la base de dades"
 }

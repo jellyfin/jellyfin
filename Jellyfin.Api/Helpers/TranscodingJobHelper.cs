@@ -380,7 +380,7 @@ namespace Jellyfin.Api.Helpers
         private void DeleteHlsPartialStreamFiles(string outputFilePath)
         {
             var directory = Path.GetDirectoryName(outputFilePath)
-                ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
+                            ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
 
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
@@ -444,6 +444,10 @@ namespace Jellyfin.Api.Helpers
             {
                 var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
+                var hardwareAccelerationTypeString = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
+                HardwareEncodingType? hardwareAccelerationType = string.IsNullOrEmpty(hardwareAccelerationTypeString)
+                    ? null
+                    : (HardwareEncodingType)Enum.Parse(typeof(HardwareEncodingType), hardwareAccelerationTypeString, true);
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {
@@ -458,6 +462,7 @@ namespace Jellyfin.Api.Helpers
                     AudioChannels = state.OutputAudioChannels,
                     IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
                     IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
+                    HardwareAccelerationType = hardwareAccelerationType,
                     TranscodeReasons = state.TranscodeReasons
                 });
             }
@@ -490,7 +495,7 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                var auth = _authorizationContext.GetAuthorizationInfo(request);
+                var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
                 if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
@@ -759,8 +764,8 @@ namespace Jellyfin.Api.Helpers
             if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.Request.LiveStreamId))
             {
                 var liveStreamResponse = await _mediaSourceManager.OpenLiveStream(
-                    new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
-                    cancellationTokenSource.Token)
+                        new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
+                        cancellationTokenSource.Token)
                     .ConfigureAwait(false);
                 var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 

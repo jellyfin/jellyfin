@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -38,6 +39,7 @@ namespace Jellyfin.Api.Controllers
         private readonly IAuthorizationContext _authContext;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
+        private readonly IQuickConnect _quickConnectManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserController"/> class.
@@ -49,6 +51,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="authContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="quickConnectManager">Instance of the <see cref="IQuickConnect"/> interface.</param>
         public UserController(
             IUserManager userManager,
             ISessionManager sessionManager,
@@ -56,7 +59,8 @@ namespace Jellyfin.Api.Controllers
             IDeviceManager deviceManager,
             IAuthorizationContext authContext,
             IServerConfigurationManager config,
-            ILogger<UserController> logger)
+            ILogger<UserController> logger,
+            IQuickConnect quickConnectManager)
         {
             _userManager = userManager;
             _sessionManager = sessionManager;
@@ -65,6 +69,7 @@ namespace Jellyfin.Api.Controllers
             _authContext = authContext;
             _config = config;
             _logger = logger;
+            _quickConnectManager = quickConnectManager;
         }
 
         /// <summary>
@@ -77,11 +82,11 @@ namespace Jellyfin.Api.Controllers
         [HttpGet]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<UserDto>> GetUsers(
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers(
             [FromQuery] bool? isHidden,
             [FromQuery] bool? isDisabled)
         {
-            var users = Get(isHidden, isDisabled, false, false);
+            var users = await Get(isHidden, isDisabled, false, false).ConfigureAwait(false);
             return Ok(users);
         }
 
@@ -92,15 +97,15 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{UserDto}"/> containing the public users.</returns>
         [HttpGet("Public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<UserDto>> GetPublicUsers()
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetPublicUsers()
         {
             // If the startup wizard hasn't been completed then just return all users
             if (!_config.Configuration.IsStartupWizardCompleted)
             {
-                return Ok(Get(false, false, false, false));
+                return Ok(await Get(false, false, false, false).ConfigureAwait(false));
             }
 
-            return Ok(Get(false, false, true, true));
+            return Ok(await Get(false, false, true, true).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -141,7 +146,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> DeleteUser([FromRoute, Required] Guid userId)
         {
             var user = _userManager.GetUserById(userId);
-            _sessionManager.RevokeUserTokens(user.Id, null);
+            await _sessionManager.RevokeUserTokens(user.Id, null).ConfigureAwait(false);
             await _userManager.DeleteUserAsync(userId).ConfigureAwait(false);
             return NoContent();
         }
@@ -195,7 +200,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<AuthenticationResult>> AuthenticateUserByName([FromBody, Required] AuthenticateUserByName request)
         {
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             try
             {
@@ -228,23 +233,11 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="Task"/> containing an <see cref="AuthenticationRequest"/> with information about the new session.</returns>
         [HttpPost("AuthenticateWithQuickConnect")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<AuthenticationResult>> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
+        public ActionResult<AuthenticationResult> AuthenticateWithQuickConnect([FromBody, Required] QuickConnectDto request)
         {
-            var auth = _authContext.GetAuthorizationInfo(Request);
-
             try
             {
-                var authRequest = new AuthenticationRequest
-                {
-                    App = auth.Client,
-                    AppVersion = auth.Version,
-                    DeviceId = auth.DeviceId,
-                    DeviceName = auth.Device,
-                };
-
-                return await _sessionManager.AuthenticateQuickConnect(
-                    authRequest,
-                    request.Token).ConfigureAwait(false);
+                return _quickConnectManager.GetAuthorizedRequest(request.Secret);
             }
             catch (SecurityException e)
             {
@@ -271,7 +264,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UpdateUserPassword request)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the password.");
             }
@@ -303,9 +296,9 @@ namespace Jellyfin.Api.Controllers
 
                 await _userManager.ChangePassword(user, request.NewPw).ConfigureAwait(false);
 
-                var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
+                var currentToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
 
-                _sessionManager.RevokeUserTokens(user.Id, currentToken);
+                await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
             }
 
             return NoContent();
@@ -325,11 +318,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateUserEasyPassword(
+        public async Task<ActionResult> UpdateUserEasyPassword(
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UpdateUserEasyPassword request)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, true).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User is not allowed to update the easy password.");
             }
@@ -343,11 +336,11 @@ namespace Jellyfin.Api.Controllers
 
             if (request.ResetPassword)
             {
-                _userManager.ResetEasyPassword(user);
+                await _userManager.ResetEasyPassword(user).ConfigureAwait(false);
             }
             else
             {
-                _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword);
+                await _userManager.ChangeEasyPassword(user, request.NewPw, request.NewPassword).ConfigureAwait(false);
             }
 
             return NoContent();
@@ -371,7 +364,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UserDto updateUser)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User update not allowed.");
             }
@@ -431,8 +424,8 @@ namespace Jellyfin.Api.Controllers
                     return StatusCode(StatusCodes.Status403Forbidden, "There must be at least one enabled user in the system.");
                 }
 
-                var currentToken = _authContext.GetAuthorizationInfo(Request).Token;
-                _sessionManager.RevokeUserTokens(user.Id, currentToken);
+                var currentToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
+                await _sessionManager.RevokeUserTokens(user.Id, currentToken).ConfigureAwait(false);
             }
 
             await _userManager.UpdatePolicyAsync(userId, newPolicy).ConfigureAwait(false);
@@ -456,7 +449,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromBody, Required] UserConfiguration userConfig)
         {
-            if (!RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false))
+            if (!await RequestHelpers.AssertCanUpdateUser(_authContext, HttpContext.Request, userId, false).ConfigureAwait(false))
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "User configuration update not allowed");
             }
@@ -555,7 +548,7 @@ namespace Jellyfin.Api.Controllers
             return _userManager.GetUserDto(user);
         }
 
-        private IEnumerable<UserDto> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
+        private async Task<IEnumerable<UserDto>> Get(bool? isHidden, bool? isDisabled, bool filterByDevice, bool filterByNetwork)
         {
             var users = _userManager.Users;
 
@@ -571,7 +564,7 @@ namespace Jellyfin.Api.Controllers
 
             if (filterByDevice)
             {
-                var deviceId = _authContext.GetAuthorizationInfo(Request).DeviceId;
+                var deviceId = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).DeviceId;
 
                 if (!string.IsNullOrWhiteSpace(deviceId))
                 {

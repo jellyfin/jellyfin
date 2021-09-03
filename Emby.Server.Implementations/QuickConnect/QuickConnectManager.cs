@@ -1,17 +1,15 @@
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.QuickConnect;
-using MediaBrowser.Controller.Security;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.QuickConnect;
 using Microsoft.Extensions.Logging;
 
@@ -22,14 +20,23 @@ namespace Emby.Server.Implementations.QuickConnect
     /// </summary>
     public class QuickConnectManager : IQuickConnect, IDisposable
     {
-        private readonly RNGCryptoServiceProvider _rng = new RNGCryptoServiceProvider();
-        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ConcurrentDictionary<string, QuickConnectResult>();
+        /// <summary>
+        /// The length of user facing codes.
+        /// </summary>
+        private const int CodeLength = 6;
+
+        /// <summary>
+        /// The time (in minutes) that the quick connect token is valid.
+        /// </summary>
+        private const int Timeout = 10;
+
+        private readonly RNGCryptoServiceProvider _rng = new ();
+        private readonly ConcurrentDictionary<string, QuickConnectResult> _currentRequests = new ();
+        private readonly ConcurrentDictionary<string, (DateTime Timestamp, AuthenticationResult AuthenticationResult)> _authorizedSecrets = new ();
 
         private readonly IServerConfigurationManager _config;
         private readonly ILogger<QuickConnectManager> _logger;
-        private readonly IAuthenticationRepository _authenticationRepository;
-        private readonly IAuthorizationContext _authContext;
-        private readonly IServerApplicationHost _appHost;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="QuickConnectManager"/> class.
@@ -37,87 +44,67 @@ namespace Emby.Server.Implementations.QuickConnect
         /// </summary>
         /// <param name="config">Configuration.</param>
         /// <param name="logger">Logger.</param>
-        /// <param name="appHost">Application host.</param>
-        /// <param name="authContext">Authentication context.</param>
-        /// <param name="authenticationRepository">Authentication repository.</param>
+        /// <param name="sessionManager">Session Manager.</param>
         public QuickConnectManager(
             IServerConfigurationManager config,
             ILogger<QuickConnectManager> logger,
-            IServerApplicationHost appHost,
-            IAuthorizationContext authContext,
-            IAuthenticationRepository authenticationRepository)
+            ISessionManager sessionManager)
         {
             _config = config;
             _logger = logger;
-            _appHost = appHost;
-            _authContext = authContext;
-            _authenticationRepository = authenticationRepository;
-
-            ReloadConfiguration();
+            _sessionManager = sessionManager;
         }
 
-        /// <inheritdoc/>
-        public int CodeLength { get; set; } = 6;
+        /// <inheritdoc />
+        public bool IsEnabled => _config.Configuration.QuickConnectAvailable;
 
-        /// <inheritdoc/>
-        public string TokenName { get; set; } = "QuickConnect";
-
-        /// <inheritdoc/>
-        public QuickConnectState State { get; private set; } = QuickConnectState.Unavailable;
-
-        /// <inheritdoc/>
-        public int Timeout { get; set; } = 5;
-
-        private DateTime DateActivated { get; set; }
-
-        /// <inheritdoc/>
-        public void AssertActive()
+        /// <summary>
+        /// Assert that quick connect is currently active and throws an exception if it is not.
+        /// </summary>
+        private void AssertActive()
         {
-            if (State != QuickConnectState.Active)
+            if (!IsEnabled)
             {
-                throw new ArgumentException("Quick connect is not active on this server");
-            }
-        }
-
-        /// <inheritdoc/>
-        public void Activate()
-        {
-            DateActivated = DateTime.UtcNow;
-            SetState(QuickConnectState.Active);
-        }
-
-        /// <inheritdoc/>
-        public void SetState(QuickConnectState newState)
-        {
-            _logger.LogDebug("Changed quick connect state from {State} to {newState}", State, newState);
-
-            ExpireRequests(true);
-
-            State = newState;
-            _config.Configuration.QuickConnectAvailable = newState == QuickConnectState.Available || newState == QuickConnectState.Active;
-            _config.SaveConfiguration();
-
-            _logger.LogDebug("Configuration saved");
-        }
-
-        /// <inheritdoc/>
-        public QuickConnectResult TryConnect()
-        {
-            ExpireRequests();
-
-            if (State != QuickConnectState.Active)
-            {
-                _logger.LogDebug("Refusing quick connect initiation request, current state is {State}", State);
                 throw new AuthenticationException("Quick connect is not active on this server");
             }
+        }
 
-            var code = GenerateCode();
-            var result = new QuickConnectResult()
+        /// <inheritdoc/>
+        public QuickConnectResult TryConnect(AuthorizationInfo authorizationInfo)
+        {
+            if (string.IsNullOrEmpty(authorizationInfo.DeviceId))
             {
-                Secret = GenerateSecureRandom(),
-                DateAdded = DateTime.UtcNow,
-                Code = code
-            };
+                throw new ArgumentException(nameof(authorizationInfo.DeviceId) + " is required");
+            }
+
+            if (string.IsNullOrEmpty(authorizationInfo.Device))
+            {
+                throw new ArgumentException(nameof(authorizationInfo.Device) + " is required");
+            }
+
+            if (string.IsNullOrEmpty(authorizationInfo.Client))
+            {
+                throw new ArgumentException(nameof(authorizationInfo.Client) + " is required");
+            }
+
+            if (string.IsNullOrEmpty(authorizationInfo.Version))
+            {
+                throw new ArgumentException(nameof(authorizationInfo.Version) + "is required");
+            }
+
+            AssertActive();
+            ExpireRequests();
+
+            var secret = GenerateSecureRandom();
+            var code = GenerateCode();
+            var result = new QuickConnectResult(
+                secret,
+                code,
+                DateTime.UtcNow,
+                authorizationInfo.DeviceId,
+                authorizationInfo.Device,
+                authorizationInfo.Client,
+                authorizationInfo.Version);
 
             _currentRequests[code] = result;
             return result;
@@ -126,12 +113,12 @@ namespace Emby.Server.Implementations.QuickConnect
         /// <inheritdoc/>
         public QuickConnectResult CheckRequestStatus(string secret)
         {
-            ExpireRequests();
             AssertActive();
+            ExpireRequests();
 
             string code = _currentRequests.Where(x => x.Value.Secret == secret).Select(x => x.Value.Code).DefaultIfEmpty(string.Empty).First();
 
-            if (!_currentRequests.TryGetValue(code, out QuickConnectResult result))
+            if (!_currentRequests.TryGetValue(code, out QuickConnectResult? result))
             {
                 throw new ResourceNotFoundException("Unable to find request with provided secret");
             }
@@ -139,8 +126,11 @@ namespace Emby.Server.Implementations.QuickConnect
             return result;
         }
 
-        /// <inheritdoc/>
-        public string GenerateCode()
+        /// <summary>
+        /// Generates a short code to display to the user to uniquely identify this request.
+        /// </summary>
+        /// <returns>A short, unique alphanumeric string.</returns>
+        private string GenerateCode()
         {
             Span<byte> raw = stackalloc byte[4];
 
@@ -159,12 +149,12 @@ namespace Emby.Server.Implementations.QuickConnect
         }
 
         /// <inheritdoc/>
-        public bool AuthorizeRequest(Guid userId, string code)
+        public async Task<bool> AuthorizeRequest(Guid userId, string code)
         {
-            ExpireRequests();
             AssertActive();
+            ExpireRequests();
 
-            if (!_currentRequests.TryGetValue(code, out QuickConnectResult result))
+            if (!_currentRequests.TryGetValue(code, out QuickConnectResult? result))
             {
                 throw new ResourceNotFoundException("Unable to find request");
             }
@@ -174,48 +164,39 @@ namespace Emby.Server.Implementations.QuickConnect
                 throw new InvalidOperationException("Request is already authorized");
             }
 
-            result.Authentication = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
-
             // Change the time on the request so it expires one minute into the future. It can't expire immediately as otherwise some clients wouldn't ever see that they have been authenticated.
-            var added = result.DateAdded ?? DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(Timeout));
-            result.DateAdded = added.Subtract(TimeSpan.FromMinutes(Timeout - 1));
+            result.DateAdded = DateTime.UtcNow.Add(TimeSpan.FromMinutes(1));
 
-            _authenticationRepository.Create(new AuthenticationInfo
+            var authenticationResult = await _sessionManager.AuthenticateDirect(new AuthenticationRequest
             {
-                AppName = TokenName,
-                AccessToken = result.Authentication,
-                DateCreated = DateTime.UtcNow,
-                DeviceId = _appHost.SystemId,
-                DeviceName = _appHost.FriendlyName,
-                AppVersion = _appHost.ApplicationVersionString,
-                UserId = userId
-            });
+                UserId = userId,
+                DeviceId = result.DeviceId,
+                DeviceName = result.DeviceName,
+                App = result.AppName,
+                AppVersion = result.AppVersion
+            }).ConfigureAwait(false);
 
-            _logger.LogDebug("Authorizing device with code {Code} to login as user {userId}", code, userId);
+            _authorizedSecrets[result.Secret] = (DateTime.UtcNow, authenticationResult);
+            result.Authenticated = true;
+            _currentRequests[code] = result;
+
+            _logger.LogDebug("Authorizing device with code {Code} to login as user {UserId}", code, userId);
 
             return true;
         }
 
         /// <inheritdoc/>
-        public int DeleteAllDevices(Guid user)
+        public AuthenticationResult GetAuthorizedRequest(string secret)
         {
-            var raw = _authenticationRepository.Get(new AuthenticationInfoQuery()
-            {
-                DeviceId = _appHost.SystemId,
-                UserId = user
-            });
+            AssertActive();
+            ExpireRequests();
 
-            var tokens = raw.Items.Where(x => x.AppName.StartsWith(TokenName, StringComparison.Ordinal));
-
-            var removed = 0;
-            foreach (var token in tokens)
+            if (!_authorizedSecrets.TryGetValue(secret, out var result))
             {
-                _authenticationRepository.Delete(token);
-                _logger.LogDebug("Deleted token {AccessToken}", token.AccessToken);
-                removed++;
+                throw new ResourceNotFoundException("Unable to find request");
             }
 
-            return removed;
+            return result.AuthenticationResult;
         }
 
         /// <summary>
@@ -235,7 +216,7 @@ namespace Emby.Server.Implementations.QuickConnect
         {
             if (disposing)
             {
-                _rng?.Dispose();
+                _rng.Dispose();
             }
         }
 
@@ -247,22 +228,19 @@ namespace Emby.Server.Implementations.QuickConnect
             return Convert.ToHexString(bytes);
         }
 
-        /// <inheritdoc/>
-        public void ExpireRequests(bool expireAll = false)
+        /// <summary>
+        /// Expire quick connect requests that are over the time limit. If <paramref name="expireAll"/> is true, all requests are unconditionally expired.
+        /// </summary>
+        /// <param name="expireAll">If true, all requests will be expired.</param>
+        private void ExpireRequests(bool expireAll = false)
         {
-            // Check if quick connect should be deactivated
-            if (State == QuickConnectState.Active && DateTime.UtcNow > DateActivated.AddMinutes(Timeout) && !expireAll)
-            {
-                _logger.LogDebug("Quick connect time expired, deactivating");
-                SetState(QuickConnectState.Available);
-                expireAll = true;
-            }
+            // All requests before this timestamp have expired
+            var minTime = DateTime.UtcNow.AddMinutes(-Timeout);
 
             // Expire stale connection requests
             foreach (var (_, currentRequest) in _currentRequests)
             {
-                var added = currentRequest.DateAdded ?? DateTime.UnixEpoch;
-                if (expireAll || DateTime.UtcNow > added.AddMinutes(Timeout))
+                if (expireAll || currentRequest.DateAdded < minTime)
                 {
                     var code = currentRequest.Code;
                     _logger.LogDebug("Removing expired request {Code}", code);
@@ -273,11 +251,18 @@ namespace Emby.Server.Implementations.QuickConnect
                     }
                 }
             }
-        }
 
-        private void ReloadConfiguration()
-        {
-            State = _config.Configuration.QuickConnectAvailable ? QuickConnectState.Available : QuickConnectState.Unavailable;
+            foreach (var (secret, (timestamp, _)) in _authorizedSecrets)
+            {
+                if (expireAll || timestamp < minTime)
+                {
+                    _logger.LogDebug("Removing expired secret {Secret}", secret);
+                    if (!_authorizedSecrets.TryRemove(secret, out _))
+                    {
+                        _logger.LogWarning("Secret {Secret} already expired", secret);
+                    }
+                }
+            }
         }
     }
 }

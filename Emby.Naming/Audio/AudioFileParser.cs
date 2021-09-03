@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Emby.Naming.Common;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Audio
 {

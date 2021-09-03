@@ -252,8 +252,15 @@ namespace MediaBrowser.Providers.Subtitles
                 }
                 catch (Exception ex)
                 {
-                    (exs ??= new List<Exception>()).Add(ex);
-                }
+// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
+#pragma warning disable CA1508
+                    exs ??= new List<Exception>()
+                            {
+                                ex
+                            };
+#pragma warning restore CA1508
+
+            }
                 finally
                 {
                     _monitor.ReportFileSystemChangeComplete(savePath, false);
@@ -370,15 +377,15 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem video)
+        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem item)
         {
             VideoContentType mediaType;
 
-            if (video is Episode)
+            if (item is Episode)
             {
                 mediaType = VideoContentType.Episode;
             }
-            else if (video is Movie)
+            else if (item is Movie)
             {
                 mediaType = VideoContentType.Movie;
             }

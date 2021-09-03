@@ -33,16 +33,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BaseXmlSaver}"/> interface.</param>
-        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
+        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             LibraryManager = libraryManager;
-            UserManager = userManager;
-            UserDataManager = userDataManager;
             Logger = logger;
         }
 
@@ -60,16 +56,6 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// Gets the library manager.
         /// </summary>
         protected ILibraryManager LibraryManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user manager.
-        /// </summary>
-        protected IUserManager UserManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user data manager.
-        /// </summary>
-        protected IUserDataManager UserDataManager { get; private set; }
 
         /// <summary>
         /// Gets the logger.
@@ -237,7 +223,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("CustomRating", item.CustomRating);
             }
 
-            if (!string.IsNullOrEmpty(item.Name) && !(item is Episode))
+            if (!string.IsNullOrEmpty(item.Name) && item is not Episode)
             {
                 writer.WriteElementString("LocalTitle", item.Name);
             }
@@ -254,7 +240,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     writer.WriteElementString("BirthDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
-                else if (!(item is Episode))
+                else if (item is not Episode)
                 {
                     writer.WriteElementString("PremiereDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
@@ -266,7 +252,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     writer.WriteElementString("DeathDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
-                else if (!(item is Episode))
+                else if (item is not Episode)
                 {
                     writer.WriteElementString("EndDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
@@ -306,7 +292,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(_usCulture));
             }
 
-            if (item.ProductionYear.HasValue && !(item is Person))
+            if (item.ProductionYear.HasValue && item is not Person)
             {
                 writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(_usCulture));
             }
@@ -334,7 +320,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (runTimeTicks.HasValue)
             {
-                var timespan = TimeSpan.FromTicks(runTimeTicks!.Value);
+                var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
                 writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(_usCulture));
             }

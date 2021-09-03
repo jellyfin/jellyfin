@@ -1,11 +1,12 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -30,6 +31,29 @@ namespace MediaBrowser.Controller.Library
     /// </summary>
     public interface ILibraryManager
     {
+        /// <summary>
+        /// Occurs when [item added].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemAdded;
+
+        /// <summary>
+        /// Occurs when [item updated].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemUpdated;
+
+        /// <summary>
+        /// Occurs when [item removed].
+        /// </summary>
+        event EventHandler<ItemChangeEventArgs> ItemRemoved;
+
+        /// <summary>
+        /// Gets the root folder.
+        /// </summary>
+        /// <value>The root folder.</value>
+        AggregateFolder RootFolder { get; }
+
+        bool IsScanRunning { get; }
+
         /// <summary>
         /// Resolves the path.
         /// </summary>
@@ -57,15 +81,9 @@ namespace MediaBrowser.Controller.Library
             string collectionType = null);
 
         /// <summary>
-        /// Gets the root folder.
-        /// </summary>
-        /// <value>The root folder.</value>
-        AggregateFolder RootFolder { get; }
-
-        /// <summary>
         /// Gets a Person.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the person.</param>
         /// <returns>Task{Person}.</returns>
         Person GetPerson(string name);
 
@@ -80,7 +98,7 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the artist.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the artist.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
 
@@ -89,21 +107,21 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets a Studio.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the studio.</param>
         /// <returns>Task{Studio}.</returns>
         Studio GetStudio(string name);
 
         /// <summary>
         /// Gets a Genre.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the genre.</param>
         /// <returns>Task{Genre}.</returns>
         Genre GetGenre(string name);
 
         /// <summary>
         /// Gets the genre.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name of the music genre.</param>
         /// <returns>Task{MusicGenre}.</returns>
         MusicGenre GetMusicGenre(string name);
 
@@ -112,7 +130,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>Task{Year}.</returns>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throws if year is invalid.</exception>
         Year GetYear(int value);
 
         /// <summary>
@@ -204,16 +222,26 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Creates the item.
         /// </summary>
+        /// <param name="item">Item to create.</param>
+        /// <param name="parent">Parent of new item.</param>
         void CreateItem(BaseItem item, BaseItem parent);
 
         /// <summary>
         /// Creates the items.
         /// </summary>
+        /// <param name="items">Items to create.</param>
+        /// <param name="parent">Parent of new items.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         void CreateItems(IReadOnlyList<BaseItem> items, BaseItem parent, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the item.
         /// </summary>
+        /// <param name="items">Items to update.</param>
+        /// <param name="parent">Parent of updated items.</param>
+        /// <param name="updateReason">Reason for update.</param>
+        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
+        /// <returns>Returns a Task that can be awaited.</returns>
         Task UpdateItemsAsync(IReadOnlyList<BaseItem> items, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
@@ -223,6 +251,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parent">The parent item.</param>
         /// <param name="updateReason">The update reason.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Returns a Task that can be awaited.</returns>
         Task UpdateItemAsync(BaseItem item, BaseItem parent, ItemUpdateType updateReason, CancellationToken cancellationToken);
 
         /// <summary>
@@ -231,23 +260,6 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
         BaseItem RetrieveItem(Guid id);
-
-        bool IsScanRunning { get; }
-
-        /// <summary>
-        /// Occurs when [item added].
-        /// </summary>
-        event EventHandler<ItemChangeEventArgs> ItemAdded;
-
-        /// <summary>
-        /// Occurs when [item updated].
-        /// </summary>
-        event EventHandler<ItemChangeEventArgs> ItemUpdated;
-
-        /// <summary>
-        /// Occurs when [item removed].
-        /// </summary>
-        event EventHandler<ItemChangeEventArgs> ItemRemoved;
 
         /// <summary>
         /// Finds the type of the collection.
@@ -293,16 +305,25 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Deletes the item.
         /// </summary>
+        /// <param name="item">Item to delete.</param>
+        /// <param name="options">Options to use for deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
+        /// <param name="item">Item to delete.</param>
+        /// <param name="options">Options to use for deletion.</param>
+        /// <param name="notifyParentItem">Notify parent of deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options, bool notifyParentItem);
 
         /// <summary>
         /// Deletes the item.
         /// </summary>
+        /// <param name="item">Item to delete.</param>
+        /// <param name="options">Options to use for deletion.</param>
+        /// <param name="parent">Parent of item.</param>
+        /// <param name="notifyParentItem">Notify parent of deletion.</param>
         void DeleteItem(BaseItem item, DeleteOptions options, BaseItem parent, bool notifyParentItem);
 
         /// <summary>
@@ -313,6 +334,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="parentId">The parent identifier.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
+        /// <returns>The named view.</returns>
         UserView GetNamedView(
             User user,
             string name,
@@ -327,6 +349,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
+        /// <returns>The named view.</returns>
         UserView GetNamedView(
             User user,
             string name,
@@ -339,6 +362,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <param name="viewType">Type of the view.</param>
         /// <param name="sortName">Name of the sort.</param>
+        /// <returns>The named view.</returns>
         UserView GetNamedView(
             string name,
             string viewType,
@@ -396,6 +420,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Fills the missing episode numbers from path.
         /// </summary>
+        /// <param name="episode">Episode to use.</param>
+        /// <param name="forceRefresh">Option to force refresh of episode numbers.</param>
+        /// <returns>True if successful.</returns>
         bool FillMissingEpisodeNumbersFromPath(Episode episode, bool forceRefresh);
 
         /// <summary>
@@ -538,6 +565,9 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the items.
         /// </summary>
+        /// <param name="query">The query to use.</param>
+        /// <param name="parents">Items to use for query.</param>
+        /// <returns>List of items.</returns>
         List<BaseItem> GetItemList(InternalItemsQuery query, List<BaseItem> parents);
 
         /// <summary>
@@ -565,11 +595,11 @@ namespace MediaBrowser.Controller.Library
 
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
 
-        void AddMediaPath(string virtualFolderName, MediaPathInfo path);
+        void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
-        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
-        void RemoveMediaPath(string virtualFolderName, string path);
+        void RemoveMediaPath(string virtualFolderName, string mediaPath);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
 
@@ -595,5 +625,11 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetParentItem(string parentId, Guid? userId);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
+
+        /// <summary>
+        /// Gets or creates a static instance of <see cref="NamingOptions"/>.
+        /// </summary>
+        /// <returns>An instance of the <see cref="NamingOptions"/> class.</returns>
+        NamingOptions GetNamingOptions();
     }
 }

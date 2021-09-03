@@ -11,9 +11,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -318,11 +318,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                // TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {

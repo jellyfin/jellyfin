@@ -8,7 +8,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
     internal class EpgChannelData
     {
-
         private readonly Dictionary<string, ChannelInfo> _channelsById;
 
         private readonly Dictionary<string, ChannelInfo> _channelsByNumber;

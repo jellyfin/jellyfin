@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.HttpServer
         public event EventHandler<EventArgs>? Closed;
 
         /// <summary>
-        /// Gets or sets the remote end point.
+        /// Gets the remote end point.
         /// </summary>
         public IPAddress? RemoteEndPoint { get; }
 
@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.HttpServer
         public DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the query string.
+        /// Gets the query string.
         /// </summary>
         /// <value>The query string.</value>
         public IQueryCollection QueryString { get; }

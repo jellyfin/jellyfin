@@ -1,7 +1,3 @@
-#nullable disable
-
-#nullable enable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;

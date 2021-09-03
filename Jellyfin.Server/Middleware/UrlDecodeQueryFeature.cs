@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
@@ -68,15 +68,20 @@ namespace Jellyfin.Server.Middleware
                 foreach (var pair in queryString)
                 {
                     var i = pair.IndexOf('=');
-
                     if (i == -1)
                     {
                         // encoded is an equals.
-                        pairs.Add(pair.ToString(), StringValues.Empty);
+                        // We use TryAdd so duplicate keys get ignored
+                        pairs.TryAdd(pair.ToString(), StringValues.Empty);
                         continue;
                     }
 
-                    pairs.Add(pair[..i].ToString(), new StringValues(pair[(i + 1)..].ToString()));
+                    var k = pair[..i].ToString();
+                    var v = pair[(i + 1)..].ToString();
+                    if (!pairs.TryAdd(k, new StringValues(v)))
+                    {
+                        pairs[k] = StringValues.Concat(pairs[k], v);
+                    }
                 }
 
                 _store = new QueryCollection(pairs);

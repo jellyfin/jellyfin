@@ -21,7 +21,8 @@ namespace Emby.Server.Implementations.Serialization
         private static XmlSerializer GetSerializer(Type type)
             => _serializers.GetOrAdd(
                 type.FullName ?? throw new ArgumentException($"Invalid type {type}."),
-                _ => new XmlSerializer(type));
+                (_, t) => new XmlSerializer(t),
+                type);
 
         /// <summary>
         /// Serializes to writer.
