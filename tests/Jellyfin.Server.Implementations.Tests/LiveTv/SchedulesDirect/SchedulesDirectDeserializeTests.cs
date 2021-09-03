@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Token_Response_Live_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/token_live_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/token_live_response.json");
             var tokenDto = JsonSerializer.Deserialize<TokenDto>(bytes);
 
             Assert.NotNull(tokenDto);
@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Token_Response_Offline_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/token_offline_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/token_offline_response.json");
             var tokenDto = JsonSerializer.Deserialize<TokenDto>(bytes);
 
             Assert.NotNull(tokenDto);
@@ -58,7 +58,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Serialize_Schedule_Request_Success()
         {
-            var expectedString = File.ReadAllText("LiveTv/SchedulesDirect/TestData/schedules_request.json").Trim();
+            var expectedString = File.ReadAllText("Test Data/SchedulesDirect/schedules_request.json").Trim();
 
             var requestObject = new RequestScheduleForChannelDto[]
             {
@@ -82,12 +82,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
                 }
             };
 
-            var jsonOptions = new JsonSerializerOptions(_jsonOptions)
-            {
-                WriteIndented = true
-            };
-
-            var requestString = JsonSerializer.Serialize(requestObject, jsonOptions);
+            var requestString = JsonSerializer.Serialize(requestObject, _jsonOptions);
             Assert.Equal(expectedString, requestString);
         }
 
@@ -97,7 +92,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Schedule_Response_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/schedules_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/schedules_response.json");
             var days = JsonSerializer.Deserialize<IReadOnlyList<DayDto>>(bytes);
 
             Assert.NotNull(days);
@@ -125,7 +120,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Program_Response_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/programs_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/programs_response.json");
             var programDtos = JsonSerializer.Deserialize<IReadOnlyList<ProgramDetailsDto>>(bytes);
 
             Assert.NotNull(programDtos);
@@ -162,7 +157,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Metadata_Programs_Response_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/metadata_programs_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/metadata_programs_response.json");
             var showImagesDtos = JsonSerializer.Deserialize<IReadOnlyList<ShowImagesDto>>(bytes);
 
             Assert.NotNull(showImagesDtos);
@@ -186,7 +181,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Headends_Response_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/headends_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/headends_response.json");
             var headendsDtos = JsonSerializer.Deserialize<IReadOnlyList<HeadendsDto>>(bytes);
 
             Assert.NotNull(headendsDtos);
@@ -206,7 +201,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Lineups_Response_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/lineups_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/lineups_response.json");
             var lineupsDto = JsonSerializer.Deserialize<LineupsDto>(bytes);
 
             Assert.NotNull(lineupsDto);
@@ -230,7 +225,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         [Fact]
         public void Deserialize_Lineup_Response_Success()
         {
-            var bytes = File.ReadAllBytes("LiveTv/SchedulesDirect/TestData/lineup_response.json");
+            var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/lineup_response.json");
             var channelDto = JsonSerializer.Deserialize<ChannelDto>(bytes);
 
             Assert.NotNull(channelDto);

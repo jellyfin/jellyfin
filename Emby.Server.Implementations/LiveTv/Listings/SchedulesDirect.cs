@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
@@ -113,18 +114,29 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var dailySchedules = await JsonSerializer.DeserializeAsync<IReadOnlyList<DayDto>>(responseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules!.Count, channelId);
+            if (dailySchedules == null)
+            {
+                return Array.Empty<ProgramInfo>();
+            }
+
+            _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
 
             using var programRequestOptions = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/programs");
             programRequestOptions.Headers.TryAddWithoutValidation("token", token);
 
             var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
-            programRequestOptions.Content = new StringContent(JsonSerializer.Serialize(programIds), Encoding.UTF8, MediaTypeNames.Application.Json);
+            programRequestOptions.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(programIds, _jsonOptions));
+            programRequestOptions.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
 
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var programDetails = await JsonSerializer.DeserializeAsync<IReadOnlyList<ProgramDetailsDto>>(innerResponseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            var programDict = programDetails!.ToDictionary(p => p.ProgramId, y => y);
+            if (programDetails == null)
+            {
+                return Array.Empty<ProgramInfo>();
+            }
+
+            var programDict = programDetails.ToDictionary(p => p.ProgramId, y => y);
 
             var programIdsWithImages = programDetails
                 .Where(p => p.HasImageArtwork).Select(p => p.ProgramId)
@@ -775,7 +787,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await JsonSerializer.DeserializeAsync<ChannelDto>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root!.Map.Count);
+            if (root == null)
+            {
+                return new List<ChannelInfo>();
+            }
+
+            _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.Map.Count);
             _logger.LogInformation("Mapping Stations to Channel");
 
             var allStations = root.Stations;
