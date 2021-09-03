@@ -3306,7 +3306,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " " + videoDecoder;
 
                 if (!IsCopyCodec(state.OutputVideoCodec)
-                    && videoDecoder.IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1)
+                    && videoDecoder.Contains("cuvid", StringComparison.OrdinalIgnoreCase))
                 {
                     var videoStream = state.VideoStream;
                     var inputWidth = videoStream?.Width;
@@ -3315,7 +3315,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     var (width, height) = GetFixedOutputSize(inputWidth, inputHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
 
-                    if (videoDecoder.IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1
+                    if (videoDecoder.Contains("cuvid", StringComparison.OrdinalIgnoreCase)
                         && width.HasValue
                         && height.HasValue)
                     {
