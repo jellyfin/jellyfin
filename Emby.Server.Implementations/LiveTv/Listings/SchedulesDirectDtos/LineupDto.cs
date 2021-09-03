@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// <summary>
         /// Gets or sets the transport.
         /// </summary>
-        [JsonPropertyName("transport.")]
+        [JsonPropertyName("transport")]
         public string Transport { get; set; }
 
         /// <summary>

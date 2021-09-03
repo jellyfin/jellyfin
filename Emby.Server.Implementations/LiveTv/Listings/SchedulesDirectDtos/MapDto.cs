@@ -34,15 +34,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         public int UhfVhf { get; set; }
 
         /// <summary>
-        /// Gets or sets the astc major.
+        /// Gets or sets the atsc major.
         /// </summary>
-        [JsonPropertyName("astcMajor")]
+        [JsonPropertyName("atscMajor")]
         public int AtscMajor { get; set; }
 
         /// <summary>
-        /// Gets or sets the astc minor.
+        /// Gets or sets the atsc minor.
         /// </summary>
-        [JsonPropertyName("astcMinor")]
+        [JsonPropertyName("atscMinor")]
         public int AtscMinor { get; set; }
     }
 }
