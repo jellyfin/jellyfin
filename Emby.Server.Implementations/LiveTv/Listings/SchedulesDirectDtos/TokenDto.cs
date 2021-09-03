@@ -37,5 +37,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// </summary>
         [JsonPropertyName("datetime")]
         public DateTime? DateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response message.
+        /// </summary>
+        [JsonPropertyName("response")]
+        public string? Response { get; set; }
     }
 }

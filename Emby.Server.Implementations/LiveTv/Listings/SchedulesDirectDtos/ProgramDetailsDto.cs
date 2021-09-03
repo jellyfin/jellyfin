@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the original air date.
         /// </summary>
         [JsonPropertyName("originalAirDate")]
-        public string? OriginalAirDate { get; set; }
+        public DateTime? OriginalAirDate { get; set; }
 
         /// <summary>
         /// Gets or sets the list of genres.

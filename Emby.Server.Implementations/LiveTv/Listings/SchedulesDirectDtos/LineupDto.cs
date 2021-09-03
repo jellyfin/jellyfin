@@ -36,5 +36,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// </summary>
         [JsonPropertyName("uri")]
         public string? Uri { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this lineup was deleted.
+        /// </summary>
+        [JsonPropertyName("isDeleted")]
+        public bool? IsDeleted { get; set; }
     }
 }

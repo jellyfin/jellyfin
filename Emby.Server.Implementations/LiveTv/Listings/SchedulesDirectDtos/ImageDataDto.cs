@@ -35,7 +35,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the aspect.
         /// </summary>
         [JsonPropertyName("aspect")]
-        public string? aspect { get; set; }
+        public string? Aspect { get; set; }
 
         /// <summary>
         /// Gets or sets the category.

@@ -10,7 +10,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// <summary>
         /// Gets or sets the gracenote object.
         /// </summary>
-        [JsonPropertyName("gracenote")]
+        [JsonPropertyName("Gracenote")]
         public GracenoteDto? Gracenote { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the air date time.
         /// </summary>
         [JsonPropertyName("airDateTime")]
-        public string? AirDateTime { get; set; }
+        public DateTime? AirDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the duration.
