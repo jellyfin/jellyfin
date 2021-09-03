@@ -235,12 +235,12 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void UpdateDeviceName(string sessionId, string deviceName)
+        public void UpdateDeviceName(string sessionId, string reportedDeviceName)
         {
             var session = GetSession(sessionId);
             if (session != null)
             {
-                session.DeviceName = deviceName;
+                session.DeviceName = reportedDeviceName;
             }
         }
 
@@ -316,14 +316,14 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public void OnSessionControllerConnected(SessionInfo info)
+        public void OnSessionControllerConnected(SessionInfo session)
         {
             EventHelper.QueueEventIfNotNull(
                 SessionControllerConnected,
                 this,
                 new SessionEventArgs
                 {
-                    SessionInfo = info
+                    SessionInfo = session
                 },
                 _logger);
         }
@@ -1581,16 +1581,16 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task Logout(Device existing)
+        public async Task Logout(Device device)
         {
             CheckDisposed();
 
-            _logger.LogInformation("Logging out access token {0}", existing.AccessToken);
+            _logger.LogInformation("Logging out access token {0}", device.AccessToken);
 
-            await _deviceManager.DeleteDevice(existing).ConfigureAwait(false);
+            await _deviceManager.DeleteDevice(device).ConfigureAwait(false);
 
             var sessions = Sessions
-                .Where(i => string.Equals(i.DeviceId, existing.DeviceId, StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(i.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             foreach (var session in sessions)
@@ -1601,7 +1601,7 @@ namespace Emby.Server.Implementations.Session
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Error reporting session ended", ex);
+                    _logger.LogError(ex, "Error reporting session ended");
                 }
             }
         }

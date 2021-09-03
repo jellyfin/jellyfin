@@ -104,13 +104,6 @@ namespace MediaBrowser.Controller
         /// <returns>The API URL.</returns>
         string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
 
-        /// <summary>
-        /// Open a URL in an external browser window.
-        /// </summary>
-        /// <param name="url">The URL to open.</param>
-        /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
-        void LaunchUrl(string url);
-
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 
         string ExpandVirtualPath(string path);

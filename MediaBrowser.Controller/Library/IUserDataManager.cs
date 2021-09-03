@@ -47,7 +47,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>User data dto.</returns>
         UserItemDataDto GetUserDataDto(BaseItem item, User user);
 
-        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions dto_options);
+        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options);
 
         /// <summary>
         /// Get all user data for the given user.
@@ -69,8 +69,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">Item to update.</param>
         /// <param name="data">Data to update.</param>
-        /// <param name="positionTicks">New playstate.</param>
+        /// <param name="reportedPositionTicks">New playstate.</param>
         /// <returns>True if playstate was updated.</returns>
-        bool UpdatePlayState(BaseItem item, UserItemData data, long? positionTicks);
+        bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks);
     }
 }

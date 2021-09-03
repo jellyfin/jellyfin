@@ -344,7 +344,7 @@ namespace MediaBrowser.Controller.Session
         /// <returns>A <see cref="Task"/> representing the log out process.</returns>
         Task Logout(string accessToken);
 
-        Task Logout(Device accessToken);
+        Task Logout(Device device);
 
         /// <summary>
         /// Revokes the user tokens.

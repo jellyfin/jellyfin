@@ -129,19 +129,17 @@ namespace Emby.Server.Implementations.Data
             return list;
         }
 
-        /// <summary>
-        /// Saves the user data.
-        /// </summary>
-        public void SaveUserData(long internalUserId, string key, UserItemData userData, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public void SaveUserData(long userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
                 throw new ArgumentNullException(nameof(userData));
             }
 
-            if (internalUserId <= 0)
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
 
             if (string.IsNullOrEmpty(key))
@@ -149,22 +147,23 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(key));
             }
 
-            PersistUserData(internalUserId, key, userData, cancellationToken);
+            PersistUserData(userId, key, userData, cancellationToken);
         }
 
-        public void SaveAllUserData(long internalUserId, UserItemData[] userData, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
                 throw new ArgumentNullException(nameof(userData));
             }
 
-            if (internalUserId <= 0)
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
 
-            PersistAllUserData(internalUserId, userData, cancellationToken);
+            PersistAllUserData(userId, userData, cancellationToken);
         }
 
         /// <summary>
@@ -263,19 +262,19 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Gets the user data.
         /// </summary>
-        /// <param name="internalUserId">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         /// <exception cref="ArgumentNullException">
         /// userId
         /// or
-        /// key
+        /// key.
         /// </exception>
-        public UserItemData GetUserData(long internalUserId, string key)
+        public UserItemData GetUserData(long userId, string key)
         {
-            if (internalUserId <= 0)
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
 
             if (string.IsNullOrEmpty(key))
@@ -287,7 +286,7 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
-                    statement.TryBind("@UserId", internalUserId);
+                    statement.TryBind("@UserId", userId);
                     statement.TryBind("@Key", key);
 
                     foreach (var row in statement.ExecuteQuery())
@@ -300,7 +299,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public UserItemData GetUserData(long internalUserId, List<string> keys)
+        public UserItemData GetUserData(long userId, List<string> keys)
         {
             if (keys == null)
             {
@@ -312,19 +311,19 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            return GetUserData(internalUserId, keys[0]);
+            return GetUserData(userId, keys[0]);
         }
 
         /// <summary>
         /// Return all user-data associated with the given user.
         /// </summary>
-        /// <param name="internalUserId">The internal user id.</param>
+        /// <param name="userId">The internal user id.</param>
         /// <returns>The list of user item data.</returns>
-        public List<UserItemData> GetAllUserData(long internalUserId)
+        public List<UserItemData> GetAllUserData(long userId)
         {
-            if (internalUserId <= 0)
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
 
             var list = new List<UserItemData>();
@@ -333,7 +332,7 @@ namespace Emby.Server.Implementations.Data
             {
                 using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
                 {
-                    statement.TryBind("@UserId", internalUserId);
+                    statement.TryBind("@UserId", userId);
 
                     foreach (var row in statement.ExecuteQuery())
                     {

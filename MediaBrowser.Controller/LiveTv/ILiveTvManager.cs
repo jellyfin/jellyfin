@@ -274,7 +274,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber);
 
-        TunerChannelMapping GetTunerChannelMapping(ChannelInfo channel, NameValuePair[] mappings, List<ChannelInfo> providerChannels);
+        TunerChannelMapping GetTunerChannelMapping(ChannelInfo tunerChannel, NameValuePair[] mappings, List<ChannelInfo> providerChannels);
 
         /// <summary>
         /// Gets the lineups.
