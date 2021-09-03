@@ -68,6 +68,9 @@ namespace MediaBrowser.Controller.Devices
         /// <summary>
         /// Determines whether this instance [can access device] the specified user identifier.
         /// </summary>
+        /// <param name="user">The user to test.</param>
+        /// <param name="deviceId">The device id to test.</param>
+        /// <returns>Whether the user can access the device.</returns>
         bool CanAccessDevice(User user, string deviceId);
 
         Task UpdateDeviceOptions(string deviceId, string deviceName);
