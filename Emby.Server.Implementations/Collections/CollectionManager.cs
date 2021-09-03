@@ -196,8 +196,8 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> ids)
-            => AddToCollectionAsync(collectionId, ids, true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
+        public Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds)
+            => AddToCollectionAsync(collectionId, itemIds, true, new MetadataRefreshOptions(new DirectoryService(_fileSystem)));
 
         private async Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {

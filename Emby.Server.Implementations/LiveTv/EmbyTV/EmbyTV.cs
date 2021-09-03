@@ -610,11 +610,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             throw new NotImplementedException();
         }
 
-        public Task<string> CreateTimer(TimerInfo timer, CancellationToken cancellationToken)
+        public Task<string> CreateTimer(TimerInfo info, CancellationToken cancellationToken)
         {
-            var existingTimer = string.IsNullOrWhiteSpace(timer.ProgramId) ?
+            var existingTimer = string.IsNullOrWhiteSpace(info.ProgramId) ?
                 null :
-                _timerProvider.GetTimerByProgramId(timer.ProgramId);
+                _timerProvider.GetTimerByProgramId(info.ProgramId);
 
             if (existingTimer != null)
             {
@@ -632,32 +632,32 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
             }
 
-            timer.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+            info.Id = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
             LiveTvProgram programInfo = null;
 
-            if (!string.IsNullOrWhiteSpace(timer.ProgramId))
+            if (!string.IsNullOrWhiteSpace(info.ProgramId))
             {
-                programInfo = GetProgramInfoFromCache(timer);
+                programInfo = GetProgramInfoFromCache(info);
             }
 
             if (programInfo == null)
             {
-                _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", timer.ProgramId);
-                programInfo = GetProgramInfoFromCache(timer.ChannelId, timer.StartDate);
+                _logger.LogInformation("Unable to find program with Id {0}. Will search using start date", info.ProgramId);
+                programInfo = GetProgramInfoFromCache(info.ChannelId, info.StartDate);
             }
 
             if (programInfo != null)
             {
-                CopyProgramInfoToTimerInfo(programInfo, timer);
+                CopyProgramInfoToTimerInfo(programInfo, info);
             }
 
-            timer.IsManual = true;
-            _timerProvider.Add(timer);
+            info.IsManual = true;
+            _timerProvider.Add(info);
 
-            TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(timer));
+            TimerCreated?.Invoke(this, new GenericEventArgs<TimerInfo>(info));
 
-            return Task.FromResult(timer.Id);
+            return Task.FromResult(info.Id);
         }
 
         public async Task<string> CreateSeriesTimer(SeriesTimerInfo info, CancellationToken cancellationToken)

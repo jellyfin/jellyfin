@@ -177,6 +177,7 @@ namespace Emby.Server.Implementations.Library
             return dto;
         }
 
+        /// <inheritdoc />
         public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
         {
             var userData = GetUserData(user, item);
@@ -191,7 +192,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="data"/> is <c>null</c>.</exception>
         private UserItemDataDto GetUserItemDataDto(UserItemData data)
         {
             if (data == null)
@@ -212,6 +213,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
+        /// <inheritdoc />
         public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
         {
             var playedToCompletion = false;

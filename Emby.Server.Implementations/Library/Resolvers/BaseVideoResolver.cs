@@ -21,12 +21,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
         where T : Video, new()
     {
-        protected readonly ILibraryManager LibraryManager;
-
         protected BaseVideoResolver(ILibraryManager libraryManager)
         {
             LibraryManager = libraryManager;
         }
+
+        protected ILibraryManager LibraryManager { get; }
 
         /// <summary>
         /// Resolves the specified args.

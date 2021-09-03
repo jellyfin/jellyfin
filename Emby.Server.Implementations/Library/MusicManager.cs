@@ -36,9 +36,10 @@ namespace Emby.Server.Implementations.Library
             return list.Concat(GetInstantMixFromGenres(item.Genres, user, dtoOptions)).ToList();
         }
 
-        public List<BaseItem> GetInstantMixFromArtist(MusicArtist item, User user, DtoOptions dtoOptions)
+        /// <inheritdoc />
+        public List<BaseItem> GetInstantMixFromArtist(MusicArtist artist, User user, DtoOptions dtoOptions)
         {
-            return GetInstantMixFromGenres(item.Genres, user, dtoOptions);
+            return GetInstantMixFromGenres(artist.Genres, user, dtoOptions);
         }
 
         public List<BaseItem> GetInstantMixFromAlbum(MusicAlbum item, User user, DtoOptions dtoOptions)

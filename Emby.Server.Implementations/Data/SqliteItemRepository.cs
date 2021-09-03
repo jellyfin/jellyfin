@@ -1902,12 +1902,7 @@ namespace Emby.Server.Implementations.Data
             return result;
         }
 
-        /// <summary>
-        /// Gets chapters for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{ChapterInfo}.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <inheritdoc />
         public List<ChapterInfo> GetChapters(BaseItem item)
         {
             CheckDisposed();
@@ -1930,13 +1925,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        /// <summary>
-        /// Gets a single chapter for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>ChapterInfo.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <inheritdoc />
         public ChapterInfo GetChapter(BaseItem item, int index)
         {
             CheckDisposed();
@@ -2048,7 +2037,7 @@ namespace Emby.Server.Implementations.Data
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    insertText.AppendFormat("(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
+                    insertText.AppendFormat(CultureInfo.InvariantCulture, "(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
 
                 insertText.Length -= 1; // Remove last ,
