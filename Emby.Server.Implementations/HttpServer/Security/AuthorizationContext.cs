@@ -74,6 +74,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 auth.TryGetValue("Token", out token);
             }
 
+#pragma warning disable CA1508 // string.IsNullOrEmpty(token) is always false.
             if (string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];
@@ -111,6 +112,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
                 // Request doesn't contain a token.
                 return authInfo;
             }
+#pragma warning restore CA1508
 
             authInfo.HasToken = true;
             var result = _authRepo.Get(new AuthenticationInfoQuery

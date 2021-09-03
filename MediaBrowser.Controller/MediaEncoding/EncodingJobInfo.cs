@@ -422,7 +422,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
                 {
-                    return VideoStream?.Codec;
+                    return VideoStream.Codec;
                 }
 
                 return OutputVideoCodec;
@@ -440,7 +440,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                 if (EncodingHelper.IsCopyCodec(OutputAudioCodec))
                 {
-                    return AudioStream?.Codec;
+                    return AudioStream.Codec;
                 }
 
                 return OutputAudioCodec;
@@ -568,7 +568,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return forceDeinterlaceIfSourceIsInterlaced && isInputInterlaced;
+            return forceDeinterlaceIfSourceIsInterlaced;
         }
 
         public string[] GetRequestedProfiles(string codec)

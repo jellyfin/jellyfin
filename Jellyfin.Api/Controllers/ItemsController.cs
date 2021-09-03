@@ -241,7 +241,7 @@ namespace Jellyfin.Api.Controllers
             var item = _libraryManager.GetParentItem(parentId, userId);
             QueryResult<BaseItem> result;
 
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
@@ -285,7 +285,7 @@ namespace Jellyfin.Api.Controllers
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
-            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || !(item is UserRootFolder))
+            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || item is not UserRootFolder)
             {
                 var query = new InternalItemsQuery(user!)
                 {

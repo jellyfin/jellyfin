@@ -403,7 +403,7 @@ namespace Emby.Server.Implementations.LiveTv
             // Set the total bitrate if not already supplied
             mediaSource.InferTotalBitrate();
 
-            if (!(service is EmbyTV.EmbyTV))
+            if (service is not EmbyTV.EmbyTV)
             {
                 // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
                 // mediaSource.SupportsDirectPlay = false;
@@ -1724,7 +1724,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
 
-            if (!(service is EmbyTV.EmbyTV))
+            if (service is not EmbyTV.EmbyTV)
             {
                 TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
             }
@@ -2050,7 +2050,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             _logger.LogInformation("New recording scheduled");
 
-            if (!(service is EmbyTV.EmbyTV))
+            if (service is not EmbyTV.EmbyTV)
             {
                 TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
                     new TimerEventInfo(newTimerId)

@@ -174,7 +174,6 @@ namespace Emby.Server.Implementations.Data
         /// <param name="key">The key.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         public void PersistUserData(long internalUserId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -319,8 +318,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Return all user-data associated with the given user.
         /// </summary>
-        /// <param name="internalUserId"></param>
-        /// <returns></returns>
+        /// <param name="internalUserId">The internal user id.</param>
+        /// <returns>The list of user item data.</returns>
         public List<UserItemData> GetAllUserData(long internalUserId)
         {
             if (internalUserId <= 0)
@@ -349,7 +348,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Read a row from the specified reader into the provided userData object.
         /// </summary>
-        /// <param name="reader"></param>
+        /// <param name="reader">The list of result set values.</param>
+        /// <returns>The user item data.</returns>
         private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
         {
             var userData = new UserItemData();

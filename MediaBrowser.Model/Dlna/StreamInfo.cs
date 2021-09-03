@@ -636,7 +636,7 @@ namespace MediaBrowser.Model.Dlna
                     continue;
                 }
 
-                var encodedValue = pair.Value.Replace(" ", "%20");
+                var encodedValue = pair.Value.Replace(" ", "%20", StringComparison.Ordinal);
 
                 list.Add(string.Format(CultureInfo.InvariantCulture, "{0}={1}", pair.Name, encodedValue));
             }

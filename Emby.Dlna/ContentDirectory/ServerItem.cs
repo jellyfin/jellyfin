@@ -17,7 +17,7 @@ namespace Emby.Dlna.ContentDirectory
         {
             Item = item;
 
-            if (item is IItemByName && !(item is Folder))
+            if (item is IItemByName && item is not Folder)
             {
                 StubType = Dlna.ContentDirectory.StubType.Folder;
             }

@@ -223,7 +223,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("CustomRating", item.CustomRating);
             }
 
-            if (!string.IsNullOrEmpty(item.Name) && !(item is Episode))
+            if (!string.IsNullOrEmpty(item.Name) && item is not Episode)
             {
                 writer.WriteElementString("LocalTitle", item.Name);
             }
@@ -240,7 +240,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     writer.WriteElementString("BirthDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
-                else if (!(item is Episode))
+                else if (item is not Episode)
                 {
                     writer.WriteElementString("PremiereDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
@@ -252,7 +252,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     writer.WriteElementString("DeathDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
-                else if (!(item is Episode))
+                else if (item is not Episode)
                 {
                     writer.WriteElementString("EndDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
@@ -292,7 +292,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(_usCulture));
             }
 
-            if (item.ProductionYear.HasValue && !(item is Person))
+            if (item.ProductionYear.HasValue && item is not Person)
             {
                 writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(_usCulture));
             }

@@ -266,7 +266,7 @@ namespace MediaBrowser.Model.Entities
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }

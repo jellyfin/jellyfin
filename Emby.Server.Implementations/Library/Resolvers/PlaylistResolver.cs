@@ -18,7 +18,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// </summary>
     public class PlaylistResolver : FolderResolver<Playlist>
     {
-        private string[] _musicPlaylistCollectionTypes = new string[] {
+        private string[] _musicPlaylistCollectionTypes =
+        {
             string.Empty,
             CollectionType.Music
         };

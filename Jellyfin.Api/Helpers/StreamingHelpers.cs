@@ -222,11 +222,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         var resolution = ResolutionNormalizer.Normalize(
                             state.VideoStream?.BitRate,
-                            state.VideoStream?.Width,
-                            state.VideoStream?.Height,
                             state.OutputVideoBitrate.Value,
-                            state.VideoStream?.Codec,
-                            state.OutputVideoCodec,
                             state.VideoRequest.MaxWidth,
                             state.VideoRequest.MaxHeight);
 
