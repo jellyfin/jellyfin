@@ -9,6 +9,12 @@ namespace MediaBrowser.Model.Configuration
             Path = path;
         }
 
+        // Needed for xml serialization
+        public MediaPathInfo()
+        {
+            Path = string.Empty;
+        }
+
         public string Path { get; set; }
 
         public string? NetworkPath { get; set; }
