@@ -9,14 +9,18 @@ using Jellyfin.Api.WebSocketListeners;
 using Jellyfin.Drawing.Skia;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Activity;
+using Jellyfin.Server.Implementations.Devices;
 using Jellyfin.Server.Implementations.Events;
+using Jellyfin.Server.Implementations.Security;
 using Jellyfin.Server.Implementations.Users;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Controller.Security;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.IO;
 using Microsoft.EntityFrameworkCore;
@@ -84,12 +88,17 @@ namespace Jellyfin.Server
             ServiceCollection.AddSingleton<IActivityManager, ActivityManager>();
             ServiceCollection.AddSingleton<IUserManager, UserManager>();
             ServiceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
+            ServiceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
             // TODO search the assemblies instead of adding them manually?
             ServiceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, ScheduledTasksWebSocketListener>();
             ServiceCollection.AddSingleton<IWebSocketListener, SessionInfoWebSocketListener>();
+
+            ServiceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
+
+            ServiceCollection.AddScoped<IAuthenticationManager, AuthenticationManager>();
 
             base.RegisterServices();
         }
