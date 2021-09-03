@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -41,6 +41,23 @@ namespace MediaBrowser.Controller.Entities
             PhysicalFolderIds = Array.Empty<Guid>();
         }
 
+        /// <summary>
+        /// Gets the display preferences id.
+        /// </summary>
+        /// <remarks>
+        /// Allow different display preferences for each collection folder.
+        /// </remarks>
+        /// <value>The display prefs id.</value>
+        [JsonIgnore]
+        public override Guid DisplayPreferencesId => Id;
+
+        [JsonIgnore]
+        public override string[] PhysicalLocations => PhysicalLocationsList;
+
+        public string[] PhysicalLocationsList { get; set; }
+
+        public Guid[] PhysicalFolderIds { get; set; }
+
         public static IXmlSerializer XmlSerializer { get; set; }
 
         public static IServerApplicationHost ApplicationHost { get; set; }
@@ -62,6 +79,9 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The actual children.</value>
         [JsonIgnore]
         public override IEnumerable<BaseItem> Children => GetActualChildren();
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
 
         public override bool CanDelete()
         {
@@ -159,23 +179,6 @@ namespace MediaBrowser.Controller.Entities
                 _libraryOptions.Clear();
             }
         }
-
-        /// <summary>
-        /// Gets the display preferences id.
-        /// </summary>
-        /// <remarks>
-        /// Allow different display preferences for each collection folder.
-        /// </remarks>
-        /// <value>The display prefs id.</value>
-        [JsonIgnore]
-        public override Guid DisplayPreferencesId => Id;
-
-        [JsonIgnore]
-        public override string[] PhysicalLocations => PhysicalLocationsList;
-
-        public string[] PhysicalLocationsList { get; set; }
-
-        public Guid[] PhysicalFolderIds { get; set; }
 
         public override bool IsSaveLocalMetadataEnabled()
         {
@@ -315,16 +318,16 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Compare our current children (presumably just read from the repo) with the current state of the file system and adjust for any changes
-        /// ***Currently does not contain logic to maintain items that are unavailable in the file system***
+        /// ***Currently does not contain logic to maintain items that are unavailable in the file system***.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -373,8 +376,5 @@ namespace MediaBrowser.Controller.Entities
 
             return result;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
     }
 }

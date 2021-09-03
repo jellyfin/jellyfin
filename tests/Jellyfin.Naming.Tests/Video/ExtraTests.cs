@@ -104,13 +104,6 @@ namespace Jellyfin.Naming.Tests.Video
             Assert.Equal(rule, res.Rule);
         }
 
-        [Fact]
-        public void TestFlagsParser()
-        {
-            var flags = new FlagParser(_videoOptions).GetFlags(string.Empty);
-            Assert.Empty(flags);
-        }
-
         private ExtraResolver GetExtraTypeParser(NamingOptions videoOptions)
         {
             return new ExtraResolver(videoOptions);

@@ -1260,10 +1260,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs(mediaInfo));
         }
 
         private void OnPlaybackProgress(UBaseObject mediaInfo)
@@ -1273,27 +1270,17 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs(mediaInfo));
         }
 
         private void OnPlaybackStop(UBaseObject mediaInfo)
         {
-            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs(mediaInfo));
         }
 
         private void OnMediaChanged(UBaseObject old, UBaseObject newMedia)
         {
-            MediaChanged?.Invoke(this, new MediaChangedEventArgs
-            {
-                OldMediaInfo = old,
-                NewMediaInfo = newMedia
-            });
+            MediaChanged?.Invoke(this, new MediaChangedEventArgs(old, newMedia));
         }
 
         /// <inheritdoc />

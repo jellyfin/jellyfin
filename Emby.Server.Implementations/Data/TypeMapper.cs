@@ -28,19 +28,9 @@ namespace Emby.Server.Implementations.Data
                 throw new ArgumentNullException(nameof(typeName));
             }
 
-            return _typeMap.GetOrAdd(typeName, LookupType);
-        }
-
-        /// <summary>
-        /// Lookups the type.
-        /// </summary>
-        /// <param name="typeName">Name of the type.</param>
-        /// <returns>Type.</returns>
-        private Type? LookupType(string typeName)
-        {
-            return AppDomain.CurrentDomain.GetAssemblies()
-                .Select(a => a.GetType(typeName))
-                .FirstOrDefault(t => t != null);
+            return _typeMap.GetOrAdd(typeName, k => AppDomain.CurrentDomain.GetAssemblies()
+                .Select(a => a.GetType(k))
+                .FirstOrDefault(t => t != null));
         }
     }
 }

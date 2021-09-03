@@ -1190,7 +1190,8 @@ namespace Jellyfin.Api.Controllers
                 throw new ArgumentException("StartTimeTicks is not allowed.");
             }
 
-            using var cancellationTokenSource = new CancellationTokenSource();
+            // CTS lifecycle is managed internally.
+            var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
             using var state = await StreamingHelpers.GetStreamingState(
@@ -1379,7 +1380,7 @@ namespace Jellyfin.Api.Controllers
             }
             else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
-                var outputFmp4HeaderArg = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) switch
+                var outputFmp4HeaderArg = OperatingSystem.IsWindows() switch
                 {
                     // on Windows, the path of fmp4 header file needs to be configured
                     true => " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"",
@@ -1495,7 +1496,7 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return args;
         }

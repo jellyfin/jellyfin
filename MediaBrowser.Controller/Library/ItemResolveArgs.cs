@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CA1721, CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace MediaBrowser.Controller.Library
         public IDirectoryService DirectoryService { get; }
 
         /// <summary>
-        /// Gets the file system children.
+        /// Gets or sets the file system children.
         /// </summary>
         /// <value>The file system children.</value>
         public FileSystemMetadata[] FileSystemChildren { get; set; }
@@ -109,6 +109,21 @@ namespace MediaBrowser.Controller.Library
         /// <value>The additional locations.</value>
         private List<string> AdditionalLocations { get; set; }
 
+        /// <summary>
+        /// Gets the physical locations.
+        /// </summary>
+        /// <value>The physical locations.</value>
+        public string[] PhysicalLocations
+        {
+            get
+            {
+                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
+                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
+            }
+        }
+
+        public string CollectionType { get; set; }
+
         public bool HasParent<T>()
             where T : Folder
         {
@@ -139,6 +154,16 @@ namespace MediaBrowser.Controller.Library
         }
 
         /// <summary>
+        /// Determines whether the specified <see cref="object" /> is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ItemResolveArgs);
+        }
+
+        /// <summary>
         /// Adds the additional location.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -155,19 +180,6 @@ namespace MediaBrowser.Controller.Library
         }
 
         // REVIEW: @bond
-
-        /// <summary>
-        /// Gets the physical locations.
-        /// </summary>
-        /// <value>The physical locations.</value>
-        public string[] PhysicalLocations
-        {
-            get
-            {
-                var paths = string.IsNullOrEmpty(Path) ? Array.Empty<string>() : new[] { Path };
-                return AdditionalLocations == null ? paths : paths.Concat(AdditionalLocations).ToArray();
-            }
-        }
 
         /// <summary>
         /// Gets the name of the file system entry by.
@@ -190,7 +202,7 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>FileSystemInfo.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Throws if path is invalid.</exception>
         public FileSystemMetadata GetFileSystemEntryByPath(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -224,32 +236,20 @@ namespace MediaBrowser.Controller.Library
             return CollectionType;
         }
 
-        public string CollectionType { get; set; }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="object" /> is equal to this instance.
-        /// </summary>
-        /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.</returns>
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as ItemResolveArgs);
-        }
-
         /// <summary>
         /// Returns a hash code for this instance.
         /// </summary>
         /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.</returns>
         public override int GetHashCode()
         {
-            return Path.GetHashCode();
+            return Path.GetHashCode(StringComparison.Ordinal);
         }
 
         /// <summary>
         /// Equals the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        /// <returns><c>true</c> if the arguments are the same, <c>false</c> otherwise.</returns>
         protected bool Equals(ItemResolveArgs args)
         {
             if (args != null)

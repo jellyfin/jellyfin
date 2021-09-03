@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Ryd Aktivitetslog",
     "Undefined": "Udefineret",
     "Forced": "Tvunget",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskOptimizeDatabaseDescription": "Kompakter database og forkorter fri plads. Ved at køre denne proces efter at scanne biblioteket eller efter at ændre noget som kunne have indflydelse på databasen, kan forbedre ydeevne.",
+    "TaskOptimizeDatabase": "Optimér database"
 }

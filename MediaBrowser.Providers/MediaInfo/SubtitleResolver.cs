@@ -1,9 +1,9 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -55,38 +55,35 @@ namespace MediaBrowser.Providers.MediaInfo
             return streams;
         }
 
-        public List<string> GetExternalSubtitleFiles(
+        public IEnumerable<string> GetExternalSubtitleFiles(
             Video video,
             IDirectoryService directoryService,
             bool clearCache)
         {
-            var list = new List<string>();
-
             if (!video.IsFileProtocol)
             {
-                return list;
+                yield break;
             }
 
             var streams = GetExternalSubtitleStreams(video, 0, directoryService, clearCache);
 
             foreach (var stream in streams)
             {
-                list.Add(stream.Path);
+                yield return stream.Path;
             }
-
-            return list;
         }
 
         public void AddExternalSubtitleStreams(
             List<MediaStream> streams,
             string videoPath,
             int startIndex,
-            string[] files)
+            IReadOnlyList<string> files)
         {
             var videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoPath);
 
-            foreach (var fullName in files)
+            for (var i = 0; i < files.Count; i++)
             {
+                var fullName = files[i];
                 var extension = Path.GetExtension(fullName.AsSpan());
                 if (!IsSubtitleExtension(extension))
                 {
@@ -135,15 +132,12 @@ namespace MediaBrowser.Providers.MediaInfo
                         break;
                     }
 
-                    var language = languageSpan.ToString();
                     // Try to translate to three character code
                     // Be flexible and check against both the full and three character versions
+                    var language = languageSpan.ToString();
                     var culture = _localization.FindLanguageInfo(language);
 
-                    if (culture != null)
-                    {
-                        language = culture.ThreeLetterISOLanguageName;
-                    }
+                    language = culture == null ? language : culture.ThreeLetterISOLanguageName;
 
                     mediaStream = new MediaStream
                     {
@@ -194,7 +188,7 @@ namespace MediaBrowser.Providers.MediaInfo
             IDirectoryService directoryService,
             bool clearCache)
         {
-            var files = directoryService.GetFilePaths(folder, clearCache).OrderBy(i => i).ToArray();
+            var files = directoryService.GetFilePaths(folder, clearCache, true);
 
             AddExternalSubtitleStreams(streams, videoPath, startIndex, files);
         }

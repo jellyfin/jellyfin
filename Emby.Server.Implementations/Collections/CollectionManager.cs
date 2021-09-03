@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -63,13 +61,13 @@ namespace Emby.Server.Implementations.Collections
         }
 
         /// <inheritdoc />
-        public event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+        public event EventHandler<CollectionCreatedEventArgs>? CollectionCreated;
 
         /// <inheritdoc />
-        public event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+        public event EventHandler<CollectionModifiedEventArgs>? ItemsAddedToCollection;
 
         /// <inheritdoc />
-        public event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+        public event EventHandler<CollectionModifiedEventArgs>? ItemsRemovedFromCollection;
 
         private IEnumerable<Folder> FindFolders(string path)
         {
@@ -80,14 +78,12 @@ namespace Emby.Server.Implementations.Collections
                 .Where(i => _fileSystem.AreEqual(path, i.Path) || _fileSystem.ContainsSubPath(i.Path, path));
         }
 
-        internal async Task<Folder> EnsureLibraryFolder(string path, bool createIfNeeded)
+        internal async Task<Folder?> EnsureLibraryFolder(string path, bool createIfNeeded)
         {
-            var existingFolders = FindFolders(path)
-                .ToList();
-
-            if (existingFolders.Count > 0)
+            var existingFolder = FindFolders(path).FirstOrDefault();
+            if (existingFolder != null)
             {
-                return existingFolders[0];
+                return existingFolder;
             }
 
             if (!createIfNeeded)
@@ -116,7 +112,7 @@ namespace Emby.Server.Implementations.Collections
             return Path.Combine(_appPaths.DataPath, "collections");
         }
 
-        private Task<Folder> GetCollectionsFolder(bool createIfNeeded)
+        private Task<Folder?> GetCollectionsFolder(bool createIfNeeded)
         {
             return EnsureLibraryFolder(GetCollectionsFolderPath(), createIfNeeded);
         }
@@ -164,7 +160,7 @@ namespace Emby.Server.Implementations.Collections
                     DateCreated = DateTime.UtcNow
                 };
 
-                parentFolder.AddChild(collection, CancellationToken.None);
+                parentFolder.AddChild(collection);
 
                 if (options.ItemIdList.Count > 0)
                 {
@@ -205,8 +201,7 @@ namespace Emby.Server.Implementations.Collections
 
         private async Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> ids, bool fireEvent, MetadataRefreshOptions refreshOptions)
         {
-            var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
-            if (collection == null)
+            if (_libraryManager.GetItemById(collectionId) is not BoxSet collection)
             {
                 throw new ArgumentException("No collection exists with the supplied Id");
             }
@@ -258,9 +253,7 @@ namespace Emby.Server.Implementations.Collections
         /// <inheritdoc />
         public async Task RemoveFromCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds)
         {
-            var collection = _libraryManager.GetItemById(collectionId) as BoxSet;
-
-            if (collection == null)
+            if (_libraryManager.GetItemById(collectionId) is not BoxSet collection)
             {
                 throw new ArgumentException("No collection exists with the supplied Id");
             }
@@ -314,11 +307,7 @@ namespace Emby.Server.Implementations.Collections
 
             foreach (var item in items)
             {
-                if (item is not ISupportsBoxSetGrouping)
-                {
-                    results[item.Id] = item;
-                }
-                else
+                if (item is ISupportsBoxSetGrouping)
                 {
                     var itemId = item.Id;
 
@@ -342,6 +331,7 @@ namespace Emby.Server.Implementations.Collections
                     }
 
                     var alreadyInResults = false;
+
                     // this is kind of a performance hack because only Video has alternate versions that should be in a box set?
                     if (item is Video video)
                     {
@@ -357,11 +347,13 @@ namespace Emby.Server.Implementations.Collections
                         }
                     }
 
-                    if (!alreadyInResults)
+                    if (alreadyInResults)
                     {
-                        results[itemId] = item;
+                        continue;
                     }
                 }
+
+                results[item.Id] = item;
             }
 
             return results.Values;

@@ -229,42 +229,6 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Creates an instant playlist based on a given genre.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="userId">Optional. Filter by user id, and attach user data.</param>
-        /// <param name="limit">Optional. The maximum number of records to return.</param>
-        /// <param name="fields">Optional. Specify additional fields of information to return in the output.</param>
-        /// <param name="enableImages">Optional. Include image information in output.</param>
-        /// <param name="enableUserData">Optional. Include user data.</param>
-        /// <param name="imageTypeLimit">Optional. The max number of images to return, per image type.</param>
-        /// <param name="enableImageTypes">Optional. The image types to include in the output.</param>
-        /// <response code="200">Instant playlist returned.</response>
-        /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
-        [HttpGet("MusicGenres/{id}/InstantMix")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById(
-            [FromRoute, Required] Guid id,
-            [FromQuery] Guid? userId,
-            [FromQuery] int? limit,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery] bool? enableImages,
-            [FromQuery] bool? enableUserData,
-            [FromQuery] int? imageTypeLimit,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
-        {
-            var item = _libraryManager.GetItemById(id);
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
-                : null;
-            var dtoOptions = new DtoOptions { Fields = fields }
-                .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
-            var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
-            return GetResult(items, user, limit, dtoOptions);
-        }
-
-        /// <summary>
         /// Creates an instant playlist based on a given item.
         /// </summary>
         /// <param name="id">The item id.</param>
@@ -352,8 +316,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the playlist items.</returns>
         [HttpGet("MusicGenres/InstantMix")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [Obsolete("Use GetInstantMixFromMusicGenres instead")]
-        public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById2(
+        public ActionResult<QueryResult<BaseItemDto>> GetInstantMixFromMusicGenreById(
             [FromQuery, Required] Guid id,
             [FromQuery] Guid? userId,
             [FromQuery] int? limit,
@@ -363,15 +326,15 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes)
         {
-            return GetInstantMixFromMusicGenreById(
-                id,
-                userId,
-                limit,
-                fields,
-                enableImages,
-                enableUserData,
-                imageTypeLimit,
-                enableImageTypes);
+            var item = _libraryManager.GetItemById(id);
+            var user = userId.HasValue && !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId.Value)
+                : null;
+            var dtoOptions = new DtoOptions { Fields = fields }
+                .AddClientFields(Request)
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+            var items = _musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+            return GetResult(items, user, limit, dtoOptions);
         }
 
         private QueryResult<BaseItemDto> GetResult(List<BaseItem> items, User? user, int? limit, DtoOptions dtoOptions)

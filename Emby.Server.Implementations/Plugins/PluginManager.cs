@@ -10,8 +10,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Json.Converters;
+using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
@@ -394,7 +394,7 @@ namespace Emby.Server.Implementations.Plugins
                 Category = packageInfo.Category,
                 Changelog = versionInfo.Changelog ?? string.Empty,
                 Description = packageInfo.Description,
-                Id = new Guid(packageInfo.Id),
+                Id = packageInfo.Id,
                 Name = packageInfo.Name,
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,

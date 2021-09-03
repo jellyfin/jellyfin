@@ -299,25 +299,29 @@ namespace Emby.Server.Implementations.AppBase
         /// <inheritdoc />
         public object GetConfiguration(string key)
         {
-            return _configurations.GetOrAdd(key, k =>
-            {
-                var file = GetConfigurationFile(key);
-
-                var configurationInfo = _configurationStores
-                    .FirstOrDefault(i => string.Equals(i.Key, key, StringComparison.OrdinalIgnoreCase));
-
-                if (configurationInfo == null)
+            return _configurations.GetOrAdd(
+                key,
+                (k, configurationManager) =>
                 {
-                    throw new ResourceNotFoundException("Configuration with key " + key + " not found.");
-                }
+                    var file = configurationManager.GetConfigurationFile(k);
 
-                var configurationType = configurationInfo.ConfigurationType;
+                    var configurationInfo = Array.Find(
+                        configurationManager._configurationStores,
+                        i => string.Equals(i.Key, k, StringComparison.OrdinalIgnoreCase));
 
-                lock (_configurationSyncLock)
-                {
-                    return LoadConfiguration(file, configurationType);
-                }
-            });
+                    if (configurationInfo == null)
+                    {
+                        throw new ResourceNotFoundException("Configuration with key " + k + " not found.");
+                    }
+
+                    var configurationType = configurationInfo.ConfigurationType;
+
+                    lock (configurationManager._configurationSyncLock)
+                    {
+                        return configurationManager.LoadConfiguration(file, configurationType);
+                    }
+                },
+                this);
         }
 
         private object LoadConfiguration(string path, Type configurationType)

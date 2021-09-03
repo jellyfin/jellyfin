@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;

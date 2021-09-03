@@ -97,6 +97,8 @@ namespace Jellyfin.Api.Helpers
             }
 
             bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
+
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
 
             using var state = await StreamingHelpers.GetStreamingState(

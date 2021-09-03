@@ -31,23 +31,17 @@ namespace MediaBrowser.Controller.Playlists
             ".zpl"
         };
 
-        public Guid OwnerUserId { get; set; }
-
-        public Share[] Shares { get; set; }
-
         public Playlist()
         {
             Shares = Array.Empty<Share>();
         }
 
+        public Guid OwnerUserId { get; set; }
+
+        public Share[] Shares { get; set; }
+
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
-
-        public static bool IsPlaylistFile(string path)
-        {
-            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
-            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
-        }
 
         [JsonIgnore]
         public override string ContainingFolderPath
@@ -80,6 +74,41 @@ namespace MediaBrowser.Controller.Playlists
         [JsonIgnore]
         public override bool SupportsCumulativeRunTimeTicks => true;
 
+        [JsonIgnore]
+        public override bool IsPreSorted => true;
+
+        public string PlaylistMediaType { get; set; }
+
+        [JsonIgnore]
+        public override string MediaType => PlaylistMediaType;
+
+        [JsonIgnore]
+        private bool IsSharedItem
+        {
+            get
+            {
+                var path = Path;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
+            }
+        }
+
+        public static bool IsPlaylistFile(string path)
+        {
+            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
+            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
+        }
+
+        public void SetMediaType(string value)
+        {
+            PlaylistMediaType = value;
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
@@ -101,7 +130,7 @@ namespace MediaBrowser.Controller.Playlists
             return new List<BaseItem>();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -195,35 +224,6 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             return new[] { item };
-        }
-
-        [JsonIgnore]
-        public override bool IsPreSorted => true;
-
-        public string PlaylistMediaType { get; set; }
-
-        [JsonIgnore]
-        public override string MediaType => PlaylistMediaType;
-
-        public void SetMediaType(string value)
-        {
-            PlaylistMediaType = value;
-        }
-
-        [JsonIgnore]
-        private bool IsSharedItem
-        {
-            get
-            {
-                var path = Path;
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    return false;
-                }
-
-                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
-            }
         }
 
         public override bool IsVisible(User user)
