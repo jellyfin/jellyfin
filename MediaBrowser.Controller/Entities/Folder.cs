@@ -233,7 +233,7 @@ namespace MediaBrowser.Controller.Entities
 
         public override bool IsVisible(User user)
         {
-            if (this is ICollectionFolder && !(this is BasePluginFolder))
+            if (this is ICollectionFolder && this is not BasePluginFolder)
             {
                 var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
                 if (blockedMediaFolders.Length > 0)
@@ -673,7 +673,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Length > 0)
             {
-                if (!(this is ICollectionFolder))
+                if (this is not ICollectionFolder)
                 {
                     return GetChildren(user, true).Count;
                 }
@@ -730,7 +730,7 @@ namespace MediaBrowser.Controller.Entities
                 return PostFilterAndSort(items, query, true);
             }
 
-            if (!(this is UserRootFolder) && !(this is AggregateFolder) && query.ParentId == Guid.Empty)
+            if (this is not UserRootFolder && this is not AggregateFolder && query.ParentId == Guid.Empty)
             {
                 query.Parent = this;
             }
@@ -805,7 +805,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Length > 0)
             {
-                if (!(this is ICollectionFolder))
+                if (this is not ICollectionFolder)
                 {
                     Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
                     return true;
@@ -1545,7 +1545,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var childOwner = child.GetOwner() ?? child;
 
-                if (childOwner != null && !(child is IItemByName))
+                if (child is not IItemByName)
                 {
                     var childProtocol = childOwner.PathProtocol;
                     if (!childProtocol.HasValue || childProtocol.Value != Model.MediaInfo.MediaProtocol.File)

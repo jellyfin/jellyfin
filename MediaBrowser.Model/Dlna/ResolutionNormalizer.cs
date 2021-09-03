@@ -21,11 +21,7 @@ namespace MediaBrowser.Model.Dlna
 
         public static ResolutionOptions Normalize(
             int? inputBitrate,
-            int? unused1,
-            int? unused2,
             int outputBitrate,
-            string inputCodec,
-            string outputCodec,
             int? maxWidth,
             int? maxHeight)
         {

@@ -296,7 +296,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // Refresh seasons
             foreach (var item in items)
             {
-                if (!(item is Season))
+                if (item is not Season)
                 {
                     continue;
                 }

@@ -6,11 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -83,8 +84,8 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceName">Name of the device.</param>
         /// <param name="remoteEndPoint">The remote end point.</param>
         /// <param name="user">The user.</param>
-        /// <returns>Session information.</returns>
-        SessionInfo LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
+        /// <returns>A task containing the session information.</returns>
+        Task<SessionInfo> LogSessionActivity(string appName, string appVersion, string deviceId, string deviceName, string remoteEndPoint, Jellyfin.Data.Entities.User user);
 
         /// <summary>
         /// Used to report that a session controller has connected.
@@ -280,33 +281,13 @@ namespace MediaBrowser.Controller.Session
         void ReportNowViewingItem(string sessionId, string itemId);
 
         /// <summary>
-        /// Reports the now viewing item.
-        /// </summary>
-        /// <param name="sessionId">The session identifier.</param>
-        /// <param name="item">The item.</param>
-        void ReportNowViewingItem(string sessionId, BaseItemDto item);
-
-        /// <summary>
         /// Authenticates the new session.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Task{SessionInfo}.</returns>
         Task<AuthenticationResult> AuthenticateNewSession(AuthenticationRequest request);
 
-        /// <summary>
-        /// Authenticates a new session with quick connect.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="token">Quick connect access token.</param>
-        /// <returns>Task{SessionInfo}.</returns>
-        Task<AuthenticationResult> AuthenticateQuickConnect(AuthenticationRequest request, string token);
-
-        /// <summary>
-        /// Creates the new session.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>Task&lt;AuthenticationResult&gt;.</returns>
-        Task<AuthenticationResult> CreateNewSession(AuthenticationRequest request);
+        Task<AuthenticationResult> AuthenticateDirect(AuthenticationRequest request);
 
         /// <summary>
         /// Reports the capabilities.
@@ -344,7 +325,7 @@ namespace MediaBrowser.Controller.Session
         /// <param name="deviceId">The device identifier.</param>
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <returns>SessionInfo.</returns>
-        SessionInfo GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint);
+        Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint);
 
         /// <summary>
         /// Gets the session by authentication token.
@@ -354,28 +335,24 @@ namespace MediaBrowser.Controller.Session
         /// <param name="remoteEndpoint">The remote endpoint.</param>
         /// <param name="appVersion">The application version.</param>
         /// <returns>Task&lt;SessionInfo&gt;.</returns>
-        SessionInfo GetSessionByAuthenticationToken(AuthenticationInfo info, string deviceId, string remoteEndpoint, string appVersion);
+        Task<SessionInfo> GetSessionByAuthenticationToken(Device info, string deviceId, string remoteEndpoint, string appVersion);
 
         /// <summary>
         /// Logouts the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        void Logout(string accessToken);
+        /// <returns>A <see cref="Task"/> representing the log out process.</returns>
+        Task Logout(string accessToken);
 
-        void Logout(AuthenticationInfo accessToken);
+        Task Logout(Device device);
 
         /// <summary>
         /// Revokes the user tokens.
         /// </summary>
-        /// <param name="userId">User ID.</param>
-        /// <param name="currentAccessToken">Current access token.</param>
-        void RevokeUserTokens(Guid userId, string currentAccessToken);
-
-        /// <summary>
-        /// Revokes the token.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        void RevokeToken(string id);
+        /// <param name="userId">The user's id.</param>
+        /// <param name="currentAccessToken">The current access token.</param>
+        /// <returns>Task.</returns>
+        Task RevokeUserTokens(Guid userId, string currentAccessToken);
 
         void CloseIfNeeded(SessionInfo session);
     }

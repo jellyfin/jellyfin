@@ -423,7 +423,7 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
+        public virtual void SetAttributes(string path, bool isHidden, bool readOnly)
         {
             if (!OperatingSystem.IsWindows())
             {
@@ -437,14 +437,14 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            if (info.IsReadOnly == isReadOnly && info.IsHidden == isHidden)
+            if (info.IsReadOnly == readOnly && info.IsHidden == isHidden)
             {
                 return;
             }
 
             var attributes = File.GetAttributes(path);
 
-            if (isReadOnly)
+            if (readOnly)
             {
                 attributes = attributes | FileAttributes.ReadOnly;
             }

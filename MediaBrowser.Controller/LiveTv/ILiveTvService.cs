@@ -70,10 +70,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Updates the timer asynchronous.
         /// </summary>
-        /// <param name="info">The information.</param>
+        /// <param name="updatedTimer">The updated timer information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken);
+        Task UpdateTimerAsync(TimerInfo updatedTimer, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the series timer asynchronous.

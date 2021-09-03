@@ -109,6 +109,9 @@ namespace Jellyfin.Server.Implementations.Tests.Data
         [InlineData("")]
         [InlineData("*")]
         [InlineData("https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0")]
+        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*6374520964785129080*WjQbtJtSO8nhNZ%L_Io#R/oaS<o}-;adXAoIn7j[%hW9s:WGw[nN")] // Invalid modified date
+        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*-637452096478512963*WjQbtJtSO8nhNZ%L_Io#R/oaS<o}-;adXAoIn7j[%hW9s:WGw[nN")] // Negative modified date
+        [InlineData("/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Invalid*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN")] // Invalid type
         public void ItemImageInfoFromValueString_Invalid_Null(string value)
         {
             Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value));

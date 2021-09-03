@@ -57,7 +57,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var hasChanges = false;
 
-            if (!(item is Photo))
+            if (item is not Photo)
             {
                 var images = providers.OfType<ILocalImageProvider>()
                     .SelectMany(i => i.GetImages(item, directoryService))
@@ -529,7 +529,7 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 var hasDualAccess = item as IHasDualAccess;
                 if (hasDualAccess == null || hasDualAccess.IsAccessedByName)

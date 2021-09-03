@@ -319,11 +319,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
             }
-            catch (ObjectDisposedException)
-            {
-                // TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error reading ffmpeg recording log");

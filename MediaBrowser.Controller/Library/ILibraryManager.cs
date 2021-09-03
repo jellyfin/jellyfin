@@ -595,11 +595,11 @@ namespace MediaBrowser.Controller.Library
 
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
 
-        void AddMediaPath(string virtualFolderName, MediaPathInfo path);
+        void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
-        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
-        void RemoveMediaPath(string virtualFolderName, string path);
+        void RemoveMediaPath(string virtualFolderName, string mediaPath);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
 

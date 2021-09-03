@@ -287,14 +287,14 @@ namespace Emby.Server.Implementations.Library
 
             if (item is IItemByName)
             {
-                if (!(item is MusicArtist))
+                if (item is not MusicArtist)
                 {
                     return;
                 }
             }
             else if (!item.IsFolder)
             {
-                if (!(item is Video) && !(item is LiveTvChannel))
+                if (item is not Video && item is not LiveTvChannel)
                 {
                     return;
                 }
@@ -866,7 +866,7 @@ namespace Emby.Server.Implementations.Library
         {
             var path = Person.GetPath(name);
             var id = GetItemByNameId<Person>(path);
-            if (!(GetItemById(id) is Person item))
+            if (GetItemById(id) is not Person item)
             {
                 item = new Person
                 {
@@ -1761,21 +1761,19 @@ namespace Emby.Server.Implementations.Library
             return orderedItems ?? items;
         }
 
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderByList)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy)
         {
             var isFirst = true;
 
             IOrderedEnumerable<BaseItem> orderedItems = null;
 
-            foreach (var orderBy in orderByList)
+            foreach (var (name, sortOrder) in orderBy)
             {
-                var comparer = GetComparer(orderBy.Item1, user);
+                var comparer = GetComparer(name, user);
                 if (comparer == null)
                 {
                     continue;
                 }
-
-                var sortOrder = orderBy.Item2;
 
                 if (isFirst)
                 {
@@ -2118,7 +2116,7 @@ namespace Emby.Server.Implementations.Library
 
         public LibraryOptions GetLibraryOptions(BaseItem item)
         {
-            if (!(item is CollectionFolder collectionFolder))
+            if (item is not CollectionFolder collectionFolder)
             {
                 // List.Find is more performant than FirstOrDefault due to enumerator allocation
                 collectionFolder = GetCollectionFolders(item)
@@ -3076,9 +3074,9 @@ namespace Emby.Server.Implementations.Library
             });
         }
 
-        public void AddMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
+        public void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
         {
-            AddMediaPathInternal(virtualFolderName, pathInfo, true);
+            AddMediaPathInternal(virtualFolderName, mediaPath, true);
         }
 
         private void AddMediaPathInternal(string virtualFolderName, MediaPathInfo pathInfo, bool saveLibraryOptions)
@@ -3131,11 +3129,11 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public void UpdateMediaPath(string virtualFolderName, MediaPathInfo pathInfo)
+        public void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath)
         {
-            if (pathInfo == null)
+            if (mediaPath == null)
             {
-                throw new ArgumentNullException(nameof(pathInfo));
+                throw new ArgumentNullException(nameof(mediaPath));
             }
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
@@ -3148,9 +3146,9 @@ namespace Emby.Server.Implementations.Library
             var list = libraryOptions.PathInfos.ToList();
             foreach (var originalPathInfo in list)
             {
-                if (string.Equals(pathInfo.Path, originalPathInfo.Path, StringComparison.Ordinal))
+                if (string.Equals(mediaPath.Path, originalPathInfo.Path, StringComparison.Ordinal))
                 {
-                    originalPathInfo.NetworkPath = pathInfo.NetworkPath;
+                    originalPathInfo.NetworkPath = mediaPath.NetworkPath;
                     break;
                 }
             }
@@ -3173,10 +3171,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (!list.Any(i => string.Equals(i.Path, location, StringComparison.Ordinal)))
                     {
-                        list.Add(new MediaPathInfo
-                        {
-                            Path = location
-                        });
+                        list.Add(new MediaPathInfo(location));
                     }
                 }
 

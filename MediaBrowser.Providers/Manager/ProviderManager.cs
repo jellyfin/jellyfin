@@ -323,7 +323,7 @@ namespace MediaBrowser.Providers.Manager
                 .OrderBy(i =>
                 {
                     // See if there's a user-defined order
-                    if (!(i is ILocalImageProvider))
+                    if (i is not ILocalImageProvider)
                     {
                         var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
                         var index = Array.IndexOf(fetcherOrder, i.Name);
@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.Manager
             if (!includeDisabled)
             {
                 // If locked only allow local providers
-                if (item.IsLocked && !(provider is ILocalMetadataProvider) && !(provider is IForcedProvider))
+                if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
                 {
                     return false;
                 }
@@ -431,7 +431,7 @@ namespace MediaBrowser.Providers.Manager
             if (!includeDisabled)
             {
                 // If locked only allow local providers
-                if (item.IsLocked && !(provider is ILocalImageProvider))
+                if (item.IsLocked && provider is not ILocalImageProvider)
                 {
                     if (refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)
                     {
@@ -466,7 +466,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>System.Int32.</returns>
         private int GetOrder(IImageProvider provider)
         {
-            if (!(provider is IHasOrder hasOrder))
+            if (provider is not IHasOrder hasOrder)
             {
                 return 0;
             }
@@ -745,7 +745,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 // Manual edit occurred
                                 // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (!(saver is IMetadataFileSaver fileSaver) || !File.Exists(fileSaver.GetSavePath(item)))
+                                if (saver is not IMetadataFileSaver fileSaver || !File.Exists(fileSaver.GetSavePath(item)))
                                 {
                                     return false;
                                 }

@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
 
             if (paths != null && paths.Length > 0)
             {
-                libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo { Path = i }).ToArray();
+                libraryOptions.PathInfos = paths.Select(i => new MediaPathInfo(i)).ToArray();
             }
 
             await _libraryManager.AddVirtualFolder(name, collectionType, libraryOptions, refreshLibrary).ConfigureAwait(false);
@@ -212,7 +212,7 @@ namespace Jellyfin.Api.Controllers
 
             try
             {
-                var mediaPath = mediaPathDto.PathInfo ?? new MediaPathInfo { Path = mediaPathDto.Path };
+                var mediaPath = mediaPathDto.PathInfo ?? new MediaPathInfo(mediaPathDto.Path ?? throw new ArgumentException("PathInfo and Path can't both be null."));
 
                 _libraryManager.AddMediaPath(mediaPathDto.Name, mediaPath);
             }

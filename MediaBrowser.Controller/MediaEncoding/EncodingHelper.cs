@@ -535,7 +535,9 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isWindows = OperatingSystem.IsWindows();
             var isLinux = OperatingSystem.IsLinux();
             var isMacOS = OperatingSystem.IsMacOS();
+#pragma warning disable CA1508 // Defaults to string.Empty
             var isSwDecoder = string.IsNullOrEmpty(videoDecoder);
+#pragma warning restore CA1508
             var isD3d11vaDecoder = videoDecoder.IndexOf("d3d11va", StringComparison.OrdinalIgnoreCase) != -1;
             var isVaapiDecoder = videoDecoder.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
             var isVaapiEncoder = outputVideoCodec.IndexOf("vaapi", StringComparison.OrdinalIgnoreCase) != -1;
@@ -1796,7 +1798,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             var request = state.BaseRequest;
 
-            var inputChannels = audioStream?.Channels;
+            var inputChannels = audioStream.Channels;
 
             if (inputChannels <= 0)
             {
@@ -2068,8 +2070,8 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 // Adjust the size of graphical subtitles to fit the video stream.
                 var videoStream = state.VideoStream;
-                var inputWidth = videoStream?.Width;
-                var inputHeight = videoStream?.Height;
+                var inputWidth = videoStream.Width;
+                var inputHeight = videoStream.Height;
                 var (width, height) = GetFixedOutputSize(inputWidth, inputHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
 
                 if (width.HasValue && height.HasValue)
@@ -3304,7 +3306,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 inputModifier += " " + videoDecoder;
 
                 if (!IsCopyCodec(state.OutputVideoCodec)
-                    && (videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1)
+                    && videoDecoder.Contains("cuvid", StringComparison.OrdinalIgnoreCase))
                 {
                     var videoStream = state.VideoStream;
                     var inputWidth = videoStream?.Width;
@@ -3313,7 +3315,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     var (width, height) = GetFixedOutputSize(inputWidth, inputHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
 
-                    if ((videoDecoder ?? string.Empty).IndexOf("cuvid", StringComparison.OrdinalIgnoreCase) != -1
+                    if (videoDecoder.Contains("cuvid", StringComparison.OrdinalIgnoreCase)
                         && width.HasValue
                         && height.HasValue)
                     {

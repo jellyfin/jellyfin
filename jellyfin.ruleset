@@ -12,6 +12,8 @@
     <Rule Id="SA1101" Action="None" />
     <!-- disable warning SA1108: Block statements should not contain embedded comments -->
     <Rule Id="SA1108" Action="None" />
+    <!-- disable warning SA1118: Parameter must not span multiple lines. -->
+    <Rule Id="SA1118" Action="None" />
     <!-- disable warning SA1128:: Put constructor initializers on their own line -->
     <Rule Id="SA1128" Action="None" />
     <!-- disable warning SA1130: Use lambda syntax -->
@@ -39,6 +41,10 @@
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA1305: Specify IFormatProvider -->
+    <Rule Id="CA1305" Action="Error" />
+    <!-- error on CA1725: Parameter names should match base declaration -->
+    <Rule Id="CA1725" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />

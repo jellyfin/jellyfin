@@ -112,7 +112,7 @@ namespace MediaBrowser.Controller.Entities
 
         private string _name;
 
-        public static char SlugChar = '-';
+        public const char SlugChar = '-';
 
         protected BaseItem()
         {
@@ -2050,7 +2050,7 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual string GetClientTypeName()
         {
-            if (IsFolder && SourceType == SourceType.Channel && !(this is Channel))
+            if (IsFolder && SourceType == SourceType.Channel && this is not Channel)
             {
                 return "ChannelFolderItem";
             }

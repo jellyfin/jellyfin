@@ -51,7 +51,7 @@ namespace Emby.Server.Implementations.Images
 
         public int Order => 0;
 
-        protected virtual bool Supports(BaseItem _) => true;
+        protected virtual bool Supports(BaseItem item) => true;
 
         public async Task<ItemUpdateType> FetchAsync(T item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {

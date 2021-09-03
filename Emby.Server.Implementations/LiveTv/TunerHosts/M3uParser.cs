@@ -295,11 +295,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            attributes.TryGetValue("tvg-name", out string name);
+            string name = nameInExtInf;
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                name = nameInExtInf;
+                attributes.TryGetValue("tvg-name", out name);
             }
 
             if (string.IsNullOrWhiteSpace(name))
