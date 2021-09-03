@@ -117,5 +117,6 @@
     "Undefined": "Indefinido",
     "Forced": "Forçado",
     "Default": "Predefinição",
-    "TaskCleanActivityLogDescription": "Apaga itens no registro com idade acima do que é configurado."
+    "TaskCleanActivityLogDescription": "Apaga itens no registro com idade acima do que é configurado.",
+    "TaskOptimizeDatabase": "Otimizar base de dados"
 }

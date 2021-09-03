@@ -43,7 +43,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         public override bool SupportsPlayedStatus => true;
 
         [JsonIgnore]
-        public override bool SupportsPeople => false;
+        public override bool SupportsPeople => true;
 
         [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;

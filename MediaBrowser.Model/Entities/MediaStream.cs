@@ -255,13 +255,18 @@ namespace MediaBrowser.Model.Entities
                             attributes.Add(string.IsNullOrEmpty(LocalizedForced) ? "Forced" : LocalizedForced);
                         }
 
+                        if (!string.IsNullOrEmpty(Codec))
+                        {
+                            attributes.Add(Codec.ToUpperInvariant());
+                        }
+
                         if (!string.IsNullOrEmpty(Title))
                         {
                             var result = new StringBuilder(Title);
                             foreach (var tag in attributes)
                             {
                                 // Keep Tags that are not already in Title.
-                                if (Title.IndexOf(tag, StringComparison.OrdinalIgnoreCase) == -1)
+                                if (!Title.Contains(tag, StringComparison.OrdinalIgnoreCase))
                                 {
                                     result.Append(" - ").Append(tag);
                                 }

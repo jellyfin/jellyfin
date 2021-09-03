@@ -75,8 +75,7 @@ namespace Jellyfin.Server.Implementations.Security
                 auth.TryGetValue("Token", out token);
             }
 
-#pragma warning disable CA1508
-            // headers can return StringValues.Empty
+#pragma warning disable CA1508 // string.IsNullOrEmpty(token) is always false.
             if (string.IsNullOrEmpty(token))
             {
                 token = headers["X-Emby-Token"];

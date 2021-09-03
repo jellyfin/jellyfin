@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
@@ -27,7 +28,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
+        private static readonly Regex _performerPattern = new (@"(?<name>.*) \((?<instrument>.*)\)");
+
+        private readonly CultureInfo _usCulture = new ("en-US");
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
@@ -740,6 +743,23 @@ namespace MediaBrowser.MediaEncoding.Probing
                     stream.BitDepth = streamInfo.BitsPerRawSample;
                 }
 
+                if (!stream.BitDepth.HasValue)
+                {
+                    if (!string.IsNullOrEmpty(streamInfo.PixelFormat)
+                        && streamInfo.PixelFormat.Contains("p10", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stream.BitDepth = 10;
+                    }
+
+                    if (!string.IsNullOrEmpty(streamInfo.Profile)
+                        && (streamInfo.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase)
+                            || streamInfo.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase)
+                            || streamInfo.Profile.Contains("Profile 2", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        stream.BitDepth = 10;
+                    }
+                }
+
                 // stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
@@ -1111,12 +1131,63 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            // Check for writer some music is tagged that way as alternative to composer/lyricist
+            if (tags.TryGetValue("performer", out var performer) && !string.IsNullOrWhiteSpace(performer))
+            {
+                foreach (var person in Split(performer, false))
+                {
+                    Match match = _performerPattern.Match(person);
+
+                    // If the performer doesn't have any instrument/role associated, it won't match. In that case, chances are it's simply a band name, so we skip it.
+                    if (match.Success)
+                    {
+                        people.Add(new BaseItemPerson
+                        {
+                            Name = match.Groups["name"].Value,
+                            Type = PersonType.Actor,
+                            Role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
+                        });
+                    }
+                }
+            }
+
+            // In cases where there isn't sufficient information as to which role a writer performed on a recording, tagging software uses the "writer" tag.
             if (tags.TryGetValue("writer", out var writer) && !string.IsNullOrWhiteSpace(writer))
             {
                 foreach (var person in Split(writer, false))
                 {
                     people.Add(new BaseItemPerson { Name = person, Type = PersonType.Writer });
+                }
+            }
+
+            if (tags.TryGetValue("arranger", out var arranger) && !string.IsNullOrWhiteSpace(arranger))
+            {
+                foreach (var person in Split(arranger, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Arranger });
+                }
+            }
+
+            if (tags.TryGetValue("engineer", out var engineer) && !string.IsNullOrWhiteSpace(engineer))
+            {
+                foreach (var person in Split(engineer, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Engineer });
+                }
+            }
+
+            if (tags.TryGetValue("mixer", out var mixer) && !string.IsNullOrWhiteSpace(mixer))
+            {
+                foreach (var person in Split(mixer, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Mixer });
+                }
+            }
+
+            if (tags.TryGetValue("remixer", out var remixer) && !string.IsNullOrWhiteSpace(remixer))
+            {
+                foreach (var person in Split(remixer, false))
+                {
+                    people.Add(new BaseItemPerson { Name = person, Type = PersonType.Remixer });
                 }
             }
 

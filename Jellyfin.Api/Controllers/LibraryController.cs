@@ -700,7 +700,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.RootFolder)
                 : _libraryManager.GetItemById(itemId);
 
-            if (item is Episode || (item is IItemByName && !(item is MusicArtist)))
+            if (item is Episode || (item is IItemByName && item is not MusicArtist))
             {
                 return new QueryResult<BaseItemDto>();
             }

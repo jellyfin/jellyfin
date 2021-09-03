@@ -28,6 +28,11 @@ namespace MediaBrowser.Controller.Subtitles
         /// <summary>
         /// Searches the subtitles.
         /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="language">Subtitle language.</param>
+        /// <param name="isPerfectMatch">Require perfect match.</param>
+        /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
+        /// <returns>Subtitles, wrapped in task.</returns>
         Task<RemoteSubtitleInfo[]> SearchSubtitles(
             Video video,
             string language,
@@ -47,11 +52,20 @@ namespace MediaBrowser.Controller.Subtitles
         /// <summary>
         /// Downloads the subtitles.
         /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="subtitleId">Subtitle ID.</param>
+        /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
+        /// <returns>A task.</returns>
         Task DownloadSubtitles(Video video, string subtitleId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Downloads the subtitles.
         /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="libraryOptions">Library options to use.</param>
+        /// <param name="subtitleId">Subtitle ID.</param>
+        /// <param name="cancellationToken">CancellationToken to use for the operation.</param>
+        /// <returns>A task.</returns>
         Task DownloadSubtitles(Video video, LibraryOptions libraryOptions, string subtitleId, CancellationToken cancellationToken);
 
         /// <summary>
@@ -73,11 +87,16 @@ namespace MediaBrowser.Controller.Subtitles
         /// <summary>
         /// Deletes the subtitles.
         /// </summary>
+        /// <param name="item">Media item.</param>
+        /// <param name="index">Subtitle index.</param>
+        /// <returns>A task.</returns>
         Task DeleteSubtitles(BaseItem item, int index);
 
         /// <summary>
         /// Gets the providers.
         /// </summary>
+        /// <param name="item">The media item.</param>
+        /// <returns>Subtitles providers.</returns>
         SubtitleProviderInfo[] GetSupportedProviders(BaseItem item);
     }
 }

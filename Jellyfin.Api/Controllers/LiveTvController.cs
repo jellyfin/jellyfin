@@ -1172,7 +1172,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesVideoFile]
-        public async Task<ActionResult> GetLiveRecordingFile([FromRoute, Required] string recordingId)
+        public ActionResult GetLiveRecordingFile([FromRoute, Required] string recordingId)
         {
             var path = _liveTvManager.GetEmbyTvActiveRecordingPath(recordingId);
 
@@ -1181,11 +1181,8 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            await using var memoryStream = new MemoryStream();
-            await new ProgressiveFileCopier(path, null, _transcodingJobHelper, CancellationToken.None)
-                .WriteToAsync(memoryStream, CancellationToken.None)
-                .ConfigureAwait(false);
-            return File(memoryStream, MimeTypes.GetMimeType(path));
+            var stream = new ProgressiveFileStream(path, null, _transcodingJobHelper);
+            return new FileStreamResult(stream, MimeTypes.GetMimeType(path));
         }
 
         /// <summary>

@@ -453,6 +453,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
         public async Task RunStartupTasksAsync(CancellationToken cancellationToken)
         {
@@ -466,7 +467,7 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder.SetFFmpegPath();
 
-            Logger.LogInformation("ServerId: {0}", SystemId);
+            Logger.LogInformation("ServerId: {ServerId}", SystemId);
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
@@ -1089,7 +1090,6 @@ namespace Emby.Server.Implementations
                 ServerName = FriendlyName,
                 LocalAddress = GetSmartApiUrl(source),
                 SupportsLibraryMonitor = true,
-                EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
                 PackageName = _startupOptions.PackageName
             };

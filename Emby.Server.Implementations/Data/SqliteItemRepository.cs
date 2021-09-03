@@ -75,6 +75,12 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
+        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{SqliteItemRepository}"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="imageProcessor">Instance of the <see cref="IImageProcessor"/> interface.</param>
+        /// <exception cref="ArgumentNullException">config is null.</exception>
         public SqliteItemRepository(
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
@@ -1135,14 +1141,24 @@ namespace Emby.Server.Implementations.Data
                 Path = RestorePath(path.ToString())
             };
 
-            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
+            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks)
+                && ticks >= DateTime.MinValue.Ticks
+                && ticks <= DateTime.MaxValue.Ticks)
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
+            }
+            else
+            {
+                return null;
             }
 
             if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
             {
                 image.Type = type;
+            }
+            else
+            {
+                return null;
             }
 
             // Optional parameters: width*height*blurhash
@@ -4879,7 +4895,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             foreach (var t in _knownTypes)
             {
-                dict[t.Name] = t.FullName ;
+                dict[t.Name] = t.FullName;
             }
 
             dict["Program"] = typeof(LiveTvProgram).FullName;

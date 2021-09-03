@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -38,9 +36,9 @@ namespace Emby.Server.Implementations.Localization
         private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
             new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
 
-        private List<CultureDto> _cultures;
-
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+        private List<CultureDto> _cultures = new List<CultureDto>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
@@ -72,8 +70,8 @@ namespace Emby.Server.Implementations.Localization
                 string countryCode = resource.Substring(RatingsPath.Length, 2);
                 var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
-                await using var str = _assembly.GetManifestResourceStream(resource);
-                using var reader = new StreamReader(str);
+                await using var stream = _assembly.GetManifestResourceStream(resource);
+                using var reader = new StreamReader(stream!); // shouldn't be null here, we just got the resource path from Assembly.GetManifestResourceNames()
                 await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
                     if (string.IsNullOrWhiteSpace(line))
@@ -113,7 +111,8 @@ namespace Emby.Server.Implementations.Localization
         {
             List<CultureDto> list = new List<CultureDto>();
 
-            await using var stream = _assembly.GetManifestResourceStream(CulturesPath);
+            await using var stream = _assembly.GetManifestResourceStream(CulturesPath)
+                ?? throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
             using var reader = new StreamReader(stream);
             await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
             {
@@ -162,7 +161,7 @@ namespace Emby.Server.Implementations.Localization
         }
 
         /// <inheritdoc />
-        public CultureDto FindLanguageInfo(string language)
+        public CultureDto? FindLanguageInfo(string language)
         {
             // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
             for (var i = 0; i < _cultures.Count; i++)
@@ -183,9 +182,10 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<CountryInfo> GetCountries()
         {
-            using StreamReader reader = new StreamReader(_assembly.GetManifestResourceStream(CountriesPath));
-
-            return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions);
+            using StreamReader reader = new StreamReader(
+                _assembly.GetManifestResourceStream(CountriesPath) ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'"));
+            return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions)
+                ?? throw new InvalidOperationException($"Resource contains invalid data: '{CountriesPath}'");
         }
 
         /// <inheritdoc />
@@ -205,7 +205,9 @@ namespace Emby.Server.Implementations.Localization
                 countryCode = "us";
             }
 
-            return GetRatings(countryCode) ?? GetRatings("us");
+            return GetRatings(countryCode)
+                ?? GetRatings("us")
+                ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
         }
 
         /// <summary>
@@ -213,7 +215,7 @@ namespace Emby.Server.Implementations.Localization
         /// </summary>
         /// <param name="countryCode">The country code.</param>
         /// <returns>The ratings.</returns>
-        private Dictionary<string, ParentalRating> GetRatings(string countryCode)
+        private Dictionary<string, ParentalRating>? GetRatings(string countryCode)
         {
             _allParentalRatings.TryGetValue(countryCode, out var value);
 
@@ -238,7 +240,7 @@ namespace Emby.Server.Implementations.Localization
 
             var ratingsDictionary = GetParentalRatingsDictionary();
 
-            if (ratingsDictionary.TryGetValue(rating, out ParentalRating value))
+            if (ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
             {
                 return value.Value;
             }
@@ -266,20 +268,6 @@ namespace Emby.Server.Implementations.Localization
 
             // TODO: Further improve by normalizing out all spaces and dashes
             return null;
-        }
-
-        /// <inheritdoc />
-        public bool HasUnicodeCategory(string value, UnicodeCategory category)
-        {
-            foreach (var chr in value)
-            {
-                if (char.GetUnicodeCategory(chr) == category)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <inheritdoc />
@@ -347,18 +335,21 @@ namespace Emby.Server.Implementations.Localization
         {
             await using var stream = _assembly.GetManifestResourceStream(resourcePath);
             // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
-            if (stream != null)
-            {
-                var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
-
-                foreach (var key in dict.Keys)
-                {
-                    dictionary[key] = dict[key];
-                }
-            }
-            else
+            if (stream == null)
             {
                 _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
+                return;
+            }
+
+            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
+            if (dict == null)
+            {
+                throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
+            }
+
+            foreach (var key in dict.Keys)
+            {
+                dictionary[key] = dict[key];
             }
         }
 
