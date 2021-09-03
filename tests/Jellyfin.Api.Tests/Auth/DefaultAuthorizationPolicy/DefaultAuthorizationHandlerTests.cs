@@ -95,16 +95,14 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
                 new Dictionary<string, string>
                 {
                     { "param", "Hörbücher" }
-                }
-                );
+                });
 
             data.Add(
                 "param=%22%Hörbücher",
                 new Dictionary<string, string>
                 {
                     { "param", "\"%Hörbücher" }
-                }
-                );
+                });
 
             return data;
         }
