@@ -208,7 +208,6 @@ namespace Jellyfin.Model.Tests.Dlna
         [InlineData(DlnaProfileType.Audio)]
         [InlineData(DlnaProfileType.Video)]
         [InlineData(DlnaProfileType.Photo)]
-
         [Theory]
         public void Test_Blank_Url_Method(DlnaProfileType type)
         {
