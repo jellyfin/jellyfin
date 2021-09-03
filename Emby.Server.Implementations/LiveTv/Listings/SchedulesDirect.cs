@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
 using Jellyfin.Extensions.Json;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Cryptography;
@@ -34,7 +33,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
-        private readonly IApplicationHost _appHost;
         private readonly ICryptoProvider _cryptoProvider;
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
@@ -44,12 +42,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
             IHttpClientFactory httpClientFactory,
-            IApplicationHost appHost,
             ICryptoProvider cryptoProvider)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _appHost = appHost;
             _cryptoProvider = cryptoProvider;
         }
 
@@ -120,8 +116,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var programRequestOptions = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/programs");
             programRequestOptions.Headers.TryAddWithoutValidation("token", token);
 
-            var programsID = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
-            programRequestOptions.Content = new StringContent("[\"" + string.Join("\", \"", programsID) + "\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
+            var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
+            programRequestOptions.Content = new StringContent("[\"" + string.Join("\", \"", programIds) + "\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
 
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -225,21 +221,21 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             string newID = programId + "T" + startAt.Ticks + "C" + channelId;
 
-            if (programInfo.AudioProperties != null)
+            if (programInfo.AudioProperties.Count != 0)
             {
-                if (programInfo.AudioProperties.Exists(item => string.Equals(item, "atmos", StringComparison.OrdinalIgnoreCase)))
+                if (programInfo.AudioProperties.Contains("atmos", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Atmos;
                 }
-                else if (programInfo.AudioProperties.Exists(item => string.Equals(item, "dd 5.1", StringComparison.OrdinalIgnoreCase)))
+                else if (programInfo.AudioProperties.Contains("dd 5.1", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Exists(item => string.Equals(item, "dd", StringComparison.OrdinalIgnoreCase)))
+                else if (programInfo.AudioProperties.Contains("dd", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Exists(item => string.Equals(item, "stereo", StringComparison.OrdinalIgnoreCase)))
+                else if (programInfo.AudioProperties.Contains("stereo", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Stereo;
                 }
@@ -520,7 +516,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             lineups.Add(new NameIdPair
                             {
                                 Name = string.IsNullOrWhiteSpace(lineup.Name) ? lineup.Lineup : lineup.Name,
-                                Id = lineup.Uri[18..]
+                                Id = lineup.Uri?[18..]
                             });
                         }
                     }
@@ -790,7 +786,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.Find(item => string.Equals(item.StationId, channel.StationId, StringComparison.OrdinalIgnoreCase))
+                var station = allStations.FirstOrDefault(item => string.Equals(item.StationId, channel.StationId, StringComparison.OrdinalIgnoreCase))
                     ?? new StationDto
                     {
                         StationId = channel.StationId
