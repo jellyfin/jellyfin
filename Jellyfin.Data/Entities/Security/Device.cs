@@ -2,14 +2,13 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
-using Jellyfin.Data.Interfaces;
 
 namespace Jellyfin.Data.Entities.Security
 {
     /// <summary>
     /// An entity representing a device.
     /// </summary>
-    public class Device : IAuditableEntity
+    public class Device
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Device"/> class.
@@ -85,10 +84,14 @@ namespace Jellyfin.Data.Entities.Security
         /// </summary>
         public bool IsActive { get; set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the date created.
+        /// </summary>
         public DateTime DateCreated { get; set; }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the date modified.
+        /// </summary>
         public DateTime DateModified { get; set; }
 
         /// <summary>
