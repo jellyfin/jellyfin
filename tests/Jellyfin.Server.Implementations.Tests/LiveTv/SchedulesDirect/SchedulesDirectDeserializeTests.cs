@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Token_Response_Live_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/token_live_response.json");
-            var tokenDto = JsonSerializer.Deserialize<TokenDto>(bytes);
+            var tokenDto = JsonSerializer.Deserialize<TokenDto>(bytes, _jsonOptions);
 
             Assert.NotNull(tokenDto);
             Assert.Equal(0, tokenDto!.Code);
@@ -41,7 +41,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Token_Response_Offline_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/token_offline_response.json");
-            var tokenDto = JsonSerializer.Deserialize<TokenDto>(bytes);
+            var tokenDto = JsonSerializer.Deserialize<TokenDto>(bytes, _jsonOptions);
 
             Assert.NotNull(tokenDto);
             Assert.Equal(3_000, tokenDto!.Code);
@@ -93,7 +93,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Schedule_Response_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/schedules_response.json");
-            var days = JsonSerializer.Deserialize<IReadOnlyList<DayDto>>(bytes);
+            var days = JsonSerializer.Deserialize<IReadOnlyList<DayDto>>(bytes, _jsonOptions);
 
             Assert.NotNull(days);
             Assert.Equal(1, days!.Count);
@@ -121,7 +121,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Program_Response_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/programs_response.json");
-            var programDtos = JsonSerializer.Deserialize<IReadOnlyList<ProgramDetailsDto>>(bytes);
+            var programDtos = JsonSerializer.Deserialize<IReadOnlyList<ProgramDetailsDto>>(bytes, _jsonOptions);
 
             Assert.NotNull(programDtos);
             Assert.Equal(2, programDtos!.Count);
@@ -158,7 +158,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Metadata_Programs_Response_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/metadata_programs_response.json");
-            var showImagesDtos = JsonSerializer.Deserialize<IReadOnlyList<ShowImagesDto>>(bytes);
+            var showImagesDtos = JsonSerializer.Deserialize<IReadOnlyList<ShowImagesDto>>(bytes, _jsonOptions);
 
             Assert.NotNull(showImagesDtos);
             Assert.Equal(1, showImagesDtos!.Count);
@@ -182,7 +182,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Headends_Response_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/headends_response.json");
-            var headendsDtos = JsonSerializer.Deserialize<IReadOnlyList<HeadendsDto>>(bytes);
+            var headendsDtos = JsonSerializer.Deserialize<IReadOnlyList<HeadendsDto>>(bytes, _jsonOptions);
 
             Assert.NotNull(headendsDtos);
             Assert.Equal(8, headendsDtos!.Count);
@@ -202,7 +202,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Lineups_Response_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/lineups_response.json");
-            var lineupsDto = JsonSerializer.Deserialize<LineupsDto>(bytes);
+            var lineupsDto = JsonSerializer.Deserialize<LineupsDto>(bytes, _jsonOptions);
 
             Assert.NotNull(lineupsDto);
             Assert.Equal(0, lineupsDto!.Code);
@@ -226,7 +226,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
         public void Deserialize_Lineup_Response_Success()
         {
             var bytes = File.ReadAllBytes("Test Data/SchedulesDirect/lineup_response.json");
-            var channelDto = JsonSerializer.Deserialize<ChannelDto>(bytes);
+            var channelDto = JsonSerializer.Deserialize<ChannelDto>(bytes, _jsonOptions);
 
             Assert.NotNull(channelDto);
             Assert.Equal(2, channelDto!.Map.Count);
