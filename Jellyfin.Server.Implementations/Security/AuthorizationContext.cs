@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
@@ -253,29 +252,57 @@ namespace Jellyfin.Server.Implementations.Security
                 return null;
             }
 
+            // Remove up until the first space
             authorizationHeader = authorizationHeader[(firstSpace + 1)..];
+            return GetParts(authorizationHeader);
+        }
 
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// Get the authorization header components.
+        /// </summary>
+        /// <param name="authorizationHeader">The authorization header.</param>
+        /// <returns>Dictionary{System.StringSystem.String}.</returns>
+        public static Dictionary<string, string> GetParts(ReadOnlySpan<char> authorizationHeader)
+        {
+            var result = new Dictionary<string, string>();
+            var escaped = false;
+            int start = 0;
+            string key = string.Empty;
 
-            foreach (var item in authorizationHeader.Split(','))
+            int i;
+            for (i = 0; i < authorizationHeader.Length; i++)
             {
-                var trimmedItem = item.Trim();
-                var firstEqualsSign = trimmedItem.IndexOf('=');
-
-                if (firstEqualsSign > 0)
+                var token = authorizationHeader[i];
+                if (token == '"' || token == ',')
                 {
-                    var key = trimmedItem[..firstEqualsSign].ToString();
-                    var value = NormalizeValue(trimmedItem[(firstEqualsSign + 1)..].Trim('"').ToString());
-                    result[key] = value;
+                    // Applying a XOR logic to evaluate whether it is opening or closing a value
+                    escaped = (!escaped) == (token == '"');
+                    if (token == ',' && !escaped)
+                    {
+                        // Meeting a comma after a closing escape char means the value is complete
+                        if (start < i)
+                        {
+                            result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"').ToString());
+                            key = string.Empty;
+                        }
+
+                        start = i + 1;
+                    }
+                }
+                else if (!escaped && token == '=')
+                {
+                    key = authorizationHeader[start.. i].Trim().ToString();
+                    start = i + 1;
                 }
             }
 
-            return result;
-        }
+            // Add last value
+            if (start < i)
+            {
+                result[key] = WebUtility.UrlDecode(authorizationHeader[start..i].Trim('"').ToString());
+            }
 
-        private static string NormalizeValue(string value)
-        {
-            return string.IsNullOrEmpty(value) ? value : WebUtility.HtmlEncode(value);
+            return result;
         }
     }
 }
