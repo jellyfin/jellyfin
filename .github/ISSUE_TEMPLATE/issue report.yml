@@ -1,0 +1,216 @@
+name: Issue Report
+description: File an issue report
+title: "[Issue]: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as necessary, most questions may not be applicable to you. If you need real-time help, join us on [Matrix](https://matrix.to/#/#jellyfin-troubleshooting:matrix.org) or [Discord](https://discord.gg/zHBxVSXdBV).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Please describe your bug
+      description: Also tell us, what did you expect to happen?
+      placeholder: The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
+#      value: "A bug happened!"
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Jellyfin Version
+      description: What version of Jellyfin are you running?
+      options:
+        - 10.7.6
+        - 10.7.z
+        - 10.6.4
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version-other
+    attributes:
+      label: "if other:"
+      placeholder: Other
+  - type: dropdown
+    id: OS
+    attributes:
+      label: OS
+      description: What Operating System are you running?
+      options:
+        - Linux
+        - Windows
+        - MacOS
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: OS-other
+    attributes:
+      label: "if other:"
+      placeholder: Other
+  - type: textarea
+    id: networking
+    attributes:
+      label: Networking
+      description: Is there anything unique about your network?
+      placeholder: Remember to never expose Jellyfin to the internet without proper encryption such as https. If you are having local network issues, have you checked your firewall?
+  - type: textarea
+    id: storage
+    attributes:
+      label: Storage
+      description: How is your media stored?
+      placeholder: Samba, NFS, cloud based storage such as rclone are useful details. 
+  - type: dropdown
+    id: Virtualization
+    attributes:
+      label: Virtualization
+      description: Any forms of virtualization?
+      options:
+        - Docker (please specify image)
+        - LXC
+        - VM
+        - Other
+  - type: input
+    id: Virt-other
+    attributes:
+      label: "if other:"
+      placeholder: Other
+  - type: dropdown
+    id: HW
+    attributes:
+      label: Hardware Acceleration
+      description: Any forms of Hardware Acceleration?
+      options:
+        - VAAPI
+        - Intel Quicksync (QSV)
+        - Nvidia NVENC
+        - AMD AMF
+        - MediaCodec Android
+        - OpenMax OMX
+        - Exynos V4L2 MFC
+        - Video ToolBox
+  - type: input
+    id: HW-other
+    attributes:
+      label: Any additional details
+  - type: dropdown
+    id: clients
+    attributes:
+      label: What clients are you seeing the problem on?
+      multiple: true
+      options:
+        - Browsers
+        - Jellyfin Media Player
+        - Android
+        - AndroidTV
+        - Fire Stick
+        - iOS
+        - Kodi
+        - Roku
+        - Other
+  - type: input
+    id: client-other
+    attributes:
+      label: "if other:"
+      placeholder: Other
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: What browsers are you seeing the problem on?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Other
+  - type: input
+    id: browser-other
+    attributes:
+      label: "if other:"
+      placeholder: Other
+  - type: dropdown
+    id: Playback
+    attributes:
+      label: Method of Playback
+      description: FFmpeg is used to Direct Stream (video remux, other components are transcoded), Remux (no video or audio conversion), and Transcode (the video is converted). Direct Play will not use FFmpeg.
+      options:
+        - Direct Play
+        - Direct Stream
+        - Remux
+        - Transcode
+  - type: dropdown
+    id: Plugins
+    attributes:
+      label: What Plugins are you seeing the problem on?
+      multiple: true
+      options:
+        - LDAP Authentication
+        - Auto Organize
+        - InfuseSync
+        - Kodi Sync Queue
+        - Playback Reporting
+        - Trakt
+        - NextPVR
+        - TVHeadEnd
+        - AniDB
+        - Anilist
+        - AniSearch
+        - AudioDB
+        - Bookshelf
+        - Cover Art Archive
+        - Fanart
+        - Kitsu
+        - MusicBrainz
+        - OMDb
+        - Open Subtitles
+        - TMDb Box Sets
+        - TVmaze
+        - TheTVDB
+        - Email
+        - Gotify Notication
+        - PushBullet
+        - Pushover
+        - Reports
+        - Slack Notifications
+        - Webhook
+        - Other
+  - type: input
+    id: Plugin-other
+    attributes:
+      label: Any additional details
+      description: Please provide what the version of the plugin that is broken. We do not provide support for third-party plugins. 
+  - type: textarea
+    id: logs
+    attributes:
+      label: Jellyfin logs
+      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
+      placeholder: For playback issues, browser/client and FFmpeg logs may be more useful. 
+      render: shell
+  - type: textarea
+    id: ffmpeg-logs
+    attributes:
+      label: FFmpeg logs
+      description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
+      placeholder: It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg. 
+      render: shell
+  - type: textarea
+    id: browserlogs
+    attributes:
+      label: Please attach any browser or client logs here
+      placeholder: Access browser logs by using the F12 to bring up the console. Screenshots are typically easier to read than raw logs. For clients such as Android or iOS, please see our documentation.
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Please attach any screenshots here
+      placeholder: Images can be pasted directly into the textbox and will be hosted by github.
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://jellyfin.org/docs/general/community-standards.html#code-of-conduct)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
