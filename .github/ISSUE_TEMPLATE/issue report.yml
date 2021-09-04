@@ -13,9 +13,20 @@ body:
       label: Please describe your bug
       description: Also tell us, what did you expect to happen?
       placeholder: The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
-#      value: "A bug happened!"
     validations:
       required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
+    validations:
+      required: false
   - type: dropdown
     id: version
     attributes:
@@ -33,155 +44,37 @@ body:
     attributes:
       label: "if other:"
       placeholder: Other
-  - type: dropdown
-    id: OS
-    attributes:
-      label: OS
-      description: What Operating System are you running?
-      options:
-        - Linux
-        - Windows
-        - MacOS
-        - Other
-    validations:
-      required: true
-  - type: input
-    id: OS-other
-    attributes:
-      label: "if other:"
-      placeholder: Other
   - type: textarea
-    id: networking
     attributes:
-      label: Networking
-      description: Is there anything unique about your network?
-      placeholder: Remember to never expose Jellyfin to the internet without proper encryption such as https. If you are having local network issues, have you checked your firewall?
-  - type: textarea
-    id: storage
-    attributes:
-      label: Storage
-      description: How is your media stored?
-      placeholder: Samba, NFS, cloud based storage such as rclone are useful details. 
-  - type: dropdown
-    id: Virtualization
-    attributes:
-      label: Virtualization
-      description: Any forms of virtualization?
-      options:
-        - Docker (please specify image)
-        - LXC
-        - VM
-        - Other
-  - type: input
-    id: Virt-other
-    attributes:
-      label: "if other:"
-      placeholder: Other
-  - type: dropdown
-    id: HW
-    attributes:
-      label: Hardware Acceleration
-      description: Any forms of Hardware Acceleration?
-      options:
-        - VAAPI
-        - Intel Quicksync (QSV)
-        - Nvidia NVENC
-        - AMD AMF
-        - MediaCodec Android
-        - OpenMax OMX
-        - Exynos V4L2 MFC
-        - Video ToolBox
-  - type: input
-    id: HW-other
-    attributes:
-      label: Any additional details
-  - type: dropdown
-    id: clients
-    attributes:
-      label: What clients are you seeing the problem on?
-      multiple: true
-      options:
-        - Browsers
-        - Jellyfin Media Player
-        - Android
-        - AndroidTV
-        - Fire Stick
-        - iOS
-        - Kodi
-        - Roku
-        - Other
-  - type: input
-    id: client-other
-    attributes:
-      label: "if other:"
-      placeholder: Other
-  - type: dropdown
-    id: browsers
-    attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Firefox
-        - Chrome
-        - Safari
-        - Microsoft Edge
-        - Other
-  - type: input
-    id: browser-other
-    attributes:
-      label: "if other:"
-      placeholder: Other
-  - type: dropdown
-    id: Playback
-    attributes:
-      label: Method of Playback
-      description: FFmpeg is used to Direct Stream (video remux, other components are transcoded), Remux (no video or audio conversion), and Transcode (the video is converted). Direct Play will not use FFmpeg.
-      options:
-        - Direct Play
-        - Direct Stream
-        - Remux
-        - Transcode
-  - type: dropdown
-    id: Plugins
-    attributes:
-      label: What Plugins are you seeing the problem on?
-      multiple: true
-      options:
-        - LDAP Authentication
-        - Auto Organize
-        - InfuseSync
-        - Kodi Sync Queue
-        - Playback Reporting
-        - Trakt
-        - NextPVR
-        - TVHeadEnd
-        - AniDB
-        - Anilist
-        - AniSearch
-        - AudioDB
-        - Bookshelf
-        - Cover Art Archive
-        - Fanart
-        - Kitsu
-        - MusicBrainz
-        - OMDb
-        - Open Subtitles
-        - TMDb Box Sets
-        - TVmaze
-        - TheTVDB
-        - Email
-        - Gotify Notication
-        - PushBullet
-        - Pushover
-        - Reports
-        - Slack Notifications
-        - Webhook
-        - Other
-  - type: input
-    id: Plugin-other
-    attributes:
-      label: Any additional details
-      description: Please provide what the version of the plugin that is broken. We do not provide support for third-party plugins. 
+      label: Environment
+      description: |
+        Examples:
+        - **OS**: [e.g. Debian, Windows]
+        - **Virtualization**: [e.g. Docker, KVM, LXC]
+        - **Clients**: [Browser, Android, Fire Stick, etc.]
+        - **Browser**: [e.g. Firefox 91, Chrome 93, Safari 13]
+        - **FFmpeg Version**: [e.g. 4.3.2-Jellyfin]
+        - **Playback**: [Direct Play, Remux, Direct Stream, Transcode]
+        - **Hardware Acceleration**: [e.g. none, VAAPI, NVENC, etc.]
+        - **Installed Plugins**: [e.g. none, Fanart, Anime, etc.]
+        - **Reverse Proxy**: [e.g. none, nginx, apache, etc.]
+        - **Base URL**: [e.g. none, yes: /example]
+        - **Networking**: [e.g. Host, Bridge/NAT]
+        - **Storage**: [e.g. local, NFS, cloud]
+      value: |
+        - OS: 
+        - Virtualization: 
+        - Clients: 
+        - Browser: 
+        - FFmpeg Version:
+        - Playback Method:
+        - Hardware Acceleration: 
+        - Plugins: 
+        - Reverse Proxy:
+        - Base URL:
+        - Networking:
+        - Storage:
+      render: markdown
   - type: textarea
     id: logs
     attributes:
