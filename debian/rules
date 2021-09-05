@@ -39,7 +39,7 @@ override_dh_auto_test:
 override_dh_clistrip:
 
 override_dh_auto_build:
-	dotnet publish --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime $(DOTNETRUNTIME) \
+	dotnet publish -maxcpucount:1 --configuration $(CONFIG) --output='$(CURDIR)/usr/lib/jellyfin/bin' --self-contained --runtime $(DOTNETRUNTIME) \
 		"-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 
 override_dh_auto_clean:

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -102,6 +104,22 @@ namespace Emby.Dlna.PlayTo
             _deviceDiscovery.DeviceLeft += OnDeviceDiscoveryDeviceLeft;
         }
 
+        /*
+         * Send a message to the DLNA device to notify what is the next track in the playlist.
+         */
+        private async Task SendNextTrackMessage(int currentPlayListItemIndex, CancellationToken cancellationToken)
+        {
+            if (currentPlayListItemIndex >= 0 && currentPlayListItemIndex < _playlist.Count - 1)
+            {
+                // The current playing item is indeed in the play list and we are not yet at the end of the playlist.
+                var nextItemIndex = currentPlayListItemIndex + 1;
+                var nextItem = _playlist[nextItemIndex];
+
+                // Send the SetNextAvTransport message.
+                await _device.SetNextAvTransport(nextItem.StreamUrl, GetDlnaHeaders(nextItem), nextItem.Didl, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         private void OnDeviceUnavailable()
         {
             try
@@ -156,6 +174,15 @@ namespace Emby.Dlna.PlayTo
                 var newItemProgress = GetProgressInfo(streamInfo);
 
                 await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
+
+                // Send a message to the DLNA device to notify what is the next track in the playlist.
+                var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId == streamInfo.ItemId);
+                if (currentItemIndex >= 0)
+                {
+                    _currentPlaylistIndex = currentItemIndex;
+                }
+
+                await SendNextTrackMessage(currentItemIndex, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -425,6 +452,11 @@ namespace Emby.Dlna.PlayTo
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
+
+                    // Send a message to the DLNA device to notify what is the next track in the play list.
+                    var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+
                     return;
                 }
 
@@ -623,6 +655,9 @@ namespace Emby.Dlna.PlayTo
 
             await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl, cancellationToken).ConfigureAwait(false);
 
+            // Send a message to the DLNA device to notify what is the next track in the play list.
+            await SendNextTrackMessage(index, cancellationToken);
+
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
             {
@@ -736,6 +771,10 @@ namespace Emby.Dlna.PlayTo
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
 
+                    // Send a message to the DLNA device to notify what is the next track in the play list.
+                    var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+
                     if (EnableClientSideSeek(newItem.StreamInfo))
                     {
                         await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
@@ -760,6 +799,10 @@ namespace Emby.Dlna.PlayTo
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, newIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
+
+                    // Send a message to the DLNA device to notify what is the next track in the play list.
+                    var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
 
                     if (EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0)
                     {

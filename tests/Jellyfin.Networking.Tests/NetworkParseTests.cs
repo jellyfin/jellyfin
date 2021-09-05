@@ -57,66 +57,6 @@ namespace Jellyfin.Networking.Tests
         }
 
         /// <summary>
-        /// Checks IP address formats.
-        /// </summary>
-        /// <param name="address">IP Address.</param>
-        [Theory]
-        [InlineData("127.0.0.1")]
-        [InlineData("127.0.0.1:123")]
-        [InlineData("localhost")]
-        [InlineData("localhost:1345")]
-        [InlineData("www.google.co.uk")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
-        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]:124")]
-        [InlineData("fe80::7add:12ff:febb:c67b%16")]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
-        [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
-        [InlineData("192.168.1.2/255.255.255.0")]
-        [InlineData("192.168.1.2/24")]
-        public void ValidHostStrings(string address)
-        {
-            Assert.True(IPHost.TryParse(address, out _));
-        }
-
-        /// <summary>
-        /// Checks IP address formats.
-        /// </summary>
-        /// <param name="address">IP Address.</param>
-        [Theory]
-        [InlineData("127.0.0.1")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517/56")]
-        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517]")]
-        [InlineData("fe80::7add:12ff:febb:c67b%16")]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]:123")]
-        [InlineData("fe80::7add:12ff:febb:c67b%16:123")]
-        [InlineData("[fe80::7add:12ff:febb:c67b%16]")]
-        [InlineData("192.168.1.2/255.255.255.0")]
-        [InlineData("192.168.1.2/24")]
-        public void ValidIPStrings(string address)
-        {
-            Assert.True(IPNetAddress.TryParse(address, out _));
-        }
-
-        /// <summary>
-        /// All should be invalid address strings.
-        /// </summary>
-        /// <param name="address">Invalid address strings.</param>
-        [Theory]
-        [InlineData("256.128.0.0.0.1")]
-        [InlineData("127.0.0.1#")]
-        [InlineData("localhost!")]
-        [InlineData("fd23:184f:2029:0:3139:7386:67d7:d517:1231")]
-        [InlineData("[fd23:184f:2029:0:3139:7386:67d7:d517:1231]")]
-        public void InvalidAddressString(string address)
-        {
-            Assert.False(IPNetAddress.TryParse(address, out _));
-            Assert.False(IPHost.TryParse(address, out _));
-        }
-
-        /// <summary>
         /// Test collection parsing.
         /// </summary>
         /// <param name="settings">Collection to parse.</param>
@@ -384,6 +324,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("jellyfin.org", "eth16", false, "eth16")]
         // User on external network, no binding - so result is the 1st external.
         [InlineData("jellyfin.org", "", false, "eth11")]
+        // Dns failure - should skip the test.
+        // https://en.wikipedia.org/wiki/.test
+        [InlineData("invalid.domain.test", "", false, "eth11")]
         // User assumed to be internal, no binding - so result is the 1st internal.
         [InlineData("", "", false, "eth16")]
         public void TestBindInterfaces(string source, string bindAddresses, bool ipv6enabled, string result)
@@ -416,10 +359,13 @@ namespace Jellyfin.Networking.Tests
 
             _ = nm.TryParseInterface(result, out Collection<IPObject>? resultObj);
 
-            if (resultObj != null)
+            // Check to see if dns resolution is working. If not, skip test.
+            _ = IPHost.TryParse(source, out var host);
+
+            if (resultObj != null && host?.HasAddress == true)
             {
                 result = ((IPNetAddress)resultObj[0]).ToString(true);
-                var intf = nm.GetBindInterface(source, out int? _);
+                var intf = nm.GetBindInterface(source, out _);
 
                 Assert.Equal(intf, result);
             }

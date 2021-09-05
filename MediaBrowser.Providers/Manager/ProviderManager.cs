@@ -167,7 +167,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentType = response.Content.Headers.ContentType.MediaType;
+            var contentType = response.Content.Headers.ContentType?.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
@@ -323,7 +323,7 @@ namespace MediaBrowser.Providers.Manager
                 .OrderBy(i =>
                 {
                     // See if there's a user-defined order
-                    if (!(i is ILocalImageProvider))
+                    if (i is not ILocalImageProvider)
                     {
                         var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
                         var index = Array.IndexOf(fetcherOrder, i.Name);
@@ -390,7 +390,7 @@ namespace MediaBrowser.Providers.Manager
             if (!includeDisabled)
             {
                 // If locked only allow local providers
-                if (item.IsLocked && !(provider is ILocalMetadataProvider) && !(provider is IForcedProvider))
+                if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
                 {
                     return false;
                 }
@@ -431,7 +431,7 @@ namespace MediaBrowser.Providers.Manager
             if (!includeDisabled)
             {
                 // If locked only allow local providers
-                if (item.IsLocked && !(provider is ILocalImageProvider))
+                if (item.IsLocked && provider is not ILocalImageProvider)
                 {
                     if (refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)
                     {
@@ -466,7 +466,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>System.Int32.</returns>
         private int GetOrder(IImageProvider provider)
         {
-            if (!(provider is IHasOrder hasOrder))
+            if (provider is not IHasOrder hasOrder)
             {
                 return 0;
             }
@@ -745,7 +745,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 // Manual edit occurred
                                 // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (!(saver is IMetadataFileSaver fileSaver) || !File.Exists(fileSaver.GetSavePath(item)))
+                                if (saver is not IMetadataFileSaver fileSaver || !File.Exists(fileSaver.GetSavePath(item)))
                                 {
                                     return false;
                                 }
@@ -1111,7 +1111,7 @@ namespace MediaBrowser.Providers.Manager
                     await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
                     break;
                 case Folder folder:
-                    await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                    await folder.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -1122,7 +1122,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                await child.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1144,7 +1144,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => i.MusicArtist)
                 .Where(i => i != null);
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true));
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), options, true, cancellationToken));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 

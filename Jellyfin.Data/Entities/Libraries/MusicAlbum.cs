@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -20,13 +18,13 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets a collection containing the album metadata.
+        /// Gets a collection containing the album metadata.
         /// </summary>
-        public virtual ICollection<MusicAlbumMetadata> MusicAlbumMetadata { get; protected set; }
+        public virtual ICollection<MusicAlbumMetadata> MusicAlbumMetadata { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the tracks.
+        /// Gets a collection containing the tracks.
         /// </summary>
-        public virtual ICollection<Track> Tracks { get; protected set; }
+        public virtual ICollection<Track> Tracks { get; private set; }
     }
 }

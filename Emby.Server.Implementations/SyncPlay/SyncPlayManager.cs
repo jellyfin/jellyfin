@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -87,7 +89,7 @@ namespace Emby.Server.Implementations.SyncPlay
             _sessionManager = sessionManager;
             _libraryManager = libraryManager;
             _logger = loggerFactory.CreateLogger<SyncPlayManager>();
-            _sessionManager.SessionControllerConnected += OnSessionControllerConnected;
+            _sessionManager.SessionEnded += OnSessionEnded;
         }
 
         /// <inheritdoc />
@@ -269,14 +271,17 @@ namespace Emby.Server.Implementations.SyncPlay
             var user = _userManager.GetUserById(session.UserId);
             List<GroupInfoDto> list = new List<GroupInfoDto>();
 
-            foreach (var group in _groups.Values)
+            lock (_groupsLock)
             {
-                // Locking required as group is not thread-safe.
-                lock (group)
+                foreach (var (_, group) in _groups)
                 {
-                    if (group.HasAccessToPlayQueue(user))
+                    // Locking required as group is not thread-safe.
+                    lock (group)
                     {
-                        list.Add(group.GetInfo());
+                        if (group.HasAccessToPlayQueue(user))
+                        {
+                            list.Add(group.GetInfo());
+                        }
                     }
                 }
             }
@@ -352,18 +357,18 @@ namespace Emby.Server.Implementations.SyncPlay
                 return;
             }
 
-            _sessionManager.SessionControllerConnected -= OnSessionControllerConnected;
+            _sessionManager.SessionEnded -= OnSessionEnded;
             _disposed = true;
         }
 
-        private void OnSessionControllerConnected(object sender, SessionEventArgs e)
+        private void OnSessionEnded(object sender, SessionEventArgs e)
         {
             var session = e.SessionInfo;
 
             if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
             {
-                var request = new JoinGroupRequest(group.GroupId);
-                JoinGroup(session, request, CancellationToken.None);
+                var leaveGroupRequest = new LeaveGroupRequest();
+                LeaveGroup(session, leaveGroupRequest, CancellationToken.None);
             }
         }
 

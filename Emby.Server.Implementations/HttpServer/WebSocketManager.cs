@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -33,7 +35,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
-            _ = _authService.Authenticate(context.Request);
+            _ = await _authService.Authenticate(context.Request).ConfigureAwait(false);
             try
             {
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);

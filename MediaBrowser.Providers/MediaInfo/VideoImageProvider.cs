@@ -88,22 +88,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (imageStream != null)
             {
-                // Instead of using the raw stream index, we need to use nth video/embedded image stream
-                var videoIndex = -1;
-                foreach (var mediaStream in mediaStreams)
-                {
-                    if (mediaStream.Type == MediaStreamType.Video ||
-                        mediaStream.Type == MediaStreamType.EmbeddedImage)
-                    {
-                        videoIndex++;
-                    }
-
-                    if (mediaStream == imageStream)
-                    {
-                        break;
-                    }
-                }
-
                 MediaSourceInfo mediaSource = new MediaSourceInfo
                 {
                     VideoType = item.VideoType,
@@ -111,7 +95,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     Protocol = item.PathProtocol.Value,
                 };
 
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, imageStream, imageStream.Index, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -154,9 +138,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            var video = item as Video;
-
-            if (video != null && !video.IsPlaceHolder && video.IsCompleteMedia)
+            if (item is Video video && !video.IsPlaceHolder && video.IsCompleteMedia)
             {
                 return true;
             }

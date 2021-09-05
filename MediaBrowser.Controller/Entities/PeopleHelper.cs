@@ -100,23 +100,5 @@ namespace MediaBrowser.Controller.Entities
                 existing.SetProviderId(id.Key, id.Value);
             }
         }
-
-        public static bool ContainsPerson(List<PersonInfo> people, string name)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            foreach (var i in people)
-            {
-                if (string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

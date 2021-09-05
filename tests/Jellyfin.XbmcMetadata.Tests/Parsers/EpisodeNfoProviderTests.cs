@@ -14,8 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-#pragma warning disable CA5369
-
 namespace Jellyfin.XbmcMetadata.Tests.Parsers
 {
     public class EpisodeNfoProviderTests

@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 
 namespace Jellyfin.Data.Entities.Libraries
@@ -25,13 +23,13 @@ namespace Jellyfin.Data.Entities.Libraries
         public int? SeasonNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the season metadata.
+        /// Gets the season metadata.
         /// </summary>
-        public virtual ICollection<SeasonMetadata> SeasonMetadata { get; protected set; }
+        public virtual ICollection<SeasonMetadata> SeasonMetadata { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the number of episodes.
+        /// Gets a collection containing the number of episodes.
         /// </summary>
-        public virtual ICollection<Episode> Episodes { get; protected set; }
+        public virtual ICollection<Episode> Episodes { get; private set; }
     }
 }

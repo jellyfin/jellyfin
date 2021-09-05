@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1711, CS1591
 
 using MediaBrowser.Controller.Entities;
 

@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -10,9 +11,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
@@ -22,7 +23,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -65,10 +65,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _encoders = new List<string>();
         private List<string> _decoders = new List<string>();
         private List<string> _hwaccels = new List<string>();
+        private List<string> _filters = new List<string>();
+        private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
-        private int threads;
+        private int _threads;
 
         public MediaEncoder(
             ILogger<MediaEncoder> logger,
@@ -88,9 +91,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
 
-        /// <inheritdoc />
-        public FFmpegLocation EncoderLocation { get; private set; }
-
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
         /// Sets global variables FFmpegPath.
@@ -99,18 +99,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetFFmpegPath()
         {
             // 1) Custom path stored in config/encoding xml file under tag <EncoderAppPath> takes precedence
-            if (!ValidatePath(_configurationManager.GetEncodingOptions().EncoderAppPath, FFmpegLocation.Custom))
+            var ffmpegPath = _configurationManager.GetEncodingOptions().EncoderAppPath;
+            if (string.IsNullOrEmpty(ffmpegPath))
             {
                 // 2) Check if the --ffmpeg CLI switch has been given
-                if (!ValidatePath(_startupOptionFFmpegPath, FFmpegLocation.SetByArgument))
+                ffmpegPath = _startupOptionFFmpegPath;
+                if (string.IsNullOrEmpty(ffmpegPath))
                 {
-                    // 3) Search system $PATH environment variable for valid FFmpeg
-                    if (!ValidatePath(ExistsOnSystemPath("ffmpeg"), FFmpegLocation.System))
-                    {
-                        EncoderLocation = FFmpegLocation.NotFound;
-                        _ffmpegPath = null;
-                    }
+                    // 3) Check "ffmpeg"
+                    ffmpegPath = "ffmpeg";
                 }
+            }
+
+            if (!ValidatePath(ffmpegPath))
+            {
+                _ffmpegPath = null;
             }
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
@@ -129,11 +132,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 SetAvailableDecoders(validator.GetDecoders());
                 SetAvailableEncoders(validator.GetEncoders());
+                SetAvailableFilters(validator.GetFilters());
+                SetAvailableFiltersWithOption(validator.GetFiltersWithOption());
                 SetAvailableHwaccels(validator.GetHwaccels());
-                threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
+                SetMediaEncoderVersion(validator);
+
+                _threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
             }
 
-            _logger.LogInformation("FFmpeg: {EncoderLocation}: {FfmpegPath}", EncoderLocation, _ffmpegPath ?? string.Empty);
+            _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
         }
 
         /// <summary>
@@ -152,14 +159,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 throw new ArgumentException("Unexpected pathType value");
             }
-            else if (string.IsNullOrWhiteSpace(path))
+
+            if (string.IsNullOrWhiteSpace(path))
             {
                 // User had cleared the custom path in UI
                 newPath = string.Empty;
-            }
-            else if (File.Exists(path))
-            {
-                newPath = path;
             }
             else if (Directory.Exists(path))
             {
@@ -168,7 +172,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             else
             {
-                throw new ResourceNotFoundException();
+                newPath = path;
             }
 
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
@@ -183,37 +187,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <summary>
         /// Validates the supplied FQPN to ensure it is a ffmpeg utility.
-        /// If checks pass, global variable FFmpegPath and EncoderLocation are updated.
+        /// If checks pass, global variable FFmpegPath is updated.
         /// </summary>
         /// <param name="path">FQPN to test.</param>
-        /// <param name="location">Location (External, Custom, System) of tool.</param>
         /// <returns><c>true</c> if the version validation succeeded; otherwise, <c>false</c>.</returns>
-        private bool ValidatePath(string path, FFmpegLocation location)
+        private bool ValidatePath(string path)
         {
-            bool rc = false;
-
-            if (!string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
-                if (File.Exists(path))
-                {
-                    rc = new EncoderValidator(_logger, path).ValidateVersion();
-
-                    if (!rc)
-                    {
-                        _logger.LogWarning("FFmpeg: {Location}: Failed version check: {Path}", location, path);
-                    }
-
-                    _ffmpegPath = path;
-                    EncoderLocation = location;
-                    return true;
-                }
-                else
-                {
-                    _logger.LogWarning("FFmpeg: {Location}: File not found: {Path}", location, path);
-                }
+                return false;
             }
 
-            return rc;
+            bool rc = new EncoderValidator(_logger, path).ValidateVersion();
+            if (!rc)
+            {
+                _logger.LogWarning("FFmpeg: Failed version check: {Path}", path);
+                return false;
+            }
+
+            _ffmpegPath = path;
+            return true;
         }
 
         private string GetEncoderPathFromDirectory(string path, string filename, bool recursive = false)
@@ -234,34 +227,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
-        /// <summary>
-        /// Search the system $PATH environment variable looking for given filename.
-        /// </summary>
-        /// <param name="fileName">The filename.</param>
-        /// <returns>The full path to the file.</returns>
-        private string ExistsOnSystemPath(string fileName)
-        {
-            var inJellyfinPath = GetEncoderPathFromDirectory(AppContext.BaseDirectory, fileName, recursive: true);
-            if (!string.IsNullOrEmpty(inJellyfinPath))
-            {
-                return inJellyfinPath;
-            }
-
-            var values = Environment.GetEnvironmentVariable("PATH");
-
-            foreach (var path in values.Split(Path.PathSeparator))
-            {
-                var candidatePath = GetEncoderPathFromDirectory(path, fileName);
-
-                if (!string.IsNullOrEmpty(candidatePath))
-                {
-                    return candidatePath;
-                }
-            }
-
-            return null;
-        }
-
         public void SetAvailableEncoders(IEnumerable<string> list)
         {
             _encoders = list.ToList();
@@ -275,6 +240,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public void SetAvailableHwaccels(IEnumerable<string> list)
         {
             _hwaccels = list.ToList();
+        }
+
+        public void SetAvailableFilters(IEnumerable<string> list)
+        {
+            _filters = list.ToList();
+        }
+
+        public void SetAvailableFiltersWithOption(IDictionary<int, bool> dict)
+        {
+            _filtersWithOption = dict;
+        }
+
+        public void SetMediaEncoderVersion(EncoderValidator validator)
+        {
+            _ffmpegVersion = validator.GetFFmpegVersion();
         }
 
         public bool SupportsEncoder(string encoder)
@@ -292,15 +272,24 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return _hwaccels.Contains(hwaccel, StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool SupportsFilter(string filter, string option)
+        public bool SupportsFilter(string filter)
         {
-            if (_ffmpegPath != null)
+            return _filters.Contains(filter, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool SupportsFilterWithOption(FilterOptionType option)
+        {
+            if (_filtersWithOption.TryGetValue((int)option, out var val))
             {
-                var validator = new EncoderValidator(_logger, _ffmpegPath);
-                return validator.CheckFilter(filter, option);
+                return val;
             }
 
             return false;
+        }
+
+        public Version GetMediaEncoderVersion()
+        {
+            return _ffmpegVersion;
         }
 
         public bool CanEncodeToAudioCodec(string codec)
@@ -366,7 +355,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetInputArgument(string inputFile, MediaSourceInfo mediaSource)
         {
             var prefix = "file";
-            if (mediaSource.VideoType == VideoType.BluRay)
+            if (mediaSource.VideoType == VideoType.BluRay
+                || mediaSource.IsoType == IsoType.BluRay)
             {
                 prefix = "bluray";
             }
@@ -392,7 +382,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var args = extractChapters
                 ? "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_chapters -show_format"
                 : "{0} -i {1} -threads {2} -v warning -print_format json -show_streams -show_format";
-            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, threads).Trim();
+            args = string.Format(CultureInfo.InvariantCulture, args, probeSizeArgument, inputPath, _threads).Trim();
 
             var process = new Process
             {
@@ -501,15 +491,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
 
-            if (isAudio)
-            {
-                if (imageStreamIndex.HasValue && imageStreamIndex.Value > 0)
-                {
-                    // It seems for audio files we need to subtract 1 (for the audio stream??)
-                    imageStreamIndex = imageStreamIndex.Value - 1;
-                }
-            }
-            else
+            if (!isAudio)
             {
                 // The failure of HDR extraction usually occurs when using custom ffmpeg that does not contain the zscale filter.
                 try
@@ -580,7 +562,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ => string.Empty
             };
 
-            var mapArg = imageStreamIndex.HasValue ? (" -map 0:v:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
+            var mapArg = imageStreamIndex.HasValue ? (" -map 0:" + imageStreamIndex.Value.ToString(CultureInfo.InvariantCulture)) : string.Empty;
 
             var enableHdrExtraction = allowTonemap && string.Equals(videoStream?.VideoRange, "HDR", StringComparison.OrdinalIgnoreCase);
             if (enableHdrExtraction)
@@ -613,7 +595,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0}{3} -threads {4} -v quiet -vframes 1 {2} -f image2 \"{1}\"", inputPath, tempExtractPath, vf, mapArg, _threads);
 
             if (offset.HasValue)
             {
@@ -726,7 +708,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             Directory.CreateDirectory(targetDirectory);
             var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
 
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, threads);
+            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, _threads);
 
             if (!string.IsNullOrWhiteSpace(container))
             {

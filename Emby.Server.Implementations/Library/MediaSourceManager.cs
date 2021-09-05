@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -13,7 +15,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -350,7 +352,7 @@ namespace Emby.Server.Implementations.Library
 
         private string[] NormalizeLanguage(string language)
         {
-            if (language == null)
+            if (string.IsNullOrEmpty(language))
             {
                 return Array.Empty<string>();
             }
@@ -379,8 +381,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredSubs = string.IsNullOrEmpty(user.SubtitleLanguagePreference)
-                ? Array.Empty<string>() : NormalizeLanguage(user.SubtitleLanguagePreference);
+            var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLangage = defaultAudioIndex == null
@@ -409,9 +410,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = string.IsNullOrEmpty(user.AudioLanguagePreference)
-                ? Array.Empty<string>()
-                : NormalizeLanguage(user.AudioLanguagePreference);
+            var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
@@ -590,18 +589,9 @@ namespace Emby.Server.Implementations.Library
 
         public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
         {
-            var info = _openStreams.Values.FirstOrDefault(i =>
-            {
-                var liveStream = i as ILiveStream;
-                if (liveStream != null)
-                {
-                    return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
-                }
+            var info = _openStreams.FirstOrDefault(i => i.Value != null && string.Equals(i.Value.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
 
-                return false;
-            });
-
-            return Task.FromResult(info as IDirectStreamProvider);
+            return Task.FromResult(info.Value as IDirectStreamProvider);
         }
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)

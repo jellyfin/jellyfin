@@ -6,10 +6,8 @@ using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
 {
-
     internal class EpgChannelData
     {
-
         private readonly Dictionary<string, ChannelInfo> _channelsById;
 
         private readonly Dictionary<string, ChannelInfo> _channelsByNumber;
@@ -39,13 +37,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public ChannelInfo GetChannelById(string id)
+        public ChannelInfo? GetChannelById(string id)
             => _channelsById.GetValueOrDefault(id);
 
-        public ChannelInfo GetChannelByNumber(string number)
+        public ChannelInfo? GetChannelByNumber(string number)
             => _channelsByNumber.GetValueOrDefault(number);
 
-        public ChannelInfo GetChannelByName(string name)
+        public ChannelInfo? GetChannelByName(string name)
             => _channelsByName.GetValueOrDefault(name);
 
         public static string NormalizeName(string value)

@@ -8,35 +8,34 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// <summary>
     /// Represents a task trigger that fires on a weekly basis.
     /// </summary>
-    public class WeeklyTrigger : ITaskTrigger
+    public sealed class WeeklyTrigger : ITaskTrigger
     {
+        private readonly TimeSpan _timeOfDay;
+        private readonly DayOfWeek _dayOfWeek;
+        private Timer? _timer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WeeklyTrigger"/> class.
+        /// </summary>
+        /// <param name="timeofDay">The time of day to trigger the task to run.</param>
+        /// <param name="dayOfWeek">The day of week.</param>
+        /// <param name="taskOptions">The options of this task.</param>
+        public WeeklyTrigger(TimeSpan timeofDay, DayOfWeek dayOfWeek, TaskOptions taskOptions)
+        {
+            _timeOfDay = timeofDay;
+            _dayOfWeek = dayOfWeek;
+            TaskOptions = taskOptions;
+        }
+
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<EventArgs> Triggered;
+        public event EventHandler<EventArgs>? Triggered;
 
         /// <summary>
-        /// Gets or sets the time of day to trigger the task to run.
+        /// Gets the options of this task.
         /// </summary>
-        /// <value>The time of day.</value>
-        public TimeSpan TimeOfDay { get; set; }
-
-        /// <summary>
-        /// Gets or sets the day of week.
-        /// </summary>
-        /// <value>The day of week.</value>
-        public DayOfWeek DayOfWeek { get; set; }
-
-        /// <summary>
-        /// Gets or sets the options of this task.
-        /// </summary>
-        public TaskOptions TaskOptions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the timer.
-        /// </summary>
-        /// <value>The timer.</value>
-        private Timer Timer { get; set; }
+        public TaskOptions TaskOptions { get; }
 
         /// <summary>
         /// Stars waiting for the trigger action.
@@ -51,7 +50,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             var triggerDate = GetNextTriggerDateTime();
 
-            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.Now, TimeSpan.FromMilliseconds(-1));
+            _timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.Now, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>
@@ -63,22 +62,22 @@ namespace Emby.Server.Implementations.ScheduledTasks
             var now = DateTime.Now;
 
             // If it's on the same day
-            if (now.DayOfWeek == DayOfWeek)
+            if (now.DayOfWeek == _dayOfWeek)
             {
                 // It's either later today, or a week from now
-                return now.TimeOfDay < TimeOfDay ? now.Date.Add(TimeOfDay) : now.Date.AddDays(7).Add(TimeOfDay);
+                return now.TimeOfDay < _timeOfDay ? now.Date.Add(_timeOfDay) : now.Date.AddDays(7).Add(_timeOfDay);
             }
 
             var triggerDate = now.Date;
 
             // Walk the date forward until we get to the trigger day
-            while (triggerDate.DayOfWeek != DayOfWeek)
+            while (triggerDate.DayOfWeek != _dayOfWeek)
             {
                 triggerDate = triggerDate.AddDays(1);
             }
 
             // Return the trigger date plus the time offset
-            return triggerDate.Add(TimeOfDay);
+            return triggerDate.Add(_timeOfDay);
         }
 
         /// <summary>
@@ -94,10 +93,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         private void DisposeTimer()
         {
-            if (Timer != null)
-            {
-                Timer.Dispose();
-            }
+            _timer?.Dispose();
         }
 
         /// <summary>

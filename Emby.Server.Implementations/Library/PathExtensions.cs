@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Common.Providers;
@@ -96,8 +94,14 @@ namespace Emby.Server.Implementations.Library
             // We have to ensure that the sub path ends with a directory separator otherwise we'll get weird results
             // when the sub path matches a similar but in-complete subpath
             var oldSubPathEndsWithSeparator = subPath[^1] == newDirectorySeparatorChar;
-            if (!path.StartsWith(subPath, StringComparison.OrdinalIgnoreCase)
-                || (!oldSubPathEndsWithSeparator && path[subPath.Length] != newDirectorySeparatorChar))
+            if (!path.StartsWith(subPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (path.Length > subPath.Length
+                && !oldSubPathEndsWithSeparator
+                && path[subPath.Length] != newDirectorySeparatorChar)
             {
                 return false;
             }

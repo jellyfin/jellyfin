@@ -144,7 +144,13 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+            await using var dbContext = _dbProvider.CreateContext();
+
+            if (await dbContext.Users
+                .AsQueryable()
+                .Where(u => u.Username == newName && u.Id != user.Id)
+                .AnyAsync()
+                .ConfigureAwait(false))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -155,15 +161,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
             OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
-        }
-
-        /// <inheritdoc/>
-        public void UpdateUser(User user)
-        {
-            using var dbContext = _dbProvider.CreateContext();
-            dbContext.Users.Update(user);
-            _users[user.Id] = user;
-            dbContext.SaveChanges();
         }
 
         /// <inheritdoc/>
@@ -251,16 +248,6 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             await using var dbContext = _dbProvider.CreateContext();
-
-            // Clear all entities related to the user from the database.
-            if (user.ProfileImage != null)
-            {
-                dbContext.Remove(user.ProfileImage);
-            }
-
-            dbContext.RemoveRange(user.Permissions);
-            dbContext.RemoveRange(user.Preferences);
-            dbContext.RemoveRange(user.AccessSchedules);
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
@@ -275,9 +262,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ResetEasyPassword(User user)
+        public Task ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, string.Empty, null);
+            return ChangeEasyPassword(user, string.Empty, null);
         }
 
         /// <inheritdoc/>
@@ -295,7 +282,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -308,7 +295,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
             _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }

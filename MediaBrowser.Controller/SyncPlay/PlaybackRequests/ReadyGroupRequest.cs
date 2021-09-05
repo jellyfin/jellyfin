@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
