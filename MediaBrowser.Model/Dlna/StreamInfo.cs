@@ -674,13 +674,13 @@ namespace MediaBrowser.Model.Dlna
             if (VideoCodecs.Length != 0)
             {
                 sb.Append("&VideoCodec=");
-                sb.Append(string.Join(',', VideoCodecs));
+                sb.AppendJoin(',', VideoCodecs);
             }
 
             if (AudioCodecs.Length != 0)
             {
                 sb.Append("&AudioCodec=");
-                sb.Append(string.Join(',', AudioCodecs));
+                sb.AppendJoin(',', AudioCodecs);
             }
 
             if (AudioStreamIndex.HasValue)
@@ -842,7 +842,7 @@ namespace MediaBrowser.Model.Dlna
             if (SubtitleStreamIndex.HasValue && SubtitleDeliveryMethod == SubtitleDeliveryMethod.Embed && SubtitleCodecs.Length != 0)
             {
                 sb.Append("&SubtitleCodec=");
-                sb.Append(string.Join(',', SubtitleCodecs));
+                sb.AppendJoin(',', SubtitleCodecs);
             }
 
             foreach (var pair in StreamOptions)
@@ -862,7 +862,7 @@ namespace MediaBrowser.Model.Dlna
             if (!IsDirectStream && TranscodeReasons.Length > 0)
             {
                 sb.Append("&TranscodeReasons=");
-                sb.Append(string.Join(',', TranscodeReasons.Distinct().Select(i => i.ToString())));
+                sb.AppendJoin(',', TranscodeReasons.Distinct().Select(i => i.ToString()));
             }
 
             if (!string.IsNullOrEmpty(query))
