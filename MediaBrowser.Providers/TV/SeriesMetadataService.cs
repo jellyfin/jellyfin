@@ -137,6 +137,8 @@ namespace MediaBrowser.Providers.TV
             // Loop through the unique season numbers
             foreach (var episode in episodesInSeriesFolder)
             {
+                await episode.RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken).ConfigureAwait(false);
+
                 // Null season numbers will have a 'dummy' season created because seasons are always required.
                 var seasonNumber = episode.ParentIndexNumber >= 0 ? episode.ParentIndexNumber : null;
                 var existingSeason = seasons.FirstOrDefault(i => i.IndexNumber == seasonNumber);
