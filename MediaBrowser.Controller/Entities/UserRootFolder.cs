@@ -44,6 +44,14 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserRootFolder"/> class.
+        /// </summary>
+        public UserRootFolder()
+        {
+            IsRoot = true;
+        }
+
         protected override List<BaseItem> LoadChildren()
         {
             lock (_childIdsLock)
