@@ -702,9 +702,9 @@ namespace Jellyfin.Server.Implementations.Users
         public async Task ClearProfileImageAsync(User user)
         {
             await using var dbContext = _dbProvider.CreateContext();
-            dbContext.Remove(user.ProfileImage);
-            user.ProfileImage = null;
+            dbContext.Images.Remove(user.ProfileImage);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
+            user.ProfileImage = null;
             _users[user.Id] = user;
         }
 

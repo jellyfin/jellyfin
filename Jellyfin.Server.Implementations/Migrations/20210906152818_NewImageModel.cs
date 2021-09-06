@@ -204,58 +204,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                 onDelete: ReferentialAction.Cascade);
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Users_Images_ImageId",
-                schema: "jellyfin",
-                table: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Images",
-                schema: "jellyfin");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Users_ImageId",
-                schema: "jellyfin",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "ImageId",
-                schema: "jellyfin",
-                table: "Users");
-
-            migrationBuilder.CreateTable(
-                name: "ImageInfos",
-                schema: "jellyfin",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    LastModified = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Path = table.Column<string>(type: "TEXT", maxLength: 512, nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ImageInfos", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ImageInfos_Users_UserId",
-                        column: x => x.UserId,
-                        principalSchema: "jellyfin",
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ImageInfos_UserId",
-                schema: "jellyfin",
-                table: "ImageInfos",
-                column: "UserId",
-                unique: true);
-        }
-
         // Old ImageInfo schema
 
         //internal class ImageInfo

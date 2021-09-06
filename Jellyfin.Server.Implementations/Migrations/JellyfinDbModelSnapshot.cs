@@ -15,7 +15,7 @@ namespace Jellyfin.Server.Implementations.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("jellyfin")
-                .HasAnnotation("ProductVersion", "5.0.7");
+                .HasAnnotation("ProductVersion", "5.0.9");
 
             modelBuilder.Entity("Jellyfin.Data.Entities.AccessSchedule", b =>
                 {
@@ -199,6 +199,46 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.ToTable("HomeSection");
                 });
 
+            modelBuilder.Entity("Jellyfin.Data.Entities.Image", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AddedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Blurhash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FileCreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("FileModificationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UUID")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Images");
+                });
+
             modelBuilder.Entity("Jellyfin.Data.Entities.ItemDisplayPreferences", b =>
                 {
                     b.Property<int>("Id")
@@ -241,46 +281,6 @@ namespace Jellyfin.Server.Implementations.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ItemDisplayPreferences");
-                });
-
-            modelBuilder.Entity("Jellyfin.Data.Entities.Image", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Blurhash")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("FileCreationDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("FileModificationDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<uint>("RowVersion")
-                        .IsConcurrencyToken()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("UUID")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.Permission", b =>
@@ -635,6 +635,16 @@ namespace Jellyfin.Server.Implementations.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Jellyfin.Data.Entities.User", b =>
+                {
+                    b.HasOne("Jellyfin.Data.Entities.Image", "ProfileImage")
+                        .WithOne()
+                        .HasForeignKey("Jellyfin.Data.Entities.User", "ImageId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("ProfileImage");
                 });
 
             modelBuilder.Entity("Jellyfin.Data.Entities.DisplayPreferences", b =>
