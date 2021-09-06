@@ -4,7 +4,6 @@ using System.IO;
 using System.Text.Json;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.MediaEncoding.Probing;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging.Abstractions;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace Jellyfin.Extensions.Json.Converters
+﻿namespace Jellyfin.Extensions.Json.Converters
 {
     /// <summary>
     /// Convert comma delimited string to array of type.
