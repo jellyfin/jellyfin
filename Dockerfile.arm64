@@ -1,4 +1,4 @@
-# DESIGNED FOR BUILDING ON AMD64 ONLY
+# DESIGNED FOR BUILDING ON ARM64 ONLY
 #####################################
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
