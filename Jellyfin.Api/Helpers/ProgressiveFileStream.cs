@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -16,6 +17,7 @@ namespace Jellyfin.Api.Helpers
         private readonly FileStream _fileStream;
         private readonly TranscodingJobDto? _job;
         private readonly TranscodingJobHelper _transcodingJobHelper;
+        private readonly int _timeoutMs;
         private readonly bool _allowAsyncFileRead;
         private int _bytesWritten;
         private bool _disposed;
@@ -26,17 +28,19 @@ namespace Jellyfin.Api.Helpers
         /// <param name="filePath">The path to the transcoded file.</param>
         /// <param name="job">The transcoding job information.</param>
         /// <param name="transcodingJobHelper">The transcoding job helper.</param>
-        public ProgressiveFileStream(string filePath, TranscodingJobDto? job, TranscodingJobHelper transcodingJobHelper)
+        /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
+        public ProgressiveFileStream(string filePath, TranscodingJobDto? job, TranscodingJobHelper transcodingJobHelper, int timeoutMs = 30000)
         {
             _job = job;
             _transcodingJobHelper = transcodingJobHelper;
+            _timeoutMs = timeoutMs;
             _bytesWritten = 0;
 
             var fileOptions = FileOptions.SequentialScan;
             _allowAsyncFileRead = false;
 
             // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (AsyncFile.UseAsyncIO)
             {
                 fileOptions |= FileOptions.Asynchronous;
                 _allowAsyncFileRead = true;
@@ -81,6 +85,7 @@ namespace Jellyfin.Api.Helpers
         {
             int totalBytesRead = 0;
             int remainingBytesToRead = count;
+            var stopwatch = Stopwatch.StartNew();
 
             int newOffset = offset;
             while (remainingBytesToRead > 0)
@@ -111,8 +116,8 @@ namespace Jellyfin.Api.Helpers
                 }
                 else
                 {
-                    // If the job is null it's a live stream and will require user action to close
-                    if (_job?.HasExited ?? false)
+                    // If the job is null it's a live stream and will require user action to close, but don't keep it open indefinitely
+                    if (_job?.HasExited ?? stopwatch.ElapsedMilliseconds > _timeoutMs)
                     {
                         break;
                     }

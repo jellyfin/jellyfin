@@ -1,5 +1,4 @@
-﻿#nullable enable
-#pragma warning disable CA1307
+﻿#pragma warning disable CA1307
 
 using System;
 using System.Collections.Concurrent;
@@ -138,17 +137,20 @@ namespace Jellyfin.Server.Implementations.Users
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (string.IsNullOrWhiteSpace(newName))
-            {
-                throw new ArgumentException("Invalid username", nameof(newName));
-            }
+            ThrowIfInvalidUsername(newName);
 
             if (user.Username.Equals(newName, StringComparison.Ordinal))
             {
                 throw new ArgumentException("The new and old names must be different.");
             }
 
-            if (Users.Any(u => u.Id != user.Id && u.Username.Equals(newName, StringComparison.Ordinal)))
+            await using var dbContext = _dbProvider.CreateContext();
+
+            if (await dbContext.Users
+                .AsQueryable()
+                .Where(u => u.Username == newName && u.Id != user.Id)
+                .AnyAsync()
+                .ConfigureAwait(false))
             {
                 throw new ArgumentException(string.Format(
                     CultureInfo.InvariantCulture,
@@ -159,15 +161,6 @@ namespace Jellyfin.Server.Implementations.Users
             user.Username = newName;
             await UpdateUserAsync(user).ConfigureAwait(false);
             OnUserUpdated?.Invoke(this, new GenericEventArgs<User>(user));
-        }
-
-        /// <inheritdoc/>
-        public void UpdateUser(User user)
-        {
-            using var dbContext = _dbProvider.CreateContext();
-            dbContext.Users.Update(user);
-            _users[user.Id] = user;
-            dbContext.SaveChanges();
         }
 
         /// <inheritdoc/>
@@ -188,11 +181,14 @@ namespace Jellyfin.Server.Implementations.Users
 
             var user = new User(
                 name,
-                _defaultAuthenticationProvider.GetType().FullName,
-                _defaultPasswordResetProvider.GetType().FullName)
+                _defaultAuthenticationProvider.GetType().FullName!,
+                _defaultPasswordResetProvider.GetType().FullName!)
             {
                 InternalId = max + 1
             };
+
+            user.AddDefaultPermissions();
+            user.AddDefaultPreferences();
 
             _users.Add(user.Id, user);
 
@@ -202,9 +198,14 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task<User> CreateUserAsync(string name)
         {
-            if (!IsValidUsername(name))
+            ThrowIfInvalidUsername(name);
+
+            if (Users.Any(u => u.Username.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)");
+                throw new ArgumentException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    "A user with the name '{0}' already exists.",
+                    name));
             }
 
             await using var dbContext = _dbProvider.CreateContext();
@@ -220,7 +221,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void DeleteUser(Guid userId)
+        public async Task DeleteUserAsync(Guid userId)
         {
             if (!_users.TryGetValue(userId, out var user))
             {
@@ -246,22 +247,12 @@ namespace Jellyfin.Server.Implementations.Users
                     nameof(userId));
             }
 
-            using var dbContext = _dbProvider.CreateContext();
-
-            // Clear all entities related to the user from the database.
-            if (user.ProfileImage != null)
-            {
-                dbContext.Remove(user.ProfileImage);
-            }
-
-            dbContext.RemoveRange(user.Permissions);
-            dbContext.RemoveRange(user.Preferences);
-            dbContext.RemoveRange(user.AccessSchedules);
+            await using var dbContext = _dbProvider.CreateContext();
             dbContext.Users.Remove(user);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
             _users.Remove(userId);
 
-            _eventManager.Publish(new UserDeletedEventArgs(user));
+            await _eventManager.PublishAsync(new UserDeletedEventArgs(user)).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -271,9 +262,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ResetEasyPassword(User user)
+        public Task ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, string.Empty, null);
+            return ChangeEasyPassword(user, string.Empty, null);
         }
 
         /// <inheritdoc/>
@@ -291,7 +282,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -304,7 +295,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
             _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }
@@ -376,14 +367,14 @@ namespace Jellyfin.Server.Implementations.Users
                     EnablePublicSharing = user.HasPermission(PermissionKind.EnablePublicSharing),
                     AccessSchedules = user.AccessSchedules.ToArray(),
                     BlockedTags = user.GetPreference(PreferenceKind.BlockedTags),
-                    EnabledChannels = user.GetPreference(PreferenceKind.EnabledChannels)?.Select(Guid.Parse).ToArray(),
+                    EnabledChannels = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels),
                     EnabledDevices = user.GetPreference(PreferenceKind.EnabledDevices),
-                    EnabledFolders = user.GetPreference(PreferenceKind.EnabledFolders)?.Select(Guid.Parse).ToArray(),
+                    EnabledFolders = user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders),
                     EnableContentDeletionFromFolders = user.GetPreference(PreferenceKind.EnableContentDeletionFromFolders),
                     SyncPlayAccess = user.SyncPlayAccess,
-                    BlockedChannels = user.GetPreference(PreferenceKind.BlockedChannels)?.Select(Guid.Parse).ToArray(),
-                    BlockedMediaFolders = user.GetPreference(PreferenceKind.BlockedMediaFolders)?.Select(Guid.Parse).ToArray(),
-                    BlockUnratedItems = user.GetPreference(PreferenceKind.BlockUnratedItems).Select(Enum.Parse<UnratedItem>).ToArray()
+                    BlockedChannels = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels),
+                    BlockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders),
+                    BlockUnratedItems = user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems)
                 }
             };
         }
@@ -403,27 +394,18 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
-            bool success;
-            IAuthenticationProvider? authenticationProvider;
+            var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
+                .ConfigureAwait(false);
+            var authenticationProvider = authResult.authenticationProvider;
+            var success = authResult.success;
 
-            if (user != null)
+            if (user == null)
             {
-                var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
-                success = authResult.success;
-            }
-            else
-            {
-                var authResult = await AuthenticateLocalUser(username, password, null, remoteEndPoint)
-                    .ConfigureAwait(false);
-                authenticationProvider = authResult.authenticationProvider;
                 string updatedUsername = authResult.username;
-                success = authResult.success;
 
                 if (success
                     && authenticationProvider != null
-                    && !(authenticationProvider is DefaultAuthenticationProvider))
+                    && authenticationProvider is not DefaultAuthenticationProvider)
                 {
                     // Trust the username returned by the authentication provider
                     username = updatedUsername;
@@ -443,7 +425,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerId = authenticationProvider.GetType().FullName;
 
-                if (!string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
+                if (providerId != null && !string.Equals(providerId, user.AuthenticationProviderId, StringComparison.OrdinalIgnoreCase))
                 {
                     user.AuthenticationProviderId = providerId;
                     await UpdateUserAsync(user).ConfigureAwait(false);
@@ -704,13 +686,11 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // TODO: fix this at some point
-            user.SetPreference(
-                PreferenceKind.BlockUnratedItems,
-                policy.BlockUnratedItems?.Select(i => i.ToString()).ToArray() ?? Array.Empty<string>());
+            user.SetPreference(PreferenceKind.BlockUnratedItems, policy.BlockUnratedItems ?? Array.Empty<UnratedItem>());
             user.SetPreference(PreferenceKind.BlockedTags, policy.BlockedTags);
-            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+            user.SetPreference(PreferenceKind.EnabledChannels, policy.EnabledChannels);
             user.SetPreference(PreferenceKind.EnabledDevices, policy.EnabledDevices);
-            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders?.Select(i => i.ToString("N", CultureInfo.InvariantCulture)).ToArray());
+            user.SetPreference(PreferenceKind.EnabledFolders, policy.EnabledFolders);
             user.SetPreference(PreferenceKind.EnableContentDeletionFromFolders, policy.EnableContentDeletionFromFolders);
 
             dbContext.Update(user);
@@ -728,12 +708,22 @@ namespace Jellyfin.Server.Implementations.Users
             _users[user.Id] = user;
         }
 
+        internal static void ThrowIfInvalidUsername(string name)
+        {
+            if (!string.IsNullOrWhiteSpace(name) && IsValidUsername(name))
+            {
+                return;
+            }
+
+            throw new ArgumentException("Usernames can contain unicode symbols, numbers (0-9), dashes (-), underscores (_), apostrophes ('), and periods (.)", nameof(name));
+        }
+
         private static bool IsValidUsername(string name)
         {
             // This is some regex that matches only on unicode "word" characters, as well as -, _ and @
             // In theory this will cut out most if not all 'control' characters which should help minimize any weirdness
             // Usernames can contain letters (a-z + whatever else unicode is cool with), numbers (0-9), at-signs (@), dashes (-), underscores (_), apostrophes ('), periods (.) and spaces ( )
-            return Regex.IsMatch(name, @"^[\w\ \-'._@]*$");
+            return Regex.IsMatch(name, @"^[\w\ \-'._@]+$");
         }
 
         private IAuthenticationProvider GetAuthenticationProvider(User user)

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,9 +8,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Events;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
@@ -22,9 +22,18 @@ namespace MediaBrowser.Controller.Providers
     /// </summary>
     public interface IProviderManager
     {
+        event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+
+        event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+
+        event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
+
         /// <summary>
         /// Queues the refresh.
         /// </summary>
+        /// <param name="itemId">Item ID.</param>
+        /// <param name="options">MetadataRefreshOptions for operation.</param>
+        /// <param name="priority">RefreshPriority for operation.</param>
         void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority);
 
         /// <summary>
@@ -79,6 +88,13 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Saves the image.
         /// </summary>
+        /// <param name="item">Image to save.</param>
+        /// <param name="source">Source of image.</param>
+        /// <param name="mimeType">Mime type image.</param>
+        /// <param name="type">Type of image.</param>
+        /// <param name="imageIndex">Index of image.</param>
+        /// <param name="saveLocallyWithMedia">Option to save locally.</param>
+        /// <param name="cancellationToken">CancellationToken to use with operation.</param>
         /// <returns>Task.</returns>
         Task SaveImage(BaseItem item, string source, string mimeType, ImageType type, int? imageIndex, bool? saveLocallyWithMedia, CancellationToken cancellationToken);
 
@@ -87,8 +103,16 @@ namespace MediaBrowser.Controller.Providers
         /// <summary>
         /// Adds the metadata providers.
         /// </summary>
-        void AddParts(IEnumerable<IImageProvider> imageProviders, IEnumerable<IMetadataService> metadataServices, IEnumerable<IMetadataProvider> metadataProviders,
-            IEnumerable<IMetadataSaver> savers,
+        /// <param name="imageProviders">Image providers to use.</param>
+        /// <param name="metadataServices">Metadata services to use.</param>
+        /// <param name="metadataProviders">Metadata providers to use.</param>
+        /// <param name="metadataSavers">Metadata savers to use.</param>
+        /// <param name="externalIds">External IDs to use.</param>
+        void AddParts(
+            IEnumerable<IImageProvider> imageProviders,
+            IEnumerable<IMetadataService> metadataServices,
+            IEnumerable<IMetadataProvider> metadataProviders,
+            IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds);
 
         /// <summary>
@@ -132,12 +156,14 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="updateType">Type of the update.</param>
-        /// <returns>Task.</returns>
         void SaveMetadata(BaseItem item, ItemUpdateType updateType);
 
         /// <summary>
         /// Saves the metadata.
         /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="updateType">Type of the update.</param>
+        /// <param name="savers">The metadata savers.</param>
         void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers);
 
         /// <summary>
@@ -179,18 +205,5 @@ namespace MediaBrowser.Controller.Providers
         void OnRefreshComplete(BaseItem item);
 
         double? GetRefreshProgress(Guid id);
-
-        event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
-
-        event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
-
-        event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
-    }
-
-    public enum RefreshPriority
-    {
-        High = 0,
-        Normal = 1,
-        Low = 2
     }
 }

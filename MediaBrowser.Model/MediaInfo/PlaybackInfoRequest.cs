@@ -8,6 +8,17 @@ namespace MediaBrowser.Model.MediaInfo
 {
     public class PlaybackInfoRequest
     {
+        public PlaybackInfoRequest()
+        {
+            EnableDirectPlay = true;
+            EnableDirectStream = true;
+            EnableTranscoding = true;
+            AllowVideoStreamCopy = true;
+            AllowAudioStreamCopy = true;
+            IsPlayback = true;
+            DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
+        }
+
         public Guid Id { get; set; }
 
         public Guid UserId { get; set; }
@@ -43,16 +54,5 @@ namespace MediaBrowser.Model.MediaInfo
         public bool AutoOpenLiveStream { get; set; }
 
         public MediaProtocol[] DirectPlayProtocols { get; set; }
-
-        public PlaybackInfoRequest()
-        {
-            EnableDirectPlay = true;
-            EnableDirectStream = true;
-            EnableTranscoding = true;
-            AllowVideoStreamCopy = true;
-            AllowAudioStreamCopy = true;
-            IsPlayback = true;
-            DirectPlayProtocols = new MediaProtocol[] { MediaProtocol.Http };
-        }
     }
 }

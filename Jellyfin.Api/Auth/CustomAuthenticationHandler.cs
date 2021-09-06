@@ -40,11 +40,11 @@ namespace Jellyfin.Api.Auth
         }
 
         /// <inheritdoc />
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             try
             {
-                var authorizationInfo = _authService.Authenticate(Request);
+                var authorizationInfo = await _authService.Authenticate(Request).ConfigureAwait(false);
                 var role = UserRoles.User;
                 if (authorizationInfo.IsApiKey || authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
                 {
@@ -68,16 +68,16 @@ namespace Jellyfin.Api.Auth
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
-                return Task.FromResult(AuthenticateResult.Success(ticket));
+                return AuthenticateResult.Success(ticket);
             }
             catch (AuthenticationException ex)
             {
                 _logger.LogDebug(ex, "Error authenticating with {Handler}", nameof(CustomAuthenticationHandler));
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return AuthenticateResult.NoResult();
             }
             catch (SecurityException ex)
             {
-                return Task.FromResult(AuthenticateResult.Fail(ex));
+                return AuthenticateResult.Fail(ex);
             }
         }
     }

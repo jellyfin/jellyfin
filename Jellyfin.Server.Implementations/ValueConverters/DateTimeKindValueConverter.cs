@@ -13,7 +13,7 @@ namespace Jellyfin.Server.Implementations.ValueConverters
         /// </summary>
         /// <param name="kind">The kind to specify.</param>
         /// <param name="mappingHints">The mapping hints.</param>
-        public DateTimeKindValueConverter(DateTimeKind kind, ConverterMappingHints mappingHints = null)
+        public DateTimeKindValueConverter(DateTimeKind kind, ConverterMappingHints? mappingHints = null)
             : base(v => v.ToUniversalTime(), v => DateTime.SpecifyKind(v, kind), mappingHints)
         {
         }

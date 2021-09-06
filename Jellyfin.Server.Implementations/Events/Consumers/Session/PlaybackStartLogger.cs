@@ -98,7 +98,7 @@ namespace Jellyfin.Server.Implementations.Events.Consumers.Session
                 return NotificationType.VideoPlayback.ToString();
             }
 
-            return null;
+            return "Playback";
         }
     }
 }

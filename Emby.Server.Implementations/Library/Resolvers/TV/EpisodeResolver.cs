@@ -1,5 +1,8 @@
+#nullable disable
+
 using System;
 using System.Linq;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -12,11 +15,20 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     public class EpisodeResolver : BaseVideoResolver<Episode>
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        public EpisodeResolver(ILibraryManager libraryManager)
+            : base(libraryManager)
+        {
+        }
+
+        /// <summary>
         /// Resolves the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>Episode.</returns>
-        protected override Episode Resolve(ItemResolveArgs args)
+        public override Episode Resolve(ItemResolveArgs args)
         {
             var parent = args.Parent;
 
@@ -25,30 +37,23 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 return null;
             }
 
-            var season = parent as Season;
-
             // Just in case the user decided to nest episodes.
             // Not officially supported but in some cases we can handle it.
-            if (season == null)
-            {
-                season = parent.GetParents().OfType<Season>().FirstOrDefault();
-            }
 
-            // If the parent is a Season or Series, then this is an Episode if the VideoResolver returns something
+            var season = parent as Season ?? parent.GetParents().OfType<Season>().FirstOrDefault();
+
+            // If the parent is a Season or Series and the parent is not an extras folder, then this is an Episode if the VideoResolver returns something
             // Also handle flat tv folders
-            if (season != null ||
-                string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ||
-                args.HasParent<Series>())
+            if ((season != null ||
+                 string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ||
+                 args.HasParent<Series>())
+                && (parent is Series || !BaseItem.AllExtrasTypesFolderNames.Contains(parent.Name, StringComparer.OrdinalIgnoreCase)))
             {
                 var episode = ResolveVideo<Episode>(args, false);
 
                 if (episode != null)
                 {
-                    var series = parent as Series;
-                    if (series == null)
-                    {
-                        series = parent.GetParents().OfType<Series>().FirstOrDefault();
-                    }
+                    var series = parent as Series ?? parent.GetParents().OfType<Series>().FirstOrDefault();
 
                     if (series != null)
                     {
@@ -73,15 +78,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
-        /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        public EpisodeResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
-        {
         }
     }
 }

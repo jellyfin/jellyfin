@@ -27,7 +27,7 @@ namespace Jellyfin.Server.Implementations.Activity
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
+        public event EventHandler<GenericEventArgs<ActivityLogEntry>>? EntryCreated;
 
         /// <inheritdoc/>
         public async Task CreateAsync(ActivityLog entry)
@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Implementations.Activity
             return new QueryResult<ActivityLogEntry>
             {
                 Items = await entries
-                    .Skip(query.StartIndex ?? 0)
+                    .Skip(query.Skip ?? 0)
                     .Take(query.Limit ?? 100)
                     .AsAsyncEnumerable()
                     .Select(ConvertToOldModel)
@@ -86,15 +86,12 @@ namespace Jellyfin.Server.Implementations.Activity
 
         private static ActivityLogEntry ConvertToOldModel(ActivityLog entry)
         {
-            return new ActivityLogEntry
+            return new ActivityLogEntry(entry.Name, entry.Type, entry.UserId)
             {
                 Id = entry.Id,
-                Name = entry.Name,
                 Overview = entry.Overview,
                 ShortOverview = entry.ShortOverview,
-                Type = entry.Type,
                 ItemId = entry.ItemId,
-                UserId = entry.UserId,
                 Date = entry.DateCreated,
                 Severity = entry.LogSeverity
             };

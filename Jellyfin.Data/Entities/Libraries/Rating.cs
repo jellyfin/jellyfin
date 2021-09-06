@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -14,37 +13,19 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="Rating"/> class.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="itemMetadata">The metadata.</param>
-        public Rating(double value, ItemMetadata itemMetadata)
+        public Rating(double value)
         {
             Value = value;
-
-            if (itemMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(itemMetadata));
-            }
-
-            itemMetadata.Ratings.Add(this);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Rating"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Rating()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the value.
@@ -61,13 +42,13 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the rating type.
         /// If this is <c>null</c> it's the internal user rating.
         /// </summary>
-        public virtual RatingSource RatingType { get; set; }
+        public virtual RatingSource? RatingType { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

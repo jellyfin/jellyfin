@@ -11,6 +11,61 @@ namespace Jellyfin.Api.Models.MediaInfoDtos
     public class OpenLiveStreamDto
     {
         /// <summary>
+        /// Gets or sets the open token.
+        /// </summary>
+        public string? OpenToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user id.
+        /// </summary>
+        public Guid? UserId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the play session id.
+        /// </summary>
+        public string? PlaySessionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max streaming bitrate.
+        /// </summary>
+        public int? MaxStreamingBitrate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start time in ticks.
+        /// </summary>
+        public long? StartTimeTicks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the audio stream index.
+        /// </summary>
+        public int? AudioStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subtitle stream index.
+        /// </summary>
+        public int? SubtitleStreamIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max audio channels.
+        /// </summary>
+        public int? MaxAudioChannels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item id.
+        /// </summary>
+        public Guid? ItemId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable direct play.
+        /// </summary>
+        public bool? EnableDirectPlay { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enale direct stream.
+        /// </summary>
+        public bool? EnableDirectStream { get; set; }
+
+        /// <summary>
         /// Gets or sets the device profile.
         /// </summary>
         public DeviceProfile? DeviceProfile { get; set; }

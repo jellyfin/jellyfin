@@ -74,6 +74,6 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
         protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
 
-        protected abstract FileSystemMetadata GetXmlFile(ItemInfo info, IDirectoryService directoryService);
+        protected abstract FileSystemMetadata? GetXmlFile(ItemInfo info, IDirectoryService directoryService);
     }
 }

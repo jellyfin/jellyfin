@@ -1,8 +1,9 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.MediaEncoding.Probing;
+using MediaBrowser.Model.IO;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Tests
@@ -14,9 +15,10 @@ namespace Jellyfin.MediaEncoding.Tests
         public async Task Test(string fileName)
         {
             var path = Path.Join("Test Data", fileName);
-            using (var stream = File.OpenRead(path))
+            await using (var stream = AsyncFile.OpenRead(path))
             {
-                await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(stream, JsonDefaults.GetOptions()).ConfigureAwait(false);
+                var res = await JsonSerializer.DeserializeAsync<InternalMediaInfoResult>(stream, JsonDefaults.Options).ConfigureAwait(false);
+                Assert.NotNull(res);
             }
         }
     }

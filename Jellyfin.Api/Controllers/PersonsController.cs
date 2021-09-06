@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
@@ -95,10 +94,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             var isFavoriteInFilters = filters.Any(f => f == ItemFilter.IsFavorite);
-            var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery
+            var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery(
+                personTypes,
+                excludePersonTypes)
             {
-                PersonTypes = personTypes,
-                ExcludePersonTypes = excludePersonTypes,
                 NameContains = searchTerm,
                 User = user,
                 IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,

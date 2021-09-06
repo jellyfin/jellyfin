@@ -13,7 +13,7 @@
     "DeviceOnlineWithName": "{0} 已經連接",
     "FailedLoginAttemptWithUserName": "來自 {0} 的登入失敗",
     "Favorites": "我的最愛",
-    "Folders": "檔案夾",
+    "Folders": "資料夾",
     "Genres": "風格",
     "HeaderAlbumArtists": "專輯藝人",
     "HeaderContinueWatching": "繼續觀看",
@@ -39,7 +39,7 @@
     "MixedContent": "混合內容",
     "Movies": "電影",
     "Music": "音樂",
-    "MusicVideos": "音樂視頻",
+    "MusicVideos": "音樂影片",
     "NameInstallFailed": "{0} 安裝失敗",
     "NameSeasonNumber": "第 {0} 季",
     "NameSeasonUnknown": "未知季數",
@@ -113,5 +113,12 @@
     "TaskCleanCache": "清理緩存目錄",
     "TasksChannelsCategory": "互聯網頻道",
     "TasksLibraryCategory": "庫",
-    "TaskRefreshPeople": "刷新人物"
+    "TaskRefreshPeople": "刷新人物",
+    "TaskCleanActivityLog": "清理活動記錄",
+    "Undefined": "未定義",
+    "Forced": "強制",
+    "Default": "預設",
+    "TaskOptimizeDatabaseDescription": "壓縮數據庫並截斷可用空間。在掃描媒體庫或執行其他數據庫的修改後運行此任務可能會提高性能。",
+    "TaskOptimizeDatabase": "最佳化數據庫",
+    "TaskCleanActivityLogDescription": "刪除早於設定時間的日誌記錄。"
 }

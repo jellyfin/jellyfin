@@ -61,33 +61,25 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             foreach (var stream in playlist.SortedStreams)
             {
-                var videoStream = stream as TSVideoStream;
-
-                if (videoStream != null)
+                if (stream is TSVideoStream videoStream)
                 {
                     AddVideoStream(mediaStreams, videoStream);
                     continue;
                 }
 
-                var audioStream = stream as TSAudioStream;
-
-                if (audioStream != null)
+                if (stream is TSAudioStream audioStream)
                 {
                     AddAudioStream(mediaStreams, audioStream);
                     continue;
                 }
 
-                var textStream = stream as TSTextStream;
-
-                if (textStream != null)
+                if (stream is TSTextStream textStream)
                 {
                     AddSubtitleStream(mediaStreams, textStream);
                     continue;
                 }
 
-                var graphicsStream = stream as TSGraphicsStream;
-
-                if (graphicsStream != null)
+                if (stream is TSGraphicsStream graphicsStream)
                 {
                     AddSubtitleStream(mediaStreams, graphicsStream);
                 }

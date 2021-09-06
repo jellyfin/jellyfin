@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -28,27 +30,27 @@ namespace Emby.Server.Implementations.Images
 
             string[] includeItemTypes;
 
-            if (string.Equals(viewType, CollectionType.Movies))
+            if (string.Equals(viewType, CollectionType.Movies, StringComparison.Ordinal))
             {
                 includeItemTypes = new string[] { "Movie" };
             }
-            else if (string.Equals(viewType, CollectionType.TvShows))
+            else if (string.Equals(viewType, CollectionType.TvShows, StringComparison.Ordinal))
             {
                 includeItemTypes = new string[] { "Series" };
             }
-            else if (string.Equals(viewType, CollectionType.Music))
+            else if (string.Equals(viewType, CollectionType.Music, StringComparison.Ordinal))
             {
                 includeItemTypes = new string[] { "MusicAlbum" };
             }
-            else if (string.Equals(viewType, CollectionType.Books))
+            else if (string.Equals(viewType, CollectionType.Books, StringComparison.Ordinal))
             {
                 includeItemTypes = new string[] { "Book", "AudioBook" };
             }
-            else if (string.Equals(viewType, CollectionType.BoxSets))
+            else if (string.Equals(viewType, CollectionType.BoxSets, StringComparison.Ordinal))
             {
                 includeItemTypes = new string[] { "BoxSet" };
             }
-            else if (string.Equals(viewType, CollectionType.HomeVideos) || string.Equals(viewType, CollectionType.Photos))
+            else if (string.Equals(viewType, CollectionType.HomeVideos, StringComparison.Ordinal) || string.Equals(viewType, CollectionType.Photos, StringComparison.Ordinal))
             {
                 includeItemTypes = new string[] { "Video", "Photo" };
             }

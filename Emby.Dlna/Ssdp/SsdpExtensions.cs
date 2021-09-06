@@ -7,21 +7,21 @@ namespace Emby.Dlna.Ssdp
 {
     public static class SsdpExtensions
     {
-        public static string GetValue(this XElement container, XName name)
+        public static string? GetValue(this XElement container, XName name)
         {
             var node = container.Element(name);
 
             return node?.Value;
         }
 
-        public static string GetAttributeValue(this XElement container, XName name)
+        public static string? GetAttributeValue(this XElement container, XName name)
         {
             var node = container.Attribute(name);
 
             return node?.Value;
         }
 
-        public static string GetDescendantValue(this XElement container, XName name)
+        public static string? GetDescendantValue(this XElement container, XName name)
             => container.Descendants(name).FirstOrDefault()?.Value;
     }
 }

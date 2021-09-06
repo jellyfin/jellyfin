@@ -99,7 +99,7 @@ namespace Jellyfin.Api.Controllers
             var packages = await _installationManager.GetAvailablePackages().ConfigureAwait(false);
             if (!string.IsNullOrEmpty(repositoryUrl))
             {
-                packages = packages.Where(p => p.versions.Where(q => q.repositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)).Any())
+                packages = packages.Where(p => p.Versions.Any(q => q.RepositoryUrl.Equals(repositoryUrl, StringComparison.OrdinalIgnoreCase)))
                     .ToList();
             }
 
@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Repositories")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SetRepositories([FromBody] List<RepositoryInfo> repositoryInfos)
+        public ActionResult SetRepositories([FromBody, Required] List<RepositoryInfo> repositoryInfos)
         {
             _serverConfigurationManager.Configuration.PluginRepositories = repositoryInfos;
             _serverConfigurationManager.SaveConfiguration();

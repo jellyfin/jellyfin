@@ -115,5 +115,8 @@
     "TasksChannelsCategory": "Internet kanali",
     "TasksLibraryCategory": "Biblioteka",
     "TaskCleanActivityLogDescription": "Briše zapise dnevnika aktivnosti starije od navedenog vremena.",
-    "TaskCleanActivityLog": "Očisti dnevnik aktivnosti"
+    "TaskCleanActivityLog": "Očisti dnevnik aktivnosti",
+    "Undefined": "Nedefinirano",
+    "Forced": "Forsirani",
+    "Default": "Zadano"
 }

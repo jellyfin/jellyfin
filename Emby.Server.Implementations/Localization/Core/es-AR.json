@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Borrar log de actividades",
     "Undefined": "Indefinido",
     "Forced": "Forzado",
-    "Default": "Por Defecto"
+    "Default": "Por Defecto",
+    "TaskOptimizeDatabaseDescription": "Compacta la base de datos y restaura el espacio libre. Ejecutar esta tarea después de actualizar las librerías o realizar otros cambios que impliquen modificar las bases de datos puede mejorar la performance.",
+    "TaskOptimizeDatabase": "Optimización de base de datos"
 }

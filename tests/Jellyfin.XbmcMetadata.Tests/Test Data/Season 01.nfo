@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<season>
+  <plot />
+  <outline />
+  <lockdata>false</lockdata>
+  <dateadded>2020-06-14 17:26:51</dateadded>
+  <title>Season 1</title>
+  <year>2019</year>
+  <tvdbid>359728</tvdbid>
+  <premiered>2019-11-08</premiered>
+  <releasedate>2019-11-08</releasedate>
+  <art>
+    <poster>/media/Serien/High School Musical The Musical The Series (2019)/Season 1/Season 1.jpeg</poster>
+  </art>
+  <actor>
+    <name>Olivia Rodrigo</name>
+    <role>Nini</role>
+    <type>Actor</type>
+    <sortorder>0</sortorder>
+    <thumb>/config/metadata/People/O/Olivia Rodrigo/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Kate Reinders</name>
+    <role>Miss Jenn</role>
+    <type>Actor</type>
+    <sortorder>1</sortorder>
+    <thumb>/config/metadata/People/K/Kate Reinders/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Sofia Wylie</name>
+    <role>Gina</role>
+    <type>Actor</type>
+    <sortorder>2</sortorder>
+    <thumb>/config/metadata/People/S/Sofia Wylie/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Matt Cornett</name>
+    <role>E.J.</role>
+    <type>Actor</type>
+    <sortorder>3</sortorder>
+    <thumb>/config/metadata/People/M/Matt Cornett/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Dara Reneé</name>
+    <role>Kourtney</role>
+    <type>Actor</type>
+    <sortorder>4</sortorder>
+    <thumb>/config/metadata/People/D/Dara Reneé/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Julia Lester</name>
+    <role>Ashlyn</role>
+    <type>Actor</type>
+    <sortorder>5</sortorder>
+    <thumb>/config/metadata/People/J/Julia Lester/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Joshua Bassett</name>
+    <role>Ricky</role>
+    <type>Actor</type>
+    <sortorder>6</sortorder>
+    <thumb>/config/metadata/People/J/Joshua Bassett/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Frankie A. Rodriguez</name>
+    <role>Carlos</role>
+    <type>Actor</type>
+    <sortorder>7</sortorder>
+    <thumb>/config/metadata/People/F/Frankie A. Rodriguez/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Larry Saperstein</name>
+    <role>Big Red</role>
+    <type>Actor</type>
+    <sortorder>8</sortorder>
+    <thumb>/config/metadata/People/L/Larry Saperstein/poster.jpg</thumb>
+  </actor>
+  <actor>
+    <name>Mark St. Cyr</name>
+    <role>Mr. Mazzara</role>
+    <type>Actor</type>
+    <sortorder>9</sortorder>
+    <thumb>/config/metadata/People/M/Mark St. Cyr/poster.jpg</thumb>
+  </actor>
+  <seasonnumber>1</seasonnumber>
+</season>
