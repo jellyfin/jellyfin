@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -9,6 +11,7 @@ namespace Emby.Server.Implementations.Net
 {
     public class SocketFactory : ISocketFactory
     {
+        /// <inheritdoc />
         public ISocket CreateUdpBroadcastSocket(int localPort)
         {
             if (localPort < 0)
@@ -33,11 +36,8 @@ namespace Emby.Server.Implementations.Net
             }
         }
 
-        /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the SSDP multicast local admin group and binds it to the specified local port.
-        /// </summary>
-        /// <returns>An implementation of the <see cref="ISocket"/> interface used by RSSDP components to perform acceptSocket operations.</returns>
-        public ISocket CreateSsdpUdpSocket(IPAddress localIpAddress, int localPort)
+        /// <inheritdoc />
+        public ISocket CreateSsdpUdpSocket(IPAddress localIp, int localPort)
         {
             if (localPort < 0)
             {
@@ -51,8 +51,8 @@ namespace Emby.Server.Implementations.Net
                 retVal.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
 
-                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIpAddress));
-                return new UdpSocket(retVal, localPort, localIpAddress);
+                retVal.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(IPAddress.Parse("239.255.255.250"), localIp));
+                return new UdpSocket(retVal, localPort, localIp);
             }
             catch
             {
@@ -62,13 +62,7 @@ namespace Emby.Server.Implementations.Net
             }
         }
 
-        /// <summary>
-        /// Creates a new UDP acceptSocket that is a member of the specified multicast IP address, and binds it to the specified local port.
-        /// </summary>
-        /// <param name="ipAddress">The multicast IP address to make the acceptSocket a member of.</param>
-        /// <param name="multicastTimeToLive">The multicast time to live value for the acceptSocket.</param>
-        /// <param name="localPort">The number of the local port to bind to.</param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public ISocket CreateUdpMulticastSocket(string ipAddress, int multicastTimeToLive, int localPort)
         {
             if (ipAddress == null)

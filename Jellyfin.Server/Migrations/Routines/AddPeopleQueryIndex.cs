@@ -41,9 +41,9 @@ namespace Jellyfin.Server.Migrations.Routines
             var databasePath = Path.Join(_serverApplicationPaths.DataPath, DbFilename);
             using var connection = SQLite3.Open(databasePath, ConnectionFlags.ReadWrite, null);
             _logger.LogInformation("Creating index idx_TypedBaseItemsUserDataKeyType");
-            connection.Execute("CREATE INDEX idx_TypedBaseItemsUserDataKeyType ON TypedBaseItems(UserDataKey, Type);");
+            connection.Execute("CREATE INDEX IF NOT EXISTS idx_TypedBaseItemsUserDataKeyType ON TypedBaseItems(UserDataKey, Type);");
             _logger.LogInformation("Creating index idx_PeopleNameListOrder");
-            connection.Execute("CREATE INDEX idx_PeopleNameListOrder ON People(Name, ListOrder);");
+            connection.Execute("CREATE INDEX IF NOT EXISTS idx_PeopleNameListOrder ON People(Name, ListOrder);");
         }
     }
 }

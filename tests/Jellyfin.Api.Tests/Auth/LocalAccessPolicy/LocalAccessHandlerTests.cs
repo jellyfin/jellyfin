@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
@@ -41,7 +42,7 @@ namespace Jellyfin.Api.Tests.Auth.LocalAccessPolicy
         public async Task LocalAccessOnly(bool isInLocalNetwork, bool shouldSucceed)
         {
             _networkManagerMock
-                .Setup(n => n.IsInLocalNetwork(It.IsAny<string>()))
+                .Setup(n => n.IsInLocalNetwork(It.IsAny<IPAddress>()))
                 .Returns(isInLocalNetwork);
 
             TestHelpers.SetupConfigurationManager(_configurationManagerMock, true);

@@ -14,8 +14,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-#pragma warning disable CA5369
-
 namespace Jellyfin.XbmcMetadata.Tests.Parsers
 {
     public class EpisodeNfoProviderTests
@@ -37,8 +35,15 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
                 .Returns(new XbmcMetadataOptions());
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var directoryService = new Mock<IDirectoryService>();
 
-            _parser = new EpisodeNfoParser(new NullLogger<EpisodeNfoParser>(), config.Object, providerManager.Object, user.Object, userData.Object);
+            _parser = new EpisodeNfoParser(
+                new NullLogger<EpisodeNfoParser>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]

@@ -165,7 +165,7 @@ namespace Jellyfin.Networking.Manager
             {
                 foreach (var item in source)
                 {
-                    result.AddItem(item);
+                    result.AddItem(item, false);
                 }
             }
 
@@ -274,7 +274,7 @@ namespace Jellyfin.Networking.Manager
                 if (_bindExclusions.Count > 0)
                 {
                     // Return all the interfaces except the ones specifically excluded.
-                    return _interfaceAddresses.Exclude(_bindExclusions);
+                    return _interfaceAddresses.Exclude(_bindExclusions, false);
                 }
 
                 if (individualInterfaces)
@@ -310,7 +310,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Remove any excluded bind interfaces.
-            return _bindAddresses.Exclude(_bindExclusions);
+            return _bindAddresses.Exclude(_bindExclusions, false);
         }
 
         /// <inheritdoc/>
@@ -397,15 +397,26 @@ namespace Jellyfin.Networking.Manager
             }
 
             // Get the first LAN interface address that isn't a loopback.
-            var interfaces = CreateCollection(_interfaceAddresses
-                .Exclude(_bindExclusions)
-                .Where(IsInLocalNetwork)
-                .OrderBy(p => p.Tag));
+            var interfaces = CreateCollection(
+                _interfaceAddresses
+                    .Exclude(_bindExclusions, false)
+                    .Where(IsInLocalNetwork)
+                    .OrderBy(p => p.Tag));
 
             if (interfaces.Count > 0)
             {
                 if (haveSource)
                 {
+                    foreach (var intf in interfaces)
+                    {
+                        if (intf.Address.Equals(source.Address))
+                        {
+                            result = FormatIP6String(intf.Address);
+                            _logger.LogDebug("{Source}: GetBindInterface: Has found matching interface. {Result}", source, result);
+                            return result;
+                        }
+                    }
+
                     // Does the request originate in one of the interface subnets?
                     // (For systems with multiple internal network cards, and multiple subnets)
                     foreach (var intf in interfaces)
@@ -532,10 +543,10 @@ namespace Jellyfin.Networking.Manager
         {
             if (filter == null)
             {
-                return _lanSubnets.Exclude(_excludedSubnets).AsNetworks();
+                return _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks();
             }
 
-            return _lanSubnets.Exclude(filter);
+            return _lanSubnets.Exclude(filter, true);
         }
 
         /// <inheritdoc/>
@@ -566,7 +577,7 @@ namespace Jellyfin.Networking.Manager
                         && ((IsIP4Enabled && iface.Address.AddressFamily == AddressFamily.InterNetwork)
                             || (IsIP6Enabled && iface.Address.AddressFamily == AddressFamily.InterNetworkV6)))
                     {
-                        result.AddItem(iface);
+                        result.AddItem(iface, false);
                     }
                 }
 
@@ -574,6 +585,29 @@ namespace Jellyfin.Networking.Manager
             }
 
             return false;
+        }
+
+        /// <inheritdoc/>
+        public bool HasRemoteAccess(IPAddress remoteIp)
+        {
+            var config = _configurationManager.GetNetworkConfiguration();
+            if (config.EnableRemoteAccess)
+            {
+                // Comma separated list of IP addresses or IP/netmask entries for networks that will be allowed to connect remotely.
+                // If left blank, all remote addresses will be allowed.
+                if (RemoteAddressFilter.Count > 0 && !IsInLocalNetwork(remoteIp))
+                {
+                    // remoteAddressFilter is a whitelist or blacklist.
+                    return RemoteAddressFilter.ContainsAddress(remoteIp) == !config.IsRemoteIPFilterBlacklist;
+                }
+            }
+            else if (!IsInLocalNetwork(remoteIp))
+            {
+                // Remote not enabled. So everyone should be LAN.
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -610,8 +644,18 @@ namespace Jellyfin.Networking.Manager
                     var address = IPNetAddress.Parse(parts[0]);
                     var index = int.Parse(parts[1], CultureInfo.InvariantCulture);
                     address.Tag = index;
-                    _interfaceAddresses.AddItem(address);
-                    _interfaceNames.Add(parts[2], Math.Abs(index));
+                    _interfaceAddresses.AddItem(address, false);
+                    _interfaceNames[parts[2]] = Math.Abs(index);
+                }
+
+                if (IsIP4Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
+                }
+
+                if (IsIP6Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
                 }
             }
 
@@ -944,8 +988,8 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 // Read and parse bind addresses and exclusions, removing ones that don't exist.
-                _bindAddresses = CreateIPCollection(lanAddresses).Union(_interfaceAddresses);
-                _bindExclusions = CreateIPCollection(lanAddresses, true).Union(_interfaceAddresses);
+                _bindAddresses = CreateIPCollection(lanAddresses).ThatAreContainedInNetworks(_interfaceAddresses);
+                _bindExclusions = CreateIPCollection(lanAddresses, true).ThatAreContainedInNetworks(_interfaceAddresses);
                 _logger.LogInformation("Using bind addresses: {0}", _bindAddresses.AsString());
                 _logger.LogInformation("Using bind exclusions: {0}", _bindExclusions.AsString());
             }
@@ -1023,12 +1067,12 @@ namespace Jellyfin.Networking.Manager
                     }
 
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());
                 _logger.LogInformation("Defined LAN exclusions : {0}", _excludedSubnets.AsString());
-                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets).AsNetworks().AsString());
+                _logger.LogInformation("Using LAN addresses: {0}", _lanSubnets.Exclude(_excludedSubnets, true).AsNetworks().AsString());
             }
         }
 
@@ -1082,7 +1126,7 @@ namespace Jellyfin.Networking.Manager
                                         nw.Tag *= -1;
                                     }
 
-                                    _interfaceAddresses.AddItem(nw);
+                                    _interfaceAddresses.AddItem(nw, false);
 
                                     // Store interface name so we can use the name in Collections.
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
@@ -1103,7 +1147,7 @@ namespace Jellyfin.Networking.Manager
                                         nw.Tag *= -1;
                                     }
 
-                                    _interfaceAddresses.AddItem(nw);
+                                    _interfaceAddresses.AddItem(nw, false);
 
                                     // Store interface name so we can use the name in Collections.
                                     _interfaceNames[adapter.Description.ToLower(CultureInfo.InvariantCulture)] = tag;
@@ -1119,36 +1163,40 @@ namespace Jellyfin.Networking.Manager
                         }
 #pragma warning restore CA1031 // Do not catch general exception types
                     }
-
-                    _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
-                    _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
-
-                    // If for some reason we don't have an interface info, resolve our DNS name.
-                    if (_interfaceAddresses.Count == 0)
-                    {
-                        _logger.LogError("No interfaces information available. Resolving DNS name.");
-                        IPHost host = new IPHost(Dns.GetHostName());
-                        foreach (var a in host.GetAddresses())
-                        {
-                            _interfaceAddresses.AddItem(a);
-                        }
-
-                        if (_interfaceAddresses.Count == 0)
-                        {
-                            _logger.LogWarning("No interfaces information available. Using loopback.");
-                            // Last ditch attempt - use loopback address.
-                            _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
-                            if (IsIP6Enabled)
-                            {
-                                _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
-                            }
-                        }
-                    }
                 }
-                catch (NetworkInformationException ex)
+                catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error in InitialiseInterfaces.");
                 }
+
+                // If for some reason we don't have an interface info, resolve our DNS name.
+                if (_interfaceAddresses.Count == 0)
+                {
+                    _logger.LogError("No interfaces information available. Resolving DNS name.");
+                    IPHost host = new IPHost(Dns.GetHostName());
+                    foreach (var a in host.GetAddresses())
+                    {
+                        _interfaceAddresses.AddItem(a);
+                    }
+
+                    if (_interfaceAddresses.Count == 0)
+                    {
+                        _logger.LogWarning("No interfaces information available. Using loopback.");
+                    }
+                }
+
+                if (IsIP4Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
+                }
+
+                if (IsIP6Enabled)
+                {
+                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
+                }
+
+                _logger.LogDebug("Discovered {0} interfaces.", _interfaceAddresses.Count);
+                _logger.LogDebug("Interfaces addresses : {0}", _interfaceAddresses.AsString());
             }
         }
 
@@ -1217,7 +1265,7 @@ namespace Jellyfin.Networking.Manager
         private bool MatchesBindInterface(IPObject source, bool isInExternalSubnet, out string result)
         {
             result = string.Empty;
-            var addresses = _bindAddresses.Exclude(_bindExclusions);
+            var addresses = _bindAddresses.Exclude(_bindExclusions, false);
 
             int count = addresses.Count;
             if (count == 1 && (_bindAddresses[0].Equals(IPAddress.Any) || _bindAddresses[0].Equals(IPAddress.IPv6Any)))
@@ -1302,7 +1350,7 @@ namespace Jellyfin.Networking.Manager
             result = string.Empty;
             // Get the first WAN interface address that isn't a loopback.
             var extResult = _interfaceAddresses
-                .Exclude(_bindExclusions)
+                .Exclude(_bindExclusions, false)
                 .Where(p => !IsInLocalNetwork(p))
                 .OrderBy(p => p.Tag);
 

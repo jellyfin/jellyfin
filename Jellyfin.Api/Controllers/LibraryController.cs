@@ -114,7 +114,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path));
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), true);
         }
 
         /// <summary>
@@ -331,10 +331,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItem(Guid itemId)
+        public async Task<ActionResult> DeleteItem(Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
             var user = auth.User;
 
             if (!item.CanDelete(user))
@@ -361,7 +361,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+        public async Task<ActionResult> DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
             if (ids.Length == 0)
             {
@@ -371,7 +371,7 @@ namespace Jellyfin.Api.Controllers
             foreach (var i in ids)
             {
                 var item = _libraryManager.GetItemById(i);
-                var auth = _authContext.GetAuthorizationInfo(Request);
+                var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
                 var user = auth.User;
 
                 if (!item.CanDelete(user))
@@ -600,7 +600,7 @@ namespace Jellyfin.Api.Controllers
         {
             foreach (var item in dto.Updates)
             {
-                _libraryMonitor.ReportFileSystemChanged(item.Path);
+                _libraryMonitor.ReportFileSystemChanged(item.Path ?? throw new ArgumentException("Item path can't be null."));
             }
 
             return NoContent();
@@ -627,7 +627,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             var user = auth.User;
 
@@ -666,7 +666,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename);
+            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename, true);
         }
 
         /// <summary>
@@ -700,7 +700,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.RootFolder)
                 : _libraryManager.GetItemById(itemId);
 
-            if (item is Episode || (item is IItemByName && !(item is MusicArtist)))
+            if (item is Episode || (item is IItemByName && item is not MusicArtist))
             {
                 return new QueryResult<BaseItemDto>();
             }

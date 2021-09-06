@@ -187,36 +187,52 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            using (var stream = response.Stream)
-            using (var memoryStream = new MemoryStream())
+            using var stream = response.Stream;
+            using var memoryStream = new MemoryStream();
+            await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
+            memoryStream.Position = 0;
+
+            var savePaths = new List<string>();
+            var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+
+            if (response.IsForced)
             {
-                await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
-                memoryStream.Position = 0;
+                saveFileName += ".forced";
+            }
 
-                var savePaths = new List<string>();
-                var saveFileName = Path.GetFileNameWithoutExtension(video.Path) + "." + response.Language.ToLowerInvariant();
+            saveFileName += "." + response.Format.ToLowerInvariant();
 
-                if (response.IsForced)
+            if (saveInMediaFolder)
+            {
+                var mediaFolderPath = Path.GetFullPath(Path.Combine(video.ContainingFolderPath, saveFileName));
+                // TODO: Add some error handling to the API user: return BadRequest("Could not save subtitle, bad path.");
+                if (mediaFolderPath.StartsWith(video.ContainingFolderPath, StringComparison.Ordinal))
                 {
-                    saveFileName += ".forced";
+                    savePaths.Add(mediaFolderPath);
                 }
+            }
 
-                saveFileName += "." + response.Format.ToLowerInvariant();
+            var internalPath = Path.GetFullPath(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
 
-                if (saveInMediaFolder)
-                {
-                    savePaths.Add(Path.Combine(video.ContainingFolderPath, saveFileName));
-                }
+            // TODO: Add some error to the user: return BadRequest("Could not save subtitle, bad path.");
+            if (internalPath.StartsWith(video.GetInternalMetadataPath(), StringComparison.Ordinal))
+            {
+                savePaths.Add(internalPath);
+            }
 
-                savePaths.Add(Path.Combine(video.GetInternalMetadataPath(), saveFileName));
-
+            if (savePaths.Count > 0)
+            {
                 await TrySaveToFiles(memoryStream, savePaths).ConfigureAwait(false);
+            }
+            else
+            {
+                _logger.LogError("An uploaded subtitle could not be saved because the resulting paths were invalid.");
             }
         }
 
         private async Task TrySaveToFiles(Stream stream, List<string> savePaths)
         {
-            Exception exceptionToThrow = null;
+            List<Exception> exs = null;
 
             foreach (var savePath in savePaths)
             {
@@ -229,20 +245,22 @@ namespace MediaBrowser.Providers.Subtitles
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
                     // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                    using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true))
-                    {
-                        await stream.CopyToAsync(fs).ConfigureAwait(false);
-                    }
+                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true);
+                    await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;
                 }
                 catch (Exception ex)
                 {
-                    if (exceptionToThrow == null)
-                    {
-                        exceptionToThrow = ex;
-                    }
-                }
+// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
+#pragma warning disable CA1508
+                    exs ??= new List<Exception>()
+                            {
+                                ex
+                            };
+#pragma warning restore CA1508
+
+            }
                 finally
                 {
                     _monitor.ReportFileSystemChangeComplete(savePath, false);
@@ -251,9 +269,9 @@ namespace MediaBrowser.Providers.Subtitles
                 stream.Position = 0;
             }
 
-            if (exceptionToThrow != null)
+            if (exs != null)
             {
-                throw exceptionToThrow;
+                throw new AggregateException(exs);
             }
         }
 
@@ -359,15 +377,15 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem video)
+        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem item)
         {
             VideoContentType mediaType;
 
-            if (video is Episode)
+            if (item is Episode)
             {
                 mediaType = VideoContentType.Episode;
             }
-            else if (video is Movie)
+            else if (item is Movie)
             {
                 mediaType = VideoContentType.Movie;
             }

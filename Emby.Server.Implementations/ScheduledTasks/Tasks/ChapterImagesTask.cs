@@ -12,9 +12,9 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
-using MediaBrowser.Model.Globalization;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -55,9 +55,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _localization = localization;
         }
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run.
-        /// </summary>
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+
+        /// <inheritdoc />
+        public string Key => "RefreshChapterImages";
+
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
@@ -140,8 +150,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         previouslyFailedImages.Add(key);
 
                         var parentPath = Path.GetDirectoryName(failHistoryPath);
-
-                        Directory.CreateDirectory(parentPath);
+                        if (parentPath != null)
+                        {
+                            Directory.CreateDirectory(parentPath);
+                        }
 
                         string text = string.Join('|', previouslyFailedImages);
                         File.WriteAllText(failHistoryPath, text);
@@ -160,26 +172,5 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
             }
         }
-
-        /// <inheritdoc />
-        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
-
-        /// <inheritdoc />
-        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
-
-        /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
-
-        /// <inheritdoc />
-        public string Key => "RefreshChapterImages";
-
-        /// <inheritdoc />
-        public bool IsHidden => false;
-
-        /// <inheritdoc />
-        public bool IsEnabled => true;
-
-        /// <inheritdoc />
-        public bool IsLogged => true;
     }
 }

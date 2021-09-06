@@ -1,9 +1,6 @@
-#nullable enable
-
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Text.RegularExpressions;
+using MediaBrowser.Common.Providers;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -43,8 +40,8 @@ namespace Emby.Server.Implementations.Library
             // for imdbid we also accept pattern matching
             if (string.Equals(attribute, "imdbid", StringComparison.OrdinalIgnoreCase))
             {
-                var m = Regex.Match(str, "tt([0-9]{7,8})", RegexOptions.IgnoreCase);
-                return m.Success ? m.Value : null;
+                var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
+                return match ? imdbId.ToString() : null;
             }
 
             return null;
@@ -97,8 +94,14 @@ namespace Emby.Server.Implementations.Library
             // We have to ensure that the sub path ends with a directory separator otherwise we'll get weird results
             // when the sub path matches a similar but in-complete subpath
             var oldSubPathEndsWithSeparator = subPath[^1] == newDirectorySeparatorChar;
-            if (!path.StartsWith(subPath, StringComparison.OrdinalIgnoreCase)
-                || (!oldSubPathEndsWithSeparator && path[subPath.Length] != newDirectorySeparatorChar))
+            if (!path.StartsWith(subPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (path.Length > subPath.Length
+                && !oldSubPathEndsWithSeparator
+                && path[subPath.Length] != newDirectorySeparatorChar)
             {
                 return false;
             }

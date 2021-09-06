@@ -14,9 +14,11 @@ assignees: ''
  - OS: [e.g. Debian, Windows]
  - Virtualization: [e.g. Docker, KVM, LXC]
  - Clients: [Browser, Android, Fire Stick, etc.]
- - Browser: [e.g. Firefox 72, Chrome 80, Safari 13]
- - Jellyfin Version: [e.g. 10.4.3, nightly 20191231]
+ - Browser: [e.g. Firefox 91, Chrome 93, Safari 13]
+ - Jellyfin Version: [e.g. 10.7.6, unstable 20191231]
+ - FFmpeg Version: [e.g. 4.3.2-Jellyfin]
  - Playback: [Direct Play, Remux, Direct Stream, Transcode] 
+ - Hardware Acceleration: [e.g. none, VAAPI, NVENC, etc.]
  - Installed Plugins: [e.g. none, Fanart, Anime, etc.]
  - Reverse Proxy: [e.g. none, nginx, apache, etc.]
  - Base URL: [e.g. none, yes: /example]
@@ -33,7 +35,13 @@ assignees: ''
 **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
 
-**Logs**
+**Server Logs**
+<!-- Please paste any log errors. -->
+
+**FFmpeg Logs**
+<!-- Please paste any log errors. -->
+
+**Browser Console Logs**
 <!-- Please paste any log errors. -->
 
 **Screenshots**

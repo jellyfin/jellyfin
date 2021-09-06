@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Extensions;
@@ -171,21 +172,31 @@ namespace Emby.Drawing
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            ImageDimensions newSize = ImageHelper.GetNewImageSize(options, null);
             int quality = options.Quality;
 
             ImageFormat outputFormat = GetOutputFormat(options.SupportedOutputFormats, requiresTransparency);
-            string cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.Blur, options.BackgroundColor, options.ForegroundLayer);
+            string cacheFilePath = GetCacheFilePath(
+                originalImagePath,
+                options.Width,
+                options.Height,
+                options.MaxWidth,
+                options.MaxHeight,
+                options.FillWidth,
+                options.FillHeight,
+                quality,
+                dateModified,
+                outputFormat,
+                options.AddPlayedIndicator,
+                options.PercentPlayed,
+                options.UnplayedCount,
+                options.Blur,
+                options.BackgroundColor,
+                options.ForegroundLayer);
 
             try
             {
                 if (!File.Exists(cacheFilePath))
                 {
-                    if (options.CropWhiteSpace && !SupportsTransparency(originalImagePath))
-                    {
-                        options.CropWhiteSpace = false;
-                    }
-
                     string resultPath = _imageEncoder.EncodeImage(originalImagePath, dateModified, cacheFilePath, autoOrient, orientation, quality, options, outputFormat);
 
                     if (string.Equals(resultPath, originalImagePath, StringComparison.OrdinalIgnoreCase))
@@ -246,48 +257,111 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters.
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageDimensions outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, int? blur, string backgroundColor, string foregroundLayer)
+        private string GetCacheFilePath(
+            string originalPath,
+            int? width,
+            int? height,
+            int? maxWidth,
+            int? maxHeight,
+            int? fillWidth,
+            int? fillHeight,
+            int quality,
+            DateTime dateModified,
+            ImageFormat format,
+            bool addPlayedIndicator,
+            double percentPlayed,
+            int? unwatchedCount,
+            int? blur,
+            string backgroundColor,
+            string foregroundLayer)
         {
-            var filename = originalPath
-                + "width=" + outputSize.Width
-                + "height=" + outputSize.Height
-                + "quality=" + quality
-                + "datemodified=" + dateModified.Ticks
-                + "f=" + format;
+            var filename = new StringBuilder(256);
+            filename.Append(originalPath);
+
+            filename.Append(",quality=");
+            filename.Append(quality);
+
+            filename.Append(",datemodified=");
+            filename.Append(dateModified.Ticks);
+
+            filename.Append(",f=");
+            filename.Append(format);
+
+            if (width.HasValue)
+            {
+                filename.Append(",width=");
+                filename.Append(width.Value);
+            }
+
+            if (height.HasValue)
+            {
+                filename.Append(",height=");
+                filename.Append(height.Value);
+            }
+
+            if (maxWidth.HasValue)
+            {
+                filename.Append(",maxwidth=");
+                filename.Append(maxWidth.Value);
+            }
+
+            if (maxHeight.HasValue)
+            {
+                filename.Append(",maxheight=");
+                filename.Append(maxHeight.Value);
+            }
+
+            if (fillWidth.HasValue)
+            {
+                filename.Append(",fillwidth=");
+                filename.Append(fillWidth.Value);
+            }
+
+            if (fillHeight.HasValue)
+            {
+                filename.Append(",fillheight=");
+                filename.Append(fillHeight.Value);
+            }
 
             if (addPlayedIndicator)
             {
-                filename += "pl=true";
+                filename.Append(",pl=true");
             }
 
             if (percentPlayed > 0)
             {
-                filename += "p=" + percentPlayed;
+                filename.Append(",p=");
+                filename.Append(percentPlayed);
             }
 
             if (unwatchedCount.HasValue)
             {
-                filename += "p=" + unwatchedCount.Value;
+                filename.Append(",p=");
+                filename.Append(unwatchedCount.Value);
             }
 
             if (blur.HasValue)
             {
-                filename += "blur=" + blur.Value;
+                filename.Append(",blur=");
+                filename.Append(blur.Value);
             }
 
             if (!string.IsNullOrEmpty(backgroundColor))
             {
-                filename += "b=" + backgroundColor;
+                filename.Append(",b=");
+                filename.Append(backgroundColor);
             }
 
             if (!string.IsNullOrEmpty(foregroundLayer))
             {
-                filename += "fl=" + foregroundLayer;
+                filename.Append(",fl=");
+                filename.Append(foregroundLayer);
             }
 
-            filename += "v=" + Version;
+            filename.Append(",v=");
+            filename.Append(Version);
 
-            return GetCachePath(ResizedImageCachePath, filename, "." + format.ToString().ToLowerInvariant());
+            return GetCachePath(ResizedImageCachePath, filename.ToString(), "." + format.ToString().ToLowerInvariant());
         }
 
         /// <inheritdoc />

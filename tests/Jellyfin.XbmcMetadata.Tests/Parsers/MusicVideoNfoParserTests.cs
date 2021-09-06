@@ -30,8 +30,15 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
 
             var user = new Mock<IUserManager>();
             var userData = new Mock<IUserDataManager>();
+            var directoryService = new Mock<IDirectoryService>();
 
-            _parser = new MovieNfoParser(new NullLogger<BaseNfoParser<MusicVideo>>(), config.Object, providerManager.Object, user.Object, userData.Object);
+            _parser = new MovieNfoParser(
+                new NullLogger<BaseNfoParser<MusicVideo>>(),
+                config.Object,
+                providerManager.Object,
+                user.Object,
+                userData.Object,
+                directoryService.Object);
         }
 
         [Fact]
