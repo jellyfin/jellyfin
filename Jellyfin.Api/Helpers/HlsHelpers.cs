@@ -39,7 +39,7 @@ namespace Jellyfin.Api.Helpers
                         FileAccess.Read,
                         FileShare.ReadWrite,
                         IODefaults.FileStreamBufferSize,
-                        FileOptions.SequentialScan);
+                        (AsyncFile.UseAsyncIO ? FileOptions.Asynchronous : FileOptions.None) | FileOptions.SequentialScan);
                     await using (fileStream.ConfigureAwait(false))
                     {
                         using var reader = new StreamReader(fileStream);

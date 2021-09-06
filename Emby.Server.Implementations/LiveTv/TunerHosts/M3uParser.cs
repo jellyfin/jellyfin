@@ -14,6 +14,7 @@ using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return File.OpenRead(info.Url);
+                return AsyncFile.OpenRead(info.Url);
             }
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, info.Url);

@@ -92,7 +92,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         try
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
-                            await using var writeStream = File.OpenWrite(channelCacheFile);
+                            await using var writeStream = AsyncFile.OpenWrite(channelCacheFile);
                             await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken).ConfigureAwait(false);
                         }
                         catch (IOException)
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     {
                         try
                         {
-                            await using var readStream = File.OpenRead(channelCacheFile);
+                            await using var readStream = AsyncFile.OpenRead(channelCacheFile);
                             var channels = await JsonSerializer.DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
                                 .ConfigureAwait(false);
                             list.AddRange(channels);

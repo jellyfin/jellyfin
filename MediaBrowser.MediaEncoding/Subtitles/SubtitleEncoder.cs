@@ -192,7 +192,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return File.OpenRead(fileInfo.Path);
+            return AsyncFile.OpenRead(fileInfo.Path);
         }
 
         private async Task<SubtitleInfo> GetReadableFile(
@@ -671,7 +671,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string text;
             Encoding encoding;
 
-            using (var fileStream = File.OpenRead(file))
+            using (var fileStream = AsyncFile.OpenRead(file))
             using (var reader = new StreamReader(fileStream, true))
             {
                 encoding = reader.CurrentEncoding;
@@ -684,7 +684,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
                 // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
                 using (var writer = new StreamWriter(fileStream, encoding))
                 {
                     await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -750,7 +750,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 case MediaProtocol.File:
-                    return File.OpenRead(path);
+                    return AsyncFile.OpenRead(path);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }

@@ -638,7 +638,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    await using FileStream jsonStream = File.OpenRead(cacheFilePath);
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                     mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
