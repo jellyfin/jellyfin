@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.7.6
+Version:        10.7.7
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -137,6 +137,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Sun Sep 05 2021 Jellyfin Packaging Team <packaging@jellyfin.org>
+- New upstream version 10.7.7; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.7
 * Thu May 20 2021 Jellyfin Packaging Team <packaging@jellyfin.org>
 - New upstream version 10.7.6; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v10.7.6
 * Tue May 04 2021 Jellyfin Packaging Team <packaging@jellyfin.org>
