@@ -81,10 +81,6 @@ namespace Jellyfin.Data.Entities
         /// <summary>
         /// Gets or sets the preference value.
         /// </summary>
-        /// <remarks>
-        /// Required.
-        /// </remarks>
-        [Required]
         public string Value { get; set; }
     }
 }
