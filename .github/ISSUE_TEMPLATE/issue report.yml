@@ -12,28 +12,25 @@ body:
     attributes:
       label: Please describe your bug
       description: Also tell us, what did you expect to happen?
-      placeholder: The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
-    validations:
-      required: true
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps To Reproduce
-      description: Steps to reproduce the behavior.
       placeholder: |
+      The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
+      
+      This is my issue.
+      
+      Steps to Reproduce
         1. In this environment...
         2. With this config...
         3. Run '...'
         4. See error...
     validations:
-      required: false
+      required: true
   - type: dropdown
     id: version
     attributes:
       label: Jellyfin Version
       description: What version of Jellyfin are you running?
       options:
-        - 10.7.6
+        - 10.7.7
         - 10.7.z
         - 10.6.4
         - Other
