@@ -1,3 +1,7 @@
+# DESIGNED FOR BUILDING ON AMD64 ONLY
+#####################################
+# Requires binfm_misc registration
+# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
 ARG DOTNET_VERSION=5.0
 
 FROM node:lts-alpine as web-builder
