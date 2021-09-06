@@ -18,10 +18,10 @@ ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
 # https://github.com/intel/compute-runtime/releases
-ARG GMMLIB_VERSION=20.3.2
-ARG IGC_VERSION=1.0.5435
-ARG NEO_VERSION=20.46.18421
-ARG LEVEL_ZERO_VERSION=1.0.18421
+ARG GMMLIB_VERSION=21.2.1
+ARG IGC_VERSION=1.0.8517
+ARG NEO_VERSION=21.35.20826
+ARG LEVEL_ZERO_VERSION=1.2.20826
 
 # Install dependencies:
 # mesa-va-drivers: needed for AMD VAAPI. Mesa >= 20.1 is required for HEVC transcoding.
