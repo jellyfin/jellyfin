@@ -994,7 +994,6 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-
         public SessionInfo GetSession(string sessionId, bool throwOnMissing = true)
         {
             var session = Sessions.FirstOrDefault(i => string.Equals(i.Id, sessionId, StringComparison.Ordinal));
