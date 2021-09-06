@@ -6,6 +6,11 @@ namespace MediaBrowser.Model.Configuration
 {
     public class ImageOption
     {
+        public ImageOption()
+        {
+            Limit = 1;
+        }
+
         /// <summary>
         /// Gets or sets the type.
         /// </summary>
@@ -23,10 +28,5 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The minimum width.</value>
         public int MinWidth { get; set; }
-
-        public ImageOption()
-        {
-            Limit = 1;
-        }
     }
 }

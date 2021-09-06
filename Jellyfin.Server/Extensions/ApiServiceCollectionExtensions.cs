@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
@@ -24,12 +21,11 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
-using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -229,14 +225,13 @@ namespace Jellyfin.Server.Extensions
                 .AddJsonOptions(options =>
                 {
                     // Update all properties that are set in JsonDefaults
-                    var jsonOptions = JsonDefaults.GetPascalCaseOptions();
+                    var jsonOptions = JsonDefaults.PascalCaseOptions;
 
                     // From JsonDefaults
                     options.JsonSerializerOptions.ReadCommentHandling = jsonOptions.ReadCommentHandling;
                     options.JsonSerializerOptions.WriteIndented = jsonOptions.WriteIndented;
                     options.JsonSerializerOptions.DefaultIgnoreCondition = jsonOptions.DefaultIgnoreCondition;
                     options.JsonSerializerOptions.NumberHandling = jsonOptions.NumberHandling;
-                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = jsonOptions.PropertyNameCaseInsensitive;
 
                     options.JsonSerializerOptions.Converters.Clear();
                     foreach (var converter in jsonOptions.Converters)
@@ -265,15 +260,16 @@ namespace Jellyfin.Server.Extensions
         {
             return serviceCollection.AddSwaggerGen(c =>
             {
+                var version = typeof(ApplicationHost).Assembly.GetName().Version?.ToString(3) ?? "0.0.1";
                 c.SwaggerDoc("api-docs", new OpenApiInfo
                 {
                     Title = "Jellyfin API",
-                    Version = "v1",
+                    Version = version,
                     Extensions = new Dictionary<string, IOpenApiExtension>
                     {
                         {
                             "x-jellyfin-version",
-                            new OpenApiString(typeof(ApplicationHost).Assembly.GetName().Version?.ToString())
+                            new OpenApiString(version)
                         }
                     }
                 });
@@ -307,17 +303,23 @@ namespace Jellyfin.Server.Extensions
                     {
                         description.TryGetMethodInfo(out MethodInfo methodInfo);
                         // Attribute name, method name, none.
-                        return description?.ActionDescriptor?.AttributeRouteInfo?.Name
+                        return description?.ActionDescriptor.AttributeRouteInfo?.Name
                                ?? methodInfo?.Name
                                ?? null;
                     });
+
+                // Allow parameters to properly be nullable.
+                c.UseAllOfToExtendReferenceSchemas();
+                c.SupportNonNullableReferenceTypes();
 
                 // TODO - remove when all types are supported in System.Text.Json
                 c.AddSwaggerTypeMappings();
 
                 c.OperationFilter<SecurityRequirementsOperationFilter>();
                 c.OperationFilter<FileResponseFilter>();
-                c.DocumentFilter<WebsocketModelFilter>();
+                c.OperationFilter<FileRequestFilter>();
+                c.OperationFilter<ParameterObsoleteFilter>();
+                c.DocumentFilter<AdditionalModelFilter>();
             });
         }
 
@@ -339,7 +341,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }
                 }
             }
@@ -395,7 +397,7 @@ namespace Jellyfin.Server.Extensions
                     Type = "object",
                     Properties = typeof(ImageType).GetEnumNames().ToDictionary(
                         name => name,
-                        name => new OpenApiSchema
+                        _ => new OpenApiSchema
                         {
                             Type = "object",
                             AdditionalProperties = new OpenApiSchema

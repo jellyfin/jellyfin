@@ -146,58 +146,6 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Gets a remote image.
-        /// </summary>
-        /// <param name="imageUrl">The image url.</param>
-        /// <response code="200">Remote image returned.</response>
-        /// <response code="404">Remote image not found.</response>
-        /// <returns>Image Stream.</returns>
-        [HttpGet("Images/Remote")]
-        [Produces(MediaTypeNames.Application.Octet)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesImageFile]
-        public async Task<ActionResult> GetRemoteImage([FromQuery, Required] Uri imageUrl)
-        {
-            var urlHash = imageUrl.ToString().GetMD5();
-            var pointerCachePath = GetFullCachePath(urlHash.ToString());
-
-            string? contentPath = null;
-            var hasFile = false;
-
-            try
-            {
-                contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-                if (System.IO.File.Exists(contentPath))
-                {
-                    hasFile = true;
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                // The file isn't cached yet
-            }
-            catch (IOException)
-            {
-                // The file isn't cached yet
-            }
-
-            if (!hasFile)
-            {
-                await DownloadImage(imageUrl, urlHash, pointerCachePath).ConfigureAwait(false);
-                contentPath = await System.IO.File.ReadAllTextAsync(pointerCachePath).ConfigureAwait(false);
-            }
-
-            if (string.IsNullOrEmpty(contentPath))
-            {
-                return NotFound();
-            }
-
-            var contentType = MimeTypes.GetMimeType(contentPath);
-            return PhysicalFile(contentPath, contentType);
-        }
-
-        /// <summary>
         /// Downloads a remote image for an item.
         /// </summary>
         /// <param name="itemId">Item Id.</param>
@@ -259,7 +207,8 @@ namespace Jellyfin.Api.Controllers
 
             var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
             Directory.CreateDirectory(fullCacheDirectory);
-            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
+            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, true);
             await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
             var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));

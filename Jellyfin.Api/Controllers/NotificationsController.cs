@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Api.Constants;
@@ -86,26 +87,19 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Sends a notification to all admins.
         /// </summary>
-        /// <param name="url">The URL of the notification.</param>
-        /// <param name="level">The level of the notification.</param>
-        /// <param name="name">The name of the notification.</param>
-        /// <param name="description">The description of the notification.</param>
+        /// <param name="notificationDto">The notification request.</param>
         /// <response code="204">Notification sent.</response>
         /// <returns>A <cref see="NoContentResult"/>.</returns>
         [HttpPost("Admin")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult CreateAdminNotification(
-            [FromQuery] string? url,
-            [FromQuery] NotificationLevel? level,
-            [FromQuery] string name = "",
-            [FromQuery] string description = "")
+        public ActionResult CreateAdminNotification([FromBody, Required] AdminNotificationDto notificationDto)
         {
             var notification = new NotificationRequest
             {
-                Name = name,
-                Description = description,
-                Url = url,
-                Level = level ?? NotificationLevel.Normal,
+                Name = notificationDto.Name,
+                Description = notificationDto.Description,
+                Url = notificationDto.Url,
+                Level = notificationDto.NotificationLevel ?? NotificationLevel.Normal,
                 UserIds = _userManager.Users
                     .Where(user => user.HasPermission(PermissionKind.IsAdministrator))
                     .Select(user => user.Id)
@@ -114,7 +108,6 @@ namespace Jellyfin.Api.Controllers
             };
 
             _notificationManager.SendNotification(notification, CancellationToken.None);
-
             return NoContent();
         }
 

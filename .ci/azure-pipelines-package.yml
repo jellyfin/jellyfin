@@ -160,7 +160,6 @@ jobs:
   dependsOn:
   - BuildPackage
   - BuildDocker
-  condition: and(succeeded('BuildPackage'), succeeded('BuildDocker'))
 
   pool:
     vmImage: 'ubuntu-latest'
@@ -186,12 +185,13 @@ jobs:
 
 - job: PublishNuget
   displayName: 'Publish NuGet packages'
-  dependsOn:
-  - BuildPackage
-  condition: succeeded('BuildPackage')
 
   pool:
     vmImage: 'ubuntu-latest'
+
+  variables:
+  - name: JellyfinVersion
+    value: $[replace(variables['Build.SourceBranch'],'refs/tags/v','')]
 
   steps:
   - task: UseDotNet@2
@@ -204,9 +204,15 @@ jobs:
     displayName: 'Build Stable Nuget packages'
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
-      command: 'pack'
-      packagesToPack: 'Jellyfin.Data/Jellyfin.Data.csproj;MediaBrowser.Common/MediaBrowser.Common.csproj;MediaBrowser.Controller/MediaBrowser.Controller.csproj;MediaBrowser.Model/MediaBrowser.Model.csproj;Emby.Naming/Emby.Naming.csproj'
-      versioningScheme: 'off'
+      command: 'custom'
+      projects: |
+        Jellyfin.Data/Jellyfin.Data.csproj
+        MediaBrowser.Common/MediaBrowser.Common.csproj
+        MediaBrowser.Controller/MediaBrowser.Controller.csproj
+        MediaBrowser.Model/MediaBrowser.Model.csproj
+        Emby.Naming/Emby.Naming.csproj
+      custom: 'pack'
+      arguments: -o $(Build.ArtifactStagingDirectory) -p:Version=$(JellyfinVersion)
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Unstable Nuget packages'
@@ -233,7 +239,7 @@ jobs:
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
     inputs:
       command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;$(Build.ArtifactStagingDirectory)/**/*.snupkg'
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
       nuGetFeedType: 'external'
       publishFeedCredentials: 'NugetOrg'
       allowPackageConflicts: true # This ignores an error if the version already exists

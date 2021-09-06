@@ -15,7 +15,7 @@
     "Favorites": "Favoriter",
     "Folders": "Mappar",
     "Genres": "Genrer",
-    "HeaderAlbumArtists": "Albumartister",
+    "HeaderAlbumArtists": "Artistens album",
     "HeaderContinueWatching": "Fortsätt kolla",
     "HeaderFavoriteAlbums": "Favoritalbum",
     "HeaderFavoriteArtists": "Favoritartister",
@@ -25,7 +25,7 @@
     "HeaderLiveTV": "Live-TV",
     "HeaderNextUp": "Nästa",
     "HeaderRecordingGroups": "Inspelningsgrupper",
-    "HomeVideos": "Hemvideor",
+    "HomeVideos": "Hemmavideor",
     "Inherit": "Ärv",
     "ItemAddedWithName": "{0} lades till i biblioteket",
     "ItemRemovedWithName": "{0} togs bort från biblioteket",
@@ -39,7 +39,7 @@
     "MixedContent": "Blandat innehåll",
     "Movies": "Filmer",
     "Music": "Musik",
-    "MusicVideos": "Musikvideos",
+    "MusicVideos": "Musikvideor",
     "NameInstallFailed": "{0} installationen misslyckades",
     "NameSeasonNumber": "Säsong {0}",
     "NameSeasonUnknown": "Okänd säsong",
@@ -117,5 +117,8 @@
     "TaskCleanActivityLogDescription": "Radera aktivitets logg inlägg som är äldre än definerad ålder.",
     "TaskCleanActivityLog": "Rensa Aktivitets Logg",
     "Undefined": "odefinierad",
-    "Forced": "Tvinga"
+    "Forced": "Tvingad",
+    "Default": "Standard",
+    "TaskOptimizeDatabase": "Optimera databasen",
+    "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna task efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats."
 }

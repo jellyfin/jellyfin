@@ -1,10 +1,9 @@
+#nullable disable
+
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Common.Plugins
 {
@@ -53,7 +52,7 @@ namespace MediaBrowser.Common.Plugins
         /// Gets a value indicating whether the plugin can be uninstalled.
         /// </summary>
         public bool CanUninstall => !Path.GetDirectoryName(AssemblyFilePath)
-            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.InvariantCulture);
+            .Equals(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), StringComparison.Ordinal);
 
         /// <summary>
         /// Gets the plugin info.

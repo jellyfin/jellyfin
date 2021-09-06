@@ -1,32 +1,43 @@
-#nullable disable
-#pragma warning disable CS1591
-
 namespace MediaBrowser.Model.ApiClient
 {
+    /// <summary>
+    /// The server discovery info model.
+    /// </summary>
     public class ServerDiscoveryInfo
     {
         /// <summary>
-        /// Gets or sets the address.
+        /// Initializes a new instance of the <see cref="ServerDiscoveryInfo"/> class.
         /// </summary>
-        /// <value>The address.</value>
-        public string Address { get; set; }
+        /// <param name="address">The server address.</param>
+        /// <param name="id">The server id.</param>
+        /// <param name="name">The server name.</param>
+        /// <param name="endpointAddress">The endpoint address.</param>
+        public ServerDiscoveryInfo(string address, string id, string name, string? endpointAddress = null)
+        {
+            Address = address;
+            Id = id;
+            Name = name;
+            EndpointAddress = endpointAddress;
+        }
 
         /// <summary>
-        /// Gets or sets the server identifier.
+        /// Gets the address.
         /// </summary>
-        /// <value>The server identifier.</value>
-        public string Id { get; set; }
+        public string Address { get; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets the server identifier.
         /// </summary>
-        /// <value>The name.</value>
-        public string Name { get; set; }
+        public string Id { get; }
 
         /// <summary>
-        /// Gets or sets the endpoint address.
+        /// Gets the name.
         /// </summary>
-        /// <value>The endpoint address.</value>
-        public string EndpointAddress { get; set; }
+        public string Name { get; }
+
+        /// <summary>
+        /// Gets the endpoint address.
+        /// </summary>
+        public string? EndpointAddress { get; }
     }
 }

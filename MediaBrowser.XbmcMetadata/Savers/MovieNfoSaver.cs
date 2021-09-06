@@ -82,7 +82,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
 
             // Check parent for null to avoid running this against things like video backdrops
-            if (item is Video video && !(item is Episode) && !video.ExtraType.HasValue)
+            if (item is Video video && item is not Episode && !video.ExtraType.HasValue)
             {
                 return updateType >= MinimumUpdateType;
             }
@@ -123,18 +123,17 @@ namespace MediaBrowser.XbmcMetadata.Savers
         }
 
         /// <inheritdoc />
-        protected override List<string> GetTagsUsed(BaseItem item)
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "album",
-                "artist",
-                "set",
-                "id"
-            });
+                yield return tag;
+            }
 
-            return list;
+            yield return "album";
+            yield return "artist";
+            yield return "set";
+            yield return "id";
         }
     }
 }

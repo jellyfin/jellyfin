@@ -14,31 +14,32 @@ namespace MediaBrowser.Model.Querying
         }
 
         /// <summary>
-        /// The user to localize search results for.
+        /// Gets or sets the user to localize search results for.
         /// </summary>
         /// <value>The user id.</value>
         public Guid UserId { get; set; }
 
         /// <summary>
+        /// Gets or sets the parent id.
         /// Specify this to localize the search to a specific item or folder. Omit to use the root.
         /// </summary>
         /// <value>The parent id.</value>
         public Guid ParentId { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        /// Gets or sets the start index. Used for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return.
+        /// Gets or sets the maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information.
+        /// Gets or sets the fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }

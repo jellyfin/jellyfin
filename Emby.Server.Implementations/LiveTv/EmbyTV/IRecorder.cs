@@ -13,7 +13,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         /// <summary>
         /// Records the specified media source.
         /// </summary>
-        Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken);
+        Task Record(IDirectStreamProvider? directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken);
 
         string GetOutputPath(MediaSourceInfo mediaSource, string targetFile);
     }

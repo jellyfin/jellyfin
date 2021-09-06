@@ -16,7 +16,7 @@
     "Folders": "Pastas",
     "Genres": "Gêneros",
     "HeaderAlbumArtists": "Artistas do Álbum",
-    "HeaderContinueWatching": "Continuar Assistindo",
+    "HeaderContinueWatching": "Continuar assistindo",
     "HeaderFavoriteAlbums": "Álbuns Favoritos",
     "HeaderFavoriteArtists": "Artistas favoritos",
     "HeaderFavoriteEpisodes": "Episódios favoritos",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Limpar Registro de Atividades",
     "Undefined": "Indefinido",
     "Forced": "Forçado",
-    "Default": "Padrão"
+    "Default": "Padrão",
+    "TaskOptimizeDatabaseDescription": "Compactar base de dados e liberar espaço livre. Executar esta tarefa após realizar mudanças que impliquem em modificações da base de dados pode trazer melhorias de desempenho.",
+    "TaskOptimizeDatabase": "Otimizar base de dados"
 }

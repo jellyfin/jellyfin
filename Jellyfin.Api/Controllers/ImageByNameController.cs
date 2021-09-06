@@ -74,12 +74,17 @@ namespace Jellyfin.Api.Controllers
                 : type;
 
             var path = BaseItem.SupportedImageExtensions
-                .Select(i => Path.Combine(_applicationPaths.GeneralPath, name, filename + i))
+                .Select(i => Path.GetFullPath(Path.Combine(_applicationPaths.GeneralPath, name, filename + i)))
                 .FirstOrDefault(System.IO.File.Exists);
 
             if (path == null)
             {
                 return NotFound();
+            }
+
+            if (!path.StartsWith(_applicationPaths.GeneralPath))
+            {
+                return BadRequest("Invalid image path.");
             }
 
             var contentType = MimeTypes.GetMimeType(path);
@@ -163,7 +168,8 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="FileStreamResult"/> containing the image contents on success, or a <see cref="NotFoundResult"/> if the image could not be found.</returns>
         private ActionResult GetImageFile(string basePath, string theme, string? name)
         {
-            var themeFolder = Path.Combine(basePath, theme);
+            var themeFolder = Path.GetFullPath(Path.Combine(basePath, theme));
+
             if (Directory.Exists(themeFolder))
             {
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(themeFolder, name + i))
@@ -171,12 +177,18 @@ namespace Jellyfin.Api.Controllers
 
                 if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                 {
+                    if (!path.StartsWith(basePath))
+                    {
+                        return BadRequest("Invalid image path.");
+                    }
+
                     var contentType = MimeTypes.GetMimeType(path);
+
                     return PhysicalFile(path, contentType);
                 }
             }
 
-            var allFolder = Path.Combine(basePath, "all");
+            var allFolder = Path.GetFullPath(Path.Combine(basePath, "all"));
             if (Directory.Exists(allFolder))
             {
                 var path = BaseItem.SupportedImageExtensions.Select(i => Path.Combine(allFolder, name + i))
@@ -184,6 +196,11 @@ namespace Jellyfin.Api.Controllers
 
                 if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
                 {
+                    if (!path.StartsWith(basePath))
+                    {
+                        return BadRequest("Invalid image path.");
+                    }
+
                     var contentType = MimeTypes.GetMimeType(path);
                     return PhysicalFile(path, contentType);
                 }

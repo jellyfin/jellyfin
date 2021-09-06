@@ -1,8 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
@@ -11,7 +12,6 @@ using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
@@ -23,17 +23,19 @@ namespace Emby.Server.Implementations.TV
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _configurationManager;
 
-        public TVSeriesManager(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager)
+        public TVSeriesManager(IUserManager userManager, IUserDataManager userDataManager, ILibraryManager libraryManager, IServerConfigurationManager configurationManager)
         {
             _userManager = userManager;
             _userDataManager = userDataManager;
             _libraryManager = libraryManager;
+            _configurationManager = configurationManager;
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(query.UserId);
 
             if (user == null)
             {
@@ -41,11 +43,9 @@ namespace Emby.Server.Implementations.TV
             }
 
             string presentationUniqueKey = null;
-            if (!string.IsNullOrEmpty(request.SeriesId))
+            if (!string.IsNullOrEmpty(query.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
-
-                if (series != null)
+                if (_libraryManager.GetItemById(query.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                 }
@@ -53,14 +53,14 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(query, user, new[] { presentationUniqueKey }, options), query);
             }
 
             BaseItem[] parents;
 
-            if (request.ParentId.HasValue)
+            if (query.ParentId.HasValue)
             {
-                var parent = _libraryManager.GetItemById(request.ParentId.Value);
+                var parent = _libraryManager.GetItemById(query.ParentId.Value);
 
                 if (parent != null)
                 {
@@ -79,10 +79,10 @@ namespace Emby.Server.Implementations.TV
                    .ToArray();
             }
 
-            return GetNextUp(request, parents, dtoOptions);
+            return GetNextUp(query, parents, options);
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -95,9 +95,7 @@ namespace Emby.Server.Implementations.TV
             int? limit = null;
             if (!string.IsNullOrEmpty(request.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
-
-                if (series != null)
+                if (_libraryManager.GetItemById(request.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                     limit = 1;
@@ -106,7 +104,7 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, options), request);
             }
 
             if (limit.HasValue)
@@ -130,7 +128,7 @@ namespace Emby.Server.Implementations.TV
                 .Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
+            var episodes = GetNextUpEpisodes(request, user, items, options);
 
             return GetResult(episodes, request);
         }
@@ -156,7 +154,7 @@ namespace Emby.Server.Implementations.TV
                         return i.Item1 != DateTime.MinValue;
                     }
 
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    if (alwaysEnableFirstEpisode || (i.Item1 != DateTime.MinValue && i.Item1.Date >= request.NextUpDateCutoff))
                     {
                         anyFound = true;
                         return true;
@@ -200,13 +198,10 @@ namespace Emby.Server.Implementations.TV
                 ParentIndexNumberNotEquals = 0,
                 DtoOptions = new DtoOptions
                 {
-                    Fields = new ItemFields[]
-                    {
-                        ItemFields.SortName
-                    },
+                    Fields = new[] { ItemFields.SortName },
                     EnableImages = false
                 }
-            }).FirstOrDefault();
+            }).Cast<Episode>().FirstOrDefault();
 
             Func<Episode> getEpisode = () =>
             {
@@ -223,6 +218,43 @@ namespace Emby.Server.Implementations.TV
                     MinSortName = lastWatchedEpisode?.SortName,
                     DtoOptions = dtoOptions
                 }).Cast<Episode>().FirstOrDefault();
+
+                if (_configurationManager.Configuration.DisplaySpecialsWithinSeasons)
+                {
+                    var consideredEpisodes = _libraryManager.GetItemList(new InternalItemsQuery(user)
+                    {
+                        AncestorWithPresentationUniqueKey = null,
+                        SeriesPresentationUniqueKey = seriesKey,
+                        ParentIndexNumber = 0,
+                        IncludeItemTypes = new[] { nameof(Episode) },
+                        IsPlayed = false,
+                        IsVirtualItem = false,
+                        DtoOptions = dtoOptions
+                    })
+                    .Cast<Episode>()
+                    .Where(episode => episode.AirsBeforeSeasonNumber != null || episode.AirsAfterSeasonNumber != null)
+                    .ToList();
+
+                    if (lastWatchedEpisode != null)
+                    {
+                        // Last watched episode is added, because there could be specials that aired before the last watched episode
+                        consideredEpisodes.Add(lastWatchedEpisode);
+                    }
+
+                    if (nextEpisode != null)
+                    {
+                        consideredEpisodes.Add(nextEpisode);
+                    }
+
+                    var sortedConsideredEpisodes = _libraryManager.Sort(consideredEpisodes, user, new[] { (ItemSortBy.AiredEpisodeOrder, SortOrder.Ascending) })
+                        .Cast<Episode>();
+                    if (lastWatchedEpisode != null)
+                    {
+                        sortedConsideredEpisodes = sortedConsideredEpisodes.SkipWhile(episode => episode.Id != lastWatchedEpisode.Id).Skip(1);
+                    }
+
+                    nextEpisode = sortedConsideredEpisodes.FirstOrDefault();
+                }
 
                 if (nextEpisode != null)
                 {

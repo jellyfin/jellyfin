@@ -254,7 +254,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
-        public string PreferredMetadataLanguage { get; set; } = string.Empty;
+        public string PreferredMetadataLanguage { get; set; } = "en";
 
         /// <summary>
         /// Gets or sets the metadata country code.
@@ -418,8 +418,6 @@ namespace MediaBrowser.Model.Configuration
 
         public PathSubstitution[] PathSubstitutions { get; set; } = Array.Empty<PathSubstitution>();
 
-        public bool EnableSimpleArtistDetection { get; set; } = false;
-
         public string[] UninstalledPlugins { get; set; } = Array.Empty<string>();
 
         /// <summary>
@@ -461,10 +459,5 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
         /// </summary>
         public bool RemoveOldPlugins { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether plugin image should be disabled.
-        /// </summary>
-        public bool DisablePluginImages { get; set; }
     }
 }

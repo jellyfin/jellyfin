@@ -1,16 +1,17 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -49,7 +50,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
@@ -101,7 +102,7 @@ namespace Emby.Server.Implementations.Channels
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
-            return !(channel is IDisableMediaSourceDisplay);
+            return channel is not IDisableMediaSourceDisplay;
         }
 
         /// <inheritdoc />
@@ -336,19 +337,19 @@ namespace Emby.Server.Implementations.Channels
             return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).Result;
         }
 
-        private List<MediaSourceInfo> GetSavedMediaSources(BaseItem item)
+        private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)
         {
             var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
             try
             {
-                var jsonString = File.ReadAllText(path, Encoding.UTF8);
-                return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, _jsonOptions)
-                    ?? new List<MediaSourceInfo>();
+                var bytes = File.ReadAllBytes(path);
+                return JsonSerializer.Deserialize<MediaSourceInfo[]>(bytes, _jsonOptions)
+                    ?? Array.Empty<MediaSourceInfo>();
             }
             catch
             {
-                return new List<MediaSourceInfo>();
+                return Array.Empty<MediaSourceInfo>();
             }
         }
 
@@ -879,7 +880,7 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
-        private async Task CacheResponse(object result, string path)
+        private async Task CacheResponse(ChannelItemResult result, string path)
         {
             try
             {
@@ -1078,11 +1079,11 @@ namespace Emby.Server.Implementations.Channels
 
             // was used for status
             // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
-            //{
+            // {
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;
             //    _logger.LogDebug("Forcing update due to ExternalEtag {0}", item.Name);
-            //}
+            // }
 
             if (!internalChannelId.Equals(item.ChannelId))
             {

@@ -1,7 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
@@ -35,42 +38,8 @@ namespace MediaBrowser.Controller.Entities.TV
         [JsonIgnore]
         public override Guid DisplayParentId => SeriesId;
 
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            double value = 2;
-            value /= 3;
-
-            return value;
-        }
-
-        public string FindSeriesSortName()
-        {
-            var series = Series;
-            return series == null ? SeriesName : series.SortName;
-        }
-
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            var series = Series;
-            if (series != null)
-            {
-                list.InsertRange(0, series.GetUserDataKeys().Select(i => i + (IndexNumber ?? 0).ToString("000")));
-            }
-
-            return list;
-        }
-
-        public override int GetChildCount(User user)
-        {
-            var result = GetChildren(user, true).Count;
-
-            return result;
-        }
-
         /// <summary>
-        /// This Episode's Series Instance.
+        /// Gets this Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -104,6 +73,57 @@ namespace MediaBrowser.Controller.Entities.TV
             }
         }
 
+        [JsonIgnore]
+        public string SeriesPresentationUniqueKey { get; set; }
+
+        [JsonIgnore]
+        public string SeriesName { get; set; }
+
+        [JsonIgnore]
+        public Guid SeriesId { get; set; }
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            double value = 2;
+            value /= 3;
+
+            return value;
+        }
+
+        public string FindSeriesSortName()
+        {
+            var series = Series;
+            return series == null ? SeriesName : series.SortName;
+        }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            var series = Series;
+            if (series != null)
+            {
+                var newList = series.GetUserDataKeys();
+                var suffix = (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
+                for (int i = 0; i < newList.Count; i++)
+                {
+                    newList[i] = newList[i] + suffix;
+                }
+
+                newList.AddRange(list);
+                list = newList;
+            }
+
+            return list;
+        }
+
+        public override int GetChildCount(User user)
+        {
+            var result = GetChildren(user, true).Count;
+
+            return result;
+        }
+
         public override string CreatePresentationUniqueKey()
         {
             if (IndexNumber.HasValue)
@@ -111,7 +131,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 var series = Series;
                 if (series != null)
                 {
-                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000");
+                    return series.PresentationUniqueKey + "-" + (IndexNumber ?? 0).ToString("000", CultureInfo.InvariantCulture);
                 }
             }
 
@@ -124,7 +144,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return IndexNumber != null ? IndexNumber.Value.ToString("0000") : Name;
+            return IndexNumber != null ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : Name;
         }
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
@@ -146,6 +166,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Gets the episodes.
         /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="options">The options to use.</param>
+        /// <returns>Set of episodes.</returns>
         public List<BaseItem> GetEpisodes(User user, DtoOptions options)
         {
             return GetEpisodes(Series, user, options);
@@ -181,15 +204,6 @@ namespace MediaBrowser.Controller.Entities.TV
         {
             return UnratedItem.Series;
         }
-
-        [JsonIgnore]
-        public string SeriesPresentationUniqueKey { get; set; }
-
-        [JsonIgnore]
-        public string SeriesName { get; set; }
-
-        [JsonIgnore]
-        public Guid SeriesId { get; set; }
 
         public string FindSeriesPresentationUniqueKey()
         {
@@ -230,10 +244,11 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
+        /// <param name="replaceAllMetadata"><c>true</c> to replace metdata, <c>false</c> to not.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!IndexNumber.HasValue && !string.IsNullOrEmpty(Path))
             {

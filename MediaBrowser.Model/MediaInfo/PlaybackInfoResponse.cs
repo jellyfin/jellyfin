@@ -11,6 +11,14 @@ namespace MediaBrowser.Model.MediaInfo
     public class PlaybackInfoResponse
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="PlaybackInfoResponse" /> class.
+        /// </summary>
+        public PlaybackInfoResponse()
+        {
+            MediaSources = Array.Empty<MediaSourceInfo>();
+        }
+
+        /// <summary>
         /// Gets or sets the media sources.
         /// </summary>
         /// <value>The media sources.</value>
@@ -27,13 +35,5 @@ namespace MediaBrowser.Model.MediaInfo
         /// </summary>
         /// <value>The error code.</value>
         public PlaybackErrorCode? ErrorCode { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PlaybackInfoResponse" /> class.
-        /// </summary>
-        public PlaybackInfoResponse()
-        {
-            MediaSources = Array.Empty<MediaSourceInfo>();
-        }
     }
 }

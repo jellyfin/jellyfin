@@ -1,13 +1,13 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     {
         private readonly string _dataPath;
         private readonly object _fileDataLock = new object();
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private T[] _items;
 
         public ItemDataProvider(
@@ -47,11 +47,11 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    var jsonString = File.ReadAllText(_dataPath, Encoding.UTF8);
-                    _items = JsonSerializer.Deserialize<T[]>(jsonString, _jsonOptions);
+                    var bytes = File.ReadAllBytes(_dataPath);
+                    _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
                     return;
                 }
-                catch (Exception ex)
+                catch (JsonException ex)
                 {
                     Logger.LogError(ex, "Error deserializing {Path}", _dataPath);
                 }

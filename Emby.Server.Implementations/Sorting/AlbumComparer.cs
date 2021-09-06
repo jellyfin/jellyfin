@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
         }
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>System.String.</returns>
-        private static string GetValue(BaseItem x)
+        private static string? GetValue(BaseItem? x)
         {
             var audio = x as Audio;
 

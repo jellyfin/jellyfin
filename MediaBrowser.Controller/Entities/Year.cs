@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -13,6 +15,25 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Year : BaseItem, IItemByName
     {
+        [JsonIgnore]
+        public override bool SupportsAncestors => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        /// <summary>
+        /// Gets the folder containing the item.
+        /// If the item is a folder, it returns the folder itself.
+        /// </summary>
+        /// <value>The containing folder path.</value>
+        [JsonIgnore]
+        public override string ContainingFolderPath => Path;
+
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
@@ -21,28 +42,12 @@ namespace MediaBrowser.Controller.Entities
             return list;
         }
 
-        /// <summary>
-        /// Returns the folder containing the item.
-        /// If the item is a folder, it returns the folder itself.
-        /// </summary>
-        /// <value>The containing folder path.</value>
-        [JsonIgnore]
-        public override string ContainingFolderPath => Path;
-
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
 
             return value;
-        }
-
-        [JsonIgnore]
-        public override bool SupportsAncestors => false;
-
-        public override bool CanDelete()
-        {
-            return false;
         }
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -73,9 +78,6 @@ namespace MediaBrowser.Controller.Entities
 
             return null;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {
@@ -110,11 +112,13 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// This is called before any metadata refresh and returns true or false indicating if changes were made.
+        /// This is called before any metadata refresh and returns true if changes were made.
         /// </summary>
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <param name="replaceAllMetadata">Whether to replace all metadata.</param>
+        /// <returns>true if the item has change, else false.</returns>
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             var newPath = GetRebasedPath();
             if (!string.Equals(Path, newPath, StringComparison.Ordinal))

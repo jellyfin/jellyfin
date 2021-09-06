@@ -52,8 +52,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var language = item.GetPreferredMetadataLanguage();
 
+            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var seasonResult = await _tmdbClientManager
-                .GetSeasonAsync(seriesTmdbId, season.IndexNumber.Value, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+                .GetSeasonAsync(seriesTmdbId, season.IndexNumber.Value, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             var posters = seasonResult?.Images?.Posters;

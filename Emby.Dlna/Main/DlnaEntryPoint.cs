@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -5,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Emby.Dlna.PlayTo;
 using Emby.Dlna.Ssdp;
@@ -26,11 +27,9 @@ using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
 using Rssdp;
 using Rssdp.Infrastructure;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Dlna.Main
 {
@@ -128,7 +127,8 @@ namespace Emby.Dlna.Main
 
             _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
             _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
-            if (_disabled)
+
+            if (_disabled && _config.GetDlnaConfiguration().EnableServer)
             {
                 _logger.LogError("The DLNA specification does not support HTTPS.");
             }
@@ -202,8 +202,8 @@ namespace Emby.Dlna.Main
             {
                 if (_communicationsServer == null)
                 {
-                    var enableMultiSocketBinding = OperatingSystem.Id == OperatingSystemId.Windows ||
-                                                   OperatingSystem.Id == OperatingSystemId.Linux;
+                    var enableMultiSocketBinding = OperatingSystem.IsWindows() ||
+                                                   OperatingSystem.IsLinux();
 
                     _communicationsServer = new SsdpCommunicationsServer(_socketFactory, _networkManager, _logger, enableMultiSocketBinding)
                     {
@@ -228,7 +228,10 @@ namespace Emby.Dlna.Main
         {
             try
             {
-                ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                if (communicationsServer != null)
+                {
+                    ((DeviceDiscovery)_deviceDiscovery).Start(communicationsServer);
+                }
             }
             catch (Exception ex)
             {
@@ -263,7 +266,12 @@ namespace Emby.Dlna.Main
 
             try
             {
-                _publisher = new SsdpDevicePublisher(_communicationsServer, _networkManager, OperatingSystem.Name, Environment.OSVersion.VersionString, _config.GetDlnaConfiguration().SendOnlyMatchedHost)
+                _publisher = new SsdpDevicePublisher(
+                    _communicationsServer,
+                    _networkManager,
+                    MediaBrowser.Common.System.OperatingSystem.Name,
+                    Environment.OSVersion.VersionString,
+                    _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
                     LogFunction = LogMessage,
                     SupportPnpRootDevice = false
@@ -313,9 +321,12 @@ namespace Emby.Dlna.Main
                 _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
 
                 var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
-                // DLNA will only work over http, so we must reset to http:// : {port}
-                uri.Scheme = "http://";
-                uri.Port = _netConfig.HttpServerPortNumber;
+                if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
+                {
+                    // DLNA will only work over http, so we must reset to http:// : {port}.
+                    uri.Scheme = "http";
+                    uri.Port = _netConfig.HttpServerPortNumber;
+                }
 
                 var device = new SsdpRootDevice
                 {

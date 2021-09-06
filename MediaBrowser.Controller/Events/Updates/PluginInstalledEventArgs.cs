@@ -1,4 +1,4 @@
-﻿using Jellyfin.Data.Events;
+using Jellyfin.Data.Events;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Controller.Events.Updates

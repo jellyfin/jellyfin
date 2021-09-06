@@ -59,9 +59,9 @@ namespace MediaBrowser.Providers.BoxSets
         }
 
         /// <inheritdoc />
-        protected override ItemUpdateType BeforeSaveInternal(BoxSet item, bool isFullRefresh, ItemUpdateType currentUpdateType)
+        protected override ItemUpdateType BeforeSaveInternal(BoxSet item, bool isFullRefresh, ItemUpdateType updateType)
         {
-            var updateType = base.BeforeSaveInternal(item, isFullRefresh, currentUpdateType);
+            var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
             var libraryFolderIds = item.GetLibraryFolderIds();
 
@@ -69,10 +69,10 @@ namespace MediaBrowser.Providers.BoxSets
             if (itemLibraryFolderIds == null || !libraryFolderIds.SequenceEqual(itemLibraryFolderIds))
             {
                 item.LibraryFolderIds = libraryFolderIds;
-                updateType |= ItemUpdateType.MetadataImport;
+                updatedType |= ItemUpdateType.MetadataImport;
             }
 
-            return updateType;
+            return updatedType;
         }
     }
 }
