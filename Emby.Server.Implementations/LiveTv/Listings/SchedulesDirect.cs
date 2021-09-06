@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -803,11 +802,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.FirstOrDefault(item => string.Equals(item.StationId, channel.StationId, StringComparison.OrdinalIgnoreCase))
-                    ?? new StationDto
-                    {
-                        StationId = channel.StationId
-                    };
+                var stationIndex = allStations.FindIndex(item => string.Equals(item.StationId, channel.StationId, StringComparison.OrdinalIgnoreCase));
+                var station = stationIndex == -1
+                    ? new StationDto { StationId = channel.StationId }
+                    : allStations[stationIndex];
 
                 var channelInfo = new ChannelInfo
                 {
