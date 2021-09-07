@@ -1186,14 +1186,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetUrlForUseByHttpApi()
-        {
-            // GetBindInterfaces will return an interface.
-            var bind = NetManager.GetInternalBindAddresses().FirstOrDefault() ??
-                NetManager.GetAllBindInterfaces(true).First();
-
-            return GetLocalApiUrl(bind.Address.ToString(), Uri.UriSchemeHttp);
-        }
+        public string GetUrlForUseByHttpApi() => GetSmartApiUrl(string.Empty);
 
         /// <inheritdoc/>
         public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)

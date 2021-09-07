@@ -482,9 +482,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "", "192.168.1.208")] // LAN address is specified by default.
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "10.0.0.1")] // return bind address
 
-        public void Get_Appropriate_Interface_NoSource(string interfaces, string lan, string bind, string result)
+        public void GetBindInterface_NoSourceGiven_Success(string interfaces, string lan, string bind, string result)
         {
-            var conf = new NetworkConfiguration()
+            var conf = new NetworkConfiguration
             {
                 EnableIPV4 = true,
                 LocalNetworkSubnets = lan.Split(','),
@@ -506,9 +506,9 @@ namespace Jellyfin.Networking.Tests
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "10.0.0.1", "192.168.1.209", "10.0.0.1")] // LAN not bound, so return external.
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "8.8.8.8", "10.0.0.1")] // return external bind address
         [InlineData("192.168.1.208/24,-16,eth16|10.0.0.1/24,10,eth7", "192.168.1.0/24", "192.168.1.208,10.0.0.1", "192.168.1.210", "192.168.1.208")] // return LAN bind address
-        public void Get_Appropriate_Interface_ForSource(string interfaces, string lan, string bind, string source, string result)
+        public void GetBindInterface_ValidSourceGiven_Success(string interfaces, string lan, string bind, string source, string result)
         {
-            var conf = new NetworkConfiguration()
+            var conf = new NetworkConfiguration
             {
                 EnableIPV4 = true,
                 LocalNetworkSubnets = lan.Split(','),
