@@ -521,7 +521,7 @@ namespace Emby.Server.Implementations.Library
 
             // TODO: @bond Fix
             var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
-            _logger.LogInformation("Live stream opened: " + json);
+            _logger.LogInformation("Live stream opened: {@Json}", json);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             if (!request.UserId.Equals(Guid.Empty))
