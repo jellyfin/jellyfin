@@ -458,7 +458,7 @@ namespace Jellyfin.Networking.Manager
                 return CreateCollection(_internalInterfaces);
             }
 
-            return new Collection<IPObject>(_bindAddresses.Where(IsInLocalNetwork).ToArray());
+            return new Collection<IPObject>(_bindAddresses.Where(a => IsInLocalNetwork(a)).ToArray());
         }
 
         /// <inheritdoc/>
