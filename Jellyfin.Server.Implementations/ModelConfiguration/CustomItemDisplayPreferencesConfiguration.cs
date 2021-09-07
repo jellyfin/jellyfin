@@ -12,8 +12,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<CustomItemDisplayPreferences> builder)
         {
-            // Indexes
-
             builder
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
                 .IsUnique();

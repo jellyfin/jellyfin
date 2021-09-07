@@ -12,8 +12,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<ApiKey> builder)
         {
-            // Indexes
-
             builder
                 .HasIndex(entity => entity.AccessToken)
                 .IsUnique();

@@ -12,14 +12,10 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<DisplayPreferences> builder)
         {
-            // Delete behaviour
-
             builder
                 .HasMany(d => d.HomeSections)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Indexes
 
             builder
                 .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })

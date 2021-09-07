@@ -12,8 +12,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<DeviceOptions> builder)
         {
-            // Indexes
-
             builder
                 .HasIndex(entity => entity.DeviceId)
                 .IsUnique();

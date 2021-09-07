@@ -12,8 +12,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<Preference> builder)
         {
-            // Indexes
-
             builder
                 .HasIndex(p => new { p.UserId, p.Kind })
                 .HasFilter("[UserId] IS NOT NULL")

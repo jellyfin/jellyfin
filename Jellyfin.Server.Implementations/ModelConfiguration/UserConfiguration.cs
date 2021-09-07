@@ -12,13 +12,9 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            // Collations
-
             builder
                 .Property(user => user.Username)
                 .UseCollation("NOCASE");
-
-            // Delete behavior
 
             builder
                 .HasOne(u => u.ProfileImage)
@@ -51,8 +47,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
                 .HasMany(u => u.ItemDisplayPreferences)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Indexes
 
             builder
                 .HasIndex(entity => entity.Username)

@@ -12,8 +12,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<Device> builder)
         {
-            // Indexes
-
             builder
                 .HasIndex(entity => new { entity.DeviceId, entity.DateLastActivity });
 

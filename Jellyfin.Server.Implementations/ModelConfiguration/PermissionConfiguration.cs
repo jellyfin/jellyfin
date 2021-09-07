@@ -12,8 +12,6 @@ namespace Jellyfin.Server.Implementations.ModelConfiguration
         /// <inheritdoc/>
         public void Configure(EntityTypeBuilder<Permission> builder)
         {
-            // Indexes
-
             // Used to get a user's permissions or a specific permission for a user.
             // Also prevents multiple values being created for a user.
             // Filtered over non-null user ids for when other entities (groups, API keys) get permissions

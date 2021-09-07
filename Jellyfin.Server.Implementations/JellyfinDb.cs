@@ -155,7 +155,7 @@ namespace Jellyfin.Server.Implementations
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("jellyfin");
 
-            // Configuration for each entity is in it's own class inside 'ModelConfiguratio'.
+            // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDb).Assembly);
         }
     }
