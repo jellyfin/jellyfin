@@ -85,7 +85,7 @@ namespace MediaBrowser.Controller
         /// Gets an URL that can be used to access the API over HTTP (not HTTPS).
         /// </summary>
         /// <returns>The API URL.</returns>
-        string GetUrlForUseByHttpApi();
+        string GetApiUrlForLocalAccess();
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.
