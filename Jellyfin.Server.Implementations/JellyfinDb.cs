@@ -153,100 +153,10 @@ namespace Jellyfin.Server.Implementations
         {
             modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
-
             modelBuilder.HasDefaultSchema("jellyfin");
 
-            // Collations
-
-            modelBuilder.Entity<User>()
-                .Property(user => user.Username)
-                .UseCollation("NOCASE");
-
-            // Delete behavior
-
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.ProfileImage)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Permissions)
-                .WithOne()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Preferences)
-                .WithOne()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.AccessSchedules)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.DisplayPreferences)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.ItemDisplayPreferences)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<DisplayPreferences>()
-                .HasMany(d => d.HomeSections)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Indexes
-
-            modelBuilder.Entity<ApiKey>()
-                .HasIndex(entity => entity.AccessToken)
-                .IsUnique();
-
-            modelBuilder.Entity<User>()
-                .HasIndex(entity => entity.Username)
-                .IsUnique();
-
-            modelBuilder.Entity<Device>()
-                .HasIndex(entity => new { entity.DeviceId, entity.DateLastActivity });
-
-            modelBuilder.Entity<Device>()
-                .HasIndex(entity => new { entity.AccessToken, entity.DateLastActivity });
-
-            modelBuilder.Entity<Device>()
-                .HasIndex(entity => new { entity.UserId, entity.DeviceId });
-
-            modelBuilder.Entity<Device>()
-                .HasIndex(entity => entity.DeviceId);
-
-            modelBuilder.Entity<DeviceOptions>()
-                .HasIndex(entity => entity.DeviceId)
-                .IsUnique();
-
-            modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
-                .IsUnique();
-
-            modelBuilder.Entity<CustomItemDisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
-                .IsUnique();
-
-            // Used to get a user's permissions or a specific permission for a user.
-            // Also prevents multiple values being created for a user.
-            // Filtered over non-null user ids for when other entities (groups, API keys) get permissions
-            modelBuilder.Entity<Permission>()
-                .HasIndex(p => new { p.UserId, p.Kind })
-                .HasFilter("[UserId] IS NOT NULL")
-                .IsUnique();
-
-            modelBuilder.Entity<Preference>()
-                .HasIndex(p => new { p.UserId, p.Kind })
-                .HasFilter("[UserId] IS NOT NULL")
-                .IsUnique();
+            // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDb).Assembly);
         }
     }
 }
