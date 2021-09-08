@@ -275,7 +275,7 @@ namespace MediaBrowser.Providers.Manager
                     item,
                     new RemoteImageQuery(provider.Name)
                     {
-                        IncludeAllLanguages = false,
+                        IncludeAllLanguages = true,
                         IncludeDisabledProviders = false,
                     },
                     cancellationToken).ConfigureAwait(false);
@@ -469,7 +469,7 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
+                .Where(i => i.Type == type && i.Width >= minWidth)
                 .ToList();
 
             if (EnableImageStub(item) && eligibleImages.Count > 0)
