@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions.Json.Converters;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace Jellyfin.Api.Models.LiveTvDtos
