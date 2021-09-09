@@ -1015,17 +1015,17 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
             }
 
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.CurrentCultureIgnoreCase));
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(query.NameLessThan))
             {
-                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
+                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
 
             // This must be the last filter

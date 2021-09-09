@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
-    <!-- disable warning CA1040: Avoid empty interfaces -->
-    <Rule Id="CA1040" Action="Info" />
-
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
     <!-- disable warning SA1011: Closing square bracket should be followed by a space. -->
@@ -57,12 +54,19 @@
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1032: Implement standard exception constructors -->
     <Rule Id="CA1032" Action="Info" />
+    <!-- disable warning CA1040: Avoid empty interfaces -->
+    <Rule Id="CA1040" Action="Info" />
     <!-- disable warning CA1062: Validate arguments of public methods -->
     <Rule Id="CA1062" Action="Info" />
+    <!-- TODO: enable when false positives are fixed -->
+    <!-- disable warning CA1508: Avoid dead conditional code -->
+    <Rule Id="CA1508" Action="Info" />
     <!-- disable warning CA1716: Identifiers should not match keywords -->
     <Rule Id="CA1716" Action="Info" />
     <!-- disable warning CA1720: Identifiers should not contain type names -->
     <Rule Id="CA1720" Action="Info" />
+    <!-- disable warning CA1724: Type names should not match namespaces -->
+    <Rule Id="CA1724" Action="Info" />
     <!-- disable warning CA1805: Do not initialize unnecessarily -->
     <Rule Id="CA1805" Action="Info" />
     <!-- disable warning CA1812: internal class that is apparently never instantiated.
