@@ -37,7 +37,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             "ConstrainedHigh"
         };
 
-        private static readonly Version minVersionForCudaOverlay = new Version(4, 4);
+        private static readonly Version _minVersionForCudaOverlay = new Version(4, 4);
 
         public EncodingHelper(
             IMediaEncoder mediaEncoder,
@@ -647,8 +647,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 if (state.IsVideoRequest
-                    && ((string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
-                         && (isNvdecDecoder || isCuvidHevcDecoder || isCuvidVp9Decoder || isSwDecoder))))
+                    && string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
+                    && (isNvdecDecoder || isCuvidHevcDecoder || isCuvidVp9Decoder || isSwDecoder))
                 {
                     if (!isCudaTonemappingSupported && isOpenclTonemappingSupported)
                     {
@@ -2099,7 +2099,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVppTonemappingSupported = IsVppTonemappingSupported(state, options);
 
             var mediaEncoderVersion = _mediaEncoder.GetMediaEncoderVersion();
-            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= minVersionForCudaOverlay;
+            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= _minVersionForCudaOverlay;
             var isCudaFormatConversionSupported = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.ScaleCudaFormat);
 
             // Tonemapping and burn-in graphical subtitles requires overlay_vaapi.
@@ -2380,7 +2380,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isCudaTonemappingSupported = IsCudaTonemappingSupported(state, options);
                 var isTonemappingSupportedOnNvenc = string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase);
                 var mediaEncoderVersion = _mediaEncoder.GetMediaEncoderVersion();
-                var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= minVersionForCudaOverlay;
+                var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= _minVersionForCudaOverlay;
                 var isCudaFormatConversionSupported = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.ScaleCudaFormat);
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
@@ -2683,7 +2683,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVppTonemappingSupported = IsVppTonemappingSupported(state, options);
             var isCudaTonemappingSupported = IsCudaTonemappingSupported(state, options);
             var mediaEncoderVersion = _mediaEncoder.GetMediaEncoderVersion();
-            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= minVersionForCudaOverlay;
+            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= _minVersionForCudaOverlay;
 
             var hasSubs = state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
