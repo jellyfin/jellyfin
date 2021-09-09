@@ -264,6 +264,9 @@ namespace Jellyfin.Api.Controllers
 
             // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
+            // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
+            // since it gets disposed when ffmpeg exits
+            var cancellationToken = cancellationTokenSource.Token;
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
@@ -278,7 +281,7 @@ namespace Jellyfin.Api.Controllers
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,
-                    cancellationTokenSource.Token)
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             TranscodingJobDto? job = null;
@@ -287,7 +290,7 @@ namespace Jellyfin.Api.Controllers
             if (!System.IO.File.Exists(playlistPath))
             {
                 var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
-                await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
                     if (!System.IO.File.Exists(playlistPath))
@@ -314,7 +317,7 @@ namespace Jellyfin.Api.Controllers
                         minSegments = state.MinSegments;
                         if (minSegments > 0)
                         {
-                            await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationTokenSource.Token).ConfigureAwait(false);
+                            await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
