@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 };
             }
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
