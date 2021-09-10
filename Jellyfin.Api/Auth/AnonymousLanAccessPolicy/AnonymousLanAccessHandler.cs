@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Jellyfin.Api.Auth.AnonymousLanAccessPolicy
 {
     /// <summary>
-    /// Local access handler.
+    /// LAN access handler. Allows anonymous users.
     /// </summary>
     public class AnonymousLanAccessHandler : AuthorizationHandler<AnonymousLanAccessRequirement>
     {
