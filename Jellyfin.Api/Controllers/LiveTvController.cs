@@ -1199,15 +1199,15 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesVideoFile]
-        public async Task<ActionResult> GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
+        public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
         {
-            var liveStreamInfo = await _mediaSourceManager.GetDirectStreamProviderByUniqueId(streamId, CancellationToken.None).ConfigureAwait(false);
+            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamId);
             if (liveStreamInfo == null)
             {
                 return NotFound();
             }
 
-            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetFilePath(), null, _transcodingJobHelper);
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream(), null, _transcodingJobHelper);
             return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 

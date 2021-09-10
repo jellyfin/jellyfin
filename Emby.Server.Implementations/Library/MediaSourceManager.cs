@@ -602,7 +602,7 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var liveStreamInfo = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
+            var liveStreamInfo = GetLiveStreamInfo(id);
 
             var mediaSource = liveStreamInfo.MediaSource;
 
@@ -771,18 +771,18 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate(true);
         }
 
-        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider);
+            var info = GetLiveStreamInfo(id);
+            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
-        private Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
+        public ILiveStream GetLiveStreamInfo(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -791,12 +791,10 @@ namespace Emby.Server.Implementations.Library
 
             if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
-                return Task.FromResult(info);
+                return info;
             }
-            else
-            {
-                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
-            }
+
+            throw new ResourceNotFoundException();
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)

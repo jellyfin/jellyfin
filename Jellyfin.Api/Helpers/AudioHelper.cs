@@ -120,14 +120,10 @@ namespace Jellyfin.Api.Helpers
             {
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
-                await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
-                    {
-                        AllowEndOfFile = false
-                    }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
-                    .ConfigureAwait(false);
-
+                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
+                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream(), null, _transcodingJobHelper);
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, MimeTypes.GetMimeType("file.ts")!);
+                return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
             }
 
             // Static remote stream
@@ -159,13 +155,8 @@ namespace Jellyfin.Api.Helpers
 
                 if (state.MediaSource.IsInfiniteStream)
                 {
-                    await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
-                        {
-                            AllowEndOfFile = false
-                        }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-                    return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, contentType);
+                    var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                    return new FileStreamResult(stream, contentType);
                 }
 
                 return FileStreamResponseHelpers.GetStaticFileResult(

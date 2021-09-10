@@ -156,11 +156,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await taskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        public string GetFilePath()
-        {
-            return TempFilePath;
-        }
-
         private async Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
         {
             using (udpClient)
@@ -184,7 +179,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 EnableStreamSharing = false;
             }
 
-            await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
+            await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
         }
 
         private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)

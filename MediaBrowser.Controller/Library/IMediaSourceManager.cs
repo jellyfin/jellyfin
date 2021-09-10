@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -111,6 +110,13 @@ namespace MediaBrowser.Controller.Library
         Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Gets the live stream info.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>An instance of <see cref="ILiveStream"/>.</returns>
+        public ILiveStream GetLiveStreamInfo(string id);
+
+        /// <summary>
         /// Closes the media source.
         /// </summary>
         /// <param name="id">The live stream identifier.</param>
@@ -128,12 +134,5 @@ namespace MediaBrowser.Controller.Library
         Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
 
         Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken);
-    }
-
-    public interface IDirectStreamProvider
-    {
-        Task CopyToAsync(Stream stream, CancellationToken cancellationToken);
-
-        string GetFilePath();
     }
 }

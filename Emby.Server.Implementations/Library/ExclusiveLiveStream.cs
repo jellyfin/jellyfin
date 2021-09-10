@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -39,6 +40,11 @@ namespace Emby.Server.Implementations.Library
         public Task Close()
         {
             return _closeFn();
+        }
+
+        public Stream GetStream(bool seekNearEnd)
+        {
+            throw new NotSupportedException();
         }
 
         public Task Open(CancellationToken openCancellationToken)
