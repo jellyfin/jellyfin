@@ -1207,7 +1207,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream(), null, _transcodingJobHelper);
+            var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
             return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file." + container));
         }
 

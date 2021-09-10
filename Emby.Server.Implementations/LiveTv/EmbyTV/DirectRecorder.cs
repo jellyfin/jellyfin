@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
                 var linkedCancellationToken = cancellationTokenSource.Token;
 
-                await using var fileStream = new ProgressiveFileStream(directStreamProvider.GetStream(), null, null);
+                await using var fileStream = new ProgressiveFileStream(directStreamProvider.GetStream());
                 await _streamHelper.CopyToAsync(
                     fileStream,
                     output,

@@ -51,13 +51,11 @@ namespace Jellyfin.Api.Helpers
         /// Initializes a new instance of the <see cref="ProgressiveFileStream"/> class.
         /// </summary>
         /// <param name="stream">The stream to progressively copy.</param>
-        /// <param name="job">The transcoding job information.</param>
-        /// <param name="transcodingJobHelper">The transcoding job helper.</param>
         /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
-        public ProgressiveFileStream(Stream stream, TranscodingJobDto? job, TranscodingJobHelper? transcodingJobHelper, int timeoutMs = 30000)
+        public ProgressiveFileStream(Stream stream, int timeoutMs = 30000)
         {
-            _job = job;
-            _transcodingJobHelper = transcodingJobHelper;
+            _job = null;
+            _transcodingJobHelper = null;
             _timeoutMs = timeoutMs;
             _allowAsyncFileRead = AsyncFile.UseAsyncIO;
             _stream = stream;

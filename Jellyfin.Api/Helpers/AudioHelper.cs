@@ -121,7 +121,7 @@ namespace Jellyfin.Api.Helpers
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
                 var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
-                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream(), null, _transcodingJobHelper);
+                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
                 return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
             }
