@@ -1201,7 +1201,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesVideoFile]
         public ActionResult GetLiveStreamFile([FromRoute, Required] string streamId, [FromRoute, Required] string container)
         {
-            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamId);
+            var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfoByUniqueId(streamId);
             if (liveStreamInfo == null)
             {
                 return NotFound();

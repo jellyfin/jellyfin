@@ -587,13 +587,6 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate();
         }
 
-        public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
-        {
-            var info = _openStreams.FirstOrDefault(i => i.Value != null && string.Equals(i.Value.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
-
-            return Task.FromResult(info.Value as IDirectStreamProvider);
-        }
-
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
         {
             var result = await OpenLiveStreamInternal(request, cancellationToken).ConfigureAwait(false);
@@ -797,6 +790,12 @@ namespace Emby.Server.Implementations.Library
             }
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public ILiveStream GetLiveStreamInfoByUniqueId(string uniqueId)
+        {
+            return _openStreams.Values.FirstOrDefault(stream => string.Equals(uniqueId, stream?.UniqueId, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)

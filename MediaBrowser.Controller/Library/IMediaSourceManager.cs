@@ -117,6 +117,13 @@ namespace MediaBrowser.Controller.Library
         public ILiveStream GetLiveStreamInfo(string id);
 
         /// <summary>
+        /// Gets the live stream info using the stream's unique id.
+        /// </summary>
+        /// <param name="uniqueId">The unique identifier.</param>
+        /// <returns>An instance of <see cref="ILiveStream"/>.</returns>
+        public ILiveStream GetLiveStreamInfoByUniqueId(string uniqueId);
+
+        /// <summary>
         /// Closes the media source.
         /// </summary>
         /// <param name="id">The live stream identifier.</param>
@@ -132,7 +139,5 @@ namespace MediaBrowser.Controller.Library
         void SetDefaultAudioAndSubtitleStreamIndexes(BaseItem item, MediaSourceInfo source, User user);
 
         Task AddMediaInfoWithProbe(MediaSourceInfo mediaSource, bool isAudio, string cacheKey, bool addProbeDelay, bool isLiveStream, CancellationToken cancellationToken);
-
-        Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken);
     }
 }
