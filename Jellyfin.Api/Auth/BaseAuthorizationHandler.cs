@@ -37,16 +37,6 @@ namespace Jellyfin.Api.Auth
         }
 
         /// <summary>
-        /// Gets a value indicating <see cref="INetworkManager"/> being used.
-        /// </summary>
-        protected INetworkManager NetworkManager => _networkManager;
-
-        /// <summary>
-        /// Gets a value indicating the <see cref="HttpContextAccessor"/> being used.
-        /// </summary>
-        protected IHttpContextAccessor HttpContextAccessor => _httpContextAccessor;
-
-        /// <summary>
         /// Validate authenticated claims.
         /// </summary>
         /// <param name="claimsPrincipal">Request claims.</param>

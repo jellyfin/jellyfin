@@ -46,9 +46,9 @@ namespace Jellyfin.Api.Constants
         public const string LocalAccessOrRequiresElevation = "LocalAccessOrRequiresElevation";
 
         /// <summary>
-        /// Policy name for requiring local LAN access.
+        /// Policy name for requiring (anonymous) LAN access.
         /// </summary>
-        public const string LocalNetworkAccessPolicy = "LocalNetworkAccessPolicy";
+        public const string AnonymousLanAccessPolicy = "AnonymousLanAccessPolicy";
 
         /// <summary>
         /// Policy name for escaping schedule controls or requiring first time setup.

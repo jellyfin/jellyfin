@@ -1,37 +1,38 @@
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
-namespace Jellyfin.Api.Auth.LocalNetworkAccessPolicy
+namespace Jellyfin.Api.Auth.AnonymousLanAccessPolicy
 {
     /// <summary>
     /// Local access handler.
     /// </summary>
-    public class LocalNetworkAccessHandler : BaseAuthorizationHandler<LocalNetworkAccessRequirement>
+    public class AnonymousLanAccessHandler : AuthorizationHandler<AnonymousLanAccessRequirement>
     {
+        private readonly INetworkManager _networkManager;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocalNetworkAccessHandler"/> class.
+        /// Initializes a new instance of the <see cref="AnonymousLanAccessHandler"/> class.
         /// </summary>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
         /// <param name="networkManager">Instance of the <see cref="INetworkManager"/> interface.</param>
         /// <param name="httpContextAccessor">Instance of the <see cref="IHttpContextAccessor"/> interface.</param>
-        public LocalNetworkAccessHandler(
-            IUserManager userManager,
+        public AnonymousLanAccessHandler(
             INetworkManager networkManager,
             IHttpContextAccessor httpContextAccessor)
-            : base(userManager, networkManager, httpContextAccessor)
         {
+            _networkManager = networkManager;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, LocalNetworkAccessRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, AnonymousLanAccessRequirement requirement)
         {
-            var ip = HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
+            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress;
 
             // Loopback will be on LAN, so we can accept null.
-            if (ip == null || NetworkManager.IsInLocalNetwork(ip))
+            if (ip == null || _networkManager.IsInLocalNetwork(ip))
             {
                 context.Succeed(requirement);
             }

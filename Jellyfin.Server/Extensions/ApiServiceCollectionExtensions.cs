@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using Emby.Server.Implementations;
 using Jellyfin.Api.Auth;
+using Jellyfin.Api.Auth.AnonymousLanAccessPolicy;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Auth.DownloadPolicy;
 using Jellyfin.Api.Auth.FirstTimeOrIgnoreParentalControlSetupPolicy;
@@ -15,7 +16,6 @@ using Jellyfin.Api.Auth.FirstTimeSetupOrElevatedPolicy;
 using Jellyfin.Api.Auth.IgnoreParentalControlPolicy;
 using Jellyfin.Api.Auth.LocalAccessOrRequiresElevationPolicy;
 using Jellyfin.Api.Auth.LocalAccessPolicy;
-using Jellyfin.Api.Auth.LocalNetworkAccessPolicy;
 using Jellyfin.Api.Auth.RequiresElevationPolicy;
 using Jellyfin.Api.Auth.SyncPlayAccessPolicy;
 using Jellyfin.Api.Constants;
@@ -62,7 +62,7 @@ namespace Jellyfin.Server.Extensions
             serviceCollection.AddSingleton<IAuthorizationHandler, IgnoreParentalControlHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, FirstTimeOrIgnoreParentalControlSetupHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessHandler>();
-            serviceCollection.AddSingleton<IAuthorizationHandler, LocalNetworkAccessHandler>();
+            serviceCollection.AddSingleton<IAuthorizationHandler, AnonymousLanAccessHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, LocalAccessOrRequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, RequiresElevationHandler>();
             serviceCollection.AddSingleton<IAuthorizationHandler, SyncPlayAccessHandler>();
@@ -160,11 +160,11 @@ namespace Jellyfin.Server.Extensions
                         policy.AddRequirements(new SyncPlayAccessRequirement(SyncPlayAccessRequirementType.IsInGroup));
                     });
                 options.AddPolicy(
-                    Policies.LocalNetworkAccessPolicy,
+                    Policies.AnonymousLanAccessPolicy,
                     policy =>
                     {
                         policy.AddAuthenticationSchemes(AuthenticationSchemes.CustomAuthentication);
-                        policy.AddRequirements(new LocalNetworkAccessRequirement());
+                        policy.AddRequirements(new AnonymousLanAccessRequirement());
                     });
             });
         }

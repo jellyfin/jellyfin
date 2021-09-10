@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Jellyfin.Api.Auth.LocalNetworkAccessPolicy
+namespace Jellyfin.Api.Auth.AnonymousLanAccessPolicy
 {
     /// <summary>
     /// The local network authorization requirement.
     /// </summary>
-    public class LocalNetworkAccessRequirement : IAuthorizationRequirement
+    public class AnonymousLanAccessRequirement : IAuthorizationRequirement
     {
     }
 }
