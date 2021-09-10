@@ -458,6 +458,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     return NotFound();
                 }
+
                 var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
                 return File(liveStream, MimeTypes.GetMimeType("file.ts")!);

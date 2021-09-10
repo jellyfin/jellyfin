@@ -126,6 +126,7 @@ namespace Jellyfin.Api.Helpers
                 {
                     throw new FileNotFoundException();
                 }
+
                 var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
                 return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
