@@ -1,7 +1,6 @@
 using System;
 using System.Buffers;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -71,7 +70,8 @@ namespace Jellyfin.Api.Helpers
         /// <returns>A <see cref="Task"/>.</returns>
         public async Task WriteToAsync(Stream outputStream, CancellationToken cancellationToken)
         {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken).Token;
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationToken);
+            cancellationToken = linkedCancellationTokenSource.Token;
 
             try
             {
@@ -84,8 +84,7 @@ namespace Jellyfin.Api.Helpers
                 var fileOptions = FileOptions.SequentialScan;
                 var allowAsyncFileRead = false;
 
-                // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (AsyncFile.UseAsyncIO)
                 {
                     fileOptions |= FileOptions.Asynchronous;
                     allowAsyncFileRead = true;

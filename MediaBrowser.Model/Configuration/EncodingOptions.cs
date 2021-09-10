@@ -35,7 +35,7 @@ namespace MediaBrowser.Model.Configuration
             EnableDecodingColorDepth10Vp9 = true;
             EnableEnhancedNvdecDecoder = true;
             EnableHardwareEncoding = true;
-            AllowHevcEncoding = true;
+            AllowHevcEncoding = false;
             EnableSubtitleExtraction = true;
             HardwareDecodingCodecs = new string[] { "h264", "vc1" };
         }

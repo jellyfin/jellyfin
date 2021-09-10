@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -171,7 +173,9 @@ namespace Emby.Dlna.PlayTo
                 uuid = uri.ToString().GetMD5().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            var sessionInfo = _sessionManager.LogSessionActivity("DLNA", _appHost.ApplicationVersionString, uuid, null, uri.OriginalString, null);
+            var sessionInfo = await _sessionManager
+                .LogSessionActivity("DLNA", _appHost.ApplicationVersionString, uuid, null, uri.OriginalString, null)
+                .ConfigureAwait(false);
 
             var controller = sessionInfo.SessionControllers.OfType<PlayToController>().FirstOrDefault();
 
@@ -188,7 +192,7 @@ namespace Emby.Dlna.PlayTo
 
                 _sessionManager.UpdateDeviceName(sessionInfo.Id, deviceName);
 
-                string serverAddress = _appHost.GetSmartApiUrl(info.LocalIpAddress);
+                string serverAddress = _appHost.GetSmartApiUrl(info.RemoteIpAddress);
 
                 controller = new PlayToController(
                     sessionInfo,

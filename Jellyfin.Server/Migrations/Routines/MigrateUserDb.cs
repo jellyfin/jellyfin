@@ -4,9 +4,9 @@ using Emby.Server.Implementations.Data;
 using Emby.Server.Implementations.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions.Json;
 using Jellyfin.Server.Implementations;
 using Jellyfin.Server.Implementations.Users;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
@@ -82,11 +82,14 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     var userDataDir = Path.Combine(_paths.UserConfigurationDirectoryPath, mockup.Name);
 
-                    var config = File.Exists(Path.Combine(userDataDir, "config.xml"))
-                        ? (UserConfiguration)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), Path.Combine(userDataDir, "config.xml"))
+                    var configPath = Path.Combine(userDataDir, "config.xml");
+                    var config = File.Exists(configPath)
+                        ? (UserConfiguration?)_xmlSerializer.DeserializeFromFile(typeof(UserConfiguration), configPath) ?? new UserConfiguration()
                         : new UserConfiguration();
-                    var policy = File.Exists(Path.Combine(userDataDir, "policy.xml"))
-                        ? (UserPolicy)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), Path.Combine(userDataDir, "policy.xml"))
+
+                    var policyPath = Path.Combine(userDataDir, "policy.xml");
+                    var policy = File.Exists(policyPath)
+                        ? (UserPolicy?)_xmlSerializer.DeserializeFromFile(typeof(UserPolicy), policyPath) ?? new UserPolicy()
                         : new UserPolicy();
                     policy.AuthenticationProviderId = policy.AuthenticationProviderId?.Replace(
                         "Emby.Server.Implementations.Library",

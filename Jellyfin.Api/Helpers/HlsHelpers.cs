@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -39,7 +38,7 @@ namespace Jellyfin.Api.Helpers
                         FileAccess.Read,
                         FileShare.ReadWrite,
                         IODefaults.FileStreamBufferSize,
-                        FileOptions.SequentialScan);
+                        (AsyncFile.UseAsyncIO ? FileOptions.Asynchronous : FileOptions.None) | FileOptions.SequentialScan);
                     await using (fileStream.ConfigureAwait(false))
                     {
                         using var reader = new StreamReader(fileStream);
@@ -99,8 +98,7 @@ namespace Jellyfin.Api.Helpers
                 return fmp4InitFileName;
             }
 
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (isWindows)
+            if (OperatingSystem.IsWindows())
             {
                 // on Windows
                 // #EXT-X-MAP:URI="X:\transcodes\prefix-1.mp4"
@@ -118,10 +116,7 @@ namespace Jellyfin.Api.Helpers
         /// <returns>The playlist text as a string.</returns>
         public static string GetLivePlaylistText(string path, StreamState state)
         {
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(stream);
-
-            var text = reader.ReadToEnd();
+            var text = File.ReadAllText(path);
 
             var segmentFormat = EncodingHelper.GetSegmentFileExtension(state.Request.SegmentContainer).TrimStart('.');
             if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))

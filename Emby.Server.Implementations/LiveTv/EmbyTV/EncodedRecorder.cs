@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -9,8 +11,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -91,7 +94,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
 
             await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
             await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
@@ -307,21 +310,14 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                     {
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.WriteAsync(bytes.AsMemory()).ConfigureAwait(false);
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                // TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {

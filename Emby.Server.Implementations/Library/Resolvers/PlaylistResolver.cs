@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -16,7 +18,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// </summary>
     public class PlaylistResolver : FolderResolver<Playlist>
     {
-        private string[] _musicPlaylistCollectionTypes = new string[] {
+        private string[] _musicPlaylistCollectionTypes =
+        {
             string.Empty,
             CollectionType.Music
         };
@@ -63,7 +66,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         Path = args.Path,
                         Name = Path.GetFileNameWithoutExtension(args.Path),
-                        IsInMixedFolder = true
+                        IsInMixedFolder = true,
+                        PlaylistMediaType = MediaType.Audio
                     };
                 }
             }

@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Xml;
 using MediaBrowser.Common.Configuration;
@@ -40,72 +39,68 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <inheritdoc />
         protected override void Fetch(MetadataResult<Episode> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
-            using (var fileStream = File.OpenRead(metadataFile))
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+            item.ResetPeople();
+
+            var xmlFile = File.ReadAllText(metadataFile);
+
+            var srch = "</episodedetails>";
+            var index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+
+            var xml = xmlFile;
+
+            if (index != -1)
             {
-                item.ResetPeople();
+                xml = xmlFile.Substring(0, index + srch.Length);
+                xmlFile = xmlFile.Substring(index + srch.Length);
+            }
 
-                var xmlFile = streamReader.ReadToEnd();
+            // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+            try
+            {
+                // Extract episode details from the first episodedetails block
+                using (var stringReader = new StringReader(xml))
+                using (var reader = XmlReader.Create(stringReader, settings))
+                {
+                    reader.MoveToContent();
+                    reader.Read();
 
-                var srch = "</episodedetails>";
-                var index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
+                    // Loop through each element
+                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                var xml = xmlFile;
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            FetchDataFromXmlNode(reader, item);
+                        }
+                        else
+                        {
+                            reader.Read();
+                        }
+                    }
+                }
 
-                if (index != -1)
+                // Extract the last episode number from nfo
+                // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
+                while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
                 {
                     xml = xmlFile.Substring(0, index + srch.Length);
                     xmlFile = xmlFile.Substring(index + srch.Length);
-                }
 
-                // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                try
-                {
-                    // Extract episode details from the first episodedetails block
                     using (var stringReader = new StringReader(xml))
                     using (var reader = XmlReader.Create(stringReader, settings))
                     {
                         reader.MoveToContent();
-                        reader.Read();
 
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                FetchDataFromXmlNode(reader, item);
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
-                        }
-                    }
-
-                    // Extract the last episode number from nfo
-                    // This is needed because XBMC metadata uses multiple episodedetails blocks instead of episodenumberend tag
-                    while ((index = xmlFile.IndexOf(srch, StringComparison.OrdinalIgnoreCase)) != -1)
-                    {
-                        xml = xmlFile.Substring(0, index + srch.Length);
-                        xmlFile = xmlFile.Substring(index + srch.Length);
-
-                        using (var stringReader = new StringReader(xml))
-                        using (var reader = XmlReader.Create(stringReader, settings))
-                        {
-                            reader.MoveToContent();
-
-                            if (reader.ReadToDescendant("episode") && int.TryParse(reader.ReadElementContentAsString(), out var num))
-                            {
-                                item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
-                            }
+                            item.Item.IndexNumberEnd = Math.Max(num, item.Item.IndexNumberEnd ?? num);
                         }
                     }
                 }
-                catch (XmlException)
-                {
-                }
+            }
+            catch (XmlException)
+            {
             }
         }
 

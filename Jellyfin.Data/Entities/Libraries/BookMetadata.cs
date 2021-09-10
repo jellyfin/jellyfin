@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -26,9 +24,9 @@ namespace Jellyfin.Data.Entities.Libraries
         public long? Isbn { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of the publishers for this book.
+        /// Gets a collection of the publishers for this book.
         /// </summary>
-        public virtual ICollection<Company> Publishers { get; protected set; }
+        public virtual ICollection<Company> Publishers { get; private set; }
 
         /// <inheritdoc />
         public ICollection<Company> Companies => Publishers;

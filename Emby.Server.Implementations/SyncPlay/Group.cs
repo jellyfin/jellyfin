@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -532,6 +534,16 @@ namespace Emby.Server.Implementations.SyncPlay
             RestartCurrentItem();
 
             return itemFound;
+        }
+
+        /// <inheritdoc />
+        public void ClearPlayQueue(bool clearPlayingItem)
+        {
+            PlayQueue.ClearPlaylist(clearPlayingItem);
+            if (clearPlayingItem)
+            {
+                RestartCurrentItem();
+            }
         }
 
         /// <inheritdoc />

@@ -9,7 +9,7 @@ namespace Emby.Dlna.Didl
 {
     public class StringWriterWithEncoding : StringWriter
     {
-        private readonly Encoding _encoding;
+        private readonly Encoding? _encoding;
 
         public StringWriterWithEncoding()
         {

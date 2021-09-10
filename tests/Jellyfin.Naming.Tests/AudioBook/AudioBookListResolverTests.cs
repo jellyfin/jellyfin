@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;

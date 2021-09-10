@@ -1,10 +1,11 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Emby.Server.Implementations.Images;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;

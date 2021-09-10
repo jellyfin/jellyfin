@@ -1,3 +1,5 @@
+#nullable disable
+
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
