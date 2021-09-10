@@ -92,7 +92,7 @@ jobs:
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="no" \
-            -e BUILD_ID=${{ env.VERSION }} \
+            -e BUILD_ID=${VERSION} \
             jellyfin-server:${{ matrix.build-config }}
 
       - name: Run packaging container (unstable)
@@ -103,7 +103,7 @@ jobs:
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="yes" \
-            -e BUILD_ID=${BUILD_VERSION%.*}.${{ env.SHORT_SHA }} \
+            -e BUILD_ID=${VERSION%.*}.${SHORT_SHA} \
             jellyfin-server:${{ matrix.build-config }}
 
       - name: Publish artifacts
