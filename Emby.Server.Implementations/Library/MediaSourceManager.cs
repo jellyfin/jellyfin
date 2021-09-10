@@ -602,7 +602,8 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var liveStreamInfo = GetLiveStreamInfo(id);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var liveStreamInfo = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
 
             var mediaSource = liveStreamInfo.MediaSource;
 
@@ -778,7 +779,8 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = GetLiveStreamInfo(id);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
             return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
@@ -794,7 +796,7 @@ namespace Emby.Server.Implementations.Library
                 return info;
             }
 
-            throw new ResourceNotFoundException();
+            return null;
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
