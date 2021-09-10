@@ -11,10 +11,9 @@ namespace MediaBrowser.Controller.Library
     public interface IDirectStreamProvider
     {
         /// <summary>
-        /// Gets the live stream, optionally seeks to the end of the file first.
+        /// Gets the live stream, shared streams seek to the end of the file first.
         /// </summary>
-        /// <param name="seekNearEnd">A value indicating whether to seek to the end of the file.</param>
         /// <returns>The stream.</returns>
-        Stream GetStream(bool seekNearEnd = true);
+        Stream GetStream();
     }
 }

@@ -42,7 +42,7 @@ namespace Emby.Server.Implementations.Library
             return _closeFn();
         }
 
-        public Stream GetStream(bool seekNearEnd)
+        public Stream GetStream()
         {
             throw new NotSupportedException();
         }

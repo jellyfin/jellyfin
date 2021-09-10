@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.CompletedTask;
         }
 
-        public Stream GetStream(bool seekNearEnd = true)
+        public Stream GetStream()
         {
             var stream = GetInputStream(TempFilePath, AsyncFile.UseAsyncIO);
             bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;

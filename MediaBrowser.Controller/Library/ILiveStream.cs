@@ -27,6 +27,6 @@ namespace MediaBrowser.Controller.Library
 
         Task Close();
 
-        Stream GetStream(bool seekNearEnd = true);
+        Stream GetStream();
     }
 }
