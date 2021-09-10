@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - release-*
   release:
     types:
       - published

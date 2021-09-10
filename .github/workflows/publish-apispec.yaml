@@ -139,6 +139,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         continue-on-error: true
         with:
+          # CHECK: The token used here needs write perms on the target repo to allow for this to work!
           token: ${{ secrets.JF_BOT_TOKEN }}
           repository: jellyfin/${{ matrix.api-repo }}
           event-type: trigger-update

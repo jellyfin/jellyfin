@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - master
+      - release-*
   release:
     types:
       - published
   workflow_dispatch:
+
+concurrency: server-container
 
 jobs:
   setup-vars:
@@ -129,7 +132,7 @@ jobs:
           tags: ${{ steps.build-image.outputs.tags }}
           registry: ghcr.io/${{ github.repository_owner }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GH_TOKEN }}
+          password: ${{ secrets.JF_BOT_TOKEN }}
 
       - name: Publish headless server image to quay.io
         uses: redhat-actions/push-to-registry@v2
@@ -137,8 +140,8 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
           registry: quay.io/jellyfin
-          username: jellyfin+github_actions
-          password: ${{ secrets.RH_TOKEN }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
 
       - name: Publish headless server image to docker.io
         uses: redhat-actions/push-to-registry@v2
@@ -146,8 +149,85 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
           registry: docker.io/jellyfin
-          username: jellyfin
-          password: ${{ secrets.DH_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  create-manifests:
+    name: Create Container collection manifests
+    runs-on: ubuntu-latest
+    needs:
+      - setup-vars
+      - container-images
+
+    env:
+      STAGE: ${{ needs.setup-vars.outputs.stage }}
+      SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
+      SEMVER: ${{ needs.setup-vars.outputs.version }}
+      MAJOR_MINOR: ${{ needs.setup-vars.outputs.major-minor }}
+
+    steps:
+      - name: Create manifests
+        run: |-
+          podman manifest create jellyfin-server:${{ env.STAGE }}
+          if [[ "${{ env.STAGE }}" == 'unstable' ]]; then
+            podman manifest create jellyfin-server:${{ env.STAGE }}-${{ env.SEMVER }}
+            podman manifest create jellyfin-server:${{ env.STAGE }}-${{ env.MAJOR_MINOR }}
+          else
+            podman manifest create jellyfin-server:latest
+            podman manifest create jellyfin-server:${{ env.SEMVER }}
+            podman manifest create jellyfin-server:${{ env.MAJOR_MINOR }}
+          fi
+
+      - name: Add images to manifests
+        run: |-
+          for arch in amd64 arm64 armhf; do
+            # will fetch the manifest hash and add it to the manifest (the manifest is identical on all registry)
+            podman manifest add jellyfin-server:${{ env.STAGE }} docker://ghcr.io/jellyfin/jellyfin-server:${{ env.SHORT_SHA }}-${arch}
+          done
+          if [[ "${{ env.STAGE }}" == 'unstable' ]]; then
+            podman manifest add --all jellyfin-server:${{ env.STAGE }}-${{ env.SEMVER }} jellyfin-server:${{ env.STAGE }}
+            podman manifest add --all jellyfin-server:${{ env.STAGE }}-${{ env.MAJOR_MINOR }} jellyfin-server:${{ env.STAGE }}
+          else
+            podman manifest add --all jellyfin-server:latest jellyfin:${{ env.STAGE }}
+            podman manifest add --all jellyfin-server:${{ env.SEMVER }} jellyfin-server:${{ env.STAGE }}
+            podman manifest add --all jellyfin-server:${{ env.MAJOR_MINOR }} jellyfin-server:${{ env.STAGE }}
+          fi
+
+      - name: Log in to GHCR.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io/jellyfin
+          username: ${{ github.actor }}
+          password: ${{ secrets.JF_BOT_TOKEN }}
+
+      - name: Log in to Quay.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: Log in to GHCR.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # I dont like the looks of this but there is currently no better solution YET
+      - name: Push manifests
+        run: |-
+          for registry in 'ghcr.io' 'quay.io' 'docker.io'; do
+            podman manifest push jellyfin-server:${{ env.STAGE }} docker://${registry}/jellyfin/jellyfin-server:${{ env.STAGE }}
+            if [[ "${{ env.STAGE }}" == 'unstable' ]]; then
+              podman manifest push jellyfin-server:${{ env.STAGE }}-${{ env.SEMVER }} docker://${registry}/jellyfin/jellyfin-server:${{ env.STAGE }}-${{ env.SEMVER }}
+              podman manifest push jellyfin-server:${{ env.STAGE }}-${{ env.MAJOR_MINOR }} docker://${registry}/jellyfin/jellyfin-server:${{ env.STAGE }}-${{ env.MAJOR_MINOR }}
+            else
+              podman manifest push jellyfin-server:latest docker://${registry}/jellyfin/jellyfin:latest
+              podman manifest push jellyfin-server:${{ env.SEMVER }} docker://${registry}/jellyfin/jellyfin-server:${{ env.SEMVER }}
+              podman manifest push jellyfin-server:${{ env.MAJOR_MINOR }} docker://${registry}/jellyfin/jellyfin-server:${{ env.MAJOR_MINOR }}
+            fi
+          done
 
   trigger-meta:
     name: Triger Meta Container Image builds
@@ -159,21 +239,21 @@ jobs:
 
     env:
       SHORT_SHA: ${{ needs.setup-vars.outputs.short-sha }}
-      MAJOR_MINOR: ${{ needs.setup-vars.outputs.major-minor }}
       SEMVER: ${{ needs.setup-vars.outputs.version }}
       STAGE: ${{ needs.setup-vars.outputs.stage }}
 
     steps:
-      - name: Run OS package collect script
-        uses: appleboy/ssh-action@v0.1.4
+      - name: Trigger Metacontainer image build
+        uses: peter-evans/repository-dispatch@v1
+        continue-on-error: true
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          script_stop: true
-          script: |-
-            nohup sudo /srv/repository/collect-server.container.sh \
-              ${{ env.SHORT_SHA }} \
-              ${{ env.MAJOR_MINOR }} \
-              ${{ env.SEMVER }} \
-              ${{ env.STAGE }} &
+          token: ${{ secrets.JF_BOT_TOKEN }}
+          repository: jellyfin/jellyfin-metapackages
+          event-type: trigger-meta-container
+          client-payload: |-
+            {
+              "type": "server",
+              "version": "${{ env.SEMVER }}",
+              "server-sha": "${{ env.SHORT_SHA }}",
+              "unstable": ${{ env.STAGE != 'stable' }}
+            }

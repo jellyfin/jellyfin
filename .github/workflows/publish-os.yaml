@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - release-*
   release:
     types:
       - published
@@ -94,7 +95,6 @@ jobs:
             -e BUILD_ID=${{ env.VERSION }} \
             jellyfin-server:${{ matrix.build-config }}
 
-      # TODO: either pass x.y.hash as BUILD_ID or ask what that number should be ideally
       - name: Run packaging container (unstable)
         if: ${{ github.event_name != 'release' }}
         run: |-
@@ -103,7 +103,7 @@ jobs:
             -v $(pwd)/deployment/dist:/dist \
             -v $(pwd):/jellyfin \
             -e IS_UNSTABLE="yes" \
-            -e BUILD_ID=${{ env.VERSION }} \
+            -e BUILD_ID=${BUILD_VERSION%.*}.${{ env.SHORT_SHA }} \
             jellyfin-server:${{ matrix.build-config }}
 
       - name: Publish artifacts
@@ -131,6 +131,7 @@ jobs:
           remote_user: ${{ secrets.DEPLOY_USER }}
           remote_key: ${{ secrets.DEPLOY_KEY }}
 
+  # IDEA: change this to not use any server scripts but a remote GH Workflow
   trigger-meta:
     name: Triger Meta Package builds
     runs-on: ubuntu-latest
@@ -157,6 +158,7 @@ jobs:
               /srv/repository/incoming/gh-actions \
               ${{ env.SHORT_SHA }} \
               ${{ env.VERSION }} \
-              ${{ env.STAGE }} &
+              ${{ env.STAGE }} \
+              server &
 
   # UpForDiscussion: add stage that dls all artifacts and publishes them to a GH release + SHA256sum collection file
