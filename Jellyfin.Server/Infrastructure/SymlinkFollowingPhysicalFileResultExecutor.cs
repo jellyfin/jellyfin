@@ -140,10 +140,6 @@ namespace Jellyfin.Server.Infrastructure
                 .ConfigureAwait(true);
         }
 
-        private static bool IsSymLink(string path)
-        {
-            var fileInfo = new FileInfo(path);
-            return (fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
-        }
+        private static bool IsSymLink(string path) => (File.GetAttributes(path) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
     }
 }
