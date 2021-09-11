@@ -15,16 +15,16 @@ namespace Jellyfin.Api.Tests.Helpers
             Assert.Equal(expected, RequestHelpers.GetOrderBy(sortBy, requestedSortOrder));
         }
 
-        public static IEnumerable<object[]> GetOrderBy_Success_TestData()
+        public static TheoryData<IReadOnlyList<string>, IReadOnlyList<SortOrder>, (string, SortOrder)[]> GetOrderBy_Success_TestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<IReadOnlyList<string>, IReadOnlyList<SortOrder>, (string, SortOrder)[]>();
+
+            data.Add(
                 Array.Empty<string>(),
                 Array.Empty<SortOrder>(),
-                Array.Empty<(string, SortOrder)>()
-            };
-            yield return new object[]
-            {
+                Array.Empty<(string, SortOrder)>());
+
+            data.Add(
                 new string[]
                 {
                     "IsFavoriteOrLiked",
@@ -35,10 +35,9 @@ namespace Jellyfin.Api.Tests.Helpers
                 {
                     ("IsFavoriteOrLiked", SortOrder.Ascending),
                     ("Random", SortOrder.Ascending),
-                }
-            };
-            yield return new object[]
-            {
+                });
+
+            data.Add(
                 new string[]
                 {
                     "SortName",
@@ -52,8 +51,9 @@ namespace Jellyfin.Api.Tests.Helpers
                 {
                     ("SortName", SortOrder.Descending),
                     ("ProductionYear", SortOrder.Descending),
-                }
-            };
+                });
+
+            return data;
         }
 
         [Fact]

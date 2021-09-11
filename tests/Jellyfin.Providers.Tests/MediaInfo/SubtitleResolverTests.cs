@@ -1,4 +1,4 @@
-﻿#pragma warning disable CA1002 // Do not expose generic lists
+#pragma warning disable CA1002 // Do not expose generic lists
 
 using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
@@ -11,11 +11,12 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class SubtitleResolverTests
     {
-        public static IEnumerable<object[]> AddExternalSubtitleStreams_GivenMixedFilenames_ReturnsValidSubtitles_TestData()
+        public static TheoryData<List<MediaStream>, string, int, string[], MediaStream[]> AddExternalSubtitleStreams_GivenMixedFilenames_ReturnsValidSubtitles_TestData()
         {
+            var data = new TheoryData<List<MediaStream>, string, int, string[], MediaStream[]>();
+
             var index = 0;
-            yield return new object[]
-            {
+            data.Add(
                 new List<MediaStream>(),
                 "/video/My.Video.mkv",
                 index,
@@ -52,8 +53,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     CreateMediaStream("/video/My.Video.default.forced.en.srt", "srt", "en", index++, isForced: true, isDefault: true),
                     CreateMediaStream("/video/My.Video.en.default.forced.srt", "srt", "en", index++, isForced: true, isDefault: true),
                     CreateMediaStream("/video/My.Video.With.Additional.Garbage.en.srt", "srt", "en", index),
-                }
-            };
+                });
+
+            return data;
         }
 
         [Theory]
