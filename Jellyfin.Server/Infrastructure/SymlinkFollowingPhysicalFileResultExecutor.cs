@@ -55,7 +55,7 @@ namespace Jellyfin.Server.Infrastructure
             // This may or may not be fixed in .NET 6, but looks like it will not https://github.com/dotnet/aspnetcore/issues/34371
             if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
             {
-                using Stream thisFileStream = AsyncFile.OpenRead(path);
+                using Stream thisFileStream = File.OpenRead(path);
                 length = thisFileStream.Length;
             }
 
