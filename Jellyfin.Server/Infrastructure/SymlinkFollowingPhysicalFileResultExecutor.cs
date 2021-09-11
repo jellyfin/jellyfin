@@ -42,7 +42,7 @@ namespace Jellyfin.Server.Infrastructure
         /// <summary>
         /// Initializes a new instance of the <see cref="SymlinkFollowingPhysicalFileResultExecutor"/> class.
         /// </summary>
-        /// <param name="loggerFactory"></param>
+        /// <param name="loggerFactory">An instance of the <see cref="ILoggerFactory"/> interface.</param>
         public SymlinkFollowingPhysicalFileResultExecutor(ILoggerFactory loggerFactory) : base(loggerFactory)
         {
         }
@@ -95,13 +95,15 @@ namespace Jellyfin.Server.Infrastructure
 
             if (range != null)
             {
-                return SendFileAsync(result.FileName,
+                return SendFileAsync(
+                    result.FileName,
                     response,
                     offset: range.From ?? 0L,
                     count: rangeLength);
             }
 
-            return SendFileAsync(result.FileName,
+            return SendFileAsync(
+                result.FileName,
                 response,
                 offset: 0,
                 count: null);
