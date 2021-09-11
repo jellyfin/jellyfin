@@ -124,7 +124,7 @@ namespace Jellyfin.Server.Infrastructure
             }
 
             // Copied from SendFileFallback.SendFileAsync
-            const int bufferSize = 1024 * 16;
+            const int BufferSize = 1024 * 16;
 
             await using var fileStream = new FileStream(
                 filePath,
