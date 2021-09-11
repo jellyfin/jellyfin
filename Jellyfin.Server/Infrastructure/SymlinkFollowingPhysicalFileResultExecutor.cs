@@ -131,7 +131,7 @@ namespace Jellyfin.Server.Infrastructure
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
-                bufferSize: bufferSize,
+                bufferSize: BufferSize,
                 options: (AsyncFile.UseAsyncIO ? FileOptions.Asynchronous : FileOptions.None) | FileOptions.SequentialScan);
 
             fileStream.Seek(offset, SeekOrigin.Begin);
