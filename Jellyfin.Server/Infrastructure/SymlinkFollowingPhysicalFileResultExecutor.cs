@@ -136,7 +136,7 @@ namespace Jellyfin.Server.Infrastructure
 
             fileStream.Seek(offset, SeekOrigin.Begin);
             await StreamCopyOperation
-                .CopyToAsync(fileStream, response.Body, count, bufferSize, CancellationToken.None)
+                .CopyToAsync(fileStream, response.Body, count, BufferSize, CancellationToken.None)
                 .ConfigureAwait(true);
         }
 
