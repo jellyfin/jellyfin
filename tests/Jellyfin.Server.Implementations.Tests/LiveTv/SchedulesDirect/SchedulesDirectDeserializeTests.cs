@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             Assert.Equal(0, tokenDto!.Code);
             Assert.Equal("OK", tokenDto.Message);
             Assert.Equal("AWS-SD-web.1", tokenDto.ServerId);
-            Assert.Equal(new DateTime(2016, 08, 23, 13, 55, 25, DateTimeKind.Utc), tokenDto.DateTime);
+            Assert.Equal(new DateTime(2016, 08, 23, 13, 55, 25, DateTimeKind.Utc), tokenDto.TokenTimestamp);
             Assert.Equal("f3fca79989cafe7dead71beefedc812b", tokenDto.Token);
         }
 
@@ -47,7 +47,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             Assert.Equal(3_000, tokenDto!.Code);
             Assert.Equal("Server offline for maintenance.", tokenDto.Message);
             Assert.Equal("20141201.web.1", tokenDto.ServerId);
-            Assert.Equal(new DateTime(2015, 04, 23, 00, 03, 32, DateTimeKind.Utc), tokenDto.DateTime);
+            Assert.Equal(new DateTime(2015, 04, 23, 00, 03, 32, DateTimeKind.Utc), tokenDto.TokenTimestamp);
             Assert.Equal("CAFEDEADBEEFCAFEDEADBEEFCAFEDEADBEEFCAFE", tokenDto.Token);
             Assert.Equal("SERVICE_OFFLINE", tokenDto.Response);
         }
@@ -207,7 +207,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv.SchedulesDirect
             Assert.NotNull(lineupsDto);
             Assert.Equal(0, lineupsDto!.Code);
             Assert.Equal("20141201.web.1", lineupsDto.ServerId);
-            Assert.Equal(new DateTime(2015, 04, 17, 14, 22, 17, DateTimeKind.Utc), lineupsDto.Datetime);
+            Assert.Equal(new DateTime(2015, 04, 17, 14, 22, 17, DateTimeKind.Utc), lineupsDto.LineupTimestamp);
             Assert.Equal(5, lineupsDto.Lineups.Count);
             Assert.Equal("GBR-0001317-DEFAULT", lineupsDto.Lineups[0].Lineup);
             Assert.Equal("Freeview - Carlton - LWT (Southeast)", lineupsDto.Lineups[0].Name);

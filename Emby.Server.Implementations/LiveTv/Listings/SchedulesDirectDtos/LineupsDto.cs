@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the datetime.
         /// </summary>
         [JsonPropertyName("datetime")]
-        public DateTime? Datetime { get; set; }
+        public DateTime? LineupTimestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the list of lineups.

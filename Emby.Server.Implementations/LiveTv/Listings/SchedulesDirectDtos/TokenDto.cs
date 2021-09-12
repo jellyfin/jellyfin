@@ -36,7 +36,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the current datetime.
         /// </summary>
         [JsonPropertyName("datetime")]
-        public DateTime? DateTime { get; set; }
+        public DateTime? TokenTimestamp { get; set; }
 
         /// <summary>
         /// Gets or sets the response message.

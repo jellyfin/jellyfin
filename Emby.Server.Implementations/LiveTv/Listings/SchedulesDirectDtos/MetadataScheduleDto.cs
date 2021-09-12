@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -23,13 +24,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the start date.
         /// </summary>
         [JsonPropertyName("startDate")]
-        public string? StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
         /// </summary>
         [JsonPropertyName("endDate")]
-        public string? EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the days count.
