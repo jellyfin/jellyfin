@@ -15,7 +15,8 @@ namespace MediaBrowser.Common.Extensions
         /// <returns><c>true</c> if the request is coming from the same machine, <c>false</c> otherwise.</returns>
         public static bool IsLocal(this HttpContext context)
         {
-            if (context.Connection.RemoteIpAddress == null) {
+            if (context.Connection.RemoteIpAddress == null)
+            {
                 // UNIX Socket request.
                 return true;
             }
