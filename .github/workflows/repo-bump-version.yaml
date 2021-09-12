@@ -1,4 +1,4 @@
-name: Auto bump_version
+name: '🆙 Auto bump_version'
 
 on:
   release:
@@ -30,7 +30,7 @@ jobs:
       - name: Setup YQ
         uses: chrisdickinson/setup-yq@latest
         with:
-          yq-version: v4.9.6
+          yq-version: v4.9.8
 
       - name: Checkout Repository
         uses: actions/checkout@v2
