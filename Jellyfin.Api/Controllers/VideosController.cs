@@ -25,14 +25,12 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -310,7 +308,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-        /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+        /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
         /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -456,9 +454,9 @@ namespace Jellyfin.Api.Controllers
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
                 await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
-                    {
-                        AllowEndOfFile = false
-                    }.WriteToAsync(Response.Body, CancellationToken.None)
+                {
+                    AllowEndOfFile = false
+                }.WriteToAsync(Response.Body, CancellationToken.None)
                     .ConfigureAwait(false);
 
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
@@ -495,9 +493,9 @@ namespace Jellyfin.Api.Controllers
                 if (state.MediaSource.IsInfiniteStream)
                 {
                     await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
-                        {
-                            AllowEndOfFile = false
-                        }.WriteToAsync(Response.Body, CancellationToken.None)
+                    {
+                        AllowEndOfFile = false
+                    }.WriteToAsync(Response.Body, CancellationToken.None)
                         .ConfigureAwait(false);
 
                     return File(Response.Body, contentType);
@@ -570,7 +568,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-        /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+        /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
         /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>

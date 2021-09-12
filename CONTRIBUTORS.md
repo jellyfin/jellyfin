@@ -46,6 +46,7 @@
  - [fruhnow](https://github.com/fruhnow)
  - [geilername](https://github.com/geilername)
  - [gnattu](https://github.com/gnattu)
+ - [GodTamIt](https://github.com/GodTamIt)
  - [grafixeyehero](https://github.com/grafixeyehero)
  - [h1nk](https://github.com/h1nk)
  - [hawken93](https://github.com/hawken93)
@@ -212,3 +213,5 @@
  - [Tim Hobbs](https://github.com/timhobbs)
  - [SvenVandenbrande](https://github.com/SvenVandenbrande)
  - [olsh](https://github.com/olsh)
+ - [lbenini](https://github.com/lbenini)
+ - [gnuyent](https://github.com/gnuyent)

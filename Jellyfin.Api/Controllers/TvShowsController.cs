@@ -228,7 +228,7 @@ namespace Jellyfin.Api.Controllers
             if (seasonId.HasValue) // Season id was supplied. Get episodes by season id.
             {
                 var item = _libraryManager.GetItemById(seasonId.Value);
-                if (!(item is Season seasonItem))
+                if (item is not Season seasonItem)
                 {
                     return NotFound("No season exists with Id " + seasonId);
                 }
@@ -237,7 +237,7 @@ namespace Jellyfin.Api.Controllers
             }
             else if (season.HasValue) // Season number was supplied. Get episodes by season number
             {
-                if (!(_libraryManager.GetItemById(seriesId) is Series series))
+                if (_libraryManager.GetItemById(seriesId) is not Series series)
                 {
                     return NotFound("Series not found");
                 }
@@ -252,7 +252,7 @@ namespace Jellyfin.Api.Controllers
             }
             else // No season number or season id was supplied. Returning all episodes.
             {
-                if (!(_libraryManager.GetItemById(seriesId) is Series series))
+                if (_libraryManager.GetItemById(seriesId) is not Series series)
                 {
                     return NotFound("Series not found");
                 }
@@ -336,7 +336,7 @@ namespace Jellyfin.Api.Controllers
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            if (!(_libraryManager.GetItemById(seriesId) is Series series))
+            if (_libraryManager.GetItemById(seriesId) is not Series series)
             {
                 return NotFound("Series not found");
             }

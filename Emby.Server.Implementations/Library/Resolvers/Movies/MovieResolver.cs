@@ -400,7 +400,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                         return movie;
                     }
 
-                    if (IsBluRayDirectory(child.FullName, filename, directoryService))
+                    if (IsBluRayDirectory(filename))
                     {
                         var movie = new T
                         {
@@ -481,7 +481,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return true;
                 }
 
-                if (subfolders.Any(s => IsBluRayDirectory(s.FullName, s.Name, directoryService)))
+                if (subfolders.Any(s => IsBluRayDirectory(s.Name)))
                 {
                     videoTypes.Add(VideoType.BluRay);
                     return true;

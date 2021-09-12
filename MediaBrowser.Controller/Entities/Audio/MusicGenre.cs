@@ -15,19 +15,6 @@ namespace MediaBrowser.Controller.Entities.Audio
     /// </summary>
     public class MusicGenre : BaseItem, IItemByName
     {
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
-            return list;
-        }
-
-        public override string CreatePresentationUniqueKey()
-        {
-            return GetUserDataKeys()[0];
-        }
-
         [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
@@ -45,6 +32,22 @@ namespace MediaBrowser.Controller.Entities.Audio
         [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
+            return list;
+        }
+
+        public override string CreatePresentationUniqueKey()
+        {
+            return GetUserDataKeys()[0];
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
@@ -59,9 +62,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             return true;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
@@ -106,6 +106,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
+        /// <param name="replaceAllMetadata">Option to replace metadata.</param>
+        /// <returns>True if metadata changed.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);

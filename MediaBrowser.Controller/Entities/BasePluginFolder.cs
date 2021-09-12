@@ -15,6 +15,12 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public virtual string CollectionType => null;
 
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
         public override bool CanDelete()
         {
             return false;
@@ -24,11 +30,5 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
     }
 }

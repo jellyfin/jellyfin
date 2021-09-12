@@ -155,15 +155,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, LiveStreamCancellationTokenSource.Token);
             cancellationToken = linkedCancellationTokenSource.Token;
 
-            // use non-async filestream on windows along with read due to https://github.com/dotnet/corefx/issues/6039
-            var allowAsync = Environment.OSVersion.Platform != PlatformID.Win32NT;
-
             bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
 
             var nextFileInfo = GetNextFile(null);
             var nextFile = nextFileInfo.file;
             var isLastFile = nextFileInfo.isLastFile;
 
+            var allowAsync = AsyncFile.UseAsyncIO;
             while (!string.IsNullOrEmpty(nextFile))
             {
                 var emptyReadLimit = isLastFile ? EmptyReadLimit : 1;

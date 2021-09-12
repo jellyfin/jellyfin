@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -56,7 +56,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var hasChanges = false;
 
-            if (!(item is Photo))
+            if (item is not Photo)
             {
                 var images = providers.OfType<ILocalImageProvider>()
                     .SelectMany(i => i.GetImages(item, directoryService))
@@ -163,7 +163,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                                 }
@@ -275,7 +275,7 @@ namespace MediaBrowser.Providers.Manager
                     item,
                     new RemoteImageQuery(provider.Name)
                     {
-                        IncludeAllLanguages = false,
+                        IncludeAllLanguages = true,
                         IncludeDisabledProviders = false,
                     },
                     cancellationToken).ConfigureAwait(false);
@@ -469,7 +469,7 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
+                .Where(i => i.Type == type && i.Width >= minWidth)
                 .ToList();
 
             if (EnableImageStub(item) && eligibleImages.Count > 0)
@@ -528,7 +528,7 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 var hasDualAccess = item as IHasDualAccess;
                 if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
@@ -536,6 +536,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
             }
+
             // We always want to use prefetched images
             return false;
         }

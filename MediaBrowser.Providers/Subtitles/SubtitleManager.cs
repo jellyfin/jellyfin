@@ -245,15 +245,22 @@ namespace MediaBrowser.Providers.Subtitles
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
                     // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true);
+                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, AsyncFile.UseAsyncIO);
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;
                 }
                 catch (Exception ex)
                 {
-                    (exs ??= new List<Exception>()).Add(ex);
-                }
+// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
+#pragma warning disable CA1508
+                    exs ??= new List<Exception>()
+                            {
+                                ex
+                            };
+#pragma warning restore CA1508
+
+            }
                 finally
                 {
                     _monitor.ReportFileSystemChangeComplete(savePath, false);

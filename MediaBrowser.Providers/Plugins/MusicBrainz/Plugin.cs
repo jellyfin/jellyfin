@@ -11,6 +11,10 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 {
     public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
+        public const string DefaultServer = "https://musicbrainz.org";
+
+        public const long DefaultRateLimit = 2000u;
+
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
             : base(applicationPaths, xmlSerializer)
         {
@@ -24,10 +28,6 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
         public override string Name => "MusicBrainz";
 
         public override string Description => "Get artist and album metadata from any MusicBrainz server.";
-
-        public const string DefaultServer = "https://musicbrainz.org";
-
-        public const long DefaultRateLimit = 2000u;
 
         // TODO remove when plugin removed from server.
         public override string ConfigurationFileName => "Jellyfin.Plugin.MusicBrainz.xml";

@@ -64,6 +64,8 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="source">The source object.</param>
         /// <param name="dest">The destination object.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <typeparam name="TU">Destination type.</typeparam>
         public static void DeepCopy<T, TU>(this T source, TU dest)
             where T : BaseItem
             where TU : BaseItem
@@ -109,6 +111,9 @@ namespace MediaBrowser.Controller.Entities
         /// Copies all properties on newly created object. Skips properties that do not exist.
         /// </summary>
         /// <param name="source">The source object.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <typeparam name="TU">Destination type.</typeparam>
+        /// <returns>Destination object.</returns>
         public static TU DeepCopy<T, TU>(this T source)
             where T : BaseItem
             where TU : BaseItem, new()

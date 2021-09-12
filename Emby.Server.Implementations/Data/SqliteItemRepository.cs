@@ -16,7 +16,6 @@ using Emby.Server.Implementations.Playlists;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -25,7 +24,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -75,6 +73,12 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
+        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger{SqliteItemRepository}"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        /// <param name="imageProcessor">Instance of the <see cref="IImageProcessor"/> interface.</param>
+        /// <exception cref="ArgumentNullException">config is null.</exception>
         public SqliteItemRepository(
             IServerConfigurationManager config,
             IServerApplicationHost appHost,
@@ -1135,14 +1139,24 @@ namespace Emby.Server.Implementations.Data
                 Path = RestorePath(path.ToString())
             };
 
-            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks))
+            if (long.TryParse(dateModified, NumberStyles.Any, CultureInfo.InvariantCulture, out var ticks)
+                && ticks >= DateTime.MinValue.Ticks
+                && ticks <= DateTime.MaxValue.Ticks)
             {
                 image.DateModified = new DateTime(ticks, DateTimeKind.Utc);
+            }
+            else
+            {
+                return null;
             }
 
             if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
             {
                 image.Type = type;
+            }
+            else
+            {
+                return null;
             }
 
             // Optional parameters: width*height*blurhash
@@ -1886,12 +1900,7 @@ namespace Emby.Server.Implementations.Data
             return result;
         }
 
-        /// <summary>
-        /// Gets chapters for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>IEnumerable{ChapterInfo}.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <inheritdoc />
         public List<ChapterInfo> GetChapters(BaseItem item)
         {
             CheckDisposed();
@@ -1914,13 +1923,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        /// <summary>
-        /// Gets a single chapter for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="index">The index.</param>
-        /// <returns>ChapterInfo.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
+        /// <inheritdoc />
         public ChapterInfo GetChapter(BaseItem item, int index)
         {
             CheckDisposed();
@@ -2032,7 +2035,7 @@ namespace Emby.Server.Implementations.Data
 
                 for (var i = startIndex; i < endIndex; i++)
                 {
-                    insertText.AppendFormat("(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
+                    insertText.AppendFormat(CultureInfo.InvariantCulture, "(@ItemId, @ChapterIndex{0}, @StartPositionTicks{0}, @Name{0}, @ImagePath{0}, @ImageDateModified{0}),", i.ToString(CultureInfo.InvariantCulture));
                 }
 
                 insertText.Length -= 1; // Remove last ,
@@ -4879,7 +4882,7 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             foreach (var t in _knownTypes)
             {
-                dict[t.Name] = t.FullName ;
+                dict[t.Name] = t.FullName;
             }
 
             dict["Program"] = typeof(LiveTvProgram).FullName;

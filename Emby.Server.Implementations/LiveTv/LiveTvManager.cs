@@ -65,6 +65,8 @@ namespace Emby.Server.Implementations.LiveTv
         private ITunerHost[] _tunerHosts = Array.Empty<ITunerHost>();
         private IListingsProvider[] _listingProviders = Array.Empty<IListingsProvider>();
 
+        private bool _disposed = false;
+
         public LiveTvManager(
             IServerConfigurationManager config,
             ILogger<LiveTvManager> logger,
@@ -403,7 +405,7 @@ namespace Emby.Server.Implementations.LiveTv
             // Set the total bitrate if not already supplied
             mediaSource.InferTotalBitrate();
 
-            if (!(service is EmbyTV.EmbyTV))
+            if (service is not EmbyTV.EmbyTV)
             {
                 // We can't trust that we'll be able to direct stream it through emby server, no matter what the provider says
                 // mediaSource.SupportsDirectPlay = false;
@@ -520,7 +522,7 @@ namespace Emby.Server.Implementations.LiveTv
             return item;
         }
 
-        private Tuple<LiveTvProgram, bool, bool> GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private (LiveTvProgram item, bool isNew, bool isUpdated) GetProgram(ProgramInfo info, Dictionary<Guid, LiveTvProgram> allExistingPrograms, LiveTvChannel channel)
         {
             var id = _tvDtoService.GetInternalProgramId(info.Id);
 
@@ -558,8 +560,6 @@ namespace Emby.Server.Implementations.LiveTv
             }
 
             item.ParentId = channel.Id;
-
-            // item.ChannelType = channelType;
 
             item.Audio = info.Audio;
             item.ChannelId = channel.Id;
@@ -772,7 +772,7 @@ namespace Emby.Server.Implementations.LiveTv
                 item.OnMetadataChanged();
             }
 
-            return new Tuple<LiveTvProgram, bool, bool>(item, isNew, isUpdated);
+            return (item, isNew, isUpdated);
         }
 
         public async Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null)
@@ -1187,14 +1187,14 @@ namespace Emby.Server.Implementations.LiveTv
 
                     foreach (var program in channelPrograms)
                     {
-                        var programTuple = GetProgram(program, existingPrograms, currentChannel, currentChannel.ChannelType, service.Name, cancellationToken);
-                        var programItem = programTuple.Item1;
+                        var programTuple = GetProgram(program, existingPrograms, currentChannel);
+                        var programItem = programTuple.item;
 
-                        if (programTuple.Item2)
+                        if (programTuple.isNew)
                         {
                             newPrograms.Add(programItem);
                         }
-                        else if (programTuple.Item3)
+                        else if (programTuple.isUpdated)
                         {
                             updatedPrograms.Add(programItem);
                         }
@@ -1385,10 +1385,10 @@ namespace Emby.Server.Implementations.LiveTv
                 // var items = allActivePaths.Select(i => _libraryManager.FindByPath(i, false)).Where(i => i != null).ToArray();
 
                 // return new QueryResult<BaseItem>
-                //{
+                // {
                 //    Items = items,
                 //    TotalRecordCount = items.Length
-                //};
+                // };
 
                 dtoOptions.Fields = dtoOptions.Fields.Concat(new[] { ItemFields.Tags }).Distinct().ToArray();
             }
@@ -1425,16 +1425,15 @@ namespace Emby.Server.Implementations.LiveTv
             return result;
         }
 
-        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> tuples, IReadOnlyList<ItemFields> fields, User user = null)
+        public Task AddInfoToProgramDto(IReadOnlyCollection<(BaseItem, BaseItemDto)> programs, IReadOnlyList<ItemFields> fields, User user = null)
         {
             var programTuples = new List<Tuple<BaseItemDto, string, string>>();
             var hasChannelImage = fields.Contains(ItemFields.ChannelImage);
             var hasChannelInfo = fields.Contains(ItemFields.ChannelInfo);
 
-            foreach (var tuple in tuples)
+            foreach (var (item, dto) in programs)
             {
-                var program = (LiveTvProgram)tuple.Item1;
-                var dto = tuple.Item2;
+                var program = (LiveTvProgram)item;
 
                 dto.StartDate = program.StartDate;
                 dto.EpisodeTitle = program.EpisodeTitle;
@@ -1724,7 +1723,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             await service.CancelTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
 
-            if (!(service is EmbyTV.EmbyTV))
+            if (service is not EmbyTV.EmbyTV)
             {
                 TimerCancelled?.Invoke(this, new GenericEventArgs<TimerEventInfo>(new TimerEventInfo(id)));
             }
@@ -1871,11 +1870,11 @@ namespace Emby.Server.Implementations.LiveTv
             return _libraryManager.GetItemById(internalChannelId);
         }
 
-        public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> tuples, DtoOptions options, User user)
+        public void AddChannelInfo(IReadOnlyCollection<(BaseItemDto, LiveTvChannel)> items, DtoOptions options, User user)
         {
             var now = DateTime.UtcNow;
 
-            var channelIds = tuples.Select(i => i.Item2.Id).Distinct().ToArray();
+            var channelIds = items.Select(i => i.Item2.Id).Distinct().ToArray();
 
             var programs = options.AddCurrentProgram ? _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -1896,7 +1895,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var addCurrentProgram = options.AddCurrentProgram;
 
-            foreach (var tuple in tuples)
+            foreach (var tuple in items)
             {
                 var dto = tuple.Item1;
                 var channel = tuple.Item2;
@@ -2050,7 +2049,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             _logger.LogInformation("New recording scheduled");
 
-            if (!(service is EmbyTV.EmbyTV))
+            if (service is not EmbyTV.EmbyTV)
             {
                 TimerCreated?.Invoke(this, new GenericEventArgs<TimerEventInfo>(
                     new TimerEventInfo(newTimerId)
@@ -2118,16 +2117,12 @@ namespace Emby.Server.Implementations.LiveTv
             };
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        private bool _disposed = false;
 
         /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
@@ -2324,20 +2319,20 @@ namespace Emby.Server.Implementations.LiveTv
             _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
         }
 
-        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelId, string providerChannelId)
+        public async Task<TunerChannelMapping> SetChannelMapping(string providerId, string tunerChannelNumber, string providerChannelNumber)
         {
             var config = GetConfiguration();
 
             var listingsProviderInfo = config.ListingProviders.First(i => string.Equals(providerId, i.Id, StringComparison.OrdinalIgnoreCase));
-            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            listingsProviderInfo.ChannelMappings = listingsProviderInfo.ChannelMappings.Where(i => !string.Equals(i.Name, tunerChannelNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-            if (!string.Equals(tunerChannelId, providerChannelId, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(tunerChannelNumber, providerChannelNumber, StringComparison.OrdinalIgnoreCase))
             {
                 var list = listingsProviderInfo.ChannelMappings.ToList();
                 list.Add(new NameValuePair
                 {
-                    Name = tunerChannelId,
-                    Value = providerChannelId
+                    Name = tunerChannelNumber,
+                    Value = providerChannelNumber
                 });
                 listingsProviderInfo.ChannelMappings = list.ToArray();
             }
@@ -2357,10 +2352,10 @@ namespace Emby.Server.Implementations.LiveTv
 
             _taskManager.CancelIfRunningAndQueue<RefreshGuideScheduledTask>();
 
-            return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelId, StringComparison.OrdinalIgnoreCase));
+            return tunerChannelMappings.First(i => string.Equals(i.Id, tunerChannelNumber, StringComparison.OrdinalIgnoreCase));
         }
 
-        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo tunerChannel, NameValuePair[] mappings, List<ChannelInfo> epgChannels)
+        public TunerChannelMapping GetTunerChannelMapping(ChannelInfo tunerChannel, NameValuePair[] mappings, List<ChannelInfo> providerChannels)
         {
             var result = new TunerChannelMapping
             {
@@ -2373,7 +2368,7 @@ namespace Emby.Server.Implementations.LiveTv
                 result.Name = tunerChannel.Number + " " + result.Name;
             }
 
-            var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, epgChannels);
+            var providerChannel = EmbyTV.EmbyTV.Current.GetEpgChannelFromTunerChannel(mappings, tunerChannel, providerChannels);
 
             if (providerChannel != null)
             {

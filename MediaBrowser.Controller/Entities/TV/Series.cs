@@ -72,6 +72,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
 
+        [JsonIgnore]
+        public override bool StopRefreshIfLocalMetadataFound => false;
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
@@ -293,7 +296,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // Refresh seasons
             foreach (var item in items)
             {
-                if (!(item is Season))
+                if (item is not Season)
                 {
                     continue;
                 }
@@ -394,6 +397,10 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Filters the episodes by season.
         /// </summary>
+        /// <param name="episodes">The episodes.</param>
+        /// <param name="parentSeason">The season.</param>
+        /// <param name="includeSpecials"><c>true</c> to include special, <c>false</c> to not.</param>
+        /// <returns>The set of episodes.</returns>
         public static IEnumerable<BaseItem> FilterEpisodesBySeason(IEnumerable<BaseItem> episodes, Season parentSeason, bool includeSpecials)
         {
             var seasonNumber = parentSeason.IndexNumber;
@@ -424,6 +431,10 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Filters the episodes by season.
         /// </summary>
+        /// <param name="episodes">The episodes.</param>
+        /// <param name="seasonNumber">The season.</param>
+        /// <param name="includeSpecials"><c>true</c> to include special, <c>false</c> to not.</param>
+        /// <returns>The set of episodes.</returns>
         public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, int seasonNumber, bool includeSpecials)
         {
             if (!includeSpecials || seasonNumber < 1)
@@ -499,8 +510,5 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return list;
         }
-
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

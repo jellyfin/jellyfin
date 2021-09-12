@@ -10,7 +10,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
@@ -77,7 +76,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 };
             }
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

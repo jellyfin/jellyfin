@@ -1,7 +1,6 @@
 using System;
 using System.Buffers;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -85,8 +84,7 @@ namespace Jellyfin.Api.Helpers
                 var fileOptions = FileOptions.SequentialScan;
                 var allowAsyncFileRead = false;
 
-                // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (AsyncFile.UseAsyncIO)
                 {
                     fileOptions |= FileOptions.Asynchronous;
                     allowAsyncFileRead = true;

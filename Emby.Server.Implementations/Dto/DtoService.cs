@@ -51,8 +51,6 @@ namespace Emby.Server.Implementations.Dto
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
-        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
-
         public DtoService(
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
@@ -74,6 +72,8 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
         }
+
+        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
@@ -507,7 +507,6 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
         private void AttachPeople(BaseItemDto dto, BaseItem item)
         {
             // Ordering by person type to ensure actors and artists are at the front.
@@ -616,7 +615,6 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
         private void AttachStudios(BaseItemDto dto, BaseItem item)
         {
             dto.Studios = item.Studios
@@ -807,7 +805,7 @@ namespace Emby.Server.Implementations.Dto
 
             dto.MediaType = item.MediaType;
 
-            if (!(item is LiveTvProgram))
+            if (item is not LiveTvProgram)
             {
                 dto.LocationType = item.LocationType;
             }
@@ -928,9 +926,9 @@ namespace Emby.Server.Implementations.Dto
                 }
 
                 // if (options.ContainsField(ItemFields.MediaSourceCount))
-                //{
+                // {
                 // Songs always have one
-                //}
+                // }
             }
 
             if (item is IHasArtist hasArtist)
@@ -938,10 +936,10 @@ namespace Emby.Server.Implementations.Dto
                 dto.Artists = hasArtist.Artists;
 
                 // var artistItems = _libraryManager.GetArtists(new InternalItemsQuery
-                //{
+                // {
                 //    EnableTotalRecordCount = false,
                 //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
-                //});
+                // });
 
                 // dto.ArtistItems = artistItems.Items
                 //    .Select(i =>
@@ -958,7 +956,7 @@ namespace Emby.Server.Implementations.Dto
                 // Include artists that are not in the database yet, e.g., just added via metadata editor
                 // var foundArtists = artistItems.Items.Select(i => i.Item1.Name).ToList();
                 dto.ArtistItems = hasArtist.Artists
-                    //.Except(foundArtists, new DistinctNameComparer())
+                    // .Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
                         // This should not be necessary but we're seeing some cases of it
@@ -990,10 +988,10 @@ namespace Emby.Server.Implementations.Dto
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
 
                 // var artistItems = _libraryManager.GetAlbumArtists(new InternalItemsQuery
-                //{
+                // {
                 //    EnableTotalRecordCount = false,
                 //    ItemIds = new[] { item.Id.ToString("N", CultureInfo.InvariantCulture) }
-                //});
+                // });
 
                 // dto.AlbumArtists = artistItems.Items
                 //    .Select(i =>
@@ -1008,7 +1006,7 @@ namespace Emby.Server.Implementations.Dto
                 //    .ToList();
 
                 dto.AlbumArtists = hasAlbumArtist.AlbumArtists
-                    //.Except(foundArtists, new DistinctNameComparer())
+                    // .Except(foundArtists, new DistinctNameComparer())
                     .Select(i =>
                     {
                         // This should not be necessary but we're seeing some cases of it
@@ -1035,8 +1033,7 @@ namespace Emby.Server.Implementations.Dto
             }
 
             // Add video info
-            var video = item as Video;
-            if (video != null)
+            if (item is Video video)
             {
                 dto.VideoType = video.VideoType;
                 dto.Video3DFormat = video.Video3DFormat;
@@ -1075,9 +1072,7 @@ namespace Emby.Server.Implementations.Dto
             if (options.ContainsField(ItemFields.MediaStreams))
             {
                 // Add VideoInfo
-                var iHasMediaSources = item as IHasMediaSources;
-
-                if (iHasMediaSources != null)
+                if (item is IHasMediaSources)
                 {
                     MediaStream[] mediaStreams;
 
@@ -1146,7 +1141,7 @@ namespace Emby.Server.Implementations.Dto
                 // TODO maybe remove the if statement entirely
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
-                    episodeSeries = episodeSeries ?? episode.Series;
+                    episodeSeries ??= episode.Series;
                     if (episodeSeries != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, episodeSeries, ImageType.Primary);
@@ -1159,7 +1154,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.SeriesStudio))
                 {
-                    episodeSeries = episodeSeries ?? episode.Series;
+                    episodeSeries ??= episode.Series;
                     if (episodeSeries != null)
                     {
                         dto.SeriesStudio = episodeSeries.Studios.FirstOrDefault();
@@ -1172,7 +1167,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
-                dto.Status = series.Status.HasValue ? series.Status.Value.ToString() : null;
+                dto.Status = series.Status?.ToString();
             }
 
             // Add SeasonInfo
@@ -1185,7 +1180,7 @@ namespace Emby.Server.Implementations.Dto
 
                 if (options.ContainsField(ItemFields.SeriesStudio))
                 {
-                    series = series ?? season.Series;
+                    series ??= season.Series;
                     if (series != null)
                     {
                         dto.SeriesStudio = series.Studios.FirstOrDefault();
@@ -1196,7 +1191,7 @@ namespace Emby.Server.Implementations.Dto
                 // TODO maybe remove the if statement entirely
                 // if (options.ContainsField(ItemFields.SeriesPrimaryImage))
                 {
-                    series = series ?? season.Series;
+                    series ??= season.Series;
                     if (series != null)
                     {
                         dto.SeriesPrimaryImageTag = GetTagAndFillBlurhash(dto, series, ImageType.Primary);
@@ -1283,7 +1278,7 @@ namespace Emby.Server.Implementations.Dto
 
             var parent = currentItem.DisplayParent ?? currentItem.GetOwner() ?? currentItem.GetParent();
 
-            if (parent == null && !(originalItem is UserRootFolder) && !(originalItem is UserView) && !(originalItem is AggregateFolder) && !(originalItem is ICollectionFolder) && !(originalItem is Channel))
+            if (parent == null && originalItem is not UserRootFolder && originalItem is not UserView && originalItem is not AggregateFolder && originalItem is not ICollectionFolder && originalItem is not Channel)
             {
                 parent = _libraryManager.GetCollectionFolders(originalItem).FirstOrDefault();
             }
@@ -1316,9 +1311,12 @@ namespace Emby.Server.Implementations.Dto
 
             var imageTags = dto.ImageTags;
 
-            while (((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0) || parent is Series) &&
-                (parent = parent ?? (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
+            while ((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0)
+                || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0)
+                || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0)
+                || parent is Series)
             {
+                parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
                 if (parent == null)
                 {
                     break;
@@ -1348,7 +1346,7 @@ namespace Emby.Server.Implementations.Dto
                     }
                 }
 
-                if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId == null || parent is Series) && !(parent is ICollectionFolder) && !(parent is UserView))
+                if (thumbLimit > 0 && !(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && (dto.ParentThumbItemId == null || parent is Series) && parent is not ICollectionFolder && parent is not UserView)
                 {
                     var image = allImages.FirstOrDefault(i => i.Type == ImageType.Thumb);
 
@@ -1398,7 +1396,6 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
         public void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
         {
             dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);

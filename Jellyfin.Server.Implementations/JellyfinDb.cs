@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,12 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+
+        public virtual DbSet<ApiKey> ApiKeys { get; set; }
+
+        public virtual DbSet<Device> Devices { get; set; }
+
+        public virtual DbSet<DeviceOptions> DeviceOptions { get; set; }
 
         public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
 
@@ -146,80 +153,10 @@ namespace Jellyfin.Server.Implementations
         {
             modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
-
             modelBuilder.HasDefaultSchema("jellyfin");
 
-            // Collations
-
-            modelBuilder.Entity<User>()
-                .Property(user => user.Username)
-                .UseCollation("NOCASE");
-
-            // Delete behavior
-
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.ProfileImage)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Permissions)
-                .WithOne()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Preferences)
-                .WithOne()
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.AccessSchedules)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.DisplayPreferences)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.ItemDisplayPreferences)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<DisplayPreferences>()
-                .HasMany(d => d.HomeSections)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Indexes
-
-            modelBuilder.Entity<User>()
-                .HasIndex(entity => entity.Username)
-                .IsUnique();
-
-            modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
-                .IsUnique();
-
-            modelBuilder.Entity<CustomItemDisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
-                .IsUnique();
-
-            // Used to get a user's permissions or a specific permission for a user.
-            // Also prevents multiple values being created for a user.
-            // Filtered over non-null user ids for when other entities (groups, API keys) get permissions
-            modelBuilder.Entity<Permission>()
-                .HasIndex(p => new { p.UserId, p.Kind })
-                .HasFilter("[UserId] IS NOT NULL")
-                .IsUnique();
-
-            modelBuilder.Entity<Preference>()
-                .HasIndex(p => new { p.UserId, p.Kind })
-                .HasFilter("[UserId] IS NOT NULL")
-                .IsUnique();
+            // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDb).Assembly);
         }
     }
 }

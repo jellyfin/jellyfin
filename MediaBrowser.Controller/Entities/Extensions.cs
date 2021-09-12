@@ -15,6 +15,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the trailer URL.
         /// </summary>
+        /// <param name="item">Media item.</param>
+        /// <param name="url">Trailer URL.</param>
         public static void AddTrailerUrl(this BaseItem item, string url)
         {
             if (string.IsNullOrEmpty(url))

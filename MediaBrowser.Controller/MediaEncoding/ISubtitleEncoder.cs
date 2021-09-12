@@ -15,6 +15,14 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// Gets the subtitles.
         /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="mediaSourceId">Media source.</param>
+        /// <param name="subtitleStreamIndex">Subtitle stream to use.</param>
+        /// <param name="outputFormat">Output format to use.</param>
+        /// <param name="startTimeTicks">Start time.</param>
+        /// <param name="endTimeTicks">End time.</param>
+        /// <param name="preserveOriginalTimestamps">Option to preserve original timestamps.</param>
+        /// <param name="cancellationToken">The cancellation token for the operation.</param>
         /// <returns>Task{Stream}.</returns>
         Task<Stream> GetSubtitles(
             BaseItem item,

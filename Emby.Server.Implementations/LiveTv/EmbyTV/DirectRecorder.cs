@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -33,7 +31,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             return targetFile;
         }
 
-        public Task Record(IDirectStreamProvider directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        public Task Record(IDirectStreamProvider? directStreamProvider, MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
             if (directStreamProvider != null)
             {
@@ -45,10 +43,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private async Task RecordFromDirectStreamProvider(IDirectStreamProvider directStreamProvider, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
+            Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
             {
                 onStarted();
 
@@ -71,10 +69,10 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             _logger.LogInformation("Opened recording stream from tuner provider");
 
-            Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
+            Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, AsyncFile.UseAsyncIO);
 
             onStarted();
 

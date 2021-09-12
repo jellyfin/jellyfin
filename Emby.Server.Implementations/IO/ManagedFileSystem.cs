@@ -5,13 +5,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
 using Microsoft.Extensions.Logging;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 
 namespace Emby.Server.Implementations.IO
 {
@@ -24,7 +21,7 @@ namespace Emby.Server.Implementations.IO
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
-        private static readonly bool _isEnvironmentCaseInsensitive = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
 
         public ManagedFileSystem(
             ILogger<ManagedFileSystem> logger,
@@ -249,7 +246,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         try
                         {
-                            using (Stream thisFileStream = File.OpenRead(fileInfo.FullName))
+                            using (Stream thisFileStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
                             {
                                 result.Length = thisFileStream.Length;
                             }
@@ -402,7 +399,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -424,9 +421,9 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
+        public virtual void SetAttributes(string path, bool isHidden, bool readOnly)
         {
-            if (OperatingSystem.Id != OperatingSystemId.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -438,14 +435,14 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            if (info.IsReadOnly == isReadOnly && info.IsHidden == isHidden)
+            if (info.IsReadOnly == readOnly && info.IsHidden == isHidden)
             {
                 return;
             }
 
             var attributes = File.GetAttributes(path);
 
-            if (isReadOnly)
+            if (readOnly)
             {
                 attributes = attributes | FileAttributes.ReadOnly;
             }

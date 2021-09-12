@@ -521,7 +521,7 @@ namespace Emby.Server.Implementations.Library
 
             // TODO: @bond Fix
             var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
-            _logger.LogInformation("Live stream opened: " + json);
+            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             if (!request.UserId.Equals(Guid.Empty))
@@ -638,7 +638,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    await using FileStream jsonStream = File.OpenRead(cacheFilePath);
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                     mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
