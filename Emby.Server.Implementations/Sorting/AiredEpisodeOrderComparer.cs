@@ -154,7 +154,7 @@ namespace Emby.Server.Implementations.Sorting
                 }
             }
 
-            return compare_val;
+            return comparisonResult;
         }
 
         /// <summary>
