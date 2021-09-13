@@ -151,7 +151,6 @@ namespace Emby.Server.Implementations.Sorting
             if (comparisonResult == 0 && x.PremiereDate.HasValue && y.PremiereDate.HasValue)
             {
                 comparisonResult = DateTime.Compare(x.PremiereDate.Value, y.PremiereDate.Value);
-                }
             }
 
             return comparisonResult;
