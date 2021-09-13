@@ -146,12 +146,11 @@ namespace Emby.Server.Implementations.Sorting
         {
             var xValue = ((x.ParentIndexNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
             var yValue = ((y.ParentIndexNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
-            var compare_val = xValue.CompareTo(yValue);
-            if (compare_val == 0)
+            var comparisonResult = xValue.CompareTo(yValue);
+            // If equal, compare premiere dates
+            if (comparisonResult == 0 && x.PremiereDate.HasValue && y.PremiereDate.HasValue)
             {
-                if (x.PremiereDate.HasValue & y.PremiereDate.HasValue)
-                {
-                    compare_val = DateTime.Compare(x.PremiereDate.Value, y.PremiereDate.Value);
+                comparisonResult = DateTime.Compare(x.PremiereDate.Value, y.PremiereDate.Value);
                 }
             }
 
