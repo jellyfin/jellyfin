@@ -4,14 +4,25 @@
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup>
     <Authors>Jellyfin Contributors</Authors>
+    <PackageId>Jellyfin.Extensions</PackageId>
+    <VersionPrefix>10.8.0</VersionPrefix>
     <RepositoryUrl>https://github.com/jellyfin/jellyfin</RepositoryUrl>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Stability)'=='Unstable'">
+    <!-- Include all symbols in the main nupkg until Azure Artifact Feed starts supporting ingesting NuGet symbol packages. -->
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Include="../../SharedVersion.cs" />
   </ItemGroup>
