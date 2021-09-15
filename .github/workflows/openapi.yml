@@ -17,7 +17,7 @@ jobs:
         with:
           dotnet-version: '5.0.x'
       - name: Generate openapi.json
-        run: dotnet test -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
         uses: actions/upload-artifact@v2
         with:
@@ -40,7 +40,7 @@ jobs:
         with:
           dotnet-version: '5.0.x'
       - name: Generate openapi.json
-        run: dotnet test -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
+        run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
         uses: actions/upload-artifact@v2
         with:
