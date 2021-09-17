@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -38,6 +40,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
         public virtual bool IsSupported => true;
 
         protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
+
         public abstract string Type { get; }
 
         public async Task<List<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
@@ -89,7 +92,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         try
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
-                            await using var writeStream = File.OpenWrite(channelCacheFile);
+                            await using var writeStream = AsyncFile.OpenWrite(channelCacheFile);
                             await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken).ConfigureAwait(false);
                         }
                         catch (IOException)
@@ -105,7 +108,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     {
                         try
                         {
-                            await using var readStream = File.OpenRead(channelCacheFile);
+                            await using var readStream = AsyncFile.OpenRead(channelCacheFile);
                             var channels = await JsonSerializer.DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
                                 .ConfigureAwait(false);
                             list.AddRange(channels);
@@ -155,7 +158,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return new List<MediaSourceInfo>();
         }
 
-        protected abstract Task<ILiveStream> GetChannelStream(TunerHostInfo tuner, ChannelInfo channel, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
+        protected abstract Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken);
 
         public async Task<ILiveStream> GetChannelStream(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {

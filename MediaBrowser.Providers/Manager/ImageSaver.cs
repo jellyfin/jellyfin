@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(mimeType));
             }
 
-            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && !(item is Audio);
+            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && item is not Audio;
 
             if (type != ImageType.Primary && item is Episode)
             {
@@ -172,7 +172,9 @@ namespace MediaBrowser.Providers.Manager
             SetImagePath(item, type, imageIndex, savedPaths[0]);
 
             // Delete the current path
-            if (currentImageIsLocalFile && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase))
+            if (currentImageIsLocalFile
+                && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase)
+                && (saveLocally || currentImagePath.Contains(_config.ApplicationPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
             {
                 var currentPath = currentImagePath;
 
@@ -262,7 +264,7 @@ namespace MediaBrowser.Providers.Manager
                 _fileSystem.SetAttributes(path, false, false);
 
                 // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
                 {
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }

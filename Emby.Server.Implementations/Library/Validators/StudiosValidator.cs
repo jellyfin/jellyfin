@@ -87,12 +87,15 @@ namespace Emby.Server.Implementations.Library.Validators
 
             foreach (var item in deadEntities)
             {
-                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             progress.Report(100);

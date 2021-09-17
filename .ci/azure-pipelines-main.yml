@@ -1,7 +1,7 @@
 parameters:
   LinuxImage: 'ubuntu-latest'
   RestoreBuildProjects: 'Jellyfin.Server/Jellyfin.Server.csproj'
-  DotNetSdkVersion: 5.0.103
+  DotNetSdkVersion: 5.0.302
 
 jobs:
   - job: Build
@@ -91,3 +91,10 @@ jobs:
         inputs:
           targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/MediaBrowser.Common.dll'
           artifactName: 'Jellyfin.Common'
+
+      - task: PublishPipelineArtifact@1
+          displayName: 'Publish Artifact Extensions'
+          condition: and(succeeded(), eq(variables['BuildConfiguration'], 'Release'))
+          inputs:
+            targetPath: '$(build.ArtifactStagingDirectory)/Jellyfin.Server/Jellyfin.Extensions.dll'
+            artifactName: 'Jellyfin.Extensions'

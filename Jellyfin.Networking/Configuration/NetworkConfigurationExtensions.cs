@@ -1,4 +1,3 @@
-using Jellyfin.Networking.Configuration;
 using MediaBrowser.Common.Configuration;
 
 namespace Jellyfin.Networking.Configuration

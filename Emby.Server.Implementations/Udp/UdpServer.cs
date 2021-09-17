@@ -18,16 +18,16 @@ namespace Emby.Server.Implementations.Udp
     public sealed class UdpServer : IDisposable
     {
         /// <summary>
+        /// Address Override Configuration Key.
+        /// </summary>
+        public const string AddressOverrideConfigKey = "PublishedServerUrl";
+
+        /// <summary>
         /// The _logger.
         /// </summary>
         private readonly ILogger _logger;
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
-
-        /// <summary>
-        /// Address Override Configuration Key.
-        /// </summary>
-        public const string AddressOverrideConfigKey = "PublishedServerUrl";
 
         private Socket _udpSocket;
         private IPEndPoint _endpoint;
@@ -38,54 +38,58 @@ namespace Emby.Server.Implementations.Udp
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServer" /> class.
         /// </summary>
-        public UdpServer(ILogger logger, IServerApplicationHost appHost, IConfiguration configuration)
+        /// <param name="logger">The logger.</param>
+        /// <param name="appHost">The application host.</param>
+        /// <param name="configuration">The configuration manager.</param>
+        /// <param name="port">The port.</param>
+        public UdpServer(
+            ILogger logger,
+            IServerApplicationHost appHost,
+            IConfiguration configuration,
+            int port)
         {
             _logger = logger;
             _appHost = appHost;
             _config = configuration;
+
+            _endpoint = new IPEndPoint(IPAddress.Any, port);
+
+            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         }
 
         private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
         {
-            string localUrl = !string.IsNullOrEmpty(_config[AddressOverrideConfigKey])
-                ? _config[AddressOverrideConfigKey]
-                : _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
-
-            if (!string.IsNullOrEmpty(localUrl))
+            string? localUrl = _config[AddressOverrideConfigKey];
+            if (string.IsNullOrEmpty(localUrl))
             {
-                var response = new ServerDiscoveryInfo
-                {
-                    Address = localUrl,
-                    Id = _appHost.SystemId,
-                    Name = _appHost.FriendlyName
-                };
-
-                try
-                {
-                    await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint).ConfigureAwait(false);
-                }
-                catch (SocketException ex)
-                {
-                    _logger.LogError(ex, "Error sending response message");
-                }
+                localUrl = _appHost.GetSmartApiUrl(((IPEndPoint)endpoint).Address);
             }
-            else
+
+            if (string.IsNullOrEmpty(localUrl))
             {
                 _logger.LogWarning("Unable to respond to udp request because the local ip address could not be determined.");
+                return;
+            }
+
+            var response = new ServerDiscoveryInfo(localUrl, _appHost.SystemId, _appHost.FriendlyName);
+
+            try
+            {
+                await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint).ConfigureAwait(false);
+            }
+            catch (SocketException ex)
+            {
+                _logger.LogError(ex, "Error sending response message");
             }
         }
 
         /// <summary>
         /// Starts the specified port.
         /// </summary>
-        /// <param name="port">The port.</param>
         /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
-        public void Start(int port, CancellationToken cancellationToken)
+        public void Start(CancellationToken cancellationToken)
         {
-            _endpoint = new IPEndPoint(IPAddress.Any, port);
-
-            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             _udpSocket.Bind(_endpoint);
 
             _ = Task.Run(async () => await BeginReceiveAsync(cancellationToken).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
@@ -93,9 +97,9 @@ namespace Emby.Server.Implementations.Udp
 
         private async Task BeginReceiveAsync(CancellationToken cancellationToken)
         {
+            var infiniteTask = Task.Delay(-1, cancellationToken);
             while (!cancellationToken.IsCancellationRequested)
             {
-                var infiniteTask = Task.Delay(-1, cancellationToken);
                 try
                 {
                     var task = _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint);

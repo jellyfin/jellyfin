@@ -12,7 +12,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
@@ -65,7 +64,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var episodeResult = await _tmdbClientManager
-                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, null, null, cancellationToken)
+                .GetEpisodeAsync(seriesTmdbId, seasonNumber.Value, episodeNumber.Value, series.DisplayOrder, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             var stills = episodeResult?.Images?.Stills;
@@ -92,7 +91,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 };
             }
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

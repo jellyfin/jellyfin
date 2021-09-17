@@ -24,8 +24,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
 using Priority_Queue;
@@ -60,8 +60,8 @@ namespace MediaBrowser.Providers.Manager
 
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
         private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
-        private IEnumerable<IMetadataSaver> _savers;
-        private IExternalId[] _externalIds;
+        private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
+        private IExternalId[] _externalIds = Array.Empty<IExternalId>();
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers
-                .Where(i => !(i is IConfigurableProvider configurable) || configurable.IsEnabled)
+                .Where(i => i is not IConfigurableProvider configurable || configurable.IsEnabled)
                 .ToArray();
         }
 
@@ -168,7 +168,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new HttpRequestException("Invalid image received.", null, response.StatusCode);
             }
 
-            var contentType = response.Content.Headers.ContentType.MediaType;
+            var contentType = response.Content.Headers.ContentType?.MediaType;
 
             // Workaround for tvheadend channel icons
             // TODO: Isolate this hack into the tvh plugin
@@ -210,7 +210,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
+            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
@@ -236,14 +236,7 @@ namespace MediaBrowser.Providers.Manager
 
             var preferredLanguage = item.GetPreferredMetadataLanguage();
 
-            var languages = new List<string>();
-            if (!query.IncludeAllLanguages && !string.IsNullOrWhiteSpace(preferredLanguage))
-            {
-                languages.Add(preferredLanguage);
-            }
-
-            // TODO include [query.IncludeAllLanguages] as an argument to the providers
-            var tasks = providers.Select(i => GetImages(item, i, languages, cancellationToken, query.ImageType));
+            var tasks = providers.Select(i => GetImages(item, i, preferredLanguage, query.IncludeAllLanguages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -255,17 +248,21 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
-        /// <param name="preferredLanguages">The preferred languages.</param>
+        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="includeAllLanguages">Whether to include all languages in results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
         private async Task<IEnumerable<RemoteImageInfo>> GetImages(
             BaseItem item,
             IRemoteImageProvider provider,
-            IReadOnlyCollection<string> preferredLanguages,
+            string preferredLanguage,
+            bool includeAllLanguages,
             CancellationToken cancellationToken,
             ImageType? type = null)
         {
+            bool hasPreferredLanguage = !string.IsNullOrWhiteSpace(preferredLanguage);
+
             try
             {
                 var result = await provider.GetImages(item, cancellationToken).ConfigureAwait(false);
@@ -275,14 +272,17 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                if (preferredLanguages.Count > 0)
+                if (!includeAllLanguages && hasPreferredLanguage)
                 {
-                    result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase) ||
+                    // Filter out languages that do not match the preferred languages.
+                    //
+                    // TODO: should exception case of "en" (English) eventually be removed?
+                    result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                               string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
                                                string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
                 }
 
-                return result;
+                return result.OrderByLanguageDescending(preferredLanguage);
             }
             catch (OperationCanceledException)
             {
@@ -324,7 +324,7 @@ namespace MediaBrowser.Providers.Manager
                 .OrderBy(i =>
                 {
                     // See if there's a user-defined order
-                    if (!(i is ILocalImageProvider))
+                    if (i is not ILocalImageProvider)
                     {
                         var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
                         var index = Array.IndexOf(fetcherOrder, i.Name);
@@ -391,7 +391,7 @@ namespace MediaBrowser.Providers.Manager
             if (!includeDisabled)
             {
                 // If locked only allow local providers
-                if (item.IsLocked && !(provider is ILocalMetadataProvider) && !(provider is IForcedProvider))
+                if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
                 {
                     return false;
                 }
@@ -432,7 +432,7 @@ namespace MediaBrowser.Providers.Manager
             if (!includeDisabled)
             {
                 // If locked only allow local providers
-                if (item.IsLocked && !(provider is ILocalImageProvider))
+                if (item.IsLocked && provider is not ILocalImageProvider)
                 {
                     if (refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)
                     {
@@ -467,7 +467,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>System.Int32.</returns>
         private int GetOrder(IImageProvider provider)
         {
-            if (!(provider is IHasOrder hasOrder))
+            if (provider is not IHasOrder hasOrder)
             {
                 return 0;
             }
@@ -746,7 +746,7 @@ namespace MediaBrowser.Providers.Manager
                             {
                                 // Manual edit occurred
                                 // Even if save local is off, save locally anyway if the metadata file already exists
-                                if (!(saver is IMetadataFileSaver fileSaver) || !File.Exists(fileSaver.GetSavePath(item)))
+                                if (saver is not IMetadataFileSaver fileSaver || !File.Exists(fileSaver.GetSavePath(item)))
                                 {
                                     return false;
                                 }
@@ -1022,26 +1022,26 @@ namespace MediaBrowser.Providers.Manager
             // TODO: Need to hunt down the conditions for this happening
             _activeRefreshes.AddOrUpdate(
                 id,
-                (_) => throw new Exception(
+                (_) => throw new InvalidOperationException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Cannot update refresh progress of item '{0}' ({1}) because a refresh for this item is not running",
                         item.GetType().Name,
                         item.Id.ToString("N", CultureInfo.InvariantCulture))),
-                (_, __) => progress);
+                (_, _) => progress);
 
             RefreshProgress?.Invoke(this, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(item, progress)));
         }
 
         /// <inheritdoc/>
-        public void QueueRefresh(Guid id, MetadataRefreshOptions options, RefreshPriority priority)
+        public void QueueRefresh(Guid itemId, MetadataRefreshOptions options, RefreshPriority priority)
         {
             if (_disposed)
             {
                 return;
             }
 
-            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options), (int)priority);
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(itemId, options), (int)priority);
 
             lock (_refreshQueueLock)
             {
@@ -1074,17 +1074,16 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     var item = libraryManager.GetItemById(refreshItem.Item1);
-                    if (item != null)
+                    if (item == null)
                     {
-                        // Try to throttle this a little bit.
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-
-                        var task = item is MusicArtist artist
-                            ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
-                            : RefreshItem(item, refreshItem.Item2, cancellationToken);
-
-                        await task.ConfigureAwait(false);
+                        continue;
                     }
+
+                    var task = item is MusicArtist artist
+                        ? RefreshArtist(artist, refreshItem.Item2, cancellationToken)
+                        : RefreshItem(item, refreshItem.Item2, cancellationToken);
+
+                    await task.ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -1113,7 +1112,7 @@ namespace MediaBrowser.Providers.Manager
                     await RefreshCollectionFolderChildren(options, collectionFolder, cancellationToken).ConfigureAwait(false);
                     break;
                 case Folder folder:
-                    await folder.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                    await folder.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
                     break;
             }
         }
@@ -1124,7 +1123,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 await child.RefreshMetadata(options, cancellationToken).ConfigureAwait(false);
 
-                await child.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options).ConfigureAwait(false);
+                await child.ValidateChildren(new SimpleProgress<double>(), options, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -1146,7 +1145,7 @@ namespace MediaBrowser.Providers.Manager
                 .Select(i => i.MusicArtist)
                 .Where(i => i != null);
 
-            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), cancellationToken, options, true));
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new SimpleProgress<double>(), options, true, cancellationToken));
 
             await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
 

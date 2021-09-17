@@ -1,3 +1,5 @@
+#nullable disable
+
 using System.Collections.Generic;
 using System.Threading;
 using MediaBrowser.Controller.Entities;
@@ -16,7 +18,6 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="key">The key.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         void SaveUserData(long userId, string key, UserItemData userData, CancellationToken cancellationToken);
 
         /// <summary>
@@ -38,17 +39,16 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Return all user data associated with the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <returns>The list of user item data.</returns>
         List<UserItemData> GetAllUserData(long userId);
 
         /// <summary>
         /// Save all user data associated with the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="userData"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userData">The user item data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken);
     }
 }

@@ -4,6 +4,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Jellyfin.Api.Auth.DefaultAuthorizationPolicy;
 using Jellyfin.Api.Constants;
+using Jellyfin.Server.Implementations.Security;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
@@ -48,6 +49,62 @@ namespace Jellyfin.Api.Tests.Auth.DefaultAuthorizationPolicy
 
             await _sut.HandleAsync(context);
             Assert.True(context.HasSucceeded);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetParts_ValidAuthHeader_Success_Data))]
+        public void GetParts_ValidAuthHeader_Success(string input, Dictionary<string, string> parts)
+        {
+            var dict = AuthorizationContext.GetParts(input);
+            foreach (var (key, value) in parts)
+            {
+                Assert.Equal(dict[key], value);
+            }
+        }
+
+        private static TheoryData<string, Dictionary<string, string>> GetParts_ValidAuthHeader_Success_Data()
+        {
+            var data = new TheoryData<string, Dictionary<string, string>>();
+
+            data.Add(
+                "x=\"123,123\",y=\"123\"",
+                new Dictionary<string, string>
+                {
+                    { "x", "123,123" },
+                    { "y", "123" }
+                });
+
+            data.Add(
+                "x=\"123,123\",         y=\"123\",z=\"'hi'\"",
+                new Dictionary<string, string>
+                {
+                    { "x", "123,123" },
+                    { "y", "123" },
+                    { "z", "'hi'" }
+                });
+
+            data.Add(
+                "x=\"ab\"",
+                new Dictionary<string, string>
+                {
+                    { "x", "ab" }
+                });
+
+            data.Add(
+                "param=Hörbücher",
+                new Dictionary<string, string>
+                {
+                    { "param", "Hörbücher" }
+                });
+
+            data.Add(
+                "param=%22%Hörbücher",
+                new Dictionary<string, string>
+                {
+                    { "param", "\"%Hörbücher" }
+                });
+
+            return data;
         }
     }
 }

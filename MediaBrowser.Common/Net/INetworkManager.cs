@@ -1,10 +1,8 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
-using MediaBrowser.Common.Net;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Common.Net

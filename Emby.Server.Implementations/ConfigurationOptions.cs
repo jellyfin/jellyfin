@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Emby.Server.Implementations.HttpServer;
 using static MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 
 namespace Emby.Server.Implementations

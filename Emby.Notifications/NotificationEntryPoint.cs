@@ -77,7 +77,6 @@ namespace Emby.Notifications
         {
             _libraryManager.ItemAdded += OnLibraryManagerItemAdded;
             _appHost.HasPendingRestartChanged += OnAppHostHasPendingRestartChanged;
-            _appHost.HasUpdateAvailableChanged += OnAppHostHasUpdateAvailableChanged;
             _activityManager.EntryCreated += OnActivityManagerEntryCreated;
 
             return Task.CompletedTask;
@@ -130,25 +129,6 @@ namespace Emby.Notifications
         private NotificationOptions GetOptions()
         {
             return _config.GetConfiguration<NotificationOptions>("notifications");
-        }
-
-        private async void OnAppHostHasUpdateAvailableChanged(object? sender, EventArgs e)
-        {
-            if (!_appHost.HasUpdateAvailable)
-            {
-                return;
-            }
-
-            var type = NotificationType.ApplicationUpdateAvailable.ToString();
-
-            var notification = new NotificationRequest
-            {
-                Description = "Please see jellyfin.org for details.",
-                NotificationType = type,
-                Name = _localization.GetLocalizedString("NewVersionIsAvailable")
-            };
-
-            await SendNotification(notification, null).ConfigureAwait(false);
         }
 
         private void OnLibraryManagerItemAdded(object? sender, ItemChangeEventArgs e)
@@ -325,7 +305,6 @@ namespace Emby.Notifications
 
             _libraryManager.ItemAdded -= OnLibraryManagerItemAdded;
             _appHost.HasPendingRestartChanged -= OnAppHostHasPendingRestartChanged;
-            _appHost.HasUpdateAvailableChanged -= OnAppHostHasUpdateAvailableChanged;
             _activityManager.EntryCreated -= OnActivityManagerEntryCreated;
 
             _disposed = true;

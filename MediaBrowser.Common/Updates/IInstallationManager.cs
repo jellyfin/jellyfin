@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -27,7 +25,7 @@ namespace MediaBrowser.Common.Updates
         /// <param name="filterIncompatible">Filter out incompatible plugins.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
-        Task<IList<PackageInfo>> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default);
+        Task<PackageInfo[]> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all available packages that are supported by this version.
@@ -47,7 +45,7 @@ namespace MediaBrowser.Common.Updates
         IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? id = default,
+            Guid id = default,
             Version? specificVersion = null);
 
         /// <summary>
@@ -62,7 +60,7 @@ namespace MediaBrowser.Common.Updates
         IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? id = default,
+            Guid id = default,
             Version? minVersion = null,
             Version? specificVersion = null);
 

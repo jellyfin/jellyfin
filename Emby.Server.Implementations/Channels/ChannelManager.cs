@@ -1,16 +1,17 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -101,7 +102,7 @@ namespace Emby.Server.Implementations.Channels
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
-            return !(channel is IDisableMediaSourceDisplay);
+            return channel is not IDisableMediaSourceDisplay;
         }
 
         /// <inheritdoc />
@@ -814,7 +815,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    await using FileStream jsonStream = File.OpenRead(cachePath);
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                     var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                     if (cachedResult != null)
                     {
@@ -837,7 +838,7 @@ namespace Emby.Server.Implementations.Channels
                 {
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        await using FileStream jsonStream = File.OpenRead(cachePath);
+                        await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                         var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                         if (cachedResult != null)
                         {
@@ -879,7 +880,7 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
-        private async Task CacheResponse(object result, string path)
+        private async Task CacheResponse(ChannelItemResult result, string path)
         {
             try
             {
@@ -1078,11 +1079,11 @@ namespace Emby.Server.Implementations.Channels
 
             // was used for status
             // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
-            //{
+            // {
             //    item.ExternalEtag = info.Etag;
             //    forceUpdate = true;
             //    _logger.LogDebug("Forcing update due to ExternalEtag {0}", item.Name);
-            //}
+            // }
 
             if (!internalChannelId.Equals(item.ChannelId))
             {

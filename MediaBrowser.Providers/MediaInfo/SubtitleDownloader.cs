@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -172,9 +172,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 SubtitleFetcherOrder = subtitleFetcherOrder
             };
 
-            var episode = video as Episode;
-
-            if (episode != null)
+            if (video is Episode episode)
             {
                 request.IndexNumberEnd = episode.IndexNumberEnd;
                 request.SeriesName = episode.SeriesName;

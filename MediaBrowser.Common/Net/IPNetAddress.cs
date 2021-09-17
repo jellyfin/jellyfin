@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -38,7 +37,7 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// IP6Loopback address host.
         /// </summary>
-        public static readonly IPNetAddress IP6Loopback = IPNetAddress.Parse("::1");
+        public static readonly IPNetAddress IP6Loopback = new IPNetAddress(IPAddress.IPv6Loopback);
 
         /// <summary>
         /// Object's IP address.
@@ -113,7 +112,7 @@ namespace MediaBrowser.Common.Net
                 }
 
                 // Is it a network?
-                string[] tokens = addr.Split("/");
+                string[] tokens = addr.Split('/');
 
                 if (tokens.Length == 2)
                 {
@@ -171,8 +170,8 @@ namespace MediaBrowser.Common.Net
                 address = address.MapToIPv4();
             }
 
-            var altAddress = NetworkAddressOf(address, PrefixLength);
-            return NetworkAddress.Address.Equals(altAddress.Address) && NetworkAddress.PrefixLength >= altAddress.PrefixLength;
+            var (altAddress, altPrefix) = NetworkAddressOf(address, PrefixLength);
+            return NetworkAddress.Address.Equals(altAddress) && NetworkAddress.PrefixLength >= altPrefix;
         }
 
         /// <inheritdoc/>
@@ -196,8 +195,8 @@ namespace MediaBrowser.Common.Net
                     return NetworkAddress.PrefixLength <= netaddrObj.PrefixLength;
                 }
 
-                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength);
-                return NetworkAddress.Address.Equals(altAddress.Address);
+                var altAddress = NetworkAddressOf(netaddrObj.Address, PrefixLength).address;
+                return NetworkAddress.Address.Equals(altAddress);
             }
 
             return false;
@@ -270,8 +269,8 @@ namespace MediaBrowser.Common.Net
         /// <inheritdoc/>
         protected override IPObject CalculateNetworkAddress()
         {
-            var value = NetworkAddressOf(_address, PrefixLength);
-            return new IPNetAddress(value.Address, value.PrefixLength);
+            var (address, prefixLength) = NetworkAddressOf(_address, PrefixLength);
+            return new IPNetAddress(address, prefixLength);
         }
     }
 }

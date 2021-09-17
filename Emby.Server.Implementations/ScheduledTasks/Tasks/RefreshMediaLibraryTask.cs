@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {

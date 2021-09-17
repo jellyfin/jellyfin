@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -366,6 +368,42 @@ namespace Emby.Dlna.PlayTo
             }
 
             RestartTimer(true);
+        }
+
+        /*
+         * SetNextAvTransport is used to specify to the DLNA device what is the next track to play.
+         * Without that information, the next track command on the device does not work.
+         */
+        public async Task SetNextAvTransport(string url, string header, string metaData, CancellationToken cancellationToken = default)
+        {
+            var avCommands = await GetAVProtocolAsync(cancellationToken).ConfigureAwait(false);
+
+            url = url.Replace("&", "&amp;", StringComparison.Ordinal);
+
+            _logger.LogDebug("{PropertyName} - SetNextAvTransport Uri: {Url} DlnaHeaders: {Header}", Properties.Name, url, header);
+
+            var command = avCommands.ServiceActions.FirstOrDefault(c => string.Equals(c.Name, "SetNextAVTransportURI", StringComparison.OrdinalIgnoreCase));
+            if (command == null)
+            {
+                return;
+            }
+
+            var dictionary = new Dictionary<string, string>
+            {
+                { "NextURI", url },
+                { "NextURIMetaData", CreateDidlMeta(metaData) }
+            };
+
+            var service = GetAvTransportService();
+
+            if (service == null)
+            {
+                throw new InvalidOperationException("Unable to find service");
+            }
+
+            var post = avCommands.BuildPost(command, service.ServiceType, url, dictionary);
+            await new SsdpHttpClient(_httpClientFactory).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header: header, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         private static string CreateDidlMeta(string value)
@@ -1222,10 +1260,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackStart?.Invoke(this, new PlaybackStartEventArgs(mediaInfo));
         }
 
         private void OnPlaybackProgress(UBaseObject mediaInfo)
@@ -1235,27 +1270,17 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackProgress?.Invoke(this, new PlaybackProgressEventArgs(mediaInfo));
         }
 
         private void OnPlaybackStop(UBaseObject mediaInfo)
         {
-            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs
-            {
-                MediaInfo = mediaInfo
-            });
+            PlaybackStopped?.Invoke(this, new PlaybackStoppedEventArgs(mediaInfo));
         }
 
         private void OnMediaChanged(UBaseObject old, UBaseObject newMedia)
         {
-            MediaChanged?.Invoke(this, new MediaChangedEventArgs
-            {
-                OldMediaInfo = old,
-                NewMediaInfo = newMedia
-            });
+            MediaChanged?.Invoke(this, new MediaChangedEventArgs(old, newMedia));
         }
 
         /// <inheritdoc />

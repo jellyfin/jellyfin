@@ -11,7 +11,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.System;
 using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -59,7 +58,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             _localImageFileMetadata = new FileSystemMetadata()
             {
                 Exists = true,
-                FullName = MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows ?
+                FullName = OperatingSystem.IsWindows() ?
                     "C:\\media\\movies\\Justice League (2017).jpg"
                     : "/media/movies/Justice League (2017).jpg"
             };
@@ -156,7 +155,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Equal("Justice League Collection", item.CollectionName);
 
             // Images
-            Assert.Equal(6, result.RemoteImages.Count);
+            Assert.Equal(7, result.RemoteImages.Count);
 
             var posters = result.RemoteImages.Where(x => x.type == ImageType.Primary).ToList();
             Assert.Single(posters);
@@ -182,6 +181,10 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             Assert.Single(discArt);
             Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviedisc/justice-league-5a3af26360617.png", discArt[0].url);
 
+            var backdrop = result.RemoteImages.Where(x => x.type == ImageType.Backdrop).ToList();
+            Assert.Single(backdrop);
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5793f518c6d6e.jpg", backdrop[0].url);
+
             // Local Image - contains only one item depending on operating system
             Assert.Single(result.Images);
             Assert.Equal(_localImageFileMetadata.Name, result.Images[0].FileInfo.Name);
@@ -201,6 +204,20 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var item = (Movie)result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
+        }
+
+        [Fact]
+        public void Parse_GivenFileWithFanartTag_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Fanart.nfo", CancellationToken.None);
+
+            Assert.Single(result.RemoteImages.Where(x => x.type == ImageType.Backdrop));
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg", result.RemoteImages.First(x => x.type == ImageType.Backdrop).url);
         }
 
         [Fact]

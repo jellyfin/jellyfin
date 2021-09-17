@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.Data
             });
         }
 
-        public static Guid ReadGuidFromBlob(this IResultSetValue result)
+        public static Guid ReadGuidFromBlob(this ResultSetValue result)
         {
             return new Guid(result.ToBlob());
         }
@@ -85,7 +86,7 @@ namespace Emby.Server.Implementations.Data
         private static string GetDateTimeKindFormat(DateTimeKind kind)
             => (kind == DateTimeKind.Utc) ? DatetimeFormatUtc : DatetimeFormatLocal;
 
-        public static DateTime ReadDateTime(this IResultSetValue result)
+        public static DateTime ReadDateTime(this ResultSetValue result)
         {
             var dateText = result.ToString();
 
@@ -96,49 +97,139 @@ namespace Emby.Server.Implementations.Data
                 DateTimeStyles.None).ToUniversalTime();
         }
 
-        public static DateTime? TryReadDateTime(this IResultSetValue result)
+        public static bool TryReadDateTime(this IReadOnlyList<ResultSetValue> reader, int index, out DateTime result)
         {
-            var dateText = result.ToString();
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            var dateText = item.ToString();
 
             if (DateTime.TryParseExact(dateText, _datetimeFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out var dateTimeResult))
             {
-                return dateTimeResult.ToUniversalTime();
+                result = dateTimeResult.ToUniversalTime();
+                return true;
             }
 
-            return null;
+            result = default;
+            return false;
         }
 
-        public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetGuid(this IReadOnlyList<ResultSetValue> reader, int index, out Guid result)
         {
-            return result[index].SQLiteType == SQLiteType.Null;
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ReadGuidFromBlob();
+            return true;
         }
 
-        public static string GetString(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool IsDbNull(this ResultSetValue result)
+        {
+            return result.SQLiteType == SQLiteType.Null;
+        }
+
+        public static string GetString(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ToString();
         }
 
-        public static bool GetBoolean(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetString(this IReadOnlyList<ResultSetValue> reader, int index, out string result)
+        {
+            result = null;
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                return false;
+            }
+
+            result = item.ToString();
+            return true;
+        }
+
+        public static bool GetBoolean(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ToBool();
         }
 
-        public static int GetInt32(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetBoolean(this IReadOnlyList<ResultSetValue> reader, int index, out bool result)
         {
-            return result[index].ToInt();
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToBool();
+            return true;
         }
 
-        public static long GetInt64(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetInt32(this IReadOnlyList<ResultSetValue> reader, int index, out int result)
+        {
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToInt();
+            return true;
+        }
+
+        public static long GetInt64(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ToInt64();
         }
 
-        public static float GetFloat(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetInt64(this IReadOnlyList<ResultSetValue> reader, int index, out long result)
         {
-            return result[index].ToFloat();
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToInt64();
+            return true;
         }
 
-        public static Guid GetGuid(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetSingle(this IReadOnlyList<ResultSetValue> reader, int index, out float result)
+        {
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToFloat();
+            return true;
+        }
+
+        public static bool TryGetDouble(this IReadOnlyList<ResultSetValue> reader, int index, out double result)
+        {
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToDouble();
+            return true;
+        }
+
+        public static Guid GetGuid(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ReadGuidFromBlob();
         }
@@ -350,7 +441,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(this IStatement statement)
+        public static IEnumerable<IReadOnlyList<ResultSetValue>> ExecuteQuery(this IStatement statement)
         {
             while (statement.MoveNext())
             {

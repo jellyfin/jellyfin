@@ -137,7 +137,7 @@ namespace Emby.Naming.Common
 
             CleanStrings = new[]
             {
-                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
+                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
                 @"(\[.*\])"
             };
 
@@ -277,14 +277,14 @@ namespace Emby.Naming.Common
                     IsNamed = true
                 },
 
-                new EpisodeExpression("[\\\\/\\._ \\[\\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([^\\\\/]*)$")
+                new EpisodeExpression(@"[\\\/\._ \[\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\.[1-9])(?![0-9]))?)([^\\\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
 
                 // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
                 // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                new EpisodeExpression(@".*[\\\/]?.*?(\[.*?\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
                 {
                     IsNamed = true
                 },
@@ -304,6 +304,12 @@ namespace Emby.Naming.Common
                 },
 
                 // *** End Kodi Standard Naming
+
+                // "Episode 16", "Episode 16 - Title"
+                new EpisodeExpression(@"[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))?[^\\\/]*$")
+                {
+                    IsNamed = true
+                },
 
                 new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
@@ -362,12 +368,6 @@ namespace Emby.Naming.Common
                     IsOptimistic = true,
                     IsNamed = true
                 },
-                // "Episode 16", "Episode 16 - Title"
-                new EpisodeExpression(@".*[\\\/][^\\\/]* (?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*[^\\\/]*$")
-                {
-                    IsOptimistic = true,
-                    IsNamed = true
-                }
             };
 
             EpisodeWithoutSeasonExpressions = new[]

@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="Rules for Jellyfin.Server" Description="Code analysis rules for Jellyfin.Server.csproj" ToolsVersion="14.0">
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
-    <!-- disable warning SA1202: 'public' members must come before 'private' members -->
-    <Rule Id="SA1202" Action="Info" />
-    <!-- disable warning SA1204: Static members must appear before non-static members -->
-    <Rule Id="SA1204" Action="Info" />
-    <!-- disable warning SA1404: Code analysis suppression should have justification -->
-    <Rule Id="SA1404" Action="Info" />
-
     <!-- disable warning SA1009: Closing parenthesis should be followed by a space. -->
     <Rule Id="SA1009" Action="None" />
     <!-- disable warning SA1011: Closing square bracket should be followed by a space. -->
@@ -16,12 +9,18 @@
     <Rule Id="SA1101" Action="None" />
     <!-- disable warning SA1108: Block statements should not contain embedded comments -->
     <Rule Id="SA1108" Action="None" />
+    <!-- disable warning SA1118: Parameter must not span multiple lines. -->
+    <Rule Id="SA1118" Action="None" />
     <!-- disable warning SA1128:: Put constructor initializers on their own line -->
     <Rule Id="SA1128" Action="None" />
     <!-- disable warning SA1130: Use lambda syntax -->
     <Rule Id="SA1130" Action="None" />
     <!-- disable warning SA1200: 'using' directive must appear within a namespace declaration -->
     <Rule Id="SA1200" Action="None" />
+    <!-- disable warning SA1202: 'public' members must come before 'private' members -->
+    <Rule Id="SA1202" Action="None" />
+    <!-- disable warning SA1204: Static members must appear before non-static members -->
+    <Rule Id="SA1204" Action="None" />
     <!-- disable warning SA1309: Fields must not begin with an underscore -->
     <Rule Id="SA1309" Action="None" />
     <!-- disable warning SA1413: Use trailing comma in multi-line initializers -->
@@ -39,20 +38,35 @@
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA1305: Specify IFormatProvider -->
+    <Rule Id="CA1305" Action="Error" />
+    <!-- error on CA1725: Parameter names should match base declaration -->
+    <Rule Id="CA1725" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
 
+    <!-- disable warning CA1014: Mark assemblies with CLSCompliantAttribute -->
+    <Rule Id="CA1014" Action="Info" />
+    <!-- disable warning CA1024: Use properties where appropriate -->
+    <Rule Id="CA1024" Action="Info" />
     <!-- disable warning CA1031: Do not catch general exception types -->
     <Rule Id="CA1031" Action="Info" />
     <!-- disable warning CA1032: Implement standard exception constructors -->
     <Rule Id="CA1032" Action="Info" />
+    <!-- disable warning CA1040: Avoid empty interfaces -->
+    <Rule Id="CA1040" Action="Info" />
     <!-- disable warning CA1062: Validate arguments of public methods -->
     <Rule Id="CA1062" Action="Info" />
+    <!-- TODO: enable when false positives are fixed -->
+    <!-- disable warning CA1508: Avoid dead conditional code -->
+    <Rule Id="CA1508" Action="Info" />
     <!-- disable warning CA1716: Identifiers should not match keywords -->
     <Rule Id="CA1716" Action="Info" />
     <!-- disable warning CA1720: Identifiers should not contain type names -->
     <Rule Id="CA1720" Action="Info" />
+    <!-- disable warning CA1724: Type names should not match namespaces -->
+    <Rule Id="CA1724" Action="Info" />
     <!-- disable warning CA1805: Do not initialize unnecessarily -->
     <Rule Id="CA1805" Action="Info" />
     <!-- disable warning CA1812: internal class that is apparently never instantiated.
@@ -66,8 +80,6 @@
     <!-- disable warning CA5394: Do not use insecure randomness -->
     <Rule Id="CA5394" Action="Info" />
 
-    <!-- disable warning CA1014: Mark assemblies with CLSCompliantAttribute -->
-    <Rule Id="CA1014" Action="Info" />
     <!-- disable warning CA1054: Change the type of parameter url from string to System.Uri -->
     <Rule Id="CA1054" Action="None" />
     <!-- disable warning CA1055: URI return values should not be strings -->
@@ -78,5 +90,9 @@
     <Rule Id="CA1303" Action="None" />
     <!-- disable warning CA1308: Normalize strings to uppercase -->
     <Rule Id="CA1308" Action="None" />
+    <!-- disable warning CA2101: Specify marshaling for P/Invoke string arguments -->
+    <Rule Id="CA2101" Action="None" />
+    <!-- disable warning CA2234: Pass System.Uri objects instead of strings -->
+    <Rule Id="CA2234" Action="None" />
   </Rules>
 </RuleSet>
