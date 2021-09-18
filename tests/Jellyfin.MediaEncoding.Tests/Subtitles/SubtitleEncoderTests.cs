@@ -64,6 +64,18 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                 },
                 new SubtitleEncoder.SubtitleInfo("/media/sub.srt", MediaProtocol.File, "srt", true));
 
+            data.Add(
+                new MediaSourceInfo()
+                {
+                    Protocol = MediaProtocol.Http
+                },
+                new MediaStream()
+                {
+                    Path = "/media/sub.ass",
+                    IsExternal = true
+                },
+                new SubtitleEncoder.SubtitleInfo("/media/sub.ass", MediaProtocol.File, "ass", true));
+
             return data;
         }
 
