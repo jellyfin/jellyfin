@@ -19,6 +19,7 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("", 'q', "")]
         [InlineData("Banana split", ' ', "Banana")]
         [InlineData("Banana split", 'q', "Banana split")]
+        [InlineData("Banana split 2", ' ', "Banana")]
         public void LeftPart_ValidArgsCharNeedle_Correct(string str, char needle, string expectedResult)
         {
             var result = str.AsSpan().LeftPart(needle).ToString();
@@ -30,6 +31,7 @@ namespace Jellyfin.Extensions.Tests
         [InlineData("Banana split", ' ', "split")]
         [InlineData("Banana split", 'q', "Banana split")]
         [InlineData("Banana split.", '.', "")]
+        [InlineData("Banana split 2", ' ', "2")]
         public void RightPart_ValidArgsCharNeedle_Correct(string str, char needle, string expectedResult)
         {
             var result = str.AsSpan().RightPart(needle).ToString();
