@@ -44,18 +44,10 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The trailer folder name.
         /// </summary>
-        public const string TrailerFolderName = "trailers";
+        public const string TrailersFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
-        public const string ThemeSongFilename = "theme";
+        public const string ThemeSongFileName = "theme";
         public const string ThemeVideosFolderName = "backdrops";
-        public const string ExtrasFolderName = "extras";
-        public const string BehindTheScenesFolderName = "behind the scenes";
-        public const string DeletedScenesFolderName = "deleted scenes";
-        public const string InterviewFolderName = "interviews";
-        public const string SceneFolderName = "scenes";
-        public const string SampleFolderName = "samples";
-        public const string ShortsFolderName = "shorts";
-        public const string FeaturettesFolderName = "featurettes";
 
         /// <summary>
         /// The supported image extensions.
@@ -93,16 +85,20 @@ namespace MediaBrowser.Controller.Entities
         };
 
         public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
-        public static readonly string[] AllExtrasTypesFolderNames =
+
+        /// <summary>
+        /// The supported extra folder names and types. See <see cref="Emby.Naming.Common.NamingOptions" />.
+        /// </summary>
+        public static readonly Dictionary<string, ExtraType> AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
         {
-            ExtrasFolderName,
-            BehindTheScenesFolderName,
-            DeletedScenesFolderName,
-            InterviewFolderName,
-            SceneFolderName,
-            SampleFolderName,
-            ShortsFolderName,
-            FeaturettesFolderName
+            ["extras"] = MediaBrowser.Model.Entities.ExtraType.Unknown,
+            ["behind the scenes"] = MediaBrowser.Model.Entities.ExtraType.BehindTheScenes,
+            ["deleted scenes"] = MediaBrowser.Model.Entities.ExtraType.DeletedScene,
+            ["interviews"] = MediaBrowser.Model.Entities.ExtraType.Interview,
+            ["scenes"] = MediaBrowser.Model.Entities.ExtraType.Scene,
+            ["samples"] = MediaBrowser.Model.Entities.ExtraType.Sample,
+            ["shorts"] = MediaBrowser.Model.Entities.ExtraType.Clip,
+            ["featurettes"] = MediaBrowser.Model.Entities.ExtraType.Clip
         };
 
         private string _sortName;
@@ -1358,7 +1354,7 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren
-                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFilename, StringComparison.OrdinalIgnoreCase)));
+                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFileName, StringComparison.OrdinalIgnoreCase)));
 
             return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
                 .OfType<Audio.Audio>()
@@ -1417,39 +1413,25 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual BaseItem[] LoadExtras(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var extras = new List<Video>();
-
-            var libraryOptions = new LibraryOptions();
-            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToList();
-            foreach (var extraFolderName in AllExtrasTypesFolderNames)
-            {
-                var files = folders
-                    .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
-                    .SelectMany(i => FileSystem.GetFiles(i.FullName));
-
-                // Re-using the same instance of LibraryOptions since it looks like it's never being altered.
-                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, libraryOptions)
+            return fileSystemChildren
+                .Where(child => child.IsDirectory)
+                .Where(folder => AllExtrasTypesFolderNames.ContainsKey(folder.Name))
+                .SelectMany(folder => LibraryManager
+                    .ResolvePaths(FileSystem.GetFiles(folder.FullName), directoryService, null, new LibraryOptions())
                     .OfType<Video>()
-                    .Select(item =>
+                    .Select(video =>
                     {
                         // Try to retrieve it from the db. If we don't find it, use the resolved version
-                        if (LibraryManager.GetItemById(item.Id) is Video dbItem)
+                        if (LibraryManager.GetItemById(video.Id) is Video dbItem)
                         {
-                            item = dbItem;
+                            video = dbItem;
                         }
 
-                        // Use some hackery to get the extra type based on foldername
-                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty, StringComparison.Ordinal), true, out ExtraType extraType)
-                            ? extraType
-                            : Model.Entities.ExtraType.Unknown;
-
-                        return item;
-
-                        // Sort them so that the list can be easily compared for changes
-                    }).OrderBy(i => i.Path));
-            }
-
-            return extras.ToArray();
+                        video.ExtraType = AllExtrasTypesFolderNames[folder.Name];
+                        return video;
+                    })
+                    .OrderBy(video => video.Path)) // Sort them so that the list can be easily compared for changes
+                .ToArray();
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)

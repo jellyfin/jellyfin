@@ -2714,7 +2714,7 @@ namespace Emby.Server.Implementations.Library
             var namingOptions = GetNamingOptions();
 
             var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(i.Name, BaseItem.TrailersFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
@@ -2758,7 +2758,7 @@ namespace Emby.Server.Implementations.Library
             var namingOptions = GetNamingOptions();
 
             var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => BaseItem.AllExtrasTypesFolderNames.Contains(i.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Where(i => BaseItem.AllExtrasTypesFolderNames.ContainsKey(i.Name ?? string.Empty))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
