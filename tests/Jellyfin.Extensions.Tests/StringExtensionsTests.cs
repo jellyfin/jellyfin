@@ -14,5 +14,26 @@ namespace Jellyfin.Extensions.Tests
         {
             Assert.Equal(count, str.AsSpan().Count(needle));
         }
+
+        [Theory]
+        [InlineData("", 'q', "")]
+        [InlineData("Banana split", ' ', "Banana")]
+        [InlineData("Banana split", 'q', "Banana split")]
+        public void LeftPart_ValidArgsCharNeedle_Correct(string str, char needle, string expectedResult)
+        {
+            var result = str.AsSpan().LeftPart(needle).ToString();
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Theory]
+        [InlineData("", 'q', "")]
+        [InlineData("Banana split", ' ', "split")]
+        [InlineData("Banana split", 'q', "Banana split")]
+        [InlineData("Banana split.", '.', "")]
+        public void RightPart_ValidArgsCharNeedle_Correct(string str, char needle, string expectedResult)
+        {
+            var result = str.AsSpan().RightPart(needle).ToString();
+            Assert.Equal(expectedResult, result);
+        }
     }
 }

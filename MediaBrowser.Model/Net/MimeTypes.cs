@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Net
 {
@@ -221,7 +222,7 @@ namespace MediaBrowser.Model.Net
             }
 
             // handle text/html; charset=UTF-8
-            mimeType = mimeType.Split(';')[0];
+            mimeType = mimeType.AsSpan().LeftPart(';').ToString();
 
             if (_extensionLookup.TryGetValue(mimeType, out string? result))
             {

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using Jellyfin.XmlTv;
 using Jellyfin.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
@@ -89,11 +90,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return UnzipIfNeeded(path, cacheFile);
         }
 
-        private string UnzipIfNeeded(string originalUrl, string file)
+        private string UnzipIfNeeded(ReadOnlySpan<char> originalUrl, string file)
         {
-            string ext = Path.GetExtension(originalUrl.Split('?')[0]);
+            ReadOnlySpan<char> ext = Path.GetExtension(originalUrl.LeftPart('?'));
 
-            if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".gz", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
