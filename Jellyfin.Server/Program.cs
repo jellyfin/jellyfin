@@ -195,9 +195,9 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await webHost.StartAsync().ConfigureAwait(false);
+                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex) when (ex is not TaskCanceledException)
                 {
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
