@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiscUtils.Udf" Version="0.16.4" />
+    <PackageReference Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
