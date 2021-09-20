@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -331,7 +332,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out var runtime))
+                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, _usCulture, out var runtime))
                         {
                             item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }

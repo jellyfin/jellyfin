@@ -1378,7 +1378,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             var disc = tags.GetValueOrDefault(tagName);
 
-            if (!string.IsNullOrEmpty(disc) && int.TryParse(disc.Split('/')[0], out var discNum))
+            if (!string.IsNullOrEmpty(disc) && int.TryParse(disc.AsSpan().LeftPart('/'), out var discNum))
             {
                 return discNum;
             }

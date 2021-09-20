@@ -238,7 +238,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     try
                     {
-                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/')[^1]);
+                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.AsSpan().RightPart('/')).ToString();
 
                         if (!IsValidChannelNumber(numberString))
                         {

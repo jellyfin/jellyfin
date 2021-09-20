@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var size = part.Split('=', 2)[^1];
 
                     int? scale = null;
-                    if (size.IndexOf("kb", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (size.Contains("kb", StringComparison.OrdinalIgnoreCase))
                     {
                         scale = 1024;
                         size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -139,7 +139,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var rate = part.Split('=', 2)[^1];
 
                     int? scale = null;
-                    if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (rate.Contains("kbits/s", StringComparison.OrdinalIgnoreCase))
                     {
                         scale = 1024;
                         rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -199,7 +200,7 @@ namespace Jellyfin.Api.Controllers
                 throw new ResourceNotFoundException(nameof(response.Content.Headers.ContentType));
             }
 
-            var ext = response.Content.Headers.ContentType.MediaType.Split('/')[^1];
+            var ext = response.Content.Headers.ContentType.MediaType.AsSpan().RightPart('/').ToString();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -81,7 +82,7 @@ namespace Jellyfin.Api.Helpers
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
-            var url = httpRequest.Path.Value.Split('.')[^1];
+            var url = httpRequest.Path.Value.AsSpan().RightPart('.').ToString();
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {

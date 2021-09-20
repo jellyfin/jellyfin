@@ -18,14 +18,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             using (var writer = new StreamWriter(stream, Encoding.UTF8, 1024, true))
             {
                 writer.WriteLine("WEBVTT");
-                writer.WriteLine(string.Empty);
+                writer.WriteLine();
                 writer.WriteLine("REGION");
                 writer.WriteLine("id:subtitle");
                 writer.WriteLine("width:80%");
                 writer.WriteLine("lines:3");
                 writer.WriteLine("regionanchor:50%,100%");
                 writer.WriteLine("viewportanchor:50%,90%");
-                writer.WriteLine(string.Empty);
+                writer.WriteLine();
                 foreach (var trackEvent in info.TrackEvents)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
