@@ -147,7 +147,7 @@ namespace Jellyfin.Api.Controllers
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
+            var minPremiereDate = DateTime.UtcNow.Date.AddDays(-1);
 
             var parentIdGuid = parentId ?? Guid.Empty;
 

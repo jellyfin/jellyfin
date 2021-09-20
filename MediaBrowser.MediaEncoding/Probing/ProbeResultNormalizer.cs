@@ -1450,9 +1450,9 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             // Credit to MCEBuddy: https://mcebuddy2x.codeplex.com/
             // DateTime is reported along with timezone info (typically Z i.e. UTC hence assume None)
-            if (tags.TryGetValue("WM/MediaOriginalBroadcastDateTime", out var premiereDateString) && DateTime.TryParse(year, null, DateTimeStyles.None, out var parsedDate))
+            if (tags.TryGetValue("WM/MediaOriginalBroadcastDateTime", out var premiereDateString) && DateTime.TryParse(year, null, DateTimeStyles.AdjustToUniversal, out var parsedDate))
             {
-                video.PremiereDate = parsedDate.ToUniversalTime();
+                video.PremiereDate = parsedDate;
             }
 
             var description = tags.GetValueOrDefault("WM/SubTitleDescription");
@@ -1468,7 +1468,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
             if (string.IsNullOrWhiteSpace(subTitle)
                 && !string.IsNullOrWhiteSpace(description)
-                && description.AsSpan()[0..Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)].IndexOf(':') != -1) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
+                && description.AsSpan()[..Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)].Contains(':')) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
             {
                 string[] descriptionParts = description.Split(':');
                 if (descriptionParts.Length > 0)

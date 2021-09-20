@@ -69,7 +69,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("Album", res.Album);
             Assert.Equal(2021, res.ProductionYear);
             Assert.True(res.PremiereDate.HasValue);
-            Assert.Equal(DateTime.Parse("2021-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+            Assert.Equal(DateTime.Parse("2021-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AdjustToUniversal), res.PremiereDate);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("City to City", res.Album);
             Assert.Equal(1978, res.ProductionYear);
             Assert.True(res.PremiereDate.HasValue);
-            Assert.Equal(DateTime.Parse("1978-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+            Assert.Equal(DateTime.Parse("1978-01-01T00:00Z", DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AdjustToUniversal), res.PremiereDate);
             Assert.Contains("Electronic", res.Genres);
             Assert.Contains("Ambient", res.Genres);
             Assert.Contains("Pop", res.Genres);
@@ -105,7 +105,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
             Assert.Equal("Eyes wide open", res.Album);
             Assert.Equal(2020, res.ProductionYear);
             Assert.True(res.PremiereDate.HasValue);
-            Assert.Equal(DateTime.Parse("2020-10-26T00:00Z", DateTimeFormatInfo.CurrentInfo).ToUniversalTime(), res.PremiereDate);
+            Assert.Equal(DateTime.Parse("2020-10-26T00:00Z", DateTimeFormatInfo.CurrentInfo, DateTimeStyles.AdjustToUniversal), res.PremiereDate);
             Assert.Equal(22, res.People.Length);
             Assert.Equal("Krysta Youngs", res.People[0].Name);
             Assert.Equal(PersonType.Composer, res.People[0].Type);
