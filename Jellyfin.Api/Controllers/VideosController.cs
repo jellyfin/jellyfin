@@ -453,14 +453,15 @@ namespace Jellyfin.Api.Controllers
             {
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
 
-                await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
+                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
+                if (liveStreamInfo == null)
                 {
-                    AllowEndOfFile = false
-                }.WriteToAsync(Response.Body, CancellationToken.None)
-                    .ConfigureAwait(false);
+                    return NotFound();
+                }
 
+                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return File(Response.Body, MimeTypes.GetMimeType("file.ts")!);
+                return File(liveStream, MimeTypes.GetMimeType("file.ts")!);
             }
 
             // Static remote stream
@@ -492,13 +493,8 @@ namespace Jellyfin.Api.Controllers
 
                 if (state.MediaSource.IsInfiniteStream)
                 {
-                    await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
-                    {
-                        AllowEndOfFile = false
-                    }.WriteToAsync(Response.Body, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-                    return File(Response.Body, contentType);
+                    var liveStream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                    return File(liveStream, contentType);
                 }
 
                 return FileStreamResponseHelpers.GetStaticFileResult(
