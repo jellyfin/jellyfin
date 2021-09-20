@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Emby.Server.Implementations.LiveTv.EmbyTV;
 using MediaBrowser.Controller.LiveTv;
 using Xunit;
@@ -70,7 +71,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
 
             yield return new object[]
             {
-                "The Big Bang Theory 2018-12-06",
+                $"The Big Bang Theory {ToLocal("2018-12-06")}",
                 new TimerInfo
                 {
                     Name = "The Big Bang Theory",
@@ -81,7 +82,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
 
             yield return new object[]
             {
-                "The Big Bang Theory 2018-12-06 - The VCR Illumination",
+                $"The Big Bang Theory {ToLocal("2018-12-06")} - The VCR Illumination",
                 new TimerInfo
                 {
                     Name = "The Big Bang Theory",
@@ -91,18 +92,10 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 }
             };
 
-            yield return new object[]
-            {
-                "The Big Bang Theory 2018_12_06_21_06_00 - The VCR Illumination",
-                new TimerInfo
-                {
-                    Name = "The Big Bang Theory",
-                    StartDate = new DateTime(2018, 12, 6, 21, 6, 0, DateTimeKind.Local),
-                    IsProgramSeries = true,
-                    OriginalAirDate = new DateTime(2018, 12, 6),
-                    EpisodeTitle = "The VCR Illumination"
-                }
-            };
+            string ToLocal(string date) => DateTime
+                .Parse(date, CultureInfo.InvariantCulture)
+                .ToLocalTime()
+                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
 
         [Theory]
