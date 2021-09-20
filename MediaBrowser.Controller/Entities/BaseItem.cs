@@ -1414,8 +1414,7 @@ namespace MediaBrowser.Controller.Entities
         protected virtual BaseItem[] LoadExtras(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             return fileSystemChildren
-                .Where(child => child.IsDirectory)
-                .Where(folder => AllExtrasTypesFolderNames.ContainsKey(folder.Name))
+                .Where(child => child.IsDirectory && AllExtrasTypesFolderNames.ContainsKey(child.Name))
                 .SelectMany(folder => LibraryManager
                     .ResolvePaths(FileSystem.GetFiles(folder.FullName), directoryService, null, new LibraryOptions())
                     .OfType<Video>()
