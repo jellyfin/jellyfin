@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.9">
       <PrivateAssets>all</PrivateAssets>
