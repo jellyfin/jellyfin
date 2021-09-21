@@ -145,9 +145,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(val))
                     {
-                        if (DateTime.TryParse(val, out var added))
+                        if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var added))
                         {
-                            item.DateCreated = added.ToUniversalTime();
+                            item.DateCreated = added;
                         }
                         else
                         {
@@ -535,9 +535,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(firstAired))
                     {
-                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var airDate) && airDate.Year > 1850)
+                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal, out var airDate) && airDate.Year > 1850)
                         {
-                            item.PremiereDate = airDate.ToUniversalTime();
+                            item.PremiereDate = airDate;
                             item.ProductionYear = airDate.Year;
                         }
                     }
@@ -552,9 +552,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(firstAired))
                     {
-                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var airDate) && airDate.Year > 1850)
+                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal, out var airDate) && airDate.Year > 1850)
                         {
-                            item.EndDate = airDate.ToUniversalTime();
+                            item.EndDate = airDate;
                         }
                     }
 
