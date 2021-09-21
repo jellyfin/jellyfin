@@ -5,8 +5,6 @@ variables:
   value: 'tests/**/*Tests.csproj'
 - name: RestoreBuildProjects
   value: 'Jellyfin.Server/Jellyfin.Server.csproj'
-- name: DotNetSdkVersion
-  value: 5.0.302
 
 pr:
   autoCancel: true
