@@ -172,6 +172,25 @@ namespace Jellyfin.Server.Implementations.Tests.Sorting
                     new Episode { ParentIndexNumber = 0, IndexNumber = 1, AirsBeforeSeasonNumber = 1, AirsBeforeEpisodeNumber = 2 },
                     1
                 };
+                // Premiere Date
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1, PremiereDate = new DateTime(2021, 09, 12, 0, 0, 0) },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1, PremiereDate = new DateTime(2021, 09, 12, 0, 0, 0) },
+                    0
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1, PremiereDate = new DateTime(2021, 09, 11, 0, 0, 0) },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1, PremiereDate = new DateTime(2021, 09, 12, 0, 0, 0) },
+                    -1
+                };
+                yield return new object?[]
+                {
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1, PremiereDate = new DateTime(2021, 09, 12, 0, 0, 0) },
+                    new Episode { ParentIndexNumber = 1, IndexNumber = 1, PremiereDate = new DateTime(2021, 09, 11, 0, 0, 0) },
+                    1
+                };
             }
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
