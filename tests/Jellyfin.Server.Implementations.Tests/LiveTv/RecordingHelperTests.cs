@@ -69,25 +69,26 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 }
             };
 
+            DateTime testOriginalAirDate = new DateTime(2018, 12, 6);
             yield return new object[]
             {
-                $"The Big Bang Theory {ToLocal("2018-12-06")}",
+                $"The Big Bang Theory {testOriginalAirDate.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}",
                 new TimerInfo
                 {
                     Name = "The Big Bang Theory",
                     IsProgramSeries = true,
-                    OriginalAirDate = new DateTime(2018, 12, 6)
+                    OriginalAirDate = testOriginalAirDate
                 }
             };
 
             yield return new object[]
             {
-                $"The Big Bang Theory {ToLocal("2018-12-06")} - The VCR Illumination",
+                $"The Big Bang Theory {testOriginalAirDate.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} - The VCR Illumination",
                 new TimerInfo
                 {
                     Name = "The Big Bang Theory",
                     IsProgramSeries = true,
-                    OriginalAirDate = new DateTime(2018, 12, 6),
+                    OriginalAirDate = testOriginalAirDate,
                     EpisodeTitle = "The VCR Illumination"
                 }
             };
@@ -104,11 +105,6 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                     EpisodeTitle = "The VCR Illumination"
                 }
             };
-
-            string ToLocal(string date) => DateTime
-                .Parse(date, CultureInfo.InvariantCulture)
-                .ToLocalTime()
-                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
 
         [Theory]
