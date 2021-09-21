@@ -193,12 +193,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            // Don't save an invalid path
-            if (!File.Exists(path))
-            {
-                throw new FileNotFoundException();
-            }
-
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
             // This ensures its not lost on next startup
             config.EncoderAppPath = newPath;
