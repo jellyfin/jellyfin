@@ -7,7 +7,7 @@ parameters:
   default: "ubuntu-latest"
 - name: DotNetSdkVersion
   type: string
-  default: 5.0.302
+  default: 6.0.100-rc.1.21458.32
 
 jobs:
   - job: CompatibilityCheck
