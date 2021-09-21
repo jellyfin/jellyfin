@@ -487,7 +487,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
-                    // Sometimes providers send back bad url's. Just move to the next image
+                    // Sometimes providers send back bad urls. Just move to the next image
                     if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
                     {
                         _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
@@ -594,7 +594,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
-                    // Sometimes providers send back bad url's. Just move to the next image
+                    // Sometimes providers send back bad urls. Just move to the next image
                     if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
                     {
                         _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
