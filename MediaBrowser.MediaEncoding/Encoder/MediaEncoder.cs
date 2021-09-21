@@ -165,14 +165,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // User had cleared the custom path in UI
                 newPath = string.Empty;
             }
-            else if (Directory.Exists(path))
-            {
-                // Given path is directory, so resolve down to filename
-                newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
-            }
             else
             {
-                newPath = path;
+                if (Directory.Exists(path))
+                {
+                    // Given path is directory, so resolve down to filename
+                    newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
+                }
+                else
+                {
+                    newPath = path;
+                }
+
+                if (!new EncoderValidator(_logger, newPath).ValidateVersion())
+                {
+                    throw new ResourceNotFoundException();
+                }
             }
 
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
