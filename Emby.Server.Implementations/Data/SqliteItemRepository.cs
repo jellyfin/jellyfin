@@ -6027,7 +6027,7 @@ AND Type = @InternalPersonType)");
 
             if (reader.TryGetString(4, out var language))
             {
-                item.Language = item.Language = language;
+                item.Language = language;
 
                 string i18nKey = "Language" + item.Language;
                 item.localizedLanguage = _localization.GetLocalizedString(i18nKey);
