@@ -242,7 +242,7 @@ namespace MediaBrowser.Model.Entities
                                 .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
                             // Use the CultureInfo locale name as a fallback, as these only appear to be available in English.
-                            attributes.Add(string.IsNullOrEmpty(localizedLanguage) ? StringHelper.FirstToUpper(fullLanguage ?? Language) : localizedLanguage);
+                            attributes.Add(string.IsNullOrEmpty(localizedLanguage) ? StringHelper.FirstToUpper(fullLanguage ?? Language) : LocalizedLanguage);
                         }
                         else
                         {
