@@ -665,10 +665,10 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.Title = GetDictionaryValue(streamInfo.Tags, "title");
 
                 string i18nKey = "Language" + stream.Language;
-                stream.localizedLanguage = _localization.GetLocalizedString(i18nKey);
-                if (stream.localizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
+                stream.LocalizedLanguage = _localization.GetLocalizedString(i18nKey);
+                if (stream.LocalizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
                 {
-                    stream.localizedLanguage = null;
+                    stream.LocalizedLanguage = null;
                 }
             }
 

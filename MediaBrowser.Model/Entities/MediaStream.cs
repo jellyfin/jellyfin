@@ -127,7 +127,7 @@ namespace MediaBrowser.Model.Entities
 
         public string LocalizedForced { get; set; }
 
-        public string localizedLanguage { get; set; }
+        public string LocalizedLanguage { get; set; }
 
         public string DisplayTitle
         {
@@ -147,7 +147,7 @@ namespace MediaBrowser.Model.Entities
                                 .FirstOrDefault(r => r.ThreeLetterISOLanguageName.Equals(Language, StringComparison.OrdinalIgnoreCase))
                                 ?.DisplayName;
                             // Use the CultureInfo locale name as a fallback, as these only appear to be available in English.
-                            attributes.Add(string.IsNullOrEmpty(localizedLanguage) ? StringHelper.FirstToUpper(fullLanguage ?? Language) : localizedLanguage);
+                            attributes.Add(string.IsNullOrEmpty(LocalizedLanguage) ? StringHelper.FirstToUpper(fullLanguage ?? Language) : LocalizedLanguage);
                         }
 
                         if (!string.IsNullOrEmpty(Codec) && !string.Equals(Codec, "dca", StringComparison.OrdinalIgnoreCase))

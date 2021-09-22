@@ -6030,10 +6030,10 @@ AND Type = @InternalPersonType)");
                 item.Language = language;
 
                 string i18nKey = "Language" + item.Language;
-                item.localizedLanguage = _localization.GetLocalizedString(i18nKey);
-                if (item.localizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
+                item.LocalizedLanguage = _localization.GetLocalizedString(i18nKey);
+                if (item.LocalizedLanguage.Equals(i18nKey, System.StringComparison.Ordinal))
                 {
-                    item.localizedLanguage = null;
+                    item.LocalizedLanguage = null;
                 }
             }
 
