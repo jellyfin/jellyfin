@@ -22,8 +22,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void Test3DName()
         {
-            var result =
-                new VideoResolver(_namingOptions).ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.3d.hsbs.mkv");
+            var result = VideoResolver.ResolveFile(@"C:/Users/media/Desktop/Video Test/Movies/Oblivion/Oblivion.3d.hsbs.mkv", _namingOptions);
 
             Assert.Equal("hsbs", result?.Format3D);
             Assert.Equal("Oblivion", result?.Name);
@@ -58,15 +57,13 @@ namespace Jellyfin.Naming.Tests.Video
 
         private void Test(string input, bool is3D, string? format3D)
         {
-            var parser = new Format3DParser(_namingOptions);
-
-            var result = parser.Parse(input);
+            var result = Format3DParser.Parse(input, _namingOptions);
 
             Assert.Equal(is3D, result.Is3D);
 
             if (format3D == null)
             {
-                Assert.Null(result.Format3D);
+                Assert.Null(result?.Format3D);
             }
             else
             {

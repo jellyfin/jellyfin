@@ -54,9 +54,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             result.HasMetadata = true;
             result.Item = new Season
             {
-                Name = info.Name,
                 IndexNumber = seasonNumber,
-                Overview = seasonResult?.Overview
+                Overview = seasonResult.Overview
             };
 
             if (!string.IsNullOrEmpty(seasonResult.ExternalIds?.TvdbId))

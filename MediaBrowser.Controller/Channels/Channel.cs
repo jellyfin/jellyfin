@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -15,11 +17,18 @@ namespace MediaBrowser.Controller.Channels
 {
     public class Channel : Folder
     {
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override SourceType SourceType => SourceType.Channel;
+
         public override bool IsVisible(User user)
         {
-            if (user.GetPreference(PreferenceKind.BlockedChannels) != null)
+            var blockedChannelsPreference = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels);
+            if (blockedChannelsPreference.Length != 0)
             {
-                if (user.GetPreference(PreferenceKind.BlockedChannels).Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                if (blockedChannelsPreference.Contains(Id))
                 {
                     return false;
                 }
@@ -27,8 +36,7 @@ namespace MediaBrowser.Controller.Channels
             else
             {
                 if (!user.HasPermission(PermissionKind.EnableAllChannels)
-                    && !user.GetPreference(PreferenceKind.EnabledChannels)
-                        .Contains(Id.ToString("N", CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+                    && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels).Contains(Id))
                 {
                     return false;
                 }
@@ -36,12 +44,6 @@ namespace MediaBrowser.Controller.Channels
 
             return base.IsVisible(user);
         }
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override SourceType SourceType => SourceType.Channel;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {
@@ -82,7 +84,7 @@ namespace MediaBrowser.Controller.Channels
 
         internal static bool IsChannelVisible(BaseItem channelItem, User user)
         {
-            var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(""));
+            var channel = ChannelManager.GetChannel(channelItem.ChannelId.ToString(string.Empty));
 
             return channel.IsVisible(user);
         }

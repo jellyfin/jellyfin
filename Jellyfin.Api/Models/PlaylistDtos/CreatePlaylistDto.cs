@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Common.Json.Converters;
+using Jellyfin.Extensions.Json.Converters;
 
 namespace Jellyfin.Api.Models.PlaylistDtos
 {
@@ -24,7 +24,7 @@ namespace Jellyfin.Api.Models.PlaylistDtos
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
-        public Guid UserId { get; set; }
+        public Guid? UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the media type.

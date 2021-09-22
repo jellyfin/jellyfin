@@ -79,6 +79,16 @@ namespace Jellyfin.Server.Extensions
         }
 
         /// <summary>
+        /// Enables url decoding before binding to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseQueryStringDecoding(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<QueryStringDecodingMiddleware>();
+        }
+
+        /// <summary>
         /// Adds base url redirection to the application pipeline.
         /// </summary>
         /// <param name="appBuilder">The application builder.</param>
@@ -106,6 +116,29 @@ namespace Jellyfin.Server.Extensions
         public static IApplicationBuilder UseWebSocketHandler(this IApplicationBuilder appBuilder)
         {
             return appBuilder.UseMiddleware<WebSocketHandlerMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds robots.txt redirection to the application pipeline.
+        /// </summary>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UseRobotsRedirection(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<RobotsRedirectionMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds /emby and /mediabrowser route trimming to the application pipeline.
+        /// </summary>
+        /// <remarks>
+        /// This must be injected before any path related middleware.
+        /// </remarks>
+        /// <param name="appBuilder">The application builder.</param>
+        /// <returns>The updated application builder.</returns>
+        public static IApplicationBuilder UsePathTrim(this IApplicationBuilder appBuilder)
+        {
+            return appBuilder.UseMiddleware<LegacyEmbyRouteRewriteMiddleware>();
         }
     }
 }

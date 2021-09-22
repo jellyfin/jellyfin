@@ -73,7 +73,7 @@ namespace Emby.Naming.AudioBook
 
             var haveChaptersOrPages = stackFiles.Any(x => x.ChapterNumber != null || x.PartNumber != null);
             var groupedBy = stackFiles.GroupBy(file => new { file.ChapterNumber, file.PartNumber });
-            var nameWithReplacedDots = nameParserResult.Name.Replace(" ", ".");
+            var nameWithReplacedDots = nameParserResult.Name.Replace(' ', '.');
 
             foreach (var group in groupedBy)
             {
@@ -87,7 +87,7 @@ namespace Emby.Naming.AudioBook
                         foreach (var audioFile in group)
                         {
                             var name = Path.GetFileNameWithoutExtension(audioFile.Path);
-                            if (name.Equals("audiobook") ||
+                            if (name.Equals("audiobook", StringComparison.OrdinalIgnoreCase) ||
                                 name.Contains(nameParserResult.Name, StringComparison.OrdinalIgnoreCase) ||
                                 name.Contains(nameWithReplacedDots, StringComparison.OrdinalIgnoreCase))
                             {

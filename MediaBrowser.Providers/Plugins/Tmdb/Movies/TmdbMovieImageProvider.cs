@@ -13,7 +13,6 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 using TMDbLib.Objects.Find;
 
@@ -73,8 +72,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
+            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var movie = await _tmdbClientManager
-                .GetMovieAsync(movieTmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+                .GetMovieAsync(movieTmdbId, null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             if (movie?.Images == null)
@@ -117,7 +117,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 });
             }
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

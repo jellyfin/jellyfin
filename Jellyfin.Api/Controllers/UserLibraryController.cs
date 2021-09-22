@@ -8,7 +8,8 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -269,7 +270,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,
@@ -296,7 +297,7 @@ namespace Jellyfin.Api.Controllers
                 new LatestItemsQuery
                 {
                     GroupItems = groupItems,
-                    IncludeItemTypes = includeItemTypes,
+                    IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
                     IsPlayed = isPlayed,
                     Limit = limit,
                     ParentId = parentId ?? Guid.Empty,

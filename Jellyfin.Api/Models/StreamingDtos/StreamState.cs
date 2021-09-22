@@ -60,6 +60,9 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// <summary>
         /// Gets or sets the direct stream provicer.
         /// </summary>
+        /// <remarks>
+        /// Deprecated.
+        /// </remarks>
         public IDirectStreamProvider? DirectStreamProvider { get; set; }
 
         /// <summary>

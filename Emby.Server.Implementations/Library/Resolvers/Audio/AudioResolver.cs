@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -19,18 +21,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
     /// </summary>
     public class AudioResolver : ItemResolver<MediaBrowser.Controller.Entities.Audio.Audio>, IMultiItemResolver
     {
-        private readonly ILibraryManager LibraryManager;
+        private readonly ILibraryManager _libraryManager;
 
         public AudioResolver(ILibraryManager libraryManager)
         {
-            LibraryManager = libraryManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Fourth;
+        public override ResolverPriority Priority => ResolverPriority.Fifth;
 
         public MultiItemResolverResult ResolveMultiple(
             Folder parent,
@@ -86,13 +88,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
 
                 var files = args.FileSystemChildren
-                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
+                    .Where(i => !_libraryManager.IgnoreFile(i, args.Parent))
                     .ToList();
 
                 return FindAudio<AudioBook>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
             }
 
-            if (LibraryManager.IsAudioFile(args.Path))
+            if (_libraryManager.IsAudioFile(args.Path))
             {
                 var extension = Path.GetExtension(args.Path);
 
@@ -105,7 +107,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 var isMixedCollectionType = string.IsNullOrEmpty(collectionType);
 
                 // For conflicting extensions, give priority to videos
-                if (isMixedCollectionType && LibraryManager.IsVideoFile(args.Path))
+                if (isMixedCollectionType && _libraryManager.IsVideoFile(args.Path))
                 {
                     return null;
                 }
@@ -180,7 +182,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
             }
 
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
 
             var resolver = new AudioBookListResolver(namingOptions);
             var resolverResult = resolver.Resolve(files).ToList();
@@ -198,6 +200,11 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 if (resolvedItem.Files.Count > 1)
                 {
                     // For now, until we sort out naming for multi-part books
+                    continue;
+                }
+
+                if (resolvedItem.Files.Count == 0)
+                {
                     continue;
                 }
 

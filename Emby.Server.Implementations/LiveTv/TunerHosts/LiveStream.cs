@@ -1,10 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
@@ -95,6 +95,18 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.CompletedTask;
         }
 
+        public Stream GetStream()
+        {
+            var stream = GetInputStream(TempFilePath, AsyncFile.UseAsyncIO);
+            bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
+            if (seekFile)
+            {
+                TrySeek(stream, -20000);
+            }
+
+            return stream;
+        }
+
         protected FileStream GetInputStream(string path, bool allowAsyncFileRead)
             => new FileStream(
                 path,
@@ -104,113 +116,29 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 IODefaults.FileStreamBufferSize,
                 allowAsyncFileRead ? FileOptions.SequentialScan | FileOptions.Asynchronous : FileOptions.SequentialScan);
 
-        public Task DeleteTempFiles()
-        {
-            return DeleteTempFiles(GetStreamFilePaths());
-        }
-
-        protected async Task DeleteTempFiles(IEnumerable<string> paths, int retryCount = 0)
+        protected async Task DeleteTempFiles(string path, int retryCount = 0)
         {
             if (retryCount == 0)
             {
-                Logger.LogInformation("Deleting temp files {0}", paths);
+                Logger.LogInformation("Deleting temp file {FilePath}", path);
             }
 
-            var failedFiles = new List<string>();
-
-            foreach (var path in paths)
+            try
             {
-                if (!File.Exists(path))
+                FileSystem.DeleteFile(path);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error deleting file {FilePath}", path);
+                if (retryCount <= 40)
                 {
-                    continue;
-                }
-
-                try
-                {
-                    FileSystem.DeleteFile(path);
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError(ex, "Error deleting file {path}", path);
-                    failedFiles.Add(path);
+                    await Task.Delay(500).ConfigureAwait(false);
+                    await DeleteTempFiles(path, retryCount + 1).ConfigureAwait(false);
                 }
             }
-
-            if (failedFiles.Count > 0 && retryCount <= 40)
-            {
-                await Task.Delay(500).ConfigureAwait(false);
-                await DeleteTempFiles(failedFiles, retryCount + 1).ConfigureAwait(false);
-            }
         }
 
-        protected virtual List<string> GetStreamFilePaths()
-        {
-            return new List<string> { TempFilePath };
-        }
-
-        public async Task CopyToAsync(Stream stream, CancellationToken cancellationToken)
-        {
-            cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, LiveStreamCancellationTokenSource.Token).Token;
-
-            // use non-async filestream on windows along with read due to https://github.com/dotnet/corefx/issues/6039
-            var allowAsync = Environment.OSVersion.Platform != PlatformID.Win32NT;
-
-            bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
-
-            var nextFileInfo = GetNextFile(null);
-            var nextFile = nextFileInfo.file;
-            var isLastFile = nextFileInfo.isLastFile;
-
-            while (!string.IsNullOrEmpty(nextFile))
-            {
-                var emptyReadLimit = isLastFile ? EmptyReadLimit : 1;
-
-                await CopyFile(nextFile, seekFile, emptyReadLimit, allowAsync, stream, cancellationToken).ConfigureAwait(false);
-
-                seekFile = false;
-                nextFileInfo = GetNextFile(nextFile);
-                nextFile = nextFileInfo.file;
-                isLastFile = nextFileInfo.isLastFile;
-            }
-
-            Logger.LogInformation("Live Stream ended.");
-        }
-
-        private (string file, bool isLastFile) GetNextFile(string currentFile)
-        {
-            var files = GetStreamFilePaths();
-
-            if (string.IsNullOrEmpty(currentFile))
-            {
-                return (files[^1], true);
-            }
-
-            var nextIndex = files.FindIndex(i => string.Equals(i, currentFile, StringComparison.OrdinalIgnoreCase)) + 1;
-
-            var isLastFile = nextIndex == files.Count - 1;
-
-            return (files.ElementAtOrDefault(nextIndex), isLastFile);
-        }
-
-        private async Task CopyFile(string path, bool seekFile, int emptyReadLimit, bool allowAsync, Stream stream, CancellationToken cancellationToken)
-        {
-            using (var inputStream = GetInputStream(path, allowAsync))
-            {
-                if (seekFile)
-                {
-                    TrySeek(inputStream, -20000);
-                }
-
-                await StreamHelper.CopyToAsync(
-                    inputStream,
-                    stream,
-                    IODefaults.CopyToBufferSize,
-                    emptyReadLimit,
-                    cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        private void TrySeek(FileStream stream, long offset)
+        private void TrySeek(Stream stream, long offset)
         {
             if (!stream.CanSeek)
             {

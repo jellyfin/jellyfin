@@ -15,7 +15,7 @@
     "Favorites": "Ulubione",
     "Folders": "Foldery",
     "Genres": "Gatunki",
-    "HeaderAlbumArtists": "Wykonawcy albumów",
+    "HeaderAlbumArtists": "Album artysty",
     "HeaderContinueWatching": "Kontynuuj odtwarzanie",
     "HeaderFavoriteAlbums": "Ulubione albumy",
     "HeaderFavoriteArtists": "Ulubieni wykonawcy",
@@ -25,7 +25,7 @@
     "HeaderLiveTV": "Telewizja",
     "HeaderNextUp": "Do obejrzenia",
     "HeaderRecordingGroups": "Grupy nagrań",
-    "HomeVideos": "Nagrania prywatne",
+    "HomeVideos": "Nagrania domowe",
     "Inherit": "Dziedzicz",
     "ItemAddedWithName": "{0} zostało dodane do biblioteki",
     "ItemRemovedWithName": "{0} zostało usunięte z biblioteki",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Czyść dziennik aktywności",
     "Undefined": "Nieustalony",
     "Forced": "Wymuszony",
-    "Default": "Domyślne"
+    "Default": "Domyślne",
+    "TaskOptimizeDatabase": "Optymalizuj bazę danych",
+    "TaskOptimizeDatabaseDescription": "Kompaktuje bazę danych i obcina wolne miejsce. Uruchomienie tego zadania po przeskanowaniu biblioteki lub dokonaniu innych zmian, które pociągają za sobą modyfikacje bazy danych, może poprawić wydajność."
 }

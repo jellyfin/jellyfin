@@ -12,11 +12,11 @@ namespace MediaBrowser.Controller.Providers
     {
         private readonly IFileSystem _fileSystem;
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new ConcurrentDictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new (StringComparer.Ordinal);
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new ConcurrentDictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new (StringComparer.Ordinal);
 
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new ConcurrentDictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new (StringComparer.Ordinal);
 
         public DirectoryService(IFileSystem fileSystem)
         {
@@ -25,15 +25,16 @@ namespace MediaBrowser.Controller.Providers
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            return _cache.GetOrAdd(path, p => _fileSystem.GetFileSystemEntries(p).ToArray());
+            return _cache.GetOrAdd(path, (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
         }
 
         public List<FileSystemMetadata> GetFiles(string path)
         {
             var list = new List<FileSystemMetadata>();
             var items = GetFileSystemEntries(path);
-            foreach (var item in items)
+            for (var i = 0; i < items.Length; i++)
             {
+                var item = items[i];
                 if (!item.IsDirectory)
                 {
                     list.Add(item);
@@ -43,18 +44,16 @@ namespace MediaBrowser.Controller.Providers
             return list;
         }
 
-        public FileSystemMetadata GetFile(string path)
+        public FileSystemMetadata? GetFile(string path)
         {
-            var result = _fileCache.GetOrAdd(path, p =>
+            if (!_fileCache.TryGetValue(path, out var result))
             {
-                var file = _fileSystem.GetFileInfo(p);
-                return file != null && file.Exists ? file : null;
-            });
-
-            if (result == null)
-            {
-                // lets not store null results in the cache
-                _fileCache.TryRemove(path, out _);
+                var file = _fileSystem.GetFileInfo(path);
+                if (file.Exists)
+                {
+                    result = file;
+                    _fileCache.TryAdd(path, result);
+                }
             }
 
             return result;
@@ -63,14 +62,21 @@ namespace MediaBrowser.Controller.Providers
         public IReadOnlyList<string> GetFilePaths(string path)
             => GetFilePaths(path, false);
 
-        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache)
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
         {
             if (clearCache)
             {
                 _filePathCache.TryRemove(path, out _);
             }
 
-            return _filePathCache.GetOrAdd(path, p => _fileSystem.GetFilePaths(p).ToList());
+            var filePaths = _filePathCache.GetOrAdd(path, (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+
+            if (sort)
+            {
+                filePaths.Sort();
+            }
+
+            return filePaths;
         }
     }
 }

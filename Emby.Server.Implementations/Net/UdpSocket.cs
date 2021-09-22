@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -189,7 +191,7 @@ namespace Emby.Server.Implementations.Net
             return taskCompletion.Task;
         }
 
-        public Task SendToAsync(byte[] buffer, int offset, int size, IPEndPoint endPoint, CancellationToken cancellationToken)
+        public Task SendToAsync(byte[] buffer, int offset, int bytes, IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -212,7 +214,7 @@ namespace Emby.Server.Implementations.Net
                 }
             };
 
-            var result = BeginSendTo(buffer, offset, size, endPoint, new AsyncCallback(callback), null);
+            var result = BeginSendTo(buffer, offset, bytes, endPoint, new AsyncCallback(callback), null);
 
             if (result.CompletedSynchronously)
             {

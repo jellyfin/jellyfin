@@ -1,14 +1,16 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using Jellyfin.XmlTv;
 using Jellyfin.XmlTv.Entities;
 using MediaBrowser.Common.Extensions;
@@ -80,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(path, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew))
+            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, AsyncFile.UseAsyncIO))
             {
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
@@ -88,11 +90,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return UnzipIfNeeded(path, cacheFile);
         }
 
-        private string UnzipIfNeeded(string originalUrl, string file)
+        private string UnzipIfNeeded(ReadOnlySpan<char> originalUrl, string file)
         {
-            string ext = Path.GetExtension(originalUrl.Split('?')[0]);
+            ReadOnlySpan<char> ext = Path.GetExtension(originalUrl.LeftPart('?'));
 
-            if (string.Equals(ext, ".gz", StringComparison.OrdinalIgnoreCase))
+            if (ext.Equals(".gz", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {

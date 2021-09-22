@@ -5,7 +5,7 @@ using System;
 
 namespace MediaBrowser.Model.Dlna
 {
-    public class ResolutionNormalizer
+    public static class ResolutionNormalizer
     {
         private static readonly ResolutionConfiguration[] Configurations =
             new[]
@@ -21,11 +21,7 @@ namespace MediaBrowser.Model.Dlna
 
         public static ResolutionOptions Normalize(
             int? inputBitrate,
-            int? unused1,
-            int? unused2,
             int outputBitrate,
-            string inputCodec,
-            string outputCodec,
             int? maxWidth,
             int? maxHeight)
         {

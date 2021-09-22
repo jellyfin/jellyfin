@@ -72,13 +72,13 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpPost("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> MarkPlayedItem(
+        public async Task<ActionResult<UserItemDataDto>> MarkPlayedItem(
             [FromRoute, Required] Guid userId,
             [FromRoute, Required] Guid itemId,
             [FromQuery, ModelBinder(typeof(LegacyDateTimeModelBinder))] DateTime? datePlayed)
         {
             var user = _userManager.GetUserById(userId);
-            var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
+            var session = await RequestHelpers.GetSession(_sessionManager, _authContext, Request).ConfigureAwait(false);
             var dto = UpdatePlayedStatus(user, itemId, true, datePlayed);
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
@@ -98,10 +98,10 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="OkResult"/> containing the <see cref="UserItemDataDto"/>.</returns>
         [HttpDelete("Users/{userId}/PlayedItems/{itemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<UserItemDataDto> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
+        public async Task<ActionResult<UserItemDataDto>> MarkUnplayedItem([FromRoute, Required] Guid userId, [FromRoute, Required] Guid itemId)
         {
             var user = _userManager.GetUserById(userId);
-            var session = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
+            var session = await RequestHelpers.GetSession(_sessionManager, _authContext, Request).ConfigureAwait(false);
             var dto = UpdatePlayedStatus(user, itemId, false, null);
             foreach (var additionalUserInfo in session.AdditionalUsers)
             {
@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> ReportPlaybackStart([FromBody] PlaybackStartInfo playbackStartInfo)
         {
             playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
-            playbackStartInfo.SessionId = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -139,7 +139,7 @@ namespace Jellyfin.Api.Controllers
         public async Task<ActionResult> ReportPlaybackProgress([FromBody] PlaybackProgressInfo playbackProgressInfo)
         {
             playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
-            playbackProgressInfo.SessionId = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -152,7 +152,7 @@ namespace Jellyfin.Api.Controllers
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/Playing/Ping")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PingPlaybackSession([FromQuery] string playSessionId)
+        public ActionResult PingPlaybackSession([FromQuery, Required] string playSessionId)
         {
             _transcodingJobHelper.PingTranscodingJob(playSessionId, null);
             return NoContent();
@@ -171,10 +171,11 @@ namespace Jellyfin.Api.Controllers
             _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
             {
-                await _transcodingJobHelper.KillTranscodingJobs(_authContext.GetAuthorizationInfo(Request).DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
+                var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+                await _transcodingJobHelper.KillTranscodingJobs(authInfo.DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
             }
 
-            playbackStopInfo.SessionId = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -202,9 +203,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? mediaSourceId,
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
-            [FromQuery] PlayMethod playMethod,
+            [FromQuery] PlayMethod? playMethod,
             [FromQuery] string? liveStreamId,
-            [FromQuery] string playSessionId,
+            [FromQuery] string? playSessionId,
             [FromQuery] bool canSeek = false)
         {
             var playbackStartInfo = new PlaybackStartInfo
@@ -214,13 +215,13 @@ namespace Jellyfin.Api.Controllers
                 MediaSourceId = mediaSourceId,
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
-                PlayMethod = playMethod,
+                PlayMethod = playMethod ?? PlayMethod.Transcode,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId
             };
 
             playbackStartInfo.PlayMethod = ValidatePlayMethod(playbackStartInfo.PlayMethod, playbackStartInfo.PlaySessionId);
-            playbackStartInfo.SessionId = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            playbackStartInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             await _sessionManager.OnPlaybackStart(playbackStartInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -254,10 +255,10 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? audioStreamIndex,
             [FromQuery] int? subtitleStreamIndex,
             [FromQuery] int? volumeLevel,
-            [FromQuery] PlayMethod playMethod,
+            [FromQuery] PlayMethod? playMethod,
             [FromQuery] string? liveStreamId,
-            [FromQuery] string playSessionId,
-            [FromQuery] RepeatMode repeatMode,
+            [FromQuery] string? playSessionId,
+            [FromQuery] RepeatMode? repeatMode,
             [FromQuery] bool isPaused = false,
             [FromQuery] bool isMuted = false)
         {
@@ -271,14 +272,14 @@ namespace Jellyfin.Api.Controllers
                 AudioStreamIndex = audioStreamIndex,
                 SubtitleStreamIndex = subtitleStreamIndex,
                 VolumeLevel = volumeLevel,
-                PlayMethod = playMethod,
+                PlayMethod = playMethod ?? PlayMethod.Transcode,
                 PlaySessionId = playSessionId,
                 LiveStreamId = liveStreamId,
-                RepeatMode = repeatMode
+                RepeatMode = repeatMode ?? RepeatMode.RepeatNone
             };
 
             playbackProgressInfo.PlayMethod = ValidatePlayMethod(playbackProgressInfo.PlayMethod, playbackProgressInfo.PlaySessionId);
-            playbackProgressInfo.SessionId = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            playbackProgressInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             await _sessionManager.OnPlaybackProgress(playbackProgressInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -320,10 +321,11 @@ namespace Jellyfin.Api.Controllers
             _logger.LogDebug("ReportPlaybackStopped PlaySessionId: {0}", playbackStopInfo.PlaySessionId ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(playbackStopInfo.PlaySessionId))
             {
-                await _transcodingJobHelper.KillTranscodingJobs(_authContext.GetAuthorizationInfo(Request).DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
+                var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
+                await _transcodingJobHelper.KillTranscodingJobs(authInfo.DeviceId, playbackStopInfo.PlaySessionId, s => true).ConfigureAwait(false);
             }
 
-            playbackStopInfo.SessionId = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            playbackStopInfo.SessionId = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             await _sessionManager.OnPlaybackStopped(playbackStopInfo).ConfigureAwait(false);
             return NoContent();
         }
@@ -352,7 +354,7 @@ namespace Jellyfin.Api.Controllers
             return _userDataRepository.GetUserDataDto(item, user);
         }
 
-        private PlayMethod ValidatePlayMethod(PlayMethod method, string playSessionId)
+        private PlayMethod ValidatePlayMethod(PlayMethod method, string? playSessionId)
         {
             if (method == PlayMethod.Transcode)
             {

@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Jellyfin.Data.Interfaces;
@@ -13,39 +12,10 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionItem"/> class.
         /// </summary>
-        /// <param name="collection">The collection.</param>
-        /// <param name="previous">The previous item.</param>
-        /// <param name="next">The next item.</param>
-        public CollectionItem(Collection collection, CollectionItem previous, CollectionItem next)
+        /// <param name="libraryItem">The library item.</param>
+        public CollectionItem(LibraryItem libraryItem)
         {
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            collection.Items.Add(this);
-
-            if (next != null)
-            {
-                Next = next;
-                next.Previous = this;
-            }
-
-            if (previous != null)
-            {
-                Previous = previous;
-                previous.Next = this;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CollectionItem"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected CollectionItem()
-        {
+            LibraryItem = libraryItem;
         }
 
         /// <summary>
@@ -59,7 +29,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the library item.
@@ -75,7 +45,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// TODO check if this properly updated Dependant and has the proper principal relationship.
         /// </remarks>
-        public virtual CollectionItem Next { get; set; }
+        public virtual CollectionItem? Next { get; set; }
 
         /// <summary>
         /// Gets or sets the previous item in the collection.
@@ -83,7 +53,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// TODO check if this properly updated Dependant and has the proper principal relationship.
         /// </remarks>
-        public virtual CollectionItem Previous { get; set; }
+        public virtual CollectionItem? Previous { get; set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

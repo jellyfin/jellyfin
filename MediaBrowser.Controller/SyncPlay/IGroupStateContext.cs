@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -159,6 +161,12 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="playlistItemId">The new playing item identifier.</param>
         /// <returns><c>true</c> if the play queue has been changed; <c>false</c> if something went wrong.</returns>
         bool SetPlayingItem(Guid playlistItemId);
+
+        /// <summary>
+        /// Clears the play queue.
+        /// </summary>
+        /// <param name="clearPlayingItem">Whether to remove the playing item as well.</param>
+        void ClearPlayQueue(bool clearPlayingItem);
 
         /// <summary>
         /// Removes items from the play queue.

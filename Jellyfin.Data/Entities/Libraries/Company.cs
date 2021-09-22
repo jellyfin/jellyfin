@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -15,49 +13,36 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <summary>
         /// Initializes a new instance of the <see cref="Company"/> class.
         /// </summary>
-        /// <param name="owner">The owner of this company.</param>
-        public Company(IHasCompanies owner)
+        public Company()
         {
-            owner?.Companies.Add(this);
-
             CompanyMetadata = new HashSet<CompanyMetadata>();
+            ChildCompanies = new HashSet<Company>();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Company"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected Company()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the metadata.
+        /// Gets a collection containing the metadata.
         /// </summary>
-        public virtual ICollection<CompanyMetadata> CompanyMetadata { get; protected set; }
+        public virtual ICollection<CompanyMetadata> CompanyMetadata { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing this company's child companies.
+        /// Gets a collection containing this company's child companies.
         /// </summary>
-        public virtual ICollection<Company> ChildCompanies { get; protected set; }
+        public virtual ICollection<Company> ChildCompanies { get; private set; }
 
         /// <inheritdoc />
-        [NotMapped]
         public ICollection<Company> Companies => ChildCompanies;
 
         /// <inheritdoc />

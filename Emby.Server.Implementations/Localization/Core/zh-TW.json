@@ -1,6 +1,6 @@
 {
     "Albums": "專輯",
-    "AppDeviceValues": "軟體：{0}，裝置：{1}",
+    "AppDeviceValues": "App：{0}，裝置：{1}",
     "Application": "應用程式",
     "Artists": "演出者",
     "AuthenticationSucceededWithUserName": "{0} 成功授權",
@@ -24,7 +24,7 @@
     "HeaderFavoriteSongs": "最愛歌曲",
     "HeaderLiveTV": "電視直播",
     "HeaderNextUp": "接下來",
-    "HomeVideos": "自製影片",
+    "HomeVideos": "家庭影片",
     "ItemAddedWithName": "{0} 已新增至媒體庫",
     "ItemRemovedWithName": "{0} 已從媒體庫移除",
     "LabelIpAddressValue": "IP 位址：{0}",
@@ -37,7 +37,7 @@
     "MixedContent": "混合內容",
     "Movies": "電影",
     "Music": "音樂",
-    "MusicVideos": "音樂MV",
+    "MusicVideos": "音樂錄影帶",
     "NameInstallFailed": "{0} 安裝失敗",
     "NameSeasonNumber": "第 {0} 季",
     "NameSeasonUnknown": "未知季數",
@@ -117,5 +117,7 @@
     "TaskCleanActivityLog": "清除活動紀錄",
     "Undefined": "未定義的",
     "Forced": "強制",
-    "Default": "原本"
+    "Default": "原本",
+    "TaskOptimizeDatabaseDescription": "縮小資料庫並釋放可用空間。在掃描資料庫或進行資料庫相關的更動後使用此功能會增加效能。",
+    "TaskOptimizeDatabase": "最佳化資料庫"
 }

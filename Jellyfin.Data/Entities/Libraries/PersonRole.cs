@@ -1,6 +1,3 @@
-#pragma warning disable CA2227
-
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -18,39 +15,23 @@ namespace Jellyfin.Data.Entities.Libraries
         /// Initializes a new instance of the <see cref="PersonRole"/> class.
         /// </summary>
         /// <param name="type">The role type.</param>
-        /// <param name="itemMetadata">The metadata.</param>
-        public PersonRole(PersonRoleType type, ItemMetadata itemMetadata)
+        /// <param name="person">The person.</param>
+        public PersonRole(PersonRoleType type, Person person)
         {
             Type = type;
-
-            if (itemMetadata == null)
-            {
-                throw new ArgumentNullException(nameof(itemMetadata));
-            }
-
-            itemMetadata.PersonRoles.Add(this);
-
+            Person = person;
+            Artwork = new HashSet<Artwork>();
             Sources = new HashSet<MetadataProviderId>();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonRole"/> class.
-        /// </summary>
-        /// <remarks>
-        /// Default constructor. Protected due to required properties, but present because EF needs it.
-        /// </remarks>
-        protected PersonRole()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the name of the person's role.
@@ -60,7 +41,7 @@ namespace Jellyfin.Data.Entities.Libraries
         /// </remarks>
         [MaxLength(1024)]
         [StringLength(1024)]
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         /// <summary>
         /// Gets or sets the person's role type.
@@ -72,7 +53,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; protected set; }
+        public uint RowVersion { get; private set; }
 
         /// <summary>
         /// Gets or sets the person.
@@ -80,16 +61,15 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         public virtual Person Person { get; set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Artwork> Artwork { get; protected set; }
+        public virtual ICollection<Artwork> Artwork { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the metadata sources for this person role.
+        /// Gets a collection containing the metadata sources for this person role.
         /// </summary>
-        public virtual ICollection<MetadataProviderId> Sources { get; protected set; }
+        public virtual ICollection<MetadataProviderId> Sources { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

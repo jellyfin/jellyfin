@@ -1,5 +1,5 @@
 {
-    "MusicVideos": "Музичні кліпи",
+    "MusicVideos": "Музичні відеокліпи",
     "Music": "Музика",
     "Movies": "Фільми",
     "MessageApplicationUpdatedTo": "Jellyfin Server оновлено до версії {0}",
@@ -113,7 +113,7 @@
     "MessageNamedServerConfigurationUpdatedWithValue": "Розділ конфігурації сервера {0} оновлено",
     "Inherit": "Успадкувати",
     "HeaderRecordingGroups": "Групи запису",
-    "Forced": "Примусово",
+    "Forced": "Форсовані",
     "TaskCleanActivityLogDescription": "Видаляє старші за встановлений термін записи з журналу активності.",
     "TaskCleanActivityLog": "Очистити журнал активності",
     "Undefined": "Не визначено",

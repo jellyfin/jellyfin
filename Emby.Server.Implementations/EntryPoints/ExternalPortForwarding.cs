@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -7,7 +9,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -106,8 +107,6 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.StartDiscovery();
 
             _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-
-            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
         private void Stop()
@@ -118,13 +117,6 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
 
             _timer?.Dispose();
-
-            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
-        }
-
-        private void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
-        {
-            NatUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
         }
 
         private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)

@@ -9,6 +9,14 @@ namespace MediaBrowser.Model.Tasks
     public class TaskInfo
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="TaskInfo"/> class.
+        /// </summary>
+        public TaskInfo()
+        {
+            Triggers = Array.Empty<TaskTriggerInfo>();
+        }
+
+        /// <summary>
         /// Gets or sets the name.
         /// </summary>
         /// <value>The name.</value>
@@ -67,13 +75,5 @@ namespace MediaBrowser.Model.Tasks
         /// </summary>
         /// <value>The key.</value>
         public string Key { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TaskInfo"/> class.
-        /// </summary>
-        public TaskInfo()
-        {
-            Triggers = Array.Empty<TaskTriggerInfo>();
-        }
     }
 }

@@ -11,23 +11,15 @@ namespace Jellyfin.Api.Auth.SyncPlayAccessPolicy
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncPlayAccessRequirement"/> class.
         /// </summary>
-        /// <param name="requiredAccess">A value of <see cref="SyncPlayAccess"/>.</param>
-        public SyncPlayAccessRequirement(SyncPlayAccess requiredAccess)
+        /// <param name="requiredAccess">A value of <see cref="SyncPlayAccessRequirementType"/>.</param>
+        public SyncPlayAccessRequirement(SyncPlayAccessRequirementType requiredAccess)
         {
             RequiredAccess = requiredAccess;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SyncPlayAccessRequirement"/> class.
-        /// </summary>
-        public SyncPlayAccessRequirement()
-        {
-            RequiredAccess = null;
-        }
-
-        /// <summary>
         /// Gets the required SyncPlay access.
         /// </summary>
-        public SyncPlayAccess? RequiredAccess { get; }
+        public SyncPlayAccessRequirementType RequiredAccess { get; }
     }
 }

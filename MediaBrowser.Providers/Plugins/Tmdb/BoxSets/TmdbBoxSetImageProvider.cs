@@ -58,7 +58,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
 
             var language = item.GetPreferredMetadataLanguage();
 
-            var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken).ConfigureAwait(false);
+            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
+            var collection = await _tmdbClientManager.GetCollectionAsync(tmdbId, null, null, cancellationToken).ConfigureAwait(false);
 
             if (collection?.Images == null)
             {
@@ -100,7 +101,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 });
             }
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

@@ -77,6 +77,8 @@ chb|||Chibcha|chibcha
 che||ce|Chechen|tchétchène
 chg|||Chagatai|djaghataï
 chi|zho|zh|Chinese|chinois
+chi|zho|zh-tw|Chinese; Traditional|chinois
+chi|zho|zh-hk|Chinese; Hong Kong|chinois
 chk|||Chuukese|chuuk
 chm|||Mari|mari
 chn|||Chinook jargon|chinook, jargon

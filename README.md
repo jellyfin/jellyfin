@@ -29,9 +29,6 @@
 <a href="https://features.jellyfin.org">
 <img alt="Submit Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
 </a>
-<a href="https://forum.jellyfin.org">
-<img alt="Discuss on our Forum" src="https://img.shields.io/discourse/https/forum.jellyfin.org/users.svg"/>
-</a>
 <a href="https://matrix.to/#/+jellyfin:matrix.org">
 <img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
 </a>
@@ -43,6 +40,9 @@
 </a>
 <a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
 <img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
+</a>
+<a href="https://lgtm.com/projects/g/jellyfin/jellyfin/alerts/">
+<img alt="Total LGTM alerts" src="https://img.shields.io/lgtm/alerts/g/jellyfin/jellyfin.svg?logo=lgtm&logoWidth=18"/>
 </a>
 </p>
 
@@ -71,6 +71,8 @@ Check out our <a href="https://translate.jellyfin.org">Weblate instance</a> to h
 <img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
 </a>
 
+---
+
 ## Jellyfin Server
 
 This repository contains the code for Jellyfin's backend server. Note that this is only one of many projects under the Jellyfin GitHub [organization](https://github.com/jellyfin/) on GitHub. If you want to contribute, you can start by checking out our [documentation](https://jellyfin.org/docs/general/contributing/index.html) to see what to work on.
@@ -84,6 +86,8 @@ These instructions will help you get set up with a local development environment
 Before the project can be built, you must first install the [.NET 5.0 SDK](https://dotnet.microsoft.com/download) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
+
+[ffmpeg](https://github.com/jellyfin/jellyfin-ffmpeg) will also need to be installed.
 
 ### Cloning the Repository
 
@@ -104,12 +108,6 @@ There are three options to get the files for the web client.
 1. Download one of the finished builds from the [Azure DevOps pipeline](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27). You can download the build for a specific release by looking at the [branches tab](https://dev.azure.com/jellyfin-project/jellyfin/_build?definitionId=27&_a=summary&repositoryFilter=6&view=branches) of the pipelines page.
 2. Build them from source following the instructions on the [jellyfin-web repository](https://github.com/jellyfin/jellyfin-web)
 3. Get the pre-built files from an existing installation of the server. For example, with a Windows server installation the client files are located at `C:\Program Files\Jellyfin\Server\jellyfin-web`
-
-Once you have a copy of the built web client files, you need to copy them into a specific directory.
-
-> `<repository root>/Mediabrowser.WebDashboard/jellyfin-web`
-
-As part of the build process, this folder will be copied to the build output directory, where it can be accessed by the server.
 
 ### Running The Server
 
@@ -133,7 +131,7 @@ To run the server from the command line you can use the `dotnet run` command. Th
 
 ```bash
 cd jellyfin                          # Move into the repository directory
-dotnet run --project Jellyfin.Server # Run the server startup project
+dotnet run --project Jellyfin.Server --webdir /absolute/path/to/jellyfin-web/dist # Run the server startup project
 ```
 
 A second option is to build the project and then run the resulting executable file directly. When running the executable directly you can easily add command line options. Add the `--help` flag to list details on all the supported command line options.
@@ -169,3 +167,13 @@ switch `--nowebclient` or the environment variable `JELLYFIN_NOWEBCONTENT=true`.
 Since this is a common scenario, there is also a separate launch profile defined for Visual Studio called `Jellyfin.Server (nowebcontent)` that can be selected from the 'Start Debugging' dropdown in the main toolbar.
 
 **NOTE:** The setup wizard can not be run if the web client is hosted separately.
+
+---
+<p align="center">
+This project is supported by:
+<br/>
+<br/>
+<a href="https://www.digitalocean.com"><img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/SVG/DO_Logo_horizontal_blue.svg" height="50px" alt="DigitalOcean"></a>
+    &nbsp;
+<a href="https://www.jetbrains.com"><img src="https://gist.githubusercontent.com/anthonylavado/e8b2403deee9581e0b4cb8cd675af7db/raw/fa104b7d73f759d7262794b94569f1b89df41c0b/jetbrains.svg" height="50px" alt="JetBrains logo"></a>
+</p>

@@ -37,7 +37,7 @@ namespace Jellyfin.Api.ModelBinders
                 }
                 catch (FormatException e)
                 {
-                    _logger.LogWarning(e, "Error converting value.");
+                    _logger.LogDebug(e, "Error converting value.");
                 }
             }
 

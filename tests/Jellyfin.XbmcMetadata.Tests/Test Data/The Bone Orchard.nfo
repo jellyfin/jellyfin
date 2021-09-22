@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<episodedetails>
+    <title>The Bone Orchard</title>
+    <showtitle>American Gods</showtitle>
+    <ratings>
+        <rating name="tmdb" max="10" default="true">
+            <value>7.532000</value>
+            <votes>31</votes>
+        </rating>
+    </ratings>
+    <userrating>0</userrating>
+    <top250>0</top250>
+    <season>1</season>
+    <episode>1</episode>
+    <displayseason>-1</displayseason>
+    <displayepisode>-1</displayepisode>
+    <episodenumberend>1</episodenumberend>
+    <airsbefore_episode>1</airsbefore_episode>
+    <airsafter_season>2</airsafter_season>
+    <airsbefore_season>3</airsbefore_season>
+    <outline></outline>
+    <plot>When Shadow Moon is released from prison early after the death of his wife, he meets Mr. Wednesday and is recruited as his bodyguard. Shadow discovers that this may be more than he bargained for.</plot>
+    <tagline></tagline>
+    <runtime>0</runtime>
+    <thumb>http://image.tmdb.org/t/p/original/uvry4weK00pFLn7fxQ9M4m3Da2A.jpg</thumb>
+    <mpaa>16</mpaa>
+    <playcount>0</playcount>
+    <lastplayed></lastplayed>
+    <id>1276153</id>
+    <uniqueid type="tmdb" default="true">1276153</uniqueid>
+    <imdbId>tt5017734</imdbId>
+    <genre>Drama</genre>
+    <genre>Mystery</genre>
+    <genre>Sci-Fi &amp; Fantasy</genre>
+    <credits>Bryan Fuller</credits>
+    <credits>Michael Green</credits>
+    <director>David Slade</director>
+    <premiered>2017-04-30</premiered>
+    <year>2017</year>
+    <status></status>
+    <code></code>
+    <aired>2017-04-30</aired>
+    <studio>Starz</studio>
+    <trailer></trailer>
+    <actor>
+        <name>Jonathan Tucker</name>
+        <role>&apos;Low Key&apos; Lyesmith</role>
+        <order>10</order>
+        <thumb>http://image.tmdb.org/t/p/original/jvJpYDbwmUTACw7Yn7PKOP6CdlJ.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Demore Barnes</name>
+        <role>Mr. Ibis</role>
+        <order>11</order>
+        <thumb>http://image.tmdb.org/t/p/original/4rEVzSIFPgiN14xYQnjKcKQ7tYE.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Betty Gilpin</name>
+        <role>Audrey</role>
+        <order>12</order>
+        <thumb>http://image.tmdb.org/t/p/original/xFeqyem5i4Kf0nFjBZ4Oi9NM26k.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Beth Grant</name>
+        <role>Jack</role>
+        <order>13</order>
+        <thumb>http://image.tmdb.org/t/p/original/zAT9GvzJE0ytL3C36L461cgKI9p.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Joel Murray</name>
+        <role>Paunch</role>
+        <order>14</order>
+        <thumb>http://image.tmdb.org/t/p/original/t5syYfCgxbTC7XPrNeXhhhQULUf.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Ricky Whittle</name>
+        <role>Shadow Moon</role>
+        <order>0</order>
+        <thumb>http://image.tmdb.org/t/p/original/cjeDbVfBp6Qvb3C74Dfy7BKDTQN.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Ian McShane</name>
+        <role>Mr. Wednesday</role>
+        <order>1</order>
+        <thumb>http://image.tmdb.org/t/p/original/pY9ud4BJwHekNiO4MMItPbgkdAy.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Emily Browning</name>
+        <role>Laura Moon</role>
+        <order>2</order>
+        <thumb>http://image.tmdb.org/t/p/original/fa1Kyj02wxwcdS6EHb2i27TNXvU.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Pablo Schreiber</name>
+        <role>Mad Sweeney</role>
+        <order>3</order>
+        <thumb>http://image.tmdb.org/t/p/original/uo8YljeePz3pbj7gvWXdB4gOOW4.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Bruce Langley</name>
+        <role>Technical Boy</role>
+        <order>4</order>
+        <thumb>http://image.tmdb.org/t/p/original/f4EOWUmznLqboq8Ce7jnlkHVK3Y.jpg</thumb>
+    </actor>
+    <actor>
+        <name>Yetide Badaki</name>
+        <role>Bilquis</role>
+        <order>5</order>
+        <thumb>http://image.tmdb.org/t/p/original/qfzkREHuI1JvMxBteIAjKX8qMEr.jpg</thumb>
+    </actor>
+    <resume>
+        <position>0.000000</position>
+        <total>0.000000</total>
+    </resume>
+    <dateadded>2017-10-07 14:25:47</dateadded>
+</episodedetails>

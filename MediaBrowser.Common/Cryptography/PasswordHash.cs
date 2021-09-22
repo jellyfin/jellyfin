@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace MediaBrowser.Common.Cryptography
@@ -30,6 +29,16 @@ namespace MediaBrowser.Common.Cryptography
 
         public PasswordHash(string id, byte[] hash, byte[] salt, Dictionary<string, string> parameters)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            if (id.Length == 0)
+            {
+                throw new ArgumentException("String can't be empty", nameof(id));
+            }
+
             Id = id;
             _hash = hash;
             _salt = salt;
@@ -59,58 +68,109 @@ namespace MediaBrowser.Common.Cryptography
         /// <value>Return the hashed password.</value>
         public ReadOnlySpan<byte> Hash => _hash;
 
-        public static PasswordHash Parse(string hashString)
+        public static PasswordHash Parse(ReadOnlySpan<char> hashString)
         {
-            // The string should at least contain the hash function and the hash itself
-            string[] splitted = hashString.Split('$');
-            if (splitted.Length < 3)
+            if (hashString.IsEmpty)
             {
-                throw new ArgumentException("String doesn't contain enough segments", nameof(hashString));
+                throw new ArgumentException("String can't be empty", nameof(hashString));
             }
 
-            // Start at 1, the first index shouldn't contain any data
-            int index = 1;
+            if (hashString[0] != '$')
+            {
+                throw new FormatException("Hash string must start with a $");
+            }
 
-            // Name of the hash function
-            string id = splitted[index++];
+            // Ignore first $
+            hashString = hashString[1..];
+
+            int nextSegment = hashString.IndexOf('$');
+            if (hashString.IsEmpty || nextSegment == 0)
+            {
+                throw new FormatException("Hash string must contain a valid id");
+            }
+            else if (nextSegment == -1)
+            {
+                return new PasswordHash(hashString.ToString(), Array.Empty<byte>());
+            }
+
+            ReadOnlySpan<char> id = hashString[..nextSegment];
+            hashString = hashString[(nextSegment + 1)..];
+            Dictionary<string, string>? parameters = null;
+
+            nextSegment = hashString.IndexOf('$');
 
             // Optional parameters
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
-            if (splitted[index].IndexOf('=', StringComparison.Ordinal) != -1)
+            ReadOnlySpan<char> parametersSpan = nextSegment == -1 ? hashString : hashString[..nextSegment];
+            if (parametersSpan.Contains('='))
             {
-                foreach (string paramset in splitted[index++].Split(','))
+                while (!parametersSpan.IsEmpty)
                 {
-                    if (string.IsNullOrEmpty(paramset))
+                    ReadOnlySpan<char> parameter;
+                    int index = parametersSpan.IndexOf(',');
+                    if (index == -1)
                     {
-                        continue;
+                        parameter = parametersSpan;
+                        parametersSpan = ReadOnlySpan<char>.Empty;
+                    }
+                    else
+                    {
+                        parameter = parametersSpan[..index];
+                        parametersSpan = parametersSpan[(index + 1)..];
                     }
 
-                    string[] fields = paramset.Split('=');
-                    if (fields.Length != 2)
+                    int splitIndex = parameter.IndexOf('=');
+                    if (splitIndex == -1 || splitIndex == 0 || splitIndex == parameter.Length - 1)
                     {
-                        throw new InvalidDataException($"Malformed parameter in password hash string {paramset}");
+                        throw new FormatException("Malformed parameter in password hash string");
                     }
 
-                    parameters.Add(fields[0], fields[1]);
+                    (parameters ??= new Dictionary<string, string>()).Add(
+                        parameter[..splitIndex].ToString(),
+                        parameter[(splitIndex + 1)..].ToString());
                 }
+
+                if (nextSegment == -1)
+                {
+                    // parameters can't be null here
+                    return new PasswordHash(id.ToString(), Array.Empty<byte>(), Array.Empty<byte>(), parameters!);
+                }
+
+                hashString = hashString[(nextSegment + 1)..];
+                nextSegment = hashString.IndexOf('$');
+            }
+
+            if (nextSegment == 0)
+            {
+                throw new FormatException("Hash string contains an empty segment");
             }
 
             byte[] hash;
             byte[] salt;
 
-            // Check if the string also contains a salt
-            if (splitted.Length - index == 2)
+            if (nextSegment == -1)
             {
-                salt = Convert.FromHexString(splitted[index++]);
-                hash = Convert.FromHexString(splitted[index++]);
+                salt = Array.Empty<byte>();
+                hash = Convert.FromHexString(hashString);
             }
             else
             {
-                salt = Array.Empty<byte>();
-                hash = Convert.FromHexString(splitted[index++]);
+                salt = Convert.FromHexString(hashString[..nextSegment]);
+                hashString = hashString[(nextSegment + 1)..];
+                nextSegment = hashString.IndexOf('$');
+                if (nextSegment != -1)
+                {
+                    throw new FormatException("Hash string contains too many segments");
+                }
+
+                if (hashString.IsEmpty)
+                {
+                    throw new FormatException("Hash segment is empty");
+                }
+
+                hash = Convert.FromHexString(hashString);
             }
 
-            return new PasswordHash(id, hash, salt, parameters);
+            return new PasswordHash(id.ToString(), hash, salt, parameters ?? new Dictionary<string, string>());
         }
 
         private void SerializeParameters(StringBuilder stringBuilder)
@@ -147,8 +207,13 @@ namespace MediaBrowser.Common.Cryptography
                     .Append(Convert.ToHexString(_salt));
             }
 
-            return str.Append('$')
-                .Append(Convert.ToHexString(_hash)).ToString();
+            if (_hash.Length != 0)
+            {
+                str.Append('$')
+                    .Append(Convert.ToHexString(_hash));
+            }
+
+            return str.ToString();
         }
     }
 }
