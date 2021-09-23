@@ -34,16 +34,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     if (info.OriginalAirDate.Value.Date.Equals(info.StartDate.Date))
                     {
-                        name += " " + GetDateString(info.StartDate);
+                        name += " " + GetDateTimeString(info.StartDate);
                     }
                     else
                     {
-                        name += " " + info.OriginalAirDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        name += " " + GetDateString(info.OriginalAirDate.Value);
                     }
                 }
                 else
                 {
-                    name += " " + GetDateString(info.StartDate);
+                    name += " " + GetDateTimeString(info.StartDate);
                 }
 
                 if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
@@ -62,15 +62,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
             else
             {
-                name += " " + GetDateString(info.StartDate);
+                name += " " + GetDateTimeString(info.StartDate);
             }
 
             return name;
         }
 
-        private static string GetDateString(DateTime date)
+        private static string GetDateTimeString(DateTime date)
         {
             return date.ToLocalTime().ToString("yyyy_MM_dd_HH_mm_ss", CultureInfo.InvariantCulture);
+        }
+
+        private static string GetDateString(DateTime date)
+        {
+            return date.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
     }
 }
