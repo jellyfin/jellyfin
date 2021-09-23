@@ -29,7 +29,7 @@ namespace Jellyfin.MediaEncoding.Keyframes
         /// <param name="filePath">Absolute file path to the media file.</param>
         /// <param name="ffProbePath">Absolute file path to the ffprobe executable.</param>
         /// <param name="ffToolPath">Absolute file path to the fftool executable.</param>
-        /// <returns></returns>
+        /// <returns>An instance of <see cref="KeyframeData"/>.</returns>
         public KeyframeData GetKeyframeData(string filePath, string ffProbePath, string ffToolPath)
         {
             var extension = Path.GetExtension(filePath);

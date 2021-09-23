@@ -49,7 +49,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions
         /// Reads from the start of the file to retrieve the SeekHead segment.
         /// </summary>
         /// <param name="reader">An instance of <see cref="EbmlReader"/>.</param>
-        /// <returns>Instance of <see cref="SeekHead"/></returns>
+        /// <returns>Instance of <see cref="SeekHead"/>.</returns>
         internal static SeekHead ReadSeekHead(this EbmlReader reader)
         {
             reader = reader ?? throw new ArgumentNullException(nameof(reader));
@@ -121,7 +121,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions
         /// </summary>
         /// <param name="reader">An instance of <see cref="EbmlReader"/>.</param>
         /// <param name="position">The position of the info segment relative to the Segment container.</param>
-        /// <returns>Instance of <see cref="Info"/></returns>
+        /// <returns>Instance of <see cref="Info"/>.</returns>
         internal static Info ReadInfo(this EbmlReader reader, long position)
         {
             reader.ReadAt(position);
