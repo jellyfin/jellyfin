@@ -25,6 +25,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         string EncoderPath { get; }
 
         /// <summary>
+        /// Gets the probe path.
+        /// </summary>
+        /// <value>The probe path.</value>
+        string ProbePath { get; }
+
+        /// <summary>
         /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>

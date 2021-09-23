@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
+using Jellyfin.MediaEncoding.Hls.Extensions;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
@@ -104,6 +105,8 @@ namespace Jellyfin.Server
 
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();
+
+            services.AddHlsPlaylistGenerator();
         }
 
         /// <summary>

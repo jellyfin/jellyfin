@@ -91,6 +91,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
 
+        /// <inheritdoc />
+        public string ProbePath => _ffprobePath;
+
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
         /// Sets global variables FFmpegPath.

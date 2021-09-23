@@ -13,6 +13,7 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.MediaEncoding.Hls.Playlist;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -28,7 +29,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -54,6 +54,7 @@ namespace Jellyfin.Api.Controllers
         private readonly TranscodingJobHelper _transcodingJobHelper;
         private readonly ILogger<DynamicHlsController> _logger;
         private readonly EncodingHelper _encodingHelper;
+        private readonly IDynamicHlsPlaylistGenerator _dynamicHlsPlaylistGenerator;
         private readonly DynamicHlsHelper _dynamicHlsHelper;
         private readonly EncodingOptions _encodingOptions;
 
@@ -73,6 +74,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="logger">Instance of the <see cref="ILogger{DynamicHlsController}"/> interface.</param>
         /// <param name="dynamicHlsHelper">Instance of <see cref="DynamicHlsHelper"/>.</param>
         /// <param name="encodingHelper">Instance of <see cref="EncodingHelper"/>.</param>
+        /// <param name="dynamicHlsPlaylistGenerator">Instance of <see cref="IDynamicHlsPlaylistGenerator"/>.</param>
         public DynamicHlsController(
             ILibraryManager libraryManager,
             IUserManager userManager,
@@ -86,7 +88,8 @@ namespace Jellyfin.Api.Controllers
             TranscodingJobHelper transcodingJobHelper,
             ILogger<DynamicHlsController> logger,
             DynamicHlsHelper dynamicHlsHelper,
-            EncodingHelper encodingHelper)
+            EncodingHelper encodingHelper,
+            IDynamicHlsPlaylistGenerator dynamicHlsPlaylistGenerator)
         {
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -101,6 +104,7 @@ namespace Jellyfin.Api.Controllers
             _logger = logger;
             _dynamicHlsHelper = dynamicHlsHelper;
             _encodingHelper = encodingHelper;
+            _dynamicHlsPlaylistGenerator = dynamicHlsPlaylistGenerator;
 
             _encodingOptions = serverConfigurationManager.GetEncodingOptions();
         }
@@ -772,13 +776,15 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playlistId">The playlist id.</param>
         /// <param name="segmentId">The segment id.</param>
         /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
+        /// <param name="runtimeTicks">The position of the requested segment in ticks.</param>
+        /// <param name="actualSegmentLengthTicks">The length of the requested segment in ticks.</param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
         /// <param name="deviceProfileId">Optional. The dlna device profile id to utilize.</param>
         /// <param name="playSessionId">The play session id.</param>
         /// <param name="segmentContainer">The segment container.</param>
-        /// <param name="segmentLength">The segment lenght.</param>
+        /// <param name="segmentLength">The desired segment length.</param>
         /// <param name="minSegments">The minimum number of segments.</param>
         /// <param name="mediaSourceId">The media version id, if playing an alternate version.</param>
         /// <param name="deviceId">The device id of the client requesting. Used to stop encoding processes when needed.</param>
@@ -830,6 +836,8 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
             [FromRoute, Required] string container,
+            [FromQuery, Required] long runtimeTicks,
+            [FromQuery, Required] long actualSegmentLengthTicks,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -881,6 +889,8 @@ namespace Jellyfin.Api.Controllers
             var streamingRequest = new VideoRequestDto
             {
                 Id = itemId,
+                CurrentRuntimeTicks = runtimeTicks,
+                ActualSegmentLengthTicks = actualSegmentLengthTicks,
                 Container = container,
                 Static = @static ?? false,
                 Params = @params,
@@ -942,6 +952,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playlistId">The playlist id.</param>
         /// <param name="segmentId">The segment id.</param>
         /// <param name="container">The video container. Possible values are: ts, webm, asf, wmv, ogv, mp4, m4v, mkv, mpeg, mpg, avi, 3gp, wmv, wtv, m2ts, mov, iso, flv. </param>
+        /// <param name="runtimeTicks">The position of the requested segment in ticks.</param>
+        /// <param name="actualSegmentLengthTicks">The length of the requested segment in ticks.</param>
         /// <param name="static">Optional. If true, the original file will be streamed statically without any encoding. Use either no url extension or the original file extension. true/false.</param>
         /// <param name="params">The streaming parameters.</param>
         /// <param name="tag">The tag.</param>
@@ -1001,6 +1013,8 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] string playlistId,
             [FromRoute, Required] int segmentId,
             [FromRoute, Required] string container,
+            [FromQuery, Required] long runtimeTicks,
+            [FromQuery, Required] long actualSegmentLengthTicks,
             [FromQuery] bool? @static,
             [FromQuery] string? @params,
             [FromQuery] string? tag,
@@ -1054,6 +1068,8 @@ namespace Jellyfin.Api.Controllers
             {
                 Id = itemId,
                 Container = container,
+                CurrentRuntimeTicks = runtimeTicks,
+                ActualSegmentLengthTicks = actualSegmentLengthTicks,
                 Static = @static ?? false,
                 Params = @params,
                 Tag = tag,
@@ -1126,60 +1142,16 @@ namespace Jellyfin.Api.Controllers
                     cancellationTokenSource.Token)
                 .ConfigureAwait(false);
 
-            Response.Headers.Add(HeaderNames.Expires, "0");
+            var request = new CreateMainPlaylistRequest(
+                state.MediaPath,
+                state.SegmentLength * 1000,
+                state.RunTimeTicks ?? 0,
+                state.Request.SegmentContainer ?? string.Empty,
+                "hls1/main/",
+                Request.QueryString.ToString());
+            var playlist = _dynamicHlsPlaylistGenerator.CreateMainPlaylist(request);
 
-            var segmentLengths = GetSegmentLengths(state);
-
-            var segmentContainer = state.Request.SegmentContainer ?? "ts";
-
-            // http://ffmpeg.org/ffmpeg-all.html#toc-hls-2
-            var isHlsInFmp4 = string.Equals(segmentContainer, "mp4", StringComparison.OrdinalIgnoreCase);
-            var hlsVersion = isHlsInFmp4 ? "7" : "3";
-
-            var builder = new StringBuilder(128);
-
-            builder.AppendLine("#EXTM3U")
-                .AppendLine("#EXT-X-PLAYLIST-TYPE:VOD")
-                .Append("#EXT-X-VERSION:")
-                .Append(hlsVersion)
-                .AppendLine()
-                .Append("#EXT-X-TARGETDURATION:")
-                .Append(Math.Ceiling(segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength))
-                .AppendLine()
-                .AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
-
-            var index = 0;
-            var segmentExtension = GetSegmentFileExtension(streamingRequest.SegmentContainer);
-            var queryString = Request.QueryString;
-
-            if (isHlsInFmp4)
-            {
-                builder.Append("#EXT-X-MAP:URI=\"")
-                    .Append("hls1/")
-                    .Append(name)
-                    .Append("/-1")
-                    .Append(segmentExtension)
-                    .Append(queryString)
-                    .Append('"')
-                    .AppendLine();
-            }
-
-            foreach (var length in segmentLengths)
-            {
-                builder.Append("#EXTINF:")
-                    .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
-                    .AppendLine(", nodesc")
-                    .Append("hls1/")
-                    .Append(name)
-                    .Append('/')
-                    .Append(index++)
-                    .Append(segmentExtension)
-                    .Append(queryString)
-                    .AppendLine();
-            }
-
-            builder.AppendLine("#EXT-X-ENDLIST");
-            return new FileContentResult(Encoding.UTF8.GetBytes(builder.ToString()), MimeTypes.GetMimeType("playlist.m3u8"));
+            return new FileContentResult(Encoding.UTF8.GetBytes(playlist), MimeTypes.GetMimeType("playlist.m3u8"));
         }
 
         private async Task<ActionResult> GetDynamicSegment(StreamingRequestDto streamingRequest, int segmentId)
@@ -1280,7 +1252,7 @@ namespace Jellyfin.Api.Controllers
                                 DeleteLastFile(playlistPath, segmentExtension, 0);
                             }
 
-                            streamingRequest.StartTimeTicks = GetStartPositionTicks(state, segmentId);
+                            streamingRequest.StartTimeTicks = streamingRequest.CurrentRuntimeTicks;
 
                             state.WaitForPath = segmentPath;
                             job = await _transcodingJobHelper.StartFfMpeg(
@@ -1634,7 +1606,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     // Transcoding job is over, so assume all existing files are ready
                     _logger.LogDebug("serving up {0} as transcode is over", segmentPath);
-                    return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
+                    return GetSegmentResult(state, segmentPath, transcodingJob);
                 }
 
                 var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
@@ -1643,7 +1615,7 @@ namespace Jellyfin.Api.Controllers
                 if (segmentIndex < currentTranscodingIndex)
                 {
                     _logger.LogDebug("serving up {0} as transcode index {1} is past requested point {2}", segmentPath, currentTranscodingIndex, segmentIndex);
-                    return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
+                    return GetSegmentResult(state, segmentPath, transcodingJob);
                 }
             }
 
@@ -1658,8 +1630,8 @@ namespace Jellyfin.Api.Controllers
                     {
                         if (transcodingJob.HasExited || System.IO.File.Exists(nextSegmentPath))
                         {
-                            _logger.LogDebug("serving up {0} as it deemed ready", segmentPath);
-                            return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
+                            _logger.LogDebug("Serving up {SegmentPath} as it deemed ready", segmentPath);
+                            return GetSegmentResult(state, segmentPath, transcodingJob);
                         }
                     }
                     else
@@ -1690,16 +1662,16 @@ namespace Jellyfin.Api.Controllers
                 _logger.LogWarning("cannot serve {0} as it doesn't exist and no transcode is running", segmentPath);
             }
 
-            return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
+            return GetSegmentResult(state, segmentPath, transcodingJob);
         }
 
-        private ActionResult GetSegmentResult(StreamState state, string segmentPath, int index, TranscodingJobDto? transcodingJob)
+        private ActionResult GetSegmentResult(StreamState state, string segmentPath, TranscodingJobDto? transcodingJob)
         {
-            var segmentEndingPositionTicks = GetEndPositionTicks(state, index);
+            var segmentEndingPositionTicks = state.Request.CurrentRuntimeTicks + state.Request.ActualSegmentLengthTicks;
 
             Response.OnCompleted(() =>
             {
-                _logger.LogDebug("finished serving {0}", segmentPath);
+                _logger.LogDebug("Finished serving {SegmentPath}", segmentPath);
                 if (transcodingJob != null)
                 {
                     transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
@@ -1710,29 +1682,6 @@ namespace Jellyfin.Api.Controllers
             });
 
             return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath)!, false, HttpContext);
-        }
-
-        private long GetEndPositionTicks(StreamState state, int requestedIndex)
-        {
-            double startSeconds = 0;
-            var lengths = GetSegmentLengths(state);
-
-            if (requestedIndex >= lengths.Length)
-            {
-                var msg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Invalid segment index requested: {0} - Segment count: {1}",
-                    requestedIndex,
-                    lengths.Length);
-                throw new ArgumentException(msg);
-            }
-
-            for (var i = 0; i <= requestedIndex; i++)
-            {
-                startSeconds += lengths[i];
-            }
-
-            return TimeSpan.FromSeconds(startSeconds).Ticks;
         }
 
         private int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
@@ -1812,30 +1761,6 @@ namespace Jellyfin.Api.Controllers
             {
                 _logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
             }
-        }
-
-        private long GetStartPositionTicks(StreamState state, int requestedIndex)
-        {
-            double startSeconds = 0;
-            var lengths = GetSegmentLengths(state);
-
-            if (requestedIndex >= lengths.Length)
-            {
-                var msg = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Invalid segment index requested: {0} - Segment count: {1}",
-                    requestedIndex,
-                    lengths.Length);
-                throw new ArgumentException(msg);
-            }
-
-            for (var i = 0; i < requestedIndex; i++)
-            {
-                startSeconds += lengths[i];
-            }
-
-            var position = TimeSpan.FromSeconds(startSeconds).Ticks;
-            return position;
         }
     }
 }
