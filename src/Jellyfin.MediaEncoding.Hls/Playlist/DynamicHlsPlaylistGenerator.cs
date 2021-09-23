@@ -19,12 +19,13 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
     /// <inheritdoc />
     public class DynamicHlsPlaylistGenerator : IDynamicHlsPlaylistGenerator
     {
+        private const string DefaultContainerExtension = ".ts";
+
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IApplicationPaths _applicationPaths;
         private readonly KeyframeExtractor _keyframeExtractor;
-        private const string DefaultContainerExtension = ".ts";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHlsPlaylistGenerator"/> class.

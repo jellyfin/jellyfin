@@ -9,7 +9,7 @@
         /// Creates the main playlist containing the main video or audio stream.
         /// </summary>
         /// <param name="request">An instance of the <see cref="CreateMainPlaylistRequest"/> class.</param>
-        /// <returns></returns>
+        /// <returns>The playlist as a formatted string.</returns>
         string CreateMainPlaylist(CreateMainPlaylistRequest request);
     }
 }
