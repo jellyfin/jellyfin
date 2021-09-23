@@ -2,6 +2,9 @@
 
 namespace Jellyfin.MediaEncoding.Keyframes
 {
+    /// <summary>
+    /// Keyframe information for a specific file.
+    /// </summary>
     public class KeyframeData
     {
         /// <summary>

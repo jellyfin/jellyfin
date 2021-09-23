@@ -120,6 +120,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions
         /// Reads from SegmentContainer to retrieve the Info segment.
         /// </summary>
         /// <param name="reader">An instance of <see cref="EbmlReader"/>.</param>
+        /// <param name="position">The position of the info segment relative to the Segment container.</param>
         /// <returns>Instance of <see cref="Info"/></returns>
         internal static Info ReadInfo(this EbmlReader reader, long position)
         {
