@@ -70,9 +70,8 @@ RUN apt-get update && apt-get install -y gnupg libssl-dev ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /cache /config /media \
     && chmod 777 /cache /config /media \
-    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
-
-RUN git clone https://github.com/jocover/jetson-ffmpeg.git \
+    && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen \
+    && git clone https://github.com/jocover/jetson-ffmpeg.git \
     && cd jetson-ffmpeg \
     && git checkout 7baa3d8 \
     && mkdir build \
@@ -85,7 +84,7 @@ RUN git clone https://github.com/jocover/jetson-ffmpeg.git \
     && cd ffmpeg \
     && wget https://raw.githubusercontent.com/jocover/jetson-ffmpeg/7baa3d8232478b82799a90c37b86a986e4df1df2/ffmpeg_nvmpi.patch \
     && git apply ffmpeg_nvmpi.patch \
-    && ./configure --enable-libopus --enable-libmp3lame --enable-libvpx --enable-gpl --enable-libx265 --enable-libx264 --enable-nvmpi \
+    && ./configure --enable-libopus --enable-libmp3lame --enable-libvpx --enable-gpl --enable-libx265 --enable-libx264 --enable-nvmpi --prefix=/usr/ \
     && make -j$(nproc) \
     && make install
 
@@ -113,4 +112,4 @@ VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
     "--cachedir", "/cache", \
-    "--ffmpeg", "/usr/local/bin/ffmpeg"]
+    "--ffmpeg", "/usr/bin/ffmpeg"]
