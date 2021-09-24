@@ -1610,7 +1610,7 @@ namespace Emby.Server.Implementations.Data
                 if (reader.TryGetString(index++, out var lockedFields))
                 {
                     List<MetadataField> fields = null;
-                    foreach (var i in lockedFields.Split('|'))
+                    foreach (var i in lockedFields.AsSpan().Split('|'))
                     {
                         if (Enum.TryParse(i, true, out MetadataField parsedValue))
                         {
@@ -1645,7 +1645,7 @@ namespace Emby.Server.Implementations.Data
                     if (reader.TryGetString(index, out var trailerTypes))
                     {
                         List<TrailerType> types = null;
-                        foreach (var i in trailerTypes.Split('|'))
+                        foreach (var i in trailerTypes.AsSpan().Split('|'))
                         {
                             if (Enum.TryParse(i, true, out TrailerType parsedValue))
                             {
@@ -1653,7 +1653,7 @@ namespace Emby.Server.Implementations.Data
                             }
                         }
 
-                        trailer.TrailerTypes = types.ToArray() ?? Array.Empty<TrailerType>();
+                        trailer.TrailerTypes = types?.ToArray() ?? Array.Empty<TrailerType>();
                     }
                 }
 

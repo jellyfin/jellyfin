@@ -171,7 +171,7 @@ namespace MediaBrowser.Model.Net
         /// Gets the type of the MIME.
         /// </summary>
         /// <param name="filename">The filename to find the MIME type of.</param>
-        /// <param name="defaultValue">Theefault value to return if no fitting MIME type is found.</param>
+        /// <param name="defaultValue">The default value to return if no fitting MIME type is found.</param>
         /// <returns>The correct MIME type for the given filename, or <paramref name="defaultValue"/> if it wasn't found.</returns>
         [return: NotNullIfNotNullAttribute("defaultValue")]
         public static string? GetMimeType(string filename, string? defaultValue = null)
