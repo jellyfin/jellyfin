@@ -1,5 +1,5 @@
 {
-    "Albums": "البومات",
+    "Albums": "ألبومات",
     "AppDeviceValues": "تطبيق: {0}, جهاز: {1}",
     "Application": "تطبيق",
     "Artists": "الفنانين",
@@ -8,7 +8,7 @@
     "CameraImageUploadedFrom": "صورة كاميرا جديدة تم رفعها من {0}",
     "Channels": "القنوات",
     "ChapterNameValue": "الفصل {0}",
-    "Collections": "مجموعات",
+    "Collections": "التجميعات",
     "DeviceOfflineWithName": "قُطِع الاتصال ب{0}",
     "DeviceOnlineWithName": "{0} متصل",
     "FailedLoginAttemptWithUserName": "عملية تسجيل الدخول فشلت من {0}",
