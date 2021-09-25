@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -39,6 +37,9 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Initializes a new instance of the <see cref="UdpServerEntryPoint" /> class.
         /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger{UdpServerEntryPoint}"/> interface.</param>
+        /// <param name="appHost">Instance of the <see cref="IServerApplicationHost"/> interface.</param>
+        /// <param name="configuration">Instance of the <see cref="IConfiguration"/> interface.</param>
         public UdpServerEntryPoint(
             ILogger<UdpServerEntryPoint> logger,
             IServerApplicationHost appHost,
@@ -56,8 +57,8 @@ namespace Emby.Server.Implementations.EntryPoints
 
             try
             {
-                _udpServer = new UdpServer(_logger, _appHost, _config);
-                _udpServer.Start(PortNumber, _cancellationTokenSource.Token);
+                _udpServer = new UdpServer(_logger, _appHost, _config, PortNumber);
+                _udpServer.Start(_cancellationTokenSource.Token);
             }
             catch (SocketException ex)
             {

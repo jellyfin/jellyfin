@@ -117,5 +117,7 @@
     "TaskCleanActivityLogDescription": "Nodzēš darbību žurnāla ierakstus, kuri ir vecāki par doto vecumu.",
     "TaskCleanActivityLog": "Notīrīt Darbību Žurnālu",
     "Undefined": "Nenoteikts",
-    "Default": "Noklusējums"
+    "Default": "Noklusējums",
+    "TaskOptimizeDatabaseDescription": "Saspiež datubāzi un atbrīvo atmiņu. Uzdevum palaišana pēc bibliotēku skenēšanas vai citām, ar datubāzi saistītām, izmaiņām iespējams uzlabos ātrdarbību.",
+    "TaskOptimizeDatabase": "Optimizēt datubāzi"
 }

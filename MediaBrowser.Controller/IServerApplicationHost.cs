@@ -1,6 +1,7 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using MediaBrowser.Common;
@@ -14,8 +15,6 @@ namespace MediaBrowser.Controller
     /// </summary>
     public interface IServerApplicationHost : IApplicationHost
     {
-        event EventHandler HasUpdateAvailableChanged;
-
         bool CoreStartupHasCompleted { get; }
 
         bool CanLaunchWebBrowser { get; }
@@ -36,12 +35,6 @@ namespace MediaBrowser.Controller
         /// Gets a value indicating whether the server should listen on an HTTPS port.
         /// </summary>
         bool ListenWithHttps { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has update available.
-        /// </summary>
-        /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
-        bool HasUpdateAvailable { get; }
 
         /// <summary>
         /// Gets the name of the friendly.
@@ -109,13 +102,6 @@ namespace MediaBrowser.Controller
         /// </param>
         /// <returns>The API URL.</returns>
         string GetLocalApiUrl(string hostname, string scheme = null, int? port = null);
-
-        /// <summary>
-        /// Open a URL in an external browser window.
-        /// </summary>
-        /// <param name="url">The URL to open.</param>
-        /// <exception cref="NotSupportedException"><see cref="CanLaunchWebBrowser"/> is false.</exception>
-        void LaunchUrl(string url);
 
         IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo();
 

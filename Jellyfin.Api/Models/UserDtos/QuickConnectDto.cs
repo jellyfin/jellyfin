@@ -8,9 +8,9 @@ namespace Jellyfin.Api.Models.UserDtos
     public class QuickConnectDto
     {
         /// <summary>
-        /// Gets or sets the quick connect token.
+        /// Gets or sets the quick connect secret.
         /// </summary>
         [Required]
-        public string? Token { get; set; }
+        public string Secret { get; set; } = null!;
     }
 }

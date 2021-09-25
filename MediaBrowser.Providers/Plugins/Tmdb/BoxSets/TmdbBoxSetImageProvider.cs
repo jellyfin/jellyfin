@@ -101,7 +101,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
                 });
             }
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

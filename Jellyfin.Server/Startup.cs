@@ -8,6 +8,7 @@ using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.HappyEyeballs;
 using Jellyfin.Server.Extensions;
 using Jellyfin.Server.Implementations;
+using Jellyfin.Server.Infrastructure;
 using Jellyfin.Server.Middleware;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -15,6 +16,8 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,6 +60,9 @@ namespace Jellyfin.Server
             {
                 options.HttpsPort = _serverApplicationHost.HttpsPort;
             });
+
+            // TODO remove once this is fixed upstream https://github.com/dotnet/aspnetcore/issues/34371
+            services.AddSingleton<IActionResultExecutor<PhysicalFileResult>, SymlinkFollowingPhysicalFileResultExecutor>();
             services.AddJellyfinApi(_serverApplicationHost.GetApiPluginAssemblies(), _serverConfigurationManager.GetNetworkConfiguration());
 
             services.AddJellyfinApiSwagger();
@@ -177,6 +183,7 @@ namespace Jellyfin.Server
 
                 mainApp.UseAuthentication();
                 mainApp.UseJellyfinApiSwagger(_serverConfigurationManager);
+                mainApp.UseQueryStringDecoding();
                 mainApp.UseRouting();
                 mainApp.UseAuthorization();
 

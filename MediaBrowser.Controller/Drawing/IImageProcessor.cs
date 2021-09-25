@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#nullable enable
 
 using System;
 using System.Collections.Generic;
@@ -59,7 +58,7 @@ namespace MediaBrowser.Controller.Drawing
         /// <returns>Guid.</returns>
         string GetImageCacheTag(BaseItem item, ItemImageInfo image);
 
-        string GetImageCacheTag(BaseItem item, ChapterInfo info);
+        string GetImageCacheTag(BaseItem item, ChapterInfo chapter);
 
         string? GetImageCacheTag(User user);
 

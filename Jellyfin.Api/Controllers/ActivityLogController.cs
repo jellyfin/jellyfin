@@ -47,7 +47,7 @@ namespace Jellyfin.Api.Controllers
         {
             return await _activityManager.GetPagedResultAsync(new ActivityLogQuery
             {
-                StartIndex = startIndex,
+                Skip = startIndex,
                 Limit = limit,
                 MinDate = minDate,
                 HasUserId = hasUserId

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -43,10 +45,12 @@ namespace Emby.Dlna.PlayTo
                     header,
                     cancellationToken)
                 .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             return await XDocument.LoadAsync(
                 stream,
-                LoadOptions.PreserveWhitespace,
+                LoadOptions.None,
                 cancellationToken).ConfigureAwait(false);
         }
 
@@ -84,6 +88,7 @@ namespace Emby.Dlna.PlayTo
             using var response = await _httpClientFactory.CreateClient(NamedClient.DirectIp)
                 .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<XDocument> GetDataAsync(string url, CancellationToken cancellationToken)
@@ -92,12 +97,13 @@ namespace Emby.Dlna.PlayTo
             options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.DirectIp).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 return await XDocument.LoadAsync(
                     stream,
-                    LoadOptions.PreserveWhitespace,
+                    LoadOptions.None,
                     cancellationToken).ConfigureAwait(false);
             }
             catch

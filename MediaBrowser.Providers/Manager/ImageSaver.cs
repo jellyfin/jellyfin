@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(mimeType));
             }
 
-            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && !(item is Audio);
+            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && item is not Audio;
 
             if (type != ImageType.Primary && item is Episode)
             {

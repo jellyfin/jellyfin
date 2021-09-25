@@ -1,5 +1,8 @@
-#pragma warning disable CS1591
+#nullable disable
 
+#pragma warning disable CA1711, CS1591
+
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
@@ -23,5 +26,7 @@ namespace MediaBrowser.Controller.Library
         Task Open(CancellationToken openCancellationToken);
 
         Task Close();
+
+        Stream GetStream();
     }
 }

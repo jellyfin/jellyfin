@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -25,6 +27,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
     {
         private string _channel;
         private string _program;
+
         public LegacyHdHomerunChannelCommands(string url)
         {
             // parse url for channel and program

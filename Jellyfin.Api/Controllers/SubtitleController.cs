@@ -196,7 +196,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="startPositionTicks">The start position of the subtitle in ticks.</param>
         /// <response code="200">File returned.</response>
         /// <returns>A <see cref="FileContentResult"/> with the subtitle file.</returns>
-        [HttpGet("Videos/{routeItemId}/routeMediaSourceId/Subtitles/{routeIndex}/Stream.{routeFormat}")]
+        [HttpGet("Videos/{routeItemId}/{routeMediaSourceId}/Subtitles/{routeIndex}/Stream.{routeFormat}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesFile("text/*")]
         public async Task<ActionResult> GetSubtitle(
@@ -361,7 +361,7 @@ namespace Jellyfin.Api.Controllers
 
             long positionTicks = 0;
 
-            var accessToken = _authContext.GetAuthorizationInfo(Request).Token;
+            var accessToken = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).Token;
 
             while (positionTicks < runtime)
             {

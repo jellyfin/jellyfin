@@ -21,11 +21,11 @@ using Jellyfin.Api.Constants;
 using Jellyfin.Api.Controllers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions.Json;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Server.Configuration;
 using Jellyfin.Server.Filters;
 using Jellyfin.Server.Formatters;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Entities;
 using Microsoft.AspNetCore.Authentication;
@@ -278,7 +278,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Name = "X-Emby-Authorization",
+                    Name = "Authorization",
                     Description = "API key header parameter"
                 });
 
@@ -303,7 +303,7 @@ namespace Jellyfin.Server.Extensions
                     {
                         description.TryGetMethodInfo(out MethodInfo methodInfo);
                         // Attribute name, method name, none.
-                        return description?.ActionDescriptor?.AttributeRouteInfo?.Name
+                        return description?.ActionDescriptor.AttributeRouteInfo?.Name
                                ?? methodInfo?.Name
                                ?? null;
                     });
@@ -341,7 +341,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     foreach (var address in host.GetAddresses())
                     {
-                        AddIpAddress(config, options, addr.Address, addr.PrefixLength);
+                        AddIpAddress(config, options, address, address.AddressFamily == AddressFamily.InterNetwork ? 32 : 128);
                     }
                 }
             }
@@ -397,7 +397,7 @@ namespace Jellyfin.Server.Extensions
                     Type = "object",
                     Properties = typeof(ImageType).GetEnumNames().ToDictionary(
                         name => name,
-                        name => new OpenApiSchema
+                        _ => new OpenApiSchema
                         {
                             Type = "object",
                             AdditionalProperties = new OpenApiSchema

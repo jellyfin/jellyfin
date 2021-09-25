@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var contentType = MimeTypes.GetMimeType(path);
-            return File(System.IO.File.OpenRead(path), contentType);
+            return File(AsyncFile.OpenRead(path), contentType);
         }
 
         /// <summary>

@@ -143,7 +143,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromQuery] Guid? userId,
+            [FromQuery] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
@@ -224,8 +224,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
+            var user = !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId)
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
@@ -241,7 +241,7 @@ namespace Jellyfin.Api.Controllers
             var item = _libraryManager.GetParentItem(parentId, userId);
             QueryResult<BaseItem> result;
 
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
@@ -285,7 +285,7 @@ namespace Jellyfin.Api.Controllers
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
-            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || !(item is UserRootFolder))
+            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || item is not UserRootFolder)
             {
                 var query = new InternalItemsQuery(user!)
                 {

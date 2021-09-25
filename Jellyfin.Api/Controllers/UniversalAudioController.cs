@@ -116,9 +116,9 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableRedirection = true)
         {
             var deviceProfile = GetDeviceProfile(container, transcodingContainer, audioCodec, transcodingProtocol, breakOnNonKeyFrames, transcodingAudioChannels, maxAudioSampleRate, maxAudioBitDepth, maxAudioChannels);
-            _authorizationContext.GetAuthorizationInfo(Request).DeviceId = deviceId;
+            (await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).DeviceId = deviceId;
 
-            var authInfo = _authorizationContext.GetAuthorizationInfo(Request);
+            var authInfo = await _authorizationContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", deviceProfile);
 
@@ -298,9 +298,9 @@ namespace Jellyfin.Api.Controllers
                 {
                     Type = DlnaProfileType.Audio,
                     Context = EncodingContext.Streaming,
-                    Container = transcodingContainer,
-                    AudioCodec = audioCodec,
-                    Protocol = transcodingProtocol,
+                    Container = transcodingContainer ?? "mp3",
+                    AudioCodec = audioCodec ?? "mp3",
+                    Protocol = transcodingProtocol ?? "http",
                     BreakOnNonKeyFrames = breakOnNonKeyFrames ?? false,
                     MaxAudioChannels = transcodingAudioChannels?.ToString(CultureInfo.InvariantCulture)
                 }

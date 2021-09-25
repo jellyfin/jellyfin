@@ -1,5 +1,4 @@
 #pragma warning disable CS1591
-#nullable enable
 
 namespace Emby.Server.Implementations
 {
@@ -11,7 +10,7 @@ namespace Emby.Server.Implementations
         string? FFmpegPath { get; }
 
         /// <summary>
-        /// Gets the value of the --service command line option.
+        /// Gets a value value indicating whether to run as service by the --service command line option.
         /// </summary>
         bool IsService { get; }
 

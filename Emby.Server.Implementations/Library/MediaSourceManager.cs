@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -13,7 +15,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -350,7 +352,7 @@ namespace Emby.Server.Implementations.Library
 
         private string[] NormalizeLanguage(string language)
         {
-            if (language == null)
+            if (string.IsNullOrEmpty(language))
             {
                 return Array.Empty<string>();
             }
@@ -379,8 +381,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredSubs = string.IsNullOrEmpty(user.SubtitleLanguagePreference)
-                ? Array.Empty<string>() : NormalizeLanguage(user.SubtitleLanguagePreference);
+            var preferredSubs = NormalizeLanguage(user.SubtitleLanguagePreference);
 
             var defaultAudioIndex = source.DefaultAudioStreamIndex;
             var audioLangage = defaultAudioIndex == null
@@ -409,9 +410,7 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            var preferredAudio = string.IsNullOrEmpty(user.AudioLanguagePreference)
-                ? Array.Empty<string>()
-                : NormalizeLanguage(user.AudioLanguagePreference);
+            var preferredAudio = NormalizeLanguage(user.AudioLanguagePreference);
 
             source.DefaultAudioStreamIndex = MediaStreamSelector.GetDefaultAudioStreamIndex(source.MediaStreams, preferredAudio, user.PlayDefaultAudioTrack);
         }
@@ -522,7 +521,7 @@ namespace Emby.Server.Implementations.Library
 
             // TODO: @bond Fix
             var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
-            _logger.LogInformation("Live stream opened: " + json);
+            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             if (!request.UserId.Equals(Guid.Empty))
@@ -588,22 +587,6 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate();
         }
 
-        public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
-        {
-            var info = _openStreams.Values.FirstOrDefault(i =>
-            {
-                var liveStream = i as ILiveStream;
-                if (liveStream != null)
-                {
-                    return string.Equals(liveStream.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return false;
-            });
-
-            return Task.FromResult(info as IDirectStreamProvider);
-        }
-
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
         {
             var result = await OpenLiveStreamInternal(request, cancellationToken).ConfigureAwait(false);
@@ -612,7 +595,8 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var liveStreamInfo = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var liveStreamInfo = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
 
             var mediaSource = liveStreamInfo.MediaSource;
 
@@ -648,7 +632,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    await using FileStream jsonStream = File.OpenRead(cacheFilePath);
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                     mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
@@ -781,18 +765,19 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate(true);
         }
 
-        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
+            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
-        private Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
+        public ILiveStream GetLiveStreamInfo(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -801,12 +786,16 @@ namespace Emby.Server.Implementations.Library
 
             if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
-                return Task.FromResult(info);
+                return info;
             }
-            else
-            {
-                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
-            }
+
+            return null;
+        }
+
+        /// <inheritdoc />
+        public ILiveStream GetLiveStreamInfoByUniqueId(string uniqueId)
+        {
+            return _openStreams.Values.FirstOrDefault(stream => string.Equals(uniqueId, stream?.UniqueId, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)

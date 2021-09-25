@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -11,12 +12,10 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 
 namespace Jellyfin.Api.Helpers
 {
@@ -97,6 +96,8 @@ namespace Jellyfin.Api.Helpers
             }
 
             bool isHeadRequest = _httpContextAccessor.HttpContext.Request.Method == System.Net.WebRequestMethods.Http.Head;
+
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
 
             using var state = await StreamingHelpers.GetStreamingState(
@@ -120,14 +121,15 @@ namespace Jellyfin.Api.Helpers
             {
                 StreamingHelpers.AddDlnaHeaders(state, _httpContextAccessor.HttpContext.Response.Headers, true, streamingRequest.StartTimeTicks, _httpContextAccessor.HttpContext.Request, _dlnaManager);
 
-                await new ProgressiveFileCopier(state.DirectStreamProvider, null, _transcodingJobHelper, CancellationToken.None)
-                    {
-                        AllowEndOfFile = false
-                    }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
-                    .ConfigureAwait(false);
+                var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
+                if (liveStreamInfo == null)
+                {
+                    throw new FileNotFoundException();
+                }
 
+                var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, MimeTypes.GetMimeType("file.ts")!);
+                return new FileStreamResult(liveStream, MimeTypes.GetMimeType("file.ts"));
             }
 
             // Static remote stream
@@ -159,13 +161,8 @@ namespace Jellyfin.Api.Helpers
 
                 if (state.MediaSource.IsInfiniteStream)
                 {
-                    await new ProgressiveFileCopier(state.MediaPath, null, _transcodingJobHelper, CancellationToken.None)
-                        {
-                            AllowEndOfFile = false
-                        }.WriteToAsync(_httpContextAccessor.HttpContext.Response.Body, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-                    return new FileStreamResult(_httpContextAccessor.HttpContext.Response.Body, contentType);
+                    var stream = new ProgressiveFileStream(state.MediaPath, null, _transcodingJobHelper);
+                    return new FileStreamResult(stream, contentType);
                 }
 
                 return FileStreamResponseHelpers.GetStaticFileResult(
