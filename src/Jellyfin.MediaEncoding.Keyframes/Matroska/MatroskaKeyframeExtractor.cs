@@ -49,7 +49,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.Matroska
 
                 if (trackNumber == videoTrackNumber)
                 {
-                    keyframes.Add(ScaleToNanoseconds(cueTime, info.TimestampScale));
+                    keyframes.Add(ScaleToTicks(cueTime, info.TimestampScale));
                 }
 
                 reader.LeaveContainer();
@@ -57,17 +57,17 @@ namespace Jellyfin.MediaEncoding.Keyframes.Matroska
 
             reader.LeaveContainer();
 
-            var result = new KeyframeData(ScaleToNanoseconds(info.Duration ?? 0, info.TimestampScale), keyframes);
+            var result = new KeyframeData(ScaleToTicks(info.Duration ?? 0, info.TimestampScale), keyframes);
             return result;
         }
 
-        private static long ScaleToNanoseconds(ulong unscaledValue, long timestampScale)
+        private static long ScaleToTicks(ulong unscaledValue, long timestampScale)
         {
             // TimestampScale is in nanoseconds, scale it to get the value in ticks, 1 tick == 100 ns
             return (long)unscaledValue * timestampScale / 100;
         }
 
-        private static long ScaleToNanoseconds(double unscaledValue, long timestampScale)
+        private static long ScaleToTicks(double unscaledValue, long timestampScale)
         {
             // TimestampScale is in nanoseconds, scale it to get the value in ticks, 1 tick == 100 ns
             return Convert.ToInt64(unscaledValue * timestampScale / 100);

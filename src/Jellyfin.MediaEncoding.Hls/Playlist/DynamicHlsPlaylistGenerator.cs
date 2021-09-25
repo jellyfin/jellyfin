@@ -26,6 +26,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IApplicationPaths _applicationPaths;
         private readonly KeyframeExtractor _keyframeExtractor;
+        private readonly ILogger<DynamicHlsPlaylistGenerator> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHlsPlaylistGenerator"/> class.
@@ -40,6 +41,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             _mediaEncoder = mediaEncoder;
             _applicationPaths = applicationPaths;
             _keyframeExtractor = new KeyframeExtractor(loggerFactory.CreateLogger<KeyframeExtractor>());
+            _logger = loggerFactory.CreateLogger<DynamicHlsPlaylistGenerator>();
         }
 
         private string KeyframeCachePath => Path.Combine(_applicationPaths.DataPath, "keyframes");
@@ -47,12 +49,13 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
         /// <inheritdoc />
         public string CreateMainPlaylist(CreateMainPlaylistRequest request)
         {
-            IReadOnlyList<double> segments;
-            if (IsExtractionAllowed(request.FilePath))
+            IReadOnlyList<double> segments = Array.Empty<double>();
+            if (IsExtractionAllowedForFile(request.FilePath))
             {
                 segments = ComputeSegments(request.FilePath, request.DesiredSegmentLengthMs);
             }
-            else
+
+            if (segments.Count == 0)
             {
                 segments = ComputeEqualLengthSegments(request.DesiredSegmentLengthMs, request.TotalRuntimeTicks);
             }
@@ -92,7 +95,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             foreach (var length in segments)
             {
                 builder.Append("#EXTINF:")
-                    .Append(length.ToString("0.0000", CultureInfo.InvariantCulture))
+                    .Append(length.ToString("0.000000", CultureInfo.InvariantCulture))
                     .AppendLine(", nodesc")
                     .Append(request.EndpointPrefix)
                     .Append(index++)
@@ -122,7 +125,16 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             }
             else
             {
-                keyframeData = _keyframeExtractor.GetKeyframeData(filePath, _mediaEncoder.ProbePath, string.Empty);
+                try
+                {
+                    keyframeData = _keyframeExtractor.GetKeyframeData(filePath, _mediaEncoder.ProbePath, string.Empty);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Keyframe extraction failed for path {FilePath}", filePath);
+                    return Array.Empty<double>();
+                }
+
                 CacheResult(cachePath, keyframeData);
             }
 
@@ -176,7 +188,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             return false;
         }
 
-        private bool IsExtractionAllowed(ReadOnlySpan<char> filePath)
+        private bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath)
         {
             // Remove the leading dot
             var extension = Path.GetExtension(filePath)[1..];

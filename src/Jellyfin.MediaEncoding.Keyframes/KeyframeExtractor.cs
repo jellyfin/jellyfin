@@ -32,25 +32,38 @@ namespace Jellyfin.MediaEncoding.Keyframes
         /// <returns>An instance of <see cref="KeyframeData"/>.</returns>
         public KeyframeData GetKeyframeData(string filePath, string ffProbePath, string ffToolPath)
         {
-            var extension = Path.GetExtension(filePath);
-            if (string.Equals(extension, ".mkv", StringComparison.OrdinalIgnoreCase))
+            var extension = Path.GetExtension(filePath.AsSpan());
+            if (extension.Equals(".mkv", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
                     return MatroskaKeyframeExtractor.GetKeyframeData(filePath);
                 }
-                catch (InvalidOperationException ex)
+                catch (Exception ex)
                 {
-                    _logger.LogError(ex, "{MatroskaKeyframeExtractor} failed to extract keyframes", nameof(MatroskaKeyframeExtractor));
+                    _logger.LogError(ex, "{ExtractorType} failed to extract keyframes", nameof(MatroskaKeyframeExtractor));
                 }
             }
 
-            if (!string.IsNullOrEmpty(ffToolPath))
+            try
             {
                 return FfToolKeyframeExtractor.GetKeyframeData(ffToolPath, filePath);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ExtractorType} failed to extract keyframes", nameof(FfToolKeyframeExtractor));
+            }
 
-            return FfProbeKeyframeExtractor.GetKeyframeData(ffProbePath, filePath);
+            try
+            {
+                return FfProbeKeyframeExtractor.GetKeyframeData(ffProbePath, filePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ExtractorType} failed to extract keyframes", nameof(FfProbeKeyframeExtractor));
+            }
+
+            return new KeyframeData(0, Array.Empty<long>());
         }
     }
 }
