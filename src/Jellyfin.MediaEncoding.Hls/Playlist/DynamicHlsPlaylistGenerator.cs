@@ -176,12 +176,18 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
 
         internal static bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath, string[] allowedExtensions)
         {
+            var extension = Path.GetExtension(filePath);
+            if (extension.IsEmpty)
+            {
+                return false;
+            }
+
             // Remove the leading dot
-            var extension = Path.GetExtension(filePath)[1..];
+            var extensionWithoutDot = extension[1..];
             for (var i = 0; i < allowedExtensions.Length; i++)
             {
                 var allowedExtension = allowedExtensions[i];
-                if (extension.Equals(allowedExtension, StringComparison.OrdinalIgnoreCase))
+                if (extensionWithoutDot.Equals(allowedExtension, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
