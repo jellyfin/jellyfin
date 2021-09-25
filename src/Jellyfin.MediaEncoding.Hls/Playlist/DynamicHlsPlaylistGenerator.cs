@@ -221,7 +221,14 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
 
         internal static double[] ComputeEqualLengthSegments(long desiredSegmentLengthMs, long totalRuntimeTicks)
         {
-            var segmentLengthTicks = TimeSpan.FromMilliseconds(desiredSegmentLengthMs).Ticks;
+            if (desiredSegmentLengthMs == 0 || totalRuntimeTicks == 0)
+            {
+                throw new InvalidOperationException($"Invalid segment length ({desiredSegmentLengthMs}) or runtime ticks ({totalRuntimeTicks})");
+            }
+
+            var desiredSegmentLength = TimeSpan.FromMilliseconds(desiredSegmentLengthMs);
+
+            var segmentLengthTicks = desiredSegmentLength.Ticks;
             var wholeSegments = totalRuntimeTicks / segmentLengthTicks;
             var remainingTicks = totalRuntimeTicks % segmentLengthTicks;
 
@@ -229,7 +236,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             var segments = new double[segmentsLen];
             for (int i = 0; i < wholeSegments; i++)
             {
-                segments[i] = desiredSegmentLengthMs;
+                segments[i] = desiredSegmentLength.TotalSeconds;
             }
 
             if (remainingTicks != 0)
