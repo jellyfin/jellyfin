@@ -52,18 +52,8 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
 
-                // Unencode and re-parse querystring.
-                var unencodedKey = HttpUtility.UrlDecode(key);
-
-                if (string.Equals(unencodedKey, key, StringComparison.Ordinal))
-                {
-                    // Don't do anything if it's not encoded.
-                    _store = value;
-                    return;
-                }
-
                 var pairs = new Dictionary<string, StringValues>();
-                var queryString = unencodedKey.SpanSplit('&');
+                var queryString = HttpUtility.UrlDecode(key).SpanSplit('&');
 
                 foreach (var pair in queryString)
                 {
