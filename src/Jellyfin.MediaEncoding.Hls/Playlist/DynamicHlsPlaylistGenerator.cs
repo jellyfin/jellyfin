@@ -198,6 +198,11 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
 
         internal static IReadOnlyList<double> ComputeSegments(KeyframeData keyframeData, int desiredSegmentLengthMs)
         {
+            if (keyframeData.KeyframeTicks.Count > 0 && keyframeData.TotalDuration < keyframeData.KeyframeTicks[^1])
+            {
+                throw new ArgumentException("Invalid duration in keyframe data", nameof(keyframeData));
+            }
+
             long lastKeyframe = 0;
             var result = new List<double>();
             // Scale the segment length to ticks to match the keyframes
@@ -219,7 +224,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             return result;
         }
 
-        internal static double[] ComputeEqualLengthSegments(long desiredSegmentLengthMs, long totalRuntimeTicks)
+        internal static double[] ComputeEqualLengthSegments(int desiredSegmentLengthMs, long totalRuntimeTicks)
         {
             if (desiredSegmentLengthMs == 0 || totalRuntimeTicks == 0)
             {
