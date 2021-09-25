@@ -52,10 +52,14 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
 
-                var pairs = new Dictionary<string, StringValues>();
-                var queryString = HttpUtility.UrlDecode(key).SpanSplit('&');
+                if (!key.Contains('='))
+                {
+                    _store = value;
+                    return;
+                }
 
-                foreach (var pair in queryString)
+                var pairs = new Dictionary<string, StringValues>();
+                foreach (var pair in key.SpanSplit('&'))
                 {
                     var i = pair.IndexOf('=');
                     if (i == -1)
