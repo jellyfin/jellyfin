@@ -132,7 +132,7 @@ namespace Jellyfin.Server.Infrastructure
                 FileAccess.Read,
                 FileShare.ReadWrite,
                 bufferSize: BufferSize,
-                options: (AsyncFile.UseAsyncIO ? FileOptions.Asynchronous : FileOptions.None) | FileOptions.SequentialScan);
+                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
 
             fileStream.Seek(offset, SeekOrigin.Begin);
             await StreamCopyOperation

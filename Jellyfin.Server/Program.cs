@@ -547,7 +547,7 @@ namespace Jellyfin.Server
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 

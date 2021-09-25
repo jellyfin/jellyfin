@@ -97,7 +97,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public Stream GetStream()
         {
-            var stream = GetInputStream(TempFilePath, AsyncFile.UseAsyncIO);
+            var stream = GetInputStream(TempFilePath);
             bool seekFile = (DateTime.UtcNow - DateOpened).TotalSeconds > 10;
             if (seekFile)
             {
@@ -107,14 +107,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return stream;
         }
 
-        protected FileStream GetInputStream(string path, bool allowAsyncFileRead)
+        protected FileStream GetInputStream(string path)
             => new FileStream(
                 path,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
                 IODefaults.FileStreamBufferSize,
-                allowAsyncFileRead ? FileOptions.SequentialScan | FileOptions.Asynchronous : FileOptions.SequentialScan);
+                FileOptions.SequentialScan | FileOptions.Asynchronous);
 
         protected async Task DeleteTempFiles(string path, int retryCount = 0)
         {
