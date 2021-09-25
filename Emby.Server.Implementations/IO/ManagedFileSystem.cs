@@ -246,9 +246,9 @@ namespace Emby.Server.Implementations.IO
                     {
                         try
                         {
-                            using (Stream thisFileStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 1))
+                            using (var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                             {
-                                result.Length = thisFileStream.Length;
+                                result.Length = RandomAccess.GetLength(fileHandle);
                             }
                         }
                         catch (FileNotFoundException ex)
