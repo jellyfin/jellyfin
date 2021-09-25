@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         cancellationToken,
                         timeOutSource.Token))
                     {
-                        var resTask = udpClient.ReceiveAsync();
+                        var resTask = udpClient.ReceiveAsync(linkedSource.Token).AsTask();
                         if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
                         {
                             resTask.Dispose();
