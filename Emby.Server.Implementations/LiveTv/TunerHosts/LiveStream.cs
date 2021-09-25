@@ -20,14 +20,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
     {
         private readonly IConfigurationManager _configurationManager;
 
-        protected readonly IFileSystem FileSystem;
-
-        protected readonly IStreamHelper StreamHelper;
-
-        protected string TempFilePath;
-        protected readonly ILogger Logger;
-        protected readonly CancellationTokenSource LiveStreamCancellationTokenSource = new CancellationTokenSource();
-
         public LiveStream(
             MediaSourceInfo mediaSource,
             TunerHostInfo tuner,
@@ -55,7 +47,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             SetTempFilePath("ts");
         }
 
-        protected virtual int EmptyReadLimit => 1000;
+        protected IFileSystem FileSystem { get; }
+
+        protected IStreamHelper StreamHelper { get; }
+
+        protected ILogger Logger { get; }
+
+        protected CancellationTokenSource LiveStreamCancellationTokenSource { get; } = new CancellationTokenSource();
+
+        protected string TempFilePath { get; set; }
 
         public MediaSourceInfo OriginalMediaSource { get; set; }
 
