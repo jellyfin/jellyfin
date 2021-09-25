@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
@@ -82,9 +83,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                header = header.Split('-')[^1];
-
-                if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
+                if (int.TryParse(header.AsSpan().RightPart('-'), NumberStyles.Integer, _usCulture, out var val))
                 {
                     return val;
                 }

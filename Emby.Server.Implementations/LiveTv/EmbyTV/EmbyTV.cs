@@ -1990,7 +1990,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                     writer.WriteElementString(
                         "dateadded",
-                        DateTime.UtcNow.ToLocalTime().ToString(DateAddedFormat, CultureInfo.InvariantCulture));
+                        DateTime.Now.ToString(DateAddedFormat, CultureInfo.InvariantCulture));
 
                     if (item.ProductionYear.HasValue)
                     {

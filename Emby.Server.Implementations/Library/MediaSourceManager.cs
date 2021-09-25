@@ -587,13 +587,6 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate();
         }
 
-        public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
-        {
-            var info = _openStreams.FirstOrDefault(i => i.Value != null && string.Equals(i.Value.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
-
-            return Task.FromResult(info.Value as IDirectStreamProvider);
-        }
-
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
         {
             var result = await OpenLiveStreamInternal(request, cancellationToken).ConfigureAwait(false);
@@ -602,7 +595,8 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var liveStreamInfo = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var liveStreamInfo = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
 
             var mediaSource = liveStreamInfo.MediaSource;
 
@@ -771,18 +765,19 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate(true);
         }
 
-        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
+            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
-        private Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
+        public ILiveStream GetLiveStreamInfo(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -791,12 +786,16 @@ namespace Emby.Server.Implementations.Library
 
             if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
-                return Task.FromResult(info);
+                return info;
             }
-            else
-            {
-                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
-            }
+
+            return null;
+        }
+
+        /// <inheritdoc />
+        public ILiveStream GetLiveStreamInfoByUniqueId(string uniqueId)
+        {
+            return _openStreams.Values.FirstOrDefault(stream => string.Equals(uniqueId, stream?.UniqueId, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)

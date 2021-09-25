@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.Data
                 dateText,
                 _datetimeFormats,
                 DateTimeFormatInfo.InvariantInfo,
-                DateTimeStyles.None).ToUniversalTime();
+                DateTimeStyles.AdjustToUniversal);
         }
 
         public static bool TryReadDateTime(this IReadOnlyList<ResultSetValue> reader, int index, out DateTime result)
@@ -108,9 +108,9 @@ namespace Emby.Server.Implementations.Data
 
             var dateText = item.ToString();
 
-            if (DateTime.TryParseExact(dateText, _datetimeFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out var dateTimeResult))
+            if (DateTime.TryParseExact(dateText, _datetimeFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AdjustToUniversal, out var dateTimeResult))
             {
-                result = dateTimeResult.ToUniversalTime();
+                result = dateTimeResult;
                 return true;
             }
 

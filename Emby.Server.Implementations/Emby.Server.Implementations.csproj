@@ -23,16 +23,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DiscUtils.Udf" Version="0.16.4" />
+    <PackageReference Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.10" />
     <PackageReference Include="Mono.Nat" Version="3.0.1" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.2.1" />
-    <PackageReference Include="sharpcompress" Version="0.28.3" />
+    <PackageReference Include="sharpcompress" Version="0.29.0" />
     <PackageReference Include="SQLitePCL.pretty.netstandard" Version="3.1.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.2" />
   </ItemGroup>
@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- https://github.com/microsoft/ApplicationInsights-dotnet/issues/2047 -->

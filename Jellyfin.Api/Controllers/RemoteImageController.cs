@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -199,13 +200,13 @@ namespace Jellyfin.Api.Controllers
                 throw new ResourceNotFoundException(nameof(response.Content.Headers.ContentType));
             }
 
-            var ext = response.Content.Headers.ContentType.MediaType.Split('/')[^1];
+            var ext = response.Content.Headers.ContentType.MediaType.AsSpan().RightPart('/').ToString();
             var fullCachePath = GetFullCachePath(urlHash + "." + ext);
 
             var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
             Directory.CreateDirectory(fullCacheDirectory);
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
 
             var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));

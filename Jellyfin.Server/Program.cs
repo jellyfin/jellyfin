@@ -195,9 +195,9 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await webHost.StartAsync().ConfigureAwait(false);
+                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex) when (ex is not TaskCanceledException)
                 {
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
@@ -547,7 +547,7 @@ namespace Jellyfin.Server
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 

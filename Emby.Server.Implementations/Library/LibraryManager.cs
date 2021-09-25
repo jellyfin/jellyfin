@@ -1250,10 +1250,8 @@ namespace Emby.Server.Implementations.Library
         private CollectionTypeOptions? GetCollectionType(string path)
         {
             var files = _fileSystem.GetFilePaths(path, new[] { ".collection" }, true, false);
-            foreach (var file in files)
+            foreach (ReadOnlySpan<char> file in files)
             {
-                // TODO: @bond use a ReadOnlySpan<char> here when Enum.TryParse supports it
-                // https://github.com/dotnet/runtime/issues/20008
                 if (Enum.TryParse<CollectionTypeOptions>(Path.GetFileNameWithoutExtension(file), true, out var res))
                 {
                     return res;
@@ -2714,7 +2712,7 @@ namespace Emby.Server.Implementations.Library
             var namingOptions = GetNamingOptions();
 
             var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => string.Equals(i.Name, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase))
+                .Where(i => string.Equals(i.Name, BaseItem.TrailersFolderName, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 
@@ -2758,7 +2756,7 @@ namespace Emby.Server.Implementations.Library
             var namingOptions = GetNamingOptions();
 
             var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => BaseItem.AllExtrasTypesFolderNames.Contains(i.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Where(i => BaseItem.AllExtrasTypesFolderNames.ContainsKey(i.Name ?? string.Empty))
                 .SelectMany(i => _fileSystem.GetFiles(i.FullName, _videoFileExtensions, false, false))
                 .ToList();
 

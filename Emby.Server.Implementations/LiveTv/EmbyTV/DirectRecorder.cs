@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Api.Helpers;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -46,20 +47,27 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO))
+            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
             {
                 onStarted();
 
-                _logger.LogInformation("Copying recording stream to file {0}", targetFile);
+                _logger.LogInformation("Copying recording to file {FilePath}", targetFile);
 
                 // The media source is infinite so we need to handle stopping ourselves
                 using var durationToken = new CancellationTokenSource(duration);
                 using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
+                var linkedCancellationToken = cancellationTokenSource.Token;
 
-                await directStreamProvider.CopyToAsync(output, cancellationTokenSource.Token).ConfigureAwait(false);
+                await using var fileStream = new ProgressiveFileStream(directStreamProvider.GetStream());
+                await _streamHelper.CopyToAsync(
+                    fileStream,
+                    output,
+                    IODefaults.CopyToBufferSize,
+                    1000,
+                    linkedCancellationToken).ConfigureAwait(false);
             }
 
-            _logger.LogInformation("Recording completed to file {0}", targetFile);
+            _logger.LogInformation("Recording completed: {FilePath}", targetFile);
         }
 
         private async Task RecordFromMediaSource(MediaSourceInfo mediaSource, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
@@ -72,7 +80,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, AsyncFile.UseAsyncIO);
+            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
 
             onStarted();
 

@@ -13,11 +13,10 @@ namespace Jellyfin.Api.Helpers
     /// </summary>
     public class ProgressiveFileStream : Stream
     {
-        private readonly FileStream _fileStream;
+        private readonly Stream _stream;
         private readonly TranscodingJobDto? _job;
-        private readonly TranscodingJobHelper _transcodingJobHelper;
+        private readonly TranscodingJobHelper? _transcodingJobHelper;
         private readonly int _timeoutMs;
-        private readonly bool _allowAsyncFileRead;
         private int _bytesWritten;
         private bool _disposed;
 
@@ -33,23 +32,25 @@ namespace Jellyfin.Api.Helpers
             _job = job;
             _transcodingJobHelper = transcodingJobHelper;
             _timeoutMs = timeoutMs;
-            _bytesWritten = 0;
 
-            var fileOptions = FileOptions.SequentialScan;
-            _allowAsyncFileRead = false;
+            _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        }
 
-            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            if (AsyncFile.UseAsyncIO)
-            {
-                fileOptions |= FileOptions.Asynchronous;
-                _allowAsyncFileRead = true;
-            }
-
-            _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressiveFileStream"/> class.
+        /// </summary>
+        /// <param name="stream">The stream to progressively copy.</param>
+        /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
+        public ProgressiveFileStream(Stream stream, int timeoutMs = 30000)
+        {
+            _job = null;
+            _transcodingJobHelper = null;
+            _timeoutMs = timeoutMs;
+            _stream = stream;
         }
 
         /// <inheritdoc />
-        public override bool CanRead => _fileStream.CanRead;
+        public override bool CanRead => _stream.CanRead;
 
         /// <inheritdoc />
         public override bool CanSeek => false;
@@ -70,13 +71,13 @@ namespace Jellyfin.Api.Helpers
         /// <inheritdoc />
         public override void Flush()
         {
-            _fileStream.Flush();
+            _stream.Flush();
         }
 
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return _fileStream.Read(buffer, offset, count);
+            return _stream.Read(buffer, offset, count);
         }
 
         /// <inheritdoc />
@@ -90,15 +91,7 @@ namespace Jellyfin.Api.Helpers
             while (remainingBytesToRead > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                int bytesRead;
-                if (_allowAsyncFileRead)
-                {
-                    bytesRead = await _fileStream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    bytesRead = _fileStream.Read(buffer, newOffset, remainingBytesToRead);
-                }
+                int bytesRead = await _stream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
 
                 remainingBytesToRead -= bytesRead;
                 newOffset += bytesRead;
@@ -152,11 +145,11 @@ namespace Jellyfin.Api.Helpers
             {
                 if (disposing)
                 {
-                    _fileStream.Dispose();
+                    _stream.Dispose();
 
                     if (_job != null)
                     {
-                        _transcodingJobHelper.OnTranscodeEndRequest(_job);
+                        _transcodingJobHelper?.OnTranscodeEndRequest(_job);
                     }
                 }
             }
