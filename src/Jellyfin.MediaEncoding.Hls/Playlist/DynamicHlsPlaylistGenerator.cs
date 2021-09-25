@@ -49,13 +49,12 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
         /// <inheritdoc />
         public string CreateMainPlaylist(CreateMainPlaylistRequest request)
         {
-            IReadOnlyList<double> segments = Array.Empty<double>();
-            if (IsExtractionAllowedForFile(request.FilePath))
+            IReadOnlyList<double> segments;
+            if (TryExtractKeyframes(request.FilePath, out var keyframeData))
             {
-                segments = ComputeSegments(request.FilePath, request.DesiredSegmentLengthMs);
+                segments = ComputeSegments(keyframeData, request.DesiredSegmentLengthMs);
             }
-
-            if (segments.Count == 0)
+            else
             {
                 segments = ComputeEqualLengthSegments(request.DesiredSegmentLengthMs, request.TotalRuntimeTicks);
             }
@@ -115,9 +114,14 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             return builder.ToString();
         }
 
-        private IReadOnlyList<double> ComputeSegments(string filePath, int desiredSegmentLengthMs)
+        private bool TryExtractKeyframes(string filePath, [NotNullWhen(true)] out KeyframeData? keyframeData)
         {
-            KeyframeData keyframeData;
+            keyframeData = null;
+            if (!IsExtractionAllowedForFile(filePath, _serverConfigurationManager.GetEncodingOptions().AllowAutomaticKeyframeExtractionForExtensions))
+            {
+                return false;
+            }
+
             var cachePath = GetCachePath(filePath);
             if (TryReadFromCache(cachePath, out var cachedResult))
             {
@@ -132,31 +136,13 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Keyframe extraction failed for path {FilePath}", filePath);
-                    return Array.Empty<double>();
+                    return false;
                 }
 
                 CacheResult(cachePath, keyframeData);
             }
 
-            long lastKeyframe = 0;
-            var result = new List<double>();
-            // Scale the segment length to ticks to match the keyframes
-            var desiredSegmentLengthTicks = TimeSpan.FromMilliseconds(desiredSegmentLengthMs).Ticks;
-            var desiredCutTime = desiredSegmentLengthTicks;
-            for (var j = 0; j < keyframeData.KeyframeTicks.Count; j++)
-            {
-                var keyframe = keyframeData.KeyframeTicks[j];
-                if (keyframe >= desiredCutTime)
-                {
-                    var currentSegmentLength = keyframe - lastKeyframe;
-                    result.Add(TimeSpan.FromTicks(currentSegmentLength).TotalSeconds);
-                    lastKeyframe = keyframe;
-                    desiredCutTime += desiredSegmentLengthTicks;
-                }
-            }
-
-            result.Add(TimeSpan.FromTicks(keyframeData.TotalDuration - lastKeyframe).TotalSeconds);
-            return result;
+            return keyframeData.KeyframeTicks.Count > 0;
         }
 
         private void CacheResult(string cachePath, KeyframeData keyframeData)
@@ -188,11 +174,10 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             return false;
         }
 
-        private bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath)
+        internal static bool IsExtractionAllowedForFile(ReadOnlySpan<char> filePath, string[] allowedExtensions)
         {
             // Remove the leading dot
             var extension = Path.GetExtension(filePath)[1..];
-            var allowedExtensions = _serverConfigurationManager.GetEncodingOptions().AllowAutomaticKeyframeExtractionForExtensions;
             for (var i = 0; i < allowedExtensions.Length; i++)
             {
                 var allowedExtension = allowedExtensions[i];
@@ -205,7 +190,30 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
             return false;
         }
 
-        private static double[] ComputeEqualLengthSegments(long desiredSegmentLengthMs, long totalRuntimeTicks)
+        internal static IReadOnlyList<double> ComputeSegments(KeyframeData keyframeData, int desiredSegmentLengthMs)
+        {
+            long lastKeyframe = 0;
+            var result = new List<double>();
+            // Scale the segment length to ticks to match the keyframes
+            var desiredSegmentLengthTicks = TimeSpan.FromMilliseconds(desiredSegmentLengthMs).Ticks;
+            var desiredCutTime = desiredSegmentLengthTicks;
+            for (var j = 0; j < keyframeData.KeyframeTicks.Count; j++)
+            {
+                var keyframe = keyframeData.KeyframeTicks[j];
+                if (keyframe >= desiredCutTime)
+                {
+                    var currentSegmentLength = keyframe - lastKeyframe;
+                    result.Add(TimeSpan.FromTicks(currentSegmentLength).TotalSeconds);
+                    lastKeyframe = keyframe;
+                    desiredCutTime += desiredSegmentLengthTicks;
+                }
+            }
+
+            result.Add(TimeSpan.FromTicks(keyframeData.TotalDuration - lastKeyframe).TotalSeconds);
+            return result;
+        }
+
+        internal static double[] ComputeEqualLengthSegments(long desiredSegmentLengthMs, long totalRuntimeTicks)
         {
             var segmentLengthTicks = TimeSpan.FromMilliseconds(desiredSegmentLengthMs).Ticks;
             var wholeSegments = totalRuntimeTicks / segmentLengthTicks;
