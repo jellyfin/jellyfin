@@ -101,7 +101,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (localAddress.IsIPv4MappedToIPv6) {
+            if (localAddress.IsIPv4MappedToIPv6)
+            {
                 localAddress = localAddress.MapToIPv4();
             }
 
