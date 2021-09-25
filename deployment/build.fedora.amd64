@@ -8,6 +8,16 @@ set -o xtrace
 # Move to source directory
 pushd ${SOURCE_DIR}
 
+if [[ ${IS_DOCKER} == YES ]]; then
+    # Remove BuildRequires for dotnet-sdk-6.0, since it's installed manually
+    pushd fedora
+
+    cp -a jellyfin.spec /tmp/spec.orig
+    sed -i 's/BuildRequires:  dotnet/# BuildRequires:  dotnet/' jellyfin.spec
+
+    popd
+fi
+
 # Modify changelog to unstable configuration if IS_UNSTABLE
 if [[ ${IS_UNSTABLE} == 'yes' ]]; then
     pushd fedora
@@ -36,5 +46,14 @@ if [[ ${IS_DOCKER} == YES ]]; then
 fi
 
 rm -f fedora/jellyfin*.tar.gz
+
+if [[ ${IS_DOCKER} == YES ]]; then
+    pushd fedora
+
+    cp -a /tmp/spec.orig jellyfin.spec
+    chown -Rc $(stat -c %u:%g ${ARTIFACT_DIR}) ${ARTIFACT_DIR}
+    
+    popd
+fi
 
 popd

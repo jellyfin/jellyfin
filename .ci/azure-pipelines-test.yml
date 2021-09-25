@@ -10,7 +10,7 @@ parameters:
   default: "tests/**/*Tests.csproj"
 - name: DotNetSdkVersion
   type: string
-  default: 6.0.100-rc.1.21458.32
+  default: 6.0.x
 
 jobs:
   - job: Test
@@ -41,6 +41,7 @@ jobs:
         inputs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
+          includePreviewVersions: true
 
       - task: SonarCloudPrepare@1
         displayName: 'Prepare analysis on SonarCloud'
