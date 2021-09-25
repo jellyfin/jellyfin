@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using Jellyfin.MediaEncoding.Keyframes.Matroska.Models;
 using NEbml.Core;
 
@@ -37,12 +38,7 @@ namespace Jellyfin.MediaEncoding.Keyframes.Matroska.Extensions
         {
             var buffer = new byte[4];
             reader.ReadBinary(buffer, 0, 4);
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(buffer);
-            }
-
-            return BitConverter.ToUInt32(buffer);
+            return BinaryPrimitives.ReadUInt32BigEndian(buffer);
         }
 
         /// <summary>
