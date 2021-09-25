@@ -17,7 +17,6 @@ namespace Jellyfin.Api.Helpers
         private readonly TranscodingJobDto? _job;
         private readonly TranscodingJobHelper? _transcodingJobHelper;
         private readonly int _timeoutMs;
-        private readonly bool _allowAsyncFileRead;
         private int _bytesWritten;
         private bool _disposed;
 
@@ -34,17 +33,7 @@ namespace Jellyfin.Api.Helpers
             _transcodingJobHelper = transcodingJobHelper;
             _timeoutMs = timeoutMs;
 
-            var fileOptions = FileOptions.SequentialScan;
-            _allowAsyncFileRead = false;
-
-            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            if (AsyncFile.UseAsyncIO)
-            {
-                fileOptions |= FileOptions.Asynchronous;
-                _allowAsyncFileRead = true;
-            }
-
-            _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);
+            _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
 
         /// <summary>
@@ -57,7 +46,6 @@ namespace Jellyfin.Api.Helpers
             _job = null;
             _transcodingJobHelper = null;
             _timeoutMs = timeoutMs;
-            _allowAsyncFileRead = AsyncFile.UseAsyncIO;
             _stream = stream;
         }
 
@@ -103,15 +91,7 @@ namespace Jellyfin.Api.Helpers
             while (remainingBytesToRead > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                int bytesRead;
-                if (_allowAsyncFileRead)
-                {
-                    bytesRead = await _stream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    bytesRead = _stream.Read(buffer, newOffset, remainingBytesToRead);
-                }
+                int bytesRead = await _stream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
 
                 remainingBytesToRead -= bytesRead;
                 newOffset += bytesRead;

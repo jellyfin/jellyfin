@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(path, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, AsyncFile.UseAsyncIO))
+            await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous))
             {
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }

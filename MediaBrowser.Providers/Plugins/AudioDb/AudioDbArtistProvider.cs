@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 

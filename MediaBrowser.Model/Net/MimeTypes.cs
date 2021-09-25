@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Jellyfin.Extensions;
@@ -164,15 +165,16 @@ namespace MediaBrowser.Model.Net
             return dict;
         }
 
-        public static string? GetMimeType(string path) => GetMimeType(path, true);
+        public static string GetMimeType(string path) => GetMimeType(path, "application/octet-stream");
 
         /// <summary>
         /// Gets the type of the MIME.
         /// </summary>
         /// <param name="filename">The filename to find the MIME type of.</param>
-        /// <param name="enableStreamDefault">Whether of not to return a default value if no fitting MIME type is found.</param>
-        /// <returns>The worrect MIME type for the given filename, or `null` if it wasn't found and <paramref name="enableStreamDefault"/> is false.</returns>
-        public static string? GetMimeType(string filename, bool enableStreamDefault)
+        /// <param name="defaultValue">The default value to return if no fitting MIME type is found.</param>
+        /// <returns>The correct MIME type for the given filename, or <paramref name="defaultValue"/> if it wasn't found.</returns>
+        [return: NotNullIfNotNullAttribute("defaultValue")]
+        public static string? GetMimeType(string filename, string? defaultValue = null)
         {
             if (filename.Length == 0)
             {
@@ -211,7 +213,7 @@ namespace MediaBrowser.Model.Net
                 return "application/octet-stream";
             }
 
-            return enableStreamDefault ? "application/octet-stream" : null;
+            return defaultValue;
         }
 
         public static string? ToExtension(string mimeType)
