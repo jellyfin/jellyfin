@@ -25,8 +25,6 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// </summary>
         public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
-        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseXmlSaver"/> class.
         /// </summary>
@@ -205,7 +203,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.CriticRating.HasValue)
             {
-                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(_usCulture));
+                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
@@ -289,12 +287,12 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.CommunityRating.HasValue)
             {
-                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(_usCulture));
+                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (item.ProductionYear.HasValue && item is not Person)
             {
-                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(_usCulture));
+                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (item is IHasAspectRatio hasAspectRatio)
@@ -322,7 +320,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
-                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(_usCulture));
+                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(CultureInfo.InvariantCulture));
             }
 
             if (item.ProviderIds != null)
@@ -395,7 +393,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     if (person.SortOrder.HasValue)
                     {
-                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(_usCulture));
+                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(CultureInfo.InvariantCulture));
                     }
 
                     writer.WriteEndElement();

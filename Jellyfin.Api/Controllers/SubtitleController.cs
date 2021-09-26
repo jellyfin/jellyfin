@@ -376,7 +376,7 @@ namespace Jellyfin.Api.Controllers
                 var endPositionTicks = Math.Min(runtime, positionTicks + segmentLengthTicks);
 
                 var url = string.Format(
-                    CultureInfo.CurrentCulture,
+                    CultureInfo.InvariantCulture,
                     "stream.vtt?CopyTimestamps=true&AddVttTimeMap=true&StartPositionTicks={0}&EndPositionTicks={1}&api_key={2}",
                     positionTicks.ToString(CultureInfo.InvariantCulture),
                     endPositionTicks.ToString(CultureInfo.InvariantCulture),

@@ -57,9 +57,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            var usCulture = new CultureInfo("en-US");
-
-            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out var year))
+            if (!int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
                 return new List<BaseItem>();
             }
