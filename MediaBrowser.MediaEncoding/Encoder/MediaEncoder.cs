@@ -43,11 +43,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         internal const int DefaultHdrImageExtractionTimeout = 20000;
 
-        /// <summary>
-        /// The us culture.
-        /// </summary>
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IFileSystem _fileSystem;
@@ -687,7 +682,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string GetTimeParameter(TimeSpan time)
         {
-            return time.ToString(@"hh\:mm\:ss\.fff", _usCulture);
+            return time.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
         }
 
         public async Task ExtractVideoImagesOnInterval(
@@ -704,11 +699,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
 
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(_usCulture);
+            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
             if (maxWidth.HasValue)
             {
-                var maxWidthParam = maxWidth.Value.ToString(_usCulture);
+                var maxWidthParam = maxWidth.Value.ToString(CultureInfo.InvariantCulture);
 
                 vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }

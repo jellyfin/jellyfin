@@ -20,8 +20,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class Device : IDisposable
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         private readonly IHttpClientFactory _httpClientFactory;
 
         private readonly ILogger _logger;
@@ -640,7 +638,7 @@ namespace Emby.Dlna.PlayTo
                 return;
             }
 
-            Volume = int.Parse(volumeValue, UsCulture);
+            Volume = int.Parse(volumeValue, CultureInfo.InvariantCulture);
 
             if (Volume > 0)
             {
@@ -842,7 +840,7 @@ namespace Emby.Dlna.PlayTo
             if (!string.IsNullOrWhiteSpace(duration)
                 && !string.Equals(duration, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                Duration = TimeSpan.Parse(duration, UsCulture);
+                Duration = TimeSpan.Parse(duration, CultureInfo.InvariantCulture);
             }
             else
             {
@@ -854,7 +852,7 @@ namespace Emby.Dlna.PlayTo
 
             if (!string.IsNullOrWhiteSpace(position) && !string.Equals(position, "NOT_IMPLEMENTED", StringComparison.OrdinalIgnoreCase))
             {
-                Position = TimeSpan.Parse(position, UsCulture);
+                Position = TimeSpan.Parse(position, CultureInfo.InvariantCulture);
             }
 
             var track = result.Document.Descendants("TrackMetaData").FirstOrDefault();
@@ -1194,8 +1192,8 @@ namespace Emby.Dlna.PlayTo
             var depth = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("depth"));
             var url = element.GetDescendantValue(UPnpNamespaces.Ud.GetName("url"));
 
-            var widthValue = int.Parse(width, NumberStyles.Integer, UsCulture);
-            var heightValue = int.Parse(height, NumberStyles.Integer, UsCulture);
+            var widthValue = int.Parse(width, NumberStyles.Integer, CultureInfo.InvariantCulture);
+            var heightValue = int.Parse(height, NumberStyles.Integer, CultureInfo.InvariantCulture);
 
             return new DeviceIcon
             {

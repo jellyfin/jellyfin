@@ -30,7 +30,6 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private static readonly Regex _performerPattern = new (@"(?<name>.*) \((?<instrument>.*)\)");
 
-        private readonly CultureInfo _usCulture = new ("en-US");
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;
 
@@ -83,7 +82,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (!string.IsNullOrEmpty(data.Format.BitRate))
                 {
-                    if (int.TryParse(data.Format.BitRate, NumberStyles.Any, _usCulture, out var value))
+                    if (int.TryParse(data.Format.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                     {
                         info.Bitrate = value;
                     }
@@ -191,7 +190,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (data.Format != null && !string.IsNullOrEmpty(data.Format.Duration))
                 {
-                    info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.Format.Duration, _usCulture)).Ticks;
+                    info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.Format.Duration, CultureInfo.InvariantCulture)).Ticks;
                 }
 
                 FetchWtvInfo(info, data);
@@ -673,7 +672,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (!string.IsNullOrEmpty(streamInfo.SampleRate))
                 {
-                    if (int.TryParse(streamInfo.SampleRate, NumberStyles.Any, _usCulture, out var value))
+                    if (int.TryParse(streamInfo.SampleRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                     {
                         stream.SampleRate = value;
                     }
@@ -802,7 +801,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrEmpty(streamInfo.BitRate))
             {
-                if (int.TryParse(streamInfo.BitRate, NumberStyles.Any, _usCulture, out var value))
+                if (int.TryParse(streamInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                 {
                     bitrate = value;
                 }
@@ -815,7 +814,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 && (stream.Type == MediaStreamType.Video || (isAudio && stream.Type == MediaStreamType.Audio)))
             {
                 // If the stream info doesn't have a bitrate get the value from the media format info
-                if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, _usCulture, out var value))
+                if (int.TryParse(formatInfo.BitRate, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                 {
                     bitrate = value;
                 }
@@ -921,8 +920,8 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var parts = (original ?? string.Empty).Split(':');
             if (!(parts.Length == 2 &&
-                int.TryParse(parts[0], NumberStyles.Any, _usCulture, out var width) &&
-                int.TryParse(parts[1], NumberStyles.Any, _usCulture, out var height) &&
+                int.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out var width) &&
+                int.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var height) &&
                 width > 0 &&
                 height > 0))
             {
@@ -1008,11 +1007,11 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (parts.Length == 2)
             {
-                result = float.Parse(parts[0], _usCulture) / float.Parse(parts[1], _usCulture);
+                result = float.Parse(parts[0], CultureInfo.InvariantCulture) / float.Parse(parts[1], CultureInfo.InvariantCulture);
             }
             else
             {
-                result = float.Parse(parts[0], _usCulture);
+                result = float.Parse(parts[0], CultureInfo.InvariantCulture);
             }
 
             return float.IsNaN(result) ? null : result;
@@ -1039,7 +1038,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             // If we got something, parse it
             if (!string.IsNullOrEmpty(duration))
             {
-                data.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, _usCulture)).Ticks;
+                data.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(duration, CultureInfo.InvariantCulture)).Ticks;
             }
         }
 
@@ -1101,7 +1100,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return;
             }
 
-            info.Size = string.IsNullOrEmpty(data.Format.Size) ? null : long.Parse(data.Format.Size, _usCulture);
+            info.Size = string.IsNullOrEmpty(data.Format.Size) ? null : long.Parse(data.Format.Size, CultureInfo.InvariantCulture);
         }
 
         private void SetAudioInfoFromTags(MediaInfo audio, IReadOnlyDictionary<string, string> tags)
@@ -1144,7 +1143,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                         {
                             Name = match.Groups["name"].Value,
                             Type = PersonType.Actor,
-                            Role = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
+                            Role = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(match.Groups["instrument"].Value)
                         });
                     }
                 }
@@ -1443,7 +1442,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                     .ToArray();
             }
 
-            if (tags.TryGetValue("WM/OriginalReleaseTime", out var year) && int.TryParse(year, NumberStyles.Integer, _usCulture, out var parsedYear))
+            if (tags.TryGetValue("WM/OriginalReleaseTime", out var year) && int.TryParse(year, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
             {
                 video.ProductionYear = parsedYear;
             }
