@@ -11,12 +11,12 @@ namespace MediaBrowser.Model.Dlna
             new[]
             {
                 new ResolutionConfiguration(426, 320000),
-                new ResolutionConfiguration(640, 500000),
-                new ResolutionConfiguration(720, 3000000),
-                new ResolutionConfiguration(1280, 8000000),
-                new ResolutionConfiguration(1920, 80000000),
-                new ResolutionConfiguration(2560, 120000000),
-                new ResolutionConfiguration(3840, 350000000)
+                new ResolutionConfiguration(640, 400000),
+                new ResolutionConfiguration(720, 2500000),
+                new ResolutionConfiguration(1280, 3500000),
+                new ResolutionConfiguration(1920, 9000000),
+                new ResolutionConfiguration(2560, 80000000),
+                new ResolutionConfiguration(3840, 120000000)
             };
 
         public static ResolutionOptions Normalize(
