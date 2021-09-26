@@ -90,9 +90,11 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
                     .AppendLine();
             }
 
-            double currentRuntimeInSeconds = 0;
+            long currentRuntimeInSeconds = 0;
             foreach (var length in segments)
             {
+                // Manually convert to ticks to avoid precision loss when converting double
+                var lengthTicks = Convert.ToInt64(length * TimeSpan.TicksPerSecond);
                 builder.Append("#EXTINF:")
                     .Append(length.ToString("0.000000", CultureInfo.InvariantCulture))
                     .AppendLine(", nodesc")
@@ -101,12 +103,12 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
                     .Append(segmentExtension)
                     .Append(request.QueryString)
                     .Append("&runtimeTicks=")
-                    .Append(TimeSpan.FromSeconds(currentRuntimeInSeconds).Ticks)
+                    .Append(currentRuntimeInSeconds)
                     .Append("&actualSegmentLengthTicks=")
-                    .Append(TimeSpan.FromSeconds(length).Ticks)
+                    .Append(lengthTicks)
                     .AppendLine();
 
-                currentRuntimeInSeconds += length;
+                currentRuntimeInSeconds += lengthTicks;
             }
 
             builder.AppendLine("#EXT-X-ENDLIST");
@@ -122,6 +124,7 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
                 return false;
             }
 
+            var succeeded = false;
             var cachePath = GetCachePath(filePath);
             if (TryReadFromCache(cachePath, out var cachedResult))
             {
@@ -139,10 +142,14 @@ namespace Jellyfin.MediaEncoding.Hls.Playlist
                     return false;
                 }
 
-                CacheResult(cachePath, keyframeData);
+                succeeded = keyframeData.KeyframeTicks.Count > 0;
+                if (succeeded)
+                {
+                    CacheResult(cachePath, keyframeData);
+                }
             }
 
-            return keyframeData.KeyframeTicks.Count > 0;
+            return succeeded;
         }
 
         private void CacheResult(string cachePath, KeyframeData keyframeData)
