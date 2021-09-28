@@ -34,23 +34,21 @@ namespace Jellyfin.MediaEncoding.Tests
             Assert.Equal(valid, _encoderValidator.ValidateVersionInternal(versionOutput));
         }
 
-        private class GetFFmpegVersionTestData : IEnumerable<object?[]>
+        private class GetFFmpegVersionTestData : TheoryData<string, Version?>
         {
-            public IEnumerator<object?[]> GetEnumerator()
+            public GetFFmpegVersionTestData()
             {
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV44Output, new Version(4, 4) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV432Output, new Version(4, 3, 2) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV431Output, new Version(4, 3, 1) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV43Output, new Version(4, 3) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput2, new Version(4, 0) };
-                yield return new object?[] { EncoderValidatorTestsData.FFmpegGitUnknownOutput, null };
+                Add(EncoderValidatorTestsData.FFmpegV44Output, new Version(4, 4));
+                Add(EncoderValidatorTestsData.FFmpegV432Output, new Version(4, 3, 2));
+                Add(EncoderValidatorTestsData.FFmpegV431Output, new Version(4, 3, 1));
+                Add(EncoderValidatorTestsData.FFmpegV43Output, new Version(4, 3));
+                Add(EncoderValidatorTestsData.FFmpegV421Output, new Version(4, 2, 1));
+                Add(EncoderValidatorTestsData.FFmpegV42Output, new Version(4, 2));
+                Add(EncoderValidatorTestsData.FFmpegV414Output, new Version(4, 1, 4));
+                Add(EncoderValidatorTestsData.FFmpegV404Output, new Version(4, 0, 4));
+                Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput2, new Version(4, 0));
+                Add(EncoderValidatorTestsData.FFmpegGitUnknownOutput, null);
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
