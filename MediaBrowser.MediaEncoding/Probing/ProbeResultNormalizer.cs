@@ -688,6 +688,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 {
                     stream.BitDepth = streamInfo.BitsPerRawSample;
                 }
+
+                if (string.IsNullOrEmpty(stream.Title))
+                {
+                    // mp4 missing track title workaround: fall back to handler_name if populated
+                    string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
+                    if (!string.IsNullOrEmpty(handlerName))
+                    {
+                        stream.Title = handlerName;
+                    }
+                }
             }
             else if (string.Equals(streamInfo.CodecType, "subtitle", StringComparison.OrdinalIgnoreCase))
             {
@@ -696,6 +706,16 @@ namespace MediaBrowser.MediaEncoding.Probing
                 stream.LocalizedUndefined = _localization.GetLocalizedString("Undefined");
                 stream.LocalizedDefault = _localization.GetLocalizedString("Default");
                 stream.LocalizedForced = _localization.GetLocalizedString("Forced");
+
+                if (string.IsNullOrEmpty(stream.Title))
+                {
+                    // mp4 missing track title workaround: fall back to handler_name if populated and not the default "SubtitleHandler"
+                    string handlerName = GetDictionaryValue(streamInfo.Tags, "handler_name");
+                    if (!string.IsNullOrEmpty(handlerName) && !string.Equals(handlerName, "SubtitleHandler", StringComparison.OrdinalIgnoreCase))
+                    {
+                        stream.Title = handlerName;
+                    }
+                }
             }
             else if (string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase))
             {
