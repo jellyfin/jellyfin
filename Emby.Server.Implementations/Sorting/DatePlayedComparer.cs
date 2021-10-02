@@ -33,6 +33,12 @@ namespace Emby.Server.Implementations.Sorting
         public IUserDataManager UserDataRepository { get; set; }
 
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.DatePlayed;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -59,11 +65,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return DateTime.MinValue;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.DatePlayed;
     }
 }

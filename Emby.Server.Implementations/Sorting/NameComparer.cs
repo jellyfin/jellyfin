@@ -11,6 +11,12 @@ namespace Emby.Server.Implementations.Sorting
     public class NameComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Name;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -30,11 +36,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Name;
     }
 }

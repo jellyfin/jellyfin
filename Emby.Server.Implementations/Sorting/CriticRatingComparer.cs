@@ -10,6 +10,12 @@ namespace Emby.Server.Implementations.Sorting
     public class CriticRatingComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.CriticRating;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -24,11 +30,5 @@ namespace Emby.Server.Implementations.Sorting
         {
             return x?.CriticRating ?? 0;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.CriticRating;
     }
 }
