@@ -39,6 +39,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
+        /// <param name="libraryManager">The library manager.</param>.
+        /// <param name="itemRepo">The item repository.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="encodingManager">The encoding manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="localization">The localization manager.</param>
         public ChapterImagesTask(
             ILibraryManager libraryManager,
             IItemRepository itemRepo,
