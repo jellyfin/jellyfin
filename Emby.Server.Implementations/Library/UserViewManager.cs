@@ -348,7 +348,8 @@ namespace Emby.Server.Implementations.Library
                 nameof(Year),
                 nameof(MusicGenre),
                 nameof(Genre)
-            } : Array.Empty<string>();
+            }
+                : Array.Empty<string>();
 
             var query = new InternalItemsQuery(user)
             {
