@@ -86,8 +86,8 @@ namespace Jellyfin.Api.Helpers
 
             DeleteEncodedMediaCache();
 
-            sessionManager!.PlaybackProgress += OnPlaybackProgress;
-            sessionManager!.PlaybackStart += OnPlaybackProgress;
+            sessionManager.PlaybackProgress += OnPlaybackProgress;
+            sessionManager.PlaybackStart += OnPlaybackProgress;
         }
 
         /// <summary>
@@ -878,8 +878,8 @@ namespace Jellyfin.Api.Helpers
             if (disposing)
             {
                 _loggerFactory.Dispose();
-                _sessionManager!.PlaybackProgress -= OnPlaybackProgress;
-                _sessionManager!.PlaybackStart -= OnPlaybackProgress;
+                _sessionManager.PlaybackProgress -= OnPlaybackProgress;
+                _sessionManager.PlaybackStart -= OnPlaybackProgress;
             }
         }
     }

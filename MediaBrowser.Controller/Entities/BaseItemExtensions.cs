@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="file">The file.</param>
         public static void SetImagePath(this BaseItem item, ImageType imageType, string file)
         {
-            if (file.StartsWith("http", System.StringComparison.OrdinalIgnoreCase))
+            if (file.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 item.SetImage(
                 new ItemImageInfo

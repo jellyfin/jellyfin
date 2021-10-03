@@ -287,7 +287,7 @@ namespace Jellyfin.Api.Controllers
 
             if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || item is not UserRootFolder)
             {
-                var query = new InternalItemsQuery(user!)
+                var query = new InternalItemsQuery(user)
                 {
                     IsPlayed = isPlayed,
                     MediaTypes = mediaTypes,

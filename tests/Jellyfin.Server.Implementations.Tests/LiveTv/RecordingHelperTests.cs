@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Emby.Server.Implementations.LiveTv.EmbyTV;
 using MediaBrowser.Controller.LiveTv;
 using Xunit;

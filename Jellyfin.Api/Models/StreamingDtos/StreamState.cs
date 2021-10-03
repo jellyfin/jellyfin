@@ -55,7 +55,7 @@ namespace Jellyfin.Api.Models.StreamingDtos
         /// <summary>
         /// Gets the video request.
         /// </summary>
-        public VideoRequestDto? VideoRequest => Request! as VideoRequestDto;
+        public VideoRequestDto? VideoRequest => Request as VideoRequestDto;
 
         /// <summary>
         /// Gets or sets the direct stream provicer.
