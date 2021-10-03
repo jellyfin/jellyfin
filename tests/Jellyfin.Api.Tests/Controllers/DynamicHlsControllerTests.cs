@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Jellyfin.Api.Controllers;
 using Xunit;
 

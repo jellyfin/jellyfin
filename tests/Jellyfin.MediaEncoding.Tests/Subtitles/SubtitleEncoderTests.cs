@@ -1,23 +1,11 @@
-using System;
-using System.Globalization;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
 
 namespace Jellyfin.MediaEncoding.Subtitles.Tests

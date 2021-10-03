@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using MediaBrowser.MediaEncoding.Encoder;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;

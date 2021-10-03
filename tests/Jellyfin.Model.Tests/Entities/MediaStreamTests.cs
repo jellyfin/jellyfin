@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
