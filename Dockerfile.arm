@@ -14,7 +14,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && mv dist /dist
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM arm32v7/debian:bullseye-slim as app
+FROM arm32v7/debian:stable-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
