@@ -18,25 +18,25 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Uses ffmpeg to create still images from the main video.
+    /// Uses ffmpeg to extract embedded images.
     /// </summary>
-    public class VideoImageProvider : IDynamicImageProvider, IHasOrder
+    public class EmbeddedImageProvider : IDynamicImageProvider, IHasOrder
     {
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly ILogger<VideoImageProvider> _logger;
+        private readonly ILogger<EmbeddedImageProvider> _logger;
 
-        public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger)
+        public EmbeddedImageProvider(IMediaEncoder mediaEncoder, ILogger<EmbeddedImageProvider> logger)
         {
             _mediaEncoder = mediaEncoder;
             _logger = logger;
         }
 
         /// <inheritdoc />
-        public string Name => "Screen Grabber";
+        public string Name => "Embedded Image Extractor";
 
         /// <inheritdoc />
-        // Make sure this comes after internet image providers
-        public int Order => 100;
+        // Default to after internet image providers but before Screen Grabber
+        public int Order => 99;
 
         /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
@@ -55,17 +55,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
-            // Can't extract if we didn't find a video stream in the file
+            // Can't extract if we didn't find any video streams in the file
             if (!video.DefaultVideoStreamIndex.HasValue)
             {
                 _logger.LogInformation("Skipping image extraction due to missing DefaultVideoStreamIndex for {Path}.", video.Path ?? string.Empty);
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
-            return GetVideoImage(video, cancellationToken);
+            return GetEmbeddedImage(video, cancellationToken);
         }
 
-        private async Task<DynamicImageResponse> GetVideoImage(Video item, CancellationToken cancellationToken)
+        private async Task<DynamicImageResponse> GetEmbeddedImage(Video item, CancellationToken cancellationToken)
         {
             MediaSourceInfo mediaSource = new MediaSourceInfo
             {
@@ -74,15 +74,26 @@ namespace MediaBrowser.Providers.MediaInfo
                 Protocol = item.PathProtocol ?? MediaProtocol.File,
             };
 
-            // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
-            // Always use 10 seconds for dvd because our duration could be out of whack
-            var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
-                              item.RunTimeTicks.Value > 0
-                                  ? TimeSpan.FromTicks(item.RunTimeTicks.Value / 10)
-                                  : TimeSpan.FromSeconds(10);
+            var imageStreams =
+                item.GetMediaStreams()
+                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
+                    .ToList();
 
-            var videoStream = item.GetMediaStreams().FirstOrDefault(i => i.Type == MediaStreamType.Video);
-            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+            string extractedImagePath;
+
+            if (imageStreams.Count == 0)
+            {
+                // Can't extract if we don't have any EmbeddedImage streams
+                return new DynamicImageResponse { HasImage = false };
+            }
+            else
+            {
+                var imageStream = imageStreams.Find(i => (i.Comment ?? string.Empty).Contains("front", StringComparison.OrdinalIgnoreCase))
+                    ?? imageStreams.Find(i => (i.Comment ?? string.Empty).Contains("cover", StringComparison.OrdinalIgnoreCase))
+                    ?? imageStreams[0];
+
+                extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, cancellationToken).ConfigureAwait(false);
+            }
 
             return new DynamicImageResponse
             {
