@@ -679,7 +679,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
                 using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 using (var writer = new StreamWriter(fileStream, encoding))
                 {

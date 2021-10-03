@@ -359,14 +359,17 @@ namespace Emby.Dlna
                 // The stream should exist as we just got its name from GetManifestResourceNames
                 using (var stream = _assembly.GetManifestResourceStream(name)!)
                 {
+                    var length = stream.Length;
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
+                    if (!fileInfo.Exists || fileInfo.Length != length)
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                        var fileOptions = AsyncFile.WriteOptions;
+                        fileOptions.Mode = FileMode.CreateNew;
+                        fileOptions.PreallocationSize = length;
+                        using (var fileStream = new FileStream(path, fileOptions))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }

@@ -8,6 +8,25 @@ namespace MediaBrowser.Model.IO
     public static class AsyncFile
     {
         /// <summary>
+        /// Gets the default <see cref="FileStreamOptions"/> for reading files async.
+        /// </summary>
+        public static FileStreamOptions ReadOptions => new FileStreamOptions()
+        {
+            Options = FileOptions.Asynchronous
+        };
+
+        /// <summary>
+        /// Gets the default <see cref="FileStreamOptions"/> for writing files async.
+        /// </summary>
+        public static FileStreamOptions WriteOptions => new FileStreamOptions()
+        {
+            Mode = FileMode.OpenOrCreate,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            Options = FileOptions.Asynchronous
+        };
+
+        /// <summary>
         /// Opens an existing file for reading.
         /// </summary>
         /// <param name="path">The file to be opened for reading.</param>
