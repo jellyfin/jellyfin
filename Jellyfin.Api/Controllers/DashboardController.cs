@@ -53,7 +53,7 @@ namespace Jellyfin.Api.Controllers
 
             if (enableInMainMenu.HasValue)
             {
-                configPages = configPages.Where(p => p!.EnableInMainMenu == enableInMainMenu.Value).ToList();
+                configPages = configPages.Where(p => p.EnableInMainMenu == enableInMainMenu.Value).ToList();
             }
 
             return configPages;

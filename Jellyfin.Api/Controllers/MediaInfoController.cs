@@ -184,7 +184,7 @@ namespace Jellyfin.Api.Controllers
                         audioStreamIndex,
                         subtitleStreamIndex,
                         maxAudioChannels,
-                        info!.PlaySessionId!,
+                        info.PlaySessionId!,
                         userId ?? Guid.Empty,
                         enableDirectPlay.Value,
                         enableDirectStream.Value,
