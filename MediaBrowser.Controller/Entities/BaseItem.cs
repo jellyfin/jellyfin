@@ -2997,7 +2997,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public bool Equals(BaseItem other) => object.Equals(Id, other?.Id);
+        public bool Equals(BaseItem other) => Equals(Id, other?.Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(Id);

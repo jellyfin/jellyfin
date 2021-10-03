@@ -594,7 +594,7 @@ namespace Jellyfin.Server
             try
             {
                 // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
-                Serilog.Log.Logger = new LoggerConfiguration()
+                Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
@@ -602,7 +602,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                Serilog.Log.Logger = new LoggerConfiguration()
+                Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
@@ -613,7 +613,7 @@ namespace Jellyfin.Server
                     .Enrich.WithThreadId()
                     .CreateLogger();
 
-                Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
+                Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
         }
 
