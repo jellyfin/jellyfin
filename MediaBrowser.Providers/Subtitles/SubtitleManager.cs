@@ -187,8 +187,8 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            using var stream = response.Stream;
-            using var memoryStream = new MemoryStream();
+            await using var stream = response.Stream;
+            await using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
             memoryStream.Position = 0;
 
@@ -236,7 +236,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             foreach (var savePath in savePaths)
             {
-                _logger.LogInformation("Saving subtitles to {0}", savePath);
+                _logger.LogInformation("Saving subtitles to {SavePath}", savePath);
 
                 _monitor.ReportFileSystemChangeBeginning(savePath);
 
@@ -254,13 +254,19 @@ namespace MediaBrowser.Providers.Subtitles
                 {
 // Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
 #pragma warning disable CA1508
-                    exs ??= new List<Exception>()
-                            {
-                                ex
-                            };
+                    if (exs == null)
 #pragma warning restore CA1508
-
-            }
+                    {
+                        exs = new List<Exception>
+                        {
+                            ex
+                        };
+                    }
+                    else
+                    {
+                        exs.Add(ex);
+                    }
+                }
                 finally
                 {
                     _monitor.ReportFileSystemChangeComplete(savePath, false);
