@@ -25,11 +25,11 @@
   <ItemGroup>
     <PackageReference Include="DiscUtils.Udf" Version="0.16.13" />
     <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.0-rc.1.21452.10" />
     <PackageReference Include="Mono.Nat" Version="3.0.1" />
     <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.2.1" />
     <PackageReference Include="sharpcompress" Version="0.30.0" />

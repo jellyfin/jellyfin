@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-rc.1.21451.13" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,12 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 
 namespace Jellyfin.Server.Implementations.Security
