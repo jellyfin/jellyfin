@@ -735,14 +735,15 @@ namespace MediaBrowser.MediaEncoding.Probing
                 else if (string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase))
                 {
                     // How to differentiate between video and embedded image?
-                    // The only difference I've seen thus far is presence of codec tag, also embedded images have high (unusual) framerates
-                    if (!string.IsNullOrWhiteSpace(stream.CodecTag))
+                    // check disposition, alternately: presence of codec tag, also embedded images have high (unusual) framerates
+                    if ((streamInfo.Disposition != null && streamInfo.Disposition.GetValueOrDefault("attached_pic") == 1) ||
+                        string.IsNullOrWhiteSpace(stream.CodecTag))
                     {
-                        stream.Type = MediaStreamType.Video;
+                        stream.Type = MediaStreamType.EmbeddedImage;
                     }
                     else
                     {
-                        stream.Type = MediaStreamType.EmbeddedImage;
+                        stream.Type = MediaStreamType.Video;
                     }
                 }
                 else
@@ -810,6 +811,12 @@ namespace MediaBrowser.MediaEncoding.Probing
                 if (!string.IsNullOrEmpty(streamInfo.ColorPrimaries))
                 {
                     stream.ColorPrimaries = streamInfo.ColorPrimaries;
+                }
+
+                // workaround for mkv attached_pics losing filename due to being classified as video based on codec
+                if (stream.Type == MediaStreamType.EmbeddedImage && streamInfo.Tags != null && string.IsNullOrEmpty(stream.Comment))
+                {
+                    stream.Comment = GetDictionaryValue(streamInfo.Tags, "filename");
                 }
             }
             else
