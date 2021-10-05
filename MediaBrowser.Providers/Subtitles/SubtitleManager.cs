@@ -254,18 +254,8 @@ namespace MediaBrowser.Providers.Subtitles
                 {
 // Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
 #pragma warning disable CA1508
-                    if (exs == null)
+                    (exs ??= new List<Exception>()).Add(ex);
 #pragma warning restore CA1508
-                    {
-                        exs = new List<Exception>
-                        {
-                            ex
-                        };
-                    }
-                    else
-                    {
-                        exs.Add(ex);
-                    }
                 }
                 finally
                 {
