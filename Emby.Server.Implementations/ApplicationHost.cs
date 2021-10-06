@@ -306,7 +306,7 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string Name => ApplicationProductName;
 
-        private CertificateInfo CertificateInfo { get; set; }
+        private string CertificatePath { get; set; }
 
         public X509Certificate2 Certificate { get; private set; }
 
@@ -548,12 +548,8 @@ namespace Emby.Server.Implementations
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
 
-            CertificateInfo = new CertificateInfo
-            {
-                Path = networkConfiguration.CertificatePath,
-                Password = networkConfiguration.CertificatePassword
-            };
-            Certificate = GetCertificate(CertificateInfo);
+            CertificatePath = networkConfiguration.CertificatePath;
+            Certificate = GetCertificate(CertificatePath, networkConfiguration.CertificatePassword);
 
             RegisterServices();
 
@@ -729,30 +725,27 @@ namespace Emby.Server.Implementations
             logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
         }
 
-        private X509Certificate2 GetCertificate(CertificateInfo info)
+        private X509Certificate2 GetCertificate(string path, string password)
         {
-            var certificateLocation = info?.Path;
-
-            if (string.IsNullOrWhiteSpace(certificateLocation))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 return null;
             }
 
             try
             {
-                if (!File.Exists(certificateLocation))
+                if (!File.Exists(path))
                 {
                     return null;
                 }
 
                 // Don't use an empty string password
-                var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
+                password = string.IsNullOrWhiteSpace(password) ? null : password;
 
-                var localCert = new X509Certificate2(certificateLocation, password, X509KeyStorageFlags.UserKeySet);
-                // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
+                var localCert = new X509Certificate2(path, password, X509KeyStorageFlags.UserKeySet);
                 if (!localCert.HasPrivateKey)
                 {
-                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certificateLocation);
+                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
                     return null;
                 }
 
@@ -760,7 +753,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
+                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", path);
                 return null;
             }
         }
@@ -882,7 +875,7 @@ namespace Emby.Server.Implementations
                     "http://" + i + ":" + HttpPort + "/"
                 };
 
-                if (CertificateInfo != null)
+                if (Certificate != null)
                 {
                     prefixes.Add("https://" + i + ":" + HttpsPort + "/");
                 }
@@ -946,7 +939,7 @@ namespace Emby.Server.Implementations
             var newPath = networkConfig.CertificatePath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(CertificateInfo?.Path, newPath, StringComparison.Ordinal))
+                && !string.Equals(CertificatePath, newPath, StringComparison.Ordinal))
             {
                 if (File.Exists(newPath))
                 {
@@ -1292,12 +1285,5 @@ namespace Emby.Server.Implementations
 
             _disposed = true;
         }
-    }
-
-    internal class CertificateInfo
-    {
-        public string Path { get; set; }
-
-        public string Password { get; set; }
     }
 }
