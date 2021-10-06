@@ -417,6 +417,8 @@ namespace Jellyfin.Api.Controllers
                     IsForced = body.IsForced,
                     Stream = memoryStream
                 }).ConfigureAwait(false);
+            _providerManager.QueueRefresh(video.Id, new MetadataRefreshOptions(new DirectoryService(_fileSystem)), RefreshPriority.High);
+
             return NoContent();
         }
 
