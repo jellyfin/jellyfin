@@ -341,14 +341,16 @@ namespace Emby.Server.Implementations.Library
                 mediaTypes = mediaTypes.Distinct().ToList();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0 ? new[]
-            {
-                nameof(Person),
-                nameof(Studio),
-                nameof(Year),
-                nameof(MusicGenre),
-                nameof(Genre)
-            } : Array.Empty<string>();
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+                ? new[]
+                {
+                    nameof(Person),
+                    nameof(Studio),
+                    nameof(Year),
+                    nameof(MusicGenre),
+                    nameof(Genre)
+                }
+                : Array.Empty<string>();
 
             var query = new InternalItemsQuery(user)
             {

@@ -67,7 +67,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return args.FileSystemChildren
                 .Where(i =>
                 {
-
                     try
                     {
                         return !i.IsDirectory &&

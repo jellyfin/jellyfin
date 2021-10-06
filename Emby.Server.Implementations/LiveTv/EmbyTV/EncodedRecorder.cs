@@ -205,9 +205,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // var audioChannels = 2;
             // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
             // if (audioStream != null)
-            //{
+            // {
             //    audioChannels = audioStream.Channels ?? audioChannels;
-            //}
+            // }
             // return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 

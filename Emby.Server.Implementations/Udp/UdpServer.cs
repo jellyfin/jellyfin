@@ -29,10 +29,10 @@ namespace Emby.Server.Implementations.Udp
         private readonly IServerApplicationHost _appHost;
         private readonly IConfiguration _config;
 
-        private Socket _udpSocket;
-        private IPEndPoint _endpoint;
         private readonly byte[] _receiveBuffer = new byte[8192];
 
+        private Socket _udpSocket;
+        private IPEndPoint _endpoint;
         private bool _disposed = false;
 
         /// <summary>

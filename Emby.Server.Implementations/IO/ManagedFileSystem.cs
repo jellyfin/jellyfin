@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.IO
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
-        protected ILogger<ManagedFileSystem> Logger;
+        private readonly ILogger<ManagedFileSystem> _logger;
 
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
         private readonly string _tempPath;
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.IO
             ILogger<ManagedFileSystem> logger,
             IApplicationPaths applicationPaths)
         {
-            Logger = logger;
+            _logger = logger;
             _tempPath = applicationPaths.TempDirectory;
         }
 
@@ -41,7 +41,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual bool IsShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual string? ResolveShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
@@ -233,9 +233,9 @@ namespace Emby.Server.Implementations.IO
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
                 // if (!result.IsDirectory)
-                //{
+                // {
                 //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                //}
+                // }
 
                 if (info is FileInfo fileInfo)
                 {
@@ -254,7 +254,7 @@ namespace Emby.Server.Implementations.IO
                         catch (FileNotFoundException ex)
                         {
                             // Dangling symlinks cannot be detected before opening the file unfortunately...
-                            Logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
+                            _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
                             result.Exists = false;
                         }
                     }
@@ -343,7 +343,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error determining CreationTimeUtc for {FullName}", info.FullName);
+                _logger.LogError(ex, "Error determining CreationTimeUtc for {FullName}", info.FullName);
                 return DateTime.MinValue;
             }
         }
@@ -382,7 +382,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error determining LastAccessTimeUtc for {FullName}", info.FullName);
+                _logger.LogError(ex, "Error determining LastAccessTimeUtc for {FullName}", info.FullName);
                 return DateTime.MinValue;
             }
         }
