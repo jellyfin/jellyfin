@@ -468,17 +468,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Protocol = MediaProtocol.File
             };
 
-            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, cancellationToken);
+            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, "jpg", cancellationToken);
         }
 
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, "jpg", cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, cancellationToken);
+            return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, outputExtension, cancellationToken);
         }
 
         private async Task<string> ExtractImage(
@@ -490,6 +490,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool isAudio,
             Video3DFormat? threedFormat,
             TimeSpan? offset,
+            string outputExtension,
             CancellationToken cancellationToken)
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
@@ -499,7 +500,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // The failure of HDR extraction usually occurs when using custom ffmpeg that does not contain the zscale filter.
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, outputExtension, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -512,7 +513,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, outputExtension, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -525,7 +526,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, outputExtension, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -537,17 +538,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, outputExtension, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, string outputExtension, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
                 throw new ArgumentNullException(nameof(inputPath));
             }
 
-            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
+            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + "." + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.

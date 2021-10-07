@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Net;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
@@ -115,25 +117,49 @@ namespace MediaBrowser.Providers.MediaInfo
                 Protocol = item.PathProtocol ?? MediaProtocol.File,
             };
 
-            string[] imageFileNames;
-            switch (type)
+            string[] imageFileNames = type switch
             {
-                case ImageType.Backdrop:
-                    imageFileNames = _backdropImageFileNames;
-                    break;
-                case ImageType.Logo:
-                    imageFileNames = _logoImageFileNames;
-                    break;
-                case ImageType.Primary:
-                default:
-                    imageFileNames = _primaryImageFileNames;
-                    break;
+                ImageType.Primary => _primaryImageFileNames,
+                ImageType.Backdrop => _backdropImageFileNames,
+                ImageType.Logo => _logoImageFileNames,
+                _ => _primaryImageFileNames
+            };
+
+            // Try attachments first
+            var attachmentSources = item.GetMediaSources(false).SelectMany(source => source.MediaAttachments).ToList();
+            var attachmentStream = attachmentSources
+                .Where(stream => !string.IsNullOrEmpty(stream.FileName))
+                .First(stream => imageFileNames.Any(name => stream.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
+
+            if (attachmentStream != null)
+            {
+                var extension = (string.IsNullOrEmpty(attachmentStream.MimeType) ?
+                    Path.GetExtension(attachmentStream.FileName) :
+                    MimeTypes.ToExtension(attachmentStream.MimeType)) ?? "jpg";
+
+                string extractedAttachmentPath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, extension, cancellationToken).ConfigureAwait(false);
+
+                ImageFormat format = extension switch
+                {
+                    "bmp" => ImageFormat.Bmp,
+                    "gif" => ImageFormat.Gif,
+                    "jpg" => ImageFormat.Jpg,
+                    "png" => ImageFormat.Png,
+                    "webp" => ImageFormat.Webp,
+                    _ => ImageFormat.Jpg
+                };
+
+                return new DynamicImageResponse
+                {
+                    Format = format,
+                    HasImage = true,
+                    Path = extractedAttachmentPath,
+                    Protocol = MediaProtocol.File
+                };
             }
 
-            var imageStreams =
-                item.GetMediaStreams()
-                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
-                    .ToList();
+            // Fall back to EmbeddedImage streams
+            var imageStreams = item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.EmbeddedImage);
 
             if (!imageStreams.Any())
             {
@@ -160,7 +186,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, cancellationToken).ConfigureAwait(false);
+            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, "jpg", cancellationToken).ConfigureAwait(false);
 
             return new DynamicImageResponse
             {
