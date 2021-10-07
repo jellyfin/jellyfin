@@ -479,6 +479,12 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.Suffix,
+                    "-deletedscene",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.Clip,
                     ExtraRuleType.Suffix,
                     "-featurette",
