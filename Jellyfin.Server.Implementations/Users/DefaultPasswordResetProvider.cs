@@ -123,6 +123,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 Action = ForgotPasswordAction.PinCode,
                 PinExpirationDate = expireTime,
+                PinFile = filePath
             };
         }
 
