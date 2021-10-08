@@ -316,7 +316,7 @@ namespace Jellyfin.Api.Controllers
             byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
             try
             {
-                new Random().NextBytes(buffer);
+                Random.Shared.NextBytes(buffer);
                 return File(buffer, MediaTypeNames.Application.Octet);
             }
             finally
