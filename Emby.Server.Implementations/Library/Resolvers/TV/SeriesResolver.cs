@@ -18,7 +18,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// <summary>
     /// Class SeriesResolver.
     /// </summary>
-    public class SeriesResolver : FolderResolver<Series>
+    public class SeriesResolver : GenericFolderResolver<Series>
     {
         private readonly ILogger<SeriesResolver> _logger;
         private readonly ILibraryManager _libraryManager;

@@ -87,11 +87,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return lineup.Where(i => !i.DRM).ToList();
         }
 
-        private class HdHomerunChannelInfo : ChannelInfo
-        {
-            public bool IsLegacyTuner { get; set; }
-        }
-
         protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken)
         {
             var lineup = await GetLineup(tuner, cancellationToken).ConfigureAwait(false);
@@ -714,6 +709,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             hostInfo.TunerCount = modelInfo.TunerCount;
 
             return hostInfo;
+        }
+
+        private class HdHomerunChannelInfo : ChannelInfo
+        {
+            public bool IsLegacyTuner { get; set; }
         }
     }
 }
