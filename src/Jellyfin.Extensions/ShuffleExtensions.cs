@@ -8,8 +8,6 @@ namespace Jellyfin.Extensions
     /// </summary>
     public static class ShuffleExtensions
     {
-        private static readonly Random _rng = new Random();
-
         /// <summary>
         /// Shuffles the items in a list.
         /// </summary>
@@ -17,7 +15,7 @@ namespace Jellyfin.Extensions
         /// <typeparam name="T">The type.</typeparam>
         public static void Shuffle<T>(this IList<T> list)
         {
-            list.Shuffle(_rng);
+            list.Shuffle(Random.Shared);
         }
 
         /// <summary>
