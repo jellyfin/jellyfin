@@ -30,9 +30,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0-rc.1.21451.13" />
     <PackageReference Include="System.Globalization" Version="4.3.0" />
-    <PackageReference Include="System.Text.Json" Version="5.0.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0-rc.1.21451.13" />
   </ItemGroup>
 
   <ItemGroup>
