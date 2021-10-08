@@ -10,9 +10,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -24,6 +24,11 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
+        /// <summary>
+        /// The options for the json Serializer.
+        /// </summary>
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
         /// <summary>
         /// Gets or sets the application paths.
         /// </summary>
@@ -65,11 +70,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// The _id.
         /// </summary>
         private string _id;
-
-        /// <summary>
-        /// The options for the json Serializer.
-        /// </summary>
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
@@ -365,7 +365,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running</exception>
+        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
         public async Task Execute(TaskOptions options)
         {
             var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));

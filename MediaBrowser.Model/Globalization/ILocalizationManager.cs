@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Globalization
@@ -56,10 +55,10 @@ namespace MediaBrowser.Model.Globalization
         IEnumerable<LocalizationOption> GetLocalizationOptions();
 
         /// <summary>
-        /// Returns the correct <see cref="CultureInfo" /> for the given language.
+        /// Returns the correct <see cref="CultureDto" /> for the given language.
         /// </summary>
         /// <param name="language">The language.</param>
-        /// <returns>The correct <see cref="CultureInfo" /> for the given language.</returns>
+        /// <returns>The correct <see cref="CultureDto" /> for the given language.</returns>
         CultureDto? FindLanguageInfo(string language);
     }
 }

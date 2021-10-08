@@ -1229,7 +1229,7 @@ namespace MediaBrowser.Model.Dlna
 
             bool result = IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
 
-            return (result, result ? (TranscodeReason?)null : TranscodeReason.ContainerBitrateExceedsLimit);
+            return (result, result ? null : TranscodeReason.ContainerBitrateExceedsLimit);
         }
 
         public static SubtitleProfile GetSubtitleProfile(

@@ -278,7 +278,7 @@ namespace Jellyfin.Server.Extensions
                 {
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Name = "X-Emby-Authorization",
+                    Name = "Authorization",
                     Description = "API key header parameter"
                 });
 

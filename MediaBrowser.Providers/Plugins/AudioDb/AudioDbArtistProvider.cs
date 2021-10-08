@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
                 var path = GetArtistInfoPath(_config.ApplicationPaths, id);
 
-                await using FileStream jsonStream = File.OpenRead(path);
+                await using FileStream jsonStream = AsyncFile.OpenRead(path);
                 var obj = await JsonSerializer.DeserializeAsync<RootObject>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (obj != null && obj.artists != null && obj.artists.Count > 0)
@@ -155,7 +155,7 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
             // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, true);
+            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 

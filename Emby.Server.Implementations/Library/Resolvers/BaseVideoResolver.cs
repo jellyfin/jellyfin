@@ -21,12 +21,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
         where T : Video, new()
     {
-        protected readonly ILibraryManager LibraryManager;
-
         protected BaseVideoResolver(ILibraryManager libraryManager)
         {
             LibraryManager = libraryManager;
         }
+
+        protected ILibraryManager LibraryManager { get; }
 
         /// <summary>
         /// Resolves the specified args.
@@ -275,6 +275,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
         /// <summary>
         /// Determines whether [is DVD directory] [the specified directory name].
         /// </summary>
+        /// <param name="fullPath">The full path of the directory.</param>
+        /// <param name="directoryName">The name of the directory.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns><c>true</c> if the provided directory is a DVD directory, <c>false</c> otherwise.</returns>
         protected bool IsDvdDirectory(string fullPath, string directoryName, IDirectoryService directoryService)
         {
             if (!string.Equals(directoryName, "video_ts", StringComparison.OrdinalIgnoreCase))

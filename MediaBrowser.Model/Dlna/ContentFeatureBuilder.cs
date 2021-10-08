@@ -208,7 +208,6 @@ namespace MediaBrowser.Model.Dlna
                 if (string.IsNullOrEmpty(orgPn))
                 {
                     contentFeatureList.Add(orgOp.TrimStart(';') + orgCi + dlnaflags);
-                    continue;
                 }
                 else
                 {

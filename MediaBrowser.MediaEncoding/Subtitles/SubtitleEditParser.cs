@@ -5,7 +5,7 @@ using System.Threading;
 using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
-using Nikse.SubtitleEdit.Core;
+using Nikse.SubtitleEdit.Core.Common;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using SubtitleFormat = Nikse.SubtitleEdit.Core.SubtitleFormats.SubtitleFormat;
 
@@ -38,7 +38,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             subRip.LoadSubtitle(subtitle, lines, "untitled");
             if (subRip.ErrorCount > 0)
             {
-                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle.");
+                _logger.LogError("{ErrorCount} errors encountered while parsing subtitle", subRip.ErrorCount);
             }
 
             var trackInfo = new SubtitleTrackInfo();

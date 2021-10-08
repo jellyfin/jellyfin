@@ -331,10 +331,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItem(Guid itemId)
+        public async Task<ActionResult> DeleteItem(Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
             var user = auth.User;
 
             if (!item.CanDelete(user))
@@ -361,7 +361,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+        public async Task<ActionResult> DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
             if (ids.Length == 0)
             {
@@ -371,7 +371,7 @@ namespace Jellyfin.Api.Controllers
             foreach (var i in ids)
             {
                 var item = _libraryManager.GetItemById(i);
-                var auth = _authContext.GetAuthorizationInfo(Request);
+                var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
                 var user = auth.User;
 
                 if (!item.CanDelete(user))
@@ -627,7 +627,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             var user = auth.User;
 

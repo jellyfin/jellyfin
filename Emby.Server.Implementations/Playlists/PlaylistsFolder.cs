@@ -17,6 +17,15 @@ namespace Emby.Server.Implementations.Playlists
             Name = "Playlists";
         }
 
+        [JsonIgnore]
+        public override bool IsHidden => true;
+
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override string CollectionType => MediaBrowser.Model.Entities.CollectionType.Playlists;
+
         public override bool IsVisible(User user)
         {
             return base.IsVisible(user) && GetChildren(user, true).Any();
@@ -26,15 +35,6 @@ namespace Emby.Server.Implementations.Playlists
         {
             return base.GetEligibleChildrenForRecursiveChildren(user).OfType<Playlist>();
         }
-
-        [JsonIgnore]
-        public override bool IsHidden => true;
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override string CollectionType => MediaBrowser.Model.Entities.CollectionType.Playlists;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {

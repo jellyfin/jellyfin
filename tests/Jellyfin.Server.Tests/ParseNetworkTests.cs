@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Text;
 using Jellyfin.Networking.Configuration;
 using Jellyfin.Networking.Manager;
 using Jellyfin.Server.Extensions;

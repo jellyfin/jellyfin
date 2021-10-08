@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -164,7 +163,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                                 }
@@ -276,7 +275,7 @@ namespace MediaBrowser.Providers.Manager
                     item,
                     new RemoteImageQuery(provider.Name)
                     {
-                        IncludeAllLanguages = false,
+                        IncludeAllLanguages = true,
                         IncludeDisabledProviders = false,
                     },
                     cancellationToken).ConfigureAwait(false);
@@ -470,7 +469,7 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
+                .Where(i => i.Type == type && i.Width >= minWidth)
                 .ToList();
 
             if (EnableImageStub(item) && eligibleImages.Count > 0)
@@ -487,7 +486,20 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
-                    response.EnsureSuccessStatusCode();
+
+                    // Sometimes providers send back bad urls. Just move to the next image
+                    if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
+                        continue;
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("{Url} returned {StatusCode}, skipping all remaining requests", url, response.StatusCode);
+                        break;
+                    }
+
                     await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                     await _providerManager.SaveImage(
@@ -501,15 +513,8 @@ namespace MediaBrowser.Providers.Manager
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException)
                 {
-                    // Sometimes providers send back bad url's. Just move to the next image
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
-                    {
-                        continue;
-                    }
-
                     break;
                 }
             }
@@ -589,6 +594,19 @@ namespace MediaBrowser.Providers.Manager
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
+                    // Sometimes providers send back bad urls. Just move to the next image
+                    if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
+                        continue;
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("{Url} returned {StatusCode}, skipping all remaining requests", url, response.StatusCode);
+                        break;
+                    }
+
                     // If there's already an image of the same size, skip it
                     if (response.Content.Headers.ContentLength.HasValue)
                     {
@@ -616,15 +634,8 @@ namespace MediaBrowser.Providers.Manager
                         cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException)
                 {
-                    // Sometimes providers send back bad urls. Just move onto the next image
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
-                    {
-                        continue;
-                    }
-
                     break;
                 }
             }

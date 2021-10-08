@@ -53,7 +53,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="path">The original path.</param>
         /// <param name="subPath">The original sub path.</param>
         /// <param name="newSubPath">The new sub path.</param>
-        /// <param name="newPath">The result of the sub path replacement</param>
+        /// <param name="newPath">The result of the sub path replacement.</param>
         /// <returns>The path after replacing the sub path.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="path" />, <paramref name="newSubPath" /> or <paramref name="newSubPath" /> is empty.</exception>
         public static bool TryReplaceSubPath(

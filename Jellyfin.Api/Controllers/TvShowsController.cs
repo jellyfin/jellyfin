@@ -88,7 +88,7 @@ namespace Jellyfin.Api.Controllers
         {
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes);
 
             var result = _tvSeriesManager.GetNextUp(
                 new NextUpQuery
@@ -147,13 +147,13 @@ namespace Jellyfin.Api.Controllers
                 ? _userManager.GetUserById(userId.Value)
                 : null;
 
-            var minPremiereDate = DateTime.Now.Date.ToUniversalTime().AddDays(-1);
+            var minPremiereDate = DateTime.UtcNow.Date.AddDays(-1);
 
             var parentIdGuid = parentId ?? Guid.Empty;
 
             var options = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImges, enableUserData, imageTypeLimit, enableImageTypes);
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
@@ -223,7 +223,7 @@ namespace Jellyfin.Api.Controllers
 
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (seasonId.HasValue) // Season id was supplied. Get episodes by season id.
             {
@@ -350,7 +350,7 @@ namespace Jellyfin.Api.Controllers
 
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
-                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes!);
+                .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             var returnItems = _dtoService.GetBaseItemDtos(seasons, dtoOptions, user);
 

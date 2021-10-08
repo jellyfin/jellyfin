@@ -86,8 +86,8 @@ namespace Jellyfin.Api.Helpers
 
             DeleteEncodedMediaCache();
 
-            sessionManager!.PlaybackProgress += OnPlaybackProgress;
-            sessionManager!.PlaybackStart += OnPlaybackProgress;
+            sessionManager.PlaybackProgress += OnPlaybackProgress;
+            sessionManager.PlaybackStart += OnPlaybackProgress;
         }
 
         /// <summary>
@@ -495,7 +495,7 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                var auth = _authorizationContext.GetAuthorizationInfo(request);
+                var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
                 if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
@@ -557,7 +557,7 @@ namespace Jellyfin.Api.Helpers
                 $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
 
             // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(request.Path + Environment.NewLine + Environment.NewLine + JsonSerializer.Serialize(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await logStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -878,8 +878,8 @@ namespace Jellyfin.Api.Helpers
             if (disposing)
             {
                 _loggerFactory.Dispose();
-                _sessionManager!.PlaybackProgress -= OnPlaybackProgress;
-                _sessionManager!.PlaybackStart -= OnPlaybackProgress;
+                _sessionManager.PlaybackProgress -= OnPlaybackProgress;
+                _sessionManager.PlaybackStart -= OnPlaybackProgress;
             }
         }
     }

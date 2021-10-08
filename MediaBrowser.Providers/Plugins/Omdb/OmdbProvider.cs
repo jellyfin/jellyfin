@@ -26,7 +26,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IApplicationHost _appHost;
         private readonly JsonSerializerOptions _jsonOptions;
 
@@ -79,7 +78,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureInfo.InvariantCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -93,14 +92,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureInfo.InvariantCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -191,7 +190,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.Year) && result.Year.Length >= 4
-                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, _usCulture, out var year)
+                && int.TryParse(result.Year.AsSpan().Slice(0, 4), NumberStyles.Number, CultureInfo.InvariantCulture, out var year)
                 && year >= 0)
             {
                 item.ProductionYear = year;
@@ -205,14 +204,14 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             }
 
             if (!string.IsNullOrEmpty(result.imdbVotes)
-                && int.TryParse(result.imdbVotes, NumberStyles.Number, _usCulture, out var voteCount)
+                && int.TryParse(result.imdbVotes, NumberStyles.Number, CultureInfo.InvariantCulture, out var voteCount)
                 && voteCount >= 0)
             {
                 // item.VoteCount = voteCount;
             }
 
             if (!string.IsNullOrEmpty(result.imdbRating)
-                && float.TryParse(result.imdbRating, NumberStyles.Any, _usCulture, out var imdbRating)
+                && float.TryParse(result.imdbRating, NumberStyles.Any, CultureInfo.InvariantCulture, out var imdbRating)
                 && imdbRating >= 0)
             {
                 item.CommunityRating = imdbRating;
@@ -236,29 +235,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         internal async Task<RootObject> GetRootObject(string imdbId, CancellationToken cancellationToken)
         {
             var path = await EnsureItemInfo(imdbId, cancellationToken).ConfigureAwait(false);
-            await using var stream = File.OpenRead(path);
+            await using var stream = AsyncFile.OpenRead(path);
             return await JsonSerializer.DeserializeAsync<RootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task<SeasonRootObject> GetSeasonRootObject(string imdbId, int seasonId, CancellationToken cancellationToken)
         {
             var path = await EnsureSeasonInfo(imdbId, seasonId, cancellationToken).ConfigureAwait(false);
-            await using var stream = File.OpenRead(path);
+            await using var stream = AsyncFile.OpenRead(path);
             return await JsonSerializer.DeserializeAsync<SeasonRootObject>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-        }
-
-        internal static bool IsValidSeries(Dictionary<string, string> seriesProviderIds)
-        {
-            if (seriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string id))
-            {
-                // This check should ideally never be necessary but we're seeing some cases of this and haven't tracked them down yet.
-                if (!string.IsNullOrWhiteSpace(id))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>Gets OMDB URL.</summary>
@@ -309,7 +294,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     imdbParam));
 
             var rootObject = await GetDeserializedOmdbResponse<RootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;
@@ -349,7 +334,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                     seasonId));
 
             var rootObject = await GetDeserializedOmdbResponse<SeasonRootObject>(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
-            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            await using FileStream jsonFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await JsonSerializer.SerializeAsync(jsonFileStream, rootObject, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
             return path;

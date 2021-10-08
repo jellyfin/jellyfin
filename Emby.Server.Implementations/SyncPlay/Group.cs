@@ -164,26 +164,26 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <summary>
         /// Filters sessions of this group.
         /// </summary>
-        /// <param name="from">The current session.</param>
+        /// <param name="fromId">The current session identifier.</param>
         /// <param name="type">The filtering type.</param>
         /// <returns>The list of sessions matching the filter.</returns>
-        private IEnumerable<SessionInfo> FilterSessions(SessionInfo from, SyncPlayBroadcastType type)
+        private IEnumerable<string> FilterSessions(string fromId, SyncPlayBroadcastType type)
         {
             return type switch
             {
-                SyncPlayBroadcastType.CurrentSession => new SessionInfo[] { from },
+                SyncPlayBroadcastType.CurrentSession => new string[] { fromId },
                 SyncPlayBroadcastType.AllGroup => _participants
                     .Values
-                    .Select(session => session.Session),
+                    .Select(member => member.SessionId),
                 SyncPlayBroadcastType.AllExceptCurrentSession => _participants
                     .Values
-                    .Select(session => session.Session)
-                    .Where(session => !session.Id.Equals(from.Id, StringComparison.OrdinalIgnoreCase)),
+                    .Select(member => member.SessionId)
+                    .Where(sessionId => !sessionId.Equals(fromId, StringComparison.OrdinalIgnoreCase)),
                 SyncPlayBroadcastType.AllReady => _participants
                     .Values
-                    .Where(session => !session.IsBuffering)
-                    .Select(session => session.Session),
-                _ => Enumerable.Empty<SessionInfo>()
+                    .Where(member => !member.IsBuffering)
+                    .Select(member => member.SessionId),
+                _ => Enumerable.Empty<string>()
             };
         }
 
@@ -225,7 +225,7 @@ namespace Emby.Server.Implementations.SyncPlay
             // Get list of users.
             var users = _participants
                 .Values
-                .Select(participant => _userManager.GetUserById(participant.Session.UserId));
+                .Select(participant => _userManager.GetUserById(participant.UserId));
 
             // Find problematic users.
             var usersWithNoAccess = users.Where(user => !HasAccessToQueue(user, queue));
@@ -353,7 +353,7 @@ namespace Emby.Server.Implementations.SyncPlay
         /// <returns>The group info for the clients.</returns>
         public GroupInfoDto GetInfo()
         {
-            var participants = _participants.Values.Select(session => session.Session.UserName).Distinct().ToList();
+            var participants = _participants.Values.Select(session => session.UserName).Distinct().ToList();
             return new GroupInfoDto(GroupId, GroupName, _state.Type, participants, DateTime.UtcNow);
         }
 
@@ -389,9 +389,9 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             IEnumerable<Task> GetTasks()
             {
-                foreach (var session in FilterSessions(from, type))
+                foreach (var sessionId in FilterSessions(from.Id, type))
                 {
-                    yield return _sessionManager.SendSyncPlayGroupUpdate(session, message, cancellationToken);
+                    yield return _sessionManager.SendSyncPlayGroupUpdate(sessionId, message, cancellationToken);
                 }
             }
 
@@ -403,9 +403,9 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             IEnumerable<Task> GetTasks()
             {
-                foreach (var session in FilterSessions(from, type))
+                foreach (var sessionId in FilterSessions(from.Id, type))
                 {
-                    yield return _sessionManager.SendSyncPlayCommand(session, message, cancellationToken);
+                    yield return _sessionManager.SendSyncPlayCommand(sessionId, message, cancellationToken);
                 }
             }
 
@@ -537,6 +537,16 @@ namespace Emby.Server.Implementations.SyncPlay
         }
 
         /// <inheritdoc />
+        public void ClearPlayQueue(bool clearPlayingItem)
+        {
+            PlayQueue.ClearPlaylist(clearPlayingItem);
+            if (clearPlayingItem)
+            {
+                RestartCurrentItem();
+            }
+        }
+
+        /// <inheritdoc />
         public bool RemoveFromPlayQueue(IReadOnlyList<Guid> playlistItemIds)
         {
             var playingItemRemoved = PlayQueue.RemoveFromPlaylist(playlistItemIds);
@@ -649,8 +659,9 @@ namespace Emby.Server.Implementations.SyncPlay
         public PlayQueueUpdate GetPlayQueueUpdate(PlayQueueUpdateReason reason)
         {
             var startPositionTicks = PositionTicks;
+            var isPlaying = _state.Type.Equals(GroupStateType.Playing);
 
-            if (_state.Type.Equals(GroupStateType.Playing))
+            if (isPlaying)
             {
                 var currentTime = DateTime.UtcNow;
                 var elapsedTime = currentTime - LastActivity;
@@ -669,6 +680,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 PlayQueue.GetPlaylist(),
                 PlayQueue.PlayingItemIndex,
                 startPositionTicks,
+                isPlaying,
                 PlayQueue.ShuffleMode,
                 PlayQueue.RepeatMode);
         }

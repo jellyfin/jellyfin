@@ -112,7 +112,7 @@ namespace Jellyfin.Drawing.Skia
             canvas.DrawImage(residedBackdrop, 0, 0);
 
             // draw shadow rectangle
-            var paintColor = new SKPaint
+            using var paintColor = new SKPaint
             {
                 Color = SKColors.Black.WithAlpha(0x78),
                 Style = SKPaintStyle.Fill
@@ -130,7 +130,7 @@ namespace Jellyfin.Drawing.Skia
             }
 
             // draw library name
-            var textPaint = new SKPaint
+            using var textPaint = new SKPaint
             {
                 Color = SKColors.White,
                 Style = SKPaintStyle.Fill,

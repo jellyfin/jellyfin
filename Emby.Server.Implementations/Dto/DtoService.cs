@@ -51,8 +51,6 @@ namespace Emby.Server.Implementations.Dto
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly Lazy<ILiveTvManager> _livetvManagerFactory;
 
-        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
-
         public DtoService(
             ILogger<DtoService> logger,
             ILibraryManager libraryManager,
@@ -74,6 +72,8 @@ namespace Emby.Server.Implementations.Dto
             _mediaSourceManager = mediaSourceManager;
             _livetvManagerFactory = livetvManagerFactory;
         }
+
+        private ILiveTvManager LivetvManager => _livetvManagerFactory.Value;
 
         /// <inheritdoc />
         public IReadOnlyList<BaseItemDto> GetBaseItemDtos(IReadOnlyList<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
@@ -507,7 +507,6 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
         private void AttachPeople(BaseItemDto dto, BaseItem item)
         {
             // Ordering by person type to ensure actors and artists are at the front.
@@ -616,7 +615,6 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
         private void AttachStudios(BaseItemDto dto, BaseItem item)
         {
             dto.Studios = item.Studios
@@ -1313,9 +1311,12 @@ namespace Emby.Server.Implementations.Dto
 
             var imageTags = dto.ImageTags;
 
-            while (((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0) || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0) || parent is Series) &&
-                (parent ??= (isFirst ? GetImageDisplayParent(item, item) ?? owner : parent)) != null)
+            while ((!(imageTags != null && imageTags.ContainsKey(ImageType.Logo)) && logoLimit > 0)
+                || (!(imageTags != null && imageTags.ContainsKey(ImageType.Art)) && artLimit > 0)
+                || (!(imageTags != null && imageTags.ContainsKey(ImageType.Thumb)) && thumbLimit > 0)
+                || parent is Series)
             {
+                parent ??= isFirst ? GetImageDisplayParent(item, item) ?? owner : parent;
                 if (parent == null)
                 {
                     break;
@@ -1395,7 +1396,6 @@ namespace Emby.Server.Implementations.Dto
         /// </summary>
         /// <param name="dto">The dto.</param>
         /// <param name="item">The item.</param>
-        /// <returns>Task.</returns>
         public void AttachPrimaryImageAspectRatio(IItemDto dto, BaseItem item)
         {
             dto.PrimaryImageAspectRatio = GetPrimaryImageAspectRatio(item);

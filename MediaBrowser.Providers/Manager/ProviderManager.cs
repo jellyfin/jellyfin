@@ -24,6 +24,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
@@ -209,7 +210,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, true);
+            var fileStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             return new ImageSaver(_configurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, saveLocallyWithMedia, cancellationToken);
         }
@@ -235,14 +236,7 @@ namespace MediaBrowser.Providers.Manager
 
             var preferredLanguage = item.GetPreferredMetadataLanguage();
 
-            var languages = new List<string>();
-            if (!query.IncludeAllLanguages && !string.IsNullOrWhiteSpace(preferredLanguage))
-            {
-                languages.Add(preferredLanguage);
-            }
-
-            // TODO include [query.IncludeAllLanguages] as an argument to the providers
-            var tasks = providers.Select(i => GetImages(item, i, languages, cancellationToken, query.ImageType));
+            var tasks = providers.Select(i => GetImages(item, i, preferredLanguage, query.IncludeAllLanguages, cancellationToken, query.ImageType));
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -254,17 +248,21 @@ namespace MediaBrowser.Providers.Manager
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
-        /// <param name="preferredLanguages">The preferred languages.</param>
+        /// <param name="preferredLanguage">The preferred language.</param>
+        /// <param name="includeAllLanguages">Whether to include all languages in results.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="type">The type.</param>
         /// <returns>Task{IEnumerable{RemoteImageInfo}}.</returns>
         private async Task<IEnumerable<RemoteImageInfo>> GetImages(
             BaseItem item,
             IRemoteImageProvider provider,
-            IReadOnlyCollection<string> preferredLanguages,
+            string preferredLanguage,
+            bool includeAllLanguages,
             CancellationToken cancellationToken,
             ImageType? type = null)
         {
+            bool hasPreferredLanguage = !string.IsNullOrWhiteSpace(preferredLanguage);
+
             try
             {
                 var result = await provider.GetImages(item, cancellationToken).ConfigureAwait(false);
@@ -274,14 +272,17 @@ namespace MediaBrowser.Providers.Manager
                     result = result.Where(i => i.Type == type.Value);
                 }
 
-                if (preferredLanguages.Count > 0)
+                if (!includeAllLanguages && hasPreferredLanguage)
                 {
-                    result = result.Where(i => string.IsNullOrEmpty(i.Language) ||
-                                               preferredLanguages.Contains(i.Language, StringComparer.OrdinalIgnoreCase) ||
+                    // Filter out languages that do not match the preferred languages.
+                    //
+                    // TODO: should exception case of "en" (English) eventually be removed?
+                    result = result.Where(i => string.IsNullOrWhiteSpace(i.Language) ||
+                                               string.Equals(preferredLanguage, i.Language, StringComparison.OrdinalIgnoreCase) ||
                                                string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase));
                 }
 
-                return result;
+                return result.OrderByLanguageDescending(preferredLanguage);
             }
             catch (OperationCanceledException)
             {

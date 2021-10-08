@@ -1,8 +1,8 @@
-# DESIGNED FOR BUILDING ON AMD64 ONLY
+# DESIGNED FOR BUILDING ON ARM64 ONLY
 #####################################
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
-ARG DOTNET_VERSION=5.0
+ARG DOTNET_VERSION=6.0
 
 
 FROM node:lts-alpine as web-builder
@@ -14,7 +14,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && mv dist /dist
 
 FROM multiarch/qemu-user-static:x86_64-aarch64 as qemu
-FROM arm64v8/debian:bullseye-slim as app
+FROM arm64v8/debian:stable-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install --no-install-recommends --no-install-sugge
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

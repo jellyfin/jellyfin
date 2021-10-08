@@ -21,8 +21,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class EncodingHelper
     {
-        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ISubtitleEncoder _subtitleEncoder;
 
@@ -37,7 +35,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             "ConstrainedHigh"
         };
 
-        private static readonly Version minVersionForCudaOverlay = new Version(4, 4);
+        private static readonly Version _minVersionForCudaOverlay = new Version(4, 4);
 
         public EncodingHelper(
             IMediaEncoder mediaEncoder,
@@ -206,9 +204,15 @@ namespace MediaBrowser.Controller.MediaEncoding
                     return GetH264Encoder(state, encodingOptions);
                 }
 
-                if (string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(codec, "vp8", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(codec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return "libvpx";
+                }
+
+                if (string.Equals(codec, "vp9", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "libvpx-vp9";
                 }
 
                 if (string.Equals(codec, "wmv", StringComparison.OrdinalIgnoreCase))
@@ -442,7 +446,8 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (string.Equals(ext, ".webm", StringComparison.OrdinalIgnoreCase))
             {
-                return "vpx";
+                // TODO: this may not always mean VP8, as the codec ages
+                return "vp8";
             }
 
             if (string.Equals(ext, ".ogg", StringComparison.OrdinalIgnoreCase) || string.Equals(ext, ".ogv", StringComparison.OrdinalIgnoreCase))
@@ -560,12 +565,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                     {
                         if (isOpenclTonemappingSupported && !isVppTonemappingSupported)
                         {
-                           arg.Append("-init_hw_device vaapi=va:")
-                                .Append(options.VaapiDevice)
-                                .Append(" -init_hw_device opencl=ocl@va ")
-                                .Append("-hwaccel_device va ")
-                                .Append("-hwaccel_output_format vaapi ")
-                                .Append("-filter_hw_device ocl ");
+                            arg.Append("-init_hw_device vaapi=va:")
+                                 .Append(options.VaapiDevice)
+                                 .Append(" -init_hw_device opencl=ocl@va ")
+                                 .Append("-hwaccel_device va ")
+                                 .Append("-hwaccel_output_format vaapi ")
+                                 .Append("-filter_hw_device ocl ");
                         }
                         else
                         {
@@ -640,8 +645,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 if (state.IsVideoRequest
-                    && ((string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
-                         && (isNvdecDecoder || isCuvidHevcDecoder || isCuvidVp9Decoder || isSwDecoder))))
+                    && string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase)
+                    && (isNvdecDecoder || isCuvidHevcDecoder || isCuvidVp9Decoder || isSwDecoder))
                 {
                     if (!isCudaTonemappingSupported && isOpenclTonemappingSupported)
                     {
@@ -774,54 +779,42 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public string GetVideoBitrateParam(EncodingJobInfo state, string videoCodec)
         {
-            var bitrate = state.OutputVideoBitrate;
-
-            if (bitrate.HasValue)
+            if (state.OutputVideoBitrate == null)
             {
-                if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
-                {
-                    // When crf is used with vpx, b:v becomes a max rate
-                    // https://trac.ffmpeg.org/wiki/Encode/VP9
-                    return string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -maxrate:v {0} -bufsize:v {1} -b:v {0}",
-                        bitrate.Value,
-                        bitrate.Value * 2);
-                }
-
-                if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
-                {
-                    return string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -b:v {0}",
-                        bitrate.Value);
-                }
-
-                if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
-                {
-                    // h264
-                    return string.Format(
-                        CultureInfo.InvariantCulture,
-                        " -maxrate {0} -bufsize {1}",
-                        bitrate.Value,
-                        bitrate.Value * 2);
-                }
-
-                // h264
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -b:v {0} -maxrate {0} -bufsize {1}",
-                    bitrate.Value,
-                    bitrate.Value * 2);
+                return string.Empty;
             }
 
-            return string.Empty;
+            int bitrate = state.OutputVideoBitrate.Value;
+
+            // Currently use the same buffer size for all encoders
+            int bufsize = bitrate * 2;
+
+            if (string.Equals(videoCodec, "libvpx", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "libvpx-vp9", StringComparison.OrdinalIgnoreCase))
+            {
+                // When crf is used with vpx, b:v becomes a max rate
+                // https://trac.ffmpeg.org/wiki/Encode/VP8
+                // https://trac.ffmpeg.org/wiki/Encode/VP9
+                return FormattableString.Invariant($" -maxrate:v {bitrate} -bufsize:v {bufsize} -b:v {bitrate}");
+            }
+
+            if (string.Equals(videoCodec, "msmpeg4", StringComparison.OrdinalIgnoreCase))
+            {
+                return FormattableString.Invariant($" -b:v {bitrate}");
+            }
+
+            if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
+            {
+                return FormattableString.Invariant($" -maxrate {bitrate} -bufsize {bufsize}");
+            }
+
+            return FormattableString.Invariant($" -b:v {bitrate} -maxrate {bitrate} -bufsize {bufsize}");
         }
 
         public static string NormalizeTranscodingLevel(EncodingJobInfo state, string level)
         {
-            if (double.TryParse(level, NumberStyles.Any, _usCulture, out double requestLevel))
+            if (double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out double requestLevel))
             {
                 if (string.Equals(state.ActualOutputVideoCodec, "hevc", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(state.ActualOutputVideoCodec, "h265", StringComparison.OrdinalIgnoreCase))
@@ -916,7 +909,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 CultureInfo.InvariantCulture,
                 "subtitles='{0}:si={1}'{2}",
                 _mediaEncoder.EscapeSubtitleFilterPath(mediaPath),
-                state.InternalSubtitleStreamOffset.ToString(_usCulture),
+                state.InternalSubtitleStreamOffset.ToString(CultureInfo.InvariantCulture),
                 // fallbackFontParam,
                 setPtsParam);
         }
@@ -1199,7 +1192,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     param += " -header_insertion_mode gop -gops_per_idr 1";
                 }
             }
-            else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // webm
+            else if (string.Equals(videoEncoder, "libvpx", StringComparison.OrdinalIgnoreCase)) // vp8
             {
                 // Values 0-3, 0 being highest quality but slower
                 var profileScore = 0;
@@ -1222,10 +1215,59 @@ namespace MediaBrowser.Controller.MediaEncoding
                 param += string.Format(
                     CultureInfo.InvariantCulture,
                     " -speed 16 -quality good -profile:v {0} -slices 8 -crf {1} -qmin {2} -qmax {3}",
-                    profileScore.ToString(_usCulture),
+                    profileScore.ToString(CultureInfo.InvariantCulture),
                     crf,
                     qmin,
                     qmax);
+            }
+            else if (string.Equals(videoEncoder, "libvpx-vp9", StringComparison.OrdinalIgnoreCase)) // vp9
+            {
+                // When `-deadline` is set to `good` or `best`, `-cpu-used` ranges from 0-5.
+                // When `-deadline` is set to `realtime`, `-cpu-used` ranges from 0-15.
+                // Resources:
+                //   * https://trac.ffmpeg.org/wiki/Encode/VP9
+                //   * https://superuser.com/questions/1586934
+                //   * https://developers.google.com/media/vp9
+                param += encodingOptions.EncoderPreset switch
+                {
+                    "veryslow" => " -deadline best -cpu-used 0",
+                    "slower" => " -deadline best -cpu-used 2",
+                    "slow" => " -deadline best -cpu-used 3",
+                    "medium" => " -deadline good -cpu-used 0",
+                    "fast" => " -deadline good -cpu-used 1",
+                    "faster" => " -deadline good -cpu-used 2",
+                    "veryfast" => " -deadline good -cpu-used 3",
+                    "superfast" => " -deadline good -cpu-used 4",
+                    "ultrafast" => " -deadline good -cpu-used 5",
+                    _ => " -deadline good -cpu-used 1"
+                };
+
+                // TODO: until VP9 gets its own CRF setting, base CRF on H.265.
+                int h265Crf = encodingOptions.H265Crf;
+                int defaultVp9Crf = 31;
+                if (h265Crf >= 0 && h265Crf <= 51)
+                {
+                    // This conversion factor is chosen to match the default CRF for H.265 to the
+                    // recommended 1080p CRF from Google. The factor also maps the logarithmic CRF
+                    // scale of x265 [0, 51] to that of VP9 [0, 63] relatively well.
+
+                    // Resources:
+                    //   * https://developers.google.com/media/vp9/settings/vod
+                    const float H265ToVp9CrfConversionFactor = 1.12F;
+
+                    var vp9Crf = Convert.ToInt32(h265Crf * H265ToVp9CrfConversionFactor);
+
+                    // Encoder allows for CRF values in the range [0, 63].
+                    vp9Crf = Math.Clamp(vp9Crf, 0, 63);
+
+                    param += FormattableString.Invariant($" -crf {vp9Crf}");
+                }
+                else
+                {
+                    param += FormattableString.Invariant($" -crf {defaultVp9Crf}");
+                }
+
+                param += " -row-mt 1 -profile 1";
             }
             else if (string.Equals(videoEncoder, "mpeg4", StringComparison.OrdinalIgnoreCase))
             {
@@ -1245,7 +1287,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var framerate = GetFramerateParam(state);
             if (framerate.HasValue)
             {
-                param += string.Format(CultureInfo.InvariantCulture, " -r {0}", framerate.Value.ToString(_usCulture));
+                param += string.Format(CultureInfo.InvariantCulture, " -r {0}", framerate.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             var targetVideoCodec = state.ActualOutputVideoCodec;
@@ -1349,7 +1391,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (string.Equals(videoEncoder, "hevc_qsv", StringComparison.OrdinalIgnoreCase))
                 {
                     // hevc_qsv use -level 51 instead of -level 153.
-                    if (double.TryParse(level, NumberStyles.Any, _usCulture, out double hevcLevel))
+                    if (double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out double hevcLevel))
                     {
                         param += " -level " + (hevcLevel / 3);
                     }
@@ -1511,7 +1553,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             // If a specific level was requested, the source must match or be less than
             var level = state.GetRequestedLevel(videoStream.Codec);
             if (!string.IsNullOrEmpty(level)
-                && double.TryParse(level, NumberStyles.Any, _usCulture, out var requestLevel))
+                && double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out var requestLevel))
             {
                 if (!videoStream.Level.HasValue)
                 {
@@ -1759,7 +1801,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 && state.AudioStream.Channels.Value > 5
                 && !encodingOptions.DownMixAudioBoost.Equals(1))
             {
-                filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(_usCulture));
+                filters.Add("volume=" + encodingOptions.DownMixAudioBoost.ToString(CultureInfo.InvariantCulture));
             }
 
             var isCopyingTimestamps = state.CopyTimestamps || state.TranscodingType != TranscodingJobType.Progressive;
@@ -2055,7 +2097,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVppTonemappingSupported = IsVppTonemappingSupported(state, options);
 
             var mediaEncoderVersion = _mediaEncoder.GetMediaEncoderVersion();
-            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= minVersionForCudaOverlay;
+            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= _minVersionForCudaOverlay;
             var isCudaFormatConversionSupported = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.ScaleCudaFormat);
 
             // Tonemapping and burn-in graphical subtitles requires overlay_vaapi.
@@ -2336,7 +2378,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 var isCudaTonemappingSupported = IsCudaTonemappingSupported(state, options);
                 var isTonemappingSupportedOnNvenc = string.Equals(options.HardwareAccelerationType, "nvenc", StringComparison.OrdinalIgnoreCase);
                 var mediaEncoderVersion = _mediaEncoder.GetMediaEncoderVersion();
-                var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= minVersionForCudaOverlay;
+                var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= _minVersionForCudaOverlay;
                 var isCudaFormatConversionSupported = _mediaEncoder.SupportsFilterWithOption(FilterOptionType.ScaleCudaFormat);
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
 
@@ -2390,8 +2432,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     if (isExynosV4L2)
                     {
-                        var widthParam = requestedWidth.Value.ToString(_usCulture);
-                        var heightParam = requestedHeight.Value.ToString(_usCulture);
+                        var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
+                        var heightParam = requestedHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                         filters.Add(
                             string.Format(
@@ -2409,8 +2451,8 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If Max dimensions were supplied, for width selects lowest even number between input width and width req size and selects lowest even number from in width*display aspect and requested size
                 else if (requestedMaxWidth.HasValue && requestedMaxHeight.HasValue)
                 {
-                    var maxWidthParam = requestedMaxWidth.Value.ToString(_usCulture);
-                    var maxHeightParam = requestedMaxHeight.Value.ToString(_usCulture);
+                    var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
+                    var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2442,7 +2484,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     }
                     else
                     {
-                        var widthParam = requestedWidth.Value.ToString(_usCulture);
+                        var widthParam = requestedWidth.Value.ToString(CultureInfo.InvariantCulture);
 
                         filters.Add(
                             string.Format(
@@ -2455,7 +2497,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a fixed height was requested
                 else if (requestedHeight.HasValue)
                 {
-                    var heightParam = requestedHeight.Value.ToString(_usCulture);
+                    var heightParam = requestedHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2478,7 +2520,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a max width was requested
                 else if (requestedMaxWidth.HasValue)
                 {
-                    var maxWidthParam = requestedMaxWidth.Value.ToString(_usCulture);
+                    var maxWidthParam = requestedMaxWidth.Value.ToString(CultureInfo.InvariantCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2501,7 +2543,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 // If a max height was requested
                 else if (requestedMaxHeight.HasValue)
                 {
-                    var maxHeightParam = requestedMaxHeight.Value.ToString(_usCulture);
+                    var maxHeightParam = requestedMaxHeight.Value.ToString(CultureInfo.InvariantCulture);
 
                     if (isExynosV4L2)
                     {
@@ -2639,7 +2681,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             var isVppTonemappingSupported = IsVppTonemappingSupported(state, options);
             var isCudaTonemappingSupported = IsCudaTonemappingSupported(state, options);
             var mediaEncoderVersion = _mediaEncoder.GetMediaEncoderVersion();
-            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= minVersionForCudaOverlay;
+            var isCudaOverlaySupported = _mediaEncoder.SupportsFilter("overlay_cuda") && mediaEncoderVersion != null && mediaEncoderVersion >= _minVersionForCudaOverlay;
 
             var hasSubs = state.SubtitleStream != null && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
             var hasTextSubs = state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
@@ -3151,20 +3193,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 #nullable enable
         public static int GetNumberOfThreads(EncodingJobInfo? state, EncodingOptions encodingOptions, string? outputVideoCodec)
         {
-            if (string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase))
-            {
-                // per docs:
-                // -threads    number of threads to use for encoding, can't be 0 [auto] with VP8
-                //             (recommended value : number of real cores - 1)
-                return Math.Max(Environment.ProcessorCount - 1, 1);
-            }
+            // VP8 and VP9 encoders must have their thread counts set.
+            bool mustSetThreadCount = string.Equals(outputVideoCodec, "libvpx", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(outputVideoCodec, "libvpx-vp9", StringComparison.OrdinalIgnoreCase);
 
             var threads = state?.BaseRequest.CpuCoreLimit ?? encodingOptions.EncodingThreadCount;
 
-            // Automatic
             if (threads <= 0)
             {
-                return 0;
+                // Automatically set thread count
+                return mustSetThreadCount ? Math.Max(Environment.ProcessorCount - 1, 1) : 0;
             }
             else if (threads >= Environment.ProcessorCount)
             {
@@ -4082,12 +4120,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                args += " -ab " + bitrate.Value.ToString(_usCulture);
+                args += " -ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             if (state.OutputAudioSampleRate.HasValue)
             {
-                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture);
+                args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
             args += GetAudioFilterParam(state, encodingOptions);
@@ -4103,12 +4141,12 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (bitrate.HasValue)
             {
-                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(_usCulture));
+                audioTranscodeParams.Add("-ab " + bitrate.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (state.OutputAudioChannels.HasValue)
             {
-                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(_usCulture));
+                audioTranscodeParams.Add("-ac " + state.OutputAudioChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             // opus will fail on 44100
@@ -4116,7 +4154,7 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (state.OutputAudioSampleRate.HasValue)
                 {
-                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(_usCulture));
+                    audioTranscodeParams.Add("-ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture));
                 }
             }
 

@@ -12,6 +12,11 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerApplicationPaths" /> class.
         /// </summary>
+        /// <param name="programDataPath">The path for Jellyfin's data.</param>
+        /// <param name="logDirectoryPath">The path for Jellyfin's logging directory.</param>
+        /// <param name="configurationDirectoryPath">The path for Jellyfin's configuration directory.</param>
+        /// <param name="cacheDirectoryPath">The path for Jellyfin's cache directory.</param>
+        /// <param name="webDirectoryPath">The path for Jellyfin's web UI.</param>
         public ServerApplicationPaths(
             string programDataPath,
             string logDirectoryPath,
