@@ -53,6 +53,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the match type.
         /// </summary>
         [JsonPropertyName("matchType")]
-        public string? MatchType { get;set; }
+        public string? MatchType { get; set; }
     }
 }
