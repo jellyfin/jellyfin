@@ -93,13 +93,9 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc />
         public async Task<ForgotPasswordResult> StartForgotPasswordProcess(User user, bool isInNetwork)
         {
-            string pin;
-            using (var cryptoRandom = RandomNumberGenerator.Create())
-            {
-                byte[] bytes = new byte[4];
-                cryptoRandom.GetBytes(bytes);
-                pin = BitConverter.ToString(bytes);
-            }
+            byte[] bytes = new byte[4];
+            RandomNumberGenerator.Fill(bytes);
+            string pin = BitConverter.ToString(bytes);
 
             DateTime expireTime = DateTime.UtcNow.AddMinutes(30);
             string filePath = _passwordResetFileBase + user.Id + ".json";
@@ -114,7 +110,6 @@ namespace Jellyfin.Server.Implementations.Users
             await using (FileStream fileStream = AsyncFile.OpenWrite(filePath))
             {
                 await JsonSerializer.SerializeAsync(fileStream, spr).ConfigureAwait(false);
-                await fileStream.FlushAsync().ConfigureAwait(false);
             }
 
             user.EasyPassword = pin;
