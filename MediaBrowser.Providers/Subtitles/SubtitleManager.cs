@@ -244,8 +244,10 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
-                    // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, FileOptions.Asynchronous);
+                    var fileOptions = AsyncFile.WriteOptions;
+                    fileOptions.Mode = FileMode.CreateNew;
+                    fileOptions.PreallocationSize = stream.Length;
+                    using var fs = new FileStream(savePath, fileOptions);
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;

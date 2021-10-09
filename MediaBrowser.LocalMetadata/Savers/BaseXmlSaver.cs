@@ -113,11 +113,19 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
+
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            var fileStreamOptions = new FileStreamOptions()
+            {
+                Mode = FileMode.Create,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                PreallocationSize = stream.Length
+            };
+
+            using (var filestream = new FileStream(path, fileStreamOptions))
             {
                 stream.CopyTo(filestream);
             }

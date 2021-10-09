@@ -1848,14 +1848,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
-                    Encoding = Encoding.UTF8,
-                    CloseOutput = false
+                    Encoding = Encoding.UTF8
                 };
 
                 using (var writer = XmlWriter.Create(stream, settings))
@@ -1913,14 +1911,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
-                    Encoding = Encoding.UTF8,
-                    CloseOutput = false
+                    Encoding = Encoding.UTF8
                 };
 
                 var options = _config.GetNfoConfiguration();

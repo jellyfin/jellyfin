@@ -46,8 +46,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+            using (var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
             {
                 onStarted();
 
@@ -79,8 +78,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile) ?? throw new ArgumentException("Path can't be a root directory.", nameof(targetFile)));
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var output = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
+            await using var output = new FileStream(targetFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.CopyToBufferSize, FileOptions.Asynchronous);
 
             onStarted();
 

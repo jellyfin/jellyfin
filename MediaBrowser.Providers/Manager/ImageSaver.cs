@@ -261,8 +261,10 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.SetAttributes(path, false, false);
 
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                var fileStreamOptions = AsyncFile.WriteOptions;
+                fileStreamOptions.Mode = FileMode.Create;
+                fileStreamOptions.PreallocationSize = source.Length;
+                await using (var fs = new FileStream(path, fileStreamOptions))
                 {
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
