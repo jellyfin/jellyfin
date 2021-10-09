@@ -29,7 +29,7 @@ ARG LEVEL_ZERO_VERSION=1.2.20826
 
 # Install dependencies:
 # mesa-va-drivers: needed for AMD VAAPI. Mesa >= 20.1 is required for HEVC transcoding.
-# curl: healcheck
+# curl: healthcheck
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg wget apt-transport-https curl \
  && wget -O - https://repo.jellyfin.org/jellyfin_team.gpg.key | apt-key add - \
@@ -88,6 +88,5 @@ ENTRYPOINT ["./jellyfin/jellyfin", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
-    # https://github.com/jellyfin/jellyfin/issues/5760#issuecomment-852297561
     CMD  curl http://localhost:$(grep -oP '(?<=PublicPort>)[^<]+' /config/config/network.xml)/$(grep -oP '(?<=BaseUrl>)[^<]+' /config/config/network.xml)health \
     || exit 1
