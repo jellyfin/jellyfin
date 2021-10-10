@@ -77,6 +77,8 @@ RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --
 
 FROM app
 
+ENV HEALTHCHECK_URL=http://localhost:8096/health
+
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
@@ -88,5 +90,4 @@ ENTRYPOINT ["./jellyfin/jellyfin", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
-    CMD  curl http://localhost:$(grep -oP '(?<=HttpServerPortNumber>)[^<]+' /config/config/network.xml)/$(grep -oP '(?<=BaseUrl>)[^<]+' /config/config/network.xml)health \
-    || exit 1
+     CMD curl -L "${HEALTHCHECK_URL}" || exit 1
