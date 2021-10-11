@@ -17,38 +17,37 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class EmbeddedImageProviderTests
     {
-        public static TheoryData<BaseItem> GetSupportedImages_Empty_TestData =>
-            new ()
+        private static TheoryData<BaseItem> GetSupportedImages_UnsupportedBaseItems_ReturnsEmpty_TestData()
+        {
+            return new ()
             {
                 new AudioBook(),
                 new BoxSet(),
                 new Series(),
                 new Season(),
             };
+        }
 
-        public static TheoryData<BaseItem, IEnumerable<ImageType>> GetSupportedImages_Populated_TestData =>
-            new TheoryData<BaseItem, IEnumerable<ImageType>>
+        [Theory]
+        [MemberData(nameof(GetSupportedImages_UnsupportedBaseItems_ReturnsEmpty_TestData))]
+        public void GetSupportedImages_UnsupportedBaseItems_ReturnsEmpty(BaseItem item)
+        {
+            var embeddedImageProvider = GetEmbeddedImageProvider(null);
+            Assert.Empty(embeddedImageProvider.GetSupportedImages(item));
+        }
+
+        private static TheoryData<BaseItem, IEnumerable<ImageType>> GetSupportedImages_SupportedBaseItems_ReturnsPopulated_TestData()
+        {
+            return new TheoryData<BaseItem, IEnumerable<ImageType>>
             {
                 { new Episode(), new List<ImageType> { ImageType.Primary } },
                 { new Movie(), new List<ImageType> { ImageType.Logo, ImageType.Backdrop, ImageType.Primary } },
             };
-
-        private EmbeddedImageProvider GetEmbeddedImageProvider(IMediaEncoder? mediaEncoder)
-        {
-            return new EmbeddedImageProvider(mediaEncoder);
         }
 
         [Theory]
-        [MemberData(nameof(GetSupportedImages_Empty_TestData))]
-        public void GetSupportedImages_Empty(BaseItem item)
-        {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
-            Assert.False(embeddedImageProvider.GetSupportedImages(item).Any());
-        }
-
-        [Theory]
-        [MemberData(nameof(GetSupportedImages_Populated_TestData))]
-        public void GetSupportedImages_Populated(BaseItem item, IEnumerable<ImageType> expected)
+        [MemberData(nameof(GetSupportedImages_SupportedBaseItems_ReturnsPopulated_TestData))]
+        public void GetSupportedImages_SupportedBaseItems_ReturnsPopulated(BaseItem item, IEnumerable<ImageType> expected)
         {
             var embeddedImageProvider = GetEmbeddedImageProvider(null);
             var actual = embeddedImageProvider.GetSupportedImages(item);
@@ -56,56 +55,34 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Fact]
-        public async void GetImage_Empty_NoStreams()
+        public async void GetImage_InputWithNoStreams_ReturnsNoImage()
         {
             var embeddedImageProvider = GetEmbeddedImageProvider(null);
 
-            var input = new Mock<Movie>();
-            input.Setup(movie => movie.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo>());
-            input.Setup(movie => movie.GetMediaStreams())
-                .Returns(new List<MediaStream>());
+            var input = GetMovie(new List<MediaAttachment>(), new List<MediaStream>());
 
-            var actual = await embeddedImageProvider.GetImage(input.Object, ImageType.Primary, CancellationToken.None);
+            var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actual);
             Assert.False(actual.HasImage);
         }
 
         [Fact]
-        public async void GetImage_Empty_NoLabeledAttachments()
+        public async void GetImage_InputWithUnlabeledAttachments_ReturnsNoImage()
         {
             var embeddedImageProvider = GetEmbeddedImageProvider(null);
 
-            var input = new Mock<Movie>();
             // add an attachment without a filename - has a list to look through but finds nothing
-            input.Setup(movie => movie.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo> { new () { MediaAttachments = new List<MediaAttachment> { new () } } });
-            input.Setup(movie => movie.GetMediaStreams())
-                .Returns(new List<MediaStream>());
+            var input = GetMovie(
+                new List<MediaAttachment> { new () },
+                new List<MediaStream>());
 
-            var actual = await embeddedImageProvider.GetImage(input.Object, ImageType.Primary, CancellationToken.None);
+            var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actual);
             Assert.False(actual.HasImage);
         }
 
         [Fact]
-        public async void GetImage_Empty_NoEmbeddedLabeledBackdrop()
-        {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
-
-            var input = new Mock<Movie>();
-            input.Setup(movie => movie.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo>());
-            input.Setup(movie => movie.GetMediaStreams())
-                .Returns(new List<MediaStream> { new () { Type = MediaStreamType.EmbeddedImage } });
-
-            var actual = await embeddedImageProvider.GetImage(input.Object, ImageType.Backdrop, CancellationToken.None);
-            Assert.NotNull(actual);
-            Assert.False(actual.HasImage);
-        }
-
-        [Fact]
-        public async void GetImage_Attached()
+        public async void GetImage_InputWithLabeledAttachments_ReturnsCorrectSelection()
         {
             // first tests file extension detection, second uses mimetype, third defaults to jpg
             MediaAttachment sampleAttachment1 = new () { FileName = "clearlogo.png", Index = 1 };
@@ -124,25 +101,23 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                 .Returns(Task.FromResult(targetPath3));
             var embeddedImageProvider = GetEmbeddedImageProvider(mediaEncoder.Object);
 
-            var input = new Mock<Movie>();
-            input.Setup(movie => movie.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo> { new () { MediaAttachments = new List<MediaAttachment> { sampleAttachment1, sampleAttachment2, sampleAttachment3 } } });
-            input.Setup(movie => movie.GetMediaStreams())
-                .Returns(new List<MediaStream>());
+            var input = GetMovie(
+                new List<MediaAttachment> { sampleAttachment1, sampleAttachment2, sampleAttachment3 },
+                new List<MediaStream>());
 
-            var actualLogo = await embeddedImageProvider.GetImage(input.Object, ImageType.Logo, CancellationToken.None);
+            var actualLogo = await embeddedImageProvider.GetImage(input, ImageType.Logo, CancellationToken.None);
             Assert.NotNull(actualLogo);
             Assert.True(actualLogo.HasImage);
             Assert.Equal(targetPath1, actualLogo.Path);
             Assert.Equal(ImageFormat.Png, actualLogo.Format);
 
-            var actualBackdrop = await embeddedImageProvider.GetImage(input.Object, ImageType.Backdrop, CancellationToken.None);
+            var actualBackdrop = await embeddedImageProvider.GetImage(input, ImageType.Backdrop, CancellationToken.None);
             Assert.NotNull(actualBackdrop);
             Assert.True(actualBackdrop.HasImage);
             Assert.Equal(targetPath2, actualBackdrop.Path);
             Assert.Equal(ImageFormat.Bmp, actualBackdrop.Format);
 
-            var actualPrimary = await embeddedImageProvider.GetImage(input.Object, ImageType.Primary, CancellationToken.None);
+            var actualPrimary = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actualPrimary);
             Assert.True(actualPrimary.HasImage);
             Assert.Equal(targetPath3, actualPrimary.Path);
@@ -150,23 +125,35 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Fact]
-        public async void GetImage_EmbeddedDefault()
+        public async void GetImage_InputWithUnlabeledEmbeddedImages_BackdropReturnsNoImage()
+        {
+            var embeddedImageProvider = GetEmbeddedImageProvider(null);
+
+            var input = GetMovie(
+                new List<MediaAttachment>(),
+                new List<MediaStream> { new () { Type = MediaStreamType.EmbeddedImage } });
+
+            var actual = await embeddedImageProvider.GetImage(input, ImageType.Backdrop, CancellationToken.None);
+            Assert.NotNull(actual);
+            Assert.False(actual.HasImage);
+        }
+
+        [Fact]
+        public async void GetImage_InputWithUnlabeledEmbeddedImages_PrimaryReturnsImage()
         {
             MediaStream sampleStream = new () { Type = MediaStreamType.EmbeddedImage, Index = 1 };
             string targetPath = "path";
 
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream, 1, "jpg", CancellationToken.None))
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream, 1, ".jpg", CancellationToken.None))
                 .Returns(Task.FromResult(targetPath));
             var embeddedImageProvider = GetEmbeddedImageProvider(mediaEncoder.Object);
 
-            var input = new Mock<Movie>();
-            input.Setup(movie => movie.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo>());
-            input.Setup(movie => movie.GetMediaStreams())
-                .Returns(new List<MediaStream>() { sampleStream });
+            var input = GetMovie(
+                new List<MediaAttachment>(),
+                new List<MediaStream> { sampleStream });
 
-            var actual = await embeddedImageProvider.GetImage(input.Object, ImageType.Primary, CancellationToken.None);
+            var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actual);
             Assert.True(actual.HasImage);
             Assert.Equal(targetPath, actual.Path);
@@ -174,7 +161,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Fact]
-        public async void GetImage_EmbeddedSelection()
+        public async void GetImage_InputWithLabeledEmbeddedImages_ReturnsCorrectSelection()
         {
             // primary is second stream to ensure it's not defaulting, backdrop is first
             MediaStream sampleStream1 = new () { Type = MediaStreamType.EmbeddedImage, Index = 1, Comment = "backdrop" };
@@ -183,29 +170,47 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             string targetPath2 = "path2.jpg";
 
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream1, 1, "jpg", CancellationToken.None))
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream1, 1, ".jpg", CancellationToken.None))
                 .Returns(Task.FromResult(targetPath1));
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream2, 2, "jpg", CancellationToken.None))
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream2, 2, ".jpg", CancellationToken.None))
                 .Returns(Task.FromResult(targetPath2));
             var embeddedImageProvider = GetEmbeddedImageProvider(mediaEncoder.Object);
 
-            var input = new Mock<Movie>();
-            input.Setup(movie => movie.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo>());
-            input.Setup(movie => movie.GetMediaStreams())
-                .Returns(new List<MediaStream> { sampleStream1, sampleStream2 });
+            var input = GetMovie(
+                new List<MediaAttachment>(),
+                new List<MediaStream> { sampleStream1, sampleStream2 });
 
-            var actualPrimary = await embeddedImageProvider.GetImage(input.Object, ImageType.Primary, CancellationToken.None);
+            var actualPrimary = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actualPrimary);
             Assert.True(actualPrimary.HasImage);
             Assert.Equal(targetPath2, actualPrimary.Path);
             Assert.Equal(ImageFormat.Jpg, actualPrimary.Format);
 
-            var actualBackdrop = await embeddedImageProvider.GetImage(input.Object, ImageType.Backdrop, CancellationToken.None);
+            var actualBackdrop = await embeddedImageProvider.GetImage(input, ImageType.Backdrop, CancellationToken.None);
             Assert.NotNull(actualBackdrop);
             Assert.True(actualBackdrop.HasImage);
             Assert.Equal(targetPath1, actualBackdrop.Path);
             Assert.Equal(ImageFormat.Jpg, actualBackdrop.Format);
+        }
+
+        private static EmbeddedImageProvider GetEmbeddedImageProvider(IMediaEncoder? mediaEncoder)
+        {
+            return new EmbeddedImageProvider(mediaEncoder);
+        }
+
+        private static Movie GetMovie(List<MediaAttachment> mediaAttachments, List<MediaStream> mediaStreams)
+        {
+            // Mocking IMediaSourceManager GetMediaAttachments and GetMediaStreams instead of mocking Movie works, but
+            // has concurrency problems between this and VideoImageProviderTests due to BaseItem.MediaSourceManager
+            // being static
+            var movie = new Mock<Movie>();
+
+            movie.Setup(item => item.GetMediaSources(It.IsAny<bool>()))
+                .Returns(new List<MediaSourceInfo> { new () { MediaAttachments = mediaAttachments } } );
+            movie.Setup(item => item.GetMediaStreams())
+                .Returns(mediaStreams);
+
+            return movie.Object;
         }
     }
 }

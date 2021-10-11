@@ -548,6 +548,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new ArgumentNullException(nameof(inputPath));
             }
 
+            if (string.IsNullOrEmpty(outputExtension))
+            {
+                outputExtension = ".jpg";
+            }
+            else if (outputExtension[0] != '.')
+            {
+                outputExtension = "." + outputExtension;
+            }
+
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 

@@ -1,6 +1,3 @@
-#nullable enable
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +15,18 @@ using Microsoft.Extensions.Logging;
 namespace MediaBrowser.Providers.MediaInfo
 {
     /// <summary>
-    /// Uses ffmpeg to create still images from the main video.
+    /// Uses <see cref="IMediaEncoder"/> to create still images from the main video.
     /// </summary>
     public class VideoImageProvider : IDynamicImageProvider, IHasOrder
     {
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger<VideoImageProvider> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoImageProvider"/> class.
+        /// </summary>
+        /// <param name="mediaEncoder">The media encoder for capturing images.</param>
+        /// <param name="logger">The logger.</param>
         public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger)
         {
             _mediaEncoder = mediaEncoder;
