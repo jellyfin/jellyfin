@@ -468,12 +468,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Protocol = MediaProtocol.File
             };
 
-            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, "jpg", cancellationToken);
+            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, ".jpg", cancellationToken);
         }
 
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, "jpg", cancellationToken);
+            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, ".jpg", cancellationToken);
         }
 
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken)
@@ -548,7 +548,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 throw new ArgumentNullException(nameof(inputPath));
             }
 
-            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + "." + outputExtension);
+            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.

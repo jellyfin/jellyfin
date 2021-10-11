@@ -81,7 +81,14 @@ namespace MediaBrowser.Providers.MediaInfo
                                   ? TimeSpan.FromTicks(item.RunTimeTicks.Value / 10)
                                   : TimeSpan.FromSeconds(10);
 
-            var videoStream = item.GetMediaStreams().FirstOrDefault(i => i.Type == MediaStreamType.Video);
+            var videoStream = item.GetDefaultVideoStream() ?? item.GetMediaStreams().FirstOrDefault(i => i.Type == MediaStreamType.Video);
+
+            if (videoStream == null)
+            {
+                _logger.LogInformation("Skipping image extraction: no video stream found for {Path}.", item.Path ?? string.Empty);
+                return new DynamicImageResponse { HasImage = false };
+            }
+
             string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
 
             return new DynamicImageResponse

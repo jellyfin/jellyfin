@@ -1,9 +1,7 @@
-#nullable enable
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -17,7 +15,6 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -48,12 +45,10 @@ namespace MediaBrowser.Providers.MediaInfo
         };
 
         private readonly IMediaEncoder _mediaEncoder;
-        private readonly ILogger<EmbeddedImageProvider> _logger;
 
-        public EmbeddedImageProvider(IMediaEncoder mediaEncoder, ILogger<EmbeddedImageProvider> logger)
+        public EmbeddedImageProvider(IMediaEncoder mediaEncoder)
         {
             _mediaEncoder = mediaEncoder;
-            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -84,7 +79,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 };
             }
 
-            return ImmutableList<ImageType>.Empty;
+            return new List<ImageType>();
         }
 
         /// <inheritdoc />
@@ -95,13 +90,6 @@ namespace MediaBrowser.Providers.MediaInfo
             // No support for these
             if (video.IsPlaceHolder || video.VideoType == VideoType.Dvd)
             {
-                return Task.FromResult(new DynamicImageResponse { HasImage = false });
-            }
-
-            // Can't extract if we didn't find any video streams in the file
-            if (!video.DefaultVideoStreamIndex.HasValue)
-            {
-                _logger.LogInformation("Skipping image extraction due to missing DefaultVideoStreamIndex for {Path}.", video.Path ?? string.Empty);
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
@@ -128,24 +116,29 @@ namespace MediaBrowser.Providers.MediaInfo
             // Try attachments first
             var attachmentSources = item.GetMediaSources(false).SelectMany(source => source.MediaAttachments).ToList();
             var attachmentStream = attachmentSources
-                .Where(stream => !string.IsNullOrEmpty(stream.FileName))
-                .First(stream => imageFileNames.Any(name => stream.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
+                .Where(attachment => !string.IsNullOrEmpty(attachment.FileName))
+                .FirstOrDefault(attachment => imageFileNames.Any(name => attachment.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
 
             if (attachmentStream != null)
             {
-                var extension = (string.IsNullOrEmpty(attachmentStream.MimeType) ?
+                var extension = string.IsNullOrEmpty(attachmentStream.MimeType) ?
                     Path.GetExtension(attachmentStream.FileName) :
-                    MimeTypes.ToExtension(attachmentStream.MimeType)) ?? "jpg";
+                    MimeTypes.ToExtension(attachmentStream.MimeType);
+
+                if (string.IsNullOrEmpty(extension))
+                {
+                    extension = ".jpg";
+                }
 
                 string extractedAttachmentPath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, extension, cancellationToken).ConfigureAwait(false);
 
                 ImageFormat format = extension switch
                 {
-                    "bmp" => ImageFormat.Bmp,
-                    "gif" => ImageFormat.Gif,
-                    "jpg" => ImageFormat.Jpg,
-                    "png" => ImageFormat.Png,
-                    "webp" => ImageFormat.Webp,
+                    ".bmp" => ImageFormat.Bmp,
+                    ".gif" => ImageFormat.Gif,
+                    ".jpg" => ImageFormat.Jpg,
+                    ".png" => ImageFormat.Png,
+                    ".webp" => ImageFormat.Webp,
                     _ => ImageFormat.Jpg
                 };
 
@@ -170,7 +163,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Extract first stream containing an element of imageFileNames
             var imageStream = imageStreams
                 .Where(stream => !string.IsNullOrEmpty(stream.Comment))
-                .First(stream => imageFileNames.Any(name => stream.Comment.Contains(name, StringComparison.OrdinalIgnoreCase)));
+                .FirstOrDefault(stream => imageFileNames.Any(name => stream.Comment.Contains(name, StringComparison.OrdinalIgnoreCase)));
 
             // Primary type only: default to first image if none found by label
             if (imageStream == null)
