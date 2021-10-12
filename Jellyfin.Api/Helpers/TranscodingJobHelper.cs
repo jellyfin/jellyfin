@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -607,6 +608,10 @@ namespace Jellyfin.Api.Helpers
             {
                 StartThrottler(state, transcodingJob);
             }
+            else if (transcodingJob.ExitCode != 0)
+            {
+                throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "FFmpeg exited with code {0}", transcodingJob.ExitCode));
+            }
 
             _logger.LogDebug("StartFfMpeg() finished successfully");
 
@@ -743,6 +748,7 @@ namespace Jellyfin.Api.Helpers
         private void OnFfMpegProcessExited(Process process, TranscodingJobDto job, StreamState state)
         {
             job.HasExited = true;
+            job.ExitCode = process.ExitCode;
 
             _logger.LogDebug("Disposing stream resources");
             state.Dispose();
