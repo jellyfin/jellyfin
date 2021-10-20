@@ -557,6 +557,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         subtitleDownloadLanguages,
                         libraryOptions.DisabledSubtitleFetchers,
                         libraryOptions.SubtitleFetcherOrder,
+                        true,
                         cancellationToken).ConfigureAwait(false);
 
                 // Rescan

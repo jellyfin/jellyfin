@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         {
             var video = (Video)_libraryManager.GetItemById(itemId);
 
-            return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, CancellationToken.None).ConfigureAwait(false);
+            return await _subtitleManager.SearchSubtitles(video, language, isPerfectMatch, false, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
