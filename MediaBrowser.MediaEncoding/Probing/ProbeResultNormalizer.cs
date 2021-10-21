@@ -582,7 +582,8 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <returns>MediaAttachments.</returns>
         private MediaAttachment GetMediaAttachment(MediaStreamInfo streamInfo)
         {
-            if (!string.Equals(streamInfo.CodecType, "attachment", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(streamInfo.CodecType, "attachment", StringComparison.OrdinalIgnoreCase)
+                && streamInfo.Disposition?.GetValueOrDefault("attached_pic") != 1)
             {
                 return null;
             }

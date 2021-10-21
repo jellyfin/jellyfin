@@ -95,9 +95,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="mediaSource">Media source information.</param>
         /// <param name="imageStream">Media stream information.</param>
         /// <param name="imageStreamIndex">Index of the stream to extract from.</param>
+        /// <param name="outputExtension">The extension of the file to write, including the '.'.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>Location of video image.</returns>
-        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken);
 
         /// <summary>
         /// Extracts the video images on interval.
