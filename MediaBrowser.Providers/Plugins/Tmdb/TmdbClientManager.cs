@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -471,33 +471,39 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Handles bad path checking and builds the absolute url.
+        /// </summary>
+        /// <param name="size">The image size to fetch.</param>
+        /// <param name="path">The relative URL of the image.</param>
+        /// <returns>The absolute URL.</returns>
+        private string GetUrl(string size, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            return _tmDbClient.GetImageUrl(size, path).ToString();
+        }
+
+        /// <summary>
         /// Gets the absolute URL of the poster.
         /// </summary>
         /// <param name="posterPath">The relative URL of the poster.</param>
         /// <returns>The absolute URL.</returns>
         public string GetPosterUrl(string posterPath)
         {
-            if (string.IsNullOrEmpty(posterPath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.PosterSizes[^1], posterPath).ToString();
+            return GetUrl(_tmDbClient.Config.Images.PosterSizes[^1], posterPath);
         }
 
         /// <summary>
         /// Gets the absolute URL of the backdrop image.
         /// </summary>
-        /// <param name="posterPath">The relative URL of the backdrop image.</param>
+        /// <param name="backdropPath">The relative URL of the backdrop image.</param>
         /// <returns>The absolute URL.</returns>
-        public string GetBackdropUrl(string posterPath)
+        public string GetBackdropUrl(string backdropPath)
         {
-            if (string.IsNullOrEmpty(posterPath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.BackdropSizes[^1], posterPath).ToString();
+            return GetUrl(_tmDbClient.Config.Images.BackdropSizes[^1], backdropPath);
         }
 
         /// <summary>
@@ -507,12 +513,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The absolute URL.</returns>
         public string GetProfileUrl(string actorProfilePath)
         {
-            if (string.IsNullOrEmpty(actorProfilePath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.ProfileSizes[^1], actorProfilePath).ToString();
+            return GetUrl(_tmDbClient.Config.Images.ProfileSizes[^1], actorProfilePath);
         }
 
         /// <summary>
@@ -522,12 +523,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The absolute URL.</returns>
         public string GetStillUrl(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.StillSizes[^1], filePath).ToString();
+            return GetUrl(_tmDbClient.Config.Images.StillSizes[^1], filePath);
         }
 
         private Task EnsureClientConfigAsync()
@@ -542,7 +538,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             GC.SuppressFinalize(this);
         }
 
-/// <summary>
+        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>

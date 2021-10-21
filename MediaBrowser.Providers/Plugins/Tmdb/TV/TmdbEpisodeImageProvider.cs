@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -75,23 +74,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new RemoteImageInfo[stills.Count];
-            for (var i = 0; i < stills.Count; i++)
-            {
-                var image = stills[i];
-                remoteImages[i] = new RemoteImageInfo
-                {
-                    Url = _tmdbClientManager.GetStillUrl(image.FilePath),
-                    CommunityRating = image.VoteAverage,
-                    VoteCount = image.VoteCount,
-                    Width = image.Width,
-                    Height = image.Height,
-                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    RatingType = RatingType.Score
-                };
-            }
+            var remoteImages = new List<RemoteImageInfo>(stills.Count);
+
+            TmdbUtils.ConvertToRemoteImageInfo(stills, _tmdbClientManager.GetStillUrl, ImageType.Primary, language, remoteImages);
 
             return remoteImages;
         }

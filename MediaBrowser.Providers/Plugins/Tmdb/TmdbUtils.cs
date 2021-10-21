@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using TMDbLib.Objects.General;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
@@ -191,6 +193,34 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             var newRating = ratingPrefix + ratingValue;
 
             return newRating.Replace("DE-", "FSK-", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Converts <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="imageUrlConverter">The relevant <see cref="TmdbClientManager"/> Get<i>Type</i>Url function to get the absolute url of the image.</param>
+        /// <param name="type">The type of the image.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public static void ConvertToRemoteImageInfo(List<ImageData> images, Func<string, string> imageUrlConverter, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            for (var i = 0; i < images.Count; i++)
+            {
+                var image = images[i];
+                results.Add(new RemoteImageInfo
+                {
+                    Url = imageUrlConverter(image.FilePath),
+                    CommunityRating = image.VoteAverage,
+                    VoteCount = image.VoteCount,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Language = AdjustImageLanguage(image.Iso_639_1, requestLanguage),
+                    ProviderName = ProviderName,
+                    Type = type,
+                    RatingType = RatingType.Score
+                });
+            }
         }
     }
 }
