@@ -147,6 +147,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="pathType">The path type.</param>
         public void UpdateEncoderPath(string path, string pathType)
         {
+            var config = _configurationManager.GetEncodingOptions();
+
+            // Filesystem may not be case insensitive, but EncoderAppPathDisplay should always point to a valid file?
+            if (string.IsNullOrEmpty(config.EncoderAppPath)
+                && string.Equals(config.EncoderAppPathDisplay, path, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("Existing ffmpeg path is empty and the new path is the same as {EncoderAppPathDisplay}. Skipping", nameof(config.EncoderAppPathDisplay));
+                return;
+            }
+
             string newPath;
 
             _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
@@ -181,7 +191,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
             // This ensures its not lost on next startup
-            var config = _configurationManager.GetEncodingOptions();
             config.EncoderAppPath = newPath;
             _configurationManager.SaveConfiguration("encoding", config);
 
