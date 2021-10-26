@@ -32,7 +32,6 @@ namespace Jellyfin.Naming.Tests.Video
         public void CleanStringTest_NeedsCleaning_Success(string input, string expectedName)
         {
             Assert.True(VideoResolver.TryCleanString(input, _namingOptions, out var newName));
-            // TODO: compare spans when XUnit supports it
             Assert.Equal(expectedName, newName);
         }
 
