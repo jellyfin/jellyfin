@@ -530,11 +530,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            return new PinRedeemResult
-            {
-                Success = false,
-                UsersReset = Array.Empty<string>()
-            };
+            return new PinRedeemResult();
         }
 
         /// <inheritdoc />

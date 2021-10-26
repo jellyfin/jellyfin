@@ -586,7 +586,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var supportsLatest = provider is ISupportsLatestMedia;
 
-            return new ChannelFeatures
+            return new ChannelFeatures(channel.Name, channel.Id)
             {
                 CanFilter = !features.MaxPageSize.HasValue,
                 CanSearch = provider is ISearchableChannel,
@@ -596,8 +596,6 @@ namespace Emby.Server.Implementations.Channels
                 MediaTypes = features.MediaTypes.ToArray(),
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
                 SupportsLatestMedia = supportsLatest,
-                Name = channel.Name,
-                Id = channel.Id.ToString("N", CultureInfo.InvariantCulture),
                 SupportsContentDownloading = features.SupportsContentDownloading,
                 AutoRefreshLevels = features.AutoRefreshLevels
             };
