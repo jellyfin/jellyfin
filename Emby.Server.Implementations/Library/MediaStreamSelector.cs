@@ -50,7 +50,8 @@ namespace Emby.Server.Implementations.Library
                 return null;
             }
 
-            var sortedStreams = GetSortedStreams(streams, MediaStreamType.Subtitle, preferredLanguages)
+            var sortedStreams = streams
+                .Where(i => i.Type == MediaStreamType.Subtitle)
                 .OrderByDescending(x => x.IsExternal)
                 .ThenByDescending(x => x.IsForced && string.Equals(x.Language, audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 .ThenByDescending(x => x.IsForced)
@@ -73,7 +74,8 @@ namespace Emby.Server.Implementations.Library
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
                 if (!preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
                 {
-                    stream = sortedStreams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
+                    stream = streams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase)) ??
+                        streams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)
