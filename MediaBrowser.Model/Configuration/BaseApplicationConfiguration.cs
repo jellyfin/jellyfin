@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Xml.Serialization;
 
@@ -35,21 +34,21 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the cache path.
         /// </summary>
         /// <value>The cache path.</value>
-        public string CachePath { get; set; }
+        public string? CachePath { get; set; }
 
         /// <summary>
         /// Gets or sets the last known version that was ran using the configuration.
         /// </summary>
         /// <value>The version from previous run.</value>
         [XmlIgnore]
-        public Version PreviousVersion { get; set; }
+        public Version? PreviousVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the stringified PreviousVersion to be stored/loaded,
         /// because System.Version itself isn't xml-serializable.
         /// </summary>
         /// <value>String value of PreviousVersion.</value>
-        public string PreviousVersionStr
+        public string? PreviousVersionStr
         {
             get => PreviousVersion?.ToString();
             set

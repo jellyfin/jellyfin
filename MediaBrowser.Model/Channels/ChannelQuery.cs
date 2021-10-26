@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -13,13 +12,13 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
-        public ItemFields[] Fields { get; set; }
+        public ItemFields[]? Fields { get; set; }
 
         public bool? EnableImages { get; set; }
 
         public int? ImageTypeLimit { get; set; }
 
-        public ImageType[] EnableImageTypes { get; set; }
+        public ImageType[]? EnableImageTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the user identifier.

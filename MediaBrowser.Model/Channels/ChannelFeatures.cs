@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -7,11 +6,14 @@ namespace MediaBrowser.Model.Channels
 {
     public class ChannelFeatures
     {
-        public ChannelFeatures()
+        public ChannelFeatures(string name, Guid id)
         {
             MediaTypes = Array.Empty<ChannelMediaType>();
             ContentTypes = Array.Empty<ChannelMediaContentType>();
             DefaultSortFields = Array.Empty<ChannelItemSortField>();
+
+            Name = name;
+            Id = id;
         }
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace MediaBrowser.Model.Channels
         /// Gets or sets the identifier.
         /// </summary>
         /// <value>The identifier.</value>
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance can search.
