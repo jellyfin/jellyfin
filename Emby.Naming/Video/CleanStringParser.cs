@@ -25,26 +25,35 @@ namespace Emby.Naming.Video
                 return false;
             }
 
-            var len = expressions.Count;
-            for (int i = 0; i < len; i++)
+            // Iteratively apply the regexps to clean the string.
+            bool cleaned = false;
+            for (int i = 0; i < expressions.Count; i++)
             {
                 if (TryClean(name, expressions[i], out newName))
                 {
-                    return true;
+                    cleaned = true;
+                    name = newName.ToString();
                 }
             }
 
-            newName = ReadOnlySpan<char>.Empty;
-            return false;
+            newName = cleaned ? name.AsSpan() : ReadOnlySpan<char>.Empty;
+            return cleaned;
         }
 
         private static bool TryClean(string name, Regex expression, out ReadOnlySpan<char> newName)
         {
             var match = expression.Match(name);
             int index = match.Index;
-            if (match.Success && index != 0)
+            if (match.Success)
             {
-                newName = name.AsSpan().Slice(0, match.Index);
+                var found = match.Groups.TryGetValue("cleaned", out var cleaned);
+                if (!found || cleaned == null)
+                {
+                    newName = ReadOnlySpan<char>.Empty;
+                    return false;
+                }
+
+                newName = name.AsSpan().Slice(cleaned.Index, cleaned.Length);
                 return true;
             }
 
