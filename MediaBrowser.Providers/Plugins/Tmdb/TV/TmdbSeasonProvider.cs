@@ -33,7 +33,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             var result = new MetadataResult<Season>();
 
-            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string seriesTmdbId);
+            info.SeriesProviderIds.TryGetValue(MetadataProvider.Tmdb.ToString(), out string? seriesTmdbId);
 
             var seasonNumber = info.IndexNumber;
 

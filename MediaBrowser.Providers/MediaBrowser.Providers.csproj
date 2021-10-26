@@ -30,7 +30,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <!-- Code Analyzers-->

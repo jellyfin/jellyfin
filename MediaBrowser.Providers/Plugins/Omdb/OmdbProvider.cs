@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS159, SA1300
 
 using System;
