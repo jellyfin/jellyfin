@@ -43,15 +43,8 @@ namespace Emby.Naming.Video
         private static bool TryClean(string name, Regex expression, out string newName)
         {
             var match = expression.Match(name);
-            if (match.Success)
+            if (match.Success && match.Groups.TryGetValue("cleaned", out var cleaned))
             {
-                var found = match.Groups.TryGetValue("cleaned", out var cleaned);
-                if (!found || cleaned == null)
-                {
-                    newName = string.Empty;
-                    return false;
-                }
-
                 newName = cleaned.Value;
                 return true;
             }
