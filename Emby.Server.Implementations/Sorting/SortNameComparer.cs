@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
@@ -10,6 +12,12 @@ namespace Emby.Server.Implementations.Sorting
     /// </summary>
     public class SortNameComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.SortName;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -30,11 +38,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.SortName;
     }
 }

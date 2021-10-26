@@ -11,7 +11,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
     /// <summary>
     /// Class TranscodingJob.
     /// </summary>
-    public class TranscodingJobDto
+    public class TranscodingJobDto : IDisposable
     {
         /// <summary>
         /// The process lock.
@@ -105,6 +105,11 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// Gets or sets a value indicating whether has exited.
         /// </summary>
         public bool HasExited { get; set; }
+
+        /// <summary>
+        /// Gets or sets exit code.
+        /// </summary>
+        public int ExitCode { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether is user paused.
@@ -247,6 +252,32 @@ namespace Jellyfin.Api.Models.PlaybackDtos
                     Logger.LogDebug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose all resources.
+        /// </summary>
+        /// <param name="disposing">Whether to dispose all resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Process?.Dispose();
+                Process = null;
+                KillTimer?.Dispose();
+                KillTimer = null;
+                CancellationTokenSource?.Dispose();
+                CancellationTokenSource = null;
+                TranscodingThrottler?.Dispose();
+                TranscodingThrottler = null;
             }
         }
     }

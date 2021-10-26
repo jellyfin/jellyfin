@@ -60,8 +60,6 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private readonly IFileSystem _fileSystem;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
         /// </summary>
@@ -283,7 +281,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 imageFileNames = _seriesImageFileNames;
             }
-            else if (item is Video && !(item is Episode))
+            else if (item is Video && item is not Episode)
             {
                 imageFileNames = _videoImageFileNames;
             }
@@ -434,7 +432,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var seasonMarker = seasonNumber.Value == 0
                                    ? "-specials"
-                                   : seasonNumber.Value.ToString("00", _usCulture);
+                                   : seasonNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
             // Get this one directly from the file system since we have to go up a level
             if (!string.Equals(prefix, seasonMarker, StringComparison.OrdinalIgnoreCase))
@@ -466,7 +464,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return added;
         }
 
-        private bool AddImage(IEnumerable<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
+        private bool AddImage(List<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
         {
             var image = GetImage(files, name);
 
@@ -484,9 +482,20 @@ namespace MediaBrowser.LocalMetadata.Images
             return false;
         }
 
-        private FileSystemMetadata? GetImage(IEnumerable<FileSystemMetadata> files, string name)
+        private static FileSystemMetadata? GetImage(IReadOnlyList<FileSystemMetadata> files, string name)
         {
-            return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase) && i.Length > 0);
+            for (var i = 0; i < files.Count; i++)
+            {
+                var file = files[i];
+                if (!file.IsDirectory
+                    && file.Length > 0
+                    && Path.GetFileNameWithoutExtension(file.FullName.AsSpan()).Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return file;
+                }
+            }
+
+            return null;
         }
     }
 }

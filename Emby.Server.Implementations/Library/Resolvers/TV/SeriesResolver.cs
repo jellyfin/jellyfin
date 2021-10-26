@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,7 +8,6 @@ using System.IO;
 using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -17,21 +18,18 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// <summary>
     /// Class SeriesResolver.
     /// </summary>
-    public class SeriesResolver : FolderResolver<Series>
+    public class SeriesResolver : GenericFolderResolver<Series>
     {
-        private readonly IFileSystem _fileSystem;
         private readonly ILogger<SeriesResolver> _logger;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesResolver"/> class.
         /// </summary>
-        /// <param name="fileSystem">The file system.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public SeriesResolver(IFileSystem fileSystem, ILogger<SeriesResolver> logger, ILibraryManager libraryManager)
+        public SeriesResolver(ILogger<SeriesResolver> logger, ILibraryManager libraryManager)
         {
-            _fileSystem = fileSystem;
             _logger = logger;
             _libraryManager = libraryManager;
         }
@@ -59,15 +57,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
-                    // if (args.ContainsFileSystemEntryByName("tvshow.nfo"))
-                    //{
-                    //    return new Series
-                    //    {
-                    //        Path = args.Path,
-                    //        Name = Path.GetFileName(args.Path)
-                    //    };
-                    //}
-
                     var configuredContentType = _libraryManager.GetConfiguredContentType(args.Path);
                     if (!string.Equals(configuredContentType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                     {
@@ -100,7 +89,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return null;
                     }
 
-                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, args.DirectoryService, _fileSystem, _logger, _libraryManager, false))
+                    if (IsSeriesFolder(args.Path, args.FileSystemChildren, _logger, _libraryManager, false))
                     {
                         return new Series
                         {
@@ -117,8 +106,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         public static bool IsSeriesFolder(
             string path,
             IEnumerable<FileSystemMetadata> fileSystemChildren,
-            IDirectoryService directoryService,
-            IFileSystem fileSystem,
             ILogger<SeriesResolver> logger,
             ILibraryManager libraryManager,
             bool isTvContentType)

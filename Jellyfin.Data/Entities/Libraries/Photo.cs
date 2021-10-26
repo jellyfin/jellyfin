@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -21,11 +19,11 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets a collection containing the photo metadata.
+        /// Gets a collection containing the photo metadata.
         /// </summary>
-        public virtual ICollection<PhotoMetadata> PhotoMetadata { get; protected set; }
+        public virtual ICollection<PhotoMetadata> PhotoMetadata { get; private set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Release> Releases { get; protected set; }
+        public virtual ICollection<Release> Releases { get; private set; }
     }
 }

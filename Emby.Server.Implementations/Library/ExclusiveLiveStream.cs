@@ -1,7 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Library;
@@ -37,6 +40,11 @@ namespace Emby.Server.Implementations.Library
         public Task Close()
         {
             return _closeFn();
+        }
+
+        public Stream GetStream()
+        {
+            throw new NotSupportedException();
         }
 
         public Task Open(CancellationToken openCancellationToken)

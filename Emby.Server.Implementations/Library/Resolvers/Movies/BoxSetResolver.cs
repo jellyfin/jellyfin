@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.IO;
 using MediaBrowser.Controller.Entities;
@@ -10,7 +12,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     /// <summary>
     /// Class BoxSetResolver.
     /// </summary>
-    public class BoxSetResolver : FolderResolver<BoxSet>
+    public class BoxSetResolver : GenericFolderResolver<BoxSet>
     {
         /// <summary>
         /// Resolves the specified args.

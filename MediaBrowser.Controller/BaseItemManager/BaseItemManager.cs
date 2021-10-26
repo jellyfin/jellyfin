@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -13,7 +15,7 @@ namespace MediaBrowser.Controller.BaseItemManager
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
-        private int _metadataRefreshConcurrency = 0;
+        private int _metadataRefreshConcurrency;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
@@ -50,7 +52,7 @@ namespace MediaBrowser.Controller.BaseItemManager
             var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
             if (typeOptions != null)
             {
-                return typeOptions.MetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+                return typeOptions.MetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
 
             if (!libraryOptions.EnableInternetProviders)
@@ -60,7 +62,7 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
 
-            return itemConfig == null || !itemConfig.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+            return itemConfig == null || !itemConfig.DisabledMetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -81,7 +83,7 @@ namespace MediaBrowser.Controller.BaseItemManager
             var typeOptions = libraryOptions.GetTypeOptions(baseItem.GetType().Name);
             if (typeOptions != null)
             {
-                return typeOptions.ImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+                return typeOptions.ImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
             }
 
             if (!libraryOptions.EnableInternetProviders)
@@ -91,14 +93,14 @@ namespace MediaBrowser.Controller.BaseItemManager
 
             var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
 
-            return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase);
+            return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
         /// Called when the configuration is updated.
         /// It will refresh the metadata throttler if the relevant config changed.
         /// </summary>
-        private void OnConfigurationUpdated(object sender, EventArgs e)
+        private void OnConfigurationUpdated(object? sender, EventArgs e)
         {
             int newMetadataRefreshConcurrency = GetMetadataRefreshConcurrency();
             if (_metadataRefreshConcurrency != newMetadataRefreshConcurrency)
@@ -111,6 +113,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// <summary>
         /// Creates the metadata refresh throttler.
         /// </summary>
+        [MemberNotNull(nameof(MetadataRefreshThrottler))]
         private void SetupMetadataThrottler()
         {
             MetadataRefreshThrottler = new SemaphoreSlim(_metadataRefreshConcurrency);

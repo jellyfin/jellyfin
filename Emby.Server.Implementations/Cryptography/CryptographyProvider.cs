@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -12,8 +10,12 @@ namespace Emby.Server.Implementations.Cryptography
     /// <summary>
     /// Class providing abstractions over cryptographic functions.
     /// </summary>
-    public class CryptographyProvider : ICryptoProvider, IDisposable
+    public class CryptographyProvider : ICryptoProvider
     {
+        // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
+        // Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
+        // there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
+        // Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
         private static readonly HashSet<string> _supportedHashMethods = new HashSet<string>()
             {
                 "MD5",
@@ -31,22 +33,6 @@ namespace Emby.Server.Implementations.Cryptography
                 "SHA-512",
                 "System.Security.Cryptography.SHA512"
             };
-
-        private RandomNumberGenerator _randomNumberGenerator;
-
-        private bool _disposed;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CryptographyProvider"/> class.
-        /// </summary>
-        public CryptographyProvider()
-        {
-            // FIXME: When we get DotNet Standard 2.1 we need to revisit how we do the crypto
-            // Currently supported hash methods from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.cryptoconfig?view=netcore-2.1
-            // there might be a better way to autogenerate this list as dotnet updates, but I couldn't find one
-            // Please note the default method of PBKDF2 is not included, it cannot be used to generate hashes cleanly as it is actually a pbkdf with sha1
-            _randomNumberGenerator = RandomNumberGenerator.Create();
-        }
 
         /// <inheritdoc />
         public string DefaultHashMethod => "PBKDF2";
@@ -103,36 +89,6 @@ namespace Emby.Server.Implementations.Cryptography
 
         /// <inheritdoc />
         public byte[] GenerateSalt(int length)
-        {
-            byte[] salt = new byte[length];
-            _randomNumberGenerator.GetBytes(salt);
-            return salt;
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _randomNumberGenerator.Dispose();
-            }
-
-            _disposed = true;
-        }
+            => RandomNumberGenerator.GetBytes(length);
     }
 }

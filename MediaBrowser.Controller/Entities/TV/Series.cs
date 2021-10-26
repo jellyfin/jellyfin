@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -57,8 +59,11 @@ namespace MediaBrowser.Controller.Entities.TV
         public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
-        /// airdate, dvd or absolute.
+        /// Gets or sets the display order.
         /// </summary>
+        /// <remarks>
+        /// Valid options are airdate, dvd or absolute.
+        /// </remarks>
         public string DisplayOrder { get; set; }
 
         /// <summary>
@@ -66,6 +71,9 @@ namespace MediaBrowser.Controller.Entities.TV
         /// </summary>
         /// <value>The status.</value>
         public SeriesStatus? Status { get; set; }
+
+        [JsonIgnore]
+        public override bool StopRefreshIfLocalMetadataFound => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -288,7 +296,7 @@ namespace MediaBrowser.Controller.Entities.TV
             // Refresh seasons
             foreach (var item in items)
             {
-                if (!(item is Season))
+                if (item is not Season)
                 {
                     continue;
                 }
@@ -316,20 +324,13 @@ namespace MediaBrowser.Controller.Entities.TV
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var skipItem = false;
-
-                var episode = item as Episode;
-
-                if (episode != null
+                bool skipItem = item is Episode episode
                     && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.FullRefresh
                     && !refreshOptions.ReplaceAllMetadata
                     && episode.IsMissingEpisode
                     && episode.LocationType == LocationType.Virtual
                     && episode.PremiereDate.HasValue
-                    && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30)
-                {
-                    skipItem = true;
-                }
+                    && (DateTime.UtcNow - episode.PremiereDate.Value).TotalDays > 30;
 
                 if (!skipItem)
                 {
@@ -396,6 +397,10 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Filters the episodes by season.
         /// </summary>
+        /// <param name="episodes">The episodes.</param>
+        /// <param name="parentSeason">The season.</param>
+        /// <param name="includeSpecials"><c>true</c> to include special, <c>false</c> to not.</param>
+        /// <returns>The set of episodes.</returns>
         public static IEnumerable<BaseItem> FilterEpisodesBySeason(IEnumerable<BaseItem> episodes, Season parentSeason, bool includeSpecials)
         {
             var seasonNumber = parentSeason.IndexNumber;
@@ -426,6 +431,10 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <summary>
         /// Filters the episodes by season.
         /// </summary>
+        /// <param name="episodes">The episodes.</param>
+        /// <param name="seasonNumber">The season.</param>
+        /// <param name="includeSpecials"><c>true</c> to include special, <c>false</c> to not.</param>
+        /// <returns>The set of episodes.</returns>
         public static IEnumerable<Episode> FilterEpisodesBySeason(IEnumerable<Episode> episodes, int seasonNumber, bool includeSpecials)
         {
             if (!includeSpecials || seasonNumber < 1)
@@ -501,8 +510,5 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return list;
         }
-
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

@@ -20,7 +20,7 @@ namespace Jellyfin.Api.Helpers
             var value = GetClaimValue(user, InternalClaimTypes.UserId);
             return string.IsNullOrEmpty(value)
                 ? null
-                : (Guid?)Guid.Parse(value);
+                : Guid.Parse(value);
         }
 
         /// <summary>

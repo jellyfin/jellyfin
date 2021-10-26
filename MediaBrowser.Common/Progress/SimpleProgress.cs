@@ -7,7 +7,7 @@ namespace MediaBrowser.Common.Progress
 {
     public class SimpleProgress<T> : IProgress<T>
     {
-        public event EventHandler<T> ProgressChanged;
+        public event EventHandler<T>? ProgressChanged;
 
         public void Report(T value)
         {

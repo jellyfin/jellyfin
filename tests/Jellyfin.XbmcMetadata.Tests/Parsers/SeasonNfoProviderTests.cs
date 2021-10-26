@@ -1,6 +1,4 @@
-﻿#pragma warning disable CA5369
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using MediaBrowser.Common.Configuration;

@@ -1,14 +1,16 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
@@ -71,7 +73,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="query">The query.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
-        /// <exception cref="ArgumentNullException">searchTerm</exception>
+        /// <exception cref="ArgumentException"><c>query.SearchTerm</c> is <c>null</c> or empty.</exception>
         private List<SearchHintInfo> GetSearchHints(SearchQuery query, User user)
         {
             var searchTerm = query.SearchTerm;

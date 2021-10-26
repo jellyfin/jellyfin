@@ -1,3 +1,5 @@
+#nullable disable
+
 using System.Globalization;
 using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;
@@ -10,7 +12,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// <summary>
     /// Class SeasonResolver.
     /// </summary>
-    public class SeasonResolver : FolderResolver<Season>
+    public class SeasonResolver : GenericFolderResolver<Season>
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
@@ -88,7 +90,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                             CultureInfo.InvariantCulture,
                             _localization.GetLocalizedString("NameSeasonNumber"),
                             seasonNumber,
-                            args.GetLibraryOptions().PreferredMetadataLanguage);
+                            args.LibraryOptions.PreferredMetadataLanguage);
                 }
 
                 return season;

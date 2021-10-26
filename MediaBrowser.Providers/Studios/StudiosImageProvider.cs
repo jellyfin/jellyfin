@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -145,7 +146,7 @@ namespace MediaBrowser.Providers.Studios
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
                 await using var response = await httpClient.GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
-                await using var fileStream = new FileStream(file, FileMode.Create);
+                await using var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
                 await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
@@ -171,23 +172,14 @@ namespace MediaBrowser.Providers.Studios
 
         public IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using var fileStream = File.OpenRead(file);
+            using var reader = new StreamReader(fileStream);
+
+            foreach (var line in reader.ReadAllLines())
             {
-                using (var reader = new StreamReader(fileStream))
+                if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var lines = new List<string>();
-
-                    while (!reader.EndOfStream)
-                    {
-                        var text = reader.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            lines.Add(text);
-                        }
-                    }
-
-                    return lines;
+                    yield return line;
                 }
             }
         }

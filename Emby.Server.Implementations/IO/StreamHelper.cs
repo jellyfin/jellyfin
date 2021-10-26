@@ -11,7 +11,7 @@ namespace Emby.Server.Implementations.IO
 {
     public class StreamHelper : IStreamHelper
     {
-        public async Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action onStarted, CancellationToken cancellationToken)
+        public async Task CopyToAsync(Stream source, Stream destination, int bufferSize, Action? onStarted, CancellationToken cancellationToken)
         {
             byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try

@@ -2,28 +2,28 @@ FROM centos:7
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=5.0
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
 ENV IS_DOCKER=YES
 
 # Prepare CentOS environment
-RUN yum update -y \
- && yum install -y epel-release \
- && yum install -y @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel git
+RUN yum update -yq \
+  && yum install -yq epel-release \
+  && yum install -yq @buildsys-build rpmdevtools yum-plugins-core libcurl-devel fontconfig-devel freetype-devel openssl-devel glibc-devel libicu-devel git wget
 
 # Install DotNET SDK
-RUN rpm -Uvh https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm \
- && rpmdev-setuptree \
- && yum install -y dotnet-sdk-${SDK_VERSION}
+RUN wget -q https://download.visualstudio.microsoft.com/download/pr/20283373-1d83-4879-8278-0afb7fd4035e/56f204f174743b29a656499ad0fc93c3/dotnet-sdk-6.0.100-rc.2.21505.57-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
+  && mkdir -p dotnet-sdk \
+  && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
+  && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
 
 # Create symlinks and directories
 RUN ln -sf ${SOURCE_DIR}/deployment/build.centos.amd64 /build.sh \
- && mkdir -p ${SOURCE_DIR}/SPECS \
- && ln -s ${SOURCE_DIR}/fedora/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
- && mkdir -p ${SOURCE_DIR}/SOURCES \
- && ln -s ${SOURCE_DIR}/fedora ${SOURCE_DIR}/SOURCES
+  && mkdir -p ${SOURCE_DIR}/SPECS \
+  && ln -s ${SOURCE_DIR}/fedora/jellyfin.spec ${SOURCE_DIR}/SPECS/jellyfin.spec \
+  && mkdir -p ${SOURCE_DIR}/SOURCES \
+  && ln -s ${SOURCE_DIR}/fedora ${SOURCE_DIR}/SOURCES
 
 VOLUME ${SOURCE_DIR}/
 

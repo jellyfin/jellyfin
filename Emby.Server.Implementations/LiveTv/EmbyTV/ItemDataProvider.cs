@@ -2,10 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -16,7 +17,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         private readonly string _dataPath;
         private readonly object _fileDataLock = new object();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
-        private T[] _items;
+        private T[]? _items;
 
         public ItemDataProvider(
             ILogger logger,
@@ -32,6 +33,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         protected Func<T, T, bool> EqualityComparer { get; }
 
+        [MemberNotNull(nameof(_items))]
         private void EnsureLoaded()
         {
             if (_items != null)
@@ -47,6 +49,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 {
                     var bytes = File.ReadAllBytes(_dataPath);
                     _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
+                    if (_items == null)
+                    {
+                        Logger.LogError("Error deserializing {Path}, data was null", _dataPath);
+                        _items = Array.Empty<T>();
+                    }
+
                     return;
                 }
                 catch (JsonException ex)
@@ -60,7 +68,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         private void SaveList()
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_dataPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(_dataPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(_dataPath)));
             var jsonString = JsonSerializer.Serialize(_items, _jsonOptions);
             File.WriteAllText(_dataPath, jsonString);
         }

@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,6 +82,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// <summary>
         /// Determine if the supplied file data points to a music album.
         /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns><c>true</c> if the provided path points to a music album, <c>false</c> otherwise.</returns>
         public bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
             return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, _libraryManager);
