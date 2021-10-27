@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CA1068, CS1591
 
 using System;

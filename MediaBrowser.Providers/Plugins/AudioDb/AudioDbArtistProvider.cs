@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CA1034, CS1591, CA1002, SA1028, SA1300
 
 using System;
