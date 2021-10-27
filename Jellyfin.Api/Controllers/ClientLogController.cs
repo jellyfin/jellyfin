@@ -1,4 +1,5 @@
-﻿using Jellyfin.Api.Constants;
+﻿using System.Threading.Tasks;
+using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Model.ClientLog;
@@ -54,6 +55,20 @@ namespace Jellyfin.Api.Controllers
                 Log(dto);
             }
 
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Upload a log file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns>Submission status.</returns>
+        [HttpPost("File")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<ActionResult> LogFile(IFormFile file)
+        {
+            await _clientEventLogger.WriteFileAsync(file.FileName, file.OpenReadStream())
+                .ConfigureAwait(false);
             return NoContent();
         }
 
