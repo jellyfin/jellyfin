@@ -1,7 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.Mime;
+using System.Threading.Tasks;
+using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.ClientLog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,15 +19,25 @@ namespace Jellyfin.Api.Controllers
     [Authorize(Policy = Policies.DefaultAuthorization)]
     public class ClientLogController : BaseJellyfinApiController
     {
+        private const int MaxDocumentSize = 1_000_000;
         private readonly IClientEventLogger _clientEventLogger;
+        private readonly IAuthorizationContext _authorizationContext;
+        private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientLogController"/> class.
         /// </summary>
         /// <param name="clientEventLogger">Instance of the <see cref="IClientEventLogger"/> interface.</param>
-        public ClientLogController(IClientEventLogger clientEventLogger)
+        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
+        /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
+        public ClientLogController(
+            IClientEventLogger clientEventLogger,
+            IAuthorizationContext authorizationContext,
+            IServerConfigurationManager serverConfigurationManager)
         {
             _clientEventLogger = clientEventLogger;
+            _authorizationContext = authorizationContext;
+            _serverConfigurationManager = serverConfigurationManager;
         }
 
         /// <summary>
@@ -36,6 +50,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult LogEvent([FromBody] ClientLogEventDto clientLogEventDto)
         {
+            if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
+            {
+                return Forbid();
+            }
+
             Log(clientLogEventDto);
             return NoContent();
         }
@@ -50,6 +69,11 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public ActionResult LogEvents([FromBody] ClientLogEventDto[] clientLogEventDtos)
         {
+            if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
+            {
+                return Forbid();
+            }
+
             foreach (var dto in clientLogEventDtos)
             {
                 Log(dto);
@@ -59,15 +83,30 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Upload a log file.
+        /// Upload a document.
         /// </summary>
-        /// <param name="file">The file.</param>
         /// <returns>Submission status.</returns>
-        [HttpPost("File")]
+        [HttpPost("Document")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> LogFile(IFormFile file)
+        [AcceptsFile(MediaTypeNames.Text.Plain)]
+        [RequestSizeLimit(MaxDocumentSize)]
+        public async Task<ActionResult> LogFile()
         {
-            await _clientEventLogger.WriteFileAsync(file.FileName, file.OpenReadStream())
+            if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
+            {
+                return Forbid();
+            }
+
+            if (Request.ContentLength > MaxDocumentSize)
+            {
+                // Manually validate to return proper status code.
+                return StatusCode(StatusCodes.Status413PayloadTooLarge, $"Payload must be less than {MaxDocumentSize:N0} bytes");
+            }
+
+            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
+                .ConfigureAwait(false);
+
+            await _clientEventLogger.WriteDocumentAsync(authorizationInfo, Request.Body)
                 .ConfigureAwait(false);
             return NoContent();
         }

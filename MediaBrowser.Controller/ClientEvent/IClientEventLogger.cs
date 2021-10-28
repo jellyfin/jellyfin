@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.ClientLog;
 
 namespace MediaBrowser.Controller.ClientEvent
@@ -18,9 +19,9 @@ namespace MediaBrowser.Controller.ClientEvent
         /// <summary>
         /// Writes a file to the log directory.
         /// </summary>
-        /// <param name="fileName">The file name.</param>
-        /// <param name="fileContents">The file contents.</param>
+        /// <param name="authorizationInfo">The current authorization info.</param>
+        /// <param name="fileContents">The file contents to write.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task WriteFileAsync(string fileName, Stream fileContents);
+        Task WriteDocumentAsync(AuthorizationInfo authorizationInfo, Stream fileContents);
     }
 }

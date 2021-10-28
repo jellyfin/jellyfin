@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.ClientLog;
 using Microsoft.Extensions.Logging;
 
@@ -43,10 +44,9 @@ namespace MediaBrowser.Controller.ClientEvent
         }
 
         /// <inheritdoc />
-        public async Task WriteFileAsync(string fileName, Stream fileContents)
+        public async Task WriteDocumentAsync(AuthorizationInfo authorizationInfo, Stream fileContents)
         {
-            // Force naming convention: upload_YYYYMMDD_$name
-            fileName = $"upload_{DateTime.UtcNow:yyyyMMdd}_{fileName}";
+            var fileName = $"upload_{authorizationInfo.Client}_{authorizationInfo.Version}_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
             var logFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, fileName);
             await using var fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);

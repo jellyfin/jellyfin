@@ -459,5 +459,10 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
         /// </summary>
         public bool RemoveOldPlugins { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether clients should be allowed to upload logs.
+        /// </summary>
+        public bool AllowClientLogUpload { get; set; }
     }
 }
