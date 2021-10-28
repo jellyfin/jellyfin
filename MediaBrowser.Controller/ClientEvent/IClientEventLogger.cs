@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.ClientEvent
         /// </summary>
         /// <param name="authorizationInfo">The current authorization info.</param>
         /// <param name="fileContents">The file contents to write.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        Task WriteDocumentAsync(AuthorizationInfo authorizationInfo, Stream fileContents);
+        /// <returns>The created file name.</returns>
+        Task<string> WriteDocumentAsync(AuthorizationInfo authorizationInfo, Stream fileContents);
     }
 }

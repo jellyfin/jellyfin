@@ -45,17 +45,22 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="clientLogEventDto">The client log dto.</param>
         /// <response code="204">Event logged.</response>
+        /// <response code="403">Event logging disabled.</response>
         /// <returns>Submission status.</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult LogEvent([FromBody] ClientLogEventDto clientLogEventDto)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult> LogEvent([FromBody] ClientLogEventDto clientLogEventDto)
         {
             if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
             {
                 return Forbid();
             }
 
-            Log(clientLogEventDto);
+            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
+                .ConfigureAwait(false);
+
+            Log(clientLogEventDto, authorizationInfo);
             return NoContent();
         }
 
@@ -64,19 +69,24 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="clientLogEventDtos">The list of client log dtos.</param>
         /// <response code="204">All events logged.</response>
+        /// <response code="403">Event logging disabled.</response>
         /// <returns>Submission status.</returns>
         [HttpPost("Bulk")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult LogEvents([FromBody] ClientLogEventDto[] clientLogEventDtos)
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult> LogEvents([FromBody] ClientLogEventDto[] clientLogEventDtos)
         {
             if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
             {
                 return Forbid();
             }
 
+            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
+                .ConfigureAwait(false);
+
             foreach (var dto in clientLogEventDtos)
             {
-                Log(dto);
+                Log(dto, authorizationInfo);
             }
 
             return NoContent();
@@ -85,12 +95,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Upload a document.
         /// </summary>
-        /// <returns>Submission status.</returns>
+        /// <response code="200">Document saved.</response>
+        /// <response code="403">Event logging disabled.</response>
+        /// <response code="413">Upload size too large.</response>
+        /// <returns>Created file name.</returns>
         [HttpPost("Document")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
         [AcceptsFile(MediaTypeNames.Text.Plain)]
         [RequestSizeLimit(MaxDocumentSize)]
-        public async Task<ActionResult> LogFile()
+        public async Task<ActionResult<string>> LogFile()
         {
             if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
             {
@@ -106,20 +121,20 @@ namespace Jellyfin.Api.Controllers
             var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
                 .ConfigureAwait(false);
 
-            await _clientEventLogger.WriteDocumentAsync(authorizationInfo, Request.Body)
+            var fileName = await _clientEventLogger.WriteDocumentAsync(authorizationInfo, Request.Body)
                 .ConfigureAwait(false);
-            return NoContent();
+            return Ok(fileName);
         }
 
-        private void Log(ClientLogEventDto dto)
+        private void Log(ClientLogEventDto dto, AuthorizationInfo authorizationInfo)
         {
             _clientEventLogger.Log(new ClientLogEvent(
                 dto.Timestamp,
                 dto.Level,
-                dto.UserId,
-                dto.ClientName,
-                dto.ClientVersion,
-                dto.DeviceId,
+                authorizationInfo.UserId,
+                authorizationInfo.Client,
+                authorizationInfo.Version,
+                authorizationInfo.DeviceId,
                 dto.Message));
         }
     }
