@@ -46,7 +46,7 @@ namespace MediaBrowser.Controller.ClientEvent
         /// <inheritdoc />
         public async Task WriteDocumentAsync(AuthorizationInfo authorizationInfo, Stream fileContents)
         {
-            var fileName = $"upload_{authorizationInfo.Client}_{authorizationInfo.Version}_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
+            var fileName = $"upload_{authorizationInfo.Client}_{(authorizationInfo.IsApiKey ? "apikey" : authorizationInfo.Version)}_{DateTime.UtcNow:yyyyMMddHHmmss}.log";
             var logFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, fileName);
             await using var fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);
