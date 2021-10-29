@@ -8,15 +8,15 @@ namespace Jellyfin.Api.Models.ClientLogDtos
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientLogDocumentResponseDto"/> class.
         /// </summary>
-        /// <param name="filename">The file name.</param>
-        public ClientLogDocumentResponseDto(string filename)
+        /// <param name="fileName">The file name.</param>
+        public ClientLogDocumentResponseDto(string fileName)
         {
-            Filename = filename;
+            FileName = fileName;
         }
 
         /// <summary>
         /// Gets the resulting filename.
         /// </summary>
-        public string Filename { get; }
+        public string FileName { get; }
     }
 }
