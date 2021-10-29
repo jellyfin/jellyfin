@@ -463,6 +463,6 @@ namespace MediaBrowser.Model.Configuration
         /// <summary>
         /// Gets or sets a value indicating whether clients should be allowed to upload logs.
         /// </summary>
-        public bool AllowClientLogUpload { get; set; }
+        public bool AllowClientLogUpload { get; set; } = true;
     }
 }
