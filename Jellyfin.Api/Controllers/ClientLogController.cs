@@ -98,14 +98,14 @@ namespace Jellyfin.Api.Controllers
         /// <response code="200">Document saved.</response>
         /// <response code="403">Event logging disabled.</response>
         /// <response code="413">Upload size too large.</response>
-        /// <returns>Created file name.</returns>
+        /// <returns>Create response.</returns>
         [HttpPost("Document")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ClientLogDocumentResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status413PayloadTooLarge)]
         [AcceptsFile(MediaTypeNames.Text.Plain)]
         [RequestSizeLimit(MaxDocumentSize)]
-        public async Task<ActionResult<string>> LogFile()
+        public async Task<ActionResult<ClientLogDocumentResponseDto>> LogFile()
         {
             if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
             {
@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
 
             var fileName = await _clientEventLogger.WriteDocumentAsync(authorizationInfo, Request.Body)
                 .ConfigureAwait(false);
-            return Ok(fileName);
+            return Ok(new ClientLogDocumentResponseDto(fileName));
         }
 
         private void Log(ClientLogEventDto dto, AuthorizationInfo authorizationInfo)
