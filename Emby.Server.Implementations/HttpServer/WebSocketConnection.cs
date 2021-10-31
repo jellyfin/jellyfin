@@ -180,16 +180,31 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             WebSocketMessage<object>? stub;
-            long bytesConsumed = 0;
             try
             {
-                stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);
+                if (buffer.IsSingleSegment)
+                {
+                    stub = JsonSerializer.Deserialize<WebSocketMessage<object>>(buffer.FirstSpan, _jsonOptions);
+                }
+                else
+                {
+                    var buf = ArrayPool<byte>.Shared.Rent(Convert.ToInt32(buffer.Length));
+                    try
+                    {
+                        buffer.CopyTo(buf);
+                        stub = JsonSerializer.Deserialize<WebSocketMessage<object>>(buf, _jsonOptions);
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(buf);
+                    }
+                }
             }
             catch (JsonException ex)
             {
                 // Tell the PipeReader how much of the buffer we have consumed
                 reader.AdvanceTo(buffer.End);
-                _logger.LogError(ex, "Error processing web socket message: {Data}", Encoding.UTF8.GetString(buffer));
+                _logger.LogError(ex, "Error processing web socket message");
                 return;
             }
 
@@ -200,7 +215,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             // Tell the PipeReader how much of the buffer we have consumed
-            reader.AdvanceTo(buffer.GetPosition(bytesConsumed));
+            reader.AdvanceTo(buffer.End);
 
             _logger.LogDebug("WS {IP} received message: {@Message}", RemoteEndPoint, stub);
 
@@ -218,14 +233,6 @@ namespace Emby.Server.Implementations.HttpServer
                         Connection = this
                     }).ConfigureAwait(false);
             }
-        }
-
-        internal WebSocketMessage<object>? DeserializeWebSocketMessage(ReadOnlySequence<byte> bytes, out long bytesConsumed)
-        {
-            var jsonReader = new Utf8JsonReader(bytes);
-            var ret = JsonSerializer.Deserialize<WebSocketMessage<object>>(ref jsonReader, _jsonOptions);
-            bytesConsumed = jsonReader.BytesConsumed;
-            return ret;
         }
 
         private Task SendKeepAliveResponse()
