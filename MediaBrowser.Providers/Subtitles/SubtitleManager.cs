@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -21,7 +23,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Model.IO.IODefaults;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -187,8 +188,8 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            using var stream = response.Stream;
-            using var memoryStream = new MemoryStream();
+            await using var stream = response.Stream;
+            await using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
             memoryStream.Position = 0;
 
@@ -236,7 +237,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             foreach (var savePath in savePaths)
             {
-                _logger.LogInformation("Saving subtitles to {0}", savePath);
+                _logger.LogInformation("Saving subtitles to {SavePath}", savePath);
 
                 _monitor.ReportFileSystemChangeBeginning(savePath);
 
@@ -244,15 +245,20 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
-                    // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, true);
+                    var fileOptions = AsyncFile.WriteOptions;
+                    fileOptions.Mode = FileMode.CreateNew;
+                    fileOptions.PreallocationSize = stream.Length;
+                    using var fs = new FileStream(savePath, fileOptions);
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;
                 }
                 catch (Exception ex)
                 {
+// Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
+#pragma warning disable CA1508
                     (exs ??= new List<Exception>()).Add(ex);
+#pragma warning restore CA1508
                 }
                 finally
                 {
@@ -269,7 +275,7 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public Task<RemoteSubtitleInfo[]> SearchSubtitles(Video video, string language, bool? isPerfectMatch, CancellationToken cancellationToken)
+        public Task<RemoteSubtitleInfo[]> SearchSubtitles(Video video, string language, bool? isPerfectMatch, bool isAutomated, CancellationToken cancellationToken)
         {
             if (video.VideoType != VideoType.VideoFile)
             {
@@ -303,7 +309,8 @@ namespace MediaBrowser.Providers.Subtitles
                 ProductionYear = video.ProductionYear,
                 ProviderIds = video.ProviderIds,
                 RuntimeTicks = video.RunTimeTicks,
-                IsPerfectMatch = isPerfectMatch ?? false
+                IsPerfectMatch = isPerfectMatch ?? false,
+                IsAutomated = isAutomated
             };
 
             if (video is Episode episode)
@@ -370,15 +377,15 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem video)
+        public SubtitleProviderInfo[] GetSupportedProviders(BaseItem item)
         {
             VideoContentType mediaType;
 
-            if (video is Episode)
+            if (item is Episode)
             {
                 mediaType = VideoContentType.Episode;
             }
-            else if (video is Movie)
+            else if (item is Movie)
             {
                 mediaType = VideoContentType.Movie;
             }

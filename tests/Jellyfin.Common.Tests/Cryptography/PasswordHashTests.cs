@@ -19,18 +19,16 @@ namespace Jellyfin.Common.Tests.Cryptography
             Assert.Throws<ArgumentException>(() => new PasswordHash(string.Empty, Array.Empty<byte>()));
         }
 
-        public static IEnumerable<object[]> Parse_Valid_TestData()
+        public static TheoryData<string, PasswordHash> Parse_Valid_TestData()
         {
+            var data = new TheoryData<string, PasswordHash>();
             // Id
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2",
-                new PasswordHash("PBKDF2", Array.Empty<byte>())
-            };
+                new PasswordHash("PBKDF2", Array.Empty<byte>()));
 
             // Id + parameter
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$iterations=1000",
                 new PasswordHash(
                     "PBKDF2",
@@ -39,12 +37,10 @@ namespace Jellyfin.Common.Tests.Cryptography
                     new Dictionary<string, string>()
                     {
                         { "iterations", "1000" },
-                    })
-            };
+                    }));
 
             // Id + parameters
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$iterations=1000,m=120",
                 new PasswordHash(
                     "PBKDF2",
@@ -54,34 +50,28 @@ namespace Jellyfin.Common.Tests.Cryptography
                     {
                         { "iterations", "1000" },
                         { "m", "120" }
-                    })
-            };
+                    }));
 
             // Id + hash
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
                 new PasswordHash(
                     "PBKDF2",
                     Convert.FromHexString("62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D"),
                     Array.Empty<byte>(),
-                    new Dictionary<string, string>())
-            };
+                    new Dictionary<string, string>()));
 
             // Id + salt + hash
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$69F420$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
                 new PasswordHash(
                     "PBKDF2",
                     Convert.FromHexString("62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D"),
                     Convert.FromHexString("69F420"),
-                    new Dictionary<string, string>())
-            };
+                    new Dictionary<string, string>()));
 
             // Id + parameter + hash
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$iterations=1000$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
                 new PasswordHash(
                     "PBKDF2",
@@ -90,12 +80,9 @@ namespace Jellyfin.Common.Tests.Cryptography
                     new Dictionary<string, string>()
                     {
                         { "iterations", "1000" }
-                    })
-            };
-
+                    }));
             // Id + parameters + hash
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$iterations=1000,m=120$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
                 new PasswordHash(
                     "PBKDF2",
@@ -105,12 +92,9 @@ namespace Jellyfin.Common.Tests.Cryptography
                     {
                         { "iterations", "1000" },
                         { "m", "120" }
-                    })
-            };
-
+                    }));
             // Id + parameters + salt + hash
-            yield return new object[]
-            {
+            data.Add(
                 "$PBKDF2$iterations=1000,m=120$69F420$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D",
                 new PasswordHash(
                     "PBKDF2",
@@ -120,8 +104,8 @@ namespace Jellyfin.Common.Tests.Cryptography
                     {
                         { "iterations", "1000" },
                         { "m", "120" }
-                    })
-            };
+                    }));
+            return data;
         }
 
         [Theory]
@@ -171,11 +155,11 @@ namespace Jellyfin.Common.Tests.Cryptography
         [InlineData("$PBKDF2$=$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D")] // Invalid parmeter
         [InlineData("$PBKDF2$=1000$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D")] // Invalid parmeter
         [InlineData("$PBKDF2$iterations=$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D")] // Invalid parmeter
-        [InlineData("$PBKDF2$iterations=$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D$")] // Ends on $
-        [InlineData("$PBKDF2$iterations=$69F420$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D$")] // Extra segment
-        [InlineData("$PBKDF2$iterations=$69F420$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D$anotherone")] // Extra segment
-        [InlineData("$PBKDF2$iterations=$invalidstalt$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D")] // Invalid salt
-        [InlineData("$PBKDF2$iterations=$69F420$invalid hash")] // Invalid hash
+        [InlineData("$PBKDF2$iterations=1000$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D$")] // Ends on $
+        [InlineData("$PBKDF2$iterations=1000$69F420$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D$")] // Extra segment
+        [InlineData("$PBKDF2$iterations=1000$69F420$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D$anotherone")] // Extra segment
+        [InlineData("$PBKDF2$iterations=1000$invalidstalt$62FBA410AFCA5B4475F35137AB2E8596B127E4D927BA23F6CC05C067E897042D")] // Invalid salt
+        [InlineData("$PBKDF2$iterations=1000$69F420$invalid hash")] // Invalid hash
         [InlineData("$PBKDF2$69F420$")] // Empty hash
         public static void Parse_InvalidFormat_ThrowsFormatException(string passwordHash)
         {

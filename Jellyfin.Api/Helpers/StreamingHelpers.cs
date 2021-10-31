@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -17,9 +18,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -83,7 +82,7 @@ namespace Jellyfin.Api.Helpers
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
-            var url = httpRequest.Path.Value.Split('.')[^1];
+            var url = httpRequest.Path.Value.AsSpan().RightPart('.').ToString();
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {
@@ -101,7 +100,7 @@ namespace Jellyfin.Api.Helpers
                 EnableDlnaHeaders = enableDlnaHeaders
             };
 
-            var auth = authorizationContext.GetAuthorizationInfo(httpRequest);
+            var auth = await authorizationContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
             if (!auth.UserId.Equals(Guid.Empty))
             {
                 state.User = userManager.GetUserById(auth.UserId);
@@ -222,11 +221,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         var resolution = ResolutionNormalizer.Normalize(
                             state.VideoStream?.BitRate,
-                            state.VideoStream?.Width,
-                            state.VideoStream?.Height,
                             state.OutputVideoBitrate.Value,
-                            state.VideoStream?.Codec,
-                            state.OutputVideoCodec,
                             state.VideoRequest.MaxWidth,
                             state.VideoRequest.MaxHeight);
 
@@ -439,7 +434,9 @@ namespace Jellyfin.Api.Helpers
                     return ".ogv";
                 }
 
-                if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "vp8", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".webm";
                 }

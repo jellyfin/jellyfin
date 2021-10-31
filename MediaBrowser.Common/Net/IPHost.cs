@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Common.Net
 {
@@ -79,16 +78,11 @@ namespace MediaBrowser.Common.Net
         /// </summary>
         public override byte PrefixLength
         {
-            get
-            {
-                return (byte)(ResolveHost() ? 128 : 32);
-            }
+            get => (byte)(ResolveHost() ? 128 : 32);
 
-            set
-            {
-                // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
-                // which is automatically determined by it's IP type. Anything else is meaningless.
-            }
+            // Not implemented, as a host object can only have a prefix length of 128 (IPv6) or 32 (IPv4) prefix length,
+            // which is automatically determined by it's IP type. Anything else is meaningless.
+            set => throw new NotImplementedException();
         }
 
         /// <summary>
@@ -201,7 +195,7 @@ namespace MediaBrowser.Common.Net
                 return res;
             }
 
-            throw new InvalidCastException("Host does not contain a valid value. {host}");
+            throw new InvalidCastException($"Host does not contain a valid value. {host}");
         }
 
         /// <summary>
@@ -226,7 +220,7 @@ namespace MediaBrowser.Common.Net
                 return res;
             }
 
-            throw new InvalidCastException("Host does not contain a valid value. {host}");
+            throw new InvalidCastException($"Host does not contain a valid value. {host}");
         }
 
         /// <summary>
@@ -354,7 +348,7 @@ namespace MediaBrowser.Common.Net
                     }
                 }
 
-                output = output[0..^1];
+                output = output[..^1];
 
                 if (moreThanOne)
                 {
@@ -405,7 +399,7 @@ namespace MediaBrowser.Common.Net
             if ((_addresses.Length == 0 && !Resolved) || (DateTime.UtcNow > _lastResolved.Value.AddMinutes(Timeout)))
             {
                 _lastResolved = DateTime.UtcNow;
-                ResolveHostInternal().GetAwaiter().GetResult();
+                ResolveHostInternal();
                 Resolved = true;
             }
 
@@ -415,30 +409,31 @@ namespace MediaBrowser.Common.Net
         /// <summary>
         /// Task that looks up a Host name and returns its IP addresses.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private async Task ResolveHostInternal()
+        private void ResolveHostInternal()
         {
-            if (!string.IsNullOrEmpty(HostName))
+            var hostName = HostName;
+            if (string.IsNullOrEmpty(hostName))
             {
-                // Resolves the host name - so save a DNS lookup.
-                if (string.Equals(HostName, "localhost", StringComparison.OrdinalIgnoreCase))
-                {
-                    _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
-                    return;
-                }
+                return;
+            }
 
-                if (Uri.CheckHostName(HostName).Equals(UriHostNameType.Dns))
+            // Resolves the host name - so save a DNS lookup.
+            if (string.Equals(hostName, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                _addresses = new IPAddress[] { IPAddress.Loopback, IPAddress.IPv6Loopback };
+                return;
+            }
+
+            if (Uri.CheckHostName(hostName) == UriHostNameType.Dns)
+            {
+                try
                 {
-                    try
-                    {
-                        IPHostEntry ip = await Dns.GetHostEntryAsync(HostName).ConfigureAwait(false);
-                        _addresses = ip.AddressList;
-                    }
-                    catch (SocketException ex)
-                    {
-                        // Log and then ignore socket errors, as the result value will just be an empty array.
-                        Debug.WriteLine("GetHostEntryAsync failed with {Message}.", ex.Message);
-                    }
+                    _addresses = Dns.GetHostEntry(hostName).AddressList;
+                }
+                catch (SocketException ex)
+                {
+                    // Log and then ignore socket errors, as the result value will just be an empty array.
+                    Debug.WriteLine("GetHostAddresses failed with {Message}.", ex.Message);
                 }
             }
         }

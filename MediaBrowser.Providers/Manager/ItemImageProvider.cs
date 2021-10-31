@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -56,7 +58,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var hasChanges = false;
 
-            if (!(item is Photo))
+            if (item is not Photo)
             {
                 var images = providers.OfType<ILocalImageProvider>()
                     .SelectMany(i => i.GetImages(item, directoryService))
@@ -102,7 +104,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, libraryOptions, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -163,7 +165,7 @@ namespace MediaBrowser.Providers.Manager
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                                    var stream = AsyncFile.OpenRead(response.Path);
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                                 }
@@ -235,7 +237,6 @@ namespace MediaBrowser.Providers.Manager
         /// Refreshes from provider.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="libraryOptions">The library options.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
@@ -247,7 +248,6 @@ namespace MediaBrowser.Providers.Manager
         /// <returns>Task.</returns>
         private async Task RefreshFromProvider(
             BaseItem item,
-            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
@@ -277,7 +277,7 @@ namespace MediaBrowser.Providers.Manager
                     item,
                     new RemoteImageQuery(provider.Name)
                     {
-                        IncludeAllLanguages = false,
+                        IncludeAllLanguages = true,
                         IncludeDisabledProviders = false,
                     },
                     cancellationToken).ConfigureAwait(false);
@@ -295,7 +295,7 @@ namespace MediaBrowser.Providers.Manager
                     if (!HasImage(item, imageType) || (refreshOptions.IsReplacingImage(imageType) && !downloadedImages.Contains(imageType)))
                     {
                         minWidth = savedOptions.GetMinWidth(imageType);
-                        var downloaded = await DownloadImage(item, libraryOptions, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
+                        var downloaded = await DownloadImage(item, provider, result, list, minWidth, imageType, cancellationToken).ConfigureAwait(false);
 
                         if (downloaded)
                         {
@@ -305,12 +305,12 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadBackdrops(item, libraryOptions, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
 
                 if (item is IHasScreenshots hasScreenshots)
                 {
                     minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadBackdrops(item, libraryOptions, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -360,7 +360,7 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        public bool MergeImages(BaseItem item, List<LocalImageInfo> images)
+        public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images)
         {
             var changed = false;
 
@@ -444,12 +444,12 @@ namespace MediaBrowser.Providers.Manager
             return null;
         }
 
-        private bool UpdateMultiImages(BaseItem item, List<LocalImageInfo> images, ImageType type)
+        private bool UpdateMultiImages(BaseItem item, IReadOnlyList<LocalImageInfo> images, ImageType type)
         {
             var changed = false;
 
             var newImageFileInfos = images
-                .FindAll(i => i.Type == type)
+                .Where(i => i.Type == type)
                 .Select(i => i.FileInfo)
                 .ToList();
 
@@ -463,7 +463,6 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task<bool> DownloadImage(
             BaseItem item,
-            LibraryOptions libraryOptions,
             IRemoteImageProvider provider,
             RefreshResult result,
             IEnumerable<RemoteImageInfo> images,
@@ -472,10 +471,10 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
+                .Where(i => i.Type == type && i.Width >= minWidth)
                 .ToList();
 
-            if (EnableImageStub(item, libraryOptions) && eligibleImages.Count > 0)
+            if (EnableImageStub(item) && eligibleImages.Count > 0)
             {
                 SaveImageStub(item, type, eligibleImages.Select(i => i.Url));
                 result.UpdateType |= ItemUpdateType.ImageUpdate;
@@ -489,7 +488,20 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
-                    response.EnsureSuccessStatusCode();
+
+                    // Sometimes providers send back bad urls. Just move to the next image
+                    if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
+                        continue;
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("{Url} returned {StatusCode}, skipping all remaining requests", url, response.StatusCode);
+                        break;
+                    }
+
                     await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                     await _providerManager.SaveImage(
@@ -503,15 +515,8 @@ namespace MediaBrowser.Providers.Manager
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException)
                 {
-                    // Sometimes providers send back bad url's. Just move to the next image
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
-                    {
-                        continue;
-                    }
-
                     break;
                 }
             }
@@ -519,7 +524,7 @@ namespace MediaBrowser.Providers.Manager
             return false;
         }
 
-        private bool EnableImageStub(BaseItem item, LibraryOptions libraryOptions)
+        private bool EnableImageStub(BaseItem item)
         {
             if (item is LiveTvProgram)
             {
@@ -531,7 +536,7 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 var hasDualAccess = item as IHasDualAccess;
                 if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
@@ -539,6 +544,7 @@ namespace MediaBrowser.Providers.Manager
                     return true;
                 }
             }
+
             // We always want to use prefetched images
             return false;
         }
@@ -563,7 +569,7 @@ namespace MediaBrowser.Providers.Manager
                 newIndex);
         }
 
-        private async Task DownloadBackdrops(BaseItem item, LibraryOptions libraryOptions, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
+        private async Task DownloadBackdrops(BaseItem item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
             {
@@ -579,7 +585,7 @@ namespace MediaBrowser.Providers.Manager
 
                 var url = image.Url;
 
-                if (EnableImageStub(item, libraryOptions))
+                if (EnableImageStub(item))
                 {
                     SaveImageStub(item, imageType, new[] { url });
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
@@ -589,6 +595,19 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
+
+                    // Sometimes providers send back bad urls. Just move to the next image
+                    if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
+                        continue;
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("{Url} returned {StatusCode}, skipping all remaining requests", url, response.StatusCode);
+                        break;
+                    }
 
                     // If there's already an image of the same size, skip it
                     if (response.Content.Headers.ContentLength.HasValue)
@@ -617,15 +636,8 @@ namespace MediaBrowser.Providers.Manager
                         cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException)
                 {
-                    // Sometimes providers send back bad urls. Just move onto the next image
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
-                    {
-                        continue;
-                    }
-
                     break;
                 }
             }

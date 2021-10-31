@@ -12,6 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../MediaBrowser.Controller/MediaBrowser.Controller.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoFixture" Version="4.17.0" />
+    <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="SharpFuzz" Version="1.6.2" />
   </ItemGroup>
 

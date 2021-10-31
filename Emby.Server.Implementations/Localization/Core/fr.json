@@ -1,7 +1,7 @@
 {
     "Albums": "Albums",
     "AppDeviceValues": "Application : {0}, Appareil : {1}",
-    "Application": "Application",
+    "Application": "Applications",
     "Artists": "Artistes",
     "AuthenticationSucceededWithUserName": "{0} authentifié avec succès",
     "Books": "Livres",
@@ -105,8 +105,8 @@
     "TaskRefreshPeople": "Rafraîchir les acteurs",
     "TaskCleanLogsDescription": "Supprime les journaux de plus de {0} jours.",
     "TaskCleanLogs": "Nettoyer le répertoire des journaux",
-    "TaskRefreshLibraryDescription": "Scanne toute les bibliothèques pour trouver les nouveaux fichiers et rafraîchit les métadonnées.",
-    "TaskRefreshLibrary": "Scanner toutes les Bibliothèques",
+    "TaskRefreshLibraryDescription": "Scanne votre médiathèque pour trouver les nouveaux fichiers et rafraîchit les métadonnées.",
+    "TaskRefreshLibrary": "Scanner la médiathèque",
     "TaskRefreshChapterImagesDescription": "Crée des vignettes pour les vidéos ayant des chapitres.",
     "TaskRefreshChapterImages": "Extraire les images de chapitre",
     "TaskCleanCacheDescription": "Supprime les fichiers de cache dont le système n'a plus besoin.",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Nettoyer le journal d'activité",
     "Undefined": "Non défini",
     "Forced": "Forcé",
-    "Default": "Par défaut"
+    "Default": "Par défaut",
+    "TaskOptimizeDatabaseDescription": "Réduit les espaces vides/inutiles et compacte la base de données. Utiliser cette fonction après une mise à jour de la bibliothèque ou toute autre modification de la base de données peut améliorer les performances du serveur.",
+    "TaskOptimizeDatabase": "Optimiser la base de données"
 }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -135,7 +137,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (replaceData || !target.RunTimeTicks.HasValue)
                 {
-                    if (!(target is Audio) && !(target is Video))
+                    if (target is not Audio && target is not Video)
                     {
                         target.RunTimeTicks = source.RunTimeTicks;
                     }

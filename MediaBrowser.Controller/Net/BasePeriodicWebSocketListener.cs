@@ -1,6 +1,6 @@
 #nullable disable
 
-#pragma warning disable CS1591
+#pragma warning disable CS1591, SA1306, SA1401
 
 using System;
 using System.Collections.Generic;
@@ -31,6 +31,21 @@ namespace MediaBrowser.Controller.Net
             new List<Tuple<IWebSocketConnection, CancellationTokenSource, TStateType>>();
 
         /// <summary>
+        /// The logger.
+        /// </summary>
+        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
+
+        protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            Logger = logger;
+        }
+
+        /// <summary>
         /// Gets the type used for the messages sent to the client.
         /// </summary>
         /// <value>The type.</value>
@@ -53,21 +68,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <returns>Task{`1}.</returns>
         protected abstract Task<TReturnDataType> GetDataToSend();
-
-        /// <summary>
-        /// The logger.
-        /// </summary>
-        protected ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> Logger;
-
-        protected BasePeriodicWebSocketListener(ILogger<BasePeriodicWebSocketListener<TReturnDataType, TStateType>> logger)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            Logger = logger;
-        }
 
         /// <summary>
         /// Processes the message.

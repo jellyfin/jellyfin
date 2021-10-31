@@ -38,10 +38,11 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
             }
         }
 
-        public static IEnumerable<object[]> Parse_MultipleDialogues_TestData()
+        public static TheoryData<string, IReadOnlyList<SubtitleTrackEvent>> Parse_MultipleDialogues_TestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<string, IReadOnlyList<SubtitleTrackEvent>>();
+
+            data.Add(
                 @"[Events]
                 Format: Layer, Start, End, Text
                 Dialogue: ,0:00:01.18,0:00:01.85,dialogue1
@@ -65,8 +66,9 @@ namespace Jellyfin.MediaEncoding.Subtitles.Tests
                         StartPositionTicks = 31800000,
                         EndPositionTicks = 38500000
                     }
-                }
-            };
+                });
+
+            return data;
         }
 
         [Fact]

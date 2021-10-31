@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.String.</returns>
         private static string? GetValue(BaseItem? x)
         {
-            if (!(x is Audio audio))
+            if (x is not Audio audio)
             {
                 return string.Empty;
             }

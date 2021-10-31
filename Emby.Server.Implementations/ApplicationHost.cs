@@ -38,7 +38,6 @@ using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.Plugins;
 using Emby.Server.Implementations.QuickConnect;
 using Emby.Server.Implementations.ScheduledTasks;
-using Emby.Server.Implementations.Security;
 using Emby.Server.Implementations.Serialization;
 using Emby.Server.Implementations.Session;
 using Emby.Server.Implementations.SyncPlay;
@@ -59,7 +58,6 @@ using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -75,7 +73,6 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.QuickConnect;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
@@ -103,7 +100,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Prometheus.DotNetRuntime;
-using OperatingSystem = MediaBrowser.Common.System.OperatingSystem;
 using WebSocketManager = Emby.Server.Implementations.HttpServer.WebSocketManager;
 
 namespace Emby.Server.Implementations
@@ -118,6 +114,11 @@ namespace Emby.Server.Implementations
         /// </summary>
         private static readonly string[] _relevantEnvVarPrefixes = { "JELLYFIN_", "DOTNET_", "ASPNETCORE_" };
 
+        /// <summary>
+        /// The disposable parts.
+        /// </summary>
+        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
+
         private readonly IFileSystem _fileSystemManager;
         private readonly IConfiguration _startupConfig;
         private readonly IXmlSerializer _xmlSerializer;
@@ -130,109 +131,14 @@ namespace Emby.Server.Implementations
         private string[] _urlPrefixes;
 
         /// <summary>
-        /// Gets a value indicating whether this instance can self restart.
-        /// </summary>
-        public bool CanSelfRestart => _startupOptions.RestartPath != null;
-
-        public bool CoreStartupHasCompleted { get; private set; }
-
-        public virtual bool CanLaunchWebBrowser
-        {
-            get
-            {
-                if (!Environment.UserInteractive)
-                {
-                    return false;
-                }
-
-                if (_startupOptions.IsService)
-                {
-                    return false;
-                }
-
-                if (OperatingSystem.Id == OperatingSystemId.Windows
-                    || OperatingSystem.Id == OperatingSystemId.Darwin)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="INetworkManager"/> singleton instance.
-        /// </summary>
-        public INetworkManager NetManager { get; internal set; }
-
-        /// <summary>
-        /// Occurs when [has pending restart changed].
-        /// </summary>
-        public event EventHandler HasPendingRestartChanged;
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has changes that require the entire application to restart.
-        /// </summary>
-        /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
-        public bool HasPendingRestart { get; private set; }
-
-        /// <inheritdoc />
-        public bool IsShuttingDown { get; private set; }
-
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        protected ILogger<ApplicationHost> Logger { get; }
-
-        protected IServiceCollection ServiceCollection { get; }
-
-        /// <summary>
-        /// Gets the logger factory.
-        /// </summary>
-        protected ILoggerFactory LoggerFactory { get; }
-
-        /// <summary>
-        /// Gets or sets the application paths.
-        /// </summary>
-        /// <value>The application paths.</value>
-        protected IServerApplicationPaths ApplicationPaths { get; set; }
-
-        /// <summary>
         /// Gets or sets all concrete types.
         /// </summary>
         /// <value>All concrete types.</value>
         private Type[] _allConcreteTypes;
 
-        /// <summary>
-        /// The disposable parts.
-        /// </summary>
-        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
+        private DeviceId _deviceId;
 
-        /// <summary>
-        /// Gets or sets the configuration manager.
-        /// </summary>
-        /// <value>The configuration manager.</value>
-        public ServerConfigurationManager ConfigurationManager { get; set; }
-
-        /// <summary>
-        /// Gets or sets the service provider.
-        /// </summary>
-        public IServiceProvider ServiceProvider { get; set; }
-
-        /// <summary>
-        /// Gets the http port for the webhost.
-        /// </summary>
-        public int HttpPort { get; private set; }
-
-        /// <summary>
-        /// Gets the https port for the webhost.
-        /// </summary>
-        public int HttpsPort { get; private set; }
-
-        /// <summary>
-        /// Gets the value of the PublishedServerUrl setting.
-        /// </summary>
-        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ApplicationHost"/> class.
@@ -276,6 +182,143 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
+        /// Occurs when [has pending restart changed].
+        /// </summary>
+        public event EventHandler HasPendingRestartChanged;
+
+        /// <summary>
+        /// Gets a value indicating whether this instance can self restart.
+        /// </summary>
+        public bool CanSelfRestart => _startupOptions.RestartPath != null;
+
+        public bool CoreStartupHasCompleted { get; private set; }
+
+        public virtual bool CanLaunchWebBrowser
+        {
+            get
+            {
+                if (!Environment.UserInteractive)
+                {
+                    return false;
+                }
+
+                if (_startupOptions.IsService)
+                {
+                    return false;
+                }
+
+                return OperatingSystem.IsWindows() || OperatingSystem.IsMacOS();
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="INetworkManager"/> singleton instance.
+        /// </summary>
+        public INetworkManager NetManager { get; internal set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has changes that require the entire application to restart.
+        /// </summary>
+        /// <value><c>true</c> if this instance has pending application restart; otherwise, <c>false</c>.</value>
+        public bool HasPendingRestart { get; private set; }
+
+        /// <inheritdoc />
+        public bool IsShuttingDown { get; private set; }
+
+        /// <summary>
+        /// Gets the logger.
+        /// </summary>
+        protected ILogger<ApplicationHost> Logger { get; }
+
+        protected IServiceCollection ServiceCollection { get; }
+
+        /// <summary>
+        /// Gets the logger factory.
+        /// </summary>
+        protected ILoggerFactory LoggerFactory { get; }
+
+        /// <summary>
+        /// Gets or sets the application paths.
+        /// </summary>
+        /// <value>The application paths.</value>
+        protected IServerApplicationPaths ApplicationPaths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration manager.
+        /// </summary>
+        /// <value>The configuration manager.</value>
+        public ServerConfigurationManager ConfigurationManager { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service provider.
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; set; }
+
+        /// <summary>
+        /// Gets the http port for the webhost.
+        /// </summary>
+        public int HttpPort { get; private set; }
+
+        /// <summary>
+        /// Gets the https port for the webhost.
+        /// </summary>
+        public int HttpsPort { get; private set; }
+
+        /// <summary>
+        /// Gets the value of the PublishedServerUrl setting.
+        /// </summary>
+        public string PublishedServerUrl => _startupOptions.PublishedServerUrl ?? _startupConfig[UdpServer.AddressOverrideConfigKey];
+
+        /// <inheritdoc />
+        public Version ApplicationVersion { get; }
+
+        /// <inheritdoc />
+        public string ApplicationVersionString { get; }
+
+        /// <summary>
+        /// Gets the current application user agent.
+        /// </summary>
+        /// <value>The application user agent.</value>
+        public string ApplicationUserAgent { get; }
+
+        /// <summary>
+        /// Gets the email address for use within a comment section of a user agent field.
+        /// Presently used to provide contact information to MusicBrainz service.
+        /// </summary>
+        public string ApplicationUserAgentAddress => "team@jellyfin.org";
+
+        /// <summary>
+        /// Gets the current application name.
+        /// </summary>
+        /// <value>The application name.</value>
+        public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName;
+
+        public string SystemId
+        {
+            get
+            {
+                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
+
+                return _deviceId.Value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public string Name => ApplicationProductName;
+
+        private string CertificatePath { get; set; }
+
+        public X509Certificate2 Certificate { get; private set; }
+
+        /// <inheritdoc/>
+        public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
+
+        public string FriendlyName =>
+            string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
+                ? Environment.MachineName
+                : ConfigurationManager.Configuration.ServerName;
+
+        /// <summary>
         /// Temporary function to migration network settings out of system.xml and into network.xml.
         /// TODO: remove at the point when a fixed migration path has been decided upon.
         /// </summary>
@@ -306,45 +349,6 @@ namespace Emby.Server.Implementations
             return path.Replace(appPaths.DataPath, appPaths.VirtualDataPath, StringComparison.OrdinalIgnoreCase)
                 .Replace(appPaths.InternalMetadataPath, appPaths.VirtualInternalMetadataPath, StringComparison.OrdinalIgnoreCase);
         }
-
-        /// <inheritdoc />
-        public Version ApplicationVersion { get; }
-
-        /// <inheritdoc />
-        public string ApplicationVersionString { get; }
-
-        /// <summary>
-        /// Gets the current application user agent.
-        /// </summary>
-        /// <value>The application user agent.</value>
-        public string ApplicationUserAgent { get; }
-
-        /// <summary>
-        /// Gets the email address for use within a comment section of a user agent field.
-        /// Presently used to provide contact information to MusicBrainz service.
-        /// </summary>
-        public string ApplicationUserAgentAddress => "team@jellyfin.org";
-
-        /// <summary>
-        /// Gets the current application name.
-        /// </summary>
-        /// <value>The application name.</value>
-        public string ApplicationProductName { get; } = FileVersionInfo.GetVersionInfo(Assembly.GetEntryAssembly().Location).ProductName;
-
-        private DeviceId _deviceId;
-
-        public string SystemId
-        {
-            get
-            {
-                _deviceId ??= new DeviceId(ApplicationPaths, LoggerFactory);
-
-                return _deviceId.Value;
-            }
-        }
-
-        /// <inheritdoc/>
-        public string Name => ApplicationProductName;
 
         /// <summary>
         /// Creates an instance of type and resolves all constructor dependencies.
@@ -463,6 +467,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Runs the startup tasks.
         /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns><see cref="Task" />.</returns>
         public async Task RunStartupTasksAsync(CancellationToken cancellationToken)
         {
@@ -476,7 +481,7 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder.SetFFmpegPath();
 
-            Logger.LogInformation("ServerId: {0}", SystemId);
+            Logger.LogInformation("ServerId: {ServerId}", SystemId);
 
             var entryPoints = GetExports<IServerEntryPoint>();
 
@@ -543,12 +548,8 @@ namespace Emby.Server.Implementations
                 HttpsPort = NetworkConfiguration.DefaultHttpsPort;
             }
 
-            CertificateInfo = new CertificateInfo
-            {
-                Path = networkConfiguration.CertificatePath,
-                Password = networkConfiguration.CertificatePassword
-            };
-            Certificate = GetCertificate(CertificateInfo);
+            CertificatePath = networkConfiguration.CertificatePath;
+            Certificate = GetCertificate(CertificatePath, networkConfiguration.CertificatePassword);
 
             RegisterServices();
 
@@ -601,8 +602,6 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
-            ServiceCollection.AddSingleton<IAuthenticationRepository, AuthenticationRepository>();
-
             ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
             ServiceCollection.AddSingleton<EncodingHelper>();
 
@@ -623,8 +622,6 @@ namespace Emby.Server.Implementations
             ServiceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
 
             ServiceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
-
-            ServiceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
             ServiceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
@@ -661,8 +658,7 @@ namespace Emby.Server.Implementations
 
             ServiceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            ServiceCollection.AddSingleton<IAuthorizationContext, AuthorizationContext>();
-            ServiceCollection.AddSingleton<ISessionContext, SessionContext>();
+            ServiceCollection.AddScoped<ISessionContext, SessionContext>();
 
             ServiceCollection.AddSingleton<IAuthService, AuthService>();
             ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
@@ -690,8 +686,6 @@ namespace Emby.Server.Implementations
 
             _mediaEncoder = Resolve<IMediaEncoder>();
             _sessionManager = Resolve<ISessionManager>();
-
-            ((AuthenticationRepository)Resolve<IAuthenticationRepository>()).Initialize();
 
             SetStaticProperties();
 
@@ -721,7 +715,7 @@ namespace Emby.Server.Implementations
 
             logger.LogInformation("Environment Variables: {EnvVars}", relevantEnvVars);
             logger.LogInformation("Arguments: {Args}", commandLineArgs);
-            logger.LogInformation("Operating system: {OS}", OperatingSystem.Name);
+            logger.LogInformation("Operating system: {OS}", MediaBrowser.Common.System.OperatingSystem.Name);
             logger.LogInformation("Architecture: {Architecture}", RuntimeInformation.OSArchitecture);
             logger.LogInformation("64-Bit Process: {Is64Bit}", Environment.Is64BitProcess);
             logger.LogInformation("User Interactive: {IsUserInteractive}", Environment.UserInteractive);
@@ -731,30 +725,27 @@ namespace Emby.Server.Implementations
             logger.LogInformation("Application directory: {ApplicationPath}", appPaths.ProgramSystemPath);
         }
 
-        private X509Certificate2 GetCertificate(CertificateInfo info)
+        private X509Certificate2 GetCertificate(string path, string password)
         {
-            var certificateLocation = info?.Path;
-
-            if (string.IsNullOrWhiteSpace(certificateLocation))
+            if (string.IsNullOrWhiteSpace(path))
             {
                 return null;
             }
 
             try
             {
-                if (!File.Exists(certificateLocation))
+                if (!File.Exists(path))
                 {
                     return null;
                 }
 
                 // Don't use an empty string password
-                var password = string.IsNullOrWhiteSpace(info.Password) ? null : info.Password;
+                password = string.IsNullOrWhiteSpace(password) ? null : password;
 
-                var localCert = new X509Certificate2(certificateLocation, password, X509KeyStorageFlags.UserKeySet);
-                // localCert.PrivateKey = PrivateKey.CreateFromFile(pvk_file).RSA;
+                var localCert = new X509Certificate2(path, password, X509KeyStorageFlags.UserKeySet);
                 if (!localCert.HasPrivateKey)
                 {
-                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", certificateLocation);
+                    Logger.LogError("No private key included in SSL cert {CertificateLocation}.", path);
                     return null;
                 }
 
@@ -762,7 +753,7 @@ namespace Emby.Server.Implementations
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", certificateLocation);
+                Logger.LogError(ex, "Error loading cert from {CertificateLocation}", path);
                 return null;
             }
         }
@@ -873,10 +864,6 @@ namespace Emby.Server.Implementations
             }
         }
 
-        private CertificateInfo CertificateInfo { get; set; }
-
-        public X509Certificate2 Certificate { get; private set; }
-
         private IEnumerable<string> GetUrlPrefixes()
         {
             var hosts = new[] { "+" };
@@ -888,7 +875,7 @@ namespace Emby.Server.Implementations
                     "http://" + i + ":" + HttpPort + "/"
                 };
 
-                if (CertificateInfo != null)
+                if (Certificate != null)
                 {
                     prefixes.Add("https://" + i + ":" + HttpsPort + "/");
                 }
@@ -952,7 +939,7 @@ namespace Emby.Server.Implementations
             var newPath = networkConfig.CertificatePath;
 
             if (!string.IsNullOrWhiteSpace(newPath)
-                && !string.Equals(CertificateInfo?.Path, newPath, StringComparison.Ordinal))
+                && !string.Equals(CertificatePath, newPath, StringComparison.Ordinal))
             {
                 if (File.Exists(newPath))
                 {
@@ -1080,9 +1067,9 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the system status.
         /// </summary>
-        /// <param name="source">Where this request originated.</param>
+        /// <param name="request">Where this request originated.</param>
         /// <returns>SystemInfo.</returns>
-        public SystemInfo GetSystemInfo(IPAddress source)
+        public SystemInfo GetSystemInfo(HttpRequest request)
         {
             return new SystemInfo
             {
@@ -1098,16 +1085,14 @@ namespace Emby.Server.Implementations
                 ItemsByNamePath = ApplicationPaths.InternalMetadataPath,
                 InternalMetadataPath = ApplicationPaths.InternalMetadataPath,
                 CachePath = ApplicationPaths.CachePath,
-                OperatingSystem = OperatingSystem.Id.ToString(),
-                OperatingSystemDisplayName = OperatingSystem.Name,
+                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
+                OperatingSystemDisplayName = MediaBrowser.Common.System.OperatingSystem.Name,
                 CanSelfRestart = CanSelfRestart,
                 CanLaunchWebBrowser = CanLaunchWebBrowser,
-                HasUpdateAvailable = HasUpdateAvailable,
                 TranscodingTempPath = ConfigurationManager.GetTranscodePath(),
                 ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(source),
+                LocalAddress = GetSmartApiUrl(request),
                 SupportsLibraryMonitor = true,
-                EncoderLocation = _mediaEncoder.EncoderLocation,
                 SystemArchitecture = RuntimeInformation.OSArchitecture,
                 PackageName = _startupOptions.PackageName
             };
@@ -1118,25 +1103,22 @@ namespace Emby.Server.Implementations
                 .Select(i => new WakeOnLanInfo(i))
                 .ToList();
 
-        public PublicSystemInfo GetPublicSystemInfo(IPAddress source)
+        public PublicSystemInfo GetPublicSystemInfo(HttpRequest request)
         {
             return new PublicSystemInfo
             {
                 Version = ApplicationVersionString,
                 ProductName = ApplicationProductName,
                 Id = SystemId,
-                OperatingSystem = OperatingSystem.Id.ToString(),
+                OperatingSystem = MediaBrowser.Common.System.OperatingSystem.Id.ToString(),
                 ServerName = FriendlyName,
-                LocalAddress = GetSmartApiUrl(source),
+                LocalAddress = GetSmartApiUrl(request),
                 StartupWizardCompleted = ConfigurationManager.CommonConfiguration.IsStartupWizardCompleted
             };
         }
 
         /// <inheritdoc/>
-        public bool ListenWithHttps => Certificate != null && ConfigurationManager.GetNetworkConfiguration().EnableHttps;
-
-        /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress ipAddress, int? port = null)
+        public string GetSmartApiUrl(IPAddress remoteAddr, int? port = null)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -1145,7 +1127,7 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(ipAddress, out port);
+            string smart = NetManager.GetBindInterface(remoteAddr, out port);
             // If the smartAPI doesn't start with http then treat it as a host or ip.
             if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -1158,6 +1140,18 @@ namespace Emby.Server.Implementations
         /// <inheritdoc/>
         public string GetSmartApiUrl(HttpRequest request, int? port = null)
         {
+            // Return the host in the HTTP request as the API url
+            if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
+            {
+                int? requestPort = request.Host.Port;
+                if ((requestPort == 80 && string.Equals(request.Scheme, "http", StringComparison.OrdinalIgnoreCase)) || (requestPort == 443 && string.Equals(request.Scheme, "https", StringComparison.OrdinalIgnoreCase)))
+                {
+                    requestPort = -1;
+                }
+
+                return GetLocalApiUrl(request.Host.Host, request.Scheme, requestPort);
+            }
+
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
             {
@@ -1208,27 +1202,20 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetLocalApiUrl(string host, string scheme = null, int? port = null)
+        public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)
         {
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder
             {
                 Scheme = scheme ?? (ListenWithHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp),
-                Host = host,
+                Host = hostname,
                 Port = port ?? (ListenWithHttps ? HttpsPort : HttpPort),
                 Path = ConfigurationManager.GetNetworkConfiguration().BaseUrl
             }.ToString().TrimEnd('/');
         }
 
-        public string FriendlyName =>
-            string.IsNullOrEmpty(ConfigurationManager.Configuration.ServerName)
-                ? Environment.MachineName
-                : ConfigurationManager.Configuration.ServerName;
-
-        /// <summary>
-        /// Shuts down.
-        /// </summary>
+        /// <inheritdoc />
         public async Task Shutdown()
         {
             if (IsShuttingDown)
@@ -1252,26 +1239,6 @@ namespace Emby.Server.Implementations
 
         protected abstract void ShutdownInternal();
 
-        public event EventHandler HasUpdateAvailableChanged;
-
-        private bool _hasUpdateAvailable;
-
-        public bool HasUpdateAvailable
-        {
-            get => _hasUpdateAvailable;
-            set
-            {
-                var fireEvent = value && !_hasUpdateAvailable;
-
-                _hasUpdateAvailable = value;
-
-                if (fireEvent)
-                {
-                    HasUpdateAvailableChanged?.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
-
         public IEnumerable<Assembly> GetApiPluginAssemblies()
         {
             var assemblies = _allConcreteTypes
@@ -1286,41 +1253,7 @@ namespace Emby.Server.Implementations
             }
         }
 
-        public virtual void LaunchUrl(string url)
-        {
-            if (!CanLaunchWebBrowser)
-            {
-                throw new NotSupportedException();
-            }
-
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true,
-                    ErrorDialog = false
-                },
-                EnableRaisingEvents = true
-            };
-            process.Exited += (sender, args) => ((Process)sender).Dispose();
-
-            try
-            {
-                process.Start();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error launching url: {url}", url);
-                throw;
-            }
-        }
-
-        private bool _disposed = false;
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
@@ -1364,12 +1297,5 @@ namespace Emby.Server.Implementations
 
             _disposed = true;
         }
-    }
-
-    internal class CertificateInfo
-    {
-        public string Path { get; set; }
-
-        public string Password { get; set; }
     }
 }

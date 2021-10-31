@@ -1,4 +1,6 @@
-﻿using System;
+#nullable disable
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -18,7 +20,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// <summary>
     /// Manager class for abstracting the TMDb API client library.
     /// </summary>
-    public class TmdbClientManager
+    public class TmdbClientManager : IDisposable
     {
         private const int CacheDurationInHours = 1;
 
@@ -242,7 +244,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
-            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, cancellationToken);
+            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, cancellationToken).ConfigureAwait(false);
             if (group != null)
             {
                 var season = group.Groups.Find(s => s.Order == seasonNumber);
@@ -358,7 +360,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language), firstAirDateYear: year, cancellationToken: cancellationToken)
+                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language), includeAdult: Plugin.Instance.Configuration.IncludeAdult, firstAirDateYear: year, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
@@ -386,7 +388,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchPersonAsync(name, cancellationToken: cancellationToken)
+                .SearchPersonAsync(name, includeAdult: Plugin.Instance.Configuration.IncludeAdult, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
@@ -428,7 +430,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchMovieAsync(name, TmdbUtils.NormalizeLanguage(language), year: year, cancellationToken: cancellationToken)
+                .SearchMovieAsync(name, TmdbUtils.NormalizeLanguage(language), includeAdult: Plugin.Instance.Configuration.IncludeAdult, year: year, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
@@ -531,6 +533,26 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         private Task EnsureClientConfigAsync()
         {
             return !_tmDbClient.HasConfig ? _tmDbClient.GetConfigAsync() : Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+/// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _memoryCache?.Dispose();
+                _tmDbClient?.Dispose();
+            }
         }
     }
 }

@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1068, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -557,6 +559,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         subtitleDownloadLanguages,
                         libraryOptions.DisabledSubtitleFetchers,
                         libraryOptions.SubtitleFetcherOrder,
+                        true,
                         cancellationToken).ConfigureAwait(false);
 
                 // Rescan

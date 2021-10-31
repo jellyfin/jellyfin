@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Providers;
 using MediaBrowser.Controller.Entities;
@@ -56,8 +57,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _userDataManager = userDataManager;
             _directoryService = directoryService;
         }
-
-        protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
 
         /// <summary>
         /// Gets the logger.
@@ -148,80 +147,76 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 return;
             }
 
-            using (var fileStream = File.OpenRead(metadataFile))
-            using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
+            item.ResetPeople();
+
+            // Need to handle a url after the xml data
+            // http://kodi.wiki/view/NFO_files/movies
+
+            var xml = File.ReadAllText(metadataFile);
+
+            // Find last closing Tag
+            // Need to do this in two steps to account for random > characters after the closing xml
+            var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
+
+            // If closing tag exists, move to end of Tag
+            if (index != -1)
             {
-                item.ResetPeople();
+                index = xml.IndexOf('>', index);
+            }
 
-                // Need to handle a url after the xml data
-                // http://kodi.wiki/view/NFO_files/movies
+            if (index != -1)
+            {
+                var endingXml = xml.AsSpan().Slice(index);
 
-                var xml = streamReader.ReadToEnd();
+                ParseProviderLinks(item.Item, endingXml);
 
-                // Find last closing Tag
-                // Need to do this in two steps to account for random > characters after the closing xml
-                var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
-
-                // If closing tag exists, move to end of Tag
-                if (index != -1)
+                // If the file is just an imdb url, don't go any further
+                if (index == 0)
                 {
-                    index = xml.IndexOf('>', index);
-                }
-
-                if (index != -1)
-                {
-                    var endingXml = xml.Substring(index);
-
-                    ParseProviderLinks(item.Item, endingXml);
-
-                    // If the file is just an imdb url, don't go any further
-                    if (index == 0)
-                    {
-                        return;
-                    }
-
-                    xml = xml.Substring(0, index + 1);
-                }
-                else
-                {
-                    // If the file is just provider urls, handle that
-                    ParseProviderLinks(item.Item, xml);
-
                     return;
                 }
 
-                // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
-                try
+                xml = xml.Substring(0, index + 1);
+            }
+            else
+            {
+                // If the file is just provider urls, handle that
+                ParseProviderLinks(item.Item, xml);
+
+                return;
+            }
+
+            // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+            try
+            {
+                using (var stringReader = new StringReader(xml))
+                using (var reader = XmlReader.Create(stringReader, settings))
                 {
-                    using (var stringReader = new StringReader(xml))
-                    using (var reader = XmlReader.Create(stringReader, settings))
+                    reader.MoveToContent();
+                    reader.Read();
+
+                    // Loop through each element
+                    while (!reader.EOF && reader.ReadState == ReadState.Interactive)
                     {
-                        reader.MoveToContent();
-                        reader.Read();
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                        // Loop through each element
-                        while (!reader.EOF && reader.ReadState == ReadState.Interactive)
+                        if (reader.NodeType == XmlNodeType.Element)
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            if (reader.NodeType == XmlNodeType.Element)
-                            {
-                                FetchDataFromXmlNode(reader, item);
-                            }
-                            else
-                            {
-                                reader.Read();
-                            }
+                            FetchDataFromXmlNode(reader, item);
+                        }
+                        else
+                        {
+                            reader.Read();
                         }
                     }
                 }
-                catch (XmlException)
-                {
-                }
+            }
+            catch (XmlException)
+            {
             }
         }
 
-        protected void ParseProviderLinks(T item, string xml)
+        protected void ParseProviderLinks(T item, ReadOnlySpan<char> xml)
         {
             if (ProviderIdParsers.TryFindImdbId(xml, out var imdbId))
             {
@@ -271,9 +266,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
+                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                             {
-                                item.DateCreated = added.ToUniversalTime();
+                                item.DateCreated = added;
                             }
                             else
                             {
@@ -312,7 +307,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrEmpty(text))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, UsCulture, out var value))
+                            if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                             {
                                 item.CriticRating = value;
                             }
@@ -373,7 +368,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var count))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
                             {
                                 userData.PlayCount = count;
                             }
@@ -387,9 +382,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var added))
+                            if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var added))
                             {
-                                userData.LastPlayedDate = added.ToUniversalTime();
+                                userData.LastPlayedDate = added;
                             }
                             else
                             {
@@ -478,7 +473,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, UsCulture, out var runtime))
+                            if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                             {
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
@@ -688,9 +683,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) && date.Year > 1850)
+                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
                             {
-                                item.PremiereDate = date.ToUniversalTime();
+                                item.PremiereDate = date;
                                 item.ProductionYear = date.Year;
                             }
                         }
@@ -706,9 +701,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(val))
                         {
-                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) && date.Year > 1850)
+                            if (DateTime.TryParseExact(val, formatString, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var date) && date.Year > 1850)
                             {
-                                item.EndDate = date.ToUniversalTime();
+                                item.EndDate = date;
                             }
                         }
 
@@ -783,59 +778,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "thumb":
                     {
-                        var artType = reader.GetAttribute("aspect");
-                        var val = reader.ReadElementContentAsString();
+                        FetchThumbNode(reader, itemResult);
+                        break;
+                    }
 
-                        // skip:
-                        // - empty aspect tag
-                        // - empty uri
-                        // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
-                        if (string.IsNullOrEmpty(artType) || string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
-                        {
-                            break;
-                        }
-
-                        ImageType imageType = GetImageType(artType);
-
-                        if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
-                        {
-                            Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, item.Name);
-                            break;
-                        }
-
-                        if (uri.IsFile)
-                        {
-                            // only allow one item of each type
-                            if (itemResult.Images.Any(x => x.Type == imageType))
-                            {
-                                break;
-                            }
-
-                            var fileSystemMetadata = _directoryService.GetFile(val);
-                            // non existing file returns null
-                            if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
-                            {
-                                Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, item.Name);
-                                break;
-                            }
-
-                            itemResult.Images.Add(new LocalImageInfo()
-                            {
-                                FileInfo = fileSystemMetadata,
-                                Type = imageType
-                            });
-                        }
-                        else
-                        {
-                            // only allow one item of each type
-                            if (itemResult.RemoteImages.Any(x => x.type == imageType))
-                            {
-                                break;
-                            }
-
-                            itemResult.RemoteImages.Add((uri.ToString(), imageType));
-                        }
-
+                case "fanart":
+                    {
+                        var subtree = reader.ReadSubtree();
+                        subtree.ReadToDescendant("thumb");
+                        FetchThumbNode(subtree, itemResult);
                         break;
                     }
 
@@ -855,6 +806,68 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                     break;
+            }
+        }
+
+        private void FetchThumbNode(XmlReader reader, MetadataResult<T> itemResult)
+        {
+            var artType = reader.GetAttribute("aspect");
+            var val = reader.ReadElementContentAsString();
+
+            // artType is null if the thumb node is a child of the fanart tag
+            // -> set image type to fanart
+            if (string.IsNullOrWhiteSpace(artType))
+            {
+                artType = "fanart";
+            }
+
+            // skip:
+            // - empty uri
+            // - tag containing '.' because we can't set images for seasons, episodes or movie sets within series or movies
+            if (string.IsNullOrEmpty(val) || artType.Contains('.', StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            ImageType imageType = GetImageType(artType);
+
+            if (!Uri.TryCreate(val, UriKind.Absolute, out var uri))
+            {
+                Logger.LogError("Image location {Path} specified in nfo file for {ItemName} is not a valid URL or file path.", val, itemResult.Item.Name);
+                return;
+            }
+
+            if (uri.IsFile)
+            {
+                // only allow one item of each type
+                if (itemResult.Images.Any(x => x.Type == imageType))
+                {
+                    return;
+                }
+
+                var fileSystemMetadata = _directoryService.GetFile(val);
+                // non existing file returns null
+                if (fileSystemMetadata == null || !fileSystemMetadata.Exists)
+                {
+                    Logger.LogWarning("Artwork file {Path} specified in nfo file for {ItemName} does not exist.", uri, itemResult.Item.Name);
+                    return;
+                }
+
+                itemResult.Images.Add(new LocalImageInfo()
+                {
+                    FileInfo = fileSystemMetadata,
+                    Type = imageType
+                });
+            }
+            else
+            {
+                // only allow one item of each type
+                if (itemResult.RemoteImages.Any(x => x.type == imageType))
+                {
+                    return;
+                }
+
+                itemResult.RemoteImages.Add((uri.ToString(), imageType));
             }
         }
 
@@ -1205,7 +1218,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "name":
-                            name = reader.ReadElementContentAsString() ?? string.Empty;
+                            name = reader.ReadElementContentAsString();
                             break;
 
                         case "role":
@@ -1250,7 +1263,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var intVal))
+                                    if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
                                     {
                                         sortOrder = intVal;
                                     }

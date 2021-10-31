@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
@@ -17,9 +18,9 @@ namespace Emby.Server.Implementations.HttpServer.Security
             _authorizationContext = authorizationContext;
         }
 
-        public AuthorizationInfo Authenticate(HttpRequest request)
+        public async Task<AuthorizationInfo> Authenticate(HttpRequest request)
         {
-            var auth = _authorizationContext.GetAuthorizationInfo(request);
+            var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
 
             if (!auth.HasToken)
             {

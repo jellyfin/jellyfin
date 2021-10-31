@@ -21,7 +21,7 @@ namespace Emby.Naming.Video
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
-        public static IEnumerable<VideoInfo> Resolve(List<FileSystemMetadata> files, NamingOptions namingOptions, bool supportMultiVersion = true)
+        public static IEnumerable<VideoInfo> Resolve(IEnumerable<FileSystemMetadata> files, NamingOptions namingOptions, bool supportMultiVersion = true)
         {
             var videoInfos = files
                 .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, namingOptions))

@@ -164,15 +164,6 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void UpdateUser(User user)
-        {
-            using var dbContext = _dbProvider.CreateContext();
-            dbContext.Users.Update(user);
-            _users[user.Id] = user;
-            dbContext.SaveChanges();
-        }
-
-        /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
             await using var dbContext = _dbProvider.CreateContext();
@@ -271,9 +262,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ResetEasyPassword(User user)
+        public Task ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, string.Empty, null);
+            return ChangeEasyPassword(user, string.Empty, null);
         }
 
         /// <inheritdoc/>
@@ -291,7 +282,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -304,7 +295,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
             _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }
@@ -539,11 +530,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            return new PinRedeemResult
-            {
-                Success = false,
-                UsersReset = Array.Empty<string>()
-            };
+            return new PinRedeemResult();
         }
 
         /// <inheritdoc />
@@ -710,6 +697,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ClearProfileImageAsync(User user)
         {
+            if (user.ProfileImage == null)
+            {
+                return;
+            }
+
             await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);

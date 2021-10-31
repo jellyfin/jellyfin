@@ -24,6 +24,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
+        private readonly IImageProcessor _imageProcessor;
+
         private string[] _validCollectionTypes = new[]
         {
                 CollectionType.Movies,
@@ -32,8 +34,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Movies,
                 CollectionType.Photos
         };
-
-        private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
@@ -400,7 +400,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                         return movie;
                     }
 
-                    if (IsBluRayDirectory(child.FullName, filename, directoryService))
+                    if (IsBluRayDirectory(filename))
                     {
                         var movie = new T
                         {
@@ -481,7 +481,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return true;
                 }
 
-                if (subfolders.Any(s => IsBluRayDirectory(s.FullName, s.Name, directoryService)))
+                if (subfolders.Any(s => IsBluRayDirectory(s.Name)))
                 {
                     videoTypes.Add(VideoType.BluRay);
                     return true;

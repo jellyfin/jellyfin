@@ -341,19 +341,26 @@ namespace Emby.Server.Implementations.Library
                 mediaTypes = mediaTypes.Distinct().ToList();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0 ? new[]
-            {
-                nameof(Person),
-                nameof(Studio),
-                nameof(Year),
-                nameof(MusicGenre),
-                nameof(Genre)
-            } : Array.Empty<string>();
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+                ? new[]
+                {
+                    nameof(Person),
+                    nameof(Studio),
+                    nameof(Year),
+                    nameof(MusicGenre),
+                    nameof(Genre)
+                }
+                : Array.Empty<string>();
 
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = new[]
+                {
+                    (ItemSortBy.DateCreated, SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Descending),
+                    (ItemSortBy.ProductionYear, SortOrder.Descending)
+                },
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,

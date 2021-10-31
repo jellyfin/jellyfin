@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Audio;
 using Emby.Naming.Common;
@@ -12,6 +11,7 @@ namespace Emby.Naming.Video
     /// </summary>
     public class ExtraResolver
     {
+        private static readonly char[] _digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
         private readonly NamingOptions _options;
 
         /// <summary>
@@ -63,9 +63,10 @@ namespace Emby.Naming.Video
                 }
                 else if (rule.RuleType == ExtraRuleType.Suffix)
                 {
-                    var filename = Path.GetFileNameWithoutExtension(pathSpan);
+                    // Trim the digits from the end of the filename so we can recognize things like -trailer2
+                    var filename = Path.GetFileNameWithoutExtension(pathSpan).TrimEnd(_digits);
 
-                    if (filename.Contains(rule.Token, StringComparison.OrdinalIgnoreCase))
+                    if (filename.EndsWith(rule.Token, StringComparison.OrdinalIgnoreCase))
                     {
                         result.ExtraType = rule.ExtraType;
                         result.Rule = rule;

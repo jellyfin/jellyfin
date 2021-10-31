@@ -7,7 +7,7 @@ parameters:
   default: "ubuntu-latest"
 - name: DotNetSdkVersion
   type: string
-  default: 5.0.103
+  default: 6.0.x
 
 jobs:
   - job: CompatibilityCheck
@@ -34,6 +34,7 @@ jobs:
         inputs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
+          includePreviewVersions: true
 
       - task: DotNetCoreCLI@2
         displayName: 'Install ABI CompatibilityChecker Tool'

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Jellyfin.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -52,20 +51,14 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
 
-                // Unencode and re-parse querystring.
-                var unencodedKey = HttpUtility.UrlDecode(key);
-
-                if (string.Equals(unencodedKey, key, StringComparison.Ordinal))
+                if (!key.Contains('='))
                 {
-                    // Don't do anything if it's not encoded.
                     _store = value;
                     return;
                 }
 
                 var pairs = new Dictionary<string, StringValues>();
-                var queryString = unencodedKey.SpanSplit('&');
-
-                foreach (var pair in queryString)
+                foreach (var pair in key.SpanSplit('&'))
                 {
                     var i = pair.IndexOf('=');
                     if (i == -1)

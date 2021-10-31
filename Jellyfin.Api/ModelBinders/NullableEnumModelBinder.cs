@@ -32,7 +32,8 @@ namespace Jellyfin.Api.ModelBinders
             {
                 try
                 {
-                    var convertedValue = converter.ConvertFromString(valueProviderResult.FirstValue);
+                    // REVIEW: This shouldn't be null here
+                    var convertedValue = converter.ConvertFromString(valueProviderResult.FirstValue!);
                     bindingContext.Result = ModelBindingResult.Success(convertedValue);
                 }
                 catch (FormatException e)

@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// <summary>
     /// Class SeasonResolver.
     /// </summary>
-    public class SeasonResolver : FolderResolver<Season>
+    public class SeasonResolver : GenericFolderResolver<Season>
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;

@@ -15,13 +15,11 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Year : BaseItem, IItemByName
     {
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
+        [JsonIgnore]
+        public override bool SupportsAncestors => false;
 
-            list.Insert(0, "Year-" + Name);
-            return list;
-        }
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
 
         /// <summary>
         /// Gets the folder containing the item.
@@ -31,20 +29,25 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override string ContainingFolderPath => Path;
 
+        public override bool CanDelete()
+        {
+            return false;
+        }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, "Year-" + Name);
+            return list;
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             double value = 2;
             value /= 3;
 
             return value;
-        }
-
-        [JsonIgnore]
-        public override bool SupportsAncestors => false;
-
-        public override bool CanDelete()
-        {
-            return false;
         }
 
         public override bool IsSaveLocalMetadataEnabled()
@@ -54,9 +57,7 @@ namespace MediaBrowser.Controller.Entities
 
         public IList<BaseItem> GetTaggedItems(InternalItemsQuery query)
         {
-            var usCulture = new CultureInfo("en-US");
-
-            if (!int.TryParse(Name, NumberStyles.Integer, usCulture, out var year))
+            if (!int.TryParse(Name, NumberStyles.Integer, CultureInfo.InvariantCulture, out var year))
             {
                 return new List<BaseItem>();
             }
@@ -75,9 +76,6 @@ namespace MediaBrowser.Controller.Entities
 
             return null;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {

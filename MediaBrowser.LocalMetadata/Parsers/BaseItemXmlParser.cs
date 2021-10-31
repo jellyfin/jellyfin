@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -20,8 +21,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class BaseItemXmlParser<T>
         where T : BaseItem
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private Dictionary<string, string>? _validProviderIds;
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 var id = info.Key + "Id";
                 if (!_validProviderIds.ContainsKey(id))
                 {
-                    _validProviderIds.Add(id, info.Key!);
+                    _validProviderIds.Add(id, info.Key);
                 }
             }
 
@@ -144,9 +143,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(val))
                     {
-                        if (DateTime.TryParse(val, out var added))
+                        if (DateTime.TryParse(val, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var added))
                         {
-                            item.DateCreated = added.ToUniversalTime();
+                            item.DateCreated = added;
                         }
                         else
                         {
@@ -179,7 +178,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrEmpty(text))
                     {
-                        if (float.TryParse(text, NumberStyles.Any, _usCulture, out var value))
+                        if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                         {
                             item.CriticRating = value;
                         }
@@ -331,7 +330,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        if (int.TryParse(text.Split(' ')[0], NumberStyles.Integer, _usCulture, out var runtime))
+                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                         {
                             item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }
@@ -534,9 +533,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(firstAired))
                     {
-                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var airDate) && airDate.Year > 1850)
+                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal, out var airDate) && airDate.Year > 1850)
                         {
-                            item.PremiereDate = airDate.ToUniversalTime();
+                            item.PremiereDate = airDate;
                             item.ProductionYear = airDate.Year;
                         }
                     }
@@ -551,9 +550,9 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(firstAired))
                     {
-                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var airDate) && airDate.Year > 1850)
+                        if (DateTime.TryParseExact(firstAired, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal | DateTimeStyles.AdjustToUniversal, out var airDate) && airDate.Year > 1850)
                         {
-                            item.EndDate = airDate.ToUniversalTime();
+                            item.EndDate = airDate;
                         }
                     }
 
@@ -748,46 +747,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.Shares = list.ToArray();
-        }
-
-        private Share GetShareFromNode(XmlReader reader)
-        {
-            var share = new Share();
-
-            reader.MoveToContent();
-            reader.Read();
-
-            // Loop through each element
-            while (!reader.EOF && reader.ReadState == ReadState.Interactive)
-            {
-                if (reader.NodeType == XmlNodeType.Element)
-                {
-                    switch (reader.Name)
-                    {
-                        case "UserId":
-                        {
-                            share.UserId = reader.ReadElementContentAsString();
-                            break;
-                        }
-
-                        case "CanEdit":
-                        {
-                            share.CanEdit = string.Equals(reader.ReadElementContentAsString(), true.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
-                            break;
-                        }
-
-                        default:
-                            reader.Skip();
-                            break;
-                    }
-                }
-                else
-                {
-                    reader.Read();
-                }
-            }
-
-            return share;
         }
 
         private void FetchFromCountriesNode(XmlReader reader)
@@ -1101,7 +1060,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "Name":
-                            name = reader.ReadElementContentAsString() ?? string.Empty;
+                            name = reader.ReadElementContentAsString();
                             break;
 
                         case "Type":
@@ -1134,7 +1093,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var intVal))
+                                if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
                                 {
                                     sortOrder = intVal;
                                 }
@@ -1270,8 +1229,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// <returns>IEnumerable{System.String}.</returns>
         private IEnumerable<string> SplitNames(string value)
         {
-            value ??= string.Empty;
-
             // Only split by comma if there is no pipe in the string
             // We have to be careful to not split names like Matthew, Jr.
             var separator = !value.Contains('|', StringComparison.Ordinal)

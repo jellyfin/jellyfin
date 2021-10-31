@@ -12,7 +12,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// <summary>
     /// Class PhotoAlbumResolver.
     /// </summary>
-    public class PhotoAlbumResolver : FolderResolver<PhotoAlbum>
+    public class PhotoAlbumResolver : GenericFolderResolver<PhotoAlbum>
     {
         private readonly IImageProcessor _imageProcessor;
         private readonly ILibraryManager _libraryManager;

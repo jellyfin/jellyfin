@@ -15,7 +15,7 @@
     "Favorites": "Tañdaulylar",
     "Folders": "Qaltalar",
     "Genres": "Janrlar",
-    "HeaderAlbumArtists": "Älbom oryndauşylary",
+    "HeaderAlbumArtists": "Oryndauşynyñ älbomy",
     "HeaderContinueWatching": "Qaraudy jalğastyru",
     "HeaderFavoriteAlbums": "Tañdauly älbomdar",
     "HeaderFavoriteArtists": "Tañdauly oryndauşylar",
@@ -118,5 +118,7 @@
     "TaskRefreshLibraryDescription": "Tasyğyşhanadağy jaña faildardy skanerleidі jäne metaderekterdı jañğyrtady.",
     "TaskRefreshChapterImagesDescription": "Sahnalary bar beineler üşın nobailar jasaidy.",
     "TaskCleanCacheDescription": "Jüiede qajet emes keştelgen faildardy joiady.",
-    "TaskCleanActivityLogDescription": "Äreket jūrnalyndağy teñşelgen jasynan asqan jazbalary joiady."
+    "TaskCleanActivityLogDescription": "Äreket jūrnalyndağy teñşelgen jasynan asqan jazbalary joiady.",
+    "TaskOptimizeDatabaseDescription": "Derekqordy qysyp, bos oryndy qysqartady. Būl tapsyrmany tasyğyşhanany skanerlegennen keiın nemese derekqorğa meñzeitın basqa özgertuler ıstelgennen keiın oryndau önımdılıktı damytuy mümkın.",
+    "TaskOptimizeDatabase": "Derekqordy oñtailandyru"
 }

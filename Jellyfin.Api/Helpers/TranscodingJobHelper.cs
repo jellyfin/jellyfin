@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
 using Jellyfin.Api.Models.StreamingDtos;
 using Jellyfin.Data.Enums;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
@@ -86,8 +87,8 @@ namespace Jellyfin.Api.Helpers
 
             DeleteEncodedMediaCache();
 
-            sessionManager!.PlaybackProgress += OnPlaybackProgress;
-            sessionManager!.PlaybackStart += OnPlaybackProgress;
+            sessionManager.PlaybackProgress += OnPlaybackProgress;
+            sessionManager.PlaybackStart += OnPlaybackProgress;
         }
 
         /// <summary>
@@ -380,7 +381,7 @@ namespace Jellyfin.Api.Helpers
         private void DeleteHlsPartialStreamFiles(string outputFilePath)
         {
             var directory = Path.GetDirectoryName(outputFilePath)
-                ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
+                            ?? throw new ArgumentException("Path can't be a root directory.", nameof(outputFilePath));
 
             var name = Path.GetFileNameWithoutExtension(outputFilePath);
 
@@ -444,6 +445,10 @@ namespace Jellyfin.Api.Helpers
             {
                 var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
+                var hardwareAccelerationTypeString = _serverConfigurationManager.GetEncodingOptions().HardwareAccelerationType;
+                HardwareEncodingType? hardwareAccelerationType = string.IsNullOrEmpty(hardwareAccelerationTypeString)
+                    ? null
+                    : (HardwareEncodingType)Enum.Parse(typeof(HardwareEncodingType), hardwareAccelerationTypeString, true);
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
                 {
@@ -458,6 +463,7 @@ namespace Jellyfin.Api.Helpers
                     AudioChannels = state.OutputAudioChannels,
                     IsAudioDirect = EncodingHelper.IsCopyCodec(state.OutputAudioCodec),
                     IsVideoDirect = EncodingHelper.IsCopyCodec(state.OutputVideoCodec),
+                    HardwareAccelerationType = hardwareAccelerationType,
                     TranscodeReasons = state.TranscodeReasons
                 });
             }
@@ -490,7 +496,7 @@ namespace Jellyfin.Api.Helpers
 
             if (state.VideoRequest != null && !EncodingHelper.IsCopyCodec(state.OutputVideoCodec))
             {
-                var auth = _authorizationContext.GetAuthorizationInfo(request);
+                var auth = await _authorizationContext.GetAuthorizationInfo(request).ConfigureAwait(false);
                 if (auth.User != null && !auth.User.HasPermission(PermissionKind.EnableVideoPlaybackTranscoding))
                 {
                     this.OnTranscodeFailedToStart(outputPath, transcodingJobType, state);
@@ -552,7 +558,7 @@ namespace Jellyfin.Api.Helpers
                 $"{logFilePrefix}{DateTime.Now:yyyy-MM-dd_HH-mm-ss}_{state.Request.MediaSourceId}_{Guid.NewGuid().ToString()[..8]}.log");
 
             // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(request.Path + Environment.NewLine + Environment.NewLine + JsonSerializer.Serialize(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await logStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
@@ -601,6 +607,10 @@ namespace Jellyfin.Api.Helpers
             if (!transcodingJob.HasExited)
             {
                 StartThrottler(state, transcodingJob);
+            }
+            else if (transcodingJob.ExitCode != 0)
+            {
+                throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "FFmpeg exited with code {0}", transcodingJob.ExitCode));
             }
 
             _logger.LogDebug("StartFfMpeg() finished successfully");
@@ -738,6 +748,7 @@ namespace Jellyfin.Api.Helpers
         private void OnFfMpegProcessExited(Process process, TranscodingJobDto job, StreamState state)
         {
             job.HasExited = true;
+            job.ExitCode = process.ExitCode;
 
             _logger.LogDebug("Disposing stream resources");
             state.Dispose();
@@ -759,8 +770,8 @@ namespace Jellyfin.Api.Helpers
             if (state.MediaSource.RequiresOpening && string.IsNullOrWhiteSpace(state.Request.LiveStreamId))
             {
                 var liveStreamResponse = await _mediaSourceManager.OpenLiveStream(
-                    new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
-                    cancellationTokenSource.Token)
+                        new LiveStreamRequest { OpenToken = state.MediaSource.OpenToken },
+                        cancellationTokenSource.Token)
                     .ConfigureAwait(false);
                 var encodingOptions = _serverConfigurationManager.GetEncodingOptions();
 
@@ -873,8 +884,8 @@ namespace Jellyfin.Api.Helpers
             if (disposing)
             {
                 _loggerFactory.Dispose();
-                _sessionManager!.PlaybackProgress -= OnPlaybackProgress;
-                _sessionManager!.PlaybackStart -= OnPlaybackProgress;
+                _sessionManager.PlaybackProgress -= OnPlaybackProgress;
+                _sessionManager.PlaybackStart -= OnPlaybackProgress;
             }
         }
     }

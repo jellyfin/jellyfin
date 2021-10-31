@@ -60,8 +60,6 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private readonly IFileSystem _fileSystem;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
         /// </summary>
@@ -283,7 +281,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 imageFileNames = _seriesImageFileNames;
             }
-            else if (item is Video && !(item is Episode))
+            else if (item is Video && item is not Episode)
             {
                 imageFileNames = _videoImageFileNames;
             }
@@ -434,7 +432,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var seasonMarker = seasonNumber.Value == 0
                                    ? "-specials"
-                                   : seasonNumber.Value.ToString("00", _usCulture);
+                                   : seasonNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
             // Get this one directly from the file system since we have to go up a level
             if (!string.Equals(prefix, seasonMarker, StringComparison.OrdinalIgnoreCase))

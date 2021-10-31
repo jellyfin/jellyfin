@@ -1,7 +1,6 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Channels
@@ -10,10 +9,10 @@ namespace MediaBrowser.Controller.Channels
     {
         public ChannelItemResult()
         {
-            Items = new List<ChannelItemInfo>();
+            Items = Array.Empty<ChannelItemInfo>();
         }
 
-        public List<ChannelItemInfo> Items { get; set; }
+        public IReadOnlyList<ChannelItemInfo> Items { get; set; }
 
         public int? TotalRecordCount { get; set; }
     }
