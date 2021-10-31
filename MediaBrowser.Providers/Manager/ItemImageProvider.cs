@@ -103,14 +103,16 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
+            List<ItemImageInfo> oldBackdropImages = new List<ItemImageInfo>();
             if (refreshOptions.IsReplacingImage(ImageType.Backdrop))
             {
-                ClearImages(item, ImageType.Backdrop);
+                oldBackdropImages = item.GetImages(ImageType.Backdrop).ToList();
             }
 
+            List<ItemImageInfo> oldScreenshotImages = new List<ItemImageInfo>();
             if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
             {
-                ClearImages(item, ImageType.Screenshot);
+                oldScreenshotImages = item.GetImages(ImageType.Screenshot).ToList();
             }
 
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
@@ -118,9 +120,9 @@ namespace MediaBrowser.Providers.Manager
             var typeName = item.GetType().Name;
             var typeOptions = libraryOptions.GetTypeOptions(typeName) ?? new TypeOptions { Type = typeName };
 
-            // In order to avoid duplicates, only download these if there are none already
-            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop);
-            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot);
+            // track library limits, adding buffer to allow lazy replacing of current images
+            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Count;
+            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot) + oldScreenshotImages.Count;
             var downloadedImages = new List<ImageType>();
 
             foreach (var provider in providers)
@@ -135,6 +137,17 @@ namespace MediaBrowser.Providers.Manager
                 {
                     await RefreshFromProvider(item, dynamicImageProvider, refreshOptions, typeOptions, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                 }
+            }
+
+            // only delete existing multi-images if new ones were added
+            if (oldBackdropImages.Count > 0 && oldBackdropImages.Count < item.GetImages(ImageType.Backdrop).Count())
+            {
+                PruneImages(item, oldBackdropImages);
+            }
+
+            if (oldScreenshotImages.Count > 0 && oldScreenshotImages.Count < item.GetImages(ImageType.Screenshot).Count())
+            {
+                PruneImages(item, oldScreenshotImages);
             }
 
             return result;
@@ -176,13 +189,14 @@ namespace MediaBrowser.Providers.Manager
                                 if (response.Protocol == MediaProtocol.Http)
                                 {
                                     _logger.LogDebug("Setting image url into item {0}", item.Id);
+                                    var index = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
                                     item.SetImage(
                                         new ItemImageInfo
                                         {
                                             Path = response.Path,
                                             Type = imageType
                                         },
-                                        0);
+                                        index);
                                 }
                                 else
                                 {
@@ -352,35 +366,25 @@ namespace MediaBrowser.Providers.Manager
             return options.IsEnabled(type);
         }
 
-        private void ClearImages(BaseItem item, ImageType type)
+        private void PruneImages(BaseItem item, List<ItemImageInfo> images)
         {
-            var deleted = false;
-            var deletedImages = new List<ItemImageInfo>();
-
-            foreach (var image in item.GetImages(type))
+            for (var i = 0; i < images.Count; i++)
             {
-                if (!image.IsLocalFile)
-                {
-                    deletedImages.Add(image);
-                    continue;
-                }
+                var image = images[i];
 
-                try
+                if (image.IsLocalFile)
                 {
-                    _fileSystem.DeleteFile(image.Path);
-                    deleted = true;
-                }
-                catch (FileNotFoundException)
-                {
+                    try
+                    {
+                        _fileSystem.DeleteFile(image.Path);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
                 }
             }
 
-            item.RemoveImages(deletedImages);
-
-            if (deleted)
-            {
-                item.ValidateImages(new DirectoryService(_fileSystem));
-            }
+            item.RemoveImages(images);
         }
 
         /// <summary>
@@ -475,6 +479,14 @@ namespace MediaBrowser.Providers.Manager
         private bool UpdateMultiImages(BaseItem item, IReadOnlyList<LocalImageInfo> images, ImageType type)
         {
             var changed = false;
+
+            var deletedImages = item.GetImages(type).Where(i => i.IsLocalFile && !File.Exists(i.Path)).ToList();
+
+            if (deletedImages.Count > 0)
+            {
+                item.RemoveImages(deletedImages);
+                changed = true;
+            }
 
             var newImageFileInfos = images
                 .Where(i => i.Type == type)
