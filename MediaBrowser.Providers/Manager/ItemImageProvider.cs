@@ -395,7 +395,7 @@ namespace MediaBrowser.Providers.Manager
         /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
         public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images)
         {
-            var changed = false;
+            var changed = item.ValidateImages(new DirectoryService(_fileSystem));
 
             for (var i = 0; i < _singularImages.Length; i++)
             {
@@ -431,18 +431,6 @@ namespace MediaBrowser.Providers.Manager
                         currentImage.DateModified = newDateModified;
                     }
                 }
-                else
-                {
-                    var existing = item.GetImageInfo(type, 0);
-                    if (existing != null)
-                    {
-                        if (existing.IsLocalFile && !File.Exists(existing.Path))
-                        {
-                            item.RemoveImage(existing);
-                            changed = true;
-                        }
-                    }
-                }
             }
 
             if (UpdateMultiImages(item, images, ImageType.Backdrop))
@@ -450,12 +438,9 @@ namespace MediaBrowser.Providers.Manager
                 changed = true;
             }
 
-            if (item is IHasScreenshots)
+            if (item is IHasScreenshots && UpdateMultiImages(item, images, ImageType.Screenshot))
             {
-                if (UpdateMultiImages(item, images, ImageType.Screenshot))
-                {
-                    changed = true;
-                }
+                changed = true;
             }
 
             return changed;
@@ -479,14 +464,6 @@ namespace MediaBrowser.Providers.Manager
         private bool UpdateMultiImages(BaseItem item, IReadOnlyList<LocalImageInfo> images, ImageType type)
         {
             var changed = false;
-
-            var deletedImages = item.GetImages(type).Where(i => i.IsLocalFile && !File.Exists(i.Path)).ToList();
-
-            if (deletedImages.Count > 0)
-            {
-                item.RemoveImages(deletedImages);
-                changed = true;
-            }
 
             var newImageFileInfos = images
                 .Where(i => i.Type == type)

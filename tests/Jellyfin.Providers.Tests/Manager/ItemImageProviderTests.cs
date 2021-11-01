@@ -183,7 +183,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
             var images = GetImages(imageType, imageCount, true);
 
-            var itemImageProvider = GetItemImageProvider(null, fileSystem.Object);
+            var itemImageProvider = GetItemImageProvider(null, fileSystem);
             var changed = itemImageProvider.MergeImages(item, images);
 
             Assert.False(changed);
@@ -213,7 +213,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
             var images = GetImages(imageType, imageCount, true);
 
-            var itemImageProvider = GetItemImageProvider(null, fileSystem.Object);
+            var itemImageProvider = GetItemImageProvider(null, fileSystem);
             var changed = itemImageProvider.MergeImages(item, images);
 
             Assert.True(changed);
@@ -363,7 +363,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 ReplaceAllImages = true
             };
 
-            var itemImageProvider = GetItemImageProvider(null, Mock.Of<IFileSystem>());
+            var itemImageProvider = GetItemImageProvider(null, new Mock<IFileSystem>());
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
@@ -401,7 +401,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
             providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(remoteInfo);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, Mock.Of<IFileSystem>());
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.False(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
@@ -459,7 +459,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var fileSystem = new Mock<IFileSystem>();
             fileSystem.Setup(fs => fs.GetFileInfo(It.IsAny<string>()))
                 .Returns(new FileSystemMetadata { Length = 1 });
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, fileSystem.Object);
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, fileSystem);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
@@ -496,7 +496,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
             providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(remoteInfo);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, Mock.Of<IFileSystem>());
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
@@ -505,7 +505,7 @@ namespace Jellyfin.Providers.Tests.Manager
             // images from the provider manager are sorted by preference (earlier images are higher priority) so we can verify that low url numbers are chosen
             foreach (var image in actualImages)
             {
-                var index = int.Parse(Regex.Match(image.Path, @"\d+").Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+                var index = int.Parse(Regex.Match(image.Path, @"[0-9]+").Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                 Assert.True(index < imageCount);
             }
         }
@@ -543,14 +543,14 @@ namespace Jellyfin.Providers.Tests.Manager
             var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
             providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(remoteInfo);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, Mock.Of<IFileSystem>());
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, new Mock<IFileSystem>());
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
             Assert.Equal(imageCount, item.GetImages(imageType).Count());
             foreach (var image in item.GetImages(imageType))
             {
-                Assert.Matches(@"image url \d", image.Path);
+                Assert.Matches(@"image url [0-9]", image.Path);
             }
         }
 
@@ -573,19 +573,28 @@ namespace Jellyfin.Providers.Tests.Manager
                 ReplaceAllImages = true
             };
 
-            var itemImageProvider = GetItemImageProvider(Mock.Of<IProviderManager>(), Mock.Of<IFileSystem>());
+            var itemImageProvider = GetItemImageProvider(Mock.Of<IProviderManager>(), null);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.False(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
             Assert.Equal(imageCount, item.GetImages(imageType).Count());
         }
 
-        private static ItemImageProvider GetItemImageProvider(IProviderManager? providerManager, IFileSystem? fileSystem)
+        private static ItemImageProvider GetItemImageProvider(IProviderManager? providerManager, Mock<IFileSystem>? mockFileSystem)
         {
             // strict to ensure this isn't accidentally used where a prepared mock is intended
             providerManager ??= Mock.Of<IProviderManager>(MockBehavior.Strict);
-            fileSystem ??= Mock.Of<IFileSystem>(MockBehavior.Strict);
-            return new ItemImageProvider(new NullLogger<ItemImageProvider>(), providerManager, fileSystem);
+
+            // BaseItem.ValidateImages depends on the directory service being able to list directory contents, give it the expected valid file paths
+            mockFileSystem ??= new Mock<IFileSystem>(MockBehavior.Strict);
+            mockFileSystem.Setup(fs => fs.GetFilePaths(It.IsAny<string>(), It.IsAny<bool>()))
+                .Returns(new[]
+                {
+                    string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 0),
+                    string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 1)
+                });
+
+            return new ItemImageProvider(new NullLogger<ItemImageProvider>(), providerManager, mockFileSystem.Object);
         }
 
         private static BaseItem GetItemWithImages(ImageType type, int count, bool validPaths)
