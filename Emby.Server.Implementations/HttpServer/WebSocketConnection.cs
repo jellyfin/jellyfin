@@ -180,11 +180,12 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             WebSocketMessage<object>? stub;
+            long bytesConsumed;
             try
             {
                 if (buffer.IsSingleSegment)
                 {
-                    stub = JsonSerializer.Deserialize<WebSocketMessage<object>>(buffer.FirstSpan, _jsonOptions);
+                    stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);
                 }
                 else
                 {
@@ -233,6 +234,14 @@ namespace Emby.Server.Implementations.HttpServer
                         Connection = this
                     }).ConfigureAwait(false);
             }
+        }
+
+        internal WebSocketMessage<object>? DeserializeWebSocketMessage(ReadOnlySequence<byte> bytes, out long bytesConsumed)
+        {
+            var jsonReader = new Utf8JsonReader(bytes);
+            var ret = JsonSerializer.Deserialize<WebSocketMessage<object>>(ref jsonReader, _jsonOptions);
+            bytesConsumed = jsonReader.BytesConsumed;
+            return ret;
         }
 
         private Task SendKeepAliveResponse()
