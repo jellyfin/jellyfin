@@ -372,11 +372,11 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<LocalizationOption> GetLocalizationOptions()
         {
-			yield return new LocalizationOption("Afrikaans", "af");
-			yield return new LocalizationOption("Arabic", "ar");
+            yield return new LocalizationOption("Afrikaans", "af");
+            yield return new LocalizationOption("Arabic", "ar");
             yield return new LocalizationOption("Bulgarian (Bulgaria)", "bg-BG");
             yield return new LocalizationOption("Catalan", "ca");
-			yield return new LocalizationOption("Chinese (Hong Kong)", "zh-HK");
+            yield return new LocalizationOption("Chinese (Hong Kong)", "zh-HK");
             yield return new LocalizationOption("Chinese Simplified", "zh-CN");
             yield return new LocalizationOption("Chinese Traditional", "zh-TW");
             yield return new LocalizationOption("Croatian", "hr");
@@ -385,48 +385,48 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Dutch", "nl");
             yield return new LocalizationOption("English (United Kingdom)", "en-GB");
             yield return new LocalizationOption("English (United States)", "en-US");
-			yield return new LocalizationOption("Esperanto", "eo");
-			yield return new LocalizationOption("Estonian", "et");
-			yield return new LocalizationOption("Finnish", "fi");
+            yield return new LocalizationOption("Esperanto", "eo");
+            yield return new LocalizationOption("Estonian", "et");
+            yield return new LocalizationOption("Finnish", "fi");
             yield return new LocalizationOption("French", "fr");
             yield return new LocalizationOption("French (Canada)", "fr-CA");
             yield return new LocalizationOption("German", "de");
             yield return new LocalizationOption("Greek", "el");
             yield return new LocalizationOption("Hebrew", "he");
             yield return new LocalizationOption("Hungarian", "hu");
-			yield return new LocalizationOption("Icelandic", "is");
-			yield return new LocalizationOption("Indonesian", "id");
+            yield return new LocalizationOption("Icelandic", "is");
+            yield return new LocalizationOption("Indonesian", "id");
             yield return new LocalizationOption("Italian", "it");
-			yield return new LocalizationOption("Japanese", "ja");
+            yield return new LocalizationOption("Japanese", "ja");
             yield return new LocalizationOption("Kazakh", "kk");
             yield return new LocalizationOption("Korean", "ko");
-			yield return new LocalizationOption("Latvian", "lv");
+            yield return new LocalizationOption("Latvian", "lv");
             yield return new LocalizationOption("Lithuanian", "lt-LT");
             yield return new LocalizationOption("Malay", "ms");
-			yield return new LocalizationOption("Malayalam", "ml");
+            yield return new LocalizationOption("Malayalam", "ml");
             yield return new LocalizationOption("Norwegian Bokmål", "nb");
-			yield return new LocalizationOption("Norwegian Nynorsk", "nn");
+            yield return new LocalizationOption("Norwegian Nynorsk", "nn");
             yield return new LocalizationOption("Persian", "fa");
             yield return new LocalizationOption("Polish", "pl");
-			yield return new LocalizationOption("Portuguese", "pt");
+            yield return new LocalizationOption("Portuguese", "pt");
             yield return new LocalizationOption("Portuguese (Brazil)", "pt-BR");
             yield return new LocalizationOption("Portuguese (Portugal)", "pt-PT");
-			yield return new LocalizationOption("Romanian", "ro");
+            yield return new LocalizationOption("Romanian", "ro");
             yield return new LocalizationOption("Russian", "ru");
-			yield return new LocalizationOption("Serbian", "sr");
+            yield return new LocalizationOption("Serbian", "sr");
             yield return new LocalizationOption("Slovak", "sk");
             yield return new LocalizationOption("Slovenian (Slovenia)", "sl-SI");
             yield return new LocalizationOption("Spanish", "es");
             yield return new LocalizationOption("Spanish (Argentina)", "es-AR");
-			yield return new LocalizationOption("Spanish (Latin America)", "es-419");
+            yield return new LocalizationOption("Spanish (Latin America)", "es-419");
             yield return new LocalizationOption("Spanish (Mexico)", "es-MX");
             yield return new LocalizationOption("Swedish", "sv");
             yield return new LocalizationOption("Swiss German", "gsw");
-			yield return new LocalizationOption("Tamil", "ta");
-			yield return new LocalizationOption("Telugu", "te");
+            yield return new LocalizationOption("Tamil", "ta");
+            yield return new LocalizationOption("Telugu", "te");
             yield return new LocalizationOption("Turkish", "tr");
             yield return new LocalizationOption("Tiếng Việt", "vi");
-			yield return new LocalizationOption("Ukrainian", "uk");
+            yield return new LocalizationOption("Ukrainian", "uk");
         }
     }
 }
