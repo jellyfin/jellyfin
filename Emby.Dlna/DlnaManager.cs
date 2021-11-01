@@ -416,7 +416,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public void UpdateProfile(DeviceProfile profile)
+        public void UpdateProfile(string profileId, DeviceProfile profile)
         {
             profile = ReserializeProfile(profile);
 
@@ -430,7 +430,7 @@ namespace Emby.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profileId, StringComparison.OrdinalIgnoreCase));
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
