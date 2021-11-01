@@ -342,12 +342,12 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadMultiImages(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
 
                 if (item is IHasScreenshots)
                 {
                     minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadMultiImages(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                    await DownloadMultiImages(item, ImageType.Screenshot, refreshOptions, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -586,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
                 newIndex);
         }
 
-        private async Task DownloadMultiImages(BaseItem item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
+        private async Task DownloadMultiImages(BaseItem item, ImageType imageType, ImageRefreshOptions refreshOptions, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
             {
@@ -626,8 +626,8 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    // If there's already an image of the same file size, skip it
-                    if (response.Content.Headers.ContentLength.HasValue)
+                    // If there's already an image of the same file size, skip it unless doing a full refresh
+                    if (response.Content.Headers.ContentLength.HasValue && !refreshOptions.IsReplacingImage(imageType))
                     {
                         try
                         {
