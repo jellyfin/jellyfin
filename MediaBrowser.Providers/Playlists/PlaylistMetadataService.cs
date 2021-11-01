@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -13,12 +15,31 @@ namespace MediaBrowser.Providers.Playlists
 {
     public class PlaylistMetadataService : MetadataService<Playlist, ItemLookupInfo>
     {
-        protected override IList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)
+        public PlaylistMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<PlaylistMetadataService> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
-            return item.GetLinkedChildren();
         }
 
-        protected override void MergeData(MetadataResult<Playlist> source, MetadataResult<Playlist> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        /// <inheritdoc />
+        protected override bool EnableUpdatingGenresFromChildren => true;
+
+        /// <inheritdoc />
+        protected override bool EnableUpdatingOfficialRatingFromChildren => true;
+
+        /// <inheritdoc />
+        protected override bool EnableUpdatingStudiosFromChildren => true;
+
+        /// <inheritdoc />
+        protected override IList<BaseItem> GetChildrenForMetadataUpdates(Playlist item)
+            => item.GetLinkedChildren();
+
+        /// <inheritdoc />
+        protected override void MergeData(MetadataResult<Playlist> source, MetadataResult<Playlist> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
@@ -32,15 +53,5 @@ namespace MediaBrowser.Providers.Playlists
                 targetItem.Shares = sourceItem.Shares;
             }
         }
-
-        public PlaylistMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
-        }
-
-        protected override bool EnableUpdatingGenresFromChildren => true;
-
-        protected override bool EnableUpdatingOfficialRatingFromChildren => true;
-
-        protected override bool EnableUpdatingStudiosFromChildren => true;
     }
 }

@@ -1,13 +1,16 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -16,41 +19,41 @@ namespace Emby.Server.Implementations.Data
     public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
         public SqliteUserDataRepository(
-            ILoggerFactory loggerFactory,
+            ILogger<SqliteUserDataRepository> logger,
             IApplicationPaths appPaths)
-            : base(loggerFactory.CreateLogger(nameof(SqliteUserDataRepository)))
+            : base(logger)
         {
             DbFilePath = Path.Combine(appPaths.DataPath, "library.db");
         }
 
-        /// <summary>
-        /// Gets the name of the repository
-        /// </summary>
-        /// <value>The name.</value>
+        /// <inheritdoc />
         public string Name => "SQLite";
 
         /// <summary>
-        /// Opens the connection to the database
+        /// Opens the connection to the database.
         /// </summary>
-        /// <returns>Task.</returns>
-        public void Initialize(ReaderWriterLockSlim writeLock, ManagedConnection managedConnection, IUserManager userManager)
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="dbLock">The lock to use for database IO.</param>
+        /// <param name="dbConnection">The connection to use for database IO.</param>
+        public void Initialize(IUserManager userManager, SemaphoreSlim dbLock, SQLiteDatabaseConnection dbConnection)
         {
-            _connection = managedConnection;
-
             WriteLock.Dispose();
-            WriteLock = writeLock;
+            WriteLock = dbLock;
+            WriteConnection?.Dispose();
+            WriteConnection = dbConnection;
 
-            using (var connection = CreateConnection())
+            using (var connection = GetConnection())
             {
                 var userDatasTableExists = TableExists(connection, "UserDatas");
                 var userDataTableExists = TableExists(connection, "userdata");
 
-                var users = userDatasTableExists ? null : userManager.Users.ToArray();
+                var users = userDatasTableExists ? null : userManager.Users;
 
-                connection.RunInTransaction(db =>
+                connection.RunInTransaction(
+                db =>
                 {
-                    db.ExecuteAll(string.Join(";", new[] {
-
+                    db.ExecuteAll(string.Join(';', new[]
+                    {
                         "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
                         "drop index if exists idx_userdata",
@@ -85,7 +88,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private void ImportUserIds(IDatabaseConnection db, User[] users)
+        private void ImportUserIds(IDatabaseConnection db, IEnumerable<User> users)
         {
             var userIdsWithUserData = GetAllUserIdsWithUserData(db);
 
@@ -98,7 +101,7 @@ namespace Emby.Server.Implementations.Data
                         continue;
                     }
 
-                    statement.TryBind("@UserId", user.Id.ToGuidBlob());
+                    statement.TryBind("@UserId", user.Id.ToByteArray());
                     statement.TryBind("@InternalUserId", user.InternalId);
 
                     statement.MoveNext();
@@ -119,9 +122,9 @@ namespace Emby.Server.Implementations.Data
                     {
                         list.Add(row[0].ReadGuidFromBlob());
                     }
-                    catch
+                    catch (Exception ex)
                     {
-
+                        Logger.LogError(ex, "Error while getting user");
                     }
                 }
             }
@@ -129,41 +132,41 @@ namespace Emby.Server.Implementations.Data
             return list;
         }
 
-        protected override bool EnableTempStoreMemory => true;
-
-        /// <summary>
-        /// Saves the user data.
-        /// </summary>
-        public void SaveUserData(long internalUserId, string key, UserItemData userData, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public void SaveUserData(long userId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
                 throw new ArgumentNullException(nameof(userData));
             }
-            if (internalUserId <= 0)
+
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
+
             if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            PersistUserData(internalUserId, key, userData, cancellationToken);
+            PersistUserData(userId, key, userData, cancellationToken);
         }
 
-        public void SaveAllUserData(long internalUserId, UserItemData[] userData, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public void SaveAllUserData(long userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
             if (userData == null)
             {
                 throw new ArgumentNullException(nameof(userData));
             }
-            if (internalUserId <= 0)
+
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
 
-            PersistAllUserData(internalUserId, userData, cancellationToken);
+            PersistAllUserData(userId, userData, cancellationToken);
         }
 
         /// <summary>
@@ -173,20 +176,17 @@ namespace Emby.Server.Implementations.Data
         /// <param name="key">The key.</param>
         /// <param name="userData">The user data.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         public void PersistUserData(long internalUserId, string key, UserItemData userData, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(
+                db =>
                 {
-                    connection.RunInTransaction(db =>
-                    {
-                        SaveUserData(db, internalUserId, key, userData);
-                    }, TransactionMode);
-                }
+                    SaveUserData(db, internalUserId, key, userData);
+                }, TransactionMode);
             }
         }
 
@@ -243,70 +243,66 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Persist all user data for the specified user
+        /// Persist all user data for the specified user.
         /// </summary>
         private void PersistAllUserData(long internalUserId, UserItemData[] userDataList, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (WriteLock.Write())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                connection.RunInTransaction(
+                db =>
                 {
-                    connection.RunInTransaction(db =>
+                    foreach (var userItemData in userDataList)
                     {
-                        foreach (var userItemData in userDataList)
-                        {
-                            SaveUserData(db, internalUserId, userItemData.Key, userItemData);
-                        }
-                    }, TransactionMode);
-                }
+                        SaveUserData(db, internalUserId, userItemData.Key, userItemData);
+                    }
+                }, TransactionMode);
             }
         }
 
         /// <summary>
         /// Gets the user data.
         /// </summary>
-        /// <param name="internalUserId">The user id.</param>
+        /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
         /// <exception cref="ArgumentNullException">
         /// userId
         /// or
-        /// key
+        /// key.
         /// </exception>
-        public UserItemData GetUserData(long internalUserId, string key)
+        public UserItemData GetUserData(long userId, string key)
         {
-            if (internalUserId <= 0)
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
+
             if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            using (WriteLock.Read())
+            using (var connection = GetConnection(true))
             {
-                using (var connection = CreateConnection(true))
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
                 {
-                    using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where key =@Key and userId=@UserId"))
+                    statement.TryBind("@UserId", userId);
+                    statement.TryBind("@Key", key);
+
+                    foreach (var row in statement.ExecuteQuery())
                     {
-                        statement.TryBind("@UserId", internalUserId);
-                        statement.TryBind("@Key", key);
-
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            return ReadRow(row);
-                        }
+                        return ReadRow(row);
                     }
-
-                    return null;
                 }
+
+                return null;
             }
         }
 
-        public UserItemData GetUserData(long internalUserId, List<string> keys)
+        public UserItemData GetUserData(long userId, List<string> keys)
         {
             if (keys == null)
             {
@@ -318,35 +314,32 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            return GetUserData(internalUserId, keys[0]);
+            return GetUserData(userId, keys[0]);
         }
 
         /// <summary>
-        /// Return all user-data associated with the given user
+        /// Return all user-data associated with the given user.
         /// </summary>
-        /// <param name="internalUserId"></param>
-        /// <returns></returns>
-        public List<UserItemData> GetAllUserData(long internalUserId)
+        /// <param name="userId">The internal user id.</param>
+        /// <returns>The list of user item data.</returns>
+        public List<UserItemData> GetAllUserData(long userId)
         {
-            if (internalUserId <= 0)
+            if (userId <= 0)
             {
-                throw new ArgumentNullException(nameof(internalUserId));
+                throw new ArgumentNullException(nameof(userId));
             }
 
             var list = new List<UserItemData>();
 
-            using (WriteLock.Read())
+            using (var connection = GetConnection())
             {
-                using (var connection = CreateConnection())
+                using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
                 {
-                    using (var statement = connection.PrepareStatement("select key,userid,rating,played,playCount,isFavorite,playbackPositionTicks,lastPlayedDate,AudioStreamIndex,SubtitleStreamIndex from UserDatas where userId=@UserId"))
-                    {
-                        statement.TryBind("@UserId", internalUserId);
+                    statement.TryBind("@UserId", userId);
 
-                        foreach (var row in statement.ExecuteQuery())
-                        {
-                            list.Add(ReadRow(row));
-                        }
+                    foreach (var row in statement.ExecuteQuery())
+                    {
+                        list.Add(ReadRow(row));
                     }
                 }
             }
@@ -355,19 +348,20 @@ namespace Emby.Server.Implementations.Data
         }
 
         /// <summary>
-        /// Read a row from the specified reader into the provided userData object
+        /// Read a row from the specified reader into the provided userData object.
         /// </summary>
-        /// <param name="reader"></param>
-        private UserItemData ReadRow(IReadOnlyList<IResultSetValue> reader)
+        /// <param name="reader">The list of result set values.</param>
+        /// <returns>The user item data.</returns>
+        private UserItemData ReadRow(IReadOnlyList<ResultSetValue> reader)
         {
             var userData = new UserItemData();
 
             userData.Key = reader[0].ToString();
-            //userData.UserId = reader[1].ReadGuidFromBlob();
+            // userData.UserId = reader[1].ReadGuidFromBlob();
 
-            if (reader[2].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetDouble(2, out var rating))
             {
-                userData.Rating = reader[2].ToDouble();
+                userData.Rating = rating;
             }
 
             userData.Played = reader[3].ToBool();
@@ -375,32 +369,32 @@ namespace Emby.Server.Implementations.Data
             userData.IsFavorite = reader[5].ToBool();
             userData.PlaybackPositionTicks = reader[6].ToInt64();
 
-            if (reader[7].SQLiteType != SQLiteType.Null)
+            if (reader.TryReadDateTime(7, out var lastPlayedDate))
             {
-                userData.LastPlayedDate = reader[7].TryReadDateTime();
+                userData.LastPlayedDate = lastPlayedDate;
             }
 
-            if (reader[8].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(8, out var audioStreamIndex))
             {
-                userData.AudioStreamIndex = reader[8].ToInt();
+                userData.AudioStreamIndex = audioStreamIndex;
             }
 
-            if (reader[9].SQLiteType != SQLiteType.Null)
+            if (reader.TryGetInt32(9, out var subtitleStreamIndex))
             {
-                userData.SubtitleStreamIndex = reader[9].ToInt();
+                userData.SubtitleStreamIndex = subtitleStreamIndex;
             }
 
             return userData;
         }
 
+        /// <inheritdoc/>
+        /// <remarks>
+        /// There is nothing to dispose here since <see cref="BaseSqliteRepository.WriteLock"/> and
+        /// <see cref="BaseSqliteRepository.WriteConnection"/> are managed by <see cref="SqliteItemRepository"/>.
+        /// See <see cref="Initialize(IUserManager, SemaphoreSlim, SQLiteDatabaseConnection)"/>.
+        /// </remarks>
         protected override void Dispose(bool dispose)
         {
-            // handled by library database
-        }
-
-        protected override void CloseConnection()
-        {
-            // handled by library database
         }
     }
 }

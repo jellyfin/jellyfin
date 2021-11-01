@@ -1,6 +1,8 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.MediaInfo
 {
-    public class AudioCodec
+    public static class AudioCodec
     {
         public const string AAC = "aac";
         public const string MP3 = "mp3";
@@ -8,9 +10,9 @@ namespace MediaBrowser.Model.MediaInfo
 
         public static string GetFriendlyName(string codec)
         {
-            if (string.IsNullOrEmpty(codec))
+            if (codec.Length == 0)
             {
-                return string.Empty;
+                return codec;
             }
 
             switch (codec.ToLowerInvariant())

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 using MediaBrowser.Controller.Configuration;
@@ -7,38 +8,53 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for series.
+    /// </summary>
     public class SeriesNfoSaver : BaseNfoSaver
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeriesNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
+        public SeriesNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger<SeriesNfoSaver> logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+        {
+        }
+
+        /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-        {
-            return Path.Combine(item.Path, "tvshow.nfo");
-        }
+            => Path.Combine(item.Path, "tvshow.nfo");
 
+        /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return "tvshow";
-        }
+            => "tvshow";
 
+        /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
+            => item.SupportsLocalMetadata && item is Series && updateType >= MinimumUpdateType;
 
-            return item is Series && updateType >= MinimumUpdateType;
-        }
-
+        /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var series = (Series)item;
 
-            var tvdb = item.GetProviderId(MetadataProviders.Tvdb);
+            var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
 
             if (!string.IsNullOrEmpty(tvdb))
             {
@@ -52,8 +68,13 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     : language;
 
                 writer.WriteStartElement("url");
-                writer.WriteAttributeString("cache", string.Format("{0}.xml", tvdb));
-                writer.WriteString(string.Format("http://www.thetvdb.com/api/1D62F2F90030C444/series/{0}/all/{1}.zip", tvdb, language));
+                writer.WriteAttributeString("cache", tvdb + ".xml");
+                writer.WriteString(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "http://www.thetvdb.com/api/1D62F2F90030C444/series/{0}/all/{1}.zip",
+                        tvdb,
+                        language));
                 writer.WriteEndElement();
 
                 writer.WriteEndElement();
@@ -68,23 +89,20 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        protected override List<string> GetTagsUsed(BaseItem item)
+        /// <inheritdoc />
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "id",
-                "episodeguide",
-                "season",
-                "episode",
-                "status",
-                "displayorder"
-            });
-            return list;
-        }
+                yield return tag;
+            }
 
-        public SeriesNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
-        {
+            yield return "id";
+            yield return "episodeguide";
+            yield return "season";
+            yield return "episode";
+            yield return "status";
+            yield return "displayorder";
         }
     }
 }

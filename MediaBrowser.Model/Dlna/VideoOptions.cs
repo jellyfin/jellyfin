@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 namespace MediaBrowser.Model.Dlna
 {
     /// <summary>
@@ -6,6 +8,7 @@ namespace MediaBrowser.Model.Dlna
     public class VideoOptions : AudioOptions
     {
         public int? AudioStreamIndex { get; set; }
+
         public int? SubtitleStreamIndex { get; set; }
     }
 }

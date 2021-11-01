@@ -1,13 +1,22 @@
+#nullable disable
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class ImageOptions
+    /// Class ImageOptions.
     /// </summary>
     public class ImageOptions
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageOptions" /> class.
+        /// </summary>
+        public ImageOptions()
+        {
+            EnableImageEnhancers = true;
+        }
+
         /// <summary>
         /// Gets or sets the type of the image.
         /// </summary>
@@ -52,7 +61,7 @@ namespace MediaBrowser.Model.Dto
 
         /// <summary>
         /// Gets or sets the image tag.
-        /// If set this will result in strong, unconditional response caching
+        /// If set this will result in strong, unconditional response caching.
         /// </summary>
         /// <value>The hash.</value>
         public string Tag { get; set; }
@@ -98,13 +107,5 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The color of the background.</value>
         public string BackgroundColor { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImageOptions" /> class.
-        /// </summary>
-        public ImageOptions()
-        {
-            EnableImageEnhancers = true;
-        }
     }
 }

@@ -3,117 +3,93 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Plugins;
-using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Updates;
 
 namespace MediaBrowser.Common.Updates
 {
+    /// <summary>
+    /// Defines the <see cref="IInstallationManager" />.
+    /// </summary>
     public interface IInstallationManager : IDisposable
     {
-        event EventHandler<InstallationEventArgs> PackageInstalling;
-        event EventHandler<InstallationEventArgs> PackageInstallationCompleted;
-        event EventHandler<InstallationFailedEventArgs> PackageInstallationFailed;
-        event EventHandler<InstallationEventArgs> PackageInstallationCancelled;
-
         /// <summary>
-        /// The current installations
-        /// </summary>
-        List<Tuple<InstallationInfo, CancellationTokenSource>> CurrentInstallations { get; set; }
-
-        /// <summary>
-        /// The completed installations
+        /// Gets the completed installations.
         /// </summary>
         IEnumerable<InstallationInfo> CompletedInstallations { get; }
 
         /// <summary>
-        /// Occurs when [plugin uninstalled].
+        /// Parses a plugin manifest at the supplied URL.
         /// </summary>
-        event EventHandler<GenericEventArgs<IPlugin>> PluginUninstalled;
+        /// <param name="manifestName">Name of the repository.</param>
+        /// <param name="manifest">The URL to query.</param>
+        /// <param name="filterIncompatible">Filter out incompatible plugins.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        Task<PackageInfo[]> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Occurs when [plugin updated].
-        /// </summary>
-        event EventHandler<GenericEventArgs<Tuple<IPlugin, PackageVersionInfo>>> PluginUpdated;
-
-        /// <summary>
-        /// Occurs when [plugin updated].
-        /// </summary>
-        event EventHandler<GenericEventArgs<PackageVersionInfo>> PluginInstalled;
-
-        /// <summary>
-        /// Gets all available packages.
+        /// Gets all available packages that are supported by this version.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="withRegistration">if set to <c>true</c> [with registration].</param>
-        /// <param name="packageType">Type of the package.</param>
-        /// <param name="applicationVersion">The application version.</param>
-        /// <returns>Task{List{PackageInfo}}.</returns>
-        Task<List<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
-            bool withRegistration = true, string packageType = null, Version applicationVersion = null);
+        /// <returns>Task{IReadOnlyList{PackageInfo}}.</returns>
+        Task<IReadOnlyList<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets all available packages from a static resource.
+        /// Returns all plugins matching the requirements.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{List{PackageInfo}}.</returns>
-        Task<List<PackageInfo>> GetAvailablePackagesWithoutRegistrationInfo(CancellationToken cancellationToken);
+        /// <param name="availablePackages">The available packages.</param>
+        /// <param name="name">The name of the plugin.</param>
+        /// <param name="id">The id of the plugin.</param>
+        /// <param name="specificVersion">The version of the plugin.</param>
+        /// <returns>All plugins matching the requirements.</returns>
+        IEnumerable<PackageInfo> FilterPackages(
+            IEnumerable<PackageInfo> availablePackages,
+            string? name = null,
+            Guid id = default,
+            Version? specificVersion = null);
 
         /// <summary>
-        /// Gets the package.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="guid">The assembly guid</param>
-        /// <param name="classification">The classification.</param>
-        /// <param name="version">The version.</param>
-        /// <returns>Task{PackageVersionInfo}.</returns>
-        Task<PackageVersionInfo> GetPackage(string name, string guid, PackageVersionClass classification, Version version);
-
-        /// <summary>
-        /// Gets the latest compatible version.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="guid">The assembly guid</param>
-        /// <param name="currentServerVersion">The current server version.</param>
-        /// <param name="classification">The classification.</param>
-        /// <returns>Task{PackageVersionInfo}.</returns>
-        Task<PackageVersionInfo> GetLatestCompatibleVersion(string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
-
-        /// <summary>
-        /// Gets the latest compatible version.
+        /// Returns all compatible versions ordered from newest to oldest.
         /// </summary>
         /// <param name="availablePackages">The available packages.</param>
         /// <param name="name">The name.</param>
-        /// <param name="guid">The assembly guid</param>
-        /// <param name="currentServerVersion">The current server version.</param>
-        /// <param name="classification">The classification.</param>
-        /// <returns>PackageVersionInfo.</returns>
-        PackageVersionInfo GetLatestCompatibleVersion(IEnumerable<PackageInfo> availablePackages, string name, string guid, Version currentServerVersion, PackageVersionClass classification = PackageVersionClass.Release);
+        /// <param name="id">The id of the plugin.</param>
+        /// <param name="minVersion">The minimum required version of the plugin.</param>
+        /// <param name="specificVersion">The specific version of the plugin to install.</param>
+        /// <returns>All compatible versions ordered from newest to oldest.</returns>
+        IEnumerable<InstallationInfo> GetCompatibleVersions(
+            IEnumerable<PackageInfo> availablePackages,
+            string? name = null,
+            Guid id = default,
+            Version? minVersion = null,
+            Version? specificVersion = null);
 
         /// <summary>
-        /// Gets the available plugin updates.
+        /// Returns the available compatible plugin updates.
         /// </summary>
-        /// <param name="applicationVersion">The current server version.</param>
-        /// <param name="withAutoUpdateEnabled">if set to <c>true</c> [with auto update enabled].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{IEnumerable{PackageVersionInfo}}.</returns>
-        Task<IEnumerable<PackageVersionInfo>> GetAvailablePluginUpdates(Version applicationVersion, bool withAutoUpdateEnabled, CancellationToken cancellationToken);
+        /// <returns>The available plugin updates.</returns>
+        Task<IEnumerable<InstallationInfo>> GetAvailablePluginUpdates(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Installs the package.
         /// </summary>
         /// <param name="package">The package.</param>
-        /// <param name="isPlugin">if set to <c>true</c> [is plugin].</param>
-        /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">package</exception>
-        Task InstallPackage(PackageVersionInfo package, bool isPlugin, IProgress<double> progress, CancellationToken cancellationToken);
+        /// <returns><see cref="Task" />.</returns>
+        Task InstallPackage(InstallationInfo package, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Uninstalls a plugin
+        /// Uninstalls a plugin.
         /// </summary>
         /// <param name="plugin">The plugin.</param>
-        /// <exception cref="ArgumentException"></exception>
-        void UninstallPlugin(IPlugin plugin);
+        void UninstallPlugin(LocalPlugin plugin);
+
+        /// <summary>
+        /// Cancels the installation.
+        /// </summary>
+        /// <param name="id">The id of the package that is being installed.</param>
+        /// <returns>Returns true if the install was cancelled.</returns>
+        bool CancelInstallation(Guid id);
     }
 }

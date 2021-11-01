@@ -1,16 +1,18 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
-using MediaBrowser.Model.Extensions;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.MediaEncoding
 {
     public class JobLogger
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
 
         public JobLogger(ILogger logger)
@@ -18,13 +20,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             _logger = logger;
         }
 
-        public async void StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
+        public async Task StartStreamingLog(EncodingJobInfo state, Stream source, Stream target)
         {
             try
             {
+                using (target)
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    while (!reader.EndOfStream && reader.BaseStream.CanRead)
                     {
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
@@ -32,15 +35,23 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                         var bytes = Encoding.UTF8.GetBytes(Environment.NewLine + line);
 
+                        // If ffmpeg process is closed, the state is disposed, so don't write to target in that case
+                        if (!target.CanWrite)
+                        {
+                            break;
+                        }
+
                         await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+
+                        // Check again, the stream could have been closed
+                        if (!target.CanWrite)
+                        {
+                            break;
+                        }
+
                         await target.FlushAsync().ConfigureAwait(false);
                     }
                 }
-            }
-            catch (ObjectDisposedException)
-            {
-                //TODO Investigate and properly fix.
-                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
             }
             catch (Exception ex)
             {
@@ -75,7 +86,16 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var rate = parts[i + 1];
 
-                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                    if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
+                    {
+                        framerate = val;
+                    }
+                }
+                else if (part.StartsWith("fps=", StringComparison.OrdinalIgnoreCase))
+                {
+                    var rate = part.Split('=', 2)[^1];
+
+                    if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                     {
                         framerate = val;
                     }
@@ -83,24 +103,23 @@ namespace MediaBrowser.Controller.MediaEncoding
                 else if (state.RunTimeTicks.HasValue &&
                     part.StartsWith("time=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var time = part.Split(new[] { '=' }, 2).Last();
+                    var time = part.Split('=', 2)[^1];
 
-                    if (TimeSpan.TryParse(time, _usCulture, out var val))
+                    if (TimeSpan.TryParse(time, CultureInfo.InvariantCulture, out var val))
                     {
                         var currentMs = startMs + val.TotalMilliseconds;
 
-                        var percentVal = currentMs / totalMs;
-                        percent = 100 * percentVal;
+                        percent = 100.0 * currentMs / totalMs;
 
                         transcodingPosition = val;
                     }
                 }
                 else if (part.StartsWith("size=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var size = part.Split(new[] { '=' }, 2).Last();
+                    var size = part.Split('=', 2)[^1];
 
                     int? scale = null;
-                    if (size.IndexOf("kb", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (size.Contains("kb", StringComparison.OrdinalIgnoreCase))
                     {
                         scale = 1024;
                         size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -108,7 +127,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        if (long.TryParse(size, NumberStyles.Any, _usCulture, out var val))
+                        if (long.TryParse(size, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                         {
                             bytesTranscoded = val * scale.Value;
                         }
@@ -116,10 +135,10 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
                 else if (part.StartsWith("bitrate=", StringComparison.OrdinalIgnoreCase))
                 {
-                    var rate = part.Split(new[] { '=' }, 2).Last();
+                    var rate = part.Split('=', 2)[^1];
 
                     int? scale = null;
-                    if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (rate.Contains("kbits/s", StringComparison.OrdinalIgnoreCase))
                     {
                         scale = 1024;
                         rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -127,7 +146,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                        if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                         {
                             bitRate = (int)Math.Ceiling(val * scale.Value);
                         }
@@ -137,7 +156,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (framerate.HasValue || percent.HasValue)
             {
-                state.ReportTranscodingProgress(transcodingPosition, 0, percent, 0, bitRate);
+                state.ReportTranscodingProgress(transcodingPosition, framerate, percent, bytesTranscoded, bitRate);
             }
         }
     }

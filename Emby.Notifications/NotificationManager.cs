@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -15,20 +18,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Notifications
 {
+    /// <summary>
+    /// NotificationManager class.
+    /// </summary>
     public class NotificationManager : INotificationManager
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<NotificationManager> _logger;
         private readonly IUserManager _userManager;
         private readonly IServerConfigurationManager _config;
 
-        private INotificationService[] _services;
-        private INotificationTypeFactory[] _typeFactories;
+        private INotificationService[] _services = Array.Empty<INotificationService>();
+        private INotificationTypeFactory[] _typeFactories = Array.Empty<INotificationTypeFactory>();
 
-        public NotificationManager(ILoggerFactory loggerFactory, IUserManager userManager, IServerConfigurationManager config)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationManager" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="config">The server configuration manager.</param>
+        public NotificationManager(
+            ILogger<NotificationManager> logger,
+            IUserManager userManager,
+            IServerConfigurationManager config)
         {
+            _logger = logger;
             _userManager = userManager;
             _config = config;
-            _logger = loggerFactory.CreateLogger(GetType().Name);
         }
 
         private NotificationOptions GetConfiguration()
@@ -36,12 +51,14 @@ namespace Emby.Notifications
             return _config.GetConfiguration<NotificationOptions>("notifications");
         }
 
+        /// <inheritdoc />
         public Task SendNotification(NotificationRequest request, CancellationToken cancellationToken)
         {
             return SendNotification(request, null, cancellationToken);
         }
 
-        public Task SendNotification(NotificationRequest request, BaseItem relatedItem, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public Task SendNotification(NotificationRequest request, BaseItem? relatedItem, CancellationToken cancellationToken)
         {
             var notificationType = request.NotificationType;
 
@@ -63,7 +80,8 @@ namespace Emby.Notifications
             return Task.WhenAll(tasks);
         }
 
-        private Task SendNotification(NotificationRequest request,
+        private Task SendNotification(
+            NotificationRequest request,
             INotificationService service,
             IEnumerable<User> users,
             string title,
@@ -78,17 +96,17 @@ namespace Emby.Notifications
             return Task.WhenAll(tasks);
         }
 
-        private IEnumerable<Guid> GetUserIds(NotificationRequest request, NotificationOption options)
+        private IEnumerable<Guid> GetUserIds(NotificationRequest request, NotificationOption? options)
         {
             if (request.SendToUserMode.HasValue)
             {
                 switch (request.SendToUserMode.Value)
                 {
                     case SendToUserType.Admins:
-                        return _userManager.Users.Where(i => i.Policy.IsAdministrator)
+                        return _userManager.Users.Where(i => i.HasPermission(PermissionKind.IsAdministrator))
                                 .Select(i => i.Id);
                     case SendToUserType.All:
-                        return _userManager.Users.Select(i => i.Id);
+                        return _userManager.UsersIds;
                     case SendToUserType.Custom:
                         return request.UserIds;
                     default:
@@ -101,14 +119,15 @@ namespace Emby.Notifications
                 var config = GetConfiguration();
 
                 return _userManager.Users
-                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N"), i.Policy))
+                    .Where(i => config.IsEnabledToSendToUser(request.NotificationType, i.Id.ToString("N", CultureInfo.InvariantCulture), i))
                     .Select(i => i.Id);
             }
 
             return request.UserIds;
         }
 
-        private async Task SendNotification(NotificationRequest request,
+        private async Task SendNotification(
+            NotificationRequest request,
             INotificationService service,
             string title,
             string description,
@@ -125,7 +144,7 @@ namespace Emby.Notifications
                 User = user
             };
 
-            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Name);
+            _logger.LogDebug("Sending notification via {0} to user {1}", service.Name, user.Username);
 
             try
             {
@@ -160,12 +179,14 @@ namespace Emby.Notifications
             return GetConfiguration().IsServiceEnabled(service.Name, notificationType);
         }
 
+        /// <inheritdoc />
         public void AddParts(IEnumerable<INotificationService> services, IEnumerable<INotificationTypeFactory> notificationTypeFactories)
         {
             _services = services.ToArray();
             _typeFactories = notificationTypeFactories.ToArray();
         }
 
+        /// <inheritdoc />
         public List<NotificationTypeInfo> GetNotificationTypes()
         {
             var list = _typeFactories.Select(i =>
@@ -179,7 +200,6 @@ namespace Emby.Notifications
                     _logger.LogError(ex, "Error in GetNotificationTypes");
                     return new List<NotificationTypeInfo>();
                 }
-
             }).SelectMany(i => i).ToList();
 
             var config = GetConfiguration();
@@ -192,13 +212,13 @@ namespace Emby.Notifications
             return list;
         }
 
+        /// <inheritdoc />
         public IEnumerable<NameIdPair> GetNotificationServices()
         {
             return _services.Select(i => new NameIdPair
             {
                 Name = i.Name,
-                Id = i.Name.GetMD5().ToString("N")
-
+                Id = i.Name.GetMD5().ToString("N", CultureInfo.InvariantCulture)
             }).OrderBy(i => i.Name);
         }
     }

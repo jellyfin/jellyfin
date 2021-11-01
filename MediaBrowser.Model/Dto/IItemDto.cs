@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Interface IItemDto
+    /// Interface IItemDto.
     /// </summary>
     public interface IItemDto
     {

@@ -1,10 +1,20 @@
+#nullable disable
+#pragma warning disable CS1591
+
+using System;
+using System.Linq;
 using System.Xml.Serialization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
     public class CodecProfile
     {
+        public CodecProfile()
+        {
+            Conditions = Array.Empty<ProfileCondition>();
+            ApplyConditions = Array.Empty<ProfileCondition>();
+        }
+
         [XmlAttribute("type")]
         public CodecType Type { get; set; }
 
@@ -17,12 +27,6 @@ namespace MediaBrowser.Model.Dlna
 
         [XmlAttribute("container")]
         public string Container { get; set; }
-
-        public CodecProfile()
-        {
-            Conditions = new ProfileCondition[] { };
-            ApplyConditions = new ProfileCondition[] { };
-        }
 
         public string[] GetCodecs()
         {
@@ -54,7 +58,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (var val in codec)
             {
-                if (ListHelper.ContainsIgnoreCase(codecs, val))
+                if (codecs.Contains(val, StringComparer.OrdinalIgnoreCase))
                 {
                     return true;
                 }

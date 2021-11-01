@@ -3,268 +3,199 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Globalization;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Localization
 {
     /// <summary>
-    /// Class LocalizationManager
+    /// Class LocalizationManager.
     /// </summary>
     public class LocalizationManager : ILocalizationManager
     {
-        /// <summary>
-        /// The _configuration manager
-        /// </summary>
-        private readonly IServerConfigurationManager _configurationManager;
+        private const string DefaultCulture = "en-US";
+        private const string RatingsPath = "Emby.Server.Implementations.Localization.Ratings.";
+        private const string CulturesPath = "Emby.Server.Implementations.Localization.iso6392.txt";
+        private const string CountriesPath = "Emby.Server.Implementations.Localization.countries.json";
+        private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
+        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
 
-        /// <summary>
-        /// The us culture
-        /// </summary>
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly IServerConfigurationManager _configurationManager;
+        private readonly ILogger<LocalizationManager> _logger;
 
         private readonly Dictionary<string, Dictionary<string, ParentalRating>> _allParentalRatings =
             new Dictionary<string, Dictionary<string, ParentalRating>>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly IFileSystem _fileSystem;
-        private readonly IJsonSerializer _jsonSerializer;
-        private readonly ILogger _logger;
-        private static readonly Assembly _assembly = typeof(LocalizationManager).Assembly;
+        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
+            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+
+        private List<CultureDto> _cultures = new List<CultureDto>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalizationManager" /> class.
         /// </summary>
         /// <param name="configurationManager">The configuration manager.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
+        /// <param name="logger">The logger.</param>
         public LocalizationManager(
             IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem,
-            IJsonSerializer jsonSerializer,
-            ILoggerFactory loggerFactory)
+            ILogger<LocalizationManager> logger)
         {
             _configurationManager = configurationManager;
-            _fileSystem = fileSystem;
-            _jsonSerializer = jsonSerializer;
-            _logger = loggerFactory.CreateLogger(nameof(LocalizationManager));
+            _logger = logger;
         }
 
+        /// <summary>
+        /// Loads all resources into memory.
+        /// </summary>
+        /// <returns><see cref="Task" />.</returns>
         public async Task LoadAll()
         {
-            const string ratingsResource = "Emby.Server.Implementations.Localization.Ratings.";
-
-            Directory.CreateDirectory(LocalizationPath);
-
-            var existingFiles = GetRatingsFiles(LocalizationPath).Select(Path.GetFileName);
-
             // Extract from the assembly
             foreach (var resource in _assembly.GetManifestResourceNames())
             {
-                if (!resource.StartsWith(ratingsResource))
+                if (!resource.StartsWith(RatingsPath, StringComparison.Ordinal))
                 {
                     continue;
                 }
 
-                string filename = "ratings-" + resource.Substring(ratingsResource.Length);
+                string countryCode = resource.Substring(RatingsPath.Length, 2);
+                var dict = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
 
-                if (existingFiles.Contains(filename))
+                await using var stream = _assembly.GetManifestResourceStream(resource);
+                using var reader = new StreamReader(stream!); // shouldn't be null here, we just got the resource path from Assembly.GetManifestResourceNames()
+                await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
                 {
-                    continue;
-                }
-
-                using (var stream = _assembly.GetManifestResourceStream(resource))
-                {
-                    string target = Path.Combine(LocalizationPath, filename);
-                    _logger.LogInformation("Extracting ratings to {0}", target);
-
-                    using (var fs = _fileSystem.GetFileStream(target, FileOpenMode.Create, FileAccessMode.Write, FileShareMode.Read))
+                    if (string.IsNullOrWhiteSpace(line))
                     {
-                        await stream.CopyToAsync(fs);
+                        continue;
                     }
+
+                    string[] parts = line.Split(',');
+                    if (parts.Length == 2
+                        && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    {
+                        var name = parts[0];
+                        dict.Add(name, new ParentalRating(name, value));
+                    }
+#if DEBUG
+                    else
+                    {
+                        _logger.LogWarning("Malformed line in ratings file for country {CountryCode}", countryCode);
+                    }
+#endif
                 }
+
+                _allParentalRatings[countryCode] = dict;
             }
 
-            foreach (var file in GetRatingsFiles(LocalizationPath))
-            {
-                await LoadRatings(file);
-            }
-
-            LoadAdditionalRatings();
-
-            await LoadCultures();
+            await LoadCultures().ConfigureAwait(false);
         }
-
-        private void LoadAdditionalRatings()
-        {
-            LoadRatings("au", new[]
-            {
-                new ParentalRating("AU-G", 1),
-                new ParentalRating("AU-PG", 5),
-                new ParentalRating("AU-M", 6),
-                new ParentalRating("AU-MA15+", 7),
-                new ParentalRating("AU-M15+", 8),
-                new ParentalRating("AU-R18+", 9),
-                new ParentalRating("AU-X18+", 10),
-                new ParentalRating("AU-RC", 11)
-            });
-
-            LoadRatings("be", new[]
-            {
-                new ParentalRating("BE-AL", 1),
-                new ParentalRating("BE-MG6", 2),
-                new ParentalRating("BE-6", 3),
-                new ParentalRating("BE-9", 5),
-                new ParentalRating("BE-12", 6),
-                new ParentalRating("BE-16", 8)
-            });
-
-            LoadRatings("de", new[]
-            {
-                new ParentalRating("DE-0", 1),
-                new ParentalRating("FSK-0", 1),
-                new ParentalRating("DE-6", 5),
-                new ParentalRating("FSK-6", 5),
-                new ParentalRating("DE-12", 7),
-                new ParentalRating("FSK-12", 7),
-                new ParentalRating("DE-16", 8),
-                new ParentalRating("FSK-16", 8),
-                new ParentalRating("DE-18", 9),
-                new ParentalRating("FSK-18", 9)
-            });
-
-            LoadRatings("ru", new[]
-            {
-                new ParentalRating("RU-0+", 1),
-                new ParentalRating("RU-6+", 3),
-                new ParentalRating("RU-12+", 7),
-                new ParentalRating("RU-16+", 9),
-                new ParentalRating("RU-18+", 10)
-            });
-        }
-
-        private void LoadRatings(string country, ParentalRating[] ratings)
-        {
-            _allParentalRatings[country] = ratings.ToDictionary(i => i.Name);
-        }
-
-        private IEnumerable<string> GetRatingsFiles(string directory)
-            => _fileSystem.GetFilePaths(directory, false)
-                .Where(i => string.Equals(Path.GetExtension(i), ".csv", StringComparison.OrdinalIgnoreCase))
-                .Where(i => Path.GetFileName(i).StartsWith("ratings-", StringComparison.OrdinalIgnoreCase));
-
-        /// <summary>
-        /// Gets the localization path.
-        /// </summary>
-        /// <value>The localization path.</value>
-        public string LocalizationPath
-            => Path.Combine(_configurationManager.ApplicationPaths.ProgramDataPath, "localization");
-
-        public string NormalizeFormKD(string text)
-            => text.Normalize(NormalizationForm.FormKD);
-
-        private CultureDto[] _cultures;
 
         /// <summary>
         /// Gets the cultures.
         /// </summary>
-        /// <returns>IEnumerable{CultureDto}.</returns>
-        public CultureDto[] GetCultures()
+        /// <returns><see cref="IEnumerable{CultureDto}" />.</returns>
+        public IEnumerable<CultureDto> GetCultures()
             => _cultures;
 
         private async Task LoadCultures()
         {
             List<CultureDto> list = new List<CultureDto>();
 
-            const string path = "Emby.Server.Implementations.Localization.iso6392.txt";
-
-            using (var stream = _assembly.GetManifestResourceStream(path))
-            using (var reader = new StreamReader(stream))
+            await using var stream = _assembly.GetManifestResourceStream(CulturesPath)
+                ?? throw new InvalidOperationException($"Invalid resource path: '{CulturesPath}'");
+            using var reader = new StreamReader(stream);
+            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
             {
-                while (!reader.EndOfStream)
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    var line = await reader.ReadLineAsync();
+                    continue;
+                }
 
-                    if (string.IsNullOrWhiteSpace(line))
+                var parts = line.Split('|');
+
+                if (parts.Length == 5)
+                {
+                    string name = parts[3];
+                    if (string.IsNullOrWhiteSpace(name))
                     {
                         continue;
                     }
 
-                    var parts = line.Split('|');
-
-                    if (parts.Length == 5)
+                    string twoCharName = parts[2];
+                    if (string.IsNullOrWhiteSpace(twoCharName))
                     {
-                        string name = parts[3];
-                        if (string.IsNullOrWhiteSpace(name))
-                        {
-                            continue;
-                        }
-
-                        string twoCharName = parts[2];
-                        if (string.IsNullOrWhiteSpace(twoCharName))
-                        {
-                            continue;
-                        }
-
-                        string[] threeletterNames;
-                        if (string.IsNullOrWhiteSpace(parts[1]))
-                        {
-                            threeletterNames = new [] { parts[0] };
-                        }
-                        else
-                        {
-                            threeletterNames = new [] { parts[0], parts[1] };
-                        }
-
-                        list.Add(new CultureDto
-                        {
-                            DisplayName = name,
-                            Name = name,
-                            ThreeLetterISOLanguageNames = threeletterNames,
-                            TwoLetterISOLanguageName = twoCharName
-                        });
+                        continue;
                     }
+
+                    string[] threeletterNames;
+                    if (string.IsNullOrWhiteSpace(parts[1]))
+                    {
+                        threeletterNames = new[] { parts[0] };
+                    }
+                    else
+                    {
+                        threeletterNames = new[] { parts[0], parts[1] };
+                    }
+
+                    list.Add(new CultureDto
+                    {
+                        DisplayName = name,
+                        Name = name,
+                        ThreeLetterISOLanguageNames = threeletterNames,
+                        TwoLetterISOLanguageName = twoCharName
+                    });
                 }
             }
 
-            _cultures = list.ToArray();
+            _cultures = list;
         }
 
-        public CultureDto FindLanguageInfo(string language)
-            => GetCultures()
-                .FirstOrDefault(i =>
-                    string.Equals(i.DisplayName, language, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(i.Name, language, StringComparison.OrdinalIgnoreCase)
-                    || i.ThreeLetterISOLanguageNames.Contains(language, StringComparer.OrdinalIgnoreCase)
-                    || string.Equals(i.TwoLetterISOLanguageName, language, StringComparison.OrdinalIgnoreCase));
+        /// <inheritdoc />
+        public CultureDto? FindLanguageInfo(string language)
+        {
+            // TODO language should ideally be a ReadOnlySpan but moq cannot mock ref structs
+            for (var i = 0; i < _cultures.Count; i++)
+            {
+                var culture = _cultures[i];
+                if (language.Equals(culture.DisplayName, StringComparison.OrdinalIgnoreCase)
+                    || language.Equals(culture.Name, StringComparison.OrdinalIgnoreCase)
+                    || culture.ThreeLetterISOLanguageNames.Contains(language, StringComparison.OrdinalIgnoreCase)
+                    || language.Equals(culture.TwoLetterISOLanguageName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return culture;
+                }
+            }
 
-        /// <summary>
-        /// Gets the countries.
-        /// </summary>
-        /// <returns>IEnumerable{CountryInfo}.</returns>
-        public Task<CountryInfo[]> GetCountries()
-            => _jsonSerializer.DeserializeFromStreamAsync<CountryInfo[]>(
-                    _assembly.GetManifestResourceStream("Emby.Server.Implementations.Localization.countries.json"));
+            return default;
+        }
 
-        /// <summary>
-        /// Gets the parental ratings.
-        /// </summary>
-        /// <returns>IEnumerable{ParentalRating}.</returns>
+        /// <inheritdoc />
+        public IEnumerable<CountryInfo> GetCountries()
+        {
+            using StreamReader reader = new StreamReader(
+                _assembly.GetManifestResourceStream(CountriesPath) ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'"));
+            return JsonSerializer.Deserialize<IEnumerable<CountryInfo>>(reader.ReadToEnd(), _jsonOptions)
+                ?? throw new InvalidOperationException($"Resource contains invalid data: '{CountriesPath}'");
+        }
+
+        /// <inheritdoc />
         public IEnumerable<ParentalRating> GetParentalRatings()
             => GetParentalRatingsDictionary().Values;
 
         /// <summary>
         /// Gets the parental ratings dictionary.
         /// </summary>
-        /// <returns>Dictionary{System.StringParentalRating}.</returns>
+        /// <returns><see cref="Dictionary{String, ParentalRating}" />.</returns>
         private Dictionary<string, ParentalRating> GetParentalRatingsDictionary()
         {
             var countryCode = _configurationManager.Configuration.MetadataCountryCode;
@@ -274,66 +205,24 @@ namespace Emby.Server.Implementations.Localization
                 countryCode = "us";
             }
 
-           return GetRatings(countryCode) ?? GetRatings("us");
+            return GetRatings(countryCode)
+                ?? GetRatings("us")
+                ?? throw new InvalidOperationException($"Invalid resource path: '{CountriesPath}'");
         }
 
         /// <summary>
         /// Gets the ratings.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
-        private Dictionary<string, ParentalRating> GetRatings(string countryCode)
+        /// <returns>The ratings.</returns>
+        private Dictionary<string, ParentalRating>? GetRatings(string countryCode)
         {
             _allParentalRatings.TryGetValue(countryCode, out var value);
 
             return value;
         }
 
-        /// <summary>
-        /// Loads the ratings.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns>Dictionary{System.StringParentalRating}.</returns>
-        private async Task LoadRatings(string file)
-        {
-            Dictionary<string, ParentalRating> dict
-                = new Dictionary<string, ParentalRating>(StringComparer.OrdinalIgnoreCase);
-
-            using (var str = File.OpenRead(file))
-            using (var reader = new StreamReader(str))
-            {
-                string line;
-                while ((line = await reader.ReadLineAsync()) != null)
-                {
-                    if (string.IsNullOrWhiteSpace(line))
-                    {
-                        continue;
-                    }
-
-                    string[] parts = line.Split(',');
-                    if (parts.Length == 2
-                        && int.TryParse(parts[1], NumberStyles.Integer, UsCulture, out var value))
-                    {
-                        dict.Add(parts[0], (new ParentalRating { Name = parts[0], Value = value }));
-                    }
-#if DEBUG
-                    else
-                    {
-                        _logger.LogWarning("Misformed line in {Path}", file);
-                    }
-#endif
-                }
-            }
-
-            var countryCode = Path.GetFileNameWithoutExtension(file).Split('-')[1];
-
-            _allParentalRatings[countryCode] = dict;
-        }
-
-        private static readonly string[] _unratedValues = { "n/a", "unrated", "not rated" };
-
-        /// <summary>
-        /// Gets the rating level.
-        /// </summary>
+        /// <inheritdoc />
         public int? GetRatingLevel(string rating)
         {
             if (string.IsNullOrEmpty(rating))
@@ -341,7 +230,7 @@ namespace Emby.Server.Implementations.Localization
                 throw new ArgumentNullException(nameof(rating));
             }
 
-            if (_unratedValues.Contains(rating, StringComparer.OrdinalIgnoreCase))
+            if (_unratedValues.Contains(rating.AsSpan(), StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -351,7 +240,7 @@ namespace Emby.Server.Implementations.Localization
 
             var ratingsDictionary = GetParentalRatingsDictionary();
 
-            if (ratingsDictionary.TryGetValue(rating, out ParentalRating value))
+            if (ratingsDictionary.TryGetValue(rating, out ParentalRating? value))
             {
                 return value.Value;
             }
@@ -366,14 +255,14 @@ namespace Emby.Server.Implementations.Localization
             }
 
             // Try splitting by : to handle "Germany: FSK 18"
-            var index = rating.IndexOf(':');
+            var index = rating.IndexOf(':', StringComparison.Ordinal);
             if (index != -1)
             {
-                rating = rating.Substring(index).TrimStart(':').Trim();
+                var trimmedRating = rating.AsSpan(index).TrimStart(':').Trim();
 
-                if (!string.IsNullOrWhiteSpace(rating))
+                if (!trimmedRating.IsEmpty)
                 {
-                    return GetRatingLevel(rating);
+                    return GetRatingLevel(trimmedRating.ToString());
                 }
             }
 
@@ -381,30 +270,20 @@ namespace Emby.Server.Implementations.Localization
             return null;
         }
 
-        public bool HasUnicodeCategory(string value, UnicodeCategory category)
-        {
-            foreach (var chr in value)
-            {
-                if (char.GetUnicodeCategory(chr) == category)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
+        /// <inheritdoc />
         public string GetLocalizedString(string phrase)
         {
             return GetLocalizedString(phrase, _configurationManager.Configuration.UICulture);
         }
 
+        /// <inheritdoc />
         public string GetLocalizedString(string phrase, string culture)
         {
             if (string.IsNullOrEmpty(culture))
             {
                 culture = _configurationManager.Configuration.UICulture;
             }
+
             if (string.IsNullOrEmpty(culture))
             {
                 culture = DefaultCulture;
@@ -420,23 +299,19 @@ namespace Emby.Server.Implementations.Localization
             return phrase;
         }
 
-        private const string DefaultCulture = "en-US";
-
-        private readonly ConcurrentDictionary<string, Dictionary<string, string>> _dictionaries =
-            new ConcurrentDictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
-
-        public Dictionary<string, string> GetLocalizationDictionary(string culture)
+        private Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
             if (string.IsNullOrEmpty(culture))
             {
                 throw new ArgumentNullException(nameof(culture));
             }
 
-            const string prefix = "Core";
-            var key = prefix + culture;
+            const string Prefix = "Core";
 
-            return _dictionaries.GetOrAdd(key,
-                    f => GetDictionary(prefix, culture, DefaultCulture + ".json").GetAwaiter().GetResult());
+            return _dictionaries.GetOrAdd(
+                culture,
+                (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
+                this);
         }
 
         private async Task<Dictionary<string, string>> GetDictionary(string prefix, string culture, string baseFilename)
@@ -450,30 +325,31 @@ namespace Emby.Server.Implementations.Localization
 
             var namespaceName = GetType().Namespace + "." + prefix;
 
-            await CopyInto(dictionary, namespaceName + "." + baseFilename);
-            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture));
+            await CopyInto(dictionary, namespaceName + "." + baseFilename).ConfigureAwait(false);
+            await CopyInto(dictionary, namespaceName + "." + GetResourceFilename(culture)).ConfigureAwait(false);
 
             return dictionary;
         }
 
         private async Task CopyInto(IDictionary<string, string> dictionary, string resourcePath)
         {
-            using (var stream = _assembly.GetManifestResourceStream(resourcePath))
+            await using var stream = _assembly.GetManifestResourceStream(resourcePath);
+            // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
+            if (stream == null)
             {
-                // If a Culture doesn't have a translation the stream will be null and it defaults to en-us further up the chain
-                if (stream != null)
-                {
-                    var dict = await _jsonSerializer.DeserializeFromStreamAsync<Dictionary<string, string>>(stream);
+                _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
+                return;
+            }
 
-                    foreach (var key in dict.Keys)
-                    {
-                        dictionary[key] = dict[key];
-                    }
-                }
-                else
-                {
-                    _logger.LogError("Missing translation/culture resource: {ResourcePath}", resourcePath);
-                }
+            var dict = await JsonSerializer.DeserializeAsync<Dictionary<string, string>>(stream, _jsonOptions).ConfigureAwait(false);
+            if (dict == null)
+            {
+                throw new InvalidOperationException($"Resource contains invalid data: '{stream}'");
+            }
+
+            foreach (var key in dict.Keys)
+            {
+                dictionary[key] = dict[key];
             }
         }
 
@@ -493,45 +369,46 @@ namespace Emby.Server.Implementations.Localization
             return culture + ".json";
         }
 
-        public LocalizationOption[] GetLocalizationOptions()
-            => new LocalizationOption[]
-            {
-                new LocalizationOption("Arabic", "ar"),
-                new LocalizationOption("Bulgarian (Bulgaria)", "bg-BG"),
-                new LocalizationOption("Catalan", "ca"),
-                new LocalizationOption("Chinese Simplified", "zh-CN"),
-                new LocalizationOption("Chinese Traditional", "zh-TW"),
-                new LocalizationOption("Croatian", "hr"),
-                new LocalizationOption("Czech", "cs"),
-                new LocalizationOption("Danish", "da"),
-                new LocalizationOption("Dutch", "nl"),
-                new LocalizationOption("English (United Kingdom)", "en-GB"),
-                new LocalizationOption("English (United States)", "en-US"),
-                new LocalizationOption("French", "fr"),
-                new LocalizationOption("French (Canada)", "fr-CA"),
-                new LocalizationOption("German", "de"),
-                new LocalizationOption("Greek", "el"),
-                new LocalizationOption("Hebrew", "he"),
-                new LocalizationOption("Hungarian", "hu"),
-                new LocalizationOption("Italian", "it"),
-                new LocalizationOption("Kazakh", "kk"),
-                new LocalizationOption("Korean", "ko"),
-                new LocalizationOption("Lithuanian", "lt-LT"),
-                new LocalizationOption("Malay", "ms"),
-                new LocalizationOption("Norwegian Bokmål", "nb"),
-                new LocalizationOption("Persian", "fa"),
-                new LocalizationOption("Polish", "pl"),
-                new LocalizationOption("Portuguese (Brazil)", "pt-BR"),
-                new LocalizationOption("Portuguese (Portugal)", "pt-PT"),
-                new LocalizationOption("Russian", "ru"),
-                new LocalizationOption("Slovak", "sk"),
-                new LocalizationOption("Slovenian (Slovenia)", "sl-SI"),
-                new LocalizationOption("Spanish", "es"),
-                new LocalizationOption("Spanish (Argentina)", "es-AR"),
-                new LocalizationOption("Spanish (Mexico)", "es-MX"),
-                new LocalizationOption("Swedish", "sv"),
-                new LocalizationOption("Swiss German", "gsw"),
-                new LocalizationOption("Turkish", "tr")
-            };
+        /// <inheritdoc />
+        public IEnumerable<LocalizationOption> GetLocalizationOptions()
+        {
+            yield return new LocalizationOption("Arabic", "ar");
+            yield return new LocalizationOption("Bulgarian (Bulgaria)", "bg-BG");
+            yield return new LocalizationOption("Catalan", "ca");
+            yield return new LocalizationOption("Chinese Simplified", "zh-CN");
+            yield return new LocalizationOption("Chinese Traditional", "zh-TW");
+            yield return new LocalizationOption("Croatian", "hr");
+            yield return new LocalizationOption("Czech", "cs");
+            yield return new LocalizationOption("Danish", "da");
+            yield return new LocalizationOption("Dutch", "nl");
+            yield return new LocalizationOption("English (United Kingdom)", "en-GB");
+            yield return new LocalizationOption("English (United States)", "en-US");
+            yield return new LocalizationOption("French", "fr");
+            yield return new LocalizationOption("French (Canada)", "fr-CA");
+            yield return new LocalizationOption("German", "de");
+            yield return new LocalizationOption("Greek", "el");
+            yield return new LocalizationOption("Hebrew", "he");
+            yield return new LocalizationOption("Hungarian", "hu");
+            yield return new LocalizationOption("Italian", "it");
+            yield return new LocalizationOption("Kazakh", "kk");
+            yield return new LocalizationOption("Korean", "ko");
+            yield return new LocalizationOption("Lithuanian", "lt-LT");
+            yield return new LocalizationOption("Malay", "ms");
+            yield return new LocalizationOption("Norwegian Bokmål", "nb");
+            yield return new LocalizationOption("Persian", "fa");
+            yield return new LocalizationOption("Polish", "pl");
+            yield return new LocalizationOption("Portuguese (Brazil)", "pt-BR");
+            yield return new LocalizationOption("Portuguese (Portugal)", "pt-PT");
+            yield return new LocalizationOption("Russian", "ru");
+            yield return new LocalizationOption("Slovak", "sk");
+            yield return new LocalizationOption("Slovenian (Slovenia)", "sl-SI");
+            yield return new LocalizationOption("Spanish", "es");
+            yield return new LocalizationOption("Spanish (Argentina)", "es-AR");
+            yield return new LocalizationOption("Spanish (Mexico)", "es-MX");
+            yield return new LocalizationOption("Swedish", "sv");
+            yield return new LocalizationOption("Swiss German", "gsw");
+            yield return new LocalizationOption("Turkish", "tr");
+            yield return new LocalizationOption("Tiếng Việt", "vi");
+        }
     }
 }

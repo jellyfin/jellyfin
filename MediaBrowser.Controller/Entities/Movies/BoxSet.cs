@@ -1,40 +1,47 @@
+#nullable disable
+
+#pragma warning disable CA1721, CA1819, CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class BoxSet
+    /// Class BoxSet.
     /// </summary>
     public class BoxSet : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<BoxSetInfo>
     {
         public BoxSet()
         {
-            RemoteTrailers = EmptyMediaUrlArray;
+            RemoteTrailers = Array.Empty<MediaUrl>();
             LocalTrailerIds = Array.Empty<Guid>();
             RemoteTrailerIds = Array.Empty<Guid>();
 
             DisplayOrder = ItemSortBy.PremiereDate;
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected override bool FilterLinkedChildrenPerUser => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPeople => true;
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the display order.
@@ -42,40 +49,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The display order.</value>
         public string DisplayOrder { get; set; }
 
-        protected override bool GetBlockUnratedValue(UserPolicy config)
-        {
-            return config.BlockUnratedItems.Contains(UnratedItem.Movie);
-        }
-
-        public override double GetDefaultPrimaryImageAspectRatio()
-            => 2.0 / 3;
-
-        public override UnratedItem GetBlockUnratedType()
-        {
-            return UnratedItem.Movie;
-        }
-
-        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
-        {
-            if (IsLegacyBoxSet)
-            {
-                return base.GetNonCachedChildren(directoryService);
-            }
-            return new List<BaseItem>();
-        }
-
-        protected override List<BaseItem> LoadChildren()
-        {
-            if (IsLegacyBoxSet)
-            {
-                return base.LoadChildren();
-            }
-
-            // Save a trip to the database
-            return new List<BaseItem>();
-        }
-
-        [IgnoreDataMember]
+        [JsonIgnore]
         private bool IsLegacyBoxSet
         {
             get
@@ -94,8 +68,44 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsPreSorted => true;
+
+        public Guid[] LibraryFolderIds { get; set; }
+
+        protected override bool GetBlockUnratedValue(User user)
+        {
+            return user.GetPreferenceValues<UnratedItem>(PreferenceKind.BlockUnratedItems).Contains(UnratedItem.Movie);
+        }
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+            => 2.0 / 3;
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.Movie;
+        }
+
+        protected override IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
+        {
+            if (IsLegacyBoxSet)
+            {
+                return base.GetNonCachedChildren(directoryService);
+            }
+
+            return Enumerable.Empty<BaseItem>();
+        }
+
+        protected override List<BaseItem> LoadChildren()
+        {
+            if (IsLegacyBoxSet)
+            {
+                return base.LoadChildren();
+            }
+
+            // Save a trip to the database
+            return new List<BaseItem>();
+        }
 
         public override bool IsAuthorizedToDelete(User user, List<Folder> allCollectionFolders)
         {
@@ -183,8 +193,6 @@ namespace MediaBrowser.Controller.Entities.Movies
             return IsVisible(user);
         }
 
-        public Guid[] LibraryFolderIds { get; set; }
-
         private Guid[] GetLibraryFolderIds(User user)
         {
             return LibraryManager.GetUserRootFolder().GetChildren(user, true)
@@ -194,7 +202,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public Guid[] GetLibraryFolderIds()
         {
-            var expandedFolders = new List<Guid>() { };
+            var expandedFolders = new List<Guid>();
 
             return FlattenItems(this, expandedFolders)
                 .SelectMany(i => LibraryManager.GetCollectionFolders(i))
@@ -211,8 +219,7 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         private IEnumerable<BaseItem> FlattenItems(BaseItem item, List<Guid> expandedFolders)
         {
-            var boxset = item as BoxSet;
-            if (boxset != null)
+            if (item is BoxSet boxset)
             {
                 if (!expandedFolders.Contains(item.Id))
                 {

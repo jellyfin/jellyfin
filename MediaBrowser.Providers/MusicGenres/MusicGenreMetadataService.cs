@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -11,13 +13,20 @@ namespace MediaBrowser.Providers.MusicGenres
 {
     public class MusicGenreMetadataService : MetadataService<MusicGenre, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public MusicGenreMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<MusicGenreMetadataService> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        public MusicGenreMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        /// <inheritdoc />
+        protected override void MergeData(MetadataResult<MusicGenre> source, MetadataResult<MusicGenre> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
     }
 }

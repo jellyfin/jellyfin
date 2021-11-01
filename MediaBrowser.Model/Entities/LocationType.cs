@@ -1,24 +1,27 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum LocationType
+    /// Enum LocationType.
     /// </summary>
     public enum LocationType
     {
         /// <summary>
-        /// The file system
+        /// The file system.
         /// </summary>
         FileSystem = 0,
+
         /// <summary>
-        /// The remote
+        /// The remote.
         /// </summary>
         Remote = 1,
+
         /// <summary>
-        /// The virtual
+        /// The virtual.
         /// </summary>
         Virtual = 2,
+
         /// <summary>
-        /// The offline
+        /// The offline.
         /// </summary>
         Offline = 3
     }

@@ -1,46 +1,34 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.System;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
     /// <summary>
-    /// Class ManagedFileSystem
+    /// Class ManagedFileSystem.
     /// </summary>
     public class ManagedFileSystem : IFileSystem
     {
-        protected ILogger Logger;
+        private readonly ILogger<ManagedFileSystem> _logger;
 
-        private readonly bool _supportsAsyncFileStreams;
-        private char[] _invalidFileNameChars;
         private readonly List<IShortcutHandler> _shortcutHandlers = new List<IShortcutHandler>();
-
         private readonly string _tempPath;
-
-        private readonly IEnvironmentInfo _environmentInfo;
-        private readonly bool _isEnvironmentCaseInsensitive;
+        private static readonly bool _isEnvironmentCaseInsensitive = OperatingSystem.IsWindows();
 
         public ManagedFileSystem(
-            ILoggerFactory loggerFactory,
-            IEnvironmentInfo environmentInfo,
+            ILogger<ManagedFileSystem> logger,
             IApplicationPaths applicationPaths)
         {
-            Logger = loggerFactory.CreateLogger("FileSystem");
-            _supportsAsyncFileStreams = true;
+            _logger = logger;
             _tempPath = applicationPaths.TempDirectory;
-            _environmentInfo = environmentInfo;
-
-            SetInvalidFileNameChars(environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows);
-
-            _isEnvironmentCaseInsensitive = environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.Windows;
         }
 
         public virtual void AddShortcutHandler(IShortcutHandler handler)
@@ -48,26 +36,12 @@ namespace Emby.Server.Implementations.IO
             _shortcutHandlers.Add(handler);
         }
 
-        protected void SetInvalidFileNameChars(bool enableManagedInvalidFileNameChars)
-        {
-            if (enableManagedInvalidFileNameChars)
-            {
-                _invalidFileNameChars = Path.GetInvalidFileNameChars();
-            }
-            else
-            {
-                // Be consistent across platforms because the windows server will fail to query network shares that don't follow windows conventions
-                // https://referencesource.microsoft.com/#mscorlib/system/io/path.cs
-                _invalidFileNameChars = new char[] { '\"', '<', '>', '|', '\0', (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10, (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20, (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30, (char)31, ':', '*', '?', '\\', '/' };
-            }
-        }
-
         /// <summary>
         /// Determines whether the specified filename is shortcut.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns><c>true</c> if the specified filename is shortcut; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
         public virtual bool IsShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
@@ -84,8 +58,8 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
-        public virtual string ResolveShortcut(string filename)
+        /// <exception cref="ArgumentNullException"><paramref name="filename"/> is <c>null</c>.</exception>
+        public virtual string? ResolveShortcut(string filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -93,25 +67,27 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(filename);
-            var handler = _shortcutHandlers.FirstOrDefault(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
+            var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
-            if (handler != null)
-            {
-                return handler.Resolve(filename);
-            }
-
-            return null;
+            return handler?.Resolve(filename);
         }
 
         public virtual string MakeAbsolutePath(string folderPath, string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath)) return filePath;
+            // path is actually a stream
+            if (string.IsNullOrWhiteSpace(filePath) || filePath.Contains("://", StringComparison.Ordinal))
+            {
+                return filePath;
+            }
 
-            if (filePath.Contains(@"://")) return filePath; //stream
-            if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/') return filePath; //absolute local path
+            if (filePath.Length > 3 && filePath[1] == ':' && filePath[2] == '/')
+            {
+                // absolute local path
+                return filePath;
+            }
 
             // unc path
-            if (filePath.StartsWith("\\\\"))
+            if (filePath.StartsWith("\\\\", StringComparison.Ordinal))
             {
                 return filePath;
             }
@@ -119,18 +95,19 @@ namespace Emby.Server.Implementations.IO
             var firstChar = filePath[0];
             if (firstChar == '/')
             {
-                // For this we don't really know.
+                // for this we don't really know
                 return filePath;
             }
-            if (firstChar == '\\') //relative path
+
+            // relative path
+            if (firstChar == '\\')
             {
                 filePath = filePath.Substring(1);
             }
+
             try
             {
-                string path = System.IO.Path.Combine(folderPath, filePath);
-                path = System.IO.Path.GetFullPath(path);
-                return path;
+                return Path.GetFullPath(Path.Combine(folderPath, filePath));
             }
             catch (ArgumentException)
             {
@@ -151,11 +128,7 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="shortcutPath">The shortcut path.</param>
         /// <param name="target">The target.</param>
-        /// <exception cref="ArgumentNullException">
-        /// shortcutPath
-        /// or
-        /// target
-        /// </exception>
+        /// <exception cref="ArgumentNullException">The shortcutPath or target is null.</exception>
         public virtual void CreateShortcut(string shortcutPath, string target)
         {
             if (string.IsNullOrEmpty(shortcutPath))
@@ -169,7 +142,7 @@ namespace Emby.Server.Implementations.IO
             }
 
             var extension = Path.GetExtension(shortcutPath);
-            var handler = _shortcutHandlers.FirstOrDefault(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
+            var handler = _shortcutHandlers.Find(i => string.Equals(extension, i.Extension, StringComparison.OrdinalIgnoreCase));
 
             if (handler != null)
             {
@@ -247,27 +220,44 @@ namespace Emby.Server.Implementations.IO
 
         private FileSystemMetadata GetFileSystemMetadata(FileSystemInfo info)
         {
-            var result = new FileSystemMetadata();
-
-            result.Exists = info.Exists;
-            result.FullName = info.FullName;
-            result.Extension = info.Extension;
-            result.Name = info.Name;
+            var result = new FileSystemMetadata
+            {
+                Exists = info.Exists,
+                FullName = info.FullName,
+                Extension = info.Extension,
+                Name = info.Name
+            };
 
             if (result.Exists)
             {
                 result.IsDirectory = info is DirectoryInfo || (info.Attributes & FileAttributes.Directory) == FileAttributes.Directory;
 
-                //if (!result.IsDirectory)
-                //{
+                // if (!result.IsDirectory)
+                // {
                 //    result.IsHidden = (info.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
-                //}
+                // }
 
-                var fileInfo = info as FileInfo;
-                if (fileInfo != null)
+                if (info is FileInfo fileInfo)
                 {
                     result.Length = fileInfo.Length;
-                    result.DirectoryName = fileInfo.DirectoryName;
+
+                    // Issue #2354 get the size of files behind symbolic links. Also Enum.HasFlag is bad as it boxes!
+                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
+                    {
+                        try
+                        {
+                            using (var fileHandle = File.OpenHandle(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                            {
+                                result.Length = RandomAccess.GetLength(fileHandle);
+                            }
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            // Dangling symlinks cannot be detected before opening the file unfortunately...
+                            _logger.LogError(ex, "Reading the file size of the symlink at {Path} failed. Marking the file as not existing.", fileInfo.FullName);
+                            result.Exists = false;
+                        }
+                    }
                 }
 
                 result.CreationTimeUtc = GetCreationTimeUtc(info);
@@ -301,21 +291,42 @@ namespace Emby.Server.Implementations.IO
         }
 
         /// <summary>
-        /// Takes a filename and removes invalid characters
+        /// Takes a filename and removes invalid characters.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">filename</exception>
-        public virtual string GetValidFilename(string filename)
+        /// <exception cref="ArgumentNullException">The filename is null.</exception>
+        public string GetValidFilename(string filename)
         {
-            var builder = new StringBuilder(filename);
-
-            foreach (var c in _invalidFileNameChars)
+            var invalid = Path.GetInvalidFileNameChars();
+            var first = filename.IndexOfAny(invalid);
+            if (first == -1)
             {
-                builder = builder.Replace(c, ' ');
+                // Fast path for clean strings
+                return filename;
             }
 
-            return builder.ToString();
+            return string.Create(
+                filename.Length,
+                (filename, invalid, first),
+                (chars, state) =>
+                {
+                    state.filename.AsSpan().CopyTo(chars);
+
+                    chars[state.first++] = ' ';
+
+                    var len = chars.Length;
+                    foreach (var c in state.invalid)
+                    {
+                        for (int i = state.first; i < len; i++)
+                        {
+                            if (chars[i] == c)
+                            {
+                                chars[i] = ' ';
+                            }
+                        }
+                    }
+                });
         }
 
         /// <summary>
@@ -332,7 +343,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error determining CreationTimeUtc for {FullName}", info.FullName);
+                _logger.LogError(ex, "Error determining CreationTimeUtc for {FullName}", info.FullName);
                 return DateTime.MinValue;
             }
         }
@@ -371,7 +382,7 @@ namespace Emby.Server.Implementations.IO
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error determining LastAccessTimeUtc for {FullName}", info.FullName);
+                _logger.LogError(ex, "Error determining LastAccessTimeUtc for {FullName}", info.FullName);
                 return DateTime.MinValue;
             }
         }
@@ -386,90 +397,9 @@ namespace Emby.Server.Implementations.IO
             return GetLastWriteTimeUtc(GetFileSystemInfo(path));
         }
 
-        /// <summary>
-        /// Gets the file stream.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="mode">The mode.</param>
-        /// <param name="access">The access.</param>
-        /// <param name="share">The share.</param>
-        /// <param name="isAsync">if set to <c>true</c> [is asynchronous].</param>
-        /// <returns>FileStream.</returns>
-        public virtual Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, bool isAsync = false)
-        {
-            if (_supportsAsyncFileStreams && isAsync)
-            {
-                return GetFileStream(path, mode, access, share, FileOpenOptions.Asynchronous);
-            }
-
-            return GetFileStream(path, mode, access, share, FileOpenOptions.None);
-        }
-
-        public virtual Stream GetFileStream(string path, FileOpenMode mode, FileAccessMode access, FileShareMode share, FileOpenOptions fileOpenOptions)
-            => new FileStream(path, GetFileMode(mode), GetFileAccess(access), GetFileShare(share), 4096, GetFileOptions(fileOpenOptions));
-
-        private static FileOptions GetFileOptions(FileOpenOptions mode)
-        {
-            var val = (int)mode;
-            return (FileOptions)val;
-        }
-
-        private static FileMode GetFileMode(FileOpenMode mode)
-        {
-            switch (mode)
-            {
-                //case FileOpenMode.Append:
-                //    return FileMode.Append;
-                case FileOpenMode.Create:
-                    return FileMode.Create;
-                case FileOpenMode.CreateNew:
-                    return FileMode.CreateNew;
-                case FileOpenMode.Open:
-                    return FileMode.Open;
-                case FileOpenMode.OpenOrCreate:
-                    return FileMode.OpenOrCreate;
-                //case FileOpenMode.Truncate:
-                //    return FileMode.Truncate;
-                default:
-                    throw new Exception("Unrecognized FileOpenMode");
-            }
-        }
-
-        private static FileAccess GetFileAccess(FileAccessMode mode)
-        {
-            switch (mode)
-            {
-                //case FileAccessMode.ReadWrite:
-                //    return FileAccess.ReadWrite;
-                case FileAccessMode.Write:
-                    return FileAccess.Write;
-                case FileAccessMode.Read:
-                    return FileAccess.Read;
-                default:
-                    throw new Exception("Unrecognized FileAccessMode");
-            }
-        }
-
-        private static FileShare GetFileShare(FileShareMode mode)
-        {
-            switch (mode)
-            {
-                case FileShareMode.ReadWrite:
-                    return FileShare.ReadWrite;
-                case FileShareMode.Write:
-                    return FileShare.Write;
-                case FileShareMode.Read:
-                    return FileShare.Read;
-                case FileShareMode.None:
-                    return FileShare.None;
-                default:
-                    throw new Exception("Unrecognized FileShareMode");
-            }
-        }
-
         public virtual void SetHidden(string path, bool isHidden)
         {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -491,33 +421,9 @@ namespace Emby.Server.Implementations.IO
             }
         }
 
-        public virtual void SetReadOnly(string path, bool isReadOnly)
+        public virtual void SetAttributes(string path, bool isHidden, bool readOnly)
         {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
-            {
-                return;
-            }
-
-            var info = GetExtendedFileSystemInfo(path);
-
-            if (info.Exists && info.IsReadOnly != isReadOnly)
-            {
-                if (isReadOnly)
-                {
-                    File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.ReadOnly);
-                }
-                else
-                {
-                    var attributes = File.GetAttributes(path);
-                    attributes = RemoveAttribute(attributes, FileAttributes.ReadOnly);
-                    File.SetAttributes(path, attributes);
-                }
-            }
-        }
-
-        public virtual void SetAttributes(string path, bool isHidden, bool isReadOnly)
-        {
-            if (_environmentInfo.OperatingSystem != MediaBrowser.Model.System.OperatingSystem.Windows)
+            if (!OperatingSystem.IsWindows())
             {
                 return;
             }
@@ -529,14 +435,14 @@ namespace Emby.Server.Implementations.IO
                 return;
             }
 
-            if (info.IsReadOnly == isReadOnly && info.IsHidden == isHidden)
+            if (info.IsReadOnly == readOnly && info.IsHidden == isHidden)
             {
                 return;
             }
 
             var attributes = File.GetAttributes(path);
 
-            if (isReadOnly)
+            if (readOnly)
             {
                 attributes = attributes | FileAttributes.ReadOnly;
             }
@@ -579,7 +485,7 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(file2));
             }
 
-            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N"));
+            var temp1 = Path.Combine(_tempPath, Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture));
 
             // Copying over will fail against hidden files
             SetHidden(file1, false);
@@ -604,26 +510,9 @@ namespace Emby.Server.Implementations.IO
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var separatorChar = Path.DirectorySeparatorChar;
-
-            return path.IndexOf(parentPath.TrimEnd(separatorChar) + separatorChar, StringComparison.OrdinalIgnoreCase) != -1;
-        }
-
-        public virtual bool IsRootPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            var parent = Path.GetDirectoryName(path);
-
-            if (!string.IsNullOrEmpty(parent))
-            {
-                return false;
-            }
-
-            return true;
+            return path.Contains(
+                Path.TrimEndingDirectorySeparator(parentPath) + Path.DirectorySeparatorChar,
+                _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
         public virtual string NormalizePath(string path)
@@ -638,7 +527,7 @@ namespace Emby.Server.Implementations.IO
                 return path;
             }
 
-            return path.TrimEnd(Path.DirectorySeparatorChar);
+            return Path.TrimEndingDirectorySeparator(path);
         }
 
         public virtual bool AreEqual(string path1, string path2)
@@ -653,7 +542,10 @@ namespace Emby.Server.Implementations.IO
                 return false;
             }
 
-            return string.Equals(NormalizePath(path1), NormalizePath(path2), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(
+                NormalizePath(path1),
+                NormalizePath(path2),
+                _isEnvironmentCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         }
 
         public virtual string GetFileNameWithoutExtension(FileSystemMetadata info)
@@ -669,7 +561,6 @@ namespace Emby.Server.Implementations.IO
         public virtual bool IsPathFile(string path)
         {
             // Cannot use Path.IsPathRooted because it returns false under mono when using windows-based paths, e.g. C:\\
-
             if (path.IndexOf("://", StringComparison.OrdinalIgnoreCase) != -1 &&
                 !path.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
             {
@@ -677,8 +568,6 @@ namespace Emby.Server.Implementations.IO
             }
 
             return true;
-
-            //return Path.IsPathRooted(path);
         }
 
         public virtual void DeleteFile(string path)
@@ -689,21 +578,20 @@ namespace Emby.Server.Implementations.IO
 
         public virtual List<FileSystemMetadata> GetDrives()
         {
-            // Only include drives in the ready state or this method could end up being very slow, waiting for drives to timeout
-            return DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new FileSystemMetadata
-            {
-                Name = d.Name,
-                FullName = d.RootDirectory.FullName,
-                IsDirectory = true
-
-            }).ToList();
+            // check for ready state to avoid waiting for drives to timeout
+            // some drives on linux have no actual size or are used for other purposes
+            return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram)
+                .Select(d => new FileSystemMetadata
+                {
+                    Name = d.Name,
+                    FullName = d.RootDirectory.FullName,
+                    IsDirectory = true
+                }).ToList();
         }
 
         public virtual IEnumerable<FileSystemMetadata> GetDirectories(string path, bool recursive = false)
         {
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-            return ToMetadata(new DirectoryInfo(path).EnumerateDirectories("*", searchOption));
+            return ToMetadata(new DirectoryInfo(path).EnumerateDirectories("*", GetEnumerationOptions(recursive)));
         }
 
         public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, bool recursive = false)
@@ -711,29 +599,30 @@ namespace Emby.Server.Implementations.IO
             return GetFiles(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<FileSystemMetadata> GetFiles(string path, IReadOnlyList<string>? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            var enumerationOptions = GetEnumerationOptions(recursive);
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
-            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Length == 1)
+            if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Count == 1)
             {
-                return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], searchOption));
+                return ToMetadata(new DirectoryInfo(path).EnumerateFiles("*" + extensions[0], enumerationOptions));
             }
 
-            var files = new DirectoryInfo(path).EnumerateFiles("*", searchOption);
+            var files = new DirectoryInfo(path).EnumerateFiles("*", enumerationOptions);
 
-            if (extensions != null && extensions.Length > 0)
+            if (extensions != null && extensions.Count > 0)
             {
                 files = files.Where(i =>
                 {
-                    var ext = i.Extension;
-                    if (ext == null)
+                    var ext = i.Extension.AsSpan();
+                    if (ext.IsEmpty)
                     {
                         return false;
                     }
-                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+
+                    return extensions.Contains(ext, StringComparison.OrdinalIgnoreCase);
                 });
             }
 
@@ -743,10 +632,9 @@ namespace Emby.Server.Implementations.IO
         public virtual IEnumerable<FileSystemMetadata> GetFileSystemEntries(string path, bool recursive = false)
         {
             var directoryInfo = new DirectoryInfo(path);
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            var enumerationOptions = GetEnumerationOptions(recursive);
 
-            return ToMetadata(directoryInfo.EnumerateDirectories("*", searchOption))
-                .Concat(ToMetadata(directoryInfo.EnumerateFiles("*", searchOption)));
+            return ToMetadata(directoryInfo.EnumerateFileSystemInfos("*", enumerationOptions));
         }
 
         private IEnumerable<FileSystemMetadata> ToMetadata(IEnumerable<FileSystemInfo> infos)
@@ -756,8 +644,7 @@ namespace Emby.Server.Implementations.IO
 
         public virtual IEnumerable<string> GetDirectoryPaths(string path, bool recursive = false)
         {
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            return Directory.EnumerateDirectories(path, "*", searchOption);
+            return Directory.EnumerateDirectories(path, "*", GetEnumerationOptions(recursive));
         }
 
         public virtual IEnumerable<string> GetFilePaths(string path, bool recursive = false)
@@ -765,29 +652,30 @@ namespace Emby.Server.Implementations.IO
             return GetFilePaths(path, null, false, recursive);
         }
 
-        public virtual IEnumerable<string> GetFilePaths(string path, string[] extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
+        public virtual IEnumerable<string> GetFilePaths(string path, string[]? extensions, bool enableCaseSensitiveExtensions, bool recursive = false)
         {
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            var enumerationOptions = GetEnumerationOptions(recursive);
 
             // On linux and osx the search pattern is case sensitive
             // If we're OK with case-sensitivity, and we're only filtering for one extension, then use the native method
             if ((enableCaseSensitiveExtensions || _isEnvironmentCaseInsensitive) && extensions != null && extensions.Length == 1)
             {
-                return Directory.EnumerateFiles(path, "*" + extensions[0], searchOption);
+                return Directory.EnumerateFiles(path, "*" + extensions[0], enumerationOptions);
             }
 
-            var files = Directory.EnumerateFiles(path, "*", searchOption);
+            var files = Directory.EnumerateFiles(path, "*", enumerationOptions);
 
             if (extensions != null && extensions.Length > 0)
             {
                 files = files.Where(i =>
                 {
-                    var ext = Path.GetExtension(i);
-                    if (ext == null)
+                    var ext = Path.GetExtension(i.AsSpan());
+                    if (ext.IsEmpty)
                     {
                         return false;
                     }
-                    return extensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
+
+                    return extensions.Contains(ext, StringComparison.OrdinalIgnoreCase);
                 });
             }
 
@@ -796,31 +684,18 @@ namespace Emby.Server.Implementations.IO
 
         public virtual IEnumerable<string> GetFileSystemEntryPaths(string path, bool recursive = false)
         {
-            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            return Directory.EnumerateFileSystemEntries(path, "*", searchOption);
+            return Directory.EnumerateFileSystemEntries(path, "*", GetEnumerationOptions(recursive));
         }
 
-        public virtual void SetExecutable(string path)
+        private EnumerationOptions GetEnumerationOptions(bool recursive)
         {
-            if (_environmentInfo.OperatingSystem == MediaBrowser.Model.System.OperatingSystem.OSX)
+            return new EnumerationOptions
             {
-                RunProcess("chmod", "+x \"" + path + "\"", Path.GetDirectoryName(path));
-            }
-        }
-
-        private static void RunProcess(string path, string args, string workingDirectory)
-        {
-            using (var process = Process.Start(new ProcessStartInfo
-            {
-                Arguments = args,
-                FileName = path,
-                CreateNoWindow = true,
-                WorkingDirectory = workingDirectory,
-                WindowStyle = ProcessWindowStyle.Normal
-            }))
-            {
-                process.WaitForExit();
-            }
+                RecurseSubdirectories = recursive,
+                IgnoreInaccessible = true,
+                // Don't skip any files.
+                AttributesToSkip = 0
+            };
         }
     }
 }

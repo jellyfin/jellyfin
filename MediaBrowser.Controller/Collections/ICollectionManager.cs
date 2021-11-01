@@ -1,5 +1,9 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 
@@ -10,40 +14,40 @@ namespace MediaBrowser.Controller.Collections
         /// <summary>
         /// Occurs when [collection created].
         /// </summary>
-        event EventHandler<CollectionCreatedEventArgs> CollectionCreated;
+        event EventHandler<CollectionCreatedEventArgs>? CollectionCreated;
 
         /// <summary>
         /// Occurs when [items added to collection].
         /// </summary>
-        event EventHandler<CollectionModifiedEventArgs> ItemsAddedToCollection;
+        event EventHandler<CollectionModifiedEventArgs>? ItemsAddedToCollection;
 
         /// <summary>
         /// Occurs when [items removed from collection].
         /// </summary>
-        event EventHandler<CollectionModifiedEventArgs> ItemsRemovedFromCollection;
+        event EventHandler<CollectionModifiedEventArgs>? ItemsRemovedFromCollection;
 
         /// <summary>
         /// Creates the collection.
         /// </summary>
         /// <param name="options">The options.</param>
-        BoxSet CreateCollection(CollectionCreationOptions options);
+        /// <returns>BoxSet wrapped in an awaitable task.</returns>
+        Task<BoxSet> CreateCollectionAsync(CollectionCreationOptions options);
 
         /// <summary>
         /// Adds to collection.
         /// </summary>
         /// <param name="collectionId">The collection identifier.</param>
         /// <param name="itemIds">The item ids.</param>
-        void AddToCollection(Guid collectionId, IEnumerable<string> itemIds);
+        /// <returns><see cref="Task"/> representing the asynchronous operation.</returns>
+        Task AddToCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>
         /// Removes from collection.
         /// </summary>
         /// <param name="collectionId">The collection identifier.</param>
         /// <param name="itemIds">The item ids.</param>
-        void RemoveFromCollection(Guid collectionId, IEnumerable<string> itemIds);
-
-        void AddToCollection(Guid collectionId, IEnumerable<Guid> itemIds);
-        void RemoveFromCollection(Guid collectionId, IEnumerable<Guid> itemIds);
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task RemoveFromCollectionAsync(Guid collectionId, IEnumerable<Guid> itemIds);
 
         /// <summary>
         /// Collapses the items within box sets.

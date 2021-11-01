@@ -1,36 +1,36 @@
+#pragma warning disable CS1591
+
+using System.Net.Http;
 using Emby.Dlna.Eventing;
-using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
 {
-    public class BaseService : IEventManager
+    public class BaseService : IDlnaEventManager
     {
-        protected IEventManager EventManager;
-        protected IHttpClient HttpClient;
-        protected ILogger Logger;
-
-        protected BaseService(ILogger logger, IHttpClient httpClient)
+        protected BaseService(ILogger<BaseService> logger, IHttpClientFactory httpClientFactory)
         {
             Logger = logger;
-            HttpClient = httpClient;
-
-            EventManager = new EventManager(Logger, HttpClient);
+            EventManager = new DlnaEventManager(logger, httpClientFactory);
         }
+
+        protected IDlnaEventManager EventManager { get; }
+
+        protected ILogger Logger { get; }
 
         public EventSubscriptionResponse CancelEventSubscription(string subscriptionId)
         {
             return EventManager.CancelEventSubscription(subscriptionId);
         }
 
-        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string timeoutString, string callbackUrl)
+        public EventSubscriptionResponse RenewEventSubscription(string subscriptionId, string notificationType, string requestedTimeoutString, string callbackUrl)
         {
-            return EventManager.RenewEventSubscription(subscriptionId, notificationType, timeoutString, callbackUrl);
+            return EventManager.RenewEventSubscription(subscriptionId, notificationType, requestedTimeoutString, callbackUrl);
         }
 
-        public EventSubscriptionResponse CreateEventSubscription(string notificationType, string timeoutString, string callbackUrl)
+        public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
         {
-            return EventManager.CreateEventSubscription(notificationType, timeoutString, callbackUrl);
+            return EventManager.CreateEventSubscription(notificationType, requestedTimeoutString, callbackUrl);
         }
     }
 }

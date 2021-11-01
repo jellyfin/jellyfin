@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Configuration;
@@ -22,7 +24,7 @@ namespace MediaBrowser.Common.Configuration
         event EventHandler<ConfigurationUpdateEventArgs> NamedConfigurationUpdated;
 
         /// <summary>
-        /// Gets or sets the application paths.
+        /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
         IApplicationPaths CommonApplicationPaths { get; }
@@ -43,6 +45,13 @@ namespace MediaBrowser.Common.Configuration
         /// </summary>
         /// <param name="newConfiguration">The new configuration.</param>
         void ReplaceConfiguration(BaseApplicationConfiguration newConfiguration);
+
+        /// <summary>
+        /// Manually pre-loads a factory so that it is available pre system initialisation.
+        /// </summary>
+        /// <typeparam name="T">Class to register.</typeparam>
+        void RegisterConfiguration<T>()
+            where T : IConfigurationFactory;
 
         /// <summary>
         /// Gets the configuration.

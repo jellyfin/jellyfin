@@ -1,16 +1,20 @@
+#pragma warning disable CS1591
+
+using System.Globalization;
+
 namespace MediaBrowser.Model.Dlna
 {
-    public class DlnaMaps
+    public static class DlnaMaps
     {
         private static readonly string DefaultStreaming =
-             FlagsToString(DlnaFlags.StreamingTransferMode |
+            FlagsToString(DlnaFlags.StreamingTransferMode |
                            DlnaFlags.BackgroundTransferMode |
                            DlnaFlags.ConnectionStall |
                            DlnaFlags.ByteBasedSeek |
                            DlnaFlags.DlnaV15);
 
         private static readonly string DefaultInteractive =
-          FlagsToString(DlnaFlags.InteractiveTransferMode |
+            FlagsToString(DlnaFlags.InteractiveTransferMode |
                         DlnaFlags.BackgroundTransferMode |
                         DlnaFlags.ConnectionStall |
                         DlnaFlags.ByteBasedSeek |
@@ -18,7 +22,7 @@ namespace MediaBrowser.Model.Dlna
 
         public static string FlagsToString(DlnaFlags flags)
         {
-            return string.Format("{0:X8}{1:D24}", (ulong)flags, 0);
+            return string.Format(CultureInfo.InvariantCulture, "{0:X8}{1:D24}", (ulong)flags, 0);
         }
 
         public static string GetOrgOpValue(bool hasKnownRuntime, bool isDirectStream, TranscodeSeekInfo profileTranscodeSeekInfo)

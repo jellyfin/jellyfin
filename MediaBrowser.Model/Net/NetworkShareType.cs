@@ -1,28 +1,32 @@
 namespace MediaBrowser.Model.Net
 {
     /// <summary>
-    /// Enum NetworkShareType
+    /// Enum NetworkShareType.
     /// </summary>
     public enum NetworkShareType
     {
         /// <summary>
-        /// Disk share
+        /// Disk share.
         /// </summary>
         Disk,
+
         /// <summary>
-        /// Printer share
+        /// Printer share.
         /// </summary>
         Printer,
+
         /// <summary>
-        /// Device share
+        /// Device share.
         /// </summary>
         Device,
+
         /// <summary>
-        /// IPC share
+        /// IPC share.
         /// </summary>
         Ipc,
+
         /// <summary>
-        /// Special share
+        /// Special share.
         /// </summary>
         Special
     }

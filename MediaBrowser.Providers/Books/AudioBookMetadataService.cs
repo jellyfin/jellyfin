@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -11,14 +13,30 @@ namespace MediaBrowser.Providers.Books
 {
     public class AudioBookMetadataService : MetadataService<AudioBook, SongInfo>
     {
-        protected override void MergeData(MetadataResult<AudioBook> source, MetadataResult<AudioBook> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public AudioBookMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<AudioBookMetadataService> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
+        {
+        }
+
+        /// <inheritdoc />
+        protected override void MergeData(
+            MetadataResult<AudioBook> source,
+            MetadataResult<AudioBook> target,
+            MetadataField[] lockedFields,
+            bool replaceData,
+            bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
             var sourceItem = source.Item;
             var targetItem = target.Item;
 
-            if (replaceData || targetItem.Artists.Length == 0)
+            if (replaceData || targetItem.Artists.Count == 0)
             {
                 targetItem.Artists = sourceItem.Artists;
             }
@@ -27,10 +45,6 @@ namespace MediaBrowser.Providers.Books
             {
                 targetItem.Album = sourceItem.Album;
             }
-        }
-
-        public AudioBookMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
-        {
         }
     }
 }

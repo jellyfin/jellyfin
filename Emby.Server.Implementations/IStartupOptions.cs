@@ -1,40 +1,38 @@
 namespace Emby.Server.Implementations
 {
+    /// <summary>
+    /// Specifies the contract for server startup options.
+    /// </summary>
     public interface IStartupOptions
     {
         /// <summary>
-        /// --ffmpeg
+        /// Gets the value of the --ffmpeg command line option.
         /// </summary>
-        string FFmpegPath { get; }
+        string? FFmpegPath { get; }
 
         /// <summary>
-        /// --ffprobe
-        /// </summary>
-        string FFprobePath { get; }
-
-        /// <summary>
-        /// --service
+        /// Gets a value indicating whether to run as service by the --service command line option.
         /// </summary>
         bool IsService { get; }
 
         /// <summary>
-        /// --noautorunwebapp
+        /// Gets the value of the --package-name command line option.
         /// </summary>
-        bool NoAutoRunWebApp { get; }
+        string? PackageName { get; }
 
         /// <summary>
-        /// --package-name
+        /// Gets the value of the --restartpath command line option.
         /// </summary>
-        string PackageName { get; }
+        string? RestartPath { get; }
 
         /// <summary>
-        /// --restartpath
+        /// Gets the value of the --restartargs command line option.
         /// </summary>
-        string RestartPath { get; }
+        string? RestartArgs { get; }
 
         /// <summary>
-        /// --restartargs
+        /// Gets the value of the --published-server-url command line option.
         /// </summary>
-        string RestartArgs { get; }
+        string? PublishedServerUrl { get; }
     }
 }

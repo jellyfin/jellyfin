@@ -1,17 +1,18 @@
+#nullable disable
+
 using System;
 using System.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
     /// <summary>
-    /// Class BoxSetResolver
+    /// Class BoxSetResolver.
     /// </summary>
-    public class BoxSetResolver : FolderResolver<BoxSet>
+    public class BoxSetResolver : GenericFolderResolver<BoxSet>
     {
         /// <summary>
         /// Resolves the specified args.
@@ -63,14 +64,14 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// <param name="item">The item.</param>
         private static void SetProviderIdFromPath(BaseItem item)
         {
-            //we need to only look at the name of this actual item (not parents)
+            // we need to only look at the name of this actual item (not parents)
             var justName = Path.GetFileName(item.Path);
 
             var id = justName.GetAttributeValue("tmdbid");
 
             if (!string.IsNullOrEmpty(id))
             {
-                item.SetProviderId(MetadataProviders.Tmdb, id);
+                item.SetProviderId(MetadataProvider.Tmdb, id);
             }
         }
     }

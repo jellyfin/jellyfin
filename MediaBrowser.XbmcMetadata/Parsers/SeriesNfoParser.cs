@@ -5,23 +5,39 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
+    /// <summary>
+    /// Nfo parser for series.
+    /// </summary>
     public class SeriesNfoParser : BaseNfoParser<Series>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SeriesNfoParser"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
+        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        public SeriesNfoParser(
+            ILogger logger,
+            IConfigurationManager config,
+            IProviderManager providerManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            IDirectoryService directoryService)
+            : base(logger, config, providerManager, userManager, userDataManager, directoryService)
+        {
+        }
+
+        /// <inheritdoc />
         protected override bool SupportsUrlAfterClosingXmlTag => true;
 
-        protected override string MovieDbParserSearchString => "themoviedb.org/tv/";
-
-        /// <summary>
-        /// Fetches the data from XML node.
-        /// </summary>
-        /// <param name="reader">The reader.</param>
-        /// <param name="itemResult">The item result.</param>
+        /// <inheritdoc />
         protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
         {
             var item = itemResult.Item;
@@ -30,28 +46,33 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             {
                 case "id":
                     {
-                        string imdbId = reader.GetAttribute("IMDB");
-                        string tmdbId = reader.GetAttribute("TMDB");
-                        string tvdbId = reader.GetAttribute("TVDB");
+                        string? imdbId = reader.GetAttribute("IMDB");
+                        string? tmdbId = reader.GetAttribute("TMDB");
+                        string? tvdbId = reader.GetAttribute("TVDB");
 
                         if (string.IsNullOrWhiteSpace(tvdbId))
                         {
                             tvdbId = reader.ReadElementContentAsString();
                         }
+
                         if (!string.IsNullOrWhiteSpace(imdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                            item.SetProviderId(MetadataProvider.Imdb, imdbId);
                         }
+
                         if (!string.IsNullOrWhiteSpace(tmdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Tmdb, tmdbId);
+                            item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
                         }
+
                         if (!string.IsNullOrWhiteSpace(tvdbId))
                         {
-                            item.SetProviderId(MetadataProviders.Tvdb, tvdbId);
+                            item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
                         }
+
                         break;
                     }
+
                 case "airs_dayofweek":
                     {
                         item.AirDays = TVUtils.GetAirDays(reader.ReadElementContentAsString());
@@ -66,6 +87,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             item.AirTime = val;
                         }
+
                         break;
                     }
 
@@ -92,10 +114,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
-        }
-
-        public SeriesNfoParser(ILogger logger, IConfigurationManager config, IProviderManager providerManager, IFileSystem fileSystem, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(logger, config, providerManager, fileSystem, xmlReaderSettingsFactory)
-        {
         }
     }
 }

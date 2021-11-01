@@ -7,34 +7,49 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using MediaBrowser.XbmcMetadata.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.XbmcMetadata.Savers
 {
+    /// <summary>
+    /// Nfo saver for artsist.
+    /// </summary>
     public class ArtistNfoSaver : BaseNfoSaver
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArtistNfoSaver"/> class.
+        /// </summary>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="configurationManager">the server configuration manager.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="userDataManager">The user data manager.</param>
+        /// <param name="logger">The logger.</param>
+        public ArtistNfoSaver(
+            IFileSystem fileSystem,
+            IServerConfigurationManager configurationManager,
+            ILibraryManager libraryManager,
+            IUserManager userManager,
+            IUserDataManager userDataManager,
+            ILogger<ArtistNfoSaver> logger)
+            : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger)
+        {
+        }
+
+        /// <inheritdoc />
         protected override string GetLocalSavePath(BaseItem item)
-        {
-            return Path.Combine(item.Path, "artist.nfo");
-        }
+            => Path.Combine(item.Path, "artist.nfo");
 
+        /// <inheritdoc />
         protected override string GetRootElementName(BaseItem item)
-        {
-            return "artist";
-        }
+            => "artist";
 
+        /// <inheritdoc />
         public override bool IsEnabledFor(BaseItem item, ItemUpdateType updateType)
-        {
-            if (!item.SupportsLocalMetadata)
-            {
-                return false;
-            }
+            => item.SupportsLocalMetadata && item is MusicArtist && updateType >= MinimumUpdateType;
 
-            return item is MusicArtist && updateType >= MinimumUpdateType;
-        }
-
+        /// <inheritdoc />
         protected override void WriteCustomElements(BaseItem item, XmlWriter writer)
         {
             var artist = (MusicArtist)item;
@@ -43,7 +58,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var formatString = ConfigurationManager.GetNfoConfiguration().ReleaseDateFormat;
 
-                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString));
+                writer.WriteElementString("disbanded", artist.EndDate.Value.ToLocalTime().ToString(formatString, CultureInfo.InvariantCulture));
             }
 
             var albums = artist
@@ -51,8 +66,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             AddAlbums(albums, writer);
         }
-
-        private readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
         private void AddAlbums(IList<BaseItem> albums, XmlWriter writer)
         {
@@ -67,26 +80,23 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
                 if (album.ProductionYear.HasValue)
                 {
-                    writer.WriteElementString("year", album.ProductionYear.Value.ToString(UsCulture));
+                    writer.WriteElementString("year", album.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
                 }
 
                 writer.WriteEndElement();
             }
         }
 
-        protected override List<string> GetTagsUsed(BaseItem item)
+        /// <inheritdoc />
+        protected override IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = base.GetTagsUsed(item);
-            list.AddRange(new string[]
+            foreach (var tag in base.GetTagsUsed(item))
             {
-                "album",
-                "disbanded"
-            });
-            return list;
-        }
+                yield return tag;
+            }
 
-        public ArtistNfoSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger logger, IXmlReaderSettingsFactory xmlReaderSettingsFactory) : base(fileSystem, configurationManager, libraryManager, userManager, userDataManager, logger, xmlReaderSettingsFactory)
-        {
+            yield return "album";
+            yield return "disbanded";
         }
     }
 }

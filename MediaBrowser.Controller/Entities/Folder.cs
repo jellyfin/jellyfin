@@ -1,9 +1,17 @@
+#nullable disable
+
+#pragma warning disable CA1002, CA1721, CA1819, CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -11,23 +19,29 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Model.Serialization;
 using Microsoft.Extensions.Logging;
+using Episode = MediaBrowser.Controller.Entities.TV.Episode;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
+using Season = MediaBrowser.Controller.Entities.TV.Season;
+using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
-    /// Class Folder
+    /// Class Folder.
     /// </summary>
     public class Folder : BaseItem
     {
-        public static IUserManager UserManager { get; set; }
+        public Folder()
+        {
+            LinkedChildren = Array.Empty<LinkedChild>();
+        }
+
         public static IUserViewManager UserViewManager { get; set; }
 
         /// <summary>
@@ -38,44 +52,120 @@ namespace MediaBrowser.Controller.Entities
 
         public LinkedChild[] LinkedChildren { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public DateTime? DateLastMediaAdded { get; set; }
 
-        public Folder()
-        {
-            LinkedChildren = EmptyLinkedChildArray;
-        }
-
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsThemeMedia => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool IsPreSorted => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool IsPhysicalRoot => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
         /// <summary>
         /// Gets a value indicating whether this instance is folder.
         /// </summary>
         /// <value><c>true</c> if this instance is folder; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsFolder => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool IsDisplayedAsFolder => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool SupportsCumulativeRunTimeTicks => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual bool SupportsDateLastMediaAdded => false;
+
+        [JsonIgnore]
+        public override string FileNameWithoutExtension
+        {
+            get
+            {
+                if (IsFileProtocol)
+                {
+                    return System.IO.Path.GetFileName(Path);
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the actual children.
+        /// </summary>
+        /// <value>The actual children.</value>
+        [JsonIgnore]
+        public virtual IEnumerable<BaseItem> Children => LoadChildren();
+
+        /// <summary>
+        /// Gets thread-safe access to all recursive children of this folder - without regard to user.
+        /// </summary>
+        /// <value>The recursive children.</value>
+        [JsonIgnore]
+        public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
+
+        [JsonIgnore]
+        protected virtual bool SupportsShortcutChildren => false;
+
+        protected virtual bool FilterLinkedChildrenPerUser => false;
+
+        [JsonIgnore]
+        protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
+
+        [JsonIgnore]
+        public virtual bool SupportsUserDataFromChildren
+        {
+            get
+            {
+                // These are just far too slow.
+                if (this is ICollectionFolder)
+                {
+                    return false;
+                }
+
+                if (this is UserView)
+                {
+                    return false;
+                }
+
+                if (this is UserRootFolder)
+                {
+                    return false;
+                }
+
+                if (this is Channel)
+                {
+                    return false;
+                }
+
+                if (SourceType != SourceType.Library)
+                {
+                    return false;
+                }
+
+                if (this is IItemByName)
+                {
+                    if (this is not IHasDualAccess hasDualAccess || hasDualAccess.IsAccessedByName)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        public static ICollectionManager CollectionManager { get; set; }
 
         public override bool CanDelete()
         {
@@ -99,44 +189,27 @@ namespace MediaBrowser.Controller.Entities
             return baseResult;
         }
 
-        [IgnoreDataMember]
-        public override string FileNameWithoutExtension
-        {
-            get
-            {
-                if (IsFileProtocol)
-                {
-                    return System.IO.Path.GetFileName(Path);
-                }
-
-                return null;
-            }
-        }
-
         protected override bool IsAllowTagFilterEnforced()
         {
             if (this is ICollectionFolder)
             {
                 return false;
             }
+
             if (this is UserView)
             {
                 return false;
             }
+
             return true;
         }
-
-        [IgnoreDataMember]
-        protected virtual bool SupportsShortcutChildren => false;
 
         /// <summary>
         /// Adds the child.
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="InvalidOperationException">Unable to add  + item.Name</exception>
-        public void AddChild(BaseItem item, CancellationToken cancellationToken)
+        /// <exception cref="InvalidOperationException">Unable to add  + item.Name.</exception>
+        public void AddChild(BaseItem item)
         {
             item.SetParent(this);
 
@@ -149,6 +222,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 item.DateCreated = DateTime.UtcNow;
             }
+
             if (item.DateModified == DateTime.MinValue)
             {
                 item.DateModified = DateTime.UtcNow;
@@ -157,37 +231,22 @@ namespace MediaBrowser.Controller.Entities
             LibraryManager.CreateItem(item, this);
         }
 
-        /// <summary>
-        /// Gets the actual children.
-        /// </summary>
-        /// <value>The actual children.</value>
-        [IgnoreDataMember]
-        public virtual IEnumerable<BaseItem> Children => LoadChildren();
-
-        /// <summary>
-        /// thread-safe access to all recursive children of this folder - without regard to user
-        /// </summary>
-        /// <value>The recursive children.</value>
-        [IgnoreDataMember]
-        public IEnumerable<BaseItem> RecursiveChildren => GetRecursiveChildren();
-
         public override bool IsVisible(User user)
         {
-            if (this is ICollectionFolder && !(this is BasePluginFolder))
+            if (this is ICollectionFolder && this is not BasePluginFolder)
             {
-                if (user.Policy.BlockedMediaFolders != null)
+                var blockedMediaFolders = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedMediaFolders);
+                if (blockedMediaFolders.Length > 0)
                 {
-                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
-
-                        // Backwards compatibility
-                        user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
+                    if (blockedMediaFolders.Contains(Id))
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+                    if (!user.HasPermission(PermissionKind.EnableAllFolders)
+                        && !user.GetPreferenceValues<Guid>(PreferenceKind.EnabledFolders).Contains(Id))
                     {
                         return false;
                     }
@@ -199,12 +258,13 @@ namespace MediaBrowser.Controller.Entities
 
         /// <summary>
         /// Loads our children.  Validation will occur externally.
-        /// We want this sychronous.
+        /// We want this synchronous.
         /// </summary>
+        /// <returns>Returns children.</returns>
         protected virtual List<BaseItem> LoadChildren()
         {
-            //logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
-            //just load our children from the repo - the library will be validated and maintained in other processes
+            // logger.LogDebug("Loading children from {0} {1} {2}", GetType().Name, Id, Path);
+            // just load our children from the repo - the library will be validated and maintained in other processes
             return GetCachedChildren();
         }
 
@@ -215,20 +275,20 @@ namespace MediaBrowser.Controller.Entities
 
         public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return ValidateChildren(progress, cancellationToken, new MetadataRefreshOptions(new DirectoryService(Logger, FileSystem)));
+            return ValidateChildren(progress, new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken: cancellationToken);
         }
 
         /// <summary>
-        /// Validates that the children of the folder still exist
+        /// Validates that the children of the folder still exist.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="metadataRefreshOptions">The metadata refresh options.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task ValidateChildren(IProgress<double> progress, CancellationToken cancellationToken, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true)
+        public Task ValidateChildren(IProgress<double> progress, MetadataRefreshOptions metadataRefreshOptions, bool recursive = true,  CancellationToken cancellationToken = default)
         {
-            return ValidateChildrenInternal(progress, cancellationToken, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService);
+            return ValidateChildrenInternal(progress, recursive, true, metadataRefreshOptions, metadataRefreshOptions.DirectoryService, cancellationToken);
         }
 
         private Dictionary<Guid, BaseItem> GetActualChildrenDictionary()
@@ -242,7 +302,8 @@ namespace MediaBrowser.Controller.Entities
                 var id = child.Id;
                 if (dictionary.ContainsKey(id))
                 {
-                    Logger.LogError("Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
+                    Logger.LogError(
+                        "Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -267,13 +328,13 @@ namespace MediaBrowser.Controller.Entities
         /// Validates the children internal.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="recursive">if set to <c>true</c> [recursive].</param>
         /// <param name="refreshChildMetadata">if set to <c>true</c> [refresh child metadata].</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="directoryService">The directory service.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected virtual async Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             if (recursive)
             {
@@ -282,7 +343,7 @@ namespace MediaBrowser.Controller.Entities
 
             try
             {
-                await ValidateChildrenInternal2(progress, cancellationToken, recursive, refreshChildMetadata, refreshOptions, directoryService).ConfigureAwait(false);
+                await ValidateChildrenInternal2(progress, recursive, refreshChildMetadata, refreshOptions, directoryService, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -293,7 +354,7 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        private async Task ValidateChildrenInternal2(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        private async Task ValidateChildrenInternal2(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -314,17 +375,17 @@ namespace MediaBrowser.Controller.Entities
                     return;
                 }
 
-                progress.Report(5);
+                progress.Report(ProgressHelpers.RetrievedChildren);
 
                 if (recursive)
                 {
-                    ProviderManager.OnRefreshProgress(this, 5);
+                    ProviderManager.OnRefreshProgress(this, ProgressHelpers.RetrievedChildren);
                 }
 
-                //build a dictionary of the current children we have now by Id so we can compare quickly and easily
+                // Build a dictionary of the current children we have now by Id so we can compare quickly and easily
                 var currentChildren = GetActualChildrenDictionary();
 
-                //create a list for our validated children
+                // Create a list for our validated children
                 var newItems = new List<BaseItem>();
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -337,7 +398,12 @@ namespace MediaBrowser.Controller.Entities
 
                         if (currentChild.UpdateFromResolvedItem(child) > ItemUpdateType.None)
                         {
-                            currentChild.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken);
+                            await currentChild.UpdateToRepositoryAsync(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            // metadata is up-to-date; make sure DB has correct images dimensions and hash
+                            await LibraryManager.UpdateImagesAsync(currentChild).ConfigureAwait(false);
                         }
 
                         continue;
@@ -374,11 +440,11 @@ namespace MediaBrowser.Controller.Entities
                 validChildrenNeedGeneration = true;
             }
 
-            progress.Report(10);
+            progress.Report(ProgressHelpers.UpdatedChildItems);
 
             if (recursive)
             {
-                ProviderManager.OnRefreshProgress(this, 10);
+                ProviderManager.OnRefreshProgress(this, ProgressHelpers.UpdatedChildItems);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -388,11 +454,13 @@ namespace MediaBrowser.Controller.Entities
                 var innerProgress = new ActionableProgress<double>();
 
                 var folder = this;
-                innerProgress.RegisterAction(p =>
+                innerProgress.RegisterAction(innerPercent =>
                 {
-                    double newPct = .80 * p + 10;
-                    progress.Report(newPct);
-                    ProviderManager.OnRefreshProgress(folder, newPct);
+                    var percent = ProgressHelpers.GetProgress(ProgressHelpers.UpdatedChildItems, ProgressHelpers.ScannedSubfolders, innerPercent);
+
+                    progress.Report(percent);
+
+                    ProviderManager.OnRefreshProgress(folder, percent);
                 });
 
                 if (validChildrenNeedGeneration)
@@ -406,11 +474,11 @@ namespace MediaBrowser.Controller.Entities
 
             if (refreshChildMetadata)
             {
-                progress.Report(90);
+                progress.Report(ProgressHelpers.ScannedSubfolders);
 
                 if (recursive)
                 {
-                    ProviderManager.OnRefreshProgress(this, 90);
+                    ProviderManager.OnRefreshProgress(this, ProgressHelpers.ScannedSubfolders);
                 }
 
                 var container = this as IMetadataContainer;
@@ -418,13 +486,15 @@ namespace MediaBrowser.Controller.Entities
                 var innerProgress = new ActionableProgress<double>();
 
                 var folder = this;
-                innerProgress.RegisterAction(p =>
+                innerProgress.RegisterAction(innerPercent =>
                 {
-                    double newPct = .10 * p + 90;
-                    progress.Report(newPct);
+                    var percent = ProgressHelpers.GetProgress(ProgressHelpers.ScannedSubfolders, ProgressHelpers.RefreshedMetadata, innerPercent);
+
+                    progress.Report(percent);
+
                     if (recursive)
                     {
-                        ProviderManager.OnRefreshProgress(folder, newPct);
+                        ProviderManager.OnRefreshProgress(folder, percent);
                     }
                 });
 
@@ -439,55 +509,35 @@ namespace MediaBrowser.Controller.Entities
                         validChildren = Children.ToList();
                     }
 
-                    await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken);
+                    await RefreshMetadataRecursive(validChildren, refreshOptions, recursive, innerProgress, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
 
-        private async Task RefreshMetadataRecursive(List<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
+        private Task RefreshMetadataRecursive(IList<BaseItem> children, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var numComplete = 0;
-            var count = children.Count;
-            double currentPercent = 0;
-
-            foreach (var child in children)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var innerProgress = new ActionableProgress<double>();
-
-                // Avoid implicitly captured closure
-                var currentInnerPercent = currentPercent;
-
-                innerProgress.RegisterAction(p =>
-                {
-                    double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
-                    progress.Report(innerPercent);
-                });
-
-                await RefreshChildMetadata(child, refreshOptions, recursive && child.IsFolder, innerProgress, cancellationToken)
-                    .ConfigureAwait(false);
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= count;
-                percent *= 100;
-                currentPercent = percent;
-
-                progress.Report(percent);
-            }
+            return RunTasks(
+                (baseItem, innerProgress) => RefreshChildMetadata(baseItem, refreshOptions, recursive && baseItem.IsFolder, innerProgress, cancellationToken),
+                children,
+                progress,
+                cancellationToken);
         }
 
         private async Task RefreshAllMetadataForContainer(IMetadataContainer container, MetadataRefreshOptions refreshOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var series = container as Series;
-            if (series != null)
-            {
-                await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+            // limit the amount of concurrent metadata refreshes
+            await ProviderManager.RunMetadataRefresh(
+                async () =>
+                {
+                    var series = container as Series;
+                    if (series != null)
+                    {
+                        await series.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                    }
 
-            }
-            await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+                    await container.RefreshAllMetadata(refreshOptions, progress, cancellationToken).ConfigureAwait(false);
+                },
+                cancellationToken).ConfigureAwait(false);
         }
 
         private async Task RefreshChildMetadata(BaseItem child, MetadataRefreshOptions refreshOptions, bool recursive, IProgress<double> progress, CancellationToken cancellationToken)
@@ -502,12 +552,15 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (refreshOptions.RefreshItem(child))
                 {
-                    await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                    // limit the amount of concurrent metadata refreshes
+                    await ProviderManager.RunMetadataRefresh(
+                        async () => await child.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false),
+                        cancellationToken).ConfigureAwait(false);
                 }
 
                 if (recursive && child is Folder folder)
                 {
-                    await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken);
+                    await folder.RefreshMetadataRecursive(folder.Children.ToList(), refreshOptions, true, progress, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -520,45 +573,80 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        private async Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
+        private Task ValidateSubFolders(IList<Folder> children, IDirectoryService directoryService, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var numComplete = 0;
-            var count = children.Count;
-            double currentPercent = 0;
-
-            foreach (var child in children)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var innerProgress = new ActionableProgress<double>();
-
-                // Avoid implicitly captured closure
-                var currentInnerPercent = currentPercent;
-
-                innerProgress.RegisterAction(p =>
-                {
-                    double innerPercent = currentInnerPercent;
-                    innerPercent += p / (count);
-                    progress.Report(innerPercent);
-                });
-
-                await child.ValidateChildrenInternal(innerProgress, cancellationToken, true, false, null, directoryService)
-                        .ConfigureAwait(false);
-
-                numComplete++;
-                double percent = numComplete;
-                percent /= count;
-                percent *= 100;
-                currentPercent = percent;
-
-                progress.Report(percent);
-            }
+            return RunTasks(
+                (folder, innerProgress) => folder.ValidateChildrenInternal(innerProgress, true, false, null, directoryService, cancellationToken),
+                children,
+                progress,
+                cancellationToken);
         }
 
         /// <summary>
-        /// Get the children of this folder from the actual file system
+        /// Runs an action block on a list of children.
+        /// </summary>
+        /// <param name="task">The task to run for each child.</param>
+        /// <param name="children">The list of children.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        private async Task RunTasks<T>(Func<T, IProgress<double>, Task> task, IList<T> children, IProgress<double> progress, CancellationToken cancellationToken)
+        {
+            var childrenCount = children.Count;
+            var childrenProgress = new double[childrenCount];
+
+            void UpdateProgress()
+            {
+                progress.Report(childrenProgress.Average());
+            }
+
+            var fanoutConcurrency = ConfigurationManager.Configuration.LibraryScanFanoutConcurrency;
+            var parallelism = fanoutConcurrency == 0 ? Environment.ProcessorCount : fanoutConcurrency;
+
+            var actionBlock = new ActionBlock<int>(
+                async i =>
+                {
+                    var innerProgress = new ActionableProgress<double>();
+
+                    innerProgress.RegisterAction(innerPercent =>
+                    {
+                        // round the percent and only update progress if it changed to prevent excessive UpdateProgress calls
+                        var innerPercentRounded = Math.Round(innerPercent);
+                        if (childrenProgress[i] != innerPercentRounded)
+                        {
+                            childrenProgress[i] = innerPercentRounded;
+                            UpdateProgress();
+                        }
+                    });
+
+                    await task(children[i], innerProgress).ConfigureAwait(false);
+
+                    childrenProgress[i] = 100;
+
+                    UpdateProgress();
+                },
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = parallelism,
+                    CancellationToken = cancellationToken,
+                });
+
+            for (var i = 0; i < childrenCount; i++)
+            {
+                actionBlock.Post(i);
+            }
+
+            actionBlock.Complete();
+
+            await actionBlock.Completion.ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Get the children of this folder from the actual file system.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
+        /// <param name="directoryService">The directory service to use for operation.</param>
+        /// <returns>Returns set of base items.</returns>
         protected virtual IEnumerable<BaseItem> GetNonCachedChildren(IDirectoryService directoryService)
         {
             var collectionType = LibraryManager.GetContentType(this);
@@ -568,7 +656,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Get our children from the repo - stubbed for now
+        /// Get our children from the repo - stubbed for now.
         /// </summary>
         /// <returns>IEnumerable{BaseItem}.</returns>
         protected List<BaseItem> GetCachedChildren()
@@ -585,7 +673,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Length > 0)
             {
-                if (!(this is ICollectionFolder))
+                if (this is not ICollectionFolder)
                 {
                     return GetChildren(user, true).Count;
                 }
@@ -600,7 +688,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             });
 
             return result.TotalRecordCount;
@@ -619,7 +706,6 @@ namespace MediaBrowser.Controller.Entities
                 {
                     EnableImages = false
                 }
-
             }).TotalRecordCount;
         }
 
@@ -644,7 +730,7 @@ namespace MediaBrowser.Controller.Entities
                 return PostFilterAndSort(items, query, true);
             }
 
-            if (!(this is UserRootFolder) && !(this is AggregateFolder) && query.ParentId == Guid.Empty)
+            if (this is not UserRootFolder && this is not AggregateFolder && query.ParentId == Guid.Empty)
             {
                 query.Parent = this;
             }
@@ -665,36 +751,36 @@ namespace MediaBrowser.Controller.Entities
             query.StartIndex = null;
             query.Limit = null;
 
-            var itemsList = LibraryManager.GetItemList(query);
+            IEnumerable<BaseItem> itemsList = LibraryManager.GetItemList(query);
             var user = query.User;
 
             if (user != null)
             {
                 // needed for boxsets
-                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User)).ToList();
+                itemsList = itemsList.Where(i => i.IsVisibleStandalone(query.User));
             }
 
-            BaseItem[] returnItems;
+            IEnumerable<BaseItem> returnItems;
             int totalCount = 0;
 
             if (query.EnableTotalRecordCount)
             {
-                var itemsArray = itemsList.ToArray();
-                totalCount = itemsArray.Length;
-                returnItems = itemsArray;
+                var itemArray = itemsList.ToArray();
+                totalCount = itemArray.Length;
+                returnItems = itemArray;
             }
             else
             {
-                returnItems = itemsList.ToArray();
+                returnItems = itemsList;
             }
 
             if (limit.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value).ToArray();
+                returnItems = returnItems.Skip(startIndex ?? 0).Take(limit.Value);
             }
             else if (startIndex.HasValue)
             {
-                returnItems = returnItems.Skip(startIndex.Value).ToArray();
+                returnItems = returnItems.Skip(startIndex.Value);
             }
 
             return new QueryResult<BaseItem>
@@ -706,7 +792,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], typeof(BoxSet).Name, StringComparison.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
@@ -719,7 +805,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (LinkedChildren.Length > 0)
             {
-                if (!(this is ICollectionFolder))
+                if (this is not ICollectionFolder)
                 {
                     Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
                     return true;
@@ -796,7 +882,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(typeof(Series).Name))
+                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(nameof(Series)))
                 {
                     Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
@@ -806,26 +892,51 @@ namespace MediaBrowser.Controller.Entities
             return false;
         }
 
+        private static BaseItem[] SortItemsByRequest(InternalItemsQuery query, IReadOnlyList<BaseItem> items)
+        {
+            var ids = query.ItemIds;
+            int size = items.Count;
+
+            // ids can potentially contain non-unique guids, but query result cannot,
+            // so we include only first occurrence of each guid
+            var positions = new Dictionary<Guid, int>(size);
+            int index = 0;
+            for (int i = 0; i < ids.Length; i++)
+            {
+                if (positions.TryAdd(ids[i], index))
+                {
+                    index++;
+                }
+            }
+
+            var newItems = new BaseItem[size];
+            for (int i = 0; i < size; i++)
+            {
+                var item = items[i];
+                newItems[positions[item.Id]] = item;
+            }
+
+            return newItems;
+        }
+
         public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
         {
             if (query.ItemIds.Length > 0)
             {
                 var result = LibraryManager.GetItemsResult(query);
 
-                if (query.OrderBy.Length == 0)
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
                 {
-                    var ids = query.ItemIds.ToList();
-
-                    // Try to preserve order
-                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
+                    result.Items = SortItemsByRequest(query, result.Items);
                 }
+
                 return result;
             }
 
             return GetItemsInternal(query);
         }
 
-        public BaseItem[] GetItemList(InternalItemsQuery query)
+        public IReadOnlyList<BaseItem> GetItemList(InternalItemsQuery query)
         {
             query.EnableTotalRecordCount = false;
 
@@ -833,14 +944,12 @@ namespace MediaBrowser.Controller.Entities
             {
                 var result = LibraryManager.GetItemList(query);
 
-                if (query.OrderBy.Length == 0)
+                if (query.OrderBy.Count == 0 && query.ItemIds.Length > 1)
                 {
-                    var ids = query.ItemIds.ToList();
-
-                    // Try to preserve order
-                    return result.OrderBy(i => ids.IndexOf(i.Id)).ToArray();
+                    return SortItemsByRequest(query, result);
                 }
-                return result.ToArray();
+
+                return result;
             }
 
             return GetItemsInternal(query).Items;
@@ -853,7 +962,7 @@ namespace MediaBrowser.Controller.Entities
                 try
                 {
                     query.Parent = this;
-                    query.ChannelIds = new Guid[] { ChannelId };
+                    query.ChannelIds = new[] { ChannelId };
 
                     // Don't blow up here because it could cause parent screens with other content to fail
                     return ChannelManager.GetChannelItemsInternal(query, new SimpleProgress<double>(), CancellationToken.None).Result;
@@ -882,13 +991,17 @@ namespace MediaBrowser.Controller.Entities
             }
             else
             {
-                items = GetChildren(user, true).Where(filter);
+                // need to pass this param to the children.
+                var childQuery = new InternalItemsQuery
+                {
+                    DisplayAlbumFolders = query.DisplayAlbumFolders
+                };
+
+                items = GetChildren(user, true, childQuery).Where(filter);
             }
 
             return PostFilterAndSort(items, query, true);
         }
-
-        public static ICollectionManager CollectionManager { get; set; }
 
         protected QueryResult<BaseItem> PostFilterAndSort(IEnumerable<BaseItem> items, InternalItemsQuery query, bool enableSorting)
         {
@@ -902,16 +1015,17 @@ namespace MediaBrowser.Controller.Entities
 
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
             }
+
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.OrdinalIgnoreCase));
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(query.NameLessThan))
             {
-                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
+                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
 
             // This must be the last filter
@@ -923,11 +1037,13 @@ namespace MediaBrowser.Controller.Entities
             return UserViewBuilder.SortAndPage(items, null, query, LibraryManager, enableSorting);
         }
 
-        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(IEnumerable<BaseItem> items,
+        private static IEnumerable<BaseItem> CollapseBoxSetItemsIfNeeded(
+            IEnumerable<BaseItem> items,
             InternalItemsQuery query,
             BaseItem queryParent,
             User user,
-            IServerConfigurationManager configurationManager, ICollectionManager collectionManager)
+            IServerConfigurationManager configurationManager,
+            ICollectionManager collectionManager)
         {
             if (items == null)
             {
@@ -942,7 +1058,8 @@ namespace MediaBrowser.Controller.Entities
             return items;
         }
 
-        private static bool CollapseBoxSetItems(InternalItemsQuery query,
+        private static bool CollapseBoxSetItems(
+            InternalItemsQuery query,
             BaseItem queryParent,
             User user,
             IServerConfigurationManager configurationManager)
@@ -952,18 +1069,22 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (queryParent is Series)
             {
                 return false;
             }
+
             if (queryParent is Season)
             {
                 return false;
             }
+
             if (queryParent is MusicAlbum)
             {
                 return false;
             }
+
             if (queryParent is MusicArtist)
             {
                 return false;
@@ -993,33 +1114,38 @@ namespace MediaBrowser.Controller.Entities
             {
                 return false;
             }
+
             if (request.IsFavoriteOrLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsLiked.HasValue)
             {
                 return false;
             }
+
             if (request.IsPlayed.HasValue)
             {
                 return false;
             }
+
             if (request.IsResumable.HasValue)
             {
                 return false;
             }
+
             if (request.IsFolder.HasValue)
             {
                 return false;
             }
 
-            if (request.Genres.Length > 0)
+            if (request.Genres.Count > 0)
             {
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1124,7 +1250,7 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.GenreIds.Length > 0)
+            if (request.GenreIds.Count > 0)
             {
                 return false;
             }
@@ -1169,6 +1295,11 @@ namespace MediaBrowser.Controller.Entities
 
         public List<BaseItem> GetChildren(User user, bool includeLinkedChildren)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             return GetChildren(user, includeLinkedChildren, null);
         }
 
@@ -1179,8 +1310,11 @@ namespace MediaBrowser.Controller.Entities
                 throw new ArgumentNullException(nameof(user));
             }
 
-            //the true root should return our users root folder children
-            if (IsPhysicalRoot) return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
+            // the true root should return our users root folder children
+            if (IsPhysicalRoot)
+            {
+                return LibraryManager.GetUserRootFolder().GetChildren(user, includeLinkedChildren);
+            }
 
             var result = new Dictionary<Guid, BaseItem>();
 
@@ -1197,10 +1331,23 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Adds the children to list.
         /// </summary>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
         private void AddChildren(User user, bool includeLinkedChildren, Dictionary<Guid, BaseItem> result, bool recursive, InternalItemsQuery query)
         {
-            foreach (var child in GetEligibleChildrenForRecursiveChildren(user))
+            // If Query.AlbumFolders is set, then enforce the format as per the db in that it permits sub-folders in music albums.
+            IEnumerable<BaseItem> children = null;
+            if ((query?.DisplayAlbumFolders ?? false) && (this is MusicAlbum))
+            {
+                children = Children;
+                query = null;
+            }
+
+            // If there are not sub-folders, proceed as normal.
+            if (children == null)
+            {
+                children = GetEligibleChildrenForRecursiveChildren(user);
+            }
+
+            foreach (var child in children)
             {
                 bool? isVisibleToUser = null;
 
@@ -1238,18 +1385,6 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets allowed recursive children of an item
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="includeLinkedChildren">if set to <c>true</c> [include linked children].</param>
-        /// <returns>IEnumerable{BaseItem}.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public IEnumerable<BaseItem> GetRecursiveChildren(User user, bool includeLinkedChildren = true)
-        {
-            return GetRecursiveChildren(user, null);
         }
 
         public virtual IEnumerable<BaseItem> GetRecursiveChildren(User user, InternalItemsQuery query)
@@ -1327,7 +1462,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-
         /// <summary>
         /// Gets the linked children.
         /// </summary>
@@ -1346,19 +1480,23 @@ namespace MediaBrowser.Controller.Entities
                     list.Add(child);
                 }
             }
+
             return list;
         }
-
-        protected virtual bool FilterLinkedChildrenPerUser => false;
 
         public bool ContainsLinkedChildByItemId(Guid itemId)
         {
             var linkedChildren = LinkedChildren;
             foreach (var i in linkedChildren)
             {
-                if (i.ItemId.HasValue && i.ItemId.Value == itemId)
+                if (i.ItemId.HasValue)
                 {
-                    return true;
+                    if (i.ItemId.Value == itemId)
+                    {
+                        return true;
+                    }
+
+                    continue;
                 }
 
                 var child = GetLinkedChild(i);
@@ -1368,6 +1506,7 @@ namespace MediaBrowser.Controller.Entities
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -1406,7 +1545,7 @@ namespace MediaBrowser.Controller.Entities
 
                 var childOwner = child.GetOwner() ?? child;
 
-                if (childOwner != null && !(child is IItemByName))
+                if (child is not IItemByName)
                 {
                     var childProtocol = childOwner.PathProtocol;
                     if (!childProtocol.HasValue || childProtocol.Value != Model.MediaInfo.MediaProtocol.File)
@@ -1445,9 +1584,6 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Item2 != null);
         }
 
-        [IgnoreDataMember]
-        protected override bool SupportsOwnedItems => base.SupportsOwnedItems || SupportsShortcutChildren;
-
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
             var changesFound = false;
@@ -1468,7 +1604,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// Refreshes the linked children.
         /// </summary>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise</returns>
+        /// <param name="fileSystemChildren">The enumerable of file system metadata.</param>
+        /// <returns><c>true</c> if the linked children were updated, <c>false</c> otherwise.</returns>
         protected virtual bool RefreshLinkedChildren(IEnumerable<FileSystemMetadata> fileSystemChildren)
         {
             if (SupportsShortcutChildren)
@@ -1532,8 +1669,8 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="user">The user.</param>
         /// <param name="datePlayed">The date played.</param>
         /// <param name="resetPosition">if set to <c>true</c> [reset position].</param>
-        /// <returns>Task.</returns>
-        public override void MarkPlayed(User user,
+        public override void MarkPlayed(
+            User user,
             DateTime? datePlayed,
             bool resetPosition)
         {
@@ -1545,7 +1682,7 @@ namespace MediaBrowser.Controller.Entities
                 EnableTotalRecordCount = false
             };
 
-            if (!user.Configuration.DisplayMissingEpisodes)
+            if (!user.DisplayMissingEpisodes)
             {
                 query.IsVirtualItem = false;
             }
@@ -1573,7 +1710,6 @@ namespace MediaBrowser.Controller.Entities
         /// Marks the unplayed.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>Task.</returns>
         public override void MarkUnplayed(User user)
         {
             var itemsResult = GetItemList(new InternalItemsQuery
@@ -1582,7 +1718,6 @@ namespace MediaBrowser.Controller.Entities
                 Recursive = true,
                 IsFolder = false,
                 EnableTotalRecordCount = false
-
             });
 
             // Sweep through recursively and update status
@@ -1600,7 +1735,6 @@ namespace MediaBrowser.Controller.Entities
                 IsFolder = false,
                 IsVirtualItem = false,
                 EnableTotalRecordCount = false
-
             });
 
             return itemsResult
@@ -1610,46 +1744,6 @@ namespace MediaBrowser.Controller.Entities
         public override bool IsUnplayed(User user)
         {
             return !IsPlayed(user);
-        }
-
-        [IgnoreDataMember]
-        public virtual bool SupportsUserDataFromChildren
-        {
-            get
-            {
-                // These are just far too slow.
-                if (this is ICollectionFolder)
-                {
-                    return false;
-                }
-                if (this is UserView)
-                {
-                    return false;
-                }
-                if (this is UserRootFolder)
-                {
-                    return false;
-                }
-                if (this is Channel)
-                {
-                    return false;
-                }
-                if (SourceType != SourceType.Library)
-                {
-                    return false;
-                }
-                var iItemByName = this as IItemByName;
-                if (iItemByName != null)
-                {
-                    var hasDualAccess = this as IHasDualAccess;
-                    if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
         }
 
         public override void FillUserDataDtoValues(UserItemDataDto dto, UserItemData userData, BaseItemDto itemDto, User user, DtoOptions fields)
@@ -1681,26 +1775,60 @@ namespace MediaBrowser.Controller.Entities
                     {
                         EnableImages = false
                     }
+                }).TotalRecordCount;
 
-                });
+                dto.UnplayedItemCount = unplayedQueryResult;
 
-                double unplayedCount = unplayedQueryResult.TotalRecordCount;
-
-                dto.UnplayedItemCount = unplayedQueryResult.TotalRecordCount;
-
-                if (itemDto != null && itemDto.RecursiveItemCount.HasValue)
+                if (itemDto?.RecursiveItemCount > 0)
                 {
-                    if (itemDto.RecursiveItemCount.Value > 0)
-                    {
-                        var unplayedPercentage = (unplayedCount / itemDto.RecursiveItemCount.Value) * 100;
-                        dto.PlayedPercentage = 100 - unplayedPercentage;
-                        dto.Played = dto.PlayedPercentage.Value >= 100;
-                    }
+                    var unplayedPercentage = ((double)unplayedQueryResult / itemDto.RecursiveItemCount.Value) * 100;
+                    dto.PlayedPercentage = 100 - unplayedPercentage;
+                    dto.Played = dto.PlayedPercentage.Value >= 100;
                 }
                 else
                 {
                     dto.Played = (dto.UnplayedItemCount ?? 0) == 0;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Contains constants used when reporting scan progress.
+        /// </summary>
+        private static class ProgressHelpers
+        {
+            /// <summary>
+            /// Reported after the folders immediate children are retrieved.
+            /// </summary>
+            public const int RetrievedChildren = 5;
+
+            /// <summary>
+            /// Reported after add, updating, or deleting child items from the LibraryManager.
+            /// </summary>
+            public const int UpdatedChildItems = 10;
+
+            /// <summary>
+            /// Reported once subfolders are scanned.
+            /// When scanning subfolders, the progress will be between [UpdatedItems, ScannedSubfolders].
+            /// </summary>
+            public const int ScannedSubfolders = 50;
+
+            /// <summary>
+            /// Reported once metadata is refreshed.
+            /// When refreshing metadata, the progress will be between [ScannedSubfolders, MetadataRefreshed].
+            /// </summary>
+            public const int RefreshedMetadata = 100;
+
+            /// <summary>
+            /// Gets the current progress given the previous step, next step, and progress in between.
+            /// </summary>
+            /// <param name="previousProgressStep">The previous progress step.</param>
+            /// <param name="nextProgressStep">The next progress step.</param>
+            /// <param name="currentProgress">The current progress step.</param>
+            /// <returns>The progress.</returns>
+            public static double GetProgress(int previousProgressStep, int nextProgressStep, double currentProgress)
+            {
+                return previousProgressStep + ((nextProgressStep - previousProgressStep) * (currentProgress / 100));
             }
         }
     }

@@ -1,107 +1,112 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3uParser
     {
-        private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
-        private readonly IServerApplicationHost _appHost;
+        private const string ExtInfPrefix = "#EXTINF:";
 
-        public M3uParser(ILogger logger, IHttpClient httpClient, IServerApplicationHost appHost)
+        private readonly ILogger _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public M3uParser(ILogger logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
-            _httpClient = httpClient;
-            _appHost = appHost;
+            _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<List<ChannelInfo>> Parse(string url, string channelIdPrefix, string tunerHostId, CancellationToken cancellationToken)
+        public async Task<List<ChannelInfo>> Parse(TunerHostInfo info, string channelIdPrefix, CancellationToken cancellationToken)
         {
             // Read the file and display it line by line.
-            using (var reader = new StreamReader(await GetListingsStream(url, cancellationToken).ConfigureAwait(false)))
+            using (var reader = new StreamReader(await GetListingsStream(info, cancellationToken).ConfigureAwait(false)))
             {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
+                return await GetChannelsAsync(reader, channelIdPrefix, info.Id).ConfigureAwait(false);
             }
         }
 
-        public List<ChannelInfo> ParseString(string text, string channelIdPrefix, string tunerHostId)
+        public async Task<Stream> GetListingsStream(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            // Read the file and display it line by line.
-            using (var reader = new StringReader(text))
+            if (info == null)
             {
-                return GetChannels(reader, channelIdPrefix, tunerHostId);
+                throw new ArgumentNullException(nameof(info));
             }
+
+            if (!info.Url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return AsyncFile.OpenRead(info.Url);
+            }
+
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, info.Url);
+            if (!string.IsNullOrEmpty(info.UserAgent))
+            {
+                requestMessage.Headers.UserAgent.TryParseAdd(info.UserAgent);
+            }
+
+            // Set HttpCompletionOption.ResponseHeadersRead to prevent timeouts on larger files
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default)
+                .SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStreamAsync(cancellationToken);
         }
 
-        public Task<Stream> GetListingsStream(string url, CancellationToken cancellationToken)
-        {
-            if (url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return _httpClient.Get(new HttpRequestOptions
-                {
-                    Url = url,
-                    CancellationToken = cancellationToken,
-                    // Some data providers will require a user agent
-                    UserAgent = _appHost.ApplicationUserAgent
-                });
-            }
-            return Task.FromResult((Stream)File.OpenRead(url));
-        }
-
-        const string ExtInfPrefix = "#EXTINF:";
-        private List<ChannelInfo> GetChannels(TextReader reader, string channelIdPrefix, string tunerHostId)
+        private async Task<List<ChannelInfo>> GetChannelsAsync(TextReader reader, string channelIdPrefix, string tunerHostId)
         {
             var channels = new List<ChannelInfo>();
-            string line;
-            string extInf = "";
+            string extInf = string.Empty;
 
-            while ((line = reader.ReadLine()) != null)
+            await foreach (var line in reader.ReadAllLinesAsync().ConfigureAwait(false))
             {
-                line = line.Trim();
-                if (string.IsNullOrWhiteSpace(line))
+                var trimmedLine = line.Trim();
+                if (string.IsNullOrWhiteSpace(trimmedLine))
                 {
                     continue;
                 }
 
-                if (line.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
+                if (trimmedLine.StartsWith("#EXTM3U", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                if (line.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
+                if (trimmedLine.StartsWith(ExtInfPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    extInf = line.Substring(ExtInfPrefix.Length).Trim();
-                    _logger.LogInformation("Found m3u channel: {0}", extInf);
+                    extInf = trimmedLine.Substring(ExtInfPrefix.Length).Trim();
                 }
-                else if (!string.IsNullOrWhiteSpace(extInf) && !line.StartsWith("#", StringComparison.OrdinalIgnoreCase))
+                else if (!string.IsNullOrWhiteSpace(extInf) && !trimmedLine.StartsWith('#'))
                 {
-                    var channel = GetChannelnfo(extInf, tunerHostId, line);
+                    var channel = GetChannelnfo(extInf, tunerHostId, trimmedLine);
                     if (string.IsNullOrWhiteSpace(channel.Id))
                     {
-                        channel.Id = channelIdPrefix + line.GetMD5().ToString("N");
+                        channel.Id = channelIdPrefix + trimmedLine.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N");
+                        channel.Id = channelIdPrefix + channel.Id.GetMD5().ToString("N", CultureInfo.InvariantCulture);
                     }
 
-                    channel.Path = line;
+                    channel.Path = trimmedLine;
                     channels.Add(channel);
-                    extInf = "";
+                    _logger.LogInformation("Parsed channel: {ChannelName}", channel.Name);
+                    extInf = string.Empty;
                 }
             }
 
@@ -110,8 +115,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private ChannelInfo GetChannelnfo(string extInf, string tunerHostId, string mediaUrl)
         {
-            var channel = new ChannelInfo();
-            channel.TunerHostId = tunerHostId;
+            var channel = new ChannelInfo()
+            {
+                TunerHostId = tunerHostId
+            };
 
             extInf = extInf.Trim();
 
@@ -121,6 +128,11 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             if (attributes.TryGetValue("tvg-logo", out string value))
             {
                 channel.ImageUrl = value;
+            }
+
+            if (attributes.TryGetValue("group-title", out string groupTitle))
+            {
+                channel.ChannelGroup = groupTitle;
             }
 
             channel.Name = GetChannelName(extInf, attributes);
@@ -137,13 +149,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 channelIdValues.Add(channelId);
             }
+
             if (!string.IsNullOrWhiteSpace(tvgId))
             {
                 channelIdValues.Add(tvgId);
             }
+
             if (channelIdValues.Count > 0)
             {
-                channel.Id = string.Join("_", channelIdValues.ToArray());
+                channel.Id = string.Join('_', channelIdValues);
             }
 
             return channel;
@@ -151,16 +165,15 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private string GetChannelNumber(string extInf, Dictionary<string, string> attributes, string mediaUrl)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].AsSpan().Trim() : ReadOnlySpan<char>.Empty;
 
             string numberString = null;
             string attributeValue;
-            double doubleValue;
 
             if (attributes.TryGetValue("tvg-chno", out attributeValue))
             {
-                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                 {
                     numberString = attributeValue;
                 }
@@ -170,41 +183,40 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 if (attributes.TryGetValue("tvg-id", out attributeValue))
                 {
-                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                    if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                     {
                         numberString = attributeValue;
                     }
                     else if (attributes.TryGetValue("channel-id", out attributeValue))
                     {
-                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out doubleValue))
+                        if (double.TryParse(attributeValue, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                         {
                             numberString = attributeValue;
                         }
                     }
                 }
 
-                if (String.IsNullOrWhiteSpace(numberString))
+                if (string.IsNullOrWhiteSpace(numberString))
                 {
                     // Using this as a fallback now as this leads to Problems with channels like "5 USA"
-                    // where 5 isnt ment to be the channel number
+                    // where 5 isn't ment to be the channel number
                     // Check for channel number with the format from SatIp
                     // #EXTINF:0,84. VOX Schweiz
                     // #EXTINF:0,84.0 - VOX Schweiz
-                    if (!string.IsNullOrWhiteSpace(nameInExtInf))
+                    if (!nameInExtInf.IsEmpty && !nameInExtInf.IsWhiteSpace())
                     {
                         var numberIndex = nameInExtInf.IndexOf(' ');
                         if (numberIndex > 0)
                         {
-                            var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
+                            var numberPart = nameInExtInf.Slice(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                            if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                             {
-                                numberString = numberPart;
+                                numberString = numberPart.ToString();
                             }
                         }
                     }
                 }
-
             }
 
             if (!IsValidChannelNumber(numberString))
@@ -226,7 +238,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     try
                     {
-                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.Split('/').Last());
+                        numberString = Path.GetFileNameWithoutExtension(mediaUrl.AsSpan().RightPart('/')).ToString();
 
                         if (!IsValidChannelNumber(numberString))
                         {
@@ -253,7 +265,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 return false;
             }
 
-            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+            if (!double.TryParse(numberString, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
             {
                 return false;
             }
@@ -263,8 +275,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         private static string GetChannelName(string extInf, Dictionary<string, string> attributes)
         {
-            var nameParts = extInf.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var nameInExtInf = nameParts.Length > 1 ? nameParts.Last().Trim() : null;
+            var nameParts = extInf.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var nameInExtInf = nameParts.Length > 1 ? nameParts[^1].Trim() : null;
 
             // Check for channel number with the format from SatIp
             // #EXTINF:0,84. VOX Schweiz
@@ -276,19 +288,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });
 
-                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out var number))
+                    if (double.TryParse(numberPart, NumberStyles.Any, CultureInfo.InvariantCulture, out _))
                     {
-                        //channel.Number = number.ToString();
+                        // channel.Number = number.ToString();
                         nameInExtInf = nameInExtInf.Substring(numberIndex + 1).Trim(new[] { ' ', '-' });
                     }
                 }
             }
 
-            attributes.TryGetValue("tvg-name", out string name);
+            string name = nameInExtInf;
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                name = nameInExtInf;
+                attributes.TryGetValue("tvg-name", out name);
             }
 
             if (string.IsNullOrWhiteSpace(name))

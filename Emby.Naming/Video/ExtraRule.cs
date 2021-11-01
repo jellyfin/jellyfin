@@ -1,28 +1,46 @@
-using Emby.Naming.Common;
+using MediaBrowser.Model.Entities;
+using MediaType = Emby.Naming.Common.MediaType;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// A rule used to match a file path with an <see cref="MediaBrowser.Model.Entities.ExtraType"/>.
+    /// </summary>
     public class ExtraRule
     {
         /// <summary>
-        /// Gets or sets the token.
+        /// Initializes a new instance of the <see cref="ExtraRule"/> class.
         /// </summary>
-        /// <value>The token.</value>
-        public string Token { get; set; }
+        /// <param name="extraType">Type of extra.</param>
+        /// <param name="ruleType">Type of rule.</param>
+        /// <param name="token">Token.</param>
+        /// <param name="mediaType">Media type.</param>
+        public ExtraRule(ExtraType extraType, ExtraRuleType ruleType, string token, MediaType mediaType)
+        {
+            Token = token;
+            ExtraType = extraType;
+            RuleType = ruleType;
+            MediaType = mediaType;
+        }
+
         /// <summary>
-        /// Gets or sets the type of the extra.
+        /// Gets or sets the token to use for matching against the file path.
         /// </summary>
-        /// <value>The type of the extra.</value>
-        public string ExtraType { get; set; }
+        public string Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the extra to return when matched.
+        /// </summary>
+        public ExtraType ExtraType { get; set; }
+
         /// <summary>
         /// Gets or sets the type of the rule.
         /// </summary>
-        /// <value>The type of the rule.</value>
         public ExtraRuleType RuleType { get; set; }
+
         /// <summary>
-        /// Gets or sets the type of the media.
+        /// Gets or sets the type of the media to return when matched.
         /// </summary>
-        /// <value>The type of the media.</value>
         public MediaType MediaType { get; set; }
     }
 }

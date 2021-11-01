@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +14,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -22,19 +26,36 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
-        private readonly IMediaSourceManager _mediaSourceManager;
-        private readonly ILogger _logger;
-        private readonly IJsonSerializer _json;
+        private readonly ILogger<SubtitleScheduledTask> _logger;
+        private readonly ILocalizationManager _localization;
 
-        public SubtitleScheduledTask(ILibraryManager libraryManager, IJsonSerializer json, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger, IMediaSourceManager mediaSourceManager)
+        public SubtitleScheduledTask(
+            ILibraryManager libraryManager,
+            IServerConfigurationManager config,
+            ISubtitleManager subtitleManager,
+            ILogger<SubtitleScheduledTask> logger,
+            ILocalizationManager localization)
         {
             _libraryManager = libraryManager;
             _config = config;
             _subtitleManager = subtitleManager;
             _logger = logger;
-            _mediaSourceManager = mediaSourceManager;
-            _json = json;
+            _localization = localization;
         }
+
+        public string Name => _localization.GetLocalizedString("TaskDownloadMissingSubtitles");
+
+        public string Description => _localization.GetLocalizedString("TaskDownloadMissingSubtitlesDescription");
+
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+
+        public string Key => "DownloadSubtitles";
+
+        public bool IsHidden => false;
+
+        public bool IsEnabled => true;
+
+        public bool IsLogged => true;
 
         private SubtitleOptions GetOptions()
         {
@@ -54,23 +75,23 @@ namespace MediaBrowser.Providers.MediaInfo
                 var libraryOptions = _libraryManager.GetLibraryOptions(library);
 
                 string[] subtitleDownloadLanguages;
-                bool SkipIfEmbeddedSubtitlesPresent;
-                bool SkipIfAudioTrackMatches;
-                bool RequirePerfectMatch;
+                bool skipIfEmbeddedSubtitlesPresent;
+                bool skipIfAudioTrackMatches;
+                bool requirePerfectMatch;
 
                 if (libraryOptions.SubtitleDownloadLanguages == null)
                 {
                     subtitleDownloadLanguages = options.DownloadLanguages;
-                    SkipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
-                    SkipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
-                    RequirePerfectMatch = options.RequirePerfectMatch;
+                    skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
+                    skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
+                    requirePerfectMatch = options.RequirePerfectMatch;
                 }
                 else
                 {
                     subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
-                    SkipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
-                    SkipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                    RequirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
+                    skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
+                    skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
+                    requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
                 }
 
                 foreach (var lang in subtitleDownloadLanguages)
@@ -86,12 +107,12 @@ namespace MediaBrowser.Providers.MediaInfo
                         Recursive = true
                     };
 
-                    if (SkipIfAudioTrackMatches)
+                    if (skipIfAudioTrackMatches)
                     {
                         query.HasNoAudioTrackWithLanguage = lang;
                     }
 
-                    if (SkipIfEmbeddedSubtitlesPresent)
+                    if (skipIfEmbeddedSubtitlesPresent)
                     {
                         // Exclude if it already has any subtitles of the same language
                         query.HasNoSubtitleTrackWithLanguage = lang;
@@ -148,36 +169,38 @@ namespace MediaBrowser.Providers.MediaInfo
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
             string[] subtitleDownloadLanguages;
-            bool SkipIfEmbeddedSubtitlesPresent;
-            bool SkipIfAudioTrackMatches;
-            bool RequirePerfectMatch;
+            bool skipIfEmbeddedSubtitlesPresent;
+            bool skipIfAudioTrackMatches;
+            bool requirePerfectMatch;
 
             if (libraryOptions.SubtitleDownloadLanguages == null)
             {
                 subtitleDownloadLanguages = options.DownloadLanguages;
-                SkipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
-                SkipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
-                RequirePerfectMatch = options.RequirePerfectMatch;
+                skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
+                skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
+                requirePerfectMatch = options.RequirePerfectMatch;
             }
             else
             {
                 subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
-                SkipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
-                SkipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                RequirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
+                skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
+                skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
+                requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
             }
 
-            var downloadedLanguages = await new SubtitleDownloader(_logger,
-                _subtitleManager)
-                .DownloadSubtitles(video,
-                mediaStreams,
-                SkipIfEmbeddedSubtitlesPresent,
-                SkipIfAudioTrackMatches,
-                RequirePerfectMatch,
-                subtitleDownloadLanguages,
-                libraryOptions.DisabledSubtitleFetchers,
-                libraryOptions.SubtitleFetcherOrder,
-                cancellationToken).ConfigureAwait(false);
+            var downloadedLanguages = await new SubtitleDownloader(
+                _logger,
+                _subtitleManager).DownloadSubtitles(
+                    video,
+                    mediaStreams,
+                    skipIfEmbeddedSubtitlesPresent,
+                    skipIfAudioTrackMatches,
+                    requirePerfectMatch,
+                    subtitleDownloadLanguages,
+                    libraryOptions.DisabledSubtitleFetchers,
+                    libraryOptions.SubtitleFetcherOrder,
+                    true,
+                    cancellationToken).ConfigureAwait(false);
 
             // Rescan
             if (downloadedLanguages.Count > 0)
@@ -191,25 +214,11 @@ namespace MediaBrowser.Providers.MediaInfo
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-
+            return new[]
+            {
                 // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks }
             };
         }
-
-        public string Name => "Download missing subtitles";
-
-        public string Description => "Searches the internet for missing subtitles based on metadata configuration.";
-
-        public string Category => "Library";
-
-        public string Key => "DownloadSubtitles";
-
-        public bool IsHidden => false;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
     }
 }

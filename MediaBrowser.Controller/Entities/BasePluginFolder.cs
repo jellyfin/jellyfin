@@ -1,4 +1,8 @@
-using MediaBrowser.Model.Serialization;
+#nullable disable
+
+#pragma warning disable CS1591
+
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -8,8 +12,14 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BasePluginFolder : Folder, ICollectionFolder
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public virtual string CollectionType => null;
+
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
 
         public override bool CanDelete()
         {
@@ -20,19 +30,5 @@ namespace MediaBrowser.Controller.Entities
         {
             return true;
         }
-
-        [IgnoreDataMember]
-        public override bool SupportsInheritedParentImages => false;
-
-        [IgnoreDataMember]
-        public override bool SupportsPeople => false;
-
-        //public override double? GetDefaultPrimaryImageAspectRatio()
-        //{
-        //    double value = 16;
-        //    value /= 9;
-
-        //    return value;
-        //}
     }
 }

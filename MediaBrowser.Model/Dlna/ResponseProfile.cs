@@ -1,9 +1,18 @@
+#nullable disable
+#pragma warning disable CS1591
+
+using System;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Model.Dlna
 {
     public class ResponseProfile
     {
+        public ResponseProfile()
+        {
+            Conditions = Array.Empty<ProfileCondition>();
+        }
+
         [XmlAttribute("container")]
         public string Container { get; set; }
 
@@ -23,11 +32,6 @@ namespace MediaBrowser.Model.Dlna
         public string MimeType { get; set; }
 
         public ProfileCondition[] Conditions { get; set; }
-
-        public ResponseProfile()
-        {
-            Conditions = new ProfileCondition[] { };
-        }
 
         public string[] GetContainers()
         {

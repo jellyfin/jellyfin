@@ -1,79 +1,82 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
     public class ManagedConnection : IDisposable
     {
-        private SQLiteDatabaseConnection db;
-        private readonly bool _closeOnDispose;
+        private readonly SemaphoreSlim _writeLock;
 
-        public ManagedConnection(SQLiteDatabaseConnection db, bool closeOnDispose)
+        private SQLiteDatabaseConnection? _db;
+
+        private bool _disposed = false;
+
+        public ManagedConnection(SQLiteDatabaseConnection db, SemaphoreSlim writeLock)
         {
-            this.db = db;
-            _closeOnDispose = closeOnDispose;
+            _db = db;
+            _writeLock = writeLock;
         }
 
         public IStatement PrepareStatement(string sql)
         {
-            return db.PrepareStatement(sql);
+            return _db.PrepareStatement(sql);
         }
 
         public IEnumerable<IStatement> PrepareAll(string sql)
         {
-            return db.PrepareAll(sql);
+            return _db.PrepareAll(sql);
         }
 
         public void ExecuteAll(string sql)
         {
-            db.ExecuteAll(sql);
+            _db.ExecuteAll(sql);
         }
 
         public void Execute(string sql, params object[] values)
         {
-            db.Execute(sql, values);
+            _db.Execute(sql, values);
         }
 
         public void RunQueries(string[] sql)
         {
-            db.RunQueries(sql);
+            _db.RunQueries(sql);
         }
 
         public void RunInTransaction(Action<IDatabaseConnection> action, TransactionMode mode)
         {
-            db.RunInTransaction(action, mode);
+            _db.RunInTransaction(action, mode);
         }
 
         public T RunInTransaction<T>(Func<IDatabaseConnection, T> action, TransactionMode mode)
         {
-            return db.RunInTransaction(action, mode);
+            return _db.RunInTransaction(action, mode);
         }
 
-        public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql)
+        public IEnumerable<IReadOnlyList<ResultSetValue>> Query(string sql)
         {
-            return db.Query(sql);
+            return _db.Query(sql);
         }
 
-        public IEnumerable<IReadOnlyList<IResultSetValue>> Query(string sql, params object[] values)
+        public IEnumerable<IReadOnlyList<ResultSetValue>> Query(string sql, params object[] values)
         {
-            return db.Query(sql, values);
-        }
-
-        public void Close()
-        {
-            using (db)
-            {
-
-            }
+            return _db.Query(sql, values);
         }
 
         public void Dispose()
         {
-            if (_closeOnDispose)
+            if (_disposed)
             {
-                Close();
+                return;
             }
+
+            _writeLock.Release();
+
+            _db = null; // Don't dispose it
+            _disposed = true;
         }
     }
 }

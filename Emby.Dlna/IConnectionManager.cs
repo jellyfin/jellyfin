@@ -1,7 +1,8 @@
+#pragma warning disable CS1591
 
 namespace Emby.Dlna
 {
-    public interface IConnectionManager : IEventManager, IUpnpService
+    public interface IConnectionManager : IDlnaEventManager, IUpnpService
     {
     }
 }

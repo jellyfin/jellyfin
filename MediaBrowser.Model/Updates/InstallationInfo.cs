@@ -1,16 +1,20 @@
+#nullable disable
+
 using System;
+using System.Text.Json.Serialization;
 
 namespace MediaBrowser.Model.Updates
 {
     /// <summary>
-    /// Class InstallationInfo
+    /// Class InstallationInfo.
     /// </summary>
     public class InstallationInfo
     {
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets or sets the Id.
         /// </summary>
-        /// <value>The id.</value>
+        /// <value>The Id.</value>
+        [JsonPropertyName("Guid")]
         public Guid Id { get; set; }
 
         /// <summary>
@@ -20,27 +24,33 @@ namespace MediaBrowser.Model.Updates
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly guid.
-        /// </summary>
-        /// <value>The guid of the assembly.</value>
-        public string AssemblyGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the version.
         /// </summary>
         /// <value>The version.</value>
-        public string Version { get; set; }
+        public Version Version { get; set; }
 
         /// <summary>
-        /// Gets or sets the update class.
+        /// Gets or sets the changelog for this version.
         /// </summary>
-        /// <value>The update class.</value>
-        public PackageVersionClass UpdateClass { get; set; }
+        /// <value>The changelog.</value>
+        public string Changelog { get; set; }
 
         /// <summary>
-        /// Gets or sets the percent complete.
+        /// Gets or sets the source URL.
         /// </summary>
-        /// <value>The percent complete.</value>
-        public double? PercentComplete { get; set; }
+        /// <value>The source URL.</value>
+        public string SourceUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a checksum for the binary.
+        /// </summary>
+        /// <value>The checksum.</value>
+        public string Checksum { get; set; }
+
+        /// <summary>
+        /// Gets or sets package information for the installation.
+        /// </summary>
+        /// <value>The package information.</value>
+        public PackageInfo PackageInfo { get; set; }
     }
 }

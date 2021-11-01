@@ -1,11 +1,15 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Emby.Naming.Audio;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using Microsoft.Extensions.Logging;
@@ -13,15 +17,21 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
-    /// Class MusicAlbumResolver
+    /// Class MusicAlbumResolver.
     /// </summary>
     public class MusicAlbumResolver : ItemResolver<MusicAlbum>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<MusicAlbumResolver> _logger;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
 
-        public MusicAlbumResolver(ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MusicAlbumResolver"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        public MusicAlbumResolver(ILogger<MusicAlbumResolver> logger, IFileSystem fileSystem, ILibraryManager libraryManager)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -32,7 +42,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Second;
+        public override ResolverPriority Priority => ResolverPriority.Third;
 
         /// <summary>
         /// Resolves the specified args.
@@ -50,26 +60,38 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 return null;
             }
 
-            if (!args.IsDirectory) return null;
+            if (!args.IsDirectory)
+            {
+                return null;
+            }
 
             // Avoid mis-identifying top folders
-            if (args.HasParent<MusicAlbum>()) return null;
-            if (args.Parent.IsRoot) return null;
+            if (args.HasParent<MusicAlbum>())
+            {
+                return null;
+            }
+
+            if (args.Parent.IsRoot)
+            {
+                return null;
+            }
 
             return IsMusicAlbum(args) ? new MusicAlbum() : null;
         }
 
-
         /// <summary>
-        /// Determine if the supplied file data points to a music album
+        /// Determine if the supplied file data points to a music album.
         /// </summary>
-        public bool IsMusicAlbum(string path, IDirectoryService directoryService, LibraryOptions libraryOptions)
+        /// <param name="path">The path to check.</param>
+        /// <param name="directoryService">The directory service.</param>
+        /// <returns><c>true</c> if the provided path points to a music album, <c>false</c> otherwise.</returns>
+        public bool IsMusicAlbum(string path, IDirectoryService directoryService)
         {
-            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, libraryOptions, _libraryManager);
+            return ContainsMusic(directoryService.GetFileSystemEntries(path), true, directoryService, _logger, _fileSystem, _libraryManager);
         }
 
         /// <summary>
-        /// Determine if the supplied resolve args should be considered a music album
+        /// Determine if the supplied resolve args should be considered a music album.
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns><c>true</c> if [is music album] [the specified args]; otherwise, <c>false</c>.</returns>
@@ -78,83 +100,74 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             // Args points to an album if parent is an Artist folder or it directly contains music
             if (args.IsDirectory)
             {
-                //if (args.Parent is MusicArtist) return true;  //saves us from testing children twice
-                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, args.GetLibraryOptions(), _libraryManager)) return true;
+                // if (args.Parent is MusicArtist) return true;  // saves us from testing children twice
+                if (ContainsMusic(args.FileSystemChildren, true, args.DirectoryService, _logger, _fileSystem, _libraryManager))
+                {
+                    return true;
+                }
             }
 
             return false;
         }
 
         /// <summary>
-        /// Determine if the supplied list contains what we should consider music
+        /// Determine if the supplied list contains what we should consider music.
         /// </summary>
-        private bool ContainsMusic(IEnumerable<FileSystemMetadata> list,
+        private bool ContainsMusic(
+            IEnumerable<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService,
-            ILogger logger,
+            ILogger<MusicAlbumResolver> logger,
             IFileSystem fileSystem,
-            LibraryOptions libraryOptions,
             ILibraryManager libraryManager)
         {
-            var discSubfolderCount = 0;
-            var notMultiDisc = false;
-
-            foreach (var fileSystemInfo in list)
+            // check for audio files before digging down into directories
+            var foundAudioFile = list.Any(fileSystemInfo => !fileSystemInfo.IsDirectory && libraryManager.IsAudioFile(fileSystemInfo.FullName));
+            if (foundAudioFile)
             {
-                if (fileSystemInfo.IsDirectory)
-                {
-                    if (allowSubfolders)
-                    {
-                        if (notMultiDisc)
-                        {
-                            continue;
-                        }
-
-                        var path = fileSystemInfo.FullName;
-                        var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryOptions, libraryManager);
-
-                        if (hasMusic)
-                        {
-                            if (IsMultiDiscFolder(path, libraryOptions))
-                            {
-                                logger.LogDebug("Found multi-disc folder: " + path);
-                                discSubfolderCount++;
-                            }
-                            else
-                            {
-                                // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
-                                notMultiDisc = true;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    var fullName = fileSystemInfo.FullName;
-
-                    if (libraryManager.IsAudioFile(fullName, libraryOptions))
-                    {
-                        return true;
-                    }
-                }
+                // at least one audio file exists
+                return true;
             }
 
-            if (notMultiDisc)
+            if (!allowSubfolders)
+            {
+                // not music since no audio file exists and we're not looking into subfolders
+                return false;
+            }
+
+            var discSubfolderCount = 0;
+
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
+            var parser = new AlbumParser(namingOptions);
+
+            var directories = list.Where(fileSystemInfo => fileSystemInfo.IsDirectory);
+
+            var result = Parallel.ForEach(directories, (fileSystemInfo, state) =>
+            {
+                var path = fileSystemInfo.FullName;
+                var hasMusic = ContainsMusic(directoryService.GetFileSystemEntries(path), false, directoryService, logger, fileSystem, libraryManager);
+
+                if (hasMusic)
+                {
+                    if (parser.IsMultiPart(path))
+                    {
+                        logger.LogDebug("Found multi-disc folder: " + path);
+                        Interlocked.Increment(ref discSubfolderCount);
+                    }
+                    else
+                    {
+                        // If there are folders underneath with music that are not multidisc, then this can't be a multi-disc album
+                        state.Stop();
+                    }
+                }
+            });
+
+            if (!result.IsCompleted)
             {
                 return false;
             }
 
             return discSubfolderCount > 0;
-        }
-
-        private bool IsMultiDiscFolder(string path, LibraryOptions libraryOptions)
-        {
-            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
-
-            var parser = new AlbumParser(namingOptions);
-            var result = parser.ParseMultiPart(path);
-
-            return result.IsMultiPart;
         }
     }
 }

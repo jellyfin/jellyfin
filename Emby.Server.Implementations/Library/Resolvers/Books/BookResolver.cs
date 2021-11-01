@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
@@ -7,25 +11,19 @@ using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Books
 {
-    /// <summary>
-    ///
-    /// </summary>
     public class BookResolver : MediaBrowser.Controller.Resolvers.ItemResolver<Book>
     {
-        private readonly string[] _validExtensions = { ".pdf", ".epub", ".mobi", ".cbr", ".cbz", ".azw3" };
+        private readonly string[] _validExtensions = { ".azw", ".azw3", ".cb7", ".cbr", ".cbt", ".cbz", ".epub", ".mobi", ".pdf" };
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        protected override Book Resolve(ItemResolveArgs args)
+        public override Book Resolve(ItemResolveArgs args)
         {
             var collectionType = args.GetCollectionType();
 
             // Only process items that are in a collection folder containing books
             if (!string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
+            {
                 return null;
+            }
 
             if (args.IsDirectory)
             {
@@ -47,26 +45,23 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
             return null;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
         private Book GetBook(ItemResolveArgs args)
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
-                var fileExtension = Path.GetExtension(f.FullName) ??
-                                    string.Empty;
+                var fileExtension = Path.GetExtension(f.FullName)
+                    ?? string.Empty;
 
-                return _validExtensions.Contains(fileExtension,
-                                                StringComparer
-                                                    .OrdinalIgnoreCase);
+                return _validExtensions.Contains(
+                    fileExtension,
+                    StringComparer.OrdinalIgnoreCase);
             }).ToList();
 
             // Don't return a Book if there is more (or less) than one document in the directory
             if (bookFiles.Count != 1)
+            {
                 return null;
+            }
 
             return new Book
             {

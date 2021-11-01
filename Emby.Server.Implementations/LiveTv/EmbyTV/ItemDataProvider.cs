@@ -1,9 +1,12 @@
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Serialization;
+using System.Text.Json;
+using Jellyfin.Extensions.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.LiveTv.EmbyTV
@@ -11,72 +14,71 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
     public class ItemDataProvider<T>
         where T : class
     {
-        private readonly object _fileDataLock = new object();
-        private List<T> _items;
-        private readonly IJsonSerializer _jsonSerializer;
-        protected readonly ILogger Logger;
         private readonly string _dataPath;
-        protected readonly Func<T, T, bool> EqualityComparer;
+        private readonly object _fileDataLock = new object();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
+        private T[]? _items;
 
-        public ItemDataProvider(IJsonSerializer jsonSerializer, ILogger logger, string dataPath, Func<T, T, bool> equalityComparer)
+        public ItemDataProvider(
+            ILogger logger,
+            string dataPath,
+            Func<T, T, bool> equalityComparer)
         {
             Logger = logger;
             _dataPath = dataPath;
             EqualityComparer = equalityComparer;
-            _jsonSerializer = jsonSerializer;
+        }
+
+        protected ILogger Logger { get; }
+
+        protected Func<T, T, bool> EqualityComparer { get; }
+
+        [MemberNotNull(nameof(_items))]
+        private void EnsureLoaded()
+        {
+            if (_items != null)
+            {
+                return;
+            }
+
+            if (File.Exists(_dataPath))
+            {
+                Logger.LogInformation("Loading live tv data from {Path}", _dataPath);
+
+                try
+                {
+                    var bytes = File.ReadAllBytes(_dataPath);
+                    _items = JsonSerializer.Deserialize<T[]>(bytes, _jsonOptions);
+                    if (_items == null)
+                    {
+                        Logger.LogError("Error deserializing {Path}, data was null", _dataPath);
+                        _items = Array.Empty<T>();
+                    }
+
+                    return;
+                }
+                catch (JsonException ex)
+                {
+                    Logger.LogError(ex, "Error deserializing {Path}", _dataPath);
+                }
+            }
+
+            _items = Array.Empty<T>();
+        }
+
+        private void SaveList()
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(_dataPath) ?? throw new ArgumentException("Path can't be a root directory.", nameof(_dataPath)));
+            var jsonString = JsonSerializer.Serialize(_items, _jsonOptions);
+            File.WriteAllText(_dataPath, jsonString);
         }
 
         public IReadOnlyList<T> GetAll()
         {
             lock (_fileDataLock)
             {
-                if (_items == null)
-                {
-                    Logger.LogInformation("Loading live tv data from {0}", _dataPath);
-                    _items = GetItemsFromFile(_dataPath);
-                }
-                return _items.ToList();
-            }
-        }
-
-        private List<T> GetItemsFromFile(string path)
-        {
-            var jsonFile = path + ".json";
-
-            if (!File.Exists(jsonFile))
-            {
-                return new List<T>();
-            }
-
-            try
-            {
-                return _jsonSerializer.DeserializeFromFile<List<T>>(jsonFile) ?? new List<T>();
-            }
-            catch (IOException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error deserializing {jsonFile}", jsonFile);
-            }
-
-            return new List<T>();
-        }
-
-        private void UpdateList(List<T> newList)
-        {
-            if (newList == null)
-            {
-                throw new ArgumentNullException(nameof(newList));
-            }
-
-            var file = _dataPath + ".json";
-            Directory.CreateDirectory(Path.GetDirectoryName(file));
-
-            lock (_fileDataLock)
-            {
-                _jsonSerializer.SerializeToFile(newList, file);
-                _items = newList;
+                EnsureLoaded();
+                return (T[])_items.Clone();
             }
         }
 
@@ -87,18 +89,20 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var list = GetAll().ToList();
-
-            var index = list.FindIndex(i => EqualityComparer(i, item));
-
-            if (index == -1)
+            lock (_fileDataLock)
             {
-                throw new ArgumentException("item not found");
+                EnsureLoaded();
+
+                var index = Array.FindIndex(_items, i => EqualityComparer(i, item));
+                if (index == -1)
+                {
+                    throw new ArgumentException("item not found");
+                }
+
+                _items[index] = item;
+
+                SaveList();
             }
-
-            list[index] = item;
-
-            UpdateList(list);
         }
 
         public virtual void Add(T item)
@@ -108,37 +112,58 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(item));
             }
 
-            var list = GetAll().ToList();
-
-            if (list.Any(i => EqualityComparer(i, item)))
+            lock (_fileDataLock)
             {
-                throw new ArgumentException("item already exists");
+                EnsureLoaded();
+
+                if (_items.Any(i => EqualityComparer(i, item)))
+                {
+                    throw new ArgumentException("item already exists", nameof(item));
+                }
+
+                int oldLen = _items.Length;
+                var newList = new T[oldLen + 1];
+                _items.CopyTo(newList, 0);
+                newList[oldLen] = item;
+                _items = newList;
+
+                SaveList();
             }
-
-            list.Add(item);
-
-            UpdateList(list);
         }
 
-        public void AddOrUpdate(T item)
+        public virtual void AddOrUpdate(T item)
         {
-            var list = GetAll().ToList();
+            lock (_fileDataLock)
+            {
+                EnsureLoaded();
 
-            if (!list.Any(i => EqualityComparer(i, item)))
-            {
-                Add(item);
-            }
-            else
-            {
-                Update(item);
+                int index = Array.FindIndex(_items, i => EqualityComparer(i, item));
+                if (index == -1)
+                {
+                    int oldLen = _items.Length;
+                    var newList = new T[oldLen + 1];
+                    _items.CopyTo(newList, 0);
+                    newList[oldLen] = item;
+                    _items = newList;
+                }
+                else
+                {
+                    _items[index] = item;
+                }
+
+                SaveList();
             }
         }
 
         public virtual void Delete(T item)
         {
-            var list = GetAll().Where(i => !EqualityComparer(i, item)).ToList();
+            lock (_fileDataLock)
+            {
+                EnsureLoaded();
+                _items = _items.Where(i => !EqualityComparer(i, item)).ToArray();
 
-            UpdateList(list);
+                SaveList();
+            }
         }
     }
 }

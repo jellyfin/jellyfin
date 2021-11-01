@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Model.Dlna;
 
 namespace Emby.Dlna.Profiles
@@ -26,7 +28,7 @@ namespace Emby.Dlna.Profiles
                 },
             };
 
-            ResponseProfiles = new ResponseProfile[] { };
+            ResponseProfiles = System.Array.Empty<ResponseProfile>();
         }
     }
 }

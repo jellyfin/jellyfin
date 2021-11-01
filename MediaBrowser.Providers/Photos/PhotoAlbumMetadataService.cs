@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -11,13 +13,20 @@ namespace MediaBrowser.Providers.Photos
 {
     public class PhotoAlbumMetadataService : MetadataService<PhotoAlbum, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<PhotoAlbum> source, MetadataResult<PhotoAlbum> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public PhotoAlbumMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<PhotoAlbumMetadataService> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        public PhotoAlbumMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        /// <inheritdoc />
+        protected override void MergeData(MetadataResult<PhotoAlbum> source, MetadataResult<PhotoAlbum> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -11,13 +13,20 @@ namespace MediaBrowser.Providers.People
 {
     public class PersonMetadataService : MetadataService<Person, PersonLookupInfo>
     {
-        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public PersonMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<PersonMetadataService> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        /// <inheritdoc />
+        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
     }
 }

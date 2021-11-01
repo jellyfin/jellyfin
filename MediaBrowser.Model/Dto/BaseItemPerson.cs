@@ -1,9 +1,12 @@
-using MediaBrowser.Model.Serialization;
+#nullable disable
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// This is used by the api to get information about a Person within a BaseItem
+    /// This is used by the api to get information about a Person within a BaseItem.
     /// </summary>
     public class BaseItemPerson
     {
@@ -38,10 +41,16 @@ namespace MediaBrowser.Model.Dto
         public string PrimaryImageTag { get; set; }
 
         /// <summary>
+        /// Gets or sets the primary image blurhash.
+        /// </summary>
+        /// <value>The primary image blurhash.</value>
+        public Dictionary<ImageType, Dictionary<string, string>> ImageBlurHashes { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public bool HasPrimaryImage => PrimaryImageTag != null;
     }
 }

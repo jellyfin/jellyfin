@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<musicvideo>
+  <title>Dancing Queen</title>
+  <userrating>0</userrating>
+  <top250>0</top250>
+  <track>3</track>
+  <album>Arrival</album>
+  <outline></outline>
+  <plot>Dancing Queen est un des tubes emblématiques de l&apos;ère disco produits par le groupe suédois ABBA en 1976. Ce tube connaît un regain de popularité en 1994 lors de la sortie de Priscilla, folle du désert, et fait « presque » partie de la distribution du film Muriel.&#x0A;Le groupe a également enregistré une version espagnole de ce titre, La reina del baile, pour le marché d&apos;Amérique latine. On peut retrouver ces versions en espagnol des succès de ABBA sur l&apos;abum Oro. Le 18 juin 1976, ABBA a interprété cette chanson lors d&apos;un spectacle télévisé organisé en l&apos;honneur du roi Charles XVI Gustave de Suède, qui venait de se marier. Le titre sera repris en 2011 par Glee dans la saison 2, épisode 20.</plot>
+  <tagline></tagline>
+  <runtime>2</runtime>
+  <thumb preview="https://www.theaudiodb.com/images/media/album/thumb/arrival-4ee244732bbde.jpg/preview">https://www.theaudiodb.com/images/media/album/thumb/arrival-4ee244732bbde.jpg</thumb>
+  <thumb preview="https://assets.fanart.tv/preview/music/d87e52c5-bb8d-4da8-b941-9f4928627dc8/albumcover/arrival-548ab7a698b49.jpg">https://assets.fanart.tv/fanart/music/d87e52c5-bb8d-4da8-b941-9f4928627dc8/albumcover/arrival-548ab7a698b49.jpg</thumb>
+  <mpaa></mpaa>
+  <playcount>0</playcount>
+  <lastplayed></lastplayed>
+  <id></id>
+  <genre>Pop</genre>
+  <director>John Smith</director>
+  <premiered>1976-01-01</premiered>
+  <year>1976</year>
+  <status></status>
+  <code></code>
+  <aired></aired>
+  <studio>Studio 54</studio>
+  <trailer></trailer>
+  <fileinfo>
+    <streamdetails>
+      <video>
+        <codec>hevc</codec>
+        <aspect>1.792230</aspect>
+        <width>716</width>
+        <height>568</height>
+        <durationinseconds>143</durationinseconds>
+        <stereomode></stereomode>
+      </video>
+      <audio>
+        <codec>ac3</codec>
+        <language>eng</language>
+        <channels>2</channels>
+      </audio>
+    </streamdetails>
+  </fileinfo>
+  <artist>ABBA</artist>
+  <resume>
+    <position>0.000000</position>
+    <total>0.000000</total>
+  </resume>
+  <dateadded>2018-09-10 09:46:06</dateadded>
+</musicvideo>

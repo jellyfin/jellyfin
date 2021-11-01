@@ -1,3 +1,7 @@
+#pragma warning disable CS1591
+
+using System;
+
 namespace MediaBrowser.Model.Users
 {
     public class PinRedeemResult
@@ -7,10 +11,11 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value><c>true</c> if success; otherwise, <c>false</c>.</value>
         public bool Success { get; set; }
+
         /// <summary>
         /// Gets or sets the users reset.
         /// </summary>
         /// <value>The users reset.</value>
-        public string[] UsersReset { get; set; }
+        public string[] UsersReset { get; set; } = Array.Empty<string>();
     }
 }

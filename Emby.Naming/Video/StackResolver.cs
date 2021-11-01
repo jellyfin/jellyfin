@@ -3,65 +3,90 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using MediaBrowser.Model.IO;
 
 namespace Emby.Naming.Video
 {
+    /// <summary>
+    /// Resolve <see cref="FileStack"/> from list of paths.
+    /// </summary>
     public class StackResolver
     {
         private readonly NamingOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StackResolver"/> class.
+        /// </summary>
+        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileStackingRegexes and passes options to <see cref="VideoResolver"/>.</param>
         public StackResolver(NamingOptions options)
         {
             _options = options;
         }
 
-        public StackResult ResolveDirectories(IEnumerable<string> files)
+        /// <summary>
+        /// Resolves only directories from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
+        public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata
-            {
-                FullName = i,
-                IsDirectory = true
-            }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
         }
 
-        public StackResult ResolveFiles(IEnumerable<string> files)
+        /// <summary>
+        /// Resolves only files from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of files.</returns>
+        public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata
-            {
-                FullName = i,
-                IsDirectory = false
-            }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
         }
 
-        public StackResult ResolveAudioBooks(IEnumerable<FileSystemMetadata> files)
+        /// <summary>
+        /// Resolves audiobooks from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
+        public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
         {
-            var result = new StackResult();
-            foreach (var directory in files.GroupBy(file => file.IsDirectory ? file.FullName : Path.GetDirectoryName(file.FullName)))
+            var groupedDirectoryFiles = files.GroupBy(file => Path.GetDirectoryName(file.Path));
+
+            foreach (var directory in groupedDirectoryFiles)
             {
-                var stack = new FileStack();
-                stack.Name = Path.GetFileName(directory.Key);
-                stack.IsDirectoryStack = false;
-                foreach (var file in directory)
+                if (string.IsNullOrEmpty(directory.Key))
                 {
-                    if (file.IsDirectory)
-                        continue;
-                    stack.Files.Add(file.FullName);
+                    foreach (var file in directory)
+                    {
+                        var stack = new FileStack { Name = Path.GetFileNameWithoutExtension(file.Path), IsDirectoryStack = false };
+                        stack.Files.Add(file.Path);
+                        yield return stack;
+                    }
                 }
-                result.Stacks.Add(stack);
+                else
+                {
+                    var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
+                    foreach (var file in directory)
+                    {
+                        stack.Files.Add(file.Path);
+                    }
+
+                    yield return stack;
+                }
             }
-            return result;
         }
 
-        public StackResult Resolve(IEnumerable<FileSystemMetadata> files)
+        /// <summary>
+        /// Resolves videos from paths.
+        /// </summary>
+        /// <param name="files">List of paths.</param>
+        /// <returns>Enumerable <see cref="FileStack"/> of videos.</returns>
+        public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
         {
-            var result = new StackResult();
-
-            var resolver = new VideoResolver(_options);
-
             var list = files
-                .Where(i => i.IsDirectory || (resolver.IsVideoFile(i.FullName) || resolver.IsStubFile(i.FullName)))
+                .Where(i => i.IsDirectory || VideoResolver.IsVideoFile(i.FullName, _options) || VideoResolver.IsStubFile(i.FullName, _options))
                 .OrderBy(i => i.FullName)
                 .ToList();
 
@@ -84,10 +109,10 @@ namespace Emby.Naming.Video
 
                     if (match1.Success)
                     {
-                        var title1 = match1.Groups[1].Value;
-                        var volume1 = match1.Groups[2].Value;
-                        var ignore1 = match1.Groups[3].Value;
-                        var extension1 = match1.Groups[4].Value;
+                        var title1 = match1.Groups["title"].Value;
+                        var volume1 = match1.Groups["volume"].Value;
+                        var ignore1 = match1.Groups["ignore"].Value;
+                        var extension1 = match1.Groups["extension"].Value;
 
                         var j = i + 1;
                         while (j < list.Count)
@@ -114,16 +139,16 @@ namespace Emby.Naming.Video
                                 {
                                     if (!string.Equals(volume1, volume2, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        if (string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase) &&
-                                            string.Equals(extension1, extension2, StringComparison.OrdinalIgnoreCase))
+                                        if (string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase)
+                                            && string.Equals(extension1, extension2, StringComparison.OrdinalIgnoreCase))
                                         {
                                             if (stack.Files.Count == 0)
                                             {
                                                 stack.Name = title1 + ignore1;
                                                 stack.IsDirectoryStack = file1.IsDirectory;
-                                                //stack.Name = title1 + ignore1 + extension1;
                                                 stack.Files.Add(file1.FullName);
                                             }
+
                                             stack.Files.Add(file2.FullName);
                                         }
                                         else
@@ -181,17 +206,15 @@ namespace Emby.Naming.Video
 
                     if (stack.Files.Count > 1)
                     {
-                        result.Stacks.Add(stack);
+                        yield return stack;
                         i += stack.Files.Count - 1;
                         break;
                     }
                 }
             }
-
-            return result;
         }
 
-        private string GetRegexInput(FileSystemMetadata file)
+        private static string GetRegexInput(FileSystemMetadata file)
         {
             // For directories, dummy up an extension otherwise the expressions will fail
             var input = !file.IsDirectory
@@ -201,7 +224,7 @@ namespace Emby.Naming.Video
             return Path.GetFileName(input);
         }
 
-        private Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
+        private static Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
         {
             var regexInput = GetRegexInput(input);
 

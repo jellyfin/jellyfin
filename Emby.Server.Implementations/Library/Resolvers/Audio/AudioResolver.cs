@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,24 +17,25 @@ using MediaBrowser.Model.IO;
 namespace Emby.Server.Implementations.Library.Resolvers.Audio
 {
     /// <summary>
-    /// Class AudioResolver
+    /// Class AudioResolver.
     /// </summary>
     public class AudioResolver : ItemResolver<MediaBrowser.Controller.Entities.Audio.Audio>, IMultiItemResolver
     {
-        private readonly ILibraryManager LibraryManager;
+        private readonly ILibraryManager _libraryManager;
 
         public AudioResolver(ILibraryManager libraryManager)
         {
-            LibraryManager = libraryManager;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
         /// Gets the priority.
         /// </summary>
         /// <value>The priority.</value>
-        public override ResolverPriority Priority => ResolverPriority.Fourth;
+        public override ResolverPriority Priority => ResolverPriority.Fifth;
 
-        public MultiItemResolverResult ResolveMultiple(Folder parent,
+        public MultiItemResolverResult ResolveMultiple(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService)
@@ -48,7 +53,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
             return result;
         }
 
-        private MultiItemResolverResult ResolveMultipleInternal(Folder parent,
+        private MultiItemResolverResult ResolveMultipleInternal(
+            Folder parent,
             List<FileSystemMetadata> files,
             string collectionType,
             IDirectoryService directoryService)
@@ -70,7 +76,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         {
             // Return audio if the path is a file and has a matching extension
 
-            var libraryOptions = args.GetLibraryOptions();
             var collectionType = args.GetCollectionType();
 
             var isBooksCollectionType = string.Equals(collectionType, CollectionType.Books, StringComparison.OrdinalIgnoreCase);
@@ -83,13 +88,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
 
                 var files = args.FileSystemChildren
-                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
+                    .Where(i => !_libraryManager.IgnoreFile(i, args.Parent))
                     .ToList();
 
                 return FindAudio<AudioBook>(args, args.Path, args.Parent, files, args.DirectoryService, collectionType, false);
             }
 
-            if (LibraryManager.IsAudioFile(args.Path, libraryOptions))
+            if (_libraryManager.IsAudioFile(args.Path))
             {
                 var extension = Path.GetExtension(args.Path);
 
@@ -102,7 +107,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 var isMixedCollectionType = string.IsNullOrEmpty(collectionType);
 
                 // For conflicting extensions, give priority to videos
-                if (isMixedCollectionType && LibraryManager.IsVideoFile(args.Path, libraryOptions))
+                if (isMixedCollectionType && _libraryManager.IsVideoFile(args.Path))
                 {
                     return null;
                 }
@@ -118,7 +123,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 {
                     item = new MediaBrowser.Controller.Entities.Audio.Audio();
                 }
-
                 else if (isBooksCollectionType)
                 {
                     item = new AudioBook();
@@ -178,7 +182,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 }
             }
 
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
 
             var resolver = new AudioBookListResolver(namingOptions);
             var resolverResult = resolver.Resolve(files).ToList();
@@ -199,7 +203,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     continue;
                 }
 
-                var firstMedia = resolvedItem.Files.First();
+                if (resolvedItem.Files.Count == 0)
+                {
+                    continue;
+                }
+
+                var firstMedia = resolvedItem.Files[0];
 
                 var libraryItem = new T
                 {
@@ -209,8 +218,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                     Name = parseName ?
                         resolvedItem.Name :
                         Path.GetFileNameWithoutExtension(firstMedia.Path),
-                    //AdditionalParts = resolvedItem.Files.Skip(1).Select(i => i.Path).ToArray(),
-                    //LocalAlternateVersions = resolvedItem.AlternateVersions.Select(i => i.Path).ToArray()
+                    // AdditionalParts = resolvedItem.Files.Skip(1).Select(i => i.Path).ToArray(),
+                    // LocalAlternateVersions = resolvedItem.AlternateVersions.Select(i => i.Path).ToArray()
                 };
 
                 result.Items.Add(libraryItem);

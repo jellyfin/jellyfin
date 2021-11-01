@@ -1,17 +1,17 @@
 namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
-    /// Enum VideoContentType
+    /// Enum VideoContentType.
     /// </summary>
     public enum VideoContentType
     {
         /// <summary>
-        /// The episode
+        /// The episode.
         /// </summary>
         Episode = 0,
 
         /// <summary>
-        /// The movie
+        /// The movie.
         /// </summary>
         Movie = 1
     }

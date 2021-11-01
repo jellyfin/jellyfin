@@ -1,27 +1,27 @@
 namespace MediaBrowser.Model.Tasks
 {
     /// <summary>
-    /// Enum TaskCompletionStatus
+    /// Enum TaskCompletionStatus.
     /// </summary>
     public enum TaskCompletionStatus
     {
         /// <summary>
-        /// The completed
+        /// The completed.
         /// </summary>
         Completed,
 
         /// <summary>
-        /// The failed
+        /// The failed.
         /// </summary>
         Failed,
 
         /// <summary>
-        /// Manually cancelled by the user
+        /// Manually cancelled by the user.
         /// </summary>
         Cancelled,
 
         /// <summary>
-        /// Aborted due to a system failure or shutdown
+        /// Aborted due to a system failure or shutdown.
         /// </summary>
         Aborted
     }

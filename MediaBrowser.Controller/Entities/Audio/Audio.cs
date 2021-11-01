@@ -1,16 +1,22 @@
+#nullable disable
+
+#pragma warning disable CA1002, CA1724, CA1826, CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {
     /// <summary>
-    /// Class Audio
+    /// Class Audio.
     /// </summary>
     public class Audio : BaseItem,
         IHasAlbumArtist,
@@ -19,83 +25,57 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasMediaSources
     {
-        /// <summary>
-        /// Gets or sets the artist.
-        /// </summary>
-        /// <value>The artist.</value>
-        [IgnoreDataMember]
-        public string[] Artists { get; set; }
-
-        [IgnoreDataMember]
-        public string[] AlbumArtists { get; set; }
-
         public Audio()
         {
             Artists = Array.Empty<string>();
             AlbumArtists = Array.Empty<string>();
         }
 
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            return 1;
-        }
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> Artists { get; set; }
 
-        [IgnoreDataMember]
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> AlbumArtists { get; set; }
+
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
-        [IgnoreDataMember]
-        public override bool SupportsPeople => false;
+        [JsonIgnore]
+        public override bool SupportsPeople => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsAddingToPlaylist => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsInheritedParentImages => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         protected override bool SupportsOwnedItems => false;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override Folder LatestItemsIndexContainer => AlbumEntity;
 
-        public override bool CanDownload()
-        {
-            return IsFileProtocol;
-        }
-
-        [IgnoreDataMember]
-        public string[] AllArtists
-        {
-            get
-            {
-                var list = new string[AlbumArtists.Length + Artists.Length];
-
-                var index = 0;
-                foreach (var artist in AlbumArtists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-                foreach (var artist in Artists)
-                {
-                    list[index] = artist;
-                    index++;
-                }
-
-                return list;
-
-            }
-        }
-
-        [IgnoreDataMember]
+        [JsonIgnore]
         public MusicAlbum AlbumEntity => FindParent<MusicAlbum>();
 
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
         /// <value>The type of the media.</value>
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Audio;
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            return 1;
+        }
+
+        public override bool CanDownload()
+        {
+            return IsFileProtocol;
+        }
 
         /// <summary>
         /// Creates the name of the sort.
@@ -103,21 +83,21 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         public override List<string> GetUserDataKeys()
         {
             var list = base.GetUserDataKeys();
 
-            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000") : string.Empty;
-
+            var songKey = IndexNumber.HasValue ? IndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) : string.Empty;
 
             if (ParentIndexNumber.HasValue)
             {
-                songKey = ParentIndexNumber.Value.ToString("0000") + "-" + songKey;
+                songKey = ParentIndexNumber.Value.ToString("0000", CultureInfo.InvariantCulture) + "-" + songKey;
             }
+
             songKey += Name;
 
             if (!string.IsNullOrEmpty(Album))
@@ -125,7 +105,7 @@ namespace MediaBrowser.Controller.Entities.Audio
                 songKey = Album + "-" + songKey;
             }
 
-            var albumArtist = AlbumArtists.Length == 0 ? null : AlbumArtists[0];
+            var albumArtist = AlbumArtists.FirstOrDefault();
             if (!string.IsNullOrEmpty(albumArtist))
             {
                 songKey = albumArtist + "-" + songKey;
@@ -142,6 +122,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 return UnratedItem.Music;
             }
+
             return base.GetBlockUnratedType();
         }
 

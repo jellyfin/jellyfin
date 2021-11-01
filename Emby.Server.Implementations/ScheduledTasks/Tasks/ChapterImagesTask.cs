@@ -12,23 +12,19 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
     /// <summary>
-    /// Class ChapterImagesTask
+    /// Class ChapterImagesTask.
     /// </summary>
     public class ChapterImagesTask : IScheduledTask
     {
         /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly ILogger _logger;
-        /// <summary>
-        /// The _library manager
+        /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
@@ -38,27 +34,50 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
         private readonly IEncodingManager _encodingManager;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
-        public ChapterImagesTask(ILoggerFactory loggerFactory, ILibraryManager libraryManager, IItemRepository itemRepo, IApplicationPaths appPaths, IEncodingManager encodingManager, IFileSystem fileSystem)
+        /// <param name="libraryManager">The library manager.</param>.
+        /// <param name="itemRepo">The item repository.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="encodingManager">The encoding manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="localization">The localization manager.</param>
+        public ChapterImagesTask(
+            ILibraryManager libraryManager,
+            IItemRepository itemRepo,
+            IApplicationPaths appPaths,
+            IEncodingManager encodingManager,
+            IFileSystem fileSystem,
+            ILocalizationManager localization)
         {
-            _logger = loggerFactory.CreateLogger(GetType().Name);
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
             _encodingManager = encodingManager;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run
-        /// </summary>
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+
+        /// <inheritdoc />
+        public string Key => "RefreshChapterImages";
+
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-
+            return new[]
+            {
                 new TaskTriggerInfo
                 {
                     Type = TaskTriggerInfo.TriggerDaily,
@@ -69,7 +88,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -88,7 +107,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 SourceTypes = new SourceType[] { SourceType.Library },
                 HasChapterImages = false,
                 IsVirtualItem = false
-
             })
                 .OfType<Video>()
                 .ToList();
@@ -104,7 +122,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 try
                 {
                     previouslyFailedImages = File.ReadAllText(failHistoryPath)
-                        .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Split('|', StringSplitOptions.RemoveEmptyEntries)
                         .ToList();
                 }
                 catch (IOException)
@@ -117,7 +135,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 previouslyFailedImages = new List<string>();
             }
 
-            var directoryService = new DirectoryService(_logger, _fileSystem);
+            var directoryService = new DirectoryService(_fileSystem);
 
             foreach (var video in videos)
             {
@@ -138,10 +156,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
                         previouslyFailedImages.Add(key);
 
                         var parentPath = Path.GetDirectoryName(failHistoryPath);
+                        if (parentPath != null)
+                        {
+                            Directory.CreateDirectory(parentPath);
+                        }
 
-                        Directory.CreateDirectory(parentPath);
-
-                        string text = string.Join("|", previouslyFailedImages);
+                        string text = string.Join('|', previouslyFailedImages);
                         File.WriteAllText(failHistoryPath, text);
                     }
 
@@ -153,24 +173,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
                 catch (ObjectDisposedException)
                 {
-                    //TODO Investigate and properly fix.
+                    // TODO Investigate and properly fix.
                     break;
                 }
             }
         }
-
-        public string Name => "Chapter image extraction";
-
-        public string Description => "Creates thumbnails for videos that have chapters.";
-
-        public string Category => "Library";
-
-        public string Key => "RefreshChapterImages";
-
-        public bool IsHidden => false;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
     }
 }

@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Notifications;
@@ -13,7 +15,7 @@ namespace Emby.Notifications
                 new ConfigurationStore
                 {
                     Key = "notifications",
-                    ConfigurationType = typeof (NotificationOptions)
+                    ConfigurationType = typeof(NotificationOptions)
                 }
             };
         }

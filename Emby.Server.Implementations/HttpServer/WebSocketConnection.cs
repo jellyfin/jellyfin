@@ -1,50 +1,76 @@
-﻿using System;
+using System;
+using System.Buffers;
+using System.IO.Pipelines;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Server.Implementations.Net;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
-using MediaBrowser.Model.Serialization;
-using MediaBrowser.Model.Services;
+using MediaBrowser.Model.Session;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using UtfUnknown;
 
 namespace Emby.Server.Implementations.HttpServer
 {
     /// <summary>
-    /// Class WebSocketConnection
+    /// Class WebSocketConnection.
     /// </summary>
-    public class WebSocketConnection : IWebSocketConnection
+    public class WebSocketConnection : IWebSocketConnection, IDisposable
     {
-        public event EventHandler<EventArgs> Closed;
+        /// <summary>
+        /// The logger.
+        /// </summary>
+        private readonly ILogger<WebSocketConnection> _logger;
 
         /// <summary>
-        /// The _socket
+        /// The json serializer options.
         /// </summary>
-        private readonly IWebSocket _socket;
+        private readonly JsonSerializerOptions _jsonOptions;
 
         /// <summary>
-        /// The _remote end point
+        /// The socket.
         /// </summary>
-        public string RemoteEndPoint { get; private set; }
+        private readonly WebSocket _socket;
 
         /// <summary>
-        /// The logger
+        /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
-        private readonly ILogger _logger;
+        /// <param name="logger">The logger.</param>
+        /// <param name="socket">The socket.</param>
+        /// <param name="remoteEndPoint">The remote end point.</param>
+        /// <param name="query">The query.</param>
+        public WebSocketConnection(
+            ILogger<WebSocketConnection> logger,
+            WebSocket socket,
+            IPAddress? remoteEndPoint,
+            IQueryCollection query)
+        {
+            _logger = logger;
+            _socket = socket;
+            RemoteEndPoint = remoteEndPoint;
+            QueryString = query;
+
+            _jsonOptions = JsonDefaults.Options;
+            LastActivityDate = DateTime.Now;
+        }
+
+        /// <inheritdoc />
+        public event EventHandler<EventArgs>? Closed;
 
         /// <summary>
-        /// The _json serializer
+        /// Gets the remote end point.
         /// </summary>
-        private readonly IJsonSerializer _jsonSerializer;
+        public IPAddress? RemoteEndPoint { get; }
 
         /// <summary>
         /// Gets or sets the receive action.
         /// </summary>
         /// <value>The receive action.</value>
-        public Func<WebSocketMessageInfo, Task> OnReceive { get; set; }
+        public Func<WebSocketMessageInfo, Task>? OnReceive { get; set; }
 
         /// <summary>
         /// Gets the last activity date.
@@ -52,208 +78,14 @@ namespace Emby.Server.Implementations.HttpServer
         /// <value>The last activity date.</value>
         public DateTime LastActivityDate { get; private set; }
 
-        /// <summary>
-        /// Gets the id.
-        /// </summary>
-        /// <value>The id.</value>
-        public Guid Id { get; private set; }
+        /// <inheritdoc />
+        public DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>The URL.</value>
-        public string Url { get; set; }
-        /// <summary>
-        /// Gets or sets the query string.
+        /// Gets the query string.
         /// </summary>
         /// <value>The query string.</value>
-        public QueryParamCollection QueryString { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
-        /// </summary>
-        /// <param name="socket">The socket.</param>
-        /// <param name="remoteEndPoint">The remote end point.</param>
-        /// <param name="jsonSerializer">The json serializer.</param>
-        /// <param name="logger">The logger.</param>
-        /// <exception cref="ArgumentNullException">socket</exception>
-        public WebSocketConnection(IWebSocket socket, string remoteEndPoint, IJsonSerializer jsonSerializer, ILogger logger)
-        {
-            if (socket == null)
-            {
-                throw new ArgumentNullException(nameof(socket));
-            }
-            if (string.IsNullOrEmpty(remoteEndPoint))
-            {
-                throw new ArgumentNullException(nameof(remoteEndPoint));
-            }
-            if (jsonSerializer == null)
-            {
-                throw new ArgumentNullException(nameof(jsonSerializer));
-            }
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            Id = Guid.NewGuid();
-            _jsonSerializer = jsonSerializer;
-            _socket = socket;
-            _socket.OnReceiveBytes = OnReceiveInternal;
-
-            var memorySocket = socket as IMemoryWebSocket;
-            if (memorySocket != null)
-            {
-                memorySocket.OnReceiveMemoryBytes = OnReceiveInternal;
-            }
-
-            RemoteEndPoint = remoteEndPoint;
-            _logger = logger;
-
-            socket.Closed += socket_Closed;
-        }
-
-        void socket_Closed(object sender, EventArgs e)
-        {
-            Closed?.Invoke(this, EventArgs.Empty);
-        }
-
-        /// <summary>
-        /// Called when [receive].
-        /// </summary>
-        /// <param name="bytes">The bytes.</param>
-        private void OnReceiveInternal(byte[] bytes)
-        {
-            LastActivityDate = DateTime.UtcNow;
-
-            if (OnReceive == null)
-            {
-                return;
-            }
-            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
-
-            if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-            {
-                OnReceiveInternal(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
-            }
-            else
-            {
-                OnReceiveInternal(Encoding.ASCII.GetString(bytes, 0, bytes.Length));
-            }
-        }
-
-        /// <summary>
-        /// Called when [receive].
-        /// </summary>
-        /// <param name="memory">The memory block.</param>
-        /// <param name="length">The length of the memory block.</param>
-        private void OnReceiveInternal(Memory<byte> memory, int length)
-        {
-            LastActivityDate = DateTime.UtcNow;
-
-            if (OnReceive == null)
-            {
-                return;
-            }
-
-            var bytes = memory.Slice(0, length).ToArray();
-
-            var charset = CharsetDetector.DetectFromBytes(bytes).Detected?.EncodingName;
-
-            if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
-            {
-                OnReceiveInternal(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
-            }
-            else
-            {
-                OnReceiveInternal(Encoding.ASCII.GetString(bytes, 0, bytes.Length));
-            }
-        }
-
-        private void OnReceiveInternal(string message)
-        {
-            LastActivityDate = DateTime.UtcNow;
-
-            if (!message.StartsWith("{", StringComparison.OrdinalIgnoreCase))
-            {
-                // This info is useful sometimes but also clogs up the log
-                _logger.LogDebug("Received web socket message that is not a json structure: {message}", message);
-                return;
-            }
-
-            if (OnReceive == null)
-            {
-                return;
-            }
-
-            try
-            {
-                var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromString(message, typeof(WebSocketMessage<object>));
-
-                var info = new WebSocketMessageInfo
-                {
-                    MessageType = stub.MessageType,
-                    Data = stub.Data == null ? null : stub.Data.ToString(),
-                    Connection = this
-                };
-
-                OnReceive(info);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing web socket message");
-            }
-        }
-
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message">The message.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">message</exception>
-        public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
-        {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            var json = _jsonSerializer.SerializeToString(message);
-
-            return SendAsync(json, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends a message asynchronously.
-        /// </summary>
-        /// <param name="buffer">The buffer.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        public Task SendAsync(byte[] buffer, CancellationToken cancellationToken)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return _socket.SendAsync(buffer, true, cancellationToken);
-        }
-
-        public Task SendAsync(string text, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                throw new ArgumentNullException(nameof(text));
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return _socket.SendAsync(text, true, cancellationToken);
-        }
+        public IQueryCollection QueryString { get; }
 
         /// <summary>
         /// Gets the state.
@@ -262,11 +94,156 @@ namespace Emby.Server.Implementations.HttpServer
         public WebSocketState State => _socket.State;
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// Sends a message asynchronously.
         /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        public Task SendAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
+        {
+            var json = JsonSerializer.SerializeToUtf8Bytes(message, _jsonOptions);
+            return _socket.SendAsync(json, WebSocketMessageType.Text, true, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task ProcessAsync(CancellationToken cancellationToken = default)
+        {
+            var pipe = new Pipe();
+            var writer = pipe.Writer;
+
+            ValueWebSocketReceiveResult receiveresult;
+            do
+            {
+                // Allocate at least 512 bytes from the PipeWriter
+                Memory<byte> memory = writer.GetMemory(512);
+                try
+                {
+                    receiveresult = await _socket.ReceiveAsync(memory, cancellationToken).ConfigureAwait(false);
+                }
+                catch (WebSocketException ex)
+                {
+                    _logger.LogWarning("WS {IP} error receiving data: {Message}", RemoteEndPoint, ex.Message);
+                    break;
+                }
+
+                int bytesRead = receiveresult.Count;
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                // Tell the PipeWriter how much was read from the Socket
+                writer.Advance(bytesRead);
+
+                // Make the data available to the PipeReader
+                FlushResult flushResult = await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                if (flushResult.IsCompleted)
+                {
+                    // The PipeReader stopped reading
+                    break;
+                }
+
+                LastActivityDate = DateTime.UtcNow;
+
+                if (receiveresult.EndOfMessage)
+                {
+                    await ProcessInternal(pipe.Reader).ConfigureAwait(false);
+                }
+            }
+            while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
+                && receiveresult.MessageType != WebSocketMessageType.Close);
+
+            Closed?.Invoke(this, EventArgs.Empty);
+
+            if (_socket.State == WebSocketState.Open
+                || _socket.State == WebSocketState.CloseReceived
+                || _socket.State == WebSocketState.CloseSent)
+            {
+                await _socket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    string.Empty,
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task ProcessInternal(PipeReader reader)
+        {
+            ReadResult result = await reader.ReadAsync().ConfigureAwait(false);
+            ReadOnlySequence<byte> buffer = result.Buffer;
+
+            if (OnReceive == null)
+            {
+                // Tell the PipeReader how much of the buffer we have consumed
+                reader.AdvanceTo(buffer.End);
+                return;
+            }
+
+            WebSocketMessage<object>? stub;
+            long bytesConsumed = 0;
+            try
+            {
+                stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);
+            }
+            catch (JsonException ex)
+            {
+                // Tell the PipeReader how much of the buffer we have consumed
+                reader.AdvanceTo(buffer.End);
+                _logger.LogError(ex, "Error processing web socket message: {Data}", Encoding.UTF8.GetString(buffer));
+                return;
+            }
+
+            if (stub == null)
+            {
+                _logger.LogError("Error processing web socket message");
+                return;
+            }
+
+            // Tell the PipeReader how much of the buffer we have consumed
+            reader.AdvanceTo(buffer.GetPosition(bytesConsumed));
+
+            _logger.LogDebug("WS {IP} received message: {@Message}", RemoteEndPoint, stub);
+
+            if (stub.MessageType == SessionMessageType.KeepAlive)
+            {
+                await SendKeepAliveResponse().ConfigureAwait(false);
+            }
+            else
+            {
+                await OnReceive(
+                    new WebSocketMessageInfo
+                    {
+                        MessageType = stub.MessageType,
+                        Data = stub.Data?.ToString(), // Data can be null
+                        Connection = this
+                    }).ConfigureAwait(false);
+            }
+        }
+
+        internal WebSocketMessage<object>? DeserializeWebSocketMessage(ReadOnlySequence<byte> bytes, out long bytesConsumed)
+        {
+            var jsonReader = new Utf8JsonReader(bytes);
+            var ret = JsonSerializer.Deserialize<WebSocketMessage<object>>(ref jsonReader, _jsonOptions);
+            bytesConsumed = jsonReader.BytesConsumed;
+            return ret;
+        }
+
+        private Task SendKeepAliveResponse()
+        {
+            LastKeepAliveDate = DateTime.UtcNow;
+            return SendAsync(
+                new WebSocketMessage<string>
+                {
+                    MessageId = Guid.NewGuid(),
+                    MessageType = SessionMessageType.KeepAlive
+                }, CancellationToken.None);
+        }
+
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

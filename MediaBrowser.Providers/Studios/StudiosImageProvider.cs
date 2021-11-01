@@ -1,11 +1,17 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -18,17 +24,19 @@ namespace MediaBrowser.Providers.Studios
     public class StudiosImageProvider : IRemoteImageProvider
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IHttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
 
-        public StudiosImageProvider(IServerConfigurationManager config, IHttpClient httpClient, IFileSystem fileSystem)
+        public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
             _config = config;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
         }
 
         public string Name => "Emby Designs";
+
+        public int Order => 0;
 
         public bool Supports(BaseItem item)
         {
@@ -78,7 +86,7 @@ namespace MediaBrowser.Providers.Studios
 
         private RemoteImageInfo GetImage(BaseItem item, string filename, ImageType type, string remoteFilename)
         {
-            var list = GetAvailableImages(filename, _fileSystem);
+            var list = GetAvailableImages(filename);
 
             var match = FindMatch(item, list);
 
@@ -99,33 +107,27 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetUrl(string image, string filename)
         {
-            return string.Format("https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
+            return string.Format(CultureInfo.InvariantCulture, "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studios/{0}/{1}.jpg", image, filename);
         }
 
         private Task<string> EnsureThumbsList(string file, CancellationToken cancellationToken)
         {
             const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studiothumbs.txt";
 
-            return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
+            return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
         private Task<string> EnsurePosterList(string file, CancellationToken cancellationToken)
         {
             const string url = "https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/images/imagesbyname/studioposters.txt";
 
-            return EnsureList(url, file, _httpClient, _fileSystem, cancellationToken);
+            return EnsureList(url, file, _fileSystem, cancellationToken);
         }
 
-        public int Order => 0;
-
-        public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
+        public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                BufferContent = false
-            });
+            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
+            return httpClient.GetAsync(url, cancellationToken);
         }
 
         /// <summary>
@@ -133,36 +135,21 @@ namespace MediaBrowser.Providers.Studios
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <param name="file">The file.</param>
-        /// <param name="httpClient">The HTTP client.</param>
         /// <param name="fileSystem">The file system.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public async Task<string> EnsureList(string url, string file, IHttpClient httpClient, IFileSystem fileSystem, CancellationToken cancellationToken)
+        public async Task<string> EnsureList(string url, string file, IFileSystem fileSystem, CancellationToken cancellationToken)
         {
             var fileInfo = fileSystem.GetFileInfo(file);
 
             if (!fileInfo.Exists || (DateTime.UtcNow - fileSystem.GetLastWriteTimeUtc(fileInfo)).TotalDays > 1)
             {
-                var temp = await httpClient.GetTempFile(new HttpRequestOptions
-                {
-                    CancellationToken = cancellationToken,
-                    Progress = new SimpleProgress<double>(),
-                    Url = url
-
-                }).ConfigureAwait(false);
+                var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
-
-                try
-                {
-                    File.Copy(temp, file, true);
-                }
-                catch
-                {
-
-                }
-
-                return temp;
+                await using var response = await httpClient.GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
+                await using var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+                await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
             return file;
@@ -177,36 +164,26 @@ namespace MediaBrowser.Providers.Studios
 
         private string GetComparableName(string name)
         {
-            return name.Replace(" ", string.Empty)
-                .Replace(".", string.Empty)
-                .Replace("&", string.Empty)
-                .Replace("!", string.Empty)
-                .Replace(",", string.Empty)
-                .Replace("/", string.Empty);
+            return name.Replace(" ", string.Empty, StringComparison.Ordinal)
+                .Replace(".", string.Empty, StringComparison.Ordinal)
+                .Replace("&", string.Empty, StringComparison.Ordinal)
+                .Replace("!", string.Empty, StringComparison.Ordinal)
+                .Replace(",", string.Empty, StringComparison.Ordinal)
+                .Replace("/", string.Empty, StringComparison.Ordinal);
         }
 
-        public IEnumerable<string> GetAvailableImages(string file, IFileSystem fileSystem)
+        public IEnumerable<string> GetAvailableImages(string file)
         {
-            using (var fileStream = fileSystem.GetFileStream(file, FileOpenMode.Open, FileAccessMode.Read, FileShareMode.Read))
+            using var fileStream = File.OpenRead(file);
+            using var reader = new StreamReader(fileStream);
+
+            foreach (var line in reader.ReadAllLines())
             {
-                using (var reader = new StreamReader(fileStream))
+                if (!string.IsNullOrWhiteSpace(line))
                 {
-                    var lines = new List<string>();
-
-                    while (!reader.EndOfStream)
-                    {
-                        var text = reader.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(text))
-                        {
-                            lines.Add(text);
-                        }
-                    }
-
-                    return lines;
+                    yield return line;
                 }
             }
         }
-
     }
 }

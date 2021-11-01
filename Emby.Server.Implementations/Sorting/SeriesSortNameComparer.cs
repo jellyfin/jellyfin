@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
@@ -7,6 +11,12 @@ namespace Emby.Server.Implementations.Sorting
 {
     public class SeriesSortNameComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.SeriesSortName;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -22,13 +32,7 @@ namespace Emby.Server.Implementations.Sorting
         {
             var hasSeries = item as IHasSeries;
 
-            return hasSeries != null ? hasSeries.FindSeriesSortName() : null;
+            return hasSeries?.FindSeriesSortName();
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.SeriesSortName;
     }
 }

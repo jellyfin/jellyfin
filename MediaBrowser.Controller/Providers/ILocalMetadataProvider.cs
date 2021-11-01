@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -17,8 +19,9 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="info">The information.</param>
         /// <param name="directoryService">The directory service.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{MetadataResult{`0}}.</returns>
-        Task<MetadataResult<TItemType>> GetMetadata(ItemInfo info,
+        /// <returns>Task{MetadataResult{0}}.</returns>
+        Task<MetadataResult<TItemType>> GetMetadata(
+            ItemInfo info,
             IDirectoryService directoryService,
             CancellationToken cancellationToken);
     }

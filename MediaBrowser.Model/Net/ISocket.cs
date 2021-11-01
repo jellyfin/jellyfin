@@ -1,4 +1,7 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,18 +12,23 @@ namespace MediaBrowser.Model.Net
     /// </summary>
     public interface ISocket : IDisposable
     {
-        IpAddressInfo LocalIPAddress { get; }
+        IPAddress LocalIPAddress { get; }
 
         Task<SocketReceiveResult> ReceiveAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken);
 
-        int Receive(byte[] buffer, int offset, int count);
-
         IAsyncResult BeginReceive(byte[] buffer, int offset, int count, AsyncCallback callback);
+
         SocketReceiveResult EndReceive(IAsyncResult result);
 
         /// <summary>
         /// Sends a UDP message to a particular end point (uni or multicast).
         /// </summary>
-        Task SendToAsync(byte[] buffer, int offset, int bytes, IpEndPointInfo endPoint, CancellationToken cancellationToken);
+        /// <param name="buffer">An array of type <see cref="byte" /> that contains the data to send.</param>
+        /// <param name="offset">The zero-based position in buffer at which to begin sending data.</param>
+        /// <param name="bytes">The number of bytes to send.</param>
+        /// <param name="endPoint">An <see cref="IPEndPoint" /> that represents the remote device.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        Task SendToAsync(byte[] buffer, int offset, int bytes, IPEndPoint endPoint, CancellationToken cancellationToken);
     }
 }

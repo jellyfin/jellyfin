@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -13,7 +15,7 @@ namespace MediaBrowser.Controller.Providers
         where TItemType : BaseItem
     {
         /// <summary>
-        /// Fetches the asynchronous.
+        /// Fetches the metadata asynchronously.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>

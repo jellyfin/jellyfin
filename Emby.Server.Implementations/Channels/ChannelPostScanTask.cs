@@ -9,21 +9,34 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Channels
 {
+    /// <summary>
+    /// A task to remove all non-installed channels from the database.
+    /// </summary>
     public class ChannelPostScanTask
     {
         private readonly IChannelManager _channelManager;
-        private readonly IUserManager _userManager;
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
-        public ChannelPostScanTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChannelPostScanTask"/> class.
+        /// </summary>
+        /// <param name="channelManager">The channel manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        public ChannelPostScanTask(IChannelManager channelManager, ILogger logger, ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
-            _userManager = userManager;
             _logger = logger;
             _libraryManager = libraryManager;
         }
 
+        /// <summary>
+        /// Runs this task.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The completed task.</returns>
         public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             CleanDatabase(cancellationToken);
@@ -32,71 +45,55 @@ namespace Emby.Server.Implementations.Channels
             return Task.CompletedTask;
         }
 
-        public static string GetUserDistinctValue(User user)
-        {
-            var channels = user.Policy.EnabledChannels
-                .OrderBy(i => i)
-                .ToList();
-
-            return string.Join("|", channels.ToArray());
-        }
-
         private void CleanDatabase(CancellationToken cancellationToken)
         {
             var installedChannelIds = ((ChannelManager)_channelManager).GetInstalledChannelIds();
 
-            var databaseIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            var uninstalledChannels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Channel).Name }
+                IncludeItemTypes = new[] { nameof(Channel) },
+                ExcludeItemIds = installedChannelIds.ToArray()
             });
 
-            var invalidIds = databaseIds
-                .Except(installedChannelIds)
-                .ToList();
-
-            foreach (var id in invalidIds)
+            foreach (var channel in uninstalledChannels)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                CleanChannel(id, cancellationToken);
+                CleanChannel((Channel)channel, cancellationToken);
             }
         }
 
-        private void CleanChannel(Guid id, CancellationToken cancellationToken)
+        private void CleanChannel(Channel channel, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Cleaning channel {0} from database", id);
+            _logger.LogInformation("Cleaning channel {0} from database", channel.Id);
 
             // Delete all channel items
-            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            var items = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                ChannelIds = new[] { id }
+                ChannelIds = new[] { channel.Id }
             });
 
-            foreach (var deleteId in allIds)
+            foreach (var item in items)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                DeleteItem(deleteId);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             // Finally, delete the channel itself
-            DeleteItem(id);
-        }
-
-        private void DeleteItem(Guid id)
-        {
-            var item = _libraryManager.GetItemById(id);
-
-            if (item == null)
-            {
-                return;
-            }
-
-            _libraryManager.DeleteItem(item, new DeleteOptions
-            {
-                DeleteFileLocation = false
-
-            }, false);
+            _libraryManager.DeleteItem(
+                channel,
+                new DeleteOptions
+                {
+                    DeleteFileLocation = false
+                },
+                false);
         }
     }
 }

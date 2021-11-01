@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.LiveTv;
@@ -6,13 +10,20 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class SeriesTimerInfo
     {
+        public SeriesTimerInfo()
+        {
+            Days = new List<DayOfWeek>();
+            SkipEpisodesInLibrary = true;
+            KeepUntil = KeepUntil.UntilDeleted;
+        }
+
         /// <summary>
-        /// Id of the recording.
+        /// Gets or sets the id of the recording.
         /// </summary>
         public string Id { get; set; }
 
         /// <summary>
-        /// ChannelId of the recording.
+        /// Gets or sets the channelId of the recording.
         /// </summary>
         public string ChannelId { get; set; }
 
@@ -23,24 +34,27 @@ namespace MediaBrowser.Controller.LiveTv
         public string ProgramId { get; set; }
 
         /// <summary>
-        /// Name of the recording.
+        /// Gets or sets the name of the recording.
         /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service name.
+        /// </summary>
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// Description of the recording.
+        /// Gets or sets the description of the recording.
         /// </summary>
         public string Overview { get; set; }
 
         /// <summary>
-        /// The start date of the recording, in UTC.
+        /// Gets or sets the start date of the recording, in UTC.
         /// </summary>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The end date of the recording, in UTC.
+        /// Gets or sets the end date of the recording, in UTC.
         /// </summary>
         public DateTime EndDate { get; set; }
 
@@ -57,6 +71,7 @@ namespace MediaBrowser.Controller.LiveTv
         public bool RecordAnyChannel { get; set; }
 
         public int KeepUpTo { get; set; }
+
         public KeepUntil KeepUntil { get; set; }
 
         public bool SkipEpisodesInLibrary { get; set; }
@@ -108,12 +123,5 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The series identifier.</value>
         public string SeriesId { get; set; }
-
-        public SeriesTimerInfo()
-        {
-            Days = new List<DayOfWeek>();
-            SkipEpisodesInLibrary = true;
-            KeepUntil = KeepUntil.UntilDeleted;
-        }
     }
 }

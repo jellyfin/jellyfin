@@ -1,16 +1,17 @@
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
-    /// Enum IsoType
+    /// Enum IsoType.
     /// </summary>
     public enum IsoType
     {
         /// <summary>
-        /// The DVD
+        /// The DVD.
         /// </summary>
         Dvd,
+
         /// <summary>
-        /// The blu ray
+        /// The blu ray.
         /// </summary>
         BluRay
     }

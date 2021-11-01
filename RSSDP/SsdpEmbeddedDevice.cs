@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Rssdp
 {
     /// <summary>
@@ -9,13 +5,7 @@ namespace Rssdp
     /// </summary>
     public class SsdpEmbeddedDevice : SsdpDevice
     {
-
-        #region Fields
         private SsdpRootDevice _RootDevice;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         /// Default constructor.
@@ -23,10 +13,6 @@ namespace Rssdp
         public SsdpEmbeddedDevice()
         {
         }
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         /// Returns the <see cref="SsdpRootDevice"/> that is this device's first ancestor. If this device is itself an <see cref="SsdpRootDevice"/>, then returns a reference to itself.
@@ -37,6 +23,7 @@ namespace Rssdp
             {
                 return _RootDevice;
             }
+
             internal set
             {
                 _RootDevice = value;
@@ -49,7 +36,5 @@ namespace Rssdp
                 }
             }
         }
-
-        #endregion
     }
 }

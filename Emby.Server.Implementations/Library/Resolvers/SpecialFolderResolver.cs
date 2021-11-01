@@ -1,3 +1,7 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.IO;
 using System.Linq;
@@ -9,7 +13,7 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
-    public class SpecialFolderResolver : FolderResolver<Folder>
+    public class SpecialFolderResolver : GenericFolderResolver<Folder>
     {
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
@@ -39,10 +43,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 {
                     return new AggregateFolder();
                 }
+
                 if (string.Equals(args.Path, _appPaths.DefaultUserViewsPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new UserRootFolder();  //if we got here and still a root - must be user root
+                    return new UserRootFolder();  // if we got here and still a root - must be user root
                 }
+
                 if (args.IsVf)
                 {
                     return new CollectionFolder
@@ -61,7 +67,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return args.FileSystemChildren
                 .Where(i =>
                 {
-
                     try
                     {
                         return !i.IsDirectory &&
@@ -71,7 +76,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     {
                         return false;
                     }
-
                 })
                 .Select(i => _fileSystem.GetFileNameWithoutExtension(i))
                 .FirstOrDefault();

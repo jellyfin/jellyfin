@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
@@ -7,16 +9,27 @@ using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
-    public class PhotoAlbumResolver : FolderResolver<PhotoAlbum>
+    /// <summary>
+    /// Class PhotoAlbumResolver.
+    /// </summary>
+    public class PhotoAlbumResolver : GenericFolderResolver<PhotoAlbum>
     {
         private readonly IImageProcessor _imageProcessor;
-        private ILibraryManager _libraryManager;
+        private readonly ILibraryManager _libraryManager;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhotoAlbumResolver"/> class.
+        /// </summary>
+        /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="libraryManager">The library manager.</param>
         public PhotoAlbumResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
         {
             _imageProcessor = imageProcessor;
             _libraryManager = libraryManager;
         }
+
+        /// <inheritdoc />
+        public override ResolverPriority Priority => ResolverPriority.Second;
 
         /// <summary>
         /// Resolves the specified args.
@@ -31,8 +44,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 // Must be an image file within a photo collection
                 var collectionType = args.GetCollectionType();
 
-                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase) ||
-                    (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.GetLibraryOptions().EnablePhotos))
+                if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase)
+                    || (string.Equals(collectionType, CollectionType.HomeVideos, StringComparison.OrdinalIgnoreCase) && args.LibraryOptions.EnablePhotos))
                 {
                     if (HasPhotos(args))
                     {
@@ -55,13 +68,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
             {
                 if (!file.IsDirectory && PhotoResolver.IsImageFile(file.FullName, _imageProcessor))
                 {
-                    var libraryOptions = args.GetLibraryOptions();
                     var filename = file.Name;
                     var ownedByMedia = false;
 
                     foreach (var siblingFile in files)
                     {
-                        if (PhotoResolver.IsOwnedByMedia(_libraryManager, libraryOptions, siblingFile.FullName, filename))
+                        if (PhotoResolver.IsOwnedByMedia(_libraryManager, siblingFile.FullName, filename))
                         {
                             ownedByMedia = true;
                             break;
@@ -74,9 +86,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     }
                 }
             }
+
             return false;
         }
-
-        public override ResolverPriority Priority => ResolverPriority.Second;
     }
 }

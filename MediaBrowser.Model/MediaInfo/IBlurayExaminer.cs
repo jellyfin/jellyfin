@@ -1,7 +1,7 @@
 namespace MediaBrowser.Model.MediaInfo
 {
     /// <summary>
-    /// Interface IBlurayExaminer
+    /// Interface IBlurayExaminer.
     /// </summary>
     public interface IBlurayExaminer
     {

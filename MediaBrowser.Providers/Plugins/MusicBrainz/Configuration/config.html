@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>MusicBrainz</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage musicBrainzConfigPage" data-require="emby-input,emby-button,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="musicBrainzConfigForm">
+                    <div class="inputContainer">
+                        <input is="emby-input" type="text" id="server" required label="Server" />
+                        <div class="fieldDescription">This can be a mirror of the official server or even a custom server.</div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" type="number" id="rateLimit" pattern="[0-9]*" required min="0" max="10000" label="Rate Limit" />
+                        <div class="fieldDescription">Span of time between requests in milliseconds. The official server is limited to one request every two seconds.</div>
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="replaceArtistName" />
+                        <span>When an artist is found during a metadata search, replace the artist name with the value on the server.</span>
+                    </label>
+                    <br />
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var MusicBrainzPluginConfig = {
+                uniquePluginId: "8c95c4d2-e50c-4fb0-a4f3-6c06ff0f9a1a"
+            };
+
+            document.querySelector('.musicBrainzConfigPage')
+                .addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
+                        var server = document.querySelector('#server');
+                        server.value = config.Server;
+                        server.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+
+                        var rateLimit = document.querySelector('#rateLimit');
+                        rateLimit.value = config.RateLimit;
+                        rateLimit.dispatchEvent(new Event('change', {
+                            bubbles: true,
+                            cancelable: false
+                        }));
+                        
+                        document.querySelector('#replaceArtistName').checked = config.ReplaceArtistName;
+
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+            document.querySelector('.musicBrainzConfigForm')
+                .addEventListener('submit', function (e) {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(MusicBrainzPluginConfig.uniquePluginId).then(function (config) {
+                        config.Server = document.querySelector('#server').value;
+                        config.RateLimit = document.querySelector('#rateLimit').value;
+                        config.ReplaceArtistName = document.querySelector('#replaceArtistName').checked;
+
+                        ApiClient.updatePluginConfiguration(MusicBrainzPluginConfig.uniquePluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+
+                    e.preventDefault();
+                    return false;
+                });
+        </script>
+    </div>
+</body>
+</html>

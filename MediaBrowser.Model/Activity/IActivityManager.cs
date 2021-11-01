@@ -1,5 +1,10 @@
+#pragma warning disable CS1591
+
 using System;
-using MediaBrowser.Model.Events;
+using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.Activity
@@ -8,10 +13,15 @@ namespace MediaBrowser.Model.Activity
     {
         event EventHandler<GenericEventArgs<ActivityLogEntry>> EntryCreated;
 
-        void Create(ActivityLogEntry entry);
+        Task CreateAsync(ActivityLog entry);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, int? startIndex, int? limit);
+        Task<QueryResult<ActivityLogEntry>> GetPagedResultAsync(ActivityLogQuery query);
 
-        QueryResult<ActivityLogEntry> GetActivityLogEntries(DateTime? minDate, bool? hasUserId, int? x, int? y);
+        /// <summary>
+        /// Remove all activity logs before the specified date.
+        /// </summary>
+        /// <param name="startDate">Activity log start date.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        Task CleanAsync(DateTime startDate);
     }
 }

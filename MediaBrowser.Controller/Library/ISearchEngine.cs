@@ -4,7 +4,7 @@ using MediaBrowser.Model.Search;
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Interface ILibrarySearchEngine
+    /// Interface ILibrarySearchEngine.
     /// </summary>
     public interface ISearchEngine
     {

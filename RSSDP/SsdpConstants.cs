@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Rssdp.Infrastructure
 {
     /// <summary>
@@ -62,6 +57,5 @@ namespace Rssdp.Infrastructure
         internal const string SsdpByeByeNotification = "ssdp:byebye";
 
         internal const int UdpResendCount = 3;
-
     }
 }

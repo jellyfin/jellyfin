@@ -1,5 +1,8 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
-using MediaBrowser.Model.Entities;
+using Jellyfin.Data.Enums;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -8,6 +11,12 @@ namespace MediaBrowser.Model.LiveTv
     /// </summary>
     public class LiveTvChannelQuery
     {
+        public LiveTvChannelQuery()
+        {
+            EnableUserData = true;
+            SortBy = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>
@@ -45,13 +54,13 @@ namespace MediaBrowser.Model.LiveTv
         public Guid UserId { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        /// Gets or sets the start index. Used for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// Gets or sets the maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
@@ -61,18 +70,19 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if [add current program]; otherwise, <c>false</c>.</value>
         public bool AddCurrentProgram { get; set; }
+
         public bool EnableUserData { get; set; }
 
         /// <summary>
-        /// Used to specific whether to return news or not
+        /// Gets or sets a value whether to return news or not.
         /// </summary>
-        /// <remarks>If set to null, all programs will be returned</remarks>
+        /// <remarks>If set to <c>null</c>, all programs will be returned.</remarks>
         public bool? IsNews { get; set; }
 
         /// <summary>
-        /// Used to specific whether to return movies or not
+        /// Gets or sets a value whether to return movies or not.
         /// </summary>
-        /// <remarks>If set to null, all programs will be returned</remarks>
+        /// <remarks>If set to <c>null</c>, all programs will be returned.</remarks>
         public bool? IsMovie { get; set; }
 
         /// <summary>
@@ -80,25 +90,21 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>null</c> if [is kids] contains no value, <c>true</c> if [is kids]; otherwise, <c>false</c>.</value>
         public bool? IsKids { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is sports.
         /// </summary>
         /// <value><c>null</c> if [is sports] contains no value, <c>true</c> if [is sports]; otherwise, <c>false</c>.</value>
         public bool? IsSports { get; set; }
+
         public bool? IsSeries { get; set; }
 
         public string[] SortBy { get; set; }
 
         /// <summary>
-        /// The sort order to return results with
+        /// Gets or sets the sort order to return results with.
         /// </summary>
         /// <value>The sort order.</value>
         public SortOrder? SortOrder { get; set; }
-
-        public LiveTvChannelQuery()
-        {
-            EnableUserData = true;
-            SortBy = Array.Empty<string>();
-        }
     }
 }

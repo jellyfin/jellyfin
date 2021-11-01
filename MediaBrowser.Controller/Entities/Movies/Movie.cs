@@ -1,34 +1,43 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities.Movies
 {
     /// <summary>
-    /// Class Movie
+    /// Class Movie.
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        public Guid[] SpecialFeatureIds { get; set; }
-
         public Movie()
         {
-            SpecialFeatureIds = new Guid[] { };
-            RemoteTrailers = EmptyMediaUrlArray;
-            LocalTrailerIds = new Guid[] { };
-            RemoteTrailerIds = new Guid[] { };
+            SpecialFeatureIds = Array.Empty<Guid>();
+            RemoteTrailers = Array.Empty<MediaUrl>();
+            LocalTrailerIds = Array.Empty<Guid>();
+            RemoteTrailerIds = Array.Empty<Guid>();
         }
 
-        public Guid[] LocalTrailerIds { get; set; }
-        public Guid[] RemoteTrailerIds { get; set; }
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> SpecialFeatureIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
+
+        /// <inheritdoc />
+        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the TMDB collection.
@@ -36,12 +45,15 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <value>The name of the TMDB collection.</value>
         public string TmdbCollectionName { get; set; }
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string CollectionName
         {
             get => TmdbCollectionName;
             set => TmdbCollectionName = value;
         }
+
+        [JsonIgnore]
+        public override bool StopRefreshIfLocalMetadataFound => false;
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -102,6 +114,7 @@ namespace MediaBrowser.Controller.Entities.Movies
             return itemsChanged;
         }
 
+        /// <inheritdoc />
         public override UnratedItem GetBlockUnratedType()
         {
             return UnratedItem.Movie;
@@ -130,9 +143,10 @@ namespace MediaBrowser.Controller.Entities.Movies
             return info;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        /// <inheritdoc />
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!ProductionYear.HasValue)
             {
@@ -166,24 +180,22 @@ namespace MediaBrowser.Controller.Entities.Movies
             return hasChanges;
         }
 
+        /// <inheritdoc />
         public override List<ExternalUrl> GetRelatedUrls()
         {
             var list = base.GetRelatedUrls();
 
-            var imdbId = this.GetProviderId(MetadataProviders.Imdb);
+            var imdbId = this.GetProviderId(MetadataProvider.Imdb);
             if (!string.IsNullOrEmpty(imdbId))
             {
                 list.Add(new ExternalUrl
                 {
                     Name = "Trakt",
-                    Url = string.Format("https://trakt.tv/movies/{0}", imdbId)
+                    Url = string.Format(CultureInfo.InvariantCulture, "https://trakt.tv/movies/{0}", imdbId)
                 });
             }
 
             return list;
         }
-
-        [IgnoreDataMember]
-        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

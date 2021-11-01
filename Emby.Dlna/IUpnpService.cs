@@ -1,4 +1,6 @@
-using System.Collections.Generic;
+#pragma warning disable CS1591
+
+using System.Threading.Tasks;
 
 namespace Emby.Dlna
 {
@@ -7,15 +9,14 @@ namespace Emby.Dlna
         /// <summary>
         /// Gets the content directory XML.
         /// </summary>
-        /// <param name="headers">The headers.</param>
         /// <returns>System.String.</returns>
-        string GetServiceXml(IDictionary<string, string> headers);
+        string GetServiceXml();
 
         /// <summary>
         /// Processes the control request.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>ControlResponse.</returns>
-        ControlResponse ProcessControlRequest(ControlRequest request);
+        Task<ControlResponse> ProcessControlRequestAsync(ControlRequest request);
     }
 }

@@ -1,35 +1,36 @@
 using System.Collections.Generic;
-using System.Globalization;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
-    /// Interface ILocalizationManager
+    /// Interface ILocalizationManager.
     /// </summary>
     public interface ILocalizationManager
     {
         /// <summary>
         /// Gets the cultures.
         /// </summary>
-        /// <returns>IEnumerable{CultureDto}.</returns>
-        CultureDto[] GetCultures();
+        /// <returns><see cref="IEnumerable{CultureDto}" />.</returns>
+        IEnumerable<CultureDto> GetCultures();
+
         /// <summary>
         /// Gets the countries.
         /// </summary>
-        /// <returns>IEnumerable{CountryInfo}.</returns>
-        Task<CountryInfo[]> GetCountries();
+        /// <returns><see cref="IEnumerable{CountryInfo}" />.</returns>
+        IEnumerable<CountryInfo> GetCountries();
+
         /// <summary>
         /// Gets the parental ratings.
         /// </summary>
-        /// <returns>IEnumerable{ParentalRating}.</returns>
+        /// <returns><see cref="IEnumerable{ParentalRating}" />.</returns>
         IEnumerable<ParentalRating> GetParentalRatings();
+
         /// <summary>
         /// Gets the rating level.
         /// </summary>
         /// <param name="rating">The rating.</param>
-        /// <returns>System.Int32.</returns>
+        /// <returns><see cref="int" /> or <c>null</c>.</returns>
         int? GetRatingLevel(string rating);
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace MediaBrowser.Model.Globalization
         /// </summary>
         /// <param name="phrase">The phrase.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>System.String.</returns>
+        /// <returns><see cref="string" />.</returns>
         string GetLocalizedString(string phrase, string culture);
 
         /// <summary>
@@ -50,13 +51,14 @@ namespace MediaBrowser.Model.Globalization
         /// <summary>
         /// Gets the localization options.
         /// </summary>
-        /// <returns>IEnumerable{LocalizatonOption}.</returns>
-        LocalizationOption[] GetLocalizationOptions();
+        /// <returns><see cref="IEnumerable{LocalizatonOption}" />.</returns>
+        IEnumerable<LocalizationOption> GetLocalizationOptions();
 
-        string NormalizeFormKD(string text);
-
-        bool HasUnicodeCategory(string value, UnicodeCategory category);
-
-        CultureDto FindLanguageInfo(string language);
+        /// <summary>
+        /// Returns the correct <see cref="CultureDto" /> for the given language.
+        /// </summary>
+        /// <param name="language">The language.</param>
+        /// <returns>The correct <see cref="CultureDto" /> for the given language.</returns>
+        CultureDto? FindLanguageInfo(string language);
     }
 }

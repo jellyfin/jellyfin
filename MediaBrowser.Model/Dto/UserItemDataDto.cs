@@ -1,9 +1,10 @@
+#nullable disable
 using System;
 
 namespace MediaBrowser.Model.Dto
 {
     /// <summary>
-    /// Class UserItemDataDto
+    /// Class UserItemDataDto.
     /// </summary>
     public class UserItemDataDto
     {

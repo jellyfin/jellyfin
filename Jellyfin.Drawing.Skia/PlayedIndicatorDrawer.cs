@@ -3,42 +3,46 @@ using SkiaSharp;
 
 namespace Jellyfin.Drawing.Skia
 {
+    /// <summary>
+    /// Static helper class for drawing 'played' indicators.
+    /// </summary>
     public static class PlayedIndicatorDrawer
     {
         private const int OffsetFromTopRightCorner = 38;
 
+        /// <summary>
+        /// Draw a 'played' indicator in the top right corner of a canvas.
+        /// </summary>
+        /// <param name="canvas">The canvas to draw the indicator on.</param>
+        /// <param name="imageSize">
+        /// The dimensions of the image to draw the indicator on. The width is used to determine the x-position of the
+        /// indicator.
+        /// </param>
         public static void DrawPlayedIndicator(SKCanvas canvas, ImageDimensions imageSize)
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
 
-            using (var paint = new SKPaint())
+            using var paint = new SKPaint
             {
-                paint.Color = SKColor.Parse("#CC52B54B");
-                paint.Style = SKPaintStyle.Fill;
-                canvas.DrawCircle((float)x, OffsetFromTopRightCorner, 20, paint);
-            }
+                Color = SKColor.Parse("#CC00A4DC"),
+                Style = SKPaintStyle.Fill
+            };
 
-            using (var paint = new SKPaint())
-            {
-                paint.Color = new SKColor(255, 255, 255, 255);
-                paint.Style = SKPaintStyle.Fill;
+            canvas.DrawCircle(x, OffsetFromTopRightCorner, 20, paint);
 
-                paint.TextSize = 30;
-                paint.IsAntialias = true;
+            paint.Color = new SKColor(255, 255, 255, 255);
+            paint.TextSize = 30;
+            paint.IsAntialias = true;
 
-                var text = "✔️";
-                var emojiChar = StringUtilities.GetUnicodeCharacterCode(text, SKTextEncoding.Utf32);
-                // or:
-                //var emojiChar = 0x1F680;
+            // or:
+            // var emojiChar = 0x1F680;
+            const string Text = "✔️";
+            var emojiChar = StringUtilities.GetUnicodeCharacterCode(Text, SKTextEncoding.Utf32);
 
-                // ask the font manager for a font with that character
-                var fontManager = SKFontManager.Default;
-                var emojiTypeface = fontManager.MatchCharacter(emojiChar);
+            // ask the font manager for a font with that character
+            paint.Typeface = SKFontManager.Default.MatchCharacter(emojiChar);
 
-                paint.Typeface = emojiTypeface;
-
-                canvas.DrawText(text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
-            }
+            canvas.DrawText(Text, (float)x - 20, OffsetFromTopRightCorner + 12, paint);
         }
     }
 }

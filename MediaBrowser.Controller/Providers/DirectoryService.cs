@@ -1,94 +1,82 @@
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using MediaBrowser.Model.IO;
-using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class DirectoryService : IDirectoryService
     {
-        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        private readonly Dictionary<string, FileSystemMetadata[]> _cache = new Dictionary<string, FileSystemMetadata[]>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new (StringComparer.Ordinal);
 
-        private readonly Dictionary<string, FileSystemMetadata> _fileCache = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new (StringComparer.Ordinal);
 
-        private readonly Dictionary<string, List<string>> _filePathCache = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new (StringComparer.Ordinal);
 
-        public DirectoryService(ILogger logger, IFileSystem fileSystem)
+        public DirectoryService(IFileSystem fileSystem)
         {
-            _logger = logger;
             _fileSystem = fileSystem;
         }
 
         public FileSystemMetadata[] GetFileSystemEntries(string path)
         {
-            if (!_cache.TryGetValue(path, out FileSystemMetadata[] entries))
-            {
-                //_logger.LogDebug("Getting files for " + path);
-
-                entries = _fileSystem.GetFileSystemEntries(path).ToArray();
-
-                //_cache.TryAdd(path, entries);
-                _cache[path] = entries;
-            }
-
-            return entries;
+            return _cache.GetOrAdd(path, (p, fileSystem) => fileSystem.GetFileSystemEntries(p).ToArray(), _fileSystem);
         }
 
         public List<FileSystemMetadata> GetFiles(string path)
         {
             var list = new List<FileSystemMetadata>();
             var items = GetFileSystemEntries(path);
-            foreach (var item in items)
+            for (var i = 0; i < items.Length; i++)
             {
+                var item = items[i];
                 if (!item.IsDirectory)
                 {
                     list.Add(item);
                 }
             }
+
             return list;
         }
 
-        public FileSystemMetadata GetFile(string path)
+        public FileSystemMetadata? GetFile(string path)
         {
-            if (!_fileCache.TryGetValue(path, out FileSystemMetadata file))
+            if (!_fileCache.TryGetValue(path, out var result))
             {
-                file = _fileSystem.GetFileInfo(path);
-
-                if (file != null && file.Exists)
+                var file = _fileSystem.GetFileInfo(path);
+                if (file.Exists)
                 {
-                    //_fileCache.TryAdd(path, file);
-                    _fileCache[path] = file;
+                    result = file;
+                    _fileCache.TryAdd(path, result);
                 }
-                else
-                {
-                    return null;
-                }
-            }
-
-            return file;
-            //return _fileSystem.GetFileInfo(path);
-        }
-
-        public List<string> GetFilePaths(string path)
-        {
-            return GetFilePaths(path, false);
-        }
-
-        public List<string> GetFilePaths(string path, bool clearCache)
-        {
-            if (clearCache || !_filePathCache.TryGetValue(path, out List<string> result))
-            {
-                result = _fileSystem.GetFilePaths(path).ToList();
-
-                _filePathCache[path] = result;
             }
 
             return result;
         }
 
+        public IReadOnlyList<string> GetFilePaths(string path)
+            => GetFilePaths(path, false);
+
+        public IReadOnlyList<string> GetFilePaths(string path, bool clearCache, bool sort = false)
+        {
+            if (clearCache)
+            {
+                _filePathCache.TryRemove(path, out _);
+            }
+
+            var filePaths = _filePathCache.GetOrAdd(path, (p, fileSystem) => fileSystem.GetFilePaths(p).ToList(), _fileSystem);
+
+            if (sort)
+            {
+                filePaths.Sort();
+            }
+
+            return filePaths;
+        }
     }
 }

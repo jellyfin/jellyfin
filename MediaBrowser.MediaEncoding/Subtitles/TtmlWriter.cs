@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -7,8 +6,12 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {
+    /// <summary>
+    /// TTML subtitle writer.
+    /// </summary>
     public class TtmlWriter : ISubtitleWriter
     {
+        /// <inheritdoc />
         public void Write(SubtitleTrackInfo info, Stream stream, CancellationToken cancellationToken)
         {
             // Example: https://github.com/zmalltalker/ttml2vtt/blob/master/data/sample.xml
@@ -37,9 +40,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     text = Regex.Replace(text, @"\\n", "<br/>", RegexOptions.IgnoreCase);
 
-                    writer.WriteLine("<p begin=\"{0}\" dur=\"{1}\">{2}</p>",
+                    writer.WriteLine(
+                        "<p begin=\"{0}\" dur=\"{1}\">{2}</p>",
                         trackEvent.StartPositionTicks,
-                        (trackEvent.EndPositionTicks - trackEvent.StartPositionTicks),
+                        trackEvent.EndPositionTicks - trackEvent.StartPositionTicks,
                         text);
                 }
 
@@ -48,13 +52,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                 writer.WriteLine("</tt>");
             }
-        }
-
-        private string FormatTime(long ticks)
-        {
-            var time = TimeSpan.FromTicks(ticks);
-
-            return string.Format(@"{0:hh\:mm\:ss\,fff}", time);
         }
     }
 }

@@ -1,5 +1,9 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
+using Jellyfin.Data.Entities;
 using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Authentication
@@ -7,9 +11,13 @@ namespace MediaBrowser.Controller.Authentication
     public interface IAuthenticationProvider
     {
         string Name { get; }
+
         bool IsEnabled { get; }
+
         Task<ProviderAuthenticationResult> Authenticate(string username, string password);
-        Task<bool> HasPassword(User user);
+
+        bool HasPassword(User user);
+
         Task ChangePassword(User user, string newPassword);
     }
 
@@ -26,6 +34,7 @@ namespace MediaBrowser.Controller.Authentication
     public class ProviderAuthenticationResult
     {
         public string Username { get; set; }
+
         public string DisplayName { get; set; }
     }
 }

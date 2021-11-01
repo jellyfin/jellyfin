@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -11,13 +13,20 @@ namespace MediaBrowser.Providers.Folders
 {
     public class UserViewMetadataService : MetadataService<UserView, ItemLookupInfo>
     {
-        protected override void MergeData(MetadataResult<UserView> source, MetadataResult<UserView> target, MetadataFields[] lockedFields, bool replaceData, bool mergeMetadataSettings)
+        public UserViewMetadataService(
+            IServerConfigurationManager serverConfigurationManager,
+            ILogger<UserViewMetadataService> logger,
+            IProviderManager providerManager,
+            IFileSystem fileSystem,
+            ILibraryManager libraryManager)
+            : base(serverConfigurationManager, logger, providerManager, fileSystem, libraryManager)
         {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
-        public UserViewMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, fileSystem, userDataManager, libraryManager)
+        /// <inheritdoc />
+        protected override void MergeData(MetadataResult<UserView> source, MetadataResult<UserView> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
     }
 }

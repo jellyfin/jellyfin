@@ -1,0 +1,4 @@
+# Joshua must review all changes to deployment and build.sh
+.ci/*           @joshuaboniface
+deployment/*    @joshuaboniface
+build.sh        @joshuaboniface

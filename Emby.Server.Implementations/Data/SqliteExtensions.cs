@@ -1,14 +1,57 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using MediaBrowser.Model.Serialization;
 using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
     public static class SqliteExtensions
     {
+        private const string DatetimeFormatUtc = "yyyy-MM-dd HH:mm:ss.FFFFFFFK";
+        private const string DatetimeFormatLocal = "yyyy-MM-dd HH:mm:ss.FFFFFFF";
+
+        /// <summary>
+        /// An array of ISO-8601 DateTime formats that we support parsing.
+        /// </summary>
+        private static readonly string[] _datetimeFormats = new string[]
+        {
+            "THHmmssK",
+            "THHmmK",
+            "HH:mm:ss.FFFFFFFK",
+            "HH:mm:ssK",
+            "HH:mmK",
+            DatetimeFormatUtc,
+            "yyyy-MM-dd HH:mm:ssK",
+            "yyyy-MM-dd HH:mmK",
+            "yyyy-MM-ddTHH:mm:ss.FFFFFFFK",
+            "yyyy-MM-ddTHH:mmK",
+            "yyyy-MM-ddTHH:mm:ssK",
+            "yyyyMMddHHmmssK",
+            "yyyyMMddHHmmK",
+            "yyyyMMddTHHmmssFFFFFFFK",
+            "THHmmss",
+            "THHmm",
+            "HH:mm:ss.FFFFFFF",
+            "HH:mm:ss",
+            "HH:mm",
+            DatetimeFormatLocal,
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm",
+            "yyyy-MM-ddTHH:mm:ss.FFFFFFF",
+            "yyyy-MM-ddTHH:mm",
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyyMMddHHmmss",
+            "yyyyMMddHHmm",
+            "yyyyMMddTHHmmssFFFFFFF",
+            "yyyy-MM-dd",
+            "yyyyMMdd",
+            "yy-MM-dd"
+        };
+
         public static void RunQueries(this SQLiteDatabaseConnection connection, string[] queries)
         {
             if (queries == null)
@@ -18,25 +61,11 @@ namespace Emby.Server.Implementations.Data
 
             connection.RunInTransaction(conn =>
             {
-                //foreach (var query in queries)
-                //{
-                //    conn.Execute(query);
-                //}
-                conn.ExecuteAll(string.Join(";", queries));
+                conn.ExecuteAll(string.Join(';', queries));
             });
         }
 
-        public static byte[] ToGuidBlob(this string str)
-        {
-            return ToGuidBlob(new Guid(str));
-        }
-
-        public static byte[] ToGuidBlob(this Guid guid)
-        {
-            return guid.ToByteArray();
-        }
-
-        public static Guid ReadGuidFromBlob(this IResultSetValue result)
+        public static Guid ReadGuidFromBlob(this ResultSetValue result)
         {
             return new Guid(result.ToBlob());
         }
@@ -54,147 +83,161 @@ namespace Emby.Server.Implementations.Data
                     CultureInfo.InvariantCulture);
         }
 
-        private static string GetDateTimeKindFormat(
-           DateTimeKind kind)
-        {
-            return (kind == DateTimeKind.Utc) ? _datetimeFormatUtc : _datetimeFormatLocal;
-        }
+        private static string GetDateTimeKindFormat(DateTimeKind kind)
+            => (kind == DateTimeKind.Utc) ? DatetimeFormatUtc : DatetimeFormatLocal;
 
-        /// <summary>
-        /// An array of ISO-8601 DateTime formats that we support parsing.
-        /// </summary>
-        private static string[] _datetimeFormats = new string[] {
-      "THHmmssK",
-      "THHmmK",
-      "HH:mm:ss.FFFFFFFK",
-      "HH:mm:ssK",
-      "HH:mmK",
-      "yyyy-MM-dd HH:mm:ss.FFFFFFFK", /* NOTE: UTC default (5). */
-      "yyyy-MM-dd HH:mm:ssK",
-      "yyyy-MM-dd HH:mmK",
-      "yyyy-MM-ddTHH:mm:ss.FFFFFFFK",
-      "yyyy-MM-ddTHH:mmK",
-      "yyyy-MM-ddTHH:mm:ssK",
-      "yyyyMMddHHmmssK",
-      "yyyyMMddHHmmK",
-      "yyyyMMddTHHmmssFFFFFFFK",
-      "THHmmss",
-      "THHmm",
-      "HH:mm:ss.FFFFFFF",
-      "HH:mm:ss",
-      "HH:mm",
-      "yyyy-MM-dd HH:mm:ss.FFFFFFF", /* NOTE: Non-UTC default (19). */
-      "yyyy-MM-dd HH:mm:ss",
-      "yyyy-MM-dd HH:mm",
-      "yyyy-MM-ddTHH:mm:ss.FFFFFFF",
-      "yyyy-MM-ddTHH:mm",
-      "yyyy-MM-ddTHH:mm:ss",
-      "yyyyMMddHHmmss",
-      "yyyyMMddHHmm",
-      "yyyyMMddTHHmmssFFFFFFF",
-      "yyyy-MM-dd",
-      "yyyyMMdd",
-      "yy-MM-dd"
-    };
-
-        private static string _datetimeFormatUtc = _datetimeFormats[5];
-        private static string _datetimeFormatLocal = _datetimeFormats[19];
-
-        public static DateTime ReadDateTime(this IResultSetValue result)
+        public static DateTime ReadDateTime(this ResultSetValue result)
         {
             var dateText = result.ToString();
 
             return DateTime.ParseExact(
-                dateText, _datetimeFormats,
+                dateText,
+                _datetimeFormats,
                 DateTimeFormatInfo.InvariantInfo,
-                DateTimeStyles.None).ToUniversalTime();
+                DateTimeStyles.AdjustToUniversal);
         }
 
-        public static DateTime? TryReadDateTime(this IResultSetValue result)
+        public static bool TryReadDateTime(this IReadOnlyList<ResultSetValue> reader, int index, out DateTime result)
         {
-            var dateText = result.ToString();
-
-            if (DateTime.TryParseExact(dateText, _datetimeFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out var dateTimeResult))
+            var item = reader[index];
+            if (item.IsDbNull())
             {
-                return dateTimeResult.ToUniversalTime();
+                result = default;
+                return false;
             }
 
-            return null;
-        }
+            var dateText = item.ToString();
 
-        /// <summary>
-        /// Serializes to bytes.
-        /// </summary>
-        /// <returns>System.Byte[][].</returns>
-        /// <exception cref="ArgumentNullException">obj</exception>
-        public static byte[] SerializeToBytes(this IJsonSerializer json, object obj)
-        {
-            if (obj == null)
+            if (DateTime.TryParseExact(dateText, _datetimeFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.AdjustToUniversal, out var dateTimeResult))
             {
-                throw new ArgumentNullException(nameof(obj));
+                result = dateTimeResult;
+                return true;
             }
 
-            using (var stream = new MemoryStream())
-            {
-                json.SerializeToStream(obj, stream);
-                return stream.ToArray();
-            }
+            result = default;
+            return false;
         }
 
-        public static void Attach(ManagedConnection db, string path, string alias)
+        public static bool TryGetGuid(this IReadOnlyList<ResultSetValue> reader, int index, out Guid result)
         {
-            var commandText = string.Format("attach @path as {0};", alias);
-
-            using (var statement = db.PrepareStatement(commandText))
+            var item = reader[index];
+            if (item.IsDbNull())
             {
-                statement.TryBind("@path", path);
-                statement.MoveNext();
+                result = default;
+                return false;
             }
+
+            result = item.ReadGuidFromBlob();
+            return true;
         }
 
-        public static bool IsDBNull(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool IsDbNull(this ResultSetValue result)
         {
-            return result[index].SQLiteType == SQLiteType.Null;
+            return result.SQLiteType == SQLiteType.Null;
         }
 
-        public static string GetString(this IReadOnlyList<IResultSetValue> result, int index)
+        public static string GetString(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ToString();
         }
 
-        public static bool GetBoolean(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetString(this IReadOnlyList<ResultSetValue> reader, int index, out string result)
+        {
+            result = null;
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                return false;
+            }
+
+            result = item.ToString();
+            return true;
+        }
+
+        public static bool GetBoolean(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ToBool();
         }
 
-        public static int GetInt32(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetBoolean(this IReadOnlyList<ResultSetValue> reader, int index, out bool result)
         {
-            return result[index].ToInt();
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToBool();
+            return true;
         }
 
-        public static long GetInt64(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetInt32(this IReadOnlyList<ResultSetValue> reader, int index, out int result)
+        {
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToInt();
+            return true;
+        }
+
+        public static long GetInt64(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ToInt64();
         }
 
-        public static float GetFloat(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetInt64(this IReadOnlyList<ResultSetValue> reader, int index, out long result)
         {
-            return result[index].ToFloat();
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToInt64();
+            return true;
         }
 
-        public static Guid GetGuid(this IReadOnlyList<IResultSetValue> result, int index)
+        public static bool TryGetSingle(this IReadOnlyList<ResultSetValue> reader, int index, out float result)
+        {
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToFloat();
+            return true;
+        }
+
+        public static bool TryGetDouble(this IReadOnlyList<ResultSetValue> reader, int index, out double result)
+        {
+            var item = reader[index];
+            if (item.IsDbNull())
+            {
+                result = default;
+                return false;
+            }
+
+            result = item.ToDouble();
+            return true;
+        }
+
+        public static Guid GetGuid(this IReadOnlyList<ResultSetValue> result, int index)
         {
             return result[index].ReadGuidFromBlob();
         }
 
+        [Conditional("DEBUG")]
         private static void CheckName(string name)
         {
-#if DEBUG
-            //if (!name.IndexOf("@", StringComparison.OrdinalIgnoreCase) != 0)
-            {
-                throw new Exception("Invalid param name: " + name);
-            }
-#endif
+            throw new ArgumentException("Invalid param name: " + name, nameof(name));
         }
 
         public static void TryBind(this IStatement statement, string name, double value)
@@ -268,7 +311,9 @@ namespace Emby.Server.Implementations.Data
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
-                bindParam.Bind(value.ToGuidBlob());
+                Span<byte> byteValue = stackalloc byte[16];
+                value.TryWriteBytes(byteValue);
+                bindParam.Bind(byteValue);
             }
             else
             {
@@ -300,7 +345,7 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public static void TryBind(this IStatement statement, string name, byte[] value)
+        public static void TryBind(this IStatement statement, string name, ReadOnlySpan<byte> value)
         {
             if (statement.BindParameters.TryGetValue(name, out IBindParameter bindParam))
             {
@@ -396,12 +441,11 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        public static IEnumerable<IReadOnlyList<IResultSetValue>> ExecuteQuery(
-            this IStatement This)
+        public static IEnumerable<IReadOnlyList<ResultSetValue>> ExecuteQuery(this IStatement statement)
         {
-            while (This.MoveNext())
+            while (statement.MoveNext())
             {
-                yield return This.Current;
+                yield return statement.Current;
             }
         }
     }

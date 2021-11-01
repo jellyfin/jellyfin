@@ -1,6 +1,10 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
+using System.Text.Json.Serialization;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -25,22 +29,16 @@ namespace MediaBrowser.Controller.Entities
         public DateTime DateModified { get; set; }
 
         public int Width { get; set; }
+
         public int Height { get; set; }
 
-        [IgnoreDataMember]
-        public bool IsLocalFile
-        {
-            get
-            {
-                if (Path != null)
-                {
-                    if (Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
+        /// <summary>
+        /// Gets or sets the blurhash.
+        /// </summary>
+        /// <value>The blurhash.</value>
+        public string BlurHash { get; set; }
+
+        [JsonIgnore]
+        public bool IsLocalFile => Path == null || !Path.StartsWith("http", StringComparison.OrdinalIgnoreCase);
     }
 }

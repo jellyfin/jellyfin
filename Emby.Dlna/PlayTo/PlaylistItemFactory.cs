@@ -1,4 +1,7 @@
-using System.Globalization;
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
@@ -7,11 +10,9 @@ using MediaBrowser.Model.Session;
 
 namespace Emby.Dlna.PlayTo
 {
-    public class PlaylistItemFactory
+    public static class PlaylistItemFactory
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
-        public PlaylistItem Create(Photo item, DeviceProfile profile)
+        public static PlaylistItem Create(Photo item, DeviceProfile profile)
         {
             var playlistItem = new PlaylistItem
             {

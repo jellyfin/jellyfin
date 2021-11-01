@@ -1,7 +1,13 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -14,6 +20,8 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
+using Genre = MediaBrowser.Controller.Entities.Genre;
+using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -41,6 +49,11 @@ namespace Emby.Server.Implementations.Library
         {
             var user = _userManager.GetUserById(query.UserId);
 
+            if (user == null)
+            {
+                throw new ArgumentException("User Id specified in the query does not exist.", nameof(query));
+            }
+
             var folders = _libraryManager.GetUserRootFolder()
                 .GetChildren(user, true)
                 .OfType<Folder>()
@@ -53,7 +66,7 @@ namespace Emby.Server.Implementations.Library
             foreach (var folder in folders)
             {
                 var collectionFolder = folder as ICollectionFolder;
-                var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+                var folderViewType = collectionFolder?.CollectionType;
 
                 if (UserView.IsUserSpecific(folder))
                 {
@@ -117,28 +130,23 @@ namespace Emby.Server.Implementations.Library
 
             if (!query.IncludeHidden)
             {
-                list = list.Where(i => !user.Configuration.MyMediaExcludes.Contains(i.Id.ToString("N"))).ToList();
+                list = list.Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.MyMediaExcludes).Contains(i.Id)).ToList();
             }
 
             var sorted = _libraryManager.Sort(list, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending).ToList();
 
-            var orders = user.Configuration.OrderedViews.ToList();
+            var orders = user.GetPreferenceValues<Guid>(PreferenceKind.OrderedViews);
 
             return list
                 .OrderBy(i =>
                 {
-                    var index = orders.IndexOf(i.Id.ToString("N"));
+                    var index = Array.IndexOf(orders, i.Id);
 
-                    if (index == -1)
+                    if (index == -1
+                        && i is UserView view
+                        && view.DisplayParentId != Guid.Empty)
                     {
-                        var view = i as UserView;
-                        if (view != null)
-                        {
-                            if (!view.DisplayParentId.Equals(Guid.Empty))
-                            {
-                                index = orders.IndexOf(view.DisplayParentId.ToString("N"));
-                            }
-                        }
+                        index = Array.IndexOf(orders, view.DisplayParentId);
                     }
 
                     return index == -1 ? int.MaxValue : index;
@@ -162,7 +170,13 @@ namespace Emby.Server.Implementations.Library
             return GetUserSubViewWithName(name, parentId, type, sortName);
         }
 
-        private Folder GetUserView(List<ICollectionFolder> parents, string viewType, string localizationKey, string sortName, User user, string[] presetViews)
+        private Folder GetUserView(
+            List<ICollectionFolder> parents,
+            string viewType,
+            string localizationKey,
+            string sortName,
+            Jellyfin.Data.Entities.User user,
+            string[] presetViews)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
@@ -223,7 +237,7 @@ namespace Emby.Server.Implementations.Library
             return list;
         }
 
-        private List<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
+        private IReadOnlyList<BaseItem> GetItemsForLatestItems(User user, LatestItemsQuery request, DtoOptions options)
         {
             var parentId = request.ParentId;
 
@@ -235,24 +249,22 @@ namespace Emby.Server.Implementations.Library
             if (!parentId.Equals(Guid.Empty))
             {
                 var parentItem = _libraryManager.GetItemById(parentId);
-                var parentItemChannel = parentItem as Channel;
-                if (parentItemChannel != null)
+                if (parentItem is Channel)
                 {
-                    return _channelManager.GetLatestChannelItemsInternal(new InternalItemsQuery(user)
-                    {
-                        ChannelIds = new[] { parentId },
-                        IsPlayed = request.IsPlayed,
-                        StartIndex = request.StartIndex,
-                        Limit = request.Limit,
-                        IncludeItemTypes = request.IncludeItemTypes,
-                        EnableTotalRecordCount = false
-
-
-                    }, CancellationToken.None).Result.Items.ToList();
+                    return _channelManager.GetLatestChannelItemsInternal(
+                        new InternalItemsQuery(user)
+                        {
+                            ChannelIds = new[] { parentId },
+                            IsPlayed = request.IsPlayed,
+                            StartIndex = request.StartIndex,
+                            Limit = request.Limit,
+                            IncludeItemTypes = request.IncludeItemTypes,
+                            EnableTotalRecordCount = false
+                        },
+                        CancellationToken.None).GetAwaiter().GetResult().Items;
                 }
 
-                var parent = parentItem as Folder;
-                if (parent != null)
+                if (parentItem is Folder parent)
                 {
                     parents.Add(parent);
                 }
@@ -269,7 +281,8 @@ namespace Emby.Server.Implementations.Library
             {
                 parents = _libraryManager.GetUserRootFolder().GetChildren(user, true)
                     .Where(i => i is Folder)
-                    .Where(i => !user.Configuration.LatestItemsExcludes.Contains(i.Id.ToString("N")))
+                    .Where(i => !user.GetPreferenceValues<Guid>(PreferenceKind.LatestItemExcludes)
+                        .Contains(i.Id))
                     .ToList();
             }
 
@@ -328,20 +341,26 @@ namespace Emby.Server.Implementations.Library
                 mediaTypes = mediaTypes.Distinct().ToList();
             }
 
-            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0 ? new[]
-            {
-                typeof(Person).Name,
-                typeof(Studio).Name,
-                typeof(Year).Name,
-                typeof(MusicGenre).Name,
-                typeof(Genre).Name
-
-            } : Array.Empty<string>();
+            var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
+                ? new[]
+                {
+                    nameof(Person),
+                    nameof(Studio),
+                    nameof(Year),
+                    nameof(MusicGenre),
+                    nameof(Genre)
+                }
+                : Array.Empty<string>();
 
             var query = new InternalItemsQuery(user)
             {
                 IncludeItemTypes = includeItemTypes,
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DateCreated, SortOrder.Descending) },
+                OrderBy = new[]
+                {
+                    (ItemSortBy.DateCreated, SortOrder.Descending),
+                    (ItemSortBy.SortName, SortOrder.Descending),
+                    (ItemSortBy.ProductionYear, SortOrder.Descending)
+                },
                 IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,

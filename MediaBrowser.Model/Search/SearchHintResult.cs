@@ -1,7 +1,8 @@
+#nullable disable
 namespace MediaBrowser.Model.Search
 {
     /// <summary>
-    /// Class SearchHintResult
+    /// Class SearchHintResult.
     /// </summary>
     public class SearchHintResult
     {

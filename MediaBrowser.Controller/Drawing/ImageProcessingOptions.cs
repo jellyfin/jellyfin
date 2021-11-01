@@ -1,8 +1,12 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 
 namespace MediaBrowser.Controller.Drawing
@@ -15,13 +19,12 @@ namespace MediaBrowser.Controller.Drawing
         }
 
         public Guid ItemId { get; set; }
+
         public BaseItem Item { get; set; }
 
         public ItemImageInfo Image { get; set; }
 
         public int ImageIndex { get; set; }
-
-        public bool CropWhiteSpace { get; set; }
 
         public int? Width { get; set; }
 
@@ -31,21 +34,26 @@ namespace MediaBrowser.Controller.Drawing
 
         public int? MaxHeight { get; set; }
 
+        public int? FillWidth { get; set; }
+
+        public int? FillHeight { get; set; }
+
         public int Quality { get; set; }
 
-        public IImageEnhancer[] Enhancers { get; set; }
-
-        public ImageFormat[] SupportedOutputFormats { get; set; }
+        public IReadOnlyCollection<ImageFormat> SupportedOutputFormats { get; set; }
 
         public bool AddPlayedIndicator { get; set; }
 
         public int? UnplayedCount { get; set; }
+
         public int? Blur { get; set; }
 
         public double PercentPlayed { get; set; }
 
         public string BackgroundColor { get; set; }
+
         public string ForegroundLayer { get; set; }
+
         public bool RequiresAutoOrientation { get; set; }
 
         private bool HasDefaultOptions(string originalImagePath)
@@ -75,15 +83,23 @@ namespace MediaBrowser.Controller.Drawing
             {
                 return false;
             }
+
             if (Height.HasValue && !sizeValue.Height.Equals(Height.Value))
             {
                 return false;
             }
+
             if (MaxWidth.HasValue && sizeValue.Width > MaxWidth.Value)
             {
                 return false;
             }
+
             if (MaxHeight.HasValue && sizeValue.Height > MaxHeight.Value)
+            {
+                return false;
+            }
+
+            if (sizeValue.Width > FillWidth || sizeValue.Height > FillHeight)
             {
                 return false;
             }
@@ -99,7 +115,6 @@ namespace MediaBrowser.Controller.Drawing
                 PercentPlayed.Equals(0) &&
                 !UnplayedCount.HasValue &&
                 !Blur.HasValue &&
-                !CropWhiteSpace &&
                 string.IsNullOrEmpty(BackgroundColor) &&
                 string.IsNullOrEmpty(ForegroundLayer);
         }

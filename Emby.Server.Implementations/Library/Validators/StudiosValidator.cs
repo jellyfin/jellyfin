@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
@@ -8,20 +9,30 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
-    class StudiosValidator
+    /// <summary>
+    /// Class StudiosValidator.
+    /// </summary>
+    public class StudiosValidator
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         private readonly IItemRepository _itemRepo;
-        /// <summary>
-        /// The _logger
-        /// </summary>
-        private readonly ILogger _logger;
 
-        public StudiosValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        /// <summary>
+        /// The logger.
+        /// </summary>
+        private readonly ILogger<StudiosValidator> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StudiosValidator" /> class.
+        /// </summary>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="logger">The logger.</param>
+        /// <param name="itemRepo">The item repository.</param>
+        public StudiosValidator(ILibraryManager libraryManager, ILogger<StudiosValidator> logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -69,20 +80,22 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(Studio).Name },
+                IncludeItemTypes = new[] { nameof(Studio) },
                 IsDeadStudio = true,
                 IsLocked = false
             });
 
             foreach (var item in deadEntities)
             {
-                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             progress.Report(100);

@@ -1,23 +1,26 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class MusicVideo : Video, IHasArtist, IHasMusicGenres, IHasLookupInfo<MusicVideoInfo>
     {
-        [IgnoreDataMember]
-        public string[] Artists { get; set; }
-
         public MusicVideo()
         {
             Artists = Array.Empty<string>();
         }
 
-        [IgnoreDataMember]
-        public string[] AllArtists => Artists;
+        /// <inheritdoc />
+        [JsonIgnore]
+        public IReadOnlyList<string> Artists { get; set; }
 
         public override UnratedItem GetBlockUnratedType()
         {
@@ -33,9 +36,9 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!ProductionYear.HasValue)
             {

@@ -1,33 +1,41 @@
+#nullable disable
+
+#pragma warning disable CA1724, CS1591
+
 using System;
+using System.Text.Json.Serialization;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Controller.Entities
 {
     public class AudioBook : Audio.Audio, IHasSeries, IHasLookupInfo<SongInfo>
     {
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPositionTicksResume => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public override bool SupportsPlayedStatus => true;
 
-        [IgnoreDataMember]
+        [JsonIgnore]
         public string SeriesPresentationUniqueKey { get; set; }
-        [IgnoreDataMember]
+
+        [JsonIgnore]
         public string SeriesName { get; set; }
-        [IgnoreDataMember]
+
+        [JsonIgnore]
         public Guid SeriesId { get; set; }
 
         public string FindSeriesSortName()
         {
             return SeriesName;
         }
+
         public string FindSeriesName()
         {
             return SeriesName;
         }
+
         public string FindSeriesPresentationUniqueKey()
         {
             return SeriesPresentationUniqueKey;

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
-    /// Deletes old cache files
+    /// Deletes old cache files.
     /// </summary>
     public class DeleteCacheFileTask : IScheduledTask, IConfigurableScheduledTask
     {
@@ -20,37 +21,66 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// Gets or sets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        private IApplicationPaths ApplicationPaths { get; set; }
-
-        private readonly ILogger _logger;
-
+        private readonly IApplicationPaths _applicationPaths;
+        private readonly ILogger<DeleteCacheFileTask> _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteCacheFileTask" /> class.
         /// </summary>
-        public DeleteCacheFileTask(IApplicationPaths appPaths, ILogger logger, IFileSystem fileSystem)
+        /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
+        /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
+        /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
+        public DeleteCacheFileTask(
+            IApplicationPaths appPaths,
+            ILogger<DeleteCacheFileTask> logger,
+            IFileSystem fileSystem,
+            ILocalizationManager localization)
         {
-            ApplicationPaths = appPaths;
+            _applicationPaths = appPaths;
             _logger = logger;
             _fileSystem = fileSystem;
+            _localization = localization;
         }
 
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskCleanCache");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskCleanCacheDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksMaintenanceCategory");
+
+        /// <inheritdoc />
+        public string Key => "DeleteCacheFiles";
+
+        /// <inheritdoc />
+        public bool IsHidden => false;
+
+        /// <inheritdoc />
+        public bool IsEnabled => true;
+
+        /// <inheritdoc />
+        public bool IsLogged => true;
+
         /// <summary>
-        /// Creates the triggers that define when the task will run
+        /// Creates the triggers that define when the task will run.
         /// </summary>
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[] {
-
+            return new[]
+            {
                 // Every so often
-                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks}
+                new TaskTriggerInfo { Type = TaskTriggerInfo.TriggerInterval, IntervalTicks = TimeSpan.FromHours(24).Ticks }
             };
         }
 
         /// <summary>
-        /// Returns the task to be executed
+        /// Returns the task to be executed.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progress">The progress.</param>
@@ -61,7 +91,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.CachePath, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(cancellationToken, _applicationPaths.CachePath, minDateModified, progress);
             }
             catch (DirectoryNotFoundException)
             {
@@ -74,7 +104,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             try
             {
-                DeleteCacheFilesFromDirectory(cancellationToken, ApplicationPaths.TempDirectory, minDateModified, progress);
+                DeleteCacheFilesFromDirectory(cancellationToken, _applicationPaths.TempDirectory, minDateModified, progress);
             }
             catch (DirectoryNotFoundException)
             {
@@ -84,9 +114,8 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             return Task.CompletedTask;
         }
 
-
         /// <summary>
-        /// Deletes the cache files from directory with a last write time less than a given date
+        /// Deletes the cache files from directory with a last write time less than a given date.
         /// </summary>
         /// <param name="cancellationToken">The task cancellation token.</param>
         /// <param name="directory">The directory.</param>
@@ -157,19 +186,5 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                 _logger.LogError(ex, "Error deleting file {path}", path);
             }
         }
-
-        public string Name => "Cache file cleanup";
-
-        public string Description => "Deletes cache files no longer needed by the system";
-
-        public string Category => "Maintenance";
-
-        public string Key => "DeleteCacheFiles";
-
-        public bool IsHidden => false;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
     }
 }

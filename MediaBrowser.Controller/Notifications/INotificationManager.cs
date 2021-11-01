@@ -1,3 +1,5 @@
+#pragma warning disable CS1591
+
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +19,7 @@ namespace MediaBrowser.Controller.Notifications
         /// <returns>Task.</returns>
         Task SendNotification(NotificationRequest request, CancellationToken cancellationToken);
 
-        Task SendNotification(NotificationRequest request, BaseItem relatedItem, CancellationToken cancellationToken);
+        Task SendNotification(NotificationRequest request, BaseItem? relatedItem, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds the parts.

@@ -1,3 +1,6 @@
+#nullable disable
+#pragma warning disable CS1591
+
 using System;
 using MediaBrowser.Model.Entities;
 
@@ -5,6 +8,14 @@ namespace MediaBrowser.Model.Querying
 {
     public class NextUpQuery
     {
+        public NextUpQuery()
+        {
+            EnableImageTypes = Array.Empty<ImageType>();
+            EnableTotalRecordCount = true;
+            DisableFirstEpisode = false;
+            NextUpDateCutoff = DateTime.MinValue;
+        }
+
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
@@ -15,7 +26,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the parent identifier.
         /// </summary>
         /// <value>The parent identifier.</value>
-        public string ParentId { get; set; }
+        public Guid? ParentId { get; set; }
 
         /// <summary>
         /// Gets or sets the series id.
@@ -24,32 +35,35 @@ namespace MediaBrowser.Model.Querying
         public string SeriesId { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        /// Gets or sets the start index. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return
+        /// Gets or sets the maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information
+        /// gets or sets the fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable images].
         /// </summary>
         /// <value><c>null</c> if [enable images] contains no value, <c>true</c> if [enable images]; otherwise, <c>false</c>.</value>
         public bool? EnableImages { get; set; }
+
         /// <summary>
         /// Gets or sets the image type limit.
         /// </summary>
         /// <value>The image type limit.</value>
         public int? ImageTypeLimit { get; set; }
+
         /// <summary>
         /// Gets or sets the enable image types.
         /// </summary>
@@ -58,10 +72,14 @@ namespace MediaBrowser.Model.Querying
 
         public bool EnableTotalRecordCount { get; set; }
 
-        public NextUpQuery()
-        {
-            EnableImageTypes = new ImageType[] { };
-            EnableTotalRecordCount = true;
-        }
+        /// <summary>
+        /// Gets or sets a value indicating whether do disable sending first episode as next up.
+        /// </summary>
+        public bool DisableFirstEpisode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the oldest date for a show to appear in Next Up.
+        /// </summary>
+        public DateTime NextUpDateCutoff { get; set; }
     }
 }

@@ -1,9 +1,16 @@
+#nullable disable
+
+#pragma warning disable CS1591
+
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Entities;
+using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -12,8 +19,7 @@ using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Events;
-using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Session;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.EntryPoints
@@ -21,40 +27,34 @@ namespace Emby.Server.Implementations.EntryPoints
     public class LibraryChangedNotifier : IServerEntryPoint
     {
         /// <summary>
-        /// The _library manager
+        /// The library update duration.
         /// </summary>
-        private readonly ILibraryManager _libraryManager;
+        private const int LibraryUpdateDuration = 30000;
 
+        private readonly ILibraryManager _libraryManager;
+        private readonly IProviderManager _providerManager;
         private readonly ISessionManager _sessionManager;
         private readonly IUserManager _userManager;
-        private readonly ILogger _logger;
+        private readonly ILogger<LibraryChangedNotifier> _logger;
 
         /// <summary>
-        /// The _library changed sync lock
+        /// The library changed sync lock.
         /// </summary>
         private readonly object _libraryChangedSyncLock = new object();
 
         private readonly List<Folder> _foldersAddedTo = new List<Folder>();
         private readonly List<Folder> _foldersRemovedFrom = new List<Folder>();
-
         private readonly List<BaseItem> _itemsAdded = new List<BaseItem>();
         private readonly List<BaseItem> _itemsRemoved = new List<BaseItem>();
         private readonly List<BaseItem> _itemsUpdated = new List<BaseItem>();
+        private readonly ConcurrentDictionary<Guid, DateTime> _lastProgressMessageTimes = new ConcurrentDictionary<Guid, DateTime>();
 
-        /// <summary>
-        /// Gets or sets the library update timer.
-        /// </summary>
-        /// <value>The library update timer.</value>
-        private Timer LibraryUpdateTimer { get; set; }
-
-        /// <summary>
-        /// The library update duration
-        /// </summary>
-        private const int LibraryUpdateDuration = 30000;
-
-        private readonly IProviderManager _providerManager;
-
-        public LibraryChangedNotifier(ILibraryManager libraryManager, ISessionManager sessionManager, IUserManager userManager, ILogger logger, IProviderManager providerManager)
+        public LibraryChangedNotifier(
+            ILibraryManager libraryManager,
+            ISessionManager sessionManager,
+            IUserManager userManager,
+            ILogger<LibraryChangedNotifier> logger,
+            IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _sessionManager = sessionManager;
@@ -63,22 +63,26 @@ namespace Emby.Server.Implementations.EntryPoints
             _providerManager = providerManager;
         }
 
+        /// <summary>
+        /// Gets or sets the library update timer.
+        /// </summary>
+        /// <value>The library update timer.</value>
+        private Timer LibraryUpdateTimer { get; set; }
+
         public Task RunAsync()
         {
-            _libraryManager.ItemAdded += libraryManager_ItemAdded;
-            _libraryManager.ItemUpdated += libraryManager_ItemUpdated;
-            _libraryManager.ItemRemoved += libraryManager_ItemRemoved;
+            _libraryManager.ItemAdded += OnLibraryItemAdded;
+            _libraryManager.ItemUpdated += OnLibraryItemUpdated;
+            _libraryManager.ItemRemoved += OnLibraryItemRemoved;
 
-            _providerManager.RefreshCompleted += _providerManager_RefreshCompleted;
-            _providerManager.RefreshStarted += _providerManager_RefreshStarted;
-            _providerManager.RefreshProgress += _providerManager_RefreshProgress;
+            _providerManager.RefreshCompleted += OnProviderRefreshCompleted;
+            _providerManager.RefreshStarted += OnProviderRefreshStarted;
+            _providerManager.RefreshProgress += OnProviderRefreshProgress;
 
             return Task.CompletedTask;
         }
 
-        private Dictionary<Guid, DateTime> _lastProgressMessageTimes = new Dictionary<Guid, DateTime>();
-
-        private void _providerManager_RefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
+        private void OnProviderRefreshProgress(object sender, GenericEventArgs<Tuple<BaseItem, double>> e)
         {
             var item = e.Argument.Item1;
 
@@ -97,15 +101,15 @@ namespace Emby.Server.Implementations.EntryPoints
                 }
             }
 
-            _lastProgressMessageTimes[item.Id] = DateTime.UtcNow;
+            _lastProgressMessageTimes.AddOrUpdate(item.Id, key => DateTime.UtcNow, (key, existing) => DateTime.UtcNow);
 
             var dict = new Dictionary<string, string>();
-            dict["ItemId"] = item.Id.ToString("N");
+            dict["ItemId"] = item.Id.ToString("N", CultureInfo.InvariantCulture);
             dict["Progress"] = progress.ToString(CultureInfo.InvariantCulture);
 
             try
             {
-                _sessionManager.SendMessageToAdminSessions("RefreshProgress", dict, CancellationToken.None);
+                _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, dict, CancellationToken.None);
             }
             catch
             {
@@ -115,36 +119,37 @@ namespace Emby.Server.Implementations.EntryPoints
 
             foreach (var collectionFolder in collectionFolders)
             {
-                var collectionFolderDict = new Dictionary<string, string>();
-                collectionFolderDict["ItemId"] = collectionFolder.Id.ToString("N");
-                collectionFolderDict["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture);
+                var collectionFolderDict = new Dictionary<string, string>
+                {
+                    ["ItemId"] = collectionFolder.Id.ToString("N", CultureInfo.InvariantCulture),
+                    ["Progress"] = (collectionFolder.GetRefreshProgress() ?? 0).ToString(CultureInfo.InvariantCulture)
+                };
 
                 try
                 {
-                    _sessionManager.SendMessageToAdminSessions("RefreshProgress", collectionFolderDict, CancellationToken.None);
+                    _sessionManager.SendMessageToAdminSessions(SessionMessageType.RefreshProgress, collectionFolderDict, CancellationToken.None);
                 }
                 catch
                 {
-
                 }
             }
         }
 
-        private void _providerManager_RefreshStarted(object sender, GenericEventArgs<BaseItem> e)
+        private void OnProviderRefreshStarted(object sender, GenericEventArgs<BaseItem> e)
         {
-            _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
+            OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 0)));
         }
 
-        private void _providerManager_RefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
+        private void OnProviderRefreshCompleted(object sender, GenericEventArgs<BaseItem> e)
         {
-            _providerManager_RefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
+            OnProviderRefreshProgress(sender, new GenericEventArgs<Tuple<BaseItem, double>>(new Tuple<BaseItem, double>(e.Argument, 100)));
+
+            _lastProgressMessageTimes.TryRemove(e.Argument.Id, out DateTime removed);
         }
 
         private static bool EnableRefreshMessage(BaseItem item)
         {
-            var folder = item as Folder;
-
-            if (folder == null)
+            if (item is not Folder folder)
             {
                 return false;
             }
@@ -177,7 +182,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -188,16 +193,18 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(
+                        LibraryUpdateTimerCallback,
+                        null,
+                        LibraryUpdateDuration,
+                        Timeout.Infinite);
                 }
                 else
                 {
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Item.GetParent() as Folder;
-                if (parent != null)
+                if (e.Item.GetParent() is Folder parent)
                 {
                     _foldersAddedTo.Add(parent);
                 }
@@ -211,7 +218,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemUpdated(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -222,8 +229,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
                 else
                 {
@@ -239,7 +245,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
-        void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
+        private void OnLibraryItemRemoved(object sender, ItemChangeEventArgs e)
         {
             if (!FilterItem(e.Item))
             {
@@ -250,16 +256,14 @@ namespace Emby.Server.Implementations.EntryPoints
             {
                 if (LibraryUpdateTimer == null)
                 {
-                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration,
-                                                   Timeout.Infinite);
+                    LibraryUpdateTimer = new Timer(LibraryUpdateTimerCallback, null, LibraryUpdateDuration, Timeout.Infinite);
                 }
                 else
                 {
                     LibraryUpdateTimer.Change(LibraryUpdateDuration, Timeout.Infinite);
                 }
 
-                var parent = e.Parent as Folder;
-                if (parent != null)
+                if (e.Parent is Folder parent)
                 {
                     _foldersRemovedFrom.Add(parent);
                 }
@@ -293,7 +297,7 @@ namespace Emby.Server.Implementations.EntryPoints
                                     .Select(x => x.First())
                                     .ToList();
 
-                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None);
+                SendChangeNotifications(_itemsAdded.ToList(), itemsUpdated, _itemsRemoved.ToList(), foldersAddedTo, foldersRemovedFrom, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (LibraryUpdateTimer != null)
                 {
@@ -318,7 +322,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="foldersAddedTo">The folders added to.</param>
         /// <param name="foldersRemovedFrom">The folders removed from.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async void SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
+        private async Task SendChangeNotifications(List<BaseItem> itemsAdded, List<BaseItem> itemsUpdated, List<BaseItem> itemsRemoved, List<Folder> foldersAddedTo, List<Folder> foldersRemovedFrom, CancellationToken cancellationToken)
         {
             var userIds = _sessionManager.Sessions
                 .Select(i => i.UserId)
@@ -347,7 +351,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
                 try
                 {
-                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, "LibraryChanged", info, cancellationToken).ConfigureAwait(false);
+                    await _sessionManager.SendMessageToUserSessions(new List<Guid> { userId }, SessionMessageType.LibraryChanged, info, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -378,17 +382,17 @@ namespace Emby.Server.Implementations.EntryPoints
 
             return new LibraryUpdateInfo
             {
-                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, true)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, true)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToArray(),
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N", CultureInfo.InvariantCulture)).Distinct().ToArray(),
 
-                CollectionFolders = GetTopParentIds(newAndRemoved, user, allUserRootChildren).ToArray()
+                CollectionFolders = GetTopParentIds(newAndRemoved, allUserRootChildren).ToArray()
             };
         }
 
@@ -399,7 +403,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return false;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 return false;
             }
@@ -407,7 +411,7 @@ namespace Emby.Server.Implementations.EntryPoints
             return item.SourceType == SourceType.Library;
         }
 
-        private IEnumerable<string> GetTopParentIds(List<BaseItem> items, User user, List<Folder> allUserRootChildren)
+        private IEnumerable<string> GetTopParentIds(List<BaseItem> items, List<Folder> allUserRootChildren)
         {
             var list = new List<string>();
 
@@ -422,7 +426,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 var collectionFolders = _libraryManager.GetCollectionFolders(item, allUserRootChildren);
                 foreach (var folder in allUserRootChildren)
                 {
-                    list.Add(folder.Id.ToString("N"));
+                    list.Add(folder.Id.ToString("N", CultureInfo.InvariantCulture));
                 }
             }
 
@@ -432,7 +436,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Translates the physical item to user library.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of item.</typeparam>
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
@@ -452,7 +456,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return new[] { item };
             }
 
-            return new T[] { };
+            return Array.Empty<T>();
         }
 
         /// <summary>
@@ -477,13 +481,13 @@ namespace Emby.Server.Implementations.EntryPoints
                     LibraryUpdateTimer = null;
                 }
 
-                _libraryManager.ItemAdded -= libraryManager_ItemAdded;
-                _libraryManager.ItemUpdated -= libraryManager_ItemUpdated;
-                _libraryManager.ItemRemoved -= libraryManager_ItemRemoved;
+                _libraryManager.ItemAdded -= OnLibraryItemAdded;
+                _libraryManager.ItemUpdated -= OnLibraryItemUpdated;
+                _libraryManager.ItemRemoved -= OnLibraryItemRemoved;
 
-                _providerManager.RefreshCompleted -= _providerManager_RefreshCompleted;
-                _providerManager.RefreshStarted -= _providerManager_RefreshStarted;
-                _providerManager.RefreshProgress -= _providerManager_RefreshProgress;
+                _providerManager.RefreshCompleted -= OnProviderRefreshCompleted;
+                _providerManager.RefreshStarted -= OnProviderRefreshStarted;
+                _providerManager.RefreshProgress -= OnProviderRefreshProgress;
             }
         }
     }

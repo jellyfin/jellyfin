@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -9,7 +9,7 @@ using MediaBrowser.Model.Providers;
 namespace MediaBrowser.Controller.Providers
 {
     /// <summary>
-    /// Interface IImageProvider
+    /// Interface IImageProvider.
     /// </summary>
     public interface IRemoteImageProvider : IImageProvider
     {
@@ -34,6 +34,6 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="url">The URL.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{HttpResponseInfo}.</returns>
-        Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken);
+        Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken);
     }
 }

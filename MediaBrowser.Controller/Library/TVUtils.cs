@@ -1,9 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MediaBrowser.Controller.Library
 {
     /// <summary>
-    /// Class TVUtils
+    /// Class TVUtils.
     /// </summary>
     public static class TVUtils
     {
@@ -12,7 +13,8 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="day">The day.</param>
         /// <returns>List{DayOfWeek}.</returns>
-        public static DayOfWeek[] GetAirDays(string day)
+        [return: NotNullIfNotNull("day")]
+        public static DayOfWeek[]? GetAirDays(string? day)
         {
             if (!string.IsNullOrEmpty(day))
             {
@@ -38,8 +40,9 @@ namespace MediaBrowser.Controller.Library
                     };
                 }
 
-                return new DayOfWeek[] { };
+                return Array.Empty<DayOfWeek>();
             }
+
             return null;
         }
     }

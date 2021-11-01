@@ -1,23 +1,25 @@
 using System;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Audio
 {
-    public class AudioFileParser
+    /// <summary>
+    /// Static helper class to determine if file at path is audio file.
+    /// </summary>
+    public static class AudioFileParser
     {
-        private readonly NamingOptions _options;
-
-        public AudioFileParser(NamingOptions options)
+        /// <summary>
+        /// Static helper method to determine if file at path is audio file.
+        /// </summary>
+        /// <param name="path">Path to file.</param>
+        /// <param name="options"><see cref="NamingOptions"/> containing AudioFileExtensions.</param>
+        /// <returns>True if file at path is audio file.</returns>
+        public static bool IsAudioFile(string path, NamingOptions options)
         {
-            _options = options;
-        }
-
-        public bool IsAudioFile(string path)
-        {
-            var extension = Path.GetExtension(path) ?? string.Empty;
-            return _options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            var extension = Path.GetExtension(path.AsSpan());
+            return options.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

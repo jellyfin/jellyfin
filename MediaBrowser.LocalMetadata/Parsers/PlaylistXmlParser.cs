@@ -3,26 +3,38 @@ using System.Xml;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.IO;
-using MediaBrowser.Model.Xml;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
+    /// <summary>
+    /// Playlist xml parser.
+    /// </summary>
     public class PlaylistXmlParser : BaseItemXmlParser<Playlist>
     {
-        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> result)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PlaylistXmlParser"/> class.
+        /// </summary>
+        /// <param name="logger">Instance of the <see cref="ILogger{PlaylistXmlParser}"/> interface.</param>
+        /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        public PlaylistXmlParser(ILogger<PlaylistXmlParser> logger, IProviderManager providerManager)
+            : base(logger, providerManager)
         {
-            var item = result.Item;
+        }
+
+        /// <inheritdoc />
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> itemResult)
+        {
+            var item = itemResult.Item;
 
             switch (reader.Name)
             {
                 case "PlaylistMediaType":
-                    {
-                        item.PlaylistMediaType = reader.ReadElementContentAsString();
+                {
+                    item.PlaylistMediaType = reader.ReadElementContentAsString();
 
-                        break;
-                    }
+                    break;
+                }
 
                 case "PlaylistItems":
 
@@ -37,10 +49,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     {
                         reader.Read();
                     }
+
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, result);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }
@@ -60,30 +73,31 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     switch (reader.Name)
                     {
                         case "PlaylistItem":
+                        {
+                            if (reader.IsEmptyElement)
                             {
-                                if (reader.IsEmptyElement)
-                                {
-                                    reader.Read();
-                                    continue;
-                                }
-
-                                using (var subReader = reader.ReadSubtree())
-                                {
-                                    var child = GetLinkedChild(subReader);
-
-                                    if (child != null)
-                                    {
-                                        list.Add(child);
-                                    }
-                                }
-
-                                break;
+                                reader.Read();
+                                continue;
                             }
+
+                            using (var subReader = reader.ReadSubtree())
+                            {
+                                var child = GetLinkedChild(subReader);
+
+                                if (child != null)
+                                {
+                                    list.Add(child);
+                                }
+                            }
+
+                            break;
+                        }
+
                         default:
-                            {
-                                reader.Skip();
-                                break;
-                            }
+                        {
+                            reader.Skip();
+                            break;
+                        }
                     }
                 }
                 else
@@ -93,10 +107,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.LinkedChildren = list.ToArray();
-        }
-
-        public PlaylistXmlParser(ILogger logger, IProviderManager providerManager, IXmlReaderSettingsFactory xmlReaderSettingsFactory, IFileSystem fileSystem) : base(logger, providerManager, xmlReaderSettingsFactory, fileSystem)
-        {
         }
     }
 }

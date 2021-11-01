@@ -1,1 +1,5 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+
 CONTRIBUTORS.md merge=union

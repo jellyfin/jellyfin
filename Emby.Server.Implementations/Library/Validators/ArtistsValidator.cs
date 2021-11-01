@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,27 +12,28 @@ using Microsoft.Extensions.Logging;
 namespace Emby.Server.Implementations.Library.Validators
 {
     /// <summary>
-    /// Class ArtistsValidator
+    /// Class ArtistsValidator.
     /// </summary>
     public class ArtistsValidator
     {
         /// <summary>
-        /// The _library manager
+        /// The library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
-        /// The _logger
+        /// The logger.
         /// </summary>
-        private readonly ILogger _logger;
+        private readonly ILogger<ArtistsValidator> _logger;
         private readonly IItemRepository _itemRepo;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArtistsPostScanTask" /> class.
+        /// Initializes a new instance of the <see cref="ArtistsValidator" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
         /// <param name="logger">The logger.</param>
-        public ArtistsValidator(ILibraryManager libraryManager, ILogger logger, IItemRepository itemRepo)
+        /// <param name="itemRepo">The item repository.</param>
+        public ArtistsValidator(ILibraryManager libraryManager, ILogger<ArtistsValidator> logger, IItemRepository itemRepo)
         {
             _libraryManager = libraryManager;
             _logger = logger;
@@ -79,7 +81,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { typeof(MusicArtist).Name },
+                IncludeItemTypes = new[] { nameof(MusicArtist) },
                 IsDeadArtist = true,
                 IsLocked = false
             }).Cast<MusicArtist>().ToList();
@@ -91,13 +93,15 @@ namespace Emby.Server.Implementations.Library.Validators
                     continue;
                 }
 
-                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N"), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name, item.GetType().Name);
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             progress.Report(100);

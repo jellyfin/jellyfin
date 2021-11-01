@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BDInfo;
@@ -9,12 +9,16 @@ using MediaBrowser.Model.MediaInfo;
 namespace MediaBrowser.MediaEncoding.BdInfo
 {
     /// <summary>
-    /// Class BdInfoExaminer
+    /// Class BdInfoExaminer.
     /// </summary>
     public class BdInfoExaminer : IBlurayExaminer
     {
         private readonly IFileSystem _fileSystem;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BdInfoExaminer" /> class.
+        /// </summary>
+        /// <param name="fileSystem">The filesystem.</param>
         public BdInfoExaminer(IFileSystem fileSystem)
         {
             _fileSystem = fileSystem;
@@ -32,7 +36,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 throw new ArgumentNullException(nameof(path));
             }
 
-            var bdrom = new BDROM(path, _fileSystem);
+            var bdrom = new BDROM(BdInfoDirectoryInfo.FromFileSystemPath(_fileSystem, path));
 
             bdrom.Scan();
 
@@ -41,7 +45,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             var outputStream = new BlurayDiscInfo
             {
-                MediaStreams = new MediaStream[] { }
+                MediaStreams = Array.Empty<MediaStream>()
             };
 
             if (playlist == null)
@@ -57,33 +61,25 @@ namespace MediaBrowser.MediaEncoding.BdInfo
 
             foreach (var stream in playlist.SortedStreams)
             {
-                var videoStream = stream as TSVideoStream;
-
-                if (videoStream != null)
+                if (stream is TSVideoStream videoStream)
                 {
                     AddVideoStream(mediaStreams, videoStream);
                     continue;
                 }
 
-                var audioStream = stream as TSAudioStream;
-
-                if (audioStream != null)
+                if (stream is TSAudioStream audioStream)
                 {
                     AddAudioStream(mediaStreams, audioStream);
                     continue;
                 }
 
-                var textStream = stream as TSTextStream;
-
-                if (textStream != null)
+                if (stream is TSTextStream textStream)
                 {
                     AddSubtitleStream(mediaStreams, textStream);
                     continue;
                 }
 
-                var graphicsStream = stream as TSGraphicsStream;
-
-                if (graphicsStream != null)
+                if (stream is TSGraphicsStream graphicsStream)
                 {
                     AddSubtitleStream(mediaStreams, graphicsStream);
                 }

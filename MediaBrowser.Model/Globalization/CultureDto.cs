@@ -1,12 +1,20 @@
-using global::System;
+#nullable disable
+#pragma warning disable CS1591
+
+using System;
 
 namespace MediaBrowser.Model.Globalization
 {
     /// <summary>
-    /// Class CultureDto
+    /// Class CultureDto.
     /// </summary>
     public class CultureDto
     {
+        public CultureDto()
+        {
+            ThreeLetterISOLanguageNames = Array.Empty<string>();
+        }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -26,7 +34,7 @@ namespace MediaBrowser.Model.Globalization
         public string TwoLetterISOLanguageName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the three letter ISO language.
+        /// Gets the name of the three letter ISO language.
         /// </summary>
         /// <value>The name of the three letter ISO language.</value>
         public string ThreeLetterISOLanguageName
@@ -38,15 +46,11 @@ namespace MediaBrowser.Model.Globalization
                 {
                     return vals[0];
                 }
+
                 return null;
             }
         }
 
         public string[] ThreeLetterISOLanguageNames { get; set; }
-
-        public CultureDto()
-        {
-            ThreeLetterISOLanguageNames = Array.Empty<string>();
-        }
     }
 }
