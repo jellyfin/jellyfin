@@ -15,7 +15,8 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x'
+          dotnet-version: '6.0.x'
+          include-prerelease: true
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
@@ -24,7 +25,7 @@ jobs:
           name: openapi-head
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net5.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net6.0/openapi.json
 
   openapi-base:
     name: OpenAPI - BASE
@@ -38,7 +39,8 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x'
+          dotnet-version: '6.0.x'
+          include-prerelease: true
       - name: Generate openapi.json
         run: dotnet test tests/Jellyfin.Server.Integration.Tests/Jellyfin.Server.Integration.Tests.csproj -c Release --filter "Jellyfin.Server.Integration.Tests.OpenApiSpecTests"
       - name: Upload openapi.json
@@ -47,7 +49,7 @@ jobs:
           name: openapi-base
           retention-days: 14
           if-no-files-found: error
-          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net5.0/openapi.json
+          path: tests/Jellyfin.Server.Integration.Tests/bin/Release/net6.0/openapi.json
 
   openapi-diff:
     name: OpenAPI - Difference
