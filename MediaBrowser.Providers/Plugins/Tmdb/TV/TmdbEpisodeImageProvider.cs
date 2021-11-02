@@ -76,7 +76,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var remoteImages = new List<RemoteImageInfo>(stills.Count);
 
-            TmdbUtils.ConvertToRemoteImageInfo(stills, _tmdbClientManager.GetStillUrl, ImageType.Primary, language, remoteImages);
+            TmdbUtils.ConvertStillsToRemoteImageInfo(stills, _tmdbClientManager, language, remoteImages);
 
             return remoteImages;
         }

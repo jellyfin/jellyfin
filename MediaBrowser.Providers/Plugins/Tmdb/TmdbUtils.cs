@@ -196,6 +196,54 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Converts poster <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="tmdbClientManager">The client manager to use for resolving image urls.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public static void ConvertPostersToRemoteImageInfo(List<ImageData> images, TmdbClientManager tmdbClientManager, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, tmdbClientManager.GetPosterUrl, ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts backdrop <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="tmdbClientManager">The client manager to use for resolving image urls.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public static void ConvertBackdropsToRemoteImageInfo(List<ImageData> images, TmdbClientManager tmdbClientManager, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, tmdbClientManager.GetBackdropUrl, ImageType.Backdrop, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts profile <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="tmdbClientManager">The client manager to use for resolving image urls.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public static void ConvertProfilesToRemoteImageInfo(List<ImageData> images, TmdbClientManager tmdbClientManager, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, tmdbClientManager.GetProfileUrl, ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts still <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="tmdbClientManager">The client manager to use for resolving image urls.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public static void ConvertStillsToRemoteImageInfo(List<ImageData> images, TmdbClientManager tmdbClientManager, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, tmdbClientManager.GetStillUrl, ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
         /// Converts <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
         /// <param name="images">The input images.</param>
@@ -203,7 +251,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="type">The type of the image.</param>
         /// <param name="requestLanguage">The requested language.</param>
         /// <param name="results">The collection to add the remote images into.</param>
-        public static void ConvertToRemoteImageInfo(List<ImageData> images, Func<string, string> imageUrlConverter, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
+        private static void ConvertToRemoteImageInfo(List<ImageData> images, Func<string, string> imageUrlConverter, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
         {
             for (var i = 0; i < images.Count; i++)
             {

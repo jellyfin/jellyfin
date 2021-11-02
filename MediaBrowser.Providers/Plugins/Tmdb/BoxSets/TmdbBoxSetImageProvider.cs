@@ -71,8 +71,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             var backdrops = collection.Images.Backdrops;
             var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count);
 
-            TmdbUtils.ConvertToRemoteImageInfo(posters, _tmdbClientManager.GetPosterUrl, ImageType.Primary, language, remoteImages);
-            TmdbUtils.ConvertToRemoteImageInfo(backdrops, _tmdbClientManager.GetBackdropUrl, ImageType.Backdrop, language, remoteImages);
+            TmdbUtils.ConvertPostersToRemoteImageInfo(posters, _tmdbClientManager, language, remoteImages);
+            TmdbUtils.ConvertBackdropsToRemoteImageInfo(backdrops, _tmdbClientManager, language, remoteImages);
 
             return remoteImages;
         }

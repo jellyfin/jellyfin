@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var remoteImages = new List<RemoteImageInfo>(posters.Count);
 
-            TmdbUtils.ConvertToRemoteImageInfo(posters, _tmdbClientManager.GetPosterUrl, ImageType.Primary, language, remoteImages);
+            TmdbUtils.ConvertPostersToRemoteImageInfo(posters, _tmdbClientManager, language, remoteImages);
 
             return remoteImages;
         }
