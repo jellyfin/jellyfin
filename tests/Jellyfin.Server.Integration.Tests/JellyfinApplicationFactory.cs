@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.IO;
 using MediaBrowser.Common;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -67,7 +66,7 @@ namespace Jellyfin.Server.Integration.Tests
             var startupConfig = Program.CreateAppConfiguration(commandLineOpts, appPaths);
 
             ILoggerFactory loggerFactory = new SerilogLoggerFactory();
-            var serviceCollection = new ServiceCollection();
+
             _disposableComponents.Add(loggerFactory);
 
             // Create the app host and initialize it
@@ -75,11 +74,10 @@ namespace Jellyfin.Server.Integration.Tests
                 appPaths,
                 loggerFactory,
                 commandLineOpts,
-                new ConfigurationBuilder().Build(),
-                new ManagedFileSystem(loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                serviceCollection);
+                new ConfigurationBuilder().Build());
             _disposableComponents.Add(appHost);
-            appHost.Init();
+            var serviceCollection = new ServiceCollection();
+            appHost.Init(serviceCollection);
 
             // Configure the web host builder
             Program.ConfigureWebHostBuilder(builder, appHost, serviceCollection, commandLineOpts, startupConfig, appPaths);

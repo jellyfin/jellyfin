@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
 {
@@ -137,7 +138,8 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Initializes this instance.
         /// </summary>
-        void Init();
+        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
+        void Init(IServiceCollection serviceCollection);
 
         /// <summary>
         /// Creates the instance.
