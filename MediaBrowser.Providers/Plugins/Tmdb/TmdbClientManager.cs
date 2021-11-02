@@ -1,4 +1,6 @@
-﻿using System;
+#nullable disable
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -55,11 +57,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
+            var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
+            if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
+            {
+                extraMethods |= MovieMethods.Keywords;
+            }
+
             movie = await _tmDbClient.GetMovieAsync(
                 tmdbId,
                 TmdbUtils.NormalizeLanguage(language),
                 imageLanguages,
-                MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Keywords | MovieMethods.Videos,
+                extraMethods,
                 cancellationToken).ConfigureAwait(false);
 
             if (movie != null)
@@ -121,11 +129,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
+            var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
+            if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
+            {
+                extraMethods |= TvShowMethods.Keywords;
+            }
+
             series = await _tmDbClient.GetTvShowAsync(
                 tmdbId,
                 language: TmdbUtils.NormalizeLanguage(language),
                 includeImageLanguage: imageLanguages,
-                extraMethods: TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.Keywords | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups,
+                extraMethods: extraMethods,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (series != null)

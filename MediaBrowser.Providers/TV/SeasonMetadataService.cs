@@ -42,7 +42,7 @@ namespace MediaBrowser.Providers.TV
                 if (!string.Equals(item.Name, seasonZeroDisplayName, StringComparison.OrdinalIgnoreCase))
                 {
                     item.Name = seasonZeroDisplayName;
-                    updatedType = updatedType | ItemUpdateType.MetadataEdit;
+                    updatedType |= ItemUpdateType.MetadataEdit;
                 }
             }
 
