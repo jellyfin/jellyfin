@@ -409,21 +409,23 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_EmptyNonStubItemPopulatedProviderRemote_DownloadsImages(ImageType imageType, int imageCount)
+        [InlineData(ImageType.Primary, 0, false)] // singular type only fetches if type is missing from item, no caching
+        [InlineData(ImageType.Backdrop, 0, false)] // empty item, no cache to check
+        [InlineData(ImageType.Backdrop, 1, false)] // populated item, cached so no download
+        [InlineData(ImageType.Backdrop, 1, true)] // populated item, forced to download
+        public async void RefreshImages_NonStubItemPopulatedProviderRemote_DownloadsIfNecessary(ImageType imageType, int initialImageCount, bool fullRefresh)
         {
-            // Has to exist for querying DateModified time on file, results stored but not checked so not populating
-            BaseItem.FileSystem ??= Mock.Of<IFileSystem>();
+            var targetImageCount = 1;
 
             // Set path and media source manager so images will be downloaded (EnableImageStub will return false)
-            var item = new MovieWithScreenshots
-            {
-                Path = "non-empty path"
-            };
+            var item = GetItemWithImages(imageType, initialImageCount, false);
+            item.Path = "non-empty path";
             BaseItem.MediaSourceManager = Mock.Of<IMediaSourceManager>();
 
-            var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
+            // seek 2 so it won't short-circuit out of downloading when populated
+            var libraryOptions = GetLibraryOptions(item, imageType, 2);
 
+            var content = "Content";
             var remoteProvider = new Mock<IRemoteImageProvider>(MockBehavior.Strict);
             remoteProvider.Setup(rp => rp.Name).Returns("MockRemoteProvider");
             remoteProvider.Setup(rp => rp.GetSupportedImages(item))
@@ -433,13 +435,19 @@ namespace Jellyfin.Providers.Tests.Manager
                 {
                     ReasonPhrase = url,
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Content", Encoding.UTF8, "image/jpeg")
+                    Content = new StringContent(content, Encoding.UTF8, "image/jpeg")
                 });
 
-            var refreshOptions = new ImageRefreshOptions(null);
+            var refreshOptions = fullRefresh
+                ? new ImageRefreshOptions(null)
+                {
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh,
+                    ReplaceAllImages = true
+                }
+                : new ImageRefreshOptions(null);
 
             var remoteInfo = new List<RemoteImageInfo>();
-            for (int i = 0; i < imageCount; i++)
+            for (int i = 0; i < targetImageCount; i++)
             {
                 remoteInfo.Add(new RemoteImageInfo
                 {
@@ -457,13 +465,14 @@ namespace Jellyfin.Providers.Tests.Manager
                     callbackItem.SetImagePath(callbackType, callbackItem.AllowsMultipleImages(callbackType) ? callbackItem.GetImages(callbackType).Count() : 0, new FileSystemMetadata()))
                 .Returns(Task.CompletedTask);
             var fileSystem = new Mock<IFileSystem>();
+            // match reported file size to image content length - condition for skipping already downloaded multi-images
             fileSystem.Setup(fs => fs.GetFileInfo(It.IsAny<string>()))
-                .Returns(new FileSystemMetadata { Length = 1 });
+                .Returns(new FileSystemMetadata { Length = content.Length });
             var itemImageProvider = GetItemImageProvider(providerManager.Object, fileSystem);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
-            Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
-            Assert.Equal(imageCount, item.GetImages(imageType).Count());
+            Assert.Equal(initialImageCount == 0 || fullRefresh, result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
+            Assert.Equal(targetImageCount, item.GetImages(imageType).Count());
         }
 
         [Theory]

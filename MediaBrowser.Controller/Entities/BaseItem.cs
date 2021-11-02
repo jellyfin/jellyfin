@@ -2345,7 +2345,7 @@ namespace MediaBrowser.Controller.Entities
             RemoveImages(new List<ItemImageInfo> { image });
         }
 
-        public void RemoveImages(List<ItemImageInfo> deletedImages)
+        public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
             ImageInfos = ImageInfos.Except(deletedImages).ToArray();
         }

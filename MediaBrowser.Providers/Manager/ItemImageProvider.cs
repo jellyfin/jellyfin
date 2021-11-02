@@ -103,16 +103,16 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
-            List<ItemImageInfo> oldBackdropImages = new List<ItemImageInfo>();
+            var oldBackdropImages = Array.Empty<ItemImageInfo>();
             if (refreshOptions.IsReplacingImage(ImageType.Backdrop))
             {
-                oldBackdropImages = item.GetImages(ImageType.Backdrop).ToList();
+                oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
             }
 
-            List<ItemImageInfo> oldScreenshotImages = new List<ItemImageInfo>();
+            var oldScreenshotImages = Array.Empty<ItemImageInfo>();
             if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
             {
-                oldScreenshotImages = item.GetImages(ImageType.Screenshot).ToList();
+                oldScreenshotImages = item.GetImages(ImageType.Screenshot).ToArray();
             }
 
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
@@ -121,8 +121,8 @@ namespace MediaBrowser.Providers.Manager
             var typeOptions = libraryOptions.GetTypeOptions(typeName) ?? new TypeOptions { Type = typeName };
 
             // track library limits, adding buffer to allow lazy replacing of current images
-            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Count;
-            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot) + oldScreenshotImages.Count;
+            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Length;
+            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot) + oldScreenshotImages.Length;
             var downloadedImages = new List<ImageType>();
 
             foreach (var provider in providers)
@@ -140,12 +140,12 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // only delete existing multi-images if new ones were added
-            if (oldBackdropImages.Count > 0 && oldBackdropImages.Count < item.GetImages(ImageType.Backdrop).Count())
+            if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
             {
                 PruneImages(item, oldBackdropImages);
             }
 
-            if (oldScreenshotImages.Count > 0 && oldScreenshotImages.Count < item.GetImages(ImageType.Screenshot).Count())
+            if (oldScreenshotImages.Length > 0 && oldScreenshotImages.Length < item.GetImages(ImageType.Screenshot).Count())
             {
                 PruneImages(item, oldScreenshotImages);
             }
@@ -366,9 +366,9 @@ namespace MediaBrowser.Providers.Manager
             return options.IsEnabled(type);
         }
 
-        private void PruneImages(BaseItem item, List<ItemImageInfo> images)
+        private void PruneImages(BaseItem item, ItemImageInfo[] images)
         {
-            for (var i = 0; i < images.Count; i++)
+            for (var i = 0; i < images.Length; i++)
             {
                 var image = images[i];
 
