@@ -50,35 +50,14 @@ namespace Jellyfin.Providers.Tests.Manager
 
         private static TheoryData<ImageType, int> GetImageTypesWithCount()
         {
-            var theoryTypes = new TheoryData<ImageType, int>();
-
-            // shotgun approach; overkill for frequent runs
-            // foreach (var imageType in (ImageType[])Enum.GetValues(typeof(ImageType)))
-            // {
-            //     switch (imageType)
-            //     {
-            //         case ImageType.Chapter:
-            //         case ImageType.Profile:
-            //             // skip types that can't be set using BaseItem.SetImagePath or otherwise don't apply to BaseItem
-            //             break;
-            //         case ImageType.Backdrop:
-            //         case ImageType.Screenshot:
-            //             // for types that support multiple test with 1 and with more than 1
-            //             theoryTypes.Add(imageType, 1);
-            //             theoryTypes.Add(imageType, 2);
-            //             break;
-            //         default:
-            //             // for singular types just test with 1
-            //             theoryTypes.Add(imageType, 1);
-            //             break;
-            //     }
-            // }
-
-            // specific test cases that hit different handling
-            theoryTypes.Add(ImageType.Primary, 1);
-            theoryTypes.Add(ImageType.Backdrop, 1);
-            theoryTypes.Add(ImageType.Backdrop, 2);
-            theoryTypes.Add(ImageType.Screenshot, 1);
+            var theoryTypes = new TheoryData<ImageType, int>
+            {
+                // minimal test cases that hit different handling
+                { ImageType.Primary, 1 },
+                { ImageType.Backdrop, 1 },
+                { ImageType.Backdrop, 2 },
+                { ImageType.Screenshot, 1 }
+            };
 
             return theoryTypes;
         }
@@ -228,125 +207,23 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_PopulatedItemPopulatedProviderDynamic_NoChange(ImageType imageType, int imageCount)
-        {
-            var item = GetItemWithImages(imageType, imageCount, true);
-
-            var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
-
-            var dynamicProvider = new Mock<IDynamicImageProvider>(MockBehavior.Strict);
-            dynamicProvider.Setup(rp => rp.Name).Returns("MockDynamicProvider");
-            dynamicProvider.Setup(rp => rp.GetSupportedImages(item))
-                .Returns(new[] { imageType });
-
-            var refreshOptions = new ImageRefreshOptions(null);
-
-            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
-            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
-                .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
-                .Returns(Task.CompletedTask);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
-            var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
-
-            Assert.False(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
-            Assert.Equal(imageCount, item.GetImages(imageType).Count());
-        }
-
-        [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_EmptyItemPopulatedProviderDynamicWithPath_AddsImages(ImageType imageType, int imageCount)
-        {
-            // Has to exist for querying DateModified time on file, results stored but not checked so not populating
-            BaseItem.FileSystem = Mock.Of<IFileSystem>();
-
-            var item = new MovieWithScreenshots();
-
-            var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
-
-            // Path must exist: is read in as a stream by AsyncFile.OpenRead
-            var imageResponse = new DynamicImageResponse
-            {
-                HasImage = true,
-                Format = ImageFormat.Jpg,
-                Path = string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 0),
-                Protocol = MediaProtocol.File
-            };
-
-            var dynamicProvider = new Mock<IDynamicImageProvider>(MockBehavior.Strict);
-            dynamicProvider.Setup(rp => rp.Name).Returns("MockDynamicProvider");
-            dynamicProvider.Setup(rp => rp.GetSupportedImages(item))
-                .Returns(new[] { imageType });
-            dynamicProvider.Setup(rp => rp.GetImage(item, imageType, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(imageResponse);
-
-            var refreshOptions = new ImageRefreshOptions(null);
-
-            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
-            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
-                .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
-                .Returns(Task.CompletedTask);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
-            var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
-
-            Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
-            // dynamic provider unable to return multiple images
-            Assert.Single(item.GetImages(imageType));
-        }
-
-        [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_EmptyItemPopulatedProviderDynamicWithoutPath_AddsImages(ImageType imageType, int imageCount)
-        {
-            // Has to exist for querying DateModified time on file, results stored but not checked so not populating
-            BaseItem.FileSystem = Mock.Of<IFileSystem>();
-
-            var item = new MovieWithScreenshots();
-
-            var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
-
-            var imageResponse = new DynamicImageResponse
-            {
-                HasImage = true,
-                Format = ImageFormat.Jpg,
-                Protocol = MediaProtocol.File
-            };
-
-            var dynamicProvider = new Mock<IDynamicImageProvider>(MockBehavior.Strict);
-            dynamicProvider.Setup(rp => rp.Name).Returns("MockDynamicProvider");
-            dynamicProvider.Setup(rp => rp.GetSupportedImages(item))
-                .Returns(new[] { imageType });
-            dynamicProvider.Setup(rp => rp.GetImage(item, imageType, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(imageResponse);
-
-            var refreshOptions = new ImageRefreshOptions(null);
-
-            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
-            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
-                .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
-                .Returns(Task.CompletedTask);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
-            var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
-
-            Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
-            // dynamic provider unable to return multiple images
-            Assert.Single(item.GetImages(imageType));
-        }
-
-        [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_PopulatedItemPopulatedProviderDynamicFullRefresh_UpdatesImages(ImageType imageType, int imageCount)
+        [InlineData(ImageType.Primary, 1, false)]
+        [InlineData(ImageType.Backdrop, 2, false)]
+        [InlineData(ImageType.Screenshot, 2, false)]
+        [InlineData(ImageType.Primary, 1, true)]
+        [InlineData(ImageType.Backdrop, 2, true)]
+        [InlineData(ImageType.Screenshot, 2, true)]
+        public async void RefreshImages_PopulatedItemPopulatedProviderDynamic_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
         {
             var item = GetItemWithImages(imageType, imageCount, false);
 
             var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
 
-            var expectedPath = "dynamic response path url";
             var imageResponse = new DynamicImageResponse
             {
                 HasImage = true,
                 Format = ImageFormat.Jpg,
-                Path = expectedPath,
+                Path = "url path",
                 Protocol = MediaProtocol.Http
             };
 
@@ -357,24 +234,89 @@ namespace Jellyfin.Providers.Tests.Manager
             dynamicProvider.Setup(rp => rp.GetImage(item, imageType, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(imageResponse);
 
-            var refreshOptions = new ImageRefreshOptions(null)
-            {
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                ReplaceAllImages = true
-            };
+            var refreshOptions = forceRefresh
+                ? new ImageRefreshOptions(null)
+                {
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh, ReplaceAllImages = true
+                }
+                : new ImageRefreshOptions(null);
 
             var itemImageProvider = GetItemImageProvider(null, new Mock<IFileSystem>());
+            var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
+
+            Assert.Equal(forceRefresh, result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
+            if (forceRefresh)
+            {
+                // replaces multi-types
+                Assert.Single(item.GetImages(imageType));
+            }
+            else
+            {
+                // adds to multi-types if room
+                Assert.Equal(imageCount, item.GetImages(imageType).Count());
+            }
+        }
+
+        [Theory]
+        [InlineData(ImageType.Primary, 1, true, MediaProtocol.Http)]
+        [InlineData(ImageType.Backdrop, 2, true, MediaProtocol.Http)]
+        [InlineData(ImageType.Primary, 1, true, MediaProtocol.File)]
+        [InlineData(ImageType.Backdrop, 2, true, MediaProtocol.File)]
+        [InlineData(ImageType.Primary, 1, false, MediaProtocol.File)]
+        [InlineData(ImageType.Backdrop, 2, false, MediaProtocol.File)]
+        public async void RefreshImages_EmptyItemPopulatedProviderDynamic_AddsImages(ImageType imageType, int imageCount, bool responseHasPath, MediaProtocol protocol)
+        {
+            // Has to exist for querying DateModified time on file, results stored but not checked so not populating
+            BaseItem.FileSystem = Mock.Of<IFileSystem>();
+
+            var item = new MovieWithScreenshots();
+
+            var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
+
+            // Path must exist if set: is read in as a stream by AsyncFile.OpenRead
+            var imageResponse = new DynamicImageResponse
+            {
+                HasImage = true,
+                Format = ImageFormat.Jpg,
+                Path = responseHasPath ? string.Format(CultureInfo.InvariantCulture, TestDataImagePath, 0) : null,
+                Protocol = protocol
+            };
+
+            var dynamicProvider = new Mock<IDynamicImageProvider>(MockBehavior.Strict);
+            dynamicProvider.Setup(rp => rp.Name).Returns("MockDynamicProvider");
+            dynamicProvider.Setup(rp => rp.GetSupportedImages(item))
+                .Returns(new[] { imageType });
+            dynamicProvider.Setup(rp => rp.GetImage(item, imageType, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(imageResponse);
+
+            var refreshOptions = new ImageRefreshOptions(null);
+
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
+            providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
+                .Callback<BaseItem, Stream, string, ImageType, int?, CancellationToken>((callbackItem, _, _, callbackType, _, _) => callbackItem.SetImagePath(callbackType, 0, new FileSystemMetadata()))
+                .Returns(Task.CompletedTask);
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
 
             Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
             // dynamic provider unable to return multiple images
             Assert.Single(item.GetImages(imageType));
-            Assert.Equal(expectedPath, item.GetImagePath(imageType, 0));
+            if (protocol == MediaProtocol.Http)
+            {
+                Assert.Equal(imageResponse.Path, item.GetImagePath(imageType, 0));
+            }
         }
 
         [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_PopulatedItemPopulatedProviderRemote_NoChange(ImageType imageType, int imageCount)
+        [InlineData(ImageType.Primary, 1, false)]
+        [InlineData(ImageType.Backdrop, 1, false)]
+        [InlineData(ImageType.Backdrop, 2, false)]
+        [InlineData(ImageType.Screenshot, 2, false)]
+        [InlineData(ImageType.Primary, 1, true)]
+        [InlineData(ImageType.Backdrop, 1, true)]
+        [InlineData(ImageType.Backdrop, 2, true)]
+        [InlineData(ImageType.Screenshot, 2, true)]
+        public async void RefreshImages_PopulatedItemPopulatedProviderRemote_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
         {
             var item = GetItemWithImages(imageType, imageCount, false);
 
@@ -385,7 +327,12 @@ namespace Jellyfin.Providers.Tests.Manager
             remoteProvider.Setup(rp => rp.GetSupportedImages(item))
                 .Returns(new[] { imageType });
 
-            var refreshOptions = new ImageRefreshOptions(null);
+            var refreshOptions = forceRefresh
+                ? new ImageRefreshOptions(null)
+                {
+                    ImageRefreshMode = MetadataRefreshMode.FullRefresh, ReplaceAllImages = true
+                }
+                : new ImageRefreshOptions(null);
 
             var remoteInfo = new List<RemoteImageInfo>();
             for (int i = 0; i < imageCount; i++)
@@ -401,11 +348,22 @@ namespace Jellyfin.Providers.Tests.Manager
             var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
             providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(remoteInfo);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, new Mock<IFileSystem>());
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
 
-            Assert.False(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
+            Assert.Equal(forceRefresh, result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
             Assert.Equal(imageCount, item.GetImages(imageType).Count());
+            foreach (var image in item.GetImages(imageType))
+            {
+                if (forceRefresh)
+                {
+                    Assert.Matches(@"image url [0-9]", image.Path);
+                }
+                else
+                {
+                    Assert.DoesNotMatch(@"image url [0-9]", image.Path);
+                }
+            }
         }
 
         [Theory]
@@ -516,50 +474,6 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 var index = int.Parse(Regex.Match(image.Path, @"[0-9]+").Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
                 Assert.True(index < imageCount);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(GetImageTypesWithCount))]
-        public async void RefreshImages_PopulatedItemPopulatedProviderRemoteFullRefresh_UpdatesImages(ImageType imageType, int imageCount)
-        {
-            var item = GetItemWithImages(imageType, imageCount, false);
-
-            var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
-
-            var remoteProvider = new Mock<IRemoteImageProvider>(MockBehavior.Strict);
-            remoteProvider.Setup(rp => rp.Name).Returns("MockRemoteProvider");
-            remoteProvider.Setup(rp => rp.GetSupportedImages(item))
-                .Returns(new[] { imageType });
-
-            var refreshOptions = new ImageRefreshOptions(null)
-            {
-                ImageRefreshMode = MetadataRefreshMode.FullRefresh,
-                ReplaceAllImages = true
-            };
-
-            var remoteInfo = new List<RemoteImageInfo>();
-            for (int i = 0; i < imageCount; i++)
-            {
-                remoteInfo.Add(new RemoteImageInfo
-                {
-                    Type = imageType,
-                    Url = "image url " + i,
-                    Width = 1 // min width is set to 0, this will always pass
-                });
-            }
-
-            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
-            providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(remoteInfo);
-            var itemImageProvider = GetItemImageProvider(providerManager.Object, new Mock<IFileSystem>());
-            var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
-
-            Assert.True(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
-            Assert.Equal(imageCount, item.GetImages(imageType).Count());
-            foreach (var image in item.GetImages(imageType))
-            {
-                Assert.Matches(@"image url [0-9]", image.Path);
             }
         }
 
