@@ -29,20 +29,24 @@
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
                         document.querySelector('#includeAdult').checked = config.IncludeAdult;
+                        document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
+                        document.querySelector('#excludeTagsMovies').checked = config.ExcludeTagsMovies;
                         Dashboard.hideLoadingMsg();
                     });
                 });
 
-            
+
             document.querySelector('.configForm')
                 .addEventListener('submit', function (e) {
                     Dashboard.showLoadingMsg();
-    
+
                     ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
                         config.IncludeAdult = document.querySelector('#includeAdult').checked;
+                        config.ExcludeTagsSeries = document.querySelector('#excludeTagsSeries').checked;
+                        config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
                         ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
-                    
+
                     e.preventDefault();
                     return false;
                 });
