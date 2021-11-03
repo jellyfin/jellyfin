@@ -13,7 +13,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -71,8 +70,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.BoxSets
             var backdrops = collection.Images.Backdrops;
             var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count);
 
-            TmdbUtils.ConvertPostersToRemoteImageInfo(posters, _tmdbClientManager, language, remoteImages);
-            TmdbUtils.ConvertBackdropsToRemoteImageInfo(backdrops, _tmdbClientManager, language, remoteImages);
+            _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
+            _tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language, remoteImages);
 
             return remoteImages;
         }

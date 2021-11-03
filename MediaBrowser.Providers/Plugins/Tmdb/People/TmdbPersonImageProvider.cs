@@ -63,7 +63,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
             var profiles = personResult.Images.Profiles;
             var remoteImages = new List<RemoteImageInfo>(profiles.Count);
 
-            TmdbUtils.ConvertProfilesToRemoteImageInfo(profiles, _tmdbClientManager, language, remoteImages);
+            _tmdbClientManager.ConvertProfilesToRemoteImageInfo(profiles, language, remoteImages);
 
             return remoteImages;
         }

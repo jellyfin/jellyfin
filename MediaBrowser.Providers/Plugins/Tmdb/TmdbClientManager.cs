@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using TMDbLib.Client;
 using TMDbLib.Objects.Collections;
@@ -497,16 +500,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets the absolute URL of the backdrop image.
-        /// </summary>
-        /// <param name="backdropPath">The relative URL of the backdrop image.</param>
-        /// <returns>The absolute URL.</returns>
-        public string GetBackdropUrl(string backdropPath)
-        {
-            return GetUrl(_tmDbClient.Config.Images.BackdropSizes[^1], backdropPath);
-        }
-
-        /// <summary>
         /// Gets the absolute URL of the profile image.
         /// </summary>
         /// <param name="actorProfilePath">The relative URL of the profile image.</param>
@@ -517,13 +510,75 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
-        /// Gets the absolute URL of the still image.
+        /// Converts poster <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
-        /// <param name="filePath">The relative URL of the still image.</param>
-        /// <returns>The absolute URL.</returns>
-        public string GetStillUrl(string filePath)
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertPostersToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            return GetUrl(_tmDbClient.Config.Images.StillSizes[^1], filePath);
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.PosterSizes[^1], ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts backdrop <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertBackdropsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.BackdropSizes[^1], ImageType.Backdrop, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts profile <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertProfilesToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.ProfileSizes[^1], ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts still <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertStillsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.StillSizes[^1], ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="size">The size of the image to fetch.</param>
+        /// <param name="type">The type of the image.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        private void ConvertToRemoteImageInfo(List<ImageData> images, string size, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            for (var i = 0; i < images.Count; i++)
+            {
+                var image = images[i];
+                results.Add(new RemoteImageInfo
+                {
+                    Url = GetUrl(size, image.FilePath),
+                    CommunityRating = image.VoteAverage,
+                    VoteCount = image.VoteCount,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage),
+                    ProviderName = TmdbUtils.ProviderName,
+                    Type = type,
+                    RatingType = RatingType.Score
+                });
+            }
         }
 
         private Task EnsureClientConfigAsync()
