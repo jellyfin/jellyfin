@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.IO;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
@@ -159,34 +158,36 @@ namespace Jellyfin.Server
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
+            // If hosting the web client, validate the client content path
+            if (startupConfig.HostWebClient())
+            {
+                string? webContentPath = appPaths.WebPath;
+                if (!Directory.Exists(webContentPath) || !Directory.EnumerateFiles(webContentPath).Any())
+                {
+                    _logger.LogError(
+                        "The server is expected to host the web client, but the provided content directory is either " +
+                        "invalid or empty: {WebContentPath}. If you do not want to host the web client with the " +
+                        "server, you may set the '--nowebclient' command line flag, or set" +
+                        "'{ConfigKey}=false' in your config settings.",
+                        webContentPath,
+                        ConfigurationExtensions.HostWebClientKey);
+                    Environment.ExitCode = 1;
+                    return;
+                }
+            }
+
             PerformStaticInitialization();
-            var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
-                startupConfig,
-                new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                serviceCollection);
+                startupConfig);
 
             try
             {
-                // If hosting the web client, validate the client content path
-                if (startupConfig.HostWebClient())
-                {
-                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
-                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
-                    {
-                        throw new InvalidOperationException(
-                            "The server is expected to host the web client, but the provided content directory is either " +
-                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
-                            "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
-                    }
-                }
-
-                appHost.Init();
+                var serviceCollection = new ServiceCollection();
+                appHost.Init(serviceCollection);
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 

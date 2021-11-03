@@ -148,25 +148,20 @@ namespace Emby.Server.Implementations
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         /// <param name="options">Instance of the <see cref="IStartupOptions"/> interface.</param>
         /// <param name="startupConfig">The <see cref="IConfiguration" /> interface.</param>
-        /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         public ApplicationHost(
             IServerApplicationPaths applicationPaths,
             ILoggerFactory loggerFactory,
             IStartupOptions options,
-            IConfiguration startupConfig,
-            IFileSystem fileSystem,
-            IServiceCollection serviceCollection)
+            IConfiguration startupConfig)
         {
             ApplicationPaths = applicationPaths;
             LoggerFactory = loggerFactory;
             _startupOptions = options;
             _startupConfig = startupConfig;
-            _fileSystemManager = fileSystem;
-            ServiceCollection = serviceCollection;
+            _fileSystemManager = new ManagedFileSystem(LoggerFactory.CreateLogger<ManagedFileSystem>(), applicationPaths);
 
             Logger = LoggerFactory.CreateLogger<ApplicationHost>();
-            fileSystem.AddShortcutHandler(new MbLinkShortcutHandler(fileSystem));
+            _fileSystemManager.AddShortcutHandler(new MbLinkShortcutHandler(_fileSystemManager));
 
             ApplicationVersion = typeof(ApplicationHost).Assembly.GetName().Version;
             ApplicationVersionString = ApplicationVersion.ToString(3);
@@ -230,8 +225,6 @@ namespace Emby.Server.Implementations
         /// Gets the logger.
         /// </summary>
         protected ILogger<ApplicationHost> Logger { get; }
-
-        protected IServiceCollection ServiceCollection { get; }
 
         /// <summary>
         /// Gets the logger factory.
@@ -522,7 +515,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public void Init()
+        public void Init(IServiceCollection serviceCollection)
         {
             DiscoverTypes();
 
@@ -552,130 +545,129 @@ namespace Emby.Server.Implementations
             CertificatePath = networkConfiguration.CertificatePath;
             Certificate = GetCertificate(CertificatePath, networkConfiguration.CertificatePassword);
 
-            RegisterServices();
+            RegisterServices(serviceCollection);
 
-            _pluginManager.RegisterServices(ServiceCollection);
+            _pluginManager.RegisterServices(serviceCollection);
         }
 
         /// <summary>
         /// Registers services/resources with the service collection that will be available via DI.
         /// </summary>
-        protected virtual void RegisterServices()
+        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
+        protected virtual void RegisterServices(IServiceCollection serviceCollection)
         {
-            ServiceCollection.AddSingleton(_startupOptions);
+            serviceCollection.AddSingleton(_startupOptions);
 
-            ServiceCollection.AddMemoryCache();
+            serviceCollection.AddMemoryCache();
 
-            ServiceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
-            ServiceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
-            ServiceCollection.AddSingleton<IApplicationHost>(this);
-            ServiceCollection.AddSingleton<IPluginManager>(_pluginManager);
-            ServiceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
+            serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
+            serviceCollection.AddSingleton<IApplicationHost>(this);
+            serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
+            serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
-            ServiceCollection.AddSingleton(_fileSystemManager);
-            ServiceCollection.AddSingleton<TmdbClientManager>();
+            serviceCollection.AddSingleton(_fileSystemManager);
+            serviceCollection.AddSingleton<TmdbClientManager>();
 
-            ServiceCollection.AddSingleton(NetManager);
+            serviceCollection.AddSingleton(NetManager);
 
-            ServiceCollection.AddSingleton<ITaskManager, TaskManager>();
+            serviceCollection.AddSingleton<ITaskManager, TaskManager>();
 
-            ServiceCollection.AddSingleton(_xmlSerializer);
+            serviceCollection.AddSingleton(_xmlSerializer);
 
-            ServiceCollection.AddSingleton<IStreamHelper, StreamHelper>();
+            serviceCollection.AddSingleton<IStreamHelper, StreamHelper>();
 
-            ServiceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
+            serviceCollection.AddSingleton<ICryptoProvider, CryptographyProvider>();
 
-            ServiceCollection.AddSingleton<ISocketFactory, SocketFactory>();
+            serviceCollection.AddSingleton<ISocketFactory, SocketFactory>();
 
-            ServiceCollection.AddSingleton<IInstallationManager, InstallationManager>();
+            serviceCollection.AddSingleton<IInstallationManager, InstallationManager>();
 
-            ServiceCollection.AddSingleton<IZipClient, ZipClient>();
+            serviceCollection.AddSingleton<IZipClient, ZipClient>();
 
-            ServiceCollection.AddSingleton<IServerApplicationHost>(this);
-            ServiceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton<IServerApplicationHost>(this);
+            serviceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
 
-            ServiceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
+            serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
-            ServiceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
+            serviceCollection.AddSingleton<IBlurayExaminer, BdInfoExaminer>();
 
-            ServiceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
-            ServiceCollection.AddSingleton<IUserDataManager, UserDataManager>();
+            serviceCollection.AddSingleton<IUserDataRepository, SqliteUserDataRepository>();
+            serviceCollection.AddSingleton<IUserDataManager, UserDataManager>();
 
-            ServiceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
+            serviceCollection.AddSingleton<IItemRepository, SqliteItemRepository>();
 
-            ServiceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
-            ServiceCollection.AddSingleton<EncodingHelper>();
+            serviceCollection.AddSingleton<IMediaEncoder, MediaBrowser.MediaEncoding.Encoder.MediaEncoder>();
+            serviceCollection.AddSingleton<EncodingHelper>();
 
             // TODO: Refactor to eliminate the circular dependencies here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
-            ServiceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
-            ServiceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
-            ServiceCollection.AddSingleton<ILibraryManager, LibraryManager>();
+            serviceCollection.AddTransient(provider => new Lazy<ILibraryMonitor>(provider.GetRequiredService<ILibraryMonitor>));
+            serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
+            serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
+            serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
 
-            ServiceCollection.AddSingleton<IMusicManager, MusicManager>();
+            serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
-            ServiceCollection.AddSingleton<ILibraryMonitor, LibraryMonitor>();
+            serviceCollection.AddSingleton<ILibraryMonitor, LibraryMonitor>();
 
-            ServiceCollection.AddSingleton<ISearchEngine, SearchEngine>();
+            serviceCollection.AddSingleton<ISearchEngine, SearchEngine>();
 
-            ServiceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
+            serviceCollection.AddSingleton<IWebSocketManager, WebSocketManager>();
 
-            ServiceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
+            serviceCollection.AddSingleton<IImageProcessor, ImageProcessor>();
 
-            ServiceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
+            serviceCollection.AddSingleton<ITVSeriesManager, TVSeriesManager>();
 
-            ServiceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
+            serviceCollection.AddSingleton<IMediaSourceManager, MediaSourceManager>();
 
-            ServiceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
+            serviceCollection.AddSingleton<ISubtitleManager, SubtitleManager>();
 
-            ServiceCollection.AddSingleton<IProviderManager, ProviderManager>();
+            serviceCollection.AddSingleton<IProviderManager, ProviderManager>();
 
             // TODO: Refactor to eliminate the circular dependency here so that Lazy<T> isn't required
-            ServiceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
-            ServiceCollection.AddSingleton<IDtoService, DtoService>();
+            serviceCollection.AddTransient(provider => new Lazy<ILiveTvManager>(provider.GetRequiredService<ILiveTvManager>));
+            serviceCollection.AddSingleton<IDtoService, DtoService>();
 
-            ServiceCollection.AddSingleton<IChannelManager, ChannelManager>();
+            serviceCollection.AddSingleton<IChannelManager, ChannelManager>();
 
-            ServiceCollection.AddSingleton<ISessionManager, SessionManager>();
+            serviceCollection.AddSingleton<ISessionManager, SessionManager>();
 
-            ServiceCollection.AddSingleton<IDlnaManager, DlnaManager>();
+            serviceCollection.AddSingleton<IDlnaManager, DlnaManager>();
 
-            ServiceCollection.AddSingleton<ICollectionManager, CollectionManager>();
+            serviceCollection.AddSingleton<ICollectionManager, CollectionManager>();
 
-            ServiceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
+            serviceCollection.AddSingleton<IPlaylistManager, PlaylistManager>();
 
-            ServiceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
+            serviceCollection.AddSingleton<ISyncPlayManager, SyncPlayManager>();
 
-            ServiceCollection.AddSingleton<LiveTvDtoService>();
-            ServiceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
+            serviceCollection.AddSingleton<LiveTvDtoService>();
+            serviceCollection.AddSingleton<ILiveTvManager, LiveTvManager>();
 
-            ServiceCollection.AddSingleton<IUserViewManager, UserViewManager>();
+            serviceCollection.AddSingleton<IUserViewManager, UserViewManager>();
 
-            ServiceCollection.AddSingleton<INotificationManager, NotificationManager>();
+            serviceCollection.AddSingleton<INotificationManager, NotificationManager>();
 
-            ServiceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
+            serviceCollection.AddSingleton<IDeviceDiscovery, DeviceDiscovery>();
 
-            ServiceCollection.AddSingleton<IChapterManager, ChapterManager>();
+            serviceCollection.AddSingleton<IChapterManager, ChapterManager>();
 
-            ServiceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
+            serviceCollection.AddSingleton<IEncodingManager, MediaEncoder.EncodingManager>();
 
-            ServiceCollection.AddScoped<ISessionContext, SessionContext>();
+            serviceCollection.AddScoped<ISessionContext, SessionContext>();
 
-            ServiceCollection.AddSingleton<IAuthService, AuthService>();
-            ServiceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
+            serviceCollection.AddSingleton<IAuthService, AuthService>();
+            serviceCollection.AddSingleton<IQuickConnect, QuickConnectManager>();
 
-            ServiceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
+            serviceCollection.AddSingleton<ISubtitleEncoder, MediaBrowser.MediaEncoding.Subtitles.SubtitleEncoder>();
 
-            ServiceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
+            serviceCollection.AddSingleton<IAttachmentExtractor, MediaBrowser.MediaEncoding.Attachments.AttachmentExtractor>();
 
-            ServiceCollection.AddSingleton<TranscodingJobHelper>();
-            ServiceCollection.AddScoped<MediaInfoHelper>();
-            ServiceCollection.AddScoped<AudioHelper>();
-            ServiceCollection.AddScoped<DynamicHlsHelper>();
-
-            ServiceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
-
-            ServiceCollection.AddSingleton<IDirectoryService, DirectoryService>();
+            serviceCollection.AddSingleton<TranscodingJobHelper>();
+            serviceCollection.AddScoped<MediaInfoHelper>();
+            serviceCollection.AddScoped<AudioHelper>();
+            serviceCollection.AddScoped<DynamicHlsHelper>();
+            serviceCollection.AddScoped<IClientEventLogger, ClientEventLogger>();
+            serviceCollection.AddSingleton<IDirectoryService, DirectoryService>();
         }
 
         /// <summary>

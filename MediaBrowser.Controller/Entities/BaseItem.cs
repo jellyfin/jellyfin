@@ -2345,7 +2345,7 @@ namespace MediaBrowser.Controller.Entities
             RemoveImages(new List<ItemImageInfo> { image });
         }
 
-        public void RemoveImages(List<ItemImageInfo> deletedImages)
+        public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
             ImageInfos = ImageInfos.Except(deletedImages).ToArray();
         }
@@ -2495,11 +2495,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds the images.
+        /// Adds the images, updating metadata if they already are part of this item.
         /// </summary>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if images were added or updated, <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Cannot call AddImages with chapter images.</exception>
         public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
@@ -2512,7 +2512,6 @@ namespace MediaBrowser.Controller.Entities
                 .ToList();
 
             var newImageList = new List<FileSystemMetadata>();
-            var imageAdded = false;
             var imageUpdated = false;
 
             foreach (var newImage in images)
@@ -2528,7 +2527,6 @@ namespace MediaBrowser.Controller.Entities
                 if (existing == null)
                 {
                     newImageList.Add(newImage);
-                    imageAdded = true;
                 }
                 else
                 {
@@ -2546,19 +2544,6 @@ namespace MediaBrowser.Controller.Entities
 
                         existing.DateModified = newDateModified;
                     }
-                }
-            }
-
-            if (imageAdded || images.Count != existingImages.Count)
-            {
-                var newImagePaths = images.Select(i => i.FullName).ToList();
-
-                var deleted = existingImages
-                    .FindAll(i => i.IsLocalFile && !newImagePaths.Contains(i.Path.AsSpan(), StringComparison.OrdinalIgnoreCase) && !File.Exists(i.Path));
-
-                if (deleted.Count > 0)
-                {
-                    ImageInfos = ImageInfos.Except(deleted).ToArray();
                 }
             }
 
