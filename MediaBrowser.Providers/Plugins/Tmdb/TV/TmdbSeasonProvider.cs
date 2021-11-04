@@ -67,7 +67,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
             var credits = seasonResult.Credits;
             if (credits?.Cast != null)
             {
-                var cast = credits.Cast.OrderBy(c => c.Order).Take(TmdbUtils.MaxCastMembers).ToList();
+                var cast = credits.Cast.OrderBy(c => c.Order).Take(Plugin.Instance.Configuration.MaxCastMembers).ToList();
                 for (var i = 0; i < cast.Count; i++)
                 {
                     result.AddPerson(new PersonInfo
