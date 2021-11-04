@@ -49,6 +49,15 @@ namespace MediaBrowser.Providers.Manager
         };
 
         /// <summary>
+        /// Image types that may contain more than one item.
+        /// </summary>
+        private static readonly ImageType[] _multiImages =
+        {
+            ImageType.Backdrop,
+            ImageType.Screenshot
+        };
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ItemImageProvider"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
@@ -103,33 +112,31 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
-            var oldBackdropImages = Array.Empty<ItemImageInfo>();
-            if (refreshOptions.IsReplacingImage(ImageType.Backdrop))
-            {
-                oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
-            }
-
-            var oldScreenshotImages = Array.Empty<ItemImageInfo>();
-            if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
-            {
-                oldScreenshotImages = item.GetImages(ImageType.Screenshot).ToArray();
-            }
-
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
 
             var typeName = item.GetType().Name;
             var typeOptions = libraryOptions.GetTypeOptions(typeName) ?? new TypeOptions { Type = typeName };
 
-            // track library limits, adding buffer to allow lazy replacing of current images
-            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Length;
-            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot) + oldScreenshotImages.Length;
+            var oldMultiImages = new Dictionary<ImageType, ItemImageInfo[]>(_multiImages.Length);
+            var multiImageLimits = new Dictionary<ImageType, int>(_multiImages.Length);
+            for (int i = 0; i < _multiImages.Length; i++)
+            {
+                var multiType = _multiImages[i];
+                oldMultiImages[multiType] = refreshOptions.IsReplacingImage(multiType)
+                    ? item.GetImages(multiType).ToArray()
+                    : Array.Empty<ItemImageInfo>();
+
+                // add buffer to allow lazy replacing of current images
+                multiImageLimits[multiType] = typeOptions.GetLimit(multiType) + oldMultiImages[multiType].Length;
+            }
+
             var downloadedImages = new List<ImageType>();
 
             foreach (var provider in providers)
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, multiImageLimits, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -140,14 +147,15 @@ namespace MediaBrowser.Providers.Manager
             }
 
             // only delete existing multi-images if new ones were added
-            if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
+            for (int i = 0; i < _multiImages.Length; i++)
             {
-                PruneImages(item, oldBackdropImages);
-            }
+                var multiType = _multiImages[i];
+                var oldImages = oldMultiImages[multiType];
 
-            if (oldScreenshotImages.Length > 0 && oldScreenshotImages.Length < item.GetImages(ImageType.Screenshot).Count())
-            {
-                PruneImages(item, oldScreenshotImages);
+                if (oldImages?.Length > 0 && oldImages.Length < item.GetImages(multiType).Count())
+                {
+                    PruneImages(item, oldImages);
+                }
             }
 
             return result;
@@ -242,10 +250,9 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="item">The item.</param>
         /// <param name="images">The images.</param>
         /// <param name="savedOptions">The saved options.</param>
-        /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <param name="screenshotLimit">The screenshot limit.</param>
+        /// <param name="multiImageLimits">The limit of each multi image type.</param>
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
-        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
+        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, Dictionary<ImageType, int> multiImageLimits)
         {
             // Using .Any causes the creation of a DisplayClass aka. variable capture
             for (var i = 0; i < _singularImages.Length; i++)
@@ -257,14 +264,13 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (images.Contains(ImageType.Backdrop) && item.GetImages(ImageType.Backdrop).Count() < backdropLimit)
+            for (var i = 0; i < _multiImages.Length; i++)
             {
-                return false;
-            }
-
-            if (images.Contains(ImageType.Screenshot) && item.GetImages(ImageType.Screenshot).Count() < screenshotLimit)
-            {
-                return false;
+                var type = _multiImages[i];
+                if (images.Contains(type) && item.GetImages(type).Count() < multiImageLimits[type])
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -277,8 +283,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
-        /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <param name="screenshotLimit">The screenshot limit.</param>
+        /// <param name="multiImageLimits">The limit of each multi image type.</param>
         /// <param name="downloadedImages">The downloaded images.</param>
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -288,8 +293,7 @@ namespace MediaBrowser.Providers.Manager
             IRemoteImageProvider provider,
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
-            int backdropLimit,
-            int screenshotLimit,
+            Dictionary<ImageType, int> multiImageLimits,
             ICollection<ImageType> downloadedImages,
             RefreshResult result,
             CancellationToken cancellationToken)
@@ -303,7 +307,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!refreshOptions.ReplaceAllImages &&
                     refreshOptions.ReplaceImages.Length == 0 &&
-                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit, screenshotLimit))
+                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, multiImageLimits))
                 {
                     return;
                 }
@@ -322,8 +326,9 @@ namespace MediaBrowser.Providers.Manager
                 var list = images.ToList();
                 int minWidth;
 
-                foreach (var imageType in _singularImages)
+                for (var i = 0; i < _singularImages.Length; i++)
                 {
+                    var imageType = _singularImages[i];
                     if (!IsEnabled(savedOptions, imageType))
                     {
                         continue;
@@ -341,8 +346,12 @@ namespace MediaBrowser.Providers.Manager
                     }
                 }
 
-                minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                for (var i = 0; i < _multiImages.Length; i++)
+                {
+                    var imageType = _multiImages[i];
+                    minWidth = savedOptions.GetMinWidth(imageType);
+                    await DownloadMultiImages(item, imageType, refreshOptions, multiImageLimits[imageType], provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException)
             {
