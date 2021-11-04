@@ -19,12 +19,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 writer.WriteLine("WEBVTT");
                 writer.WriteLine();
-                writer.WriteLine("REGION");
-                writer.WriteLine("id:subtitle");
-                writer.WriteLine("width:80%");
-                writer.WriteLine("lines:3");
-                writer.WriteLine("regionanchor:50%,100%");
-                writer.WriteLine("viewportanchor:50%,90%");
+                writer.WriteLine("Region: id:subtitle width:80% lines:3 regionanchor:50%,100% viewportanchor:50%,90%");
                 writer.WriteLine();
                 foreach (var trackEvent in info.TrackEvents)
                 {
@@ -39,7 +34,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                         endTime = startTime.Add(TimeSpan.FromMilliseconds(1));
                     }
 
-                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff} region:subtitle", startTime, endTime);
+                    writer.WriteLine(@"{0:hh\:mm\:ss\.fff} --> {1:hh\:mm\:ss\.fff} region:subtitle line:90%", startTime, endTime);
 
                     var text = trackEvent.Text;
 
