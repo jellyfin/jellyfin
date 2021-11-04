@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
@@ -43,7 +42,7 @@ namespace Jellyfin.Providers.Tests.Manager
         public void ValidateImages_EmptyItemEmptyProviders_NoChange()
         {
             var itemImageProvider = GetItemImageProvider(null, null);
-            var changed = itemImageProvider.ValidateImages(new MovieWithScreenshots(), Enumerable.Empty<ILocalImageProvider>(), null);
+            var changed = itemImageProvider.ValidateImages(new Video(), Enumerable.Empty<ILocalImageProvider>(), null);
 
             Assert.False(changed);
         }
@@ -55,8 +54,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 // minimal test cases that hit different handling
                 { ImageType.Primary, 1 },
                 { ImageType.Backdrop, 1 },
-                { ImageType.Backdrop, 2 },
-                { ImageType.Screenshot, 1 }
+                { ImageType.Backdrop, 2 }
             };
 
             return theoryTypes;
@@ -69,7 +67,7 @@ namespace Jellyfin.Providers.Tests.Manager
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem = Mock.Of<IFileSystem>();
 
-            var item = new MovieWithScreenshots();
+            var item = new Video();
             var imageProvider = GetImageProvider(imageType, imageCount, true);
 
             var itemImageProvider = GetItemImageProvider(null, null);
@@ -109,7 +107,7 @@ namespace Jellyfin.Providers.Tests.Manager
         public void MergeImages_EmptyItemNewImagesEmpty_NoChange()
         {
             var itemImageProvider = GetItemImageProvider(null, null);
-            var changed = itemImageProvider.MergeImages(new MovieWithScreenshots(), Array.Empty<LocalImageInfo>());
+            var changed = itemImageProvider.MergeImages(new Video(), Array.Empty<LocalImageInfo>());
 
             Assert.False(changed);
         }
@@ -270,7 +268,7 @@ namespace Jellyfin.Providers.Tests.Manager
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem = Mock.Of<IFileSystem>();
 
-            var item = new MovieWithScreenshots();
+            var item = new Video();
 
             var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
 
@@ -312,11 +310,9 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(ImageType.Primary, 1, false)]
         [InlineData(ImageType.Backdrop, 1, false)]
         [InlineData(ImageType.Backdrop, 2, false)]
-        [InlineData(ImageType.Screenshot, 2, false)]
         [InlineData(ImageType.Primary, 1, true)]
         [InlineData(ImageType.Backdrop, 1, true)]
         [InlineData(ImageType.Backdrop, 2, true)]
-        [InlineData(ImageType.Screenshot, 2, true)]
         public async void RefreshImages_PopulatedItemPopulatedProviderRemote_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
         {
             var item = GetItemWithImages(imageType, imageCount, false);
@@ -439,7 +435,7 @@ namespace Jellyfin.Providers.Tests.Manager
         [MemberData(nameof(GetImageTypesWithCount))]
         public async void RefreshImages_EmptyItemPopulatedProviderRemoteExtras_LimitsImages(ImageType imageType, int imageCount)
         {
-            var item = new MovieWithScreenshots();
+            var item = new Video();
 
             var libraryOptions = GetLibraryOptions(item, imageType, imageCount);
 
@@ -528,7 +524,7 @@ namespace Jellyfin.Providers.Tests.Manager
             // Has to exist for querying DateModified time on file, results stored but not checked so not populating
             BaseItem.FileSystem ??= Mock.Of<IFileSystem>();
 
-            var item = new MovieWithScreenshots();
+            var item = new Video();
 
             var path = validPaths ? TestDataImagePath : "invalid path {0}";
             for (int i = 0; i < count; i++)
@@ -598,12 +594,6 @@ namespace Jellyfin.Providers.Tests.Manager
                     }
                 }
             };
-        }
-
-        // Create a class that implements IHasScreenshots for testing since no BaseItem class is also IHasScreenshots
-        private class MovieWithScreenshots : Movie, IHasScreenshots
-        {
-            // No contents
         }
     }
 }
