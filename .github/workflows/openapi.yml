@@ -9,11 +9,13 @@ jobs:
   openapi-head:
     name: OpenAPI - HEAD
     runs-on: ubuntu-latest
+    permissions: read-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
@@ -33,6 +35,7 @@ jobs:
     name: OpenAPI - BASE
     if: ${{ github.base_ref != '' }}
     runs-on: ubuntu-latest
+    permissions: read-all
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
