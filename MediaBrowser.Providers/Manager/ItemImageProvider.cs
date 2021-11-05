@@ -109,12 +109,6 @@ namespace MediaBrowser.Providers.Manager
                 oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
             }
 
-            var oldScreenshotImages = Array.Empty<ItemImageInfo>();
-            if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
-            {
-                oldScreenshotImages = item.GetImages(ImageType.Screenshot).ToArray();
-            }
-
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
 
             var typeName = item.GetType().Name;
@@ -122,14 +116,13 @@ namespace MediaBrowser.Providers.Manager
 
             // track library limits, adding buffer to allow lazy replacing of current images
             var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Length;
-            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot) + oldScreenshotImages.Length;
             var downloadedImages = new List<ImageType>();
 
             foreach (var provider in providers)
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -143,11 +136,6 @@ namespace MediaBrowser.Providers.Manager
             if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
             {
                 PruneImages(item, oldBackdropImages);
-            }
-
-            if (oldScreenshotImages.Length > 0 && oldScreenshotImages.Length < item.GetImages(ImageType.Screenshot).Count())
-            {
-                PruneImages(item, oldScreenshotImages);
             }
 
             return result;
@@ -243,9 +231,8 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="images">The images.</param>
         /// <param name="savedOptions">The saved options.</param>
         /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <param name="screenshotLimit">The screenshot limit.</param>
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
-        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
+        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit)
         {
             // Using .Any causes the creation of a DisplayClass aka. variable capture
             for (var i = 0; i < _singularImages.Length; i++)
@@ -262,11 +249,6 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            if (images.Contains(ImageType.Screenshot) && item.GetImages(ImageType.Screenshot).Count() < screenshotLimit)
-            {
-                return false;
-            }
-
             return true;
         }
 
@@ -278,7 +260,6 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
         /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <param name="screenshotLimit">The screenshot limit.</param>
         /// <param name="downloadedImages">The downloaded images.</param>
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -289,7 +270,6 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
             int backdropLimit,
-            int screenshotLimit,
             ICollection<ImageType> downloadedImages,
             RefreshResult result,
             CancellationToken cancellationToken)
@@ -303,7 +283,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!refreshOptions.ReplaceAllImages &&
                     refreshOptions.ReplaceImages.Length == 0 &&
-                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit, screenshotLimit))
+                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit))
                 {
                     return;
                 }

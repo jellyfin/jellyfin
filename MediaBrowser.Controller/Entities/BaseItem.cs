@@ -2577,7 +2577,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool AllowsMultipleImages(ImageType type)
         {
-            return type == ImageType.Backdrop || type == ImageType.Screenshot || type == ImageType.Chapter;
+            return type == ImageType.Backdrop || type == ImageType.Chapter;
         }
 
         public Task SwapImagesAsync(ImageType type, int index1, int index2)

@@ -1,5 +1,7 @@
 #pragma warning disable CS1591
 
+using System;
+
 namespace MediaBrowser.Model.Querying
 {
     /// <summary>
@@ -143,6 +145,7 @@ namespace MediaBrowser.Model.Querying
         /// <summary>
         /// The screenshot image tags.
         /// </summary>
+        [Obsolete("Screenshot image type is no longer used.")]
         ScreenshotImageTags,
 
         SeriesPrimaryImage,
