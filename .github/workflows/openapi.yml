@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-  pull_request:
+  pull_request_target:
 
 jobs:
   openapi-head:
@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
@@ -53,7 +55,7 @@ jobs:
 
   openapi-diff:
     name: OpenAPI - Difference
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request_target' }}
     runs-on: ubuntu-latest
     needs:
       - openapi-head
