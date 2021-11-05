@@ -1,11 +1,12 @@
-﻿using System.Net.Mime;
+﻿using System;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
+using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.ClientLog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -21,22 +22,18 @@ namespace Jellyfin.Api.Controllers
     {
         private const int MaxDocumentSize = 1_000_000;
         private readonly IClientEventLogger _clientEventLogger;
-        private readonly IAuthorizationContext _authorizationContext;
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientLogController"/> class.
         /// </summary>
         /// <param name="clientEventLogger">Instance of the <see cref="IClientEventLogger"/> interface.</param>
-        /// <param name="authorizationContext">Instance of the <see cref="IAuthorizationContext"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         public ClientLogController(
             IClientEventLogger clientEventLogger,
-            IAuthorizationContext authorizationContext,
             IServerConfigurationManager serverConfigurationManager)
         {
             _clientEventLogger = clientEventLogger;
-            _authorizationContext = authorizationContext;
             _serverConfigurationManager = serverConfigurationManager;
         }
 
@@ -50,17 +47,15 @@ namespace Jellyfin.Api.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult> LogEvent([FromBody] ClientLogEventDto clientLogEventDto)
+        public ActionResult LogEvent([FromBody] ClientLogEventDto clientLogEventDto)
         {
             if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
             {
                 return Forbid();
             }
 
-            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
-                .ConfigureAwait(false);
-
-            Log(clientLogEventDto, authorizationInfo);
+            var (clientName, clientVersion, userId, deviceId) = GetRequestInformation();
+            Log(clientLogEventDto, userId, clientName, clientVersion, deviceId);
             return NoContent();
         }
 
@@ -74,19 +69,17 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Bulk")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult> LogEvents([FromBody] ClientLogEventDto[] clientLogEventDtos)
+        public ActionResult LogEvents([FromBody] ClientLogEventDto[] clientLogEventDtos)
         {
             if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
             {
                 return Forbid();
             }
 
-            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
-                .ConfigureAwait(false);
-
+            var (clientName, clientVersion, userId, deviceId) = GetRequestInformation();
             foreach (var dto in clientLogEventDtos)
             {
-                Log(dto, authorizationInfo);
+                Log(dto, userId, clientName, clientVersion, deviceId);
             }
 
             return NoContent();
@@ -118,24 +111,39 @@ namespace Jellyfin.Api.Controllers
                 return StatusCode(StatusCodes.Status413PayloadTooLarge, $"Payload must be less than {MaxDocumentSize:N0} bytes");
             }
 
-            var authorizationInfo = await _authorizationContext.GetAuthorizationInfo(Request)
-                .ConfigureAwait(false);
-
-            var fileName = await _clientEventLogger.WriteDocumentAsync(authorizationInfo, Request.Body)
+            var (clientName, clientVersion, _, _) = GetRequestInformation();
+            var fileName = await _clientEventLogger.WriteDocumentAsync(clientName, clientVersion, Request.Body)
                 .ConfigureAwait(false);
             return Ok(new ClientLogDocumentResponseDto(fileName));
         }
 
-        private void Log(ClientLogEventDto dto, AuthorizationInfo authorizationInfo)
+        private void Log(
+            ClientLogEventDto dto,
+            Guid userId,
+            string clientName,
+            string clientVersion,
+            string deviceId)
         {
             _clientEventLogger.Log(new ClientLogEvent(
                 dto.Timestamp,
                 dto.Level,
-                authorizationInfo.UserId,
-                authorizationInfo.Client,
-                authorizationInfo.Version,
-                authorizationInfo.DeviceId,
+                userId,
+                clientName,
+                clientVersion,
+                deviceId,
                 dto.Message));
+        }
+
+        private (string ClientName, string ClientVersion, Guid UserId, string DeviceId) GetRequestInformation()
+        {
+            var clientName = ClaimHelpers.GetClient(HttpContext.User) ?? "unknown-client";
+            var clientVersion = ClaimHelpers.GetIsApiKey(HttpContext.User)
+                ? "apikey"
+                : ClaimHelpers.GetVersion(HttpContext.User) ?? "unknown-version";
+            var userId = ClaimHelpers.GetUserId(HttpContext.User) ?? Guid.Empty;
+            var deviceId = ClaimHelpers.GetDeviceId(HttpContext.User) ?? "unknown-device-id";
+
+            return (clientName, clientVersion, userId, deviceId);
         }
     }
 }
