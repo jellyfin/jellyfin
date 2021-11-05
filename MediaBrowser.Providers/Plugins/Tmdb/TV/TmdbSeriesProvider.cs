@@ -331,7 +331,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             if (seriesResult.Credits?.Cast != null)
             {
-                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     var personInfo = new PersonInfo
                     {

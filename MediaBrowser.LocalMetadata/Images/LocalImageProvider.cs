@@ -256,11 +256,6 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder);
             }
-
-            if (item is IHasScreenshots)
-            {
-                PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
-            }
         }
 
         private void PopulatePrimaryImages(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
@@ -361,11 +356,6 @@ namespace MediaBrowser.LocalMetadata.Images
                 FileInfo = i,
                 Type = ImageType.Backdrop
             }));
-        }
-
-        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
-        {
-            PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", isInMixedFolder, ImageType.Screenshot);
         }
 
         private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)

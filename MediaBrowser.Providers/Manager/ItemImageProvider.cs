@@ -343,12 +343,6 @@ namespace MediaBrowser.Providers.Manager
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
                 await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
-
-                if (item is IHasScreenshots)
-                {
-                    minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadMultiImages(item, ImageType.Screenshot, refreshOptions, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
-                }
             }
             catch (OperationCanceledException)
             {
@@ -434,11 +428,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             if (UpdateMultiImages(item, images, ImageType.Backdrop))
-            {
-                changed = true;
-            }
-
-            if (item is IHasScreenshots && UpdateMultiImages(item, images, ImageType.Screenshot))
             {
                 changed = true;
             }
