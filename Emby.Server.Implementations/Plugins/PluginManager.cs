@@ -126,7 +126,8 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         assembly = Assembly.LoadFrom(file);
 
-                        assembly.GetExportedTypes();
+                        // Load all required types to verify that the plugin will load
+                        assembly.GetTypes();
                     }
                     catch (FileLoadException ex)
                     {
@@ -134,7 +135,7 @@ namespace Emby.Server.Implementations.Plugins
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
-                    catch (TypeLoadException ex) // Undocumented exception
+                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.NotSupported);
