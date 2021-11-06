@@ -223,12 +223,16 @@ namespace Jellyfin.Server
             }
             finally
             {
-                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
-                // Run before disposing the application
-                using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
-                if (context.Database.IsSqlite())
+                // Don't throw additional exception if startup failed.
+                if (appHost.ServiceProvider != null)
                 {
-                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                    _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                    // Run before disposing the application
+                    using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
+                    if (context.Database.IsSqlite())
+                    {
+                        context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                    }
                 }
 
                 appHost.Dispose();
