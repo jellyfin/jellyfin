@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
@@ -48,6 +50,7 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The screenshot.
         /// </summary>
+        [Obsolete("Screenshot image type is no longer used.")]
         Screenshot = 8,
 
         /// <summary>

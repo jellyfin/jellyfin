@@ -207,10 +207,8 @@ namespace Jellyfin.Providers.Tests.Manager
         [Theory]
         [InlineData(ImageType.Primary, 1, false)]
         [InlineData(ImageType.Backdrop, 2, false)]
-        [InlineData(ImageType.Screenshot, 2, false)]
         [InlineData(ImageType.Primary, 1, true)]
         [InlineData(ImageType.Backdrop, 2, true)]
-        [InlineData(ImageType.Screenshot, 2, true)]
         public async void RefreshImages_PopulatedItemPopulatedProviderDynamic_UpdatesImagesIfForced(ImageType imageType, int imageCount, bool forceRefresh)
         {
             var item = GetItemWithImages(imageType, imageCount, false);

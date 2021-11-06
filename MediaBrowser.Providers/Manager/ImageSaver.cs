@@ -439,9 +439,6 @@ namespace MediaBrowser.Providers.Manager
                 case ImageType.Backdrop:
                     filename = GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex);
                     break;
-                case ImageType.Screenshot:
-                    filename = GetBackdropSaveFilename(item.GetImages(type), "screenshot", "screenshot", imageIndex);
-                    break;
                 default:
                     filename = type.ToString().ToLowerInvariant();
                     break;

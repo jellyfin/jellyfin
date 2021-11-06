@@ -755,15 +755,6 @@ namespace Emby.Server.Implementations.Dto
                 dto.BackdropImageTags = GetTagsAndFillBlurhashes(dto, item, ImageType.Backdrop, backdropLimit);
             }
 
-            if (options.ContainsField(ItemFields.ScreenshotImageTags))
-            {
-                var screenshotLimit = options.GetImageLimit(ImageType.Screenshot);
-                if (screenshotLimit > 0)
-                {
-                    dto.ScreenshotImageTags = GetTagsAndFillBlurhashes(dto, item, ImageType.Screenshot, screenshotLimit);
-                }
-            }
-
             if (options.ContainsField(ItemFields.Genres))
             {
                 dto.Genres = item.Genres;
