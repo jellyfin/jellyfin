@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.ClientLog;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +49,6 @@ namespace MediaBrowser.Controller.ClientEvent
             var logFilePath = Path.Combine(_applicationPaths.LogDirectoryPath, fileName);
             await using var fileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             await fileContents.CopyToAsync(fileStream).ConfigureAwait(false);
-            await fileStream.FlushAsync().ConfigureAwait(false);
             return fileName;
         }
     }
