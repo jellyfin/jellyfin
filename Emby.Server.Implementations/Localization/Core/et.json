@@ -17,7 +17,7 @@
     "TaskCleanLogsDescription": "Kustutab logifailid, mis on vanemad kui {0} päeva.",
     "TaskCleanLogs": "Puhasta logikataloog",
     "TaskRefreshLibraryDescription": "Otsib meedikogust uusi faile ja värskendab metaandmeid.",
-    "Collections": "Kollektsioonid",
+    "Collections": "Kogumikud",
     "TaskRefreshLibrary": "Skaneeri meediakogu",
     "TaskRefreshChapterImagesDescription": "Loob peatükkidega videote jaoks pisipildid.",
     "TaskRefreshChapterImages": "Eralda peatükipildid",
