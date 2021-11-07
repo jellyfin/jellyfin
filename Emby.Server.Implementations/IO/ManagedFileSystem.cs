@@ -580,7 +580,11 @@ namespace Emby.Server.Implementations.IO
         {
             // check for ready state to avoid waiting for drives to timeout
             // some drives on linux have no actual size or are used for other purposes
-            return DriveInfo.GetDrives().Where(d => d.IsReady && d.TotalSize != 0 && d.DriveType != DriveType.Ram)
+            return DriveInfo.GetDrives()
+                .Where(
+                    d => (d.DriveType == DriveType.Fixed || d.DriveType == DriveType.Network || d.DriveType == DriveType.Removable)
+                        && d.IsReady
+                        && d.TotalSize != 0)
                 .Select(d => new FileSystemMetadata
                 {
                     Name = d.Name,
