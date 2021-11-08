@@ -32,7 +32,7 @@
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0-rc.2*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0-rc.2*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.0-rc.2*" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.0-rc.2*" />
     <PackageReference Include="prometheus-net" Version="5.0.1" />
