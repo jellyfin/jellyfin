@@ -25,6 +25,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
@@ -449,53 +450,45 @@ namespace Emby.Dlna.ContentDirectory
             }
 
             QueryResult<BaseItem> childrenResult;
+            var settings = new XmlWriterSettings
+            {
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
 
             using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
+            using (var writer = XmlWriter.Create(builder, settings))
             {
-                var settings = new XmlWriterSettings()
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
+                writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
+
+                DidlBuilder.WriteXmlRootAttributes(_profile, writer);
+
+                var serverItem = GetItemFromObjectId(sparams["ContainerID"]);
+
+                var item = serverItem.Item;
+
+                childrenResult = GetChildrenSorted(item, _user, searchCriteria, sortCriteria, start, requestedCount);
+                foreach (var i in childrenResult.Items)
                 {
-                    Encoding = Encoding.UTF8,
-                    CloseOutput = false,
-                    OmitXmlDeclaration = true,
-                    ConformanceLevel = ConformanceLevel.Fragment
-                };
-
-                using (var writer = XmlWriter.Create(builder, settings))
-                {
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
-
-                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
-
-                    DidlBuilder.WriteXmlRootAttributes(_profile, writer);
-
-                    var serverItem = GetItemFromObjectId(sparams["ContainerID"]);
-
-                    var item = serverItem.Item;
-
-                    childrenResult = GetChildrenSorted(item, _user, searchCriteria, sortCriteria, start, requestedCount);
-
-                    var dlnaOptions = _config.GetDlnaConfiguration();
-
-                    foreach (var i in childrenResult.Items)
+                    if (i.IsDisplayedAsFolder)
                     {
-                        if (i.IsDisplayedAsFolder)
-                        {
-                            var childCount = GetChildrenSorted(i, _user, searchCriteria, sortCriteria, null, 0)
-                                .TotalRecordCount;
+                        var childCount = GetChildrenSorted(i, _user, searchCriteria, sortCriteria, null, 0)
+                            .TotalRecordCount;
 
-                            _didlBuilder.WriteFolderElement(writer, i, null, item, childCount, filter);
-                        }
-                        else
-                        {
-                            _didlBuilder.WriteItemElement(writer, i, _user, item, serverItem.StubType, deviceId, filter);
-                        }
+                        _didlBuilder.WriteFolderElement(writer, i, null, item, childCount, filter);
                     }
-
-                    writer.WriteFullEndElement();
+                    else
+                    {
+                        _didlBuilder.WriteItemElement(writer, i, _user, item, serverItem.StubType, deviceId, filter);
+                    }
                 }
 
+                writer.WriteFullEndElement();
                 xmlWriter.WriteElementString("Result", builder.ToString());
             }
 
@@ -587,52 +580,49 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetUserItems(BaseItem item, StubType? stubType, User user, SortCriteria sort, int? startIndex, int? limit)
         {
-            if (item is MusicGenre)
+            switch (item)
             {
-                return GetMusicGenreItems(item, Guid.Empty, user, sort, startIndex, limit);
+                case MusicGenre:
+                    return GetMusicGenreItems(item, user, sort, startIndex, limit);
+                case MusicArtist:
+                    return GetMusicArtistItems(item, user, sort, startIndex, limit);
+                case Genre:
+                    return GetGenreItems(item, user, sort, startIndex, limit);
             }
 
-            if (item is MusicArtist)
+            if (stubType is not StubType.Folder && item is IHasCollectionType collectionFolder)
             {
-                return GetMusicArtistItems(item, Guid.Empty, user, sort, startIndex, limit);
-            }
-
-            if (item is Genre)
-            {
-                return GetGenreItems(item, Guid.Empty, user, sort, startIndex, limit);
-            }
-
-            if ((!stubType.HasValue || stubType.Value != StubType.Folder)
-                && item is IHasCollectionType collectionFolder)
-            {
-                if (string.Equals(CollectionType.Music, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+                var collectionType = collectionFolder.CollectionType;
+                if (string.Equals(CollectionType.Music, collectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetMusicFolders(item, user, stubType, sort, startIndex, limit);
                 }
-                else if (string.Equals(CollectionType.Movies, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(CollectionType.Movies, collectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetMovieFolders(item, user, stubType, sort, startIndex, limit);
                 }
-                else if (string.Equals(CollectionType.TvShows, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(CollectionType.TvShows, collectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetTvFolders(item, user, stubType, sort, startIndex, limit);
                 }
-                else if (string.Equals(CollectionType.Folders, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(CollectionType.Folders, collectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetFolders(user, startIndex, limit);
                 }
-                else if (string.Equals(CollectionType.LiveTv, collectionFolder.CollectionType, StringComparison.OrdinalIgnoreCase))
+
+                if (string.Equals(CollectionType.LiveTv, collectionType, StringComparison.OrdinalIgnoreCase))
                 {
                     return GetLiveTvChannels(user, sort, startIndex, limit);
                 }
             }
 
-            if (stubType.HasValue)
+            if (stubType.HasValue && stubType.Value != StubType.Folder)
             {
-                if (stubType.Value != StubType.Folder)
-                {
-                    return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
-                }
+                // TODO should this be doing something?
+                return new QueryResult<ServerItem>();
             }
 
             var folder = (Folder)item;
@@ -668,8 +658,8 @@ namespace Emby.Dlna.ContentDirectory
             {
                 StartIndex = startIndex,
                 Limit = limit,
+                IncludeItemTypes = new[] { nameof(LiveTvChannel) }
             };
-            query.IncludeItemTypes = new[] { nameof(LiveTvChannel) };
 
             SetSorting(query, sort, false);
 
@@ -697,110 +687,45 @@ namespace Emby.Dlna.ContentDirectory
             };
             SetSorting(query, sort, false);
 
-            if (stubType.HasValue && stubType.Value == StubType.Latest)
+            switch (stubType)
             {
-                return GetMusicLatest(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Playlists)
-            {
-                return GetMusicPlaylists(user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Albums)
-            {
-                return GetMusicAlbums(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Artists)
-            {
-                return GetMusicArtists(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.AlbumArtists)
-            {
-                return GetMusicAlbumArtists(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteAlbums)
-            {
-                return GetFavoriteAlbums(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteArtists)
-            {
-                return GetFavoriteArtists(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteSongs)
-            {
-                return GetFavoriteSongs(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Songs)
-            {
-                return GetMusicSongs(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Genres)
-            {
-                return GetMusicGenres(item, user, query);
+                case StubType.Latest:
+                    return GetLatest(item, query, nameof(Audio));
+                case StubType.Playlists:
+                    return GetMusicPlaylists(query);
+                case StubType.Albums:
+                    return GetChildrenOfItem(item, query, nameof(MusicAlbum));
+                case StubType.Artists:
+                    return GetMusicArtists(item, query);
+                case StubType.AlbumArtists:
+                    return GetMusicAlbumArtists(item, query);
+                case StubType.FavoriteAlbums:
+                    return GetChildrenOfItem(item, query, nameof(MusicAlbum));
+                case StubType.FavoriteArtists:
+                    return GetFavoriteArtists(item, query);
+                case StubType.FavoriteSongs:
+                    return GetChildrenOfItem(item, query, nameof(Audio));
+                case StubType.Songs:
+                    return GetChildrenOfItem(item, query, nameof(Audio));
+                case StubType.Genres:
+                    return GetMusicGenres(item, query);
             }
 
             var list = new List<ServerItem>
             {
-                new ServerItem(item)
-                {
-                    StubType = StubType.Latest
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Playlists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Albums
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.AlbumArtists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Artists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Songs
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Genres
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteArtists
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteAlbums
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteSongs
-                }
+                new (item, StubType.Latest),
+                new (item, StubType.Playlists),
+                new (item, StubType.Albums),
+                new (item, StubType.AlbumArtists),
+                new (item, StubType.Artists),
+                new (item, StubType.Songs),
+                new (item, StubType.Genres),
+                new (item, StubType.FavoriteArtists),
+                new (item, StubType.FavoriteAlbums),
+                new (item, StubType.FavoriteSongs)
             };
 
-            if (limit.HasValue)
+            if (limit < list.Count)
             {
                 list = list.Take(limit.Value).ToList();
             }
@@ -831,67 +756,35 @@ namespace Emby.Dlna.ContentDirectory
             };
             SetSorting(query, sort, false);
 
-            if (stubType.HasValue && stubType.Value == StubType.ContinueWatching)
+            switch (stubType)
             {
-                return GetMovieContinueWatching(item, user, query);
+                case StubType.ContinueWatching:
+                    return GetMovieContinueWatching(item, query);
+                case StubType.Latest:
+                    return GetLatest(item, query, nameof(Movie));
+                case StubType.Movies:
+                    return GetChildrenOfItem(item, query, nameof(Movie));
+                case StubType.Collections:
+                    return GetMovieCollections(query);
+                case StubType.Favorites:
+                    return GetChildrenOfItem(item, query, nameof(Movie));
+                case StubType.Genres:
+                    return GetGenres(item, query);
             }
 
-            if (stubType.HasValue && stubType.Value == StubType.Latest)
+            var array = new ServerItem[]
             {
-                return GetMovieLatest(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Movies)
-            {
-                return GetMovieMovies(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Collections)
-            {
-                return GetMovieCollections(user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Favorites)
-            {
-                return GetMovieFavorites(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Genres)
-            {
-                return GetGenres(item, user, query);
-            }
-
-            var array = new[]
-            {
-                new ServerItem(item)
-                {
-                    StubType = StubType.ContinueWatching
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Latest
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Movies
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Collections
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Favorites
-                },
-                new ServerItem(item)
-                {
-                    StubType = StubType.Genres
-                }
+                new (item, StubType.ContinueWatching),
+                new (item, StubType.Latest),
+                new (item, StubType.Movies),
+                new (item, StubType.Collections),
+                new (item, StubType.Favorites),
+                new (item, StubType.Genres)
             };
 
-            if (limit.HasValue)
+            if (limit < array.Length)
             {
-                array = array.Take(limit.Value).ToArray();
+                array = array[..limit.Value];
             }
 
             return new QueryResult<ServerItem>
@@ -910,22 +803,21 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private QueryResult<ServerItem> GetFolders(User user, int? startIndex, int? limit)
         {
-            var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true)
+            var folders = _libraryManager.GetUserRootFolder().GetChildren(user, true);
+            var totalRecordCount = folders.Count;
+            // Handle paging
+            var items = folders
                 .OrderBy(i => i.SortName)
-                .Select(i => new ServerItem(i)
-                {
-                    StubType = StubType.Folder
-                })
+                .Skip(startIndex ?? 0)
+                .Take(limit ?? int.MaxValue)
+                .Select(i => new ServerItem(i, StubType.Folder))
                 .ToArray();
 
-            return ApplyPaging(
-                new QueryResult<ServerItem>
-                {
-                    Items = folders,
-                    TotalRecordCount = folders.Length
-                },
-                startIndex,
-                limit);
+            return new QueryResult<ServerItem>
+            {
+                Items = items,
+                TotalRecordCount = totalRecordCount
+            };
         }
 
         /// <summary>
@@ -947,80 +839,36 @@ namespace Emby.Dlna.ContentDirectory
             };
             SetSorting(query, sort, false);
 
-            if (stubType.HasValue && stubType.Value == StubType.ContinueWatching)
+            switch (stubType)
             {
-                return GetMovieContinueWatching(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.NextUp)
-            {
-                return GetNextUp(item, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Latest)
-            {
-                return GetTvLatest(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Series)
-            {
-                return GetSeries(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteSeries)
-            {
-                return GetFavoriteSeries(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.FavoriteEpisodes)
-            {
-                return GetFavoriteEpisodes(item, user, query);
-            }
-
-            if (stubType.HasValue && stubType.Value == StubType.Genres)
-            {
-                return GetGenres(item, user, query);
+                case StubType.ContinueWatching:
+                    return GetMovieContinueWatching(item, query);
+                case StubType.NextUp:
+                    return GetNextUp(item, query);
+                case StubType.Latest:
+                    return GetLatest(item, query, nameof(Episode));
+                case StubType.Series:
+                    return GetChildrenOfItem(item, query, nameof(Series));
+                case StubType.FavoriteSeries:
+                    return GetChildrenOfItem(item, query, nameof(Series));
+                case StubType.FavoriteEpisodes:
+                    return GetChildrenOfItem(item, query, nameof(Episode));
+                case StubType.Genres:
+                    return GetGenres(item, query);
             }
 
             var list = new List<ServerItem>
             {
-                new ServerItem(item)
-                {
-                    StubType = StubType.ContinueWatching
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.NextUp
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Latest
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Series
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteSeries
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.FavoriteEpisodes
-                },
-
-                new ServerItem(item)
-                {
-                    StubType = StubType.Genres
-                }
+                new (item, StubType.ContinueWatching),
+                new (item, StubType.NextUp),
+                new (item, StubType.Latest),
+                new (item, StubType.Series),
+                new (item, StubType.FavoriteSeries),
+                new (item, StubType.FavoriteEpisodes),
+                new (item, StubType.Genres)
             };
 
-            if (limit.HasValue)
+            if (limit < list.Count)
             {
                 list = list.Take(limit.Value).ToList();
             }
@@ -1036,14 +884,12 @@ namespace Emby.Dlna.ContentDirectory
         /// Returns the Movies that are part watched that meet the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMovieContinueWatching(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieContinueWatching(BaseItem parent, InternalItemsQuery query)
         {
             query.Recursive = true;
             query.Parent = parent;
-            query.SetUser(user);
 
             query.OrderBy = new[]
             {
@@ -1052,47 +898,7 @@ namespace Emby.Dlna.ContentDirectory
             };
 
             query.IsResumable = true;
-            query.Limit = query.Limit ?? 10;
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the series meeting the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetSeries(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-
-            query.IncludeItemTypes = new[] { nameof(Series) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the Movie folders meeting the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMovieMovies(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-
-            query.IncludeItemTypes = new[] { nameof(Movie) };
+            query.Limit ??= 10;
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1102,15 +908,11 @@ namespace Emby.Dlna.ContentDirectory
         /// <summary>
         /// Returns the Movie collections meeting the criteria.
         /// </summary>
-        /// <param name="user">The see cref="User"/>.</param>
         /// <param name="query">The see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMovieCollections(User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMovieCollections(InternalItemsQuery query)
         {
             query.Recursive = true;
-            // query.Parent = parent;
-            query.SetUser(user);
-
             query.IncludeItemTypes = new[] { nameof(BoxSet) };
 
             var result = _libraryManager.GetItemsResult(query);
@@ -1119,139 +921,19 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the Music albums meeting the criteria.
+        /// Returns the children that meet the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <param name="itemType">The item type.</param>
+        /// <param name="isFavorite">A value indicating whether to only fetch favorite items.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicAlbums(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetChildrenOfItem(BaseItem parent, InternalItemsQuery query, string itemType, bool isFavorite = false)
         {
             query.Recursive = true;
             query.Parent = parent;
-            query.SetUser(user);
-
-            query.IncludeItemTypes = new[] { nameof(MusicAlbum) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the Music songs meeting the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicSongs(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-
-            query.IncludeItemTypes = new[] { nameof(Audio) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the songs tagged as favourite that meet the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetFavoriteSongs(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-            query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Audio) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the series tagged as favourite that meet the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetFavoriteSeries(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-            query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Series) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the episodes tagged as favourite that meet the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetFavoriteEpisodes(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-            query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Episode) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the movies tagged as favourite that meet the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMovieFavorites(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-            query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Movie) };
-
-            var result = _libraryManager.GetItemsResult(query);
-
-            return ToResult(result);
-        }
-
-        /// <summary>
-        /// /// Returns the albums tagged as favourite that meet the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetFavoriteAlbums(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.Recursive = true;
-            query.Parent = parent;
-            query.SetUser(user);
-            query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(MusicAlbum) };
+            query.IsFavorite = isFavorite;
+            query.IncludeItemTypes = new[] { itemType };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1263,169 +945,95 @@ namespace Emby.Dlna.ContentDirectory
         /// The GetGenres.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetGenres(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetGenres(BaseItem parent, InternalItemsQuery query)
         {
-            var genresResult = _libraryManager.GetGenres(new InternalItemsQuery(user)
-            {
-                AncestorIds = new[] { parent.Id },
-                StartIndex = query.StartIndex,
-                Limit = query.Limit
-            });
+            // Don't sort
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.AncestorIds = new[] { parent.Id };
+            var genresResult = _libraryManager.GetGenres(query);
 
-            var result = new QueryResult<BaseItem>
-            {
-                TotalRecordCount = genresResult.TotalRecordCount,
-                Items = genresResult.Items.Select(i => i.Item1).ToArray()
-            };
-
-            return ToResult(result);
+            return ToResult(genresResult);
         }
 
         /// <summary>
         /// Returns the music genres meeting the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicGenres(BaseItem parent, InternalItemsQuery query)
         {
-            var genresResult = _libraryManager.GetMusicGenres(new InternalItemsQuery(user)
-            {
-                AncestorIds = new[] { parent.Id },
-                StartIndex = query.StartIndex,
-                Limit = query.Limit
-            });
+            // Don't sort
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.AncestorIds = new[] { parent.Id };
+            var genresResult = _libraryManager.GetMusicGenres(query);
 
-            var result = new QueryResult<BaseItem>
-            {
-                TotalRecordCount = genresResult.TotalRecordCount,
-                Items = genresResult.Items.Select(i => i.Item1).ToArray()
-            };
-
-            return ToResult(result);
+            return ToResult(genresResult);
         }
 
         /// <summary>
         /// Returns the music albums by artist that meet the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicAlbumArtists(BaseItem parent, InternalItemsQuery query)
         {
-            var artists = _libraryManager.GetAlbumArtists(new InternalItemsQuery(user)
-            {
-                AncestorIds = new[] { parent.Id },
-                StartIndex = query.StartIndex,
-                Limit = query.Limit
-            });
+            // Don't sort
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.AncestorIds = new[] { parent.Id };
+            var artists = _libraryManager.GetAlbumArtists(query);
 
-            var result = new QueryResult<BaseItem>
-            {
-                TotalRecordCount = artists.TotalRecordCount,
-                Items = artists.Items.Select(i => i.Item1).ToArray()
-            };
-
-            return ToResult(result);
+            return ToResult(artists);
         }
 
         /// <summary>
         /// Returns the music artists meeting the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicArtists(BaseItem parent, InternalItemsQuery query)
         {
-            var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
-            {
-                AncestorIds = new[] { parent.Id },
-                StartIndex = query.StartIndex,
-                Limit = query.Limit
-            });
-
-            var result = new QueryResult<BaseItem>
-            {
-                TotalRecordCount = artists.TotalRecordCount,
-                Items = artists.Items.Select(i => i.Item1).ToArray()
-            };
-
-            return ToResult(result);
+            // Don't sort
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.AncestorIds = new[] { parent.Id };
+            var artists = _libraryManager.GetArtists(query);
+            return ToResult(artists);
         }
 
         /// <summary>
         /// Returns the artists tagged as favourite that meet the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetFavoriteArtists(BaseItem parent, InternalItemsQuery query)
         {
-            var artists = _libraryManager.GetArtists(new InternalItemsQuery(user)
-            {
-                AncestorIds = new[] { parent.Id },
-                StartIndex = query.StartIndex,
-                Limit = query.Limit,
-                IsFavorite = true
-            });
-
-            var result = new QueryResult<BaseItem>
-            {
-                TotalRecordCount = artists.TotalRecordCount,
-                Items = artists.Items.Select(i => i.Item1).ToArray()
-            };
-
-            return ToResult(result);
+            // Don't sort
+            query.OrderBy = Array.Empty<(string, SortOrder)>();
+            query.AncestorIds = new[] { parent.Id };
+            query.IsFavorite = true;
+            var artists = _libraryManager.GetArtists(query);
+            return ToResult(artists);
         }
 
         /// <summary>
         /// Returns the music playlists meeting the criteria.
         /// </summary>
-        /// <param name="user">The user<see cref="User"/>.</param>
         /// <param name="query">The query<see cref="InternalItemsQuery"/>.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicPlaylists(User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetMusicPlaylists(InternalItemsQuery query)
         {
             query.Parent = null;
             query.IncludeItemTypes = new[] { nameof(Playlist) };
-            query.SetUser(user);
             query.Recursive = true;
 
             var result = _libraryManager.GetItemsResult(query);
 
             return ToResult(result);
-        }
-
-        /// <summary>
-        /// Returns the latest music meeting the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicLatest(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
-
-            var items = _userViewManager.GetLatestItems(
-                new LatestItemsQuery
-                {
-                    UserId = user.Id,
-                    Limit = 50,
-                    IncludeItemTypes = new[] { nameof(Audio) },
-                    ParentId = parent?.Id ?? Guid.Empty,
-                    GroupItems = true
-                },
-                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
-
-            return ToResult(items);
         }
 
         /// <summary>
@@ -1443,7 +1051,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
-                    UserId = query.User.Id
+                    UserId = query.User!.Id
                 },
                 new[] { parent },
                 query.DtoOptions);
@@ -1452,47 +1060,22 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Returns the latest tv meeting the criteria.
+        /// Returns the latest items of [itemType] meeting the criteria.
         /// </summary>
         /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
+        /// <param name="itemType">The item type.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetTvLatest(BaseItem parent, User user, InternalItemsQuery query)
+        private QueryResult<ServerItem> GetLatest(BaseItem parent, InternalItemsQuery query, string itemType)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
             var items = _userViewManager.GetLatestItems(
                 new LatestItemsQuery
                 {
-                    UserId = user.Id,
+                    UserId = query.User!.Id,
                     Limit = query.Limit ?? 50,
-                    IncludeItemTypes = new[] { nameof(Episode) },
-                    ParentId = parent == null ? Guid.Empty : parent.Id,
-                    GroupItems = false
-                },
-                query.DtoOptions).Select(i => i.Item1 ?? i.Item2.FirstOrDefault()).Where(i => i != null).ToArray();
-
-            return ToResult(items);
-        }
-
-        /// <summary>
-        /// Returns the latest movies meeting the criteria.
-        /// </summary>
-        /// <param name="parent">The <see cref="BaseItem"/>.</param>
-        /// <param name="user">The <see cref="User"/>.</param>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
-        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMovieLatest(BaseItem parent, User user, InternalItemsQuery query)
-        {
-            query.OrderBy = Array.Empty<(string, SortOrder)>();
-
-            var items = _userViewManager.GetLatestItems(
-                new LatestItemsQuery
-                {
-                    UserId = user.Id,
-                    Limit = query.Limit ?? 50,
-                    IncludeItemTypes = new[] { nameof(Movie) },
+                    IncludeItemTypes = new[] { itemType },
                     ParentId = parent?.Id ?? Guid.Empty,
                     GroupItems = true
                 },
@@ -1505,18 +1088,16 @@ namespace Emby.Dlna.ContentDirectory
         /// Returns music artist items that meet the criteria.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
-        /// <param name="parentId">The <see cref="Guid"/>.</param>
         /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="startIndex">The start index.</param>
         /// <param name="limit">The maximum number to return.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicArtistItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetMusicArtistItems(BaseItem item, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
                 Recursive = true,
-                ParentId = parentId,
                 ArtistIds = new[] { item.Id },
                 IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
@@ -1535,18 +1116,16 @@ namespace Emby.Dlna.ContentDirectory
         /// Returns the genre items meeting the criteria.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
-        /// <param name="parentId">The <see cref="Guid"/>.</param>
         /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="startIndex">The start index.</param>
         /// <param name="limit">The maximum number to return.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetGenreItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetGenreItems(BaseItem item, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
                 Recursive = true,
-                ParentId = parentId,
                 GenreIds = new[] { item.Id },
                 IncludeItemTypes = new[]
                 {
@@ -1569,18 +1148,16 @@ namespace Emby.Dlna.ContentDirectory
         /// Returns the music genre items meeting the criteria.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
-        /// <param name="parentId">The <see cref="Guid"/>.</param>
         /// <param name="user">The <see cref="User"/>.</param>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="startIndex">The start index.</param>
         /// <param name="limit">The maximum number to return.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, Guid parentId, User user, SortCriteria sort, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetMusicGenreItems(BaseItem item, User user, SortCriteria sort, int? startIndex, int? limit)
         {
             var query = new InternalItemsQuery(user)
             {
                 Recursive = true,
-                ParentId = parentId,
                 GenreIds = new[] { item.Id },
                 IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
@@ -1596,19 +1173,19 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Converts a <see cref="BaseItem"/> array into a <see cref="QueryResult{ServerItem}"/>.
+        /// Converts <see cref="IReadOnlyCollection{BaseItem}"/> into a <see cref="QueryResult{ServerItem}"/>.
         /// </summary>
         /// <param name="result">An array of <see cref="BaseItem"/>.</param>
         /// <returns>A <see cref="QueryResult{ServerItem}"/>.</returns>
-        private static QueryResult<ServerItem> ToResult(BaseItem[] result)
+        private static QueryResult<ServerItem> ToResult(IReadOnlyCollection<BaseItem> result)
         {
             var serverItems = result
-                .Select(i => new ServerItem(i))
+                .Select(i => new ServerItem(i, null))
                 .ToArray();
 
             return new QueryResult<ServerItem>
             {
-                TotalRecordCount = result.Length,
+                TotalRecordCount = result.Count,
                 Items = serverItems
             };
         }
@@ -1622,7 +1199,26 @@ namespace Emby.Dlna.ContentDirectory
         {
             var serverItems = result
                 .Items
-                .Select(i => new ServerItem(i))
+                .Select(i => new ServerItem(i, null))
+                .ToArray();
+
+            return new QueryResult<ServerItem>
+            {
+                TotalRecordCount = result.TotalRecordCount,
+                Items = serverItems
+            };
+        }
+
+        /// <summary>
+        /// Converts a query result to a <see cref="QueryResult{ServerItem}"/>.
+        /// </summary>
+        /// <param name="result">A <see cref="QueryResult{BaseItem}"/>.</param>
+        /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
+        private static QueryResult<ServerItem> ToResult(QueryResult<(BaseItem, ItemCounts)> result)
+        {
+            var serverItems = result
+                .Items
+                .Select(i => new ServerItem(i.Item1, null))
                 .ToArray();
 
             return new QueryResult<ServerItem>
@@ -1651,20 +1247,6 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Apply paging to a query.
-        /// </summary>
-        /// <param name="result">The <see cref="QueryResult{ServerItem}"/>.</param>
-        /// <param name="startIndex">The start index.</param>
-        /// <param name="limit">The maximum number to return.</param>
-        /// <returns>A <see cref="QueryResult{ServerItem}"/>.</returns>
-        private static QueryResult<ServerItem> ApplyPaging(QueryResult<ServerItem> result, int? startIndex, int? limit)
-        {
-            result.Items = result.Items.Skip(startIndex ?? 0).Take(limit ?? int.MaxValue).ToArray();
-
-            return result;
-        }
-
-        /// <summary>
         /// Retrieves the ServerItem id.
         /// </summary>
         /// <param name="id">The id<see cref="string"/>.</param>
@@ -1672,7 +1254,7 @@ namespace Emby.Dlna.ContentDirectory
         private ServerItem GetItemFromObjectId(string id)
         {
             return DidlBuilder.IsIdRoot(id)
-                 ? new ServerItem(_libraryManager.GetUserRootFolder())
+                 ? new ServerItem(_libraryManager.GetUserRootFolder(), null)
                  : ParseItemId(id);
         }
 
@@ -1696,31 +1278,23 @@ namespace Emby.Dlna.ContentDirectory
                 id = parts[23];
             }
 
-            var enumNames = Enum.GetNames(typeof(StubType));
-            foreach (var name in enumNames)
+            var dividerIndex = id.IndexOf('_');
+            if (dividerIndex != -1 && Enum.TryParse<StubType>(id.AsSpan(0, dividerIndex), true, out var parsedStubType))
             {
-                if (id.StartsWith(name + "_", StringComparison.OrdinalIgnoreCase))
-                {
-                    stubType = Enum.Parse<StubType>(name, true);
-                    id = id.Split('_', 2)[1];
-
-                    break;
-                }
+                id = id[(dividerIndex + 1)..];
+                stubType = parsedStubType;
             }
 
             if (Guid.TryParse(id, out var itemId))
             {
                 var item = _libraryManager.GetItemById(itemId);
 
-                return new ServerItem(item)
-                {
-                    StubType = stubType
-                };
+                return new ServerItem(item, stubType);
             }
 
             Logger.LogError("Error parsing item Id: {Id}. Returning user root folder.", id);
 
-            return new ServerItem(_libraryManager.GetUserRootFolder());
+            return new ServerItem(_libraryManager.GetUserRootFolder(), null);
         }
     }
 }
