@@ -13,6 +13,7 @@ using Emby.Server.Implementations;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
+using Serilog.Filters;
 using SQLitePCL;
 using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -596,22 +598,46 @@ namespace Jellyfin.Server
             {
                 // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
                 Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(configuration)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithThreadId()
+                    .WriteTo.Logger(lc =>
+                        lc.ReadFrom.Configuration(configuration)
+                            .Enrich.FromLogContext()
+                            .Enrich.WithThreadId()
+                            .Filter.ByExcluding(Matching.FromSource<ClientEventLogger>()))
+                    .WriteTo.Logger(lc =>
+                        lc.WriteTo.Map(
+                                "ClientName",
+                                (clientName, wt)
+                                    => wt.File(
+                                        Path.Combine(appPaths.LogDirectoryPath, "log_" + clientName + "_.log"),
+                                        rollingInterval: RollingInterval.Day,
+                                        outputTemplate: "{Message:l}{NewLine}{Exception}",
+                                        encoding: Encoding.UTF8))
+                            .Filter.ByIncludingOnly(Matching.FromSource<ClientEventLogger>()))
                     .CreateLogger();
             }
             catch (Exception ex)
             {
                 Log.Logger = new LoggerConfiguration()
-                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
-                    .WriteTo.Async(x => x.File(
-                        Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
-                        rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
-                        encoding: Encoding.UTF8))
-                    .Enrich.FromLogContext()
-                    .Enrich.WithThreadId()
+                    .WriteTo.Logger(lc =>
+                        lc.WriteTo.Async(x => x.File(
+                                Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
+                                rollingInterval: RollingInterval.Day,
+                                outputTemplate: "{Message:l}{NewLine}{Exception}",
+                                encoding: Encoding.UTF8))
+                            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+                            .Enrich.FromLogContext()
+                            .Enrich.WithThreadId())
+                    .WriteTo.Logger(lc =>
+                        lc
+                            .WriteTo.Map(
+                                "ClientName",
+                                (clientName, wt)
+                                    => wt.File(
+                                        Path.Combine(appPaths.LogDirectoryPath, "log_" + clientName + "_.log"),
+                                        rollingInterval: RollingInterval.Day,
+                                        outputTemplate: "{Message:l}{NewLine}{Exception}",
+                                        encoding: Encoding.UTF8))
+                            .Filter.ByIncludingOnly(Matching.FromSource<ClientEventLogger>()))
                     .CreateLogger();
 
                 Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
