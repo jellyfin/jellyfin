@@ -25,8 +25,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '6.0.x'
-        include-prerelease: true
-        
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:

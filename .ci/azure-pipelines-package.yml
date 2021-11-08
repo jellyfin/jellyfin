@@ -199,7 +199,6 @@ jobs:
     inputs:
       packageType: 'sdk'
       version: '6.0.x'
-      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
