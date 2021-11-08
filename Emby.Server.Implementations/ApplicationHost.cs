@@ -1166,10 +1166,13 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetApiUrlForLocalAccess()
+        public string GetApiUrlForLocalAccess(bool allowHttps)
         {
-            string smart = NetManager.GetBindInterface(string.Empty, out var port);
-            return GetLocalApiUrl(smart.Trim('/'), null, port);
+            // With an empty source, the port will be null
+            string smart = NetManager.GetBindInterface(string.Empty, out _);
+            var scheme = allowHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+            var port = allowHttps ? HttpsPort : HttpPort;
+            return GetLocalApiUrl(smart.Trim('/'), scheme, port);
         }
 
         /// <inheritdoc/>

@@ -52,7 +52,6 @@ namespace Emby.Dlna.Main
         private readonly ISocketFactory _socketFactory;
         private readonly INetworkManager _networkManager;
         private readonly object _syncLock = new object();
-        private readonly NetworkConfiguration _netConfig;
         private readonly bool _disabled;
 
         private PlayToManager _manager;
@@ -125,8 +124,8 @@ namespace Emby.Dlna.Main
                 config);
             Current = this;
 
-            _netConfig = config.GetConfiguration<NetworkConfiguration>("network");
-            _disabled = appHost.ListenWithHttps && _netConfig.RequireHttps;
+            var netConfig = config.GetConfiguration<NetworkConfiguration>("network");
+            _disabled = appHost.ListenWithHttps && netConfig.RequireHttps;
 
             if (_disabled && _config.GetDlnaConfiguration().EnableServer)
             {
@@ -318,15 +317,9 @@ namespace Emby.Dlna.Main
 
                 var fullService = "urn:schemas-upnp-org:device:MediaServer:1";
 
-                _logger.LogInformation("Registering publisher for {0} on {1}", fullService, address);
+                _logger.LogInformation("Registering publisher for {ResourceName} on {DeviceAddress}", fullService, address);
 
-                var uri = new UriBuilder(_appHost.GetSmartApiUrl(address.Address) + descriptorUri);
-                if (!string.IsNullOrEmpty(_appHost.PublishedServerUrl))
-                {
-                    // DLNA will only work over http, so we must reset to http:// : {port}.
-                    uri.Scheme = "http";
-                    uri.Port = _netConfig.HttpServerPortNumber;
-                }
+                var uri = new UriBuilder(_appHost.GetApiUrlForLocalAccess(false) + descriptorUri);
 
                 var device = new SsdpRootDevice
                 {
