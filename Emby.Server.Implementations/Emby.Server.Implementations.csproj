@@ -27,7 +27,7 @@
     <PackageReference Include="Jellyfin.XmlTv" Version="10.6.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-rc.2*" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0-rc.2*" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-rc.2*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0-rc.2*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.0-rc.2*" />
     <PackageReference Include="Mono.Nat" Version="3.0.1" />
