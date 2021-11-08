@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0-rc.2*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0-rc.2*" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.0-rc.2*" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.0-rc.2*" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="6.0.0" />
     <PackageReference Include="prometheus-net" Version="5.0.1" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="5.0.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
