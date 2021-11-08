@@ -1805,7 +1805,7 @@ namespace Jellyfin.Api.Controllers
                 _logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
 
                 var task = Task.Delay(100);
-                Task.WaitAll(task);
+                task.Wait();
                 DeleteFile(path, retryCount + 1);
             }
             catch (Exception ex)
