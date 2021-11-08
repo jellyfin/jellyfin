@@ -2,7 +2,6 @@
 
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using MediaBrowser.Common;
@@ -51,11 +50,11 @@ namespace MediaBrowser.Controller
         /// <summary>
         /// Gets the system info.
         /// </summary>
-        /// <param name="source">The originator of the request.</param>
+        /// <param name="request">The HTTP request.</param>
         /// <returns>SystemInfo.</returns>
-        SystemInfo GetSystemInfo(IPAddress source);
+        SystemInfo GetSystemInfo(HttpRequest request);
 
-        PublicSystemInfo GetPublicSystemInfo(IPAddress address);
+        PublicSystemInfo GetPublicSystemInfo(HttpRequest request);
 
         /// <summary>
         /// Gets a URL specific for the request.

@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1710,7 +1709,7 @@ namespace Jellyfin.Api.Controllers
                 return Task.CompletedTask;
             });
 
-            return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath)!, false, HttpContext);
+            return FileStreamResponseHelpers.GetStaticFileResult(segmentPath, MimeTypes.GetMimeType(segmentPath), false, HttpContext);
         }
 
         private long GetEndPositionTicks(StreamState state, int requestedIndex)

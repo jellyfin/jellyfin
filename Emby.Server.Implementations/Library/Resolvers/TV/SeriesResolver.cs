@@ -8,7 +8,6 @@ using System.IO;
 using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -19,7 +18,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// <summary>
     /// Class SeriesResolver.
     /// </summary>
-    public class SeriesResolver : FolderResolver<Series>
+    public class SeriesResolver : GenericFolderResolver<Series>
     {
         private readonly ILogger<SeriesResolver> _logger;
         private readonly ILibraryManager _libraryManager;
@@ -55,6 +54,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                     return null;
                 }
 
+                var seriesInfo = Naming.TV.SeriesResolver.Resolve(_libraryManager.GetNamingOptions(), args.Path);
+
                 var collectionType = args.GetCollectionType();
                 if (string.Equals(collectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
                 {
@@ -64,7 +65,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return new Series
                         {
                             Path = args.Path,
-                            Name = Path.GetFileName(args.Path)
+                            Name = seriesInfo.Name
                         };
                     }
                 }
@@ -81,7 +82,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return new Series
                         {
                             Path = args.Path,
-                            Name = Path.GetFileName(args.Path)
+                            Name = seriesInfo.Name
                         };
                     }
 
@@ -95,7 +96,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
                         return new Series
                         {
                             Path = args.Path,
-                            Name = Path.GetFileName(args.Path)
+                            Name = seriesInfo.Name
                         };
                     }
                 }

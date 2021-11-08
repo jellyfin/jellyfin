@@ -195,10 +195,11 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET 5.0 sdk'
+    displayName: 'Use .NET 6.0 sdk'
     inputs:
       packageType: 'sdk'
-      version: '5.0.x'
+      version: '6.0.x'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Stable Nuget packages'
@@ -211,6 +212,7 @@ jobs:
         MediaBrowser.Controller/MediaBrowser.Controller.csproj
         MediaBrowser.Model/MediaBrowser.Model.csproj
         Emby.Naming/Emby.Naming.csproj
+        src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
       custom: 'pack'
       arguments: -o $(Build.ArtifactStagingDirectory) -p:Version=$(JellyfinVersion)
 
@@ -225,6 +227,7 @@ jobs:
         MediaBrowser.Controller/MediaBrowser.Controller.csproj
         MediaBrowser.Model/MediaBrowser.Model.csproj
         Emby.Naming/Emby.Naming.csproj
+        src/Jellyfin.Extensions/Jellyfin.Extensions.csproj
       custom: 'pack'
       arguments: '--version-suffix $(Build.BuildNumber) -o $(Build.ArtifactStagingDirectory) -p:Stability=Unstable'
 

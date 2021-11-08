@@ -20,7 +20,7 @@ namespace Jellyfin.Networking.Tests
                 CallBase = true
             };
             configManager.Setup(x => x.GetConfiguration(It.IsAny<string>())).Returns(conf);
-            return (IConfigurationManager)configManager.Object;
+            return configManager.Object;
         }
 
         /// <summary>

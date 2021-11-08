@@ -24,6 +24,8 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     /// </summary>
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
+        private readonly IImageProcessor _imageProcessor;
+
         private string[] _validCollectionTypes = new[]
         {
                 CollectionType.Movies,
@@ -32,8 +34,6 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Movies,
                 CollectionType.Photos
         };
-
-        private readonly IImageProcessor _imageProcessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.

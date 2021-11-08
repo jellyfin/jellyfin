@@ -420,7 +420,7 @@ namespace Emby.Server.Implementations.Dto
             // Just return something so that apps that are expecting a value won't think the folders are empty
             if (folder is ICollectionFolder || folder is UserView)
             {
-                return new Random().Next(1, 10);
+                return Random.Shared.Next(1, 10);
             }
 
             return folder.GetChildCount(user);
@@ -753,15 +753,6 @@ namespace Emby.Server.Implementations.Dto
             if (backdropLimit > 0)
             {
                 dto.BackdropImageTags = GetTagsAndFillBlurhashes(dto, item, ImageType.Backdrop, backdropLimit);
-            }
-
-            if (options.ContainsField(ItemFields.ScreenshotImageTags))
-            {
-                var screenshotLimit = options.GetImageLimit(ImageType.Screenshot);
-                if (screenshotLimit > 0)
-                {
-                    dto.ScreenshotImageTags = GetTagsAndFillBlurhashes(dto, item, ImageType.Screenshot, screenshotLimit);
-                }
             }
 
             if (options.ContainsField(ItemFields.Genres))

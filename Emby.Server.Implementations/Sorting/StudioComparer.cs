@@ -14,6 +14,12 @@ namespace Emby.Server.Implementations.Sorting
     public class StudioComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Studio;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -33,11 +39,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return AlphanumericComparator.CompareValues(x.Studios.FirstOrDefault(), y.Studios.FirstOrDefault());
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Studio;
     }
 }

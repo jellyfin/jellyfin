@@ -10,6 +10,12 @@ namespace Emby.Server.Implementations.Sorting
     public class ProductionYearComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.ProductionYear;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -44,11 +50,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return 0;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.ProductionYear;
     }
 }

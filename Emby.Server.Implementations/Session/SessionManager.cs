@@ -741,6 +741,8 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Used to report playback progress for an item.
         /// </summary>
+        /// <param name="info">The playback progress info.</param>
+        /// <param name="isAutomated">Whether this is an automated update.</param>
         /// <returns>Task.</returns>
         public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
         {
@@ -1199,16 +1201,18 @@ namespace Emby.Server.Implementations.Session
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken)
         {
             CheckDisposed();
+            var session = GetSession(sessionId);
             await SendMessageToSession(session, SessionMessageType.SyncPlayCommand, command, cancellationToken).ConfigureAwait(false);
         }
 
         /// <inheritdoc />
-        public async Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken)
+        public async Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken)
         {
             CheckDisposed();
+            var session = GetSession(sessionId);
             await SendMessageToSession(session, SessionMessageType.SyncPlayGroupUpdate, command, cancellationToken).ConfigureAwait(false);
         }
 

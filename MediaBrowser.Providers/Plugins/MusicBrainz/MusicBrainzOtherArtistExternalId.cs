@@ -20,7 +20,7 @@ namespace MediaBrowser.Providers.Music
         public ExternalIdMediaType? Type => ExternalIdMediaType.OtherArtist;
 
         /// <inheritdoc />
-        public string UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
+        public string? UrlFormatString => Plugin.Instance.Configuration.Server + "/artist/{0}";
 
         /// <inheritdoc />
         public bool Supports(IHasProviderIds item) => item is Audio || item is MusicAlbum;

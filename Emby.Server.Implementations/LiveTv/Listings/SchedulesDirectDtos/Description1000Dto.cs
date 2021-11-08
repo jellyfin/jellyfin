@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,12 +11,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the description language.
         /// </summary>
         [JsonPropertyName("descriptionLanguage")]
-        public string DescriptionLanguage { get; set; }
+        public string? DescriptionLanguage { get; set; }
 
         /// <summary>
         /// Gets or sets the description.
         /// </summary>
         [JsonPropertyName("description")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 }

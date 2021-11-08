@@ -155,7 +155,7 @@ namespace Jellyfin.Api.Controllers
                         null,
                         null,
                         maxAudioChannels,
-                        info!.PlaySessionId!,
+                        info.PlaySessionId!,
                         userId ?? Guid.Empty,
                         true,
                         true,

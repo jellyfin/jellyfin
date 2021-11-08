@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -76,7 +77,7 @@ namespace DvdLib.Ifo
 
         private void ReadVTS(ushort vtsNum, IReadOnlyList<FileInfo> allFiles)
         {
-            var filename = string.Format("VTS_{0:00}_0.IFO", vtsNum);
+            var filename = string.Format(CultureInfo.InvariantCulture, "VTS_{0:00}_0.IFO", vtsNum);
 
             var vtsPath = allFiles.FirstOrDefault(i => string.Equals(i.Name, filename, StringComparison.OrdinalIgnoreCase)) ??
                 allFiles.FirstOrDefault(i => string.Equals(i.Name, Path.ChangeExtension(filename, ".bup"), StringComparison.OrdinalIgnoreCase));

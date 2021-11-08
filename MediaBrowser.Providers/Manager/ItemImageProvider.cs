@@ -1,8 +1,7 @@
-#pragma warning disable CA1002, CS1591
+#nullable disable
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,6 +23,9 @@ using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.Manager
 {
+    /// <summary>
+    /// Utilities for managing images attached to items.
+    /// </summary>
     public class ItemImageProvider
     {
         private readonly ILogger _logger;
@@ -46,6 +48,12 @@ namespace MediaBrowser.Providers.Manager
             ImageType.Thumb
         };
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemImageProvider"/> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="providerManager">The provider manager for interacting with provider image references.</param>
+        /// <param name="fileSystem">The filesystem.</param>
         public ItemImageProvider(ILogger logger, IProviderManager providerManager, IFileSystem fileSystem)
         {
             _logger = logger;
@@ -53,6 +61,13 @@ namespace MediaBrowser.Providers.Manager
             _fileSystem = fileSystem;
         }
 
+        /// <summary>
+        /// Verifies existing images have valid paths and adds any new local images provided.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/> to validate images for.</param>
+        /// <param name="providers">The providers to use, must include <see cref="ILocalImageProvider"/>(s) for local scanning.</param>
+        /// <param name="directoryService">The directory service for <see cref="ILocalImageProvider"/>s to use.</param>
+        /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
         public bool ValidateImages(BaseItem item, IEnumerable<IImageProvider> providers, IDirectoryService directoryService)
         {
             var hasChanges = false;
@@ -72,6 +87,15 @@ namespace MediaBrowser.Providers.Manager
             return hasChanges;
         }
 
+        /// <summary>
+        /// Refreshes from the providers according to the given options.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/> to gather images for.</param>
+        /// <param name="libraryOptions">The library options.</param>
+        /// <param name="providers">The providers to query for images.</param>
+        /// <param name="refreshOptions">The refresh options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The refresh result.</returns>
         public async Task<RefreshResult> RefreshImages(
             BaseItem item,
             LibraryOptions libraryOptions,
@@ -79,14 +103,10 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             CancellationToken cancellationToken)
         {
+            var oldBackdropImages = Array.Empty<ItemImageInfo>();
             if (refreshOptions.IsReplacingImage(ImageType.Backdrop))
             {
-                ClearImages(item, ImageType.Backdrop);
-            }
-
-            if (refreshOptions.IsReplacingImage(ImageType.Screenshot))
-            {
-                ClearImages(item, ImageType.Screenshot);
+                oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
             }
 
             var result = new RefreshResult { UpdateType = ItemUpdateType.None };
@@ -94,16 +114,15 @@ namespace MediaBrowser.Providers.Manager
             var typeName = item.GetType().Name;
             var typeOptions = libraryOptions.GetTypeOptions(typeName) ?? new TypeOptions { Type = typeName };
 
-            // In order to avoid duplicates, only download these if there are none already
-            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop);
-            var screenshotLimit = typeOptions.GetLimit(ImageType.Screenshot);
+            // track library limits, adding buffer to allow lazy replacing of current images
+            var backdropLimit = typeOptions.GetLimit(ImageType.Backdrop) + oldBackdropImages.Length;
             var downloadedImages = new List<ImageType>();
 
             foreach (var provider in providers)
             {
                 if (provider is IRemoteImageProvider remoteProvider)
                 {
-                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, screenshotLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
+                    await RefreshFromProvider(item, remoteProvider, refreshOptions, typeOptions, backdropLimit, downloadedImages, result, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -113,11 +132,17 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
+            // only delete existing multi-images if new ones were added
+            if (oldBackdropImages.Length > 0 && oldBackdropImages.Length < item.GetImages(ImageType.Backdrop).Count())
+            {
+                PruneImages(item, oldBackdropImages);
+            }
+
             return result;
         }
 
         /// <summary>
-        /// Refreshes from provider.
+        /// Refreshes from a dynamic provider.
         /// </summary>
         private async Task RefreshFromProvider(
             BaseItem item,
@@ -152,19 +177,20 @@ namespace MediaBrowser.Providers.Manager
                                 if (response.Protocol == MediaProtocol.Http)
                                 {
                                     _logger.LogDebug("Setting image url into item {0}", item.Id);
+                                    var index = item.AllowsMultipleImages(imageType) ? item.GetImages(imageType).Count() : 0;
                                     item.SetImage(
                                         new ItemImageInfo
                                         {
                                             Path = response.Path,
                                             Type = imageType
                                         },
-                                        0);
+                                        index);
                                 }
                                 else
                                 {
                                     var mimeType = MimeTypes.GetMimeType(response.Path);
 
-                                    var stream = new FileStream(response.Path, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+                                    var stream = AsyncFile.OpenRead(response.Path);
 
                                     await _providerManager.SaveImage(item, stream, mimeType, imageType, null, cancellationToken).ConfigureAwait(false);
                                 }
@@ -205,9 +231,8 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="images">The images.</param>
         /// <param name="savedOptions">The saved options.</param>
         /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <param name="screenshotLimit">The screenshot limit.</param>
         /// <returns><c>true</c> if the specified item contains images; otherwise, <c>false</c>.</returns>
-        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit, int screenshotLimit)
+        private bool ContainsImages(BaseItem item, List<ImageType> images, TypeOptions savedOptions, int backdropLimit)
         {
             // Using .Any causes the creation of a DisplayClass aka. variable capture
             for (var i = 0; i < _singularImages.Length; i++)
@@ -224,23 +249,17 @@ namespace MediaBrowser.Providers.Manager
                 return false;
             }
 
-            if (images.Contains(ImageType.Screenshot) && item.GetImages(ImageType.Screenshot).Count() < screenshotLimit)
-            {
-                return false;
-            }
-
             return true;
         }
 
         /// <summary>
-        /// Refreshes from provider.
+        /// Refreshes from a remote provider.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="provider">The provider.</param>
         /// <param name="refreshOptions">The refresh options.</param>
         /// <param name="savedOptions">The saved options.</param>
         /// <param name="backdropLimit">The backdrop limit.</param>
-        /// <param name="screenshotLimit">The screenshot limit.</param>
         /// <param name="downloadedImages">The downloaded images.</param>
         /// <param name="result">The result.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
@@ -251,7 +270,6 @@ namespace MediaBrowser.Providers.Manager
             ImageRefreshOptions refreshOptions,
             TypeOptions savedOptions,
             int backdropLimit,
-            int screenshotLimit,
             ICollection<ImageType> downloadedImages,
             RefreshResult result,
             CancellationToken cancellationToken)
@@ -265,7 +283,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (!refreshOptions.ReplaceAllImages &&
                     refreshOptions.ReplaceImages.Length == 0 &&
-                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit, screenshotLimit))
+                    ContainsImages(item, provider.GetSupportedImages(item).ToList(), savedOptions, backdropLimit))
                 {
                     return;
                 }
@@ -276,7 +294,7 @@ namespace MediaBrowser.Providers.Manager
                     item,
                     new RemoteImageQuery(provider.Name)
                     {
-                        IncludeAllLanguages = false,
+                        IncludeAllLanguages = true,
                         IncludeDisabledProviders = false,
                     },
                     cancellationToken).ConfigureAwait(false);
@@ -304,13 +322,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 minWidth = savedOptions.GetMinWidth(ImageType.Backdrop);
-                await DownloadBackdrops(item, ImageType.Backdrop, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
-
-                if (item is IHasScreenshots hasScreenshots)
-                {
-                    minWidth = savedOptions.GetMinWidth(ImageType.Screenshot);
-                    await DownloadBackdrops(item, ImageType.Screenshot, screenshotLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
-                }
+                await DownloadMultiImages(item, ImageType.Backdrop, refreshOptions, backdropLimit, provider, result, list, minWidth, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -328,40 +340,36 @@ namespace MediaBrowser.Providers.Manager
             return options.IsEnabled(type);
         }
 
-        private void ClearImages(BaseItem item, ImageType type)
+        private void PruneImages(BaseItem item, ItemImageInfo[] images)
         {
-            var deleted = false;
-            var deletedImages = new List<ItemImageInfo>();
-
-            foreach (var image in item.GetImages(type))
+            for (var i = 0; i < images.Length; i++)
             {
-                if (!image.IsLocalFile)
-                {
-                    deletedImages.Add(image);
-                    continue;
-                }
+                var image = images[i];
 
-                try
+                if (image.IsLocalFile)
                 {
-                    _fileSystem.DeleteFile(image.Path);
-                    deleted = true;
-                }
-                catch (FileNotFoundException)
-                {
+                    try
+                    {
+                        _fileSystem.DeleteFile(image.Path);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                    }
                 }
             }
 
-            item.RemoveImages(deletedImages);
-
-            if (deleted)
-            {
-                item.ValidateImages(new DirectoryService(_fileSystem));
-            }
+            item.RemoveImages(images);
         }
 
+        /// <summary>
+        /// Merges a list of images into the provided item, validating existing images and replacing them or adding new images as necessary.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/> to modify.</param>
+        /// <param name="images">The new images to place in <c>item</c>.</param>
+        /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
         public bool MergeImages(BaseItem item, IReadOnlyList<LocalImageInfo> images)
         {
-            var changed = false;
+            var changed = item.ValidateImages(new DirectoryService(_fileSystem));
 
             for (var i = 0; i < _singularImages.Length; i++)
             {
@@ -397,32 +405,11 @@ namespace MediaBrowser.Providers.Manager
                         currentImage.DateModified = newDateModified;
                     }
                 }
-                else
-                {
-                    var existing = item.GetImageInfo(type, 0);
-                    if (existing != null)
-                    {
-                        if (existing.IsLocalFile && !File.Exists(existing.Path))
-                        {
-                            item.RemoveImage(existing);
-                            changed = true;
-                        }
-                    }
-                }
             }
 
             if (UpdateMultiImages(item, images, ImageType.Backdrop))
             {
                 changed = true;
-            }
-
-            var hasScreenshots = item as IHasScreenshots;
-            if (hasScreenshots != null)
-            {
-                if (UpdateMultiImages(item, images, ImageType.Screenshot))
-                {
-                    changed = true;
-                }
             }
 
             return changed;
@@ -470,7 +457,7 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && !(i.Width.HasValue && i.Width.Value < minWidth))
+                .Where(i => i.Type == type && i.Width >= minWidth)
                 .ToList();
 
             if (EnableImageStub(item) && eligibleImages.Count > 0)
@@ -487,7 +474,20 @@ namespace MediaBrowser.Providers.Manager
                 try
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
-                    response.EnsureSuccessStatusCode();
+
+                    // Sometimes providers send back bad urls. Just move to the next image
+                    if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
+                        continue;
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("{Url} returned {StatusCode}, skipping all remaining requests", url, response.StatusCode);
+                        break;
+                    }
+
                     await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                     await _providerManager.SaveImage(
@@ -501,15 +501,8 @@ namespace MediaBrowser.Providers.Manager
                     result.UpdateType |= ItemUpdateType.ImageUpdate;
                     return true;
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException)
                 {
-                    // Sometimes providers send back bad url's. Just move to the next image
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
-                    {
-                        continue;
-                    }
-
                     break;
                 }
             }
@@ -529,7 +522,7 @@ namespace MediaBrowser.Providers.Manager
                 return true;
             }
 
-            if (item is IItemByName && item is not MusicArtist)
+            if (item is IItemByName and not MusicArtist)
             {
                 var hasDualAccess = item as IHasDualAccess;
                 if (hasDualAccess == null || hasDualAccess.IsAccessedByName)
@@ -562,7 +555,7 @@ namespace MediaBrowser.Providers.Manager
                 newIndex);
         }
 
-        private async Task DownloadBackdrops(BaseItem item, ImageType imageType, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
+        private async Task DownloadMultiImages(BaseItem item, ImageType imageType, ImageRefreshOptions refreshOptions, int limit, IRemoteImageProvider provider, RefreshResult result, IEnumerable<RemoteImageInfo> images, int minWidth, CancellationToken cancellationToken)
         {
             foreach (var image in images.Where(i => i.Type == imageType))
             {
@@ -589,8 +582,21 @@ namespace MediaBrowser.Providers.Manager
                 {
                     using var response = await provider.GetImageResponse(url, cancellationToken).ConfigureAwait(false);
 
-                    // If there's already an image of the same size, skip it
-                    if (response.Content.Headers.ContentLength.HasValue)
+                    // Sometimes providers send back bad urls. Just move to the next image
+                    if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("{Url} returned {StatusCode}, ignoring", url, response.StatusCode);
+                        continue;
+                    }
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("{Url} returned {StatusCode}, skipping all remaining requests", url, response.StatusCode);
+                        break;
+                    }
+
+                    // If there's already an image of the same file size, skip it unless doing a full refresh
+                    if (response.Content.Headers.ContentLength.HasValue && !refreshOptions.IsReplacingImage(imageType))
                     {
                         try
                         {
@@ -616,15 +622,8 @@ namespace MediaBrowser.Providers.Manager
                         cancellationToken).ConfigureAwait(false);
                     result.UpdateType = result.UpdateType | ItemUpdateType.ImageUpdate;
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException)
                 {
-                    // Sometimes providers send back bad urls. Just move onto the next image
-                    if (ex.StatusCode.HasValue
-                        && (ex.StatusCode.Value == HttpStatusCode.NotFound || ex.StatusCode.Value == HttpStatusCode.Forbidden))
-                    {
-                        continue;
-                    }
-
                     break;
                 }
             }

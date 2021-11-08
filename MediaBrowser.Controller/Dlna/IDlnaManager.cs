@@ -37,8 +37,9 @@ namespace MediaBrowser.Controller.Dlna
         /// <summary>
         /// Updates the profile.
         /// </summary>
+        /// <param name="profileId">The profile id.</param>
         /// <param name="profile">The profile.</param>
-        void UpdateProfile(DeviceProfile profile);
+        void UpdateProfile(string profileId, DeviceProfile profile);
 
         /// <summary>
         /// Deletes the profile.
@@ -74,6 +75,6 @@ namespace MediaBrowser.Controller.Dlna
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <returns>DlnaIconResponse.</returns>
-        ImageStream GetIcon(string filename);
+        ImageStream? GetIcon(string filename);
     }
 }

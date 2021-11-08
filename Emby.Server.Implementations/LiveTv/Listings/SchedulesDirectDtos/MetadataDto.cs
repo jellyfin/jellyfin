@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,18 +11,18 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the linup.
         /// </summary>
         [JsonPropertyName("lineup")]
-        public string Lineup { get; set; }
+        public string? Lineup { get; set; }
 
         /// <summary>
         /// Gets or sets the modified timestamp.
         /// </summary>
         [JsonPropertyName("modified")]
-        public string Modified { get; set; }
+        public string? Modified { get; set; }
 
         /// <summary>
         /// Gets or sets the transport.
         /// </summary>
         [JsonPropertyName("transport")]
-        public string Transport { get; set; }
+        public string? Transport { get; set; }
     }
 }

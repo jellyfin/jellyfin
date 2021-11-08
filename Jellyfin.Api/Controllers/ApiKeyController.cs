@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;

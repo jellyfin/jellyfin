@@ -65,13 +65,13 @@ namespace Emby.Server.Implementations.Images
             if (SupportedImages.Contains(ImageType.Primary))
             {
                 var primaryResult = await FetchAsync(item, ImageType.Primary, options, cancellationToken).ConfigureAwait(false);
-                updateType = updateType | primaryResult;
+                updateType |= primaryResult;
             }
 
             if (SupportedImages.Contains(ImageType.Thumb))
             {
                 var thumbResult = await FetchAsync(item, ImageType.Thumb, options, cancellationToken).ConfigureAwait(false);
-                updateType = updateType | thumbResult;
+                updateType |= thumbResult;
             }
 
             return updateType;

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
 using Xunit;
 
@@ -6,12 +5,11 @@ namespace Jellyfin.Model.Tests.Entities
 {
     public class MediaStreamTests
     {
-        public static IEnumerable<object[]> Get_DisplayTitle_TestData()
+        public static TheoryData<MediaStream, string> Get_DisplayTitle_TestData()
         {
-            return new List<object[]>
-            {
-                new object[]
-                {
+            var data = new TheoryData<MediaStream, string>();
+
+            data.Add(
                     new MediaStream
                     {
                         Type = MediaStreamType.Subtitle,
@@ -21,61 +19,57 @@ namespace Jellyfin.Model.Tests.Entities
                         IsDefault = false,
                         Codec = "ASS"
                     },
-                    "English - Und - ASS"
-                },
-                new object[]
+                    "English - Und - ASS");
+
+            data.Add(
+                new MediaStream
                 {
-                    new MediaStream
-                    {
-                        Type = MediaStreamType.Subtitle,
-                        Title = "English",
-                        Language = string.Empty,
-                        IsForced = false,
-                        IsDefault = false,
-                        Codec = string.Empty
-                    },
-                    "English - Und"
+                    Type = MediaStreamType.Subtitle,
+                    Title = "English",
+                    Language = string.Empty,
+                    IsForced = false,
+                    IsDefault = false,
+                    Codec = string.Empty
                 },
-                new object[]
+                "English - Und");
+
+            data.Add(
+                new MediaStream
                 {
-                    new MediaStream
-                    {
-                        Type = MediaStreamType.Subtitle,
-                        Title = "English",
-                        Language = "EN",
-                        IsForced = false,
-                        IsDefault = false,
-                        Codec = string.Empty
-                    },
-                    "English"
+                    Type = MediaStreamType.Subtitle,
+                    Title = "English",
+                    Language = "EN",
+                    IsForced = false,
+                    IsDefault = false,
+                    Codec = string.Empty
                 },
-                new object[]
+                "English");
+
+            data.Add(
+                new MediaStream
                 {
-                    new MediaStream
-                    {
-                        Type = MediaStreamType.Subtitle,
-                        Title = "English",
-                        Language = "EN",
-                        IsForced = true,
-                        IsDefault = true,
-                        Codec = "SRT"
-                    },
-                    "English - Default - Forced - SRT"
+                    Type = MediaStreamType.Subtitle,
+                    Title = "English",
+                    Language = "EN",
+                    IsForced = true,
+                    IsDefault = true,
+                    Codec = "SRT"
                 },
-                new object[]
+                "English - Default - Forced - SRT");
+
+            data.Add(
+                new MediaStream
                 {
-                    new MediaStream
-                    {
-                        Type = MediaStreamType.Subtitle,
-                        Title = null,
-                        Language = null,
-                        IsForced = false,
-                        IsDefault = false,
-                        Codec = null
-                    },
-                    "Und"
-                }
-            };
+                    Type = MediaStreamType.Subtitle,
+                    Title = null,
+                    Language = null,
+                    IsForced = false,
+                    IsDefault = false,
+                    Codec = null
+                },
+                "Und");
+
+            return data;
         }
 
         [Theory]

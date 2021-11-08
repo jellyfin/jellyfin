@@ -23,10 +23,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public abstract class BaseTunerHost
     {
-        protected readonly IServerConfigurationManager Config;
-        protected readonly ILogger<BaseTunerHost> Logger;
-        protected readonly IFileSystem FileSystem;
-
         private readonly IMemoryCache _memoryCache;
 
         protected BaseTunerHost(IServerConfigurationManager config, ILogger<BaseTunerHost> logger, IFileSystem fileSystem, IMemoryCache memoryCache)
@@ -37,11 +33,19 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             FileSystem = fileSystem;
         }
 
+        protected IServerConfigurationManager Config { get; }
+
+        protected ILogger<BaseTunerHost> Logger { get; }
+
+        protected IFileSystem FileSystem { get; }
+
         public virtual bool IsSupported => true;
 
-        protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
-
         public abstract string Type { get; }
+
+        protected virtual string ChannelIdPrefix => Type + "_";
+
+        protected abstract Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken);
 
         public async Task<List<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
         {
@@ -92,7 +96,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                         try
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(channelCacheFile));
-                            await using var writeStream = File.OpenWrite(channelCacheFile);
+                            await using var writeStream = AsyncFile.OpenWrite(channelCacheFile);
                             await JsonSerializer.SerializeAsync(writeStream, channels, cancellationToken: cancellationToken).ConfigureAwait(false);
                         }
                         catch (IOException)
@@ -108,7 +112,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                     {
                         try
                         {
-                            await using var readStream = File.OpenRead(channelCacheFile);
+                            await using var readStream = AsyncFile.OpenRead(channelCacheFile);
                             var channels = await JsonSerializer.DeserializeAsync<List<ChannelInfo>>(readStream, cancellationToken: cancellationToken)
                                 .ConfigureAwait(false);
                             list.AddRange(channels);
@@ -216,8 +220,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
             throw new LiveTvConflictException();
         }
-
-        protected virtual string ChannelIdPrefix => Type + "_";
 
         protected virtual bool IsValidChannelId(string channelId)
         {

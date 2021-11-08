@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
-            _logFileStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, true);
+            _logFileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
             await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
             await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
@@ -188,7 +188,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 CultureInfo.InvariantCulture,
                 "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
-                targetFile,
+                targetFile.Replace("\"", "\\\""), // Escape quotes in filename
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,
@@ -205,9 +205,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             // var audioChannels = 2;
             // var audioStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Audio);
             // if (audioStream != null)
-            //{
+            // {
             //    audioChannels = audioStream.Channels ?? audioChannels;
-            //}
+            // }
             // return "-codec:a:0 aac -strict experimental -ab 320000";
         }
 

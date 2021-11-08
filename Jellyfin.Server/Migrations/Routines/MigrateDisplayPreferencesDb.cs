@@ -120,7 +120,7 @@ namespace Jellyfin.Server.Migrations.Routines
 
                     var displayPreferences = new DisplayPreferences(dtoUserId, itemId, client)
                     {
-                        IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null,
+                        IndexBy = Enum.TryParse<IndexingKind>(dto.IndexBy, true, out var indexBy) ? indexBy : null,
                         ShowBackdrop = dto.ShowBackdrop,
                         ShowSidebar = dto.ShowSidebar,
                         ScrollDirection = dto.ScrollDirection,

@@ -137,7 +137,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var existingDisplayPreferences = _displayPreferencesManager.GetDisplayPreferences(userId, itemId, client);
-            existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : (IndexingKind?)null;
+            existingDisplayPreferences.IndexBy = Enum.TryParse<IndexingKind>(displayPreferences.IndexBy, true, out var indexBy) ? indexBy : null;
             existingDisplayPreferences.ShowBackdrop = displayPreferences.ShowBackdrop;
             existingDisplayPreferences.ShowSidebar = displayPreferences.ShowSidebar;
 

@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using FsCheck;
 using FsCheck.Xunit;

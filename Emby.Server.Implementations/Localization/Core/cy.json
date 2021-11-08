@@ -1,0 +1,14 @@
+{
+    "DeviceOnlineWithName": "Mae {0} wedi'i gysylltu",
+    "DeviceOfflineWithName": "Mae {0} wedi datgysylltu",
+    "Default": "Diofyn",
+    "Collections": "Casgliadau",
+    "ChapterNameValue": "Pennod {0}",
+    "Channels": "Sianeli",
+    "CameraImageUploadedFrom": "Mae delwedd camera newydd wedi'i lanlwytho o {0}",
+    "Books": "Llyfrau",
+    "AuthenticationSucceededWithUserName": "{0} wedi’i ddilysu’n llwyddiannus",
+    "Artists": "Artistiaid",
+    "AppDeviceValues": "Ap: {0}, Dyfais: {1}",
+    "Albums": "Albwmau"
+}

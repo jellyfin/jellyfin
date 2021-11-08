@@ -12,6 +12,12 @@ namespace Emby.Server.Implementations.Sorting
     public class AlbumComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Album;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -33,11 +39,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return audio == null ? string.Empty : audio.Album;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Album;
     }
 }

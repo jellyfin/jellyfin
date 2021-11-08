@@ -1,7 +1,8 @@
-#pragma warning disable CS1591
-
 namespace Emby.Server.Implementations
 {
+    /// <summary>
+    /// Specifies the contract for server startup options.
+    /// </summary>
     public interface IStartupOptions
     {
         /// <summary>
@@ -10,7 +11,7 @@ namespace Emby.Server.Implementations
         string? FFmpegPath { get; }
 
         /// <summary>
-        /// Gets a value value indicating whether to run as service by the --service command line option.
+        /// Gets a value indicating whether to run as service by the --service command line option.
         /// </summary>
         bool IsService { get; }
 

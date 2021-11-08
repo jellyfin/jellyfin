@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -42,11 +43,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// The default HDR image extraction timeout in milliseconds.
         /// </summary>
         internal const int DefaultHdrImageExtractionTimeout = 20000;
-
-        /// <summary>
-        /// The us culture.
-        /// </summary>
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly ILogger<MediaEncoder> _logger;
         private readonly IServerConfigurationManager _configurationManager;
@@ -151,6 +147,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="pathType">The path type.</param>
         public void UpdateEncoderPath(string path, string pathType)
         {
+            var config = _configurationManager.GetEncodingOptions();
+
+            // Filesystem may not be case insensitive, but EncoderAppPathDisplay should always point to a valid file?
+            if (string.IsNullOrEmpty(config.EncoderAppPath)
+                && string.Equals(config.EncoderAppPathDisplay, path, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("Existing ffmpeg path is empty and the new path is the same as {EncoderAppPathDisplay}. Skipping", nameof(config.EncoderAppPathDisplay));
+                return;
+            }
+
             string newPath;
 
             _logger.LogInformation("Attempting to update encoder path to {Path}. pathType: {PathType}", path ?? string.Empty, pathType ?? string.Empty);
@@ -165,19 +171,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // User had cleared the custom path in UI
                 newPath = string.Empty;
             }
-            else if (Directory.Exists(path))
-            {
-                // Given path is directory, so resolve down to filename
-                newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
-            }
             else
             {
-                newPath = path;
+                if (Directory.Exists(path))
+                {
+                    // Given path is directory, so resolve down to filename
+                    newPath = GetEncoderPathFromDirectory(path, "ffmpeg");
+                }
+                else
+                {
+                    newPath = path;
+                }
+
+                if (!new EncoderValidator(_logger, newPath).ValidateVersion())
+                {
+                    throw new ResourceNotFoundException();
+                }
             }
 
             // Write the new ffmpeg path to the xml as <EncoderAppPath>
             // This ensures its not lost on next startup
-            var config = _configurationManager.GetEncodingOptions();
             config.EncoderAppPath = newPath;
             _configurationManager.SaveConfiguration("encoding", config);
 
@@ -465,17 +478,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Protocol = MediaProtocol.File
             };
 
-            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, cancellationToken);
+            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, ".jpg", cancellationToken);
         }
 
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, cancellationToken);
+            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, ".jpg", cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, cancellationToken);
+            return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, outputExtension, cancellationToken);
         }
 
         private async Task<string> ExtractImage(
@@ -487,6 +500,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool isAudio,
             Video3DFormat? threedFormat,
             TimeSpan? offset,
+            string outputExtension,
             CancellationToken cancellationToken)
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
@@ -496,7 +510,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // The failure of HDR extraction usually occurs when using custom ffmpeg that does not contain the zscale filter.
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, outputExtension, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -509,7 +523,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, outputExtension, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -522,7 +536,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, outputExtension, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -534,17 +548,26 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, outputExtension, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, string outputExtension, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
                 throw new ArgumentNullException(nameof(inputPath));
             }
 
-            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + ".jpg");
+            if (string.IsNullOrEmpty(outputExtension))
+            {
+                outputExtension = ".jpg";
+            }
+            else if (outputExtension[0] != '.')
+            {
+                outputExtension = "." + outputExtension;
+            }
+
+            var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
 
             // apply some filters to thumbnail extracted below (below) crop any black lines that we made and get the correct ar.
@@ -679,7 +702,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string GetTimeParameter(TimeSpan time)
         {
-            return time.ToString(@"hh\:mm\:ss\.fff", _usCulture);
+            return time.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
         }
 
         public async Task ExtractVideoImagesOnInterval(
@@ -696,11 +719,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
 
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(_usCulture);
+            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
             if (maxWidth.HasValue)
             {
-                var maxWidthParam = maxWidth.Value.ToString(_usCulture);
+                var maxWidthParam = maxWidth.Value.ToString(CultureInfo.InvariantCulture);
 
                 vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
             }

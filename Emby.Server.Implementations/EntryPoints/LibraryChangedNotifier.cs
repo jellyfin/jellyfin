@@ -436,7 +436,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Translates the physical item to user library.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of item.</typeparam>
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>

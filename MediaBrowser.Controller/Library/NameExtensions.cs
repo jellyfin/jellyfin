@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Diacritics.Extensions;
-using MediaBrowser.Controller.Extensions;
 
 namespace MediaBrowser.Controller.Library
 {

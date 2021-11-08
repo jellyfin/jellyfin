@@ -32,6 +32,9 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
+        /// <param name="userManager">The user manager.</param>
+        /// <param name="dbLock">The lock to use for database IO.</param>
+        /// <param name="dbConnection">The connection to use for database IO.</param>
         public void Initialize(IUserManager userManager, SemaphoreSlim dbLock, SQLiteDatabaseConnection dbConnection)
         {
             WriteLock.Dispose();
@@ -49,8 +52,8 @@ namespace Emby.Server.Implementations.Data
                 connection.RunInTransaction(
                 db =>
                 {
-                    db.ExecuteAll(string.Join(';', new[] {
-
+                    db.ExecuteAll(string.Join(';', new[]
+                    {
                         "create table if not exists UserDatas (key nvarchar not null, userId INT not null, rating float null, played bit not null, playCount int not null, isFavorite bit not null, playbackPositionTicks bigint not null, lastPlayedDate datetime null, AudioStreamIndex INT, SubtitleStreamIndex INT)",
 
                         "drop index if exists idx_userdata",
