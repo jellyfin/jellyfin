@@ -729,7 +729,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NsDc);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NsDc);
                 }
             }
 
