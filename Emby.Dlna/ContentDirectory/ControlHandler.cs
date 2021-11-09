@@ -1199,10 +1199,11 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
         {
-            var serverItems = result
-                .Items
-                .Select(i => new ServerItem(i, null))
-                .ToArray();
+            var serverItems = new ServerItem[result.Items.Count];
+            for (var i = 0; i < result.Items.Count; i++)
+            {
+                serverItems[i] = new ServerItem(result.Items[i], null);
+            }
 
             return new QueryResult<ServerItem>
             {
@@ -1218,10 +1219,11 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ToResult(QueryResult<(BaseItem, ItemCounts)> result)
         {
-            var serverItems = result
-                .Items
-                .Select(i => new ServerItem(i.Item1, null))
-                .ToArray();
+            var serverItems = new ServerItem[result.Items.Count];
+            for (var i = 0; i < result.Items.Count; i++)
+            {
+                serverItems[i] = new ServerItem(result.Items[i].Item1, null);
+            }
 
             return new QueryResult<ServerItem>
             {
