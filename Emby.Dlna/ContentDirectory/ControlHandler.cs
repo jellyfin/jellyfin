@@ -511,30 +511,24 @@ namespace Emby.Dlna.ContentDirectory
             string[] mediaTypes = Array.Empty<string>();
             bool? isFolder = null;
 
-            if (search.SearchType == SearchType.Audio)
+            switch (search.SearchType)
             {
-                mediaTypes = new[] { MediaType.Audio };
-                isFolder = false;
-            }
-            else if (search.SearchType == SearchType.Video)
-            {
-                mediaTypes = new[] { MediaType.Video };
-                isFolder = false;
-            }
-            else if (search.SearchType == SearchType.Image)
-            {
-                mediaTypes = new[] { MediaType.Photo };
-                isFolder = false;
-            }
-            else if (search.SearchType == SearchType.Playlist)
-            {
-                // items = items.OfType<Playlist>();
-                isFolder = true;
-            }
-            else if (search.SearchType == SearchType.MusicAlbum)
-            {
-                // items = items.OfType<MusicAlbum>();
-                isFolder = true;
+                case SearchType.Audio:
+                    mediaTypes = new[] { MediaType.Audio };
+                    isFolder = false;
+                    break;
+                case SearchType.Video:
+                    mediaTypes = new[] { MediaType.Video };
+                    isFolder = false;
+                    break;
+                case SearchType.Image:
+                    mediaTypes = new[] { MediaType.Photo };
+                    isFolder = false;
+                    break;
+                case SearchType.Playlist:
+                case SearchType.MusicAlbum:
+                    isFolder = true;
+                    break;
             }
 
             return folder.GetItems(new InternalItemsQuery
@@ -1256,7 +1250,7 @@ namespace Emby.Dlna.ContentDirectory
             var paramsIndex = id.IndexOf(ParamsSrch, StringComparison.OrdinalIgnoreCase);
             if (paramsIndex != -1)
             {
-                id = id.Substring(paramsIndex + ParamsSrch.Length);
+                id = id[(paramsIndex + ParamsSrch.Length)..];
 
                 var parts = id.Split(';');
                 id = parts[23];
