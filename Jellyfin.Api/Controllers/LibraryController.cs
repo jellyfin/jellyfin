@@ -921,14 +921,14 @@ namespace Jellyfin.Api.Controllers
             {
                 CollectionType.BoxSets => new[] { "BoxSet" },
                 CollectionType.Playlists => new[] { "Playlist" },
-                CollectionType.Movies => new[] { "Movie" },
-                CollectionType.TvShows => new[] { "Series", "Season", "Episode" },
+                CollectionType.Movies => new[] { "Movie", "Video" },
+                CollectionType.TvShows => new[] { "Series", "Season", "Episode", "Video" },
                 CollectionType.Books => new[] { "Book" },
                 CollectionType.Music => new[] { "MusicArtist", "MusicAlbum", "Audio", "MusicVideo" },
                 CollectionType.HomeVideos => new[] { "Video", "Photo" },
                 CollectionType.Photos => new[] { "Video", "Photo" },
                 CollectionType.MusicVideos => new[] { "MusicVideo" },
-                _ => new[] { "Series", "Season", "Episode", "Movie" }
+                _ => new[] { "Series", "Season", "Episode", "Movie", "Video" }
             };
         }
 

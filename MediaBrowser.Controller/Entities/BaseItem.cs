@@ -2584,7 +2584,7 @@ namespace MediaBrowser.Controller.Entities
         {
             if (!AllowsMultipleImages(type))
             {
-                throw new ArgumentException("The change index operation is only applicable to backdrops and screen shots");
+                throw new ArgumentException("The change index operation is only applicable to types that allow multiple images");
             }
 
             var info1 = GetImageInfo(type, index1);
@@ -2807,6 +2807,11 @@ namespace MediaBrowser.Controller.Entities
             if (video == null)
             {
                 return Task.FromResult(true);
+            }
+
+            if (video.OwnerId == Guid.Empty)
+            {
+                video.OwnerId = this.Id;
             }
 
             return RefreshMetadataForOwnedItem(video, copyTitleMetadata, newOptions, cancellationToken);

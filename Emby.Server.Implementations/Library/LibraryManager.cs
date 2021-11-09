@@ -2067,12 +2067,25 @@ namespace Emby.Server.Implementations.Library
             {
                 var parent = item.GetParent();
 
-                if (parent == null || parent is AggregateFolder)
+                if (parent is AggregateFolder)
                 {
                     break;
                 }
+                else if (parent == null)
+                {
+                    var owner = item.GetOwner();
 
-                item = parent;
+                    if (owner == null)
+                    {
+                        break;
+                    }
+
+                    item = owner;
+                }
+                else
+                {
+                    item = parent;
+                }
             }
 
             if (item == null)
