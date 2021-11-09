@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;

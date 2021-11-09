@@ -1,13 +1,11 @@
 #pragma warning disable CS1591
 
+using System;
+
 namespace MediaBrowser.Model.MediaInfo
 {
     public static class AudioCodec
     {
-        public const string AAC = "aac";
-        public const string MP3 = "mp3";
-        public const string AC3 = "ac3";
-
         public static string GetFriendlyName(string codec)
         {
             if (codec.Length == 0)
@@ -15,17 +13,20 @@ namespace MediaBrowser.Model.MediaInfo
                 return codec;
             }
 
-            switch (codec.ToLowerInvariant())
+            if (string.Equals(codec, "ac3", StringComparison.OrdinalIgnoreCase))
             {
-                case "ac3":
-                    return "Dolby Digital";
-                case "eac3":
-                    return "Dolby Digital+";
-                case "dca":
-                    return "DTS";
-                default:
-                    return codec.ToUpperInvariant();
+                return "Dolby Digital";
             }
+            else if (string.Equals(codec, "eac3", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Dolby Digital+";
+            }
+            else if (string.Equals(codec, "dca", StringComparison.OrdinalIgnoreCase))
+            {
+                return "DTS";
+            }
+
+            return codec.ToUpperInvariant();
         }
     }
 }

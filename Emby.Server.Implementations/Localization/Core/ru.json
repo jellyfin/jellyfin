@@ -215,7 +215,7 @@
     "LanguageYor": "Йоруба",
     "LanguageZha": "Чжуанский",
     "LanguageZul": "Зулу",
-    "Latest": "Последнее",
+    "Latest": "Крайнее",
     "MessageApplicationUpdated": "Jellyfin Server был обновлён",
     "MessageApplicationUpdatedTo": "Jellyfin Server был обновлён до {0}",
     "MessageNamedServerConfigurationUpdatedWithValue": "Конфигурация сервера (раздел {0}) была обновлена",
