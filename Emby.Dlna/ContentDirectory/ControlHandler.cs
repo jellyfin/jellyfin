@@ -700,11 +700,11 @@ namespace Emby.Dlna.ContentDirectory
                 case StubType.AlbumArtists:
                     return GetMusicAlbumArtists(item, query);
                 case StubType.FavoriteAlbums:
-                    return GetChildrenOfItem(item, query, nameof(MusicAlbum));
+                    return GetChildrenOfItem(item, query, nameof(MusicAlbum), true);
                 case StubType.FavoriteArtists:
                     return GetFavoriteArtists(item, query);
                 case StubType.FavoriteSongs:
-                    return GetChildrenOfItem(item, query, nameof(Audio));
+                    return GetChildrenOfItem(item, query, nameof(Audio), true);
                 case StubType.Songs:
                     return GetChildrenOfItem(item, query, nameof(Audio));
                 case StubType.Genres:
@@ -767,7 +767,7 @@ namespace Emby.Dlna.ContentDirectory
                 case StubType.Collections:
                     return GetMovieCollections(query);
                 case StubType.Favorites:
-                    return GetChildrenOfItem(item, query, nameof(Movie));
+                    return GetChildrenOfItem(item, query, nameof(Movie), true);
                 case StubType.Genres:
                     return GetGenres(item, query);
             }
@@ -850,9 +850,9 @@ namespace Emby.Dlna.ContentDirectory
                 case StubType.Series:
                     return GetChildrenOfItem(item, query, nameof(Series));
                 case StubType.FavoriteSeries:
-                    return GetChildrenOfItem(item, query, nameof(Series));
+                    return GetChildrenOfItem(item, query, nameof(Series), true);
                 case StubType.FavoriteEpisodes:
-                    return GetChildrenOfItem(item, query, nameof(Episode));
+                    return GetChildrenOfItem(item, query, nameof(Episode), true);
                 case StubType.Genres:
                     return GetGenres(item, query);
             }
