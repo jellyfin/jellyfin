@@ -1181,8 +1181,9 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ToResult(QueryResult<BaseItem> result)
         {
-            var serverItems = new ServerItem[result.Items.Count];
-            for (var i = 0; i < result.Items.Count; i++)
+            var length = result.Items.Count;
+            var serverItems = new ServerItem[length];
+            for (var i = 0; i < length; i++)
             {
                 serverItems[i] = new ServerItem(result.Items[i], null);
             }
@@ -1201,8 +1202,9 @@ namespace Emby.Dlna.ContentDirectory
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
         private static QueryResult<ServerItem> ToResult(QueryResult<(BaseItem, ItemCounts)> result)
         {
-            var serverItems = new ServerItem[result.Items.Count];
-            for (var i = 0; i < result.Items.Count; i++)
+            var length = result.Items.Count;
+            var serverItems = new ServerItem[length];
+            for (var i = 0; i < length; i++)
             {
                 serverItems[i] = new ServerItem(result.Items[i].Item1, null);
             }
