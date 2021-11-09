@@ -231,12 +231,12 @@ namespace Jellyfin.Providers.Tests.Manager
                 .ReturnsAsync(imageResponse);
 
             var refreshOptions = forceRefresh
-                ? new ImageRefreshOptions(null)
+                ? new ImageRefreshOptions(Mock.Of<IDirectoryService>())
                 {
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                     ReplaceAllImages = true
                 }
-                : new ImageRefreshOptions(null);
+                : new ImageRefreshOptions(Mock.Of<IDirectoryService>());
 
             var itemImageProvider = GetItemImageProvider(null, new Mock<IFileSystem>());
             var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { dynamicProvider.Object }, refreshOptions, CancellationToken.None);
@@ -286,7 +286,7 @@ namespace Jellyfin.Providers.Tests.Manager
             dynamicProvider.Setup(rp => rp.GetImage(item, imageType, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(imageResponse);
 
-            var refreshOptions = new ImageRefreshOptions(null);
+            var refreshOptions = new ImageRefreshOptions(Mock.Of<IDirectoryService>());
 
             var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
             providerManager.Setup(pm => pm.SaveImage(item, It.IsAny<Stream>(), It.IsAny<string>(), imageType, null, It.IsAny<CancellationToken>()))
@@ -323,12 +323,12 @@ namespace Jellyfin.Providers.Tests.Manager
                 .Returns(new[] { imageType });
 
             var refreshOptions = forceRefresh
-                ? new ImageRefreshOptions(null)
+                ? new ImageRefreshOptions(Mock.Of<IDirectoryService>())
                 {
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                     ReplaceAllImages = true
                 }
-                : new ImageRefreshOptions(null);
+                : new ImageRefreshOptions(Mock.Of<IDirectoryService>());
 
             var remoteInfo = new RemoteImageInfo[imageCount];
             for (int i = 0; i < imageCount; i++)
@@ -393,12 +393,12 @@ namespace Jellyfin.Providers.Tests.Manager
                 });
 
             var refreshOptions = fullRefresh
-                ? new ImageRefreshOptions(null)
+                ? new ImageRefreshOptions(Mock.Of<IDirectoryService>())
                 {
                     ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                     ReplaceAllImages = true
                 }
-                : new ImageRefreshOptions(null);
+                : new ImageRefreshOptions(Mock.Of<IDirectoryService>());
 
             var remoteInfo = new RemoteImageInfo[targetImageCount];
             for (int i = 0; i < targetImageCount; i++)
@@ -442,7 +442,7 @@ namespace Jellyfin.Providers.Tests.Manager
             remoteProvider.Setup(rp => rp.GetSupportedImages(item))
                 .Returns(new[] { imageType });
 
-            var refreshOptions = new ImageRefreshOptions(null);
+            var refreshOptions = new ImageRefreshOptions(Mock.Of<IDirectoryService>());
 
             // populate remote with double the required images to verify count is trimmed to the library option count
             var remoteInfoCount = imageCount * 2;
@@ -487,7 +487,7 @@ namespace Jellyfin.Providers.Tests.Manager
             remoteProvider.Setup(rp => rp.GetSupportedImages(item))
                 .Returns(new[] { imageType });
 
-            var refreshOptions = new ImageRefreshOptions(null)
+            var refreshOptions = new ImageRefreshOptions(Mock.Of<IDirectoryService>())
             {
                 ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                 ReplaceAllImages = true
