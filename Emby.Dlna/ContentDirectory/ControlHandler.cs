@@ -511,10 +511,6 @@ namespace Emby.Dlna.ContentDirectory
         {
             var folder = (Folder)item;
 
-            var sortOrders = folder.IsPreSorted
-                ? Array.Empty<(string, SortOrder)>()
-                : new[] { (ItemSortBy.SortName, sort.SortOrder) };
-
             string[] mediaTypes = Array.Empty<string>();
             bool? isFolder = null;
 
@@ -548,7 +544,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Limit = limit,
                 StartIndex = startIndex,
-                OrderBy = sortOrders,
+                OrderBy = GetOrderBy(sort, folder.IsPreSorted),
                 User = user,
                 Recursive = true,
                 IsMissing = false,
