@@ -1123,12 +1123,6 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindInterface(remoteAddr, out port);
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
@@ -1155,12 +1149,6 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindInterface(request, out port);
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
             return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
         }
 
@@ -1175,30 +1163,28 @@ namespace Emby.Server.Implementations
             }
 
             string smart = NetManager.GetBindInterface(hostname, out port);
-
-            // If the smartAPI doesn't start with http then treat it as a host or ip.
-            if (smart.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                return smart.Trim('/');
-            }
-
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
         /// <inheritdoc/>
-        public string GetLoopbackHttpApiUrl()
+        public string GetApiUrlForLocalAccess(bool allowHttps)
         {
-            if (NetManager.IsIP6Enabled)
-            {
-                return GetLocalApiUrl("::1", Uri.UriSchemeHttp, HttpPort);
-            }
-
-            return GetLocalApiUrl("127.0.0.1", Uri.UriSchemeHttp, HttpPort);
+            // With an empty source, the port will be null
+            string smart = NetManager.GetBindInterface(string.Empty, out _);
+            var scheme = allowHttps ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+            var port = allowHttps ? HttpsPort : HttpPort;
+            return GetLocalApiUrl(smart.Trim('/'), scheme, port);
         }
 
         /// <inheritdoc/>
         public string GetLocalApiUrl(string hostname, string scheme = null, int? port = null)
         {
+            // If the smartAPI doesn't start with http then treat it as a host or ip.
+            if (hostname.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return hostname.TrimEnd('/');
+            }
+
             // NOTE: If no BaseUrl is set then UriBuilder appends a trailing slash, but if there is no BaseUrl it does
             // not. For consistency, always trim the trailing slash.
             return new UriBuilder

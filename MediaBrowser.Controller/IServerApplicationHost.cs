@@ -81,11 +81,11 @@ namespace MediaBrowser.Controller
         string GetSmartApiUrl(string hostname, int? port = null);
 
         /// <summary>
-        /// Gets a localhost URL that can be used to access the API using the loop-back IP address.
-        /// over HTTP (not HTTPS).
+        /// Gets an URL that can be used to access the API over LAN.
         /// </summary>
+        /// <param name="allowHttps">A value indicating whether to allow HTTPS.</param>
         /// <returns>The API URL.</returns>
-        string GetLoopbackHttpApiUrl();
+        string GetApiUrlForLocalAccess(bool allowHttps = true);
 
         /// <summary>
         /// Gets a local (LAN) URL that can be used to access the API.

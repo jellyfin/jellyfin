@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
 
             // OpenedMediaSource.Path = TempFilePath;
