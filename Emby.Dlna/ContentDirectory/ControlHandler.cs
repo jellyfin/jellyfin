@@ -51,7 +51,6 @@ namespace Emby.Dlna.ContentDirectory
 
         private readonly ILibraryManager _libraryManager;
         private readonly IUserDataManager _userDataManager;
-        private readonly IServerConfigurationManager _config;
         private readonly User _user;
         private readonly IUserViewManager _userViewManager;
         private readonly ITVSeriesManager _tvSeriesManager;
@@ -105,7 +104,6 @@ namespace Emby.Dlna.ContentDirectory
             _userViewManager = userViewManager;
             _tvSeriesManager = tvSeriesManager;
             _profile = profile;
-            _config = config;
 
             _didlBuilder = new DidlBuilder(
                 profile,
