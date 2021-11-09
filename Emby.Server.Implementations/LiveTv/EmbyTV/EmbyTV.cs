@@ -1308,16 +1308,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 await recorder.Record(directStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
-                _logger.LogInformation("Recording completed: {recordPath}", recordPath);
+                _logger.LogInformation("Recording completed: {RecordPath}", recordPath);
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("Recording stopped: {recordPath}", recordPath);
+                _logger.LogInformation("Recording stopped: {RecordPath}", recordPath);
                 recordingStatus = RecordingStatus.Completed;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error recording to {recordPath}", recordPath);
+                _logger.LogError(ex, "Error recording to {RecordPath}", recordPath);
                 recordingStatus = RecordingStatus.Error;
             }
 
@@ -1404,7 +1404,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {path}", path);
+                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {Path}", path);
                 }
             }
         }

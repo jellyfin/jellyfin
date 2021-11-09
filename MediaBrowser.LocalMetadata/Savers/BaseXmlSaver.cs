@@ -144,7 +144,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error setting hidden attribute on {path}", path);
+                Logger.LogError(ex, "Error setting hidden attribute on {Path}", path);
             }
         }
 

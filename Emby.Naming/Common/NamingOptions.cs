@@ -1,3 +1,5 @@
+#pragma warning disable CA1819
+
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
