@@ -13,15 +13,15 @@ body:
       label: Please describe your bug
       description: Also tell us, what did you expect to happen?
       placeholder: |
-      The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
-      
-      This is my issue.
-      
-      Steps to Reproduce
-        1. In this environment...
-        2. With this config...
-        3. Run '...'
-        4. See error...
+        The more information that you are able to provide, the better. Did you do anything before this happened? Did you upgrade or change anything? Any screenshots or logs you can provide will be helpful.
+
+        This is my issue.
+
+        Steps to Reproduce
+          1. In this environment...
+          2. With this config...
+          3. Run '...'
+          4. See error...
     validations:
       required: true
   - type: dropdown
@@ -59,14 +59,14 @@ body:
         - **Networking**: [e.g. Host, Bridge/NAT]
         - **Storage**: [e.g. local, NFS, cloud]
       value: |
-        - OS: 
-        - Virtualization: 
-        - Clients: 
-        - Browser: 
+        - OS:
+        - Virtualization:
+        - Clients:
+        - Browser:
         - FFmpeg Version:
         - Playback Method:
-        - Hardware Acceleration: 
-        - Plugins: 
+        - Hardware Acceleration:
+        - Plugins:
         - Reverse Proxy:
         - Base URL:
         - Networking:
@@ -77,14 +77,14 @@ body:
     attributes:
       label: Jellyfin logs
       description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
-      placeholder: For playback issues, browser/client and FFmpeg logs may be more useful. 
+      placeholder: For playback issues, browser/client and FFmpeg logs may be more useful.
       render: shell
   - type: textarea
     id: ffmpeg-logs
     attributes:
       label: FFmpeg logs
       description: Please copy and paste any relevant log output. This can be found in Dashboard > Logs.
-      placeholder: It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg. 
+      placeholder: It's important to include the specific codec details. If no FFmpeg logs appear, the file was Direct Played and did not use FFmpeg.
       render: shell
   - type: textarea
     id: browserlogs
