@@ -57,7 +57,7 @@ namespace Jellyfin.Server.Implementations.Events
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Uncaught exception in EventConsumer {type}: ", service.GetType());
+                    _logger.LogError(e, "Uncaught exception in EventConsumer {Type}: ", service.GetType());
                 }
             }
         }

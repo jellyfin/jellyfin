@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.IO
                         if (string.IsNullOrEmpty(newPath))
                         {
                             // invalid shortcut - could be old or target could just be unavailable
-                            logger.LogWarning("Encountered invalid shortcut: " + fullName);
+                            logger.LogWarning("Encountered invalid shortcut: {Path}", fullName);
                             continue;
                         }
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.IO
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, "Error resolving shortcut from {path}", fullName);
+                        logger.LogError(ex, "Error resolving shortcut from {Path}", fullName);
                     }
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)

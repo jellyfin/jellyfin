@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
-            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
             IPAddress localAddress = null;
