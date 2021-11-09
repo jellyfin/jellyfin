@@ -1794,7 +1794,7 @@ namespace Jellyfin.Api.Controllers
                 return;
             }
 
-            _logger.LogDebug("Deleting partial HLS file {path}", path);
+            _logger.LogDebug("Deleting partial HLS file {Path}", path);
 
             try
             {
@@ -1802,15 +1802,15 @@ namespace Jellyfin.Api.Controllers
             }
             catch (IOException ex)
             {
-                _logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
+                _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
 
                 var task = Task.Delay(100);
-                Task.WaitAll(task);
+                task.Wait();
                 DeleteFile(path, retryCount + 1);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting partial stream file(s) {path}", path);
+                _logger.LogError(ex, "Error deleting partial stream file(s) {Path}", path);
             }
         }
 

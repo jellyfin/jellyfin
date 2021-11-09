@@ -497,7 +497,7 @@ namespace Emby.Server.Implementations.Dto
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting {imageType} image info for {path}", image.Type, image.Path);
+                _logger.LogError(ex, "Error getting {ImageType} image info for {Path}", image.Type, image.Path);
                 return null;
             }
         }

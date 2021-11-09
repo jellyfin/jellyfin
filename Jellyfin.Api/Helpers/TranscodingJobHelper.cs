@@ -283,6 +283,7 @@ namespace Jellyfin.Api.Helpers
 
             lock (job.ProcessLock!)
             {
+                #pragma warning disable CA1849 // Can't await in lock block
                 job.TranscodingThrottler?.Stop().GetAwaiter().GetResult();
 
                 var process = job.Process;
@@ -308,6 +309,7 @@ namespace Jellyfin.Api.Helpers
                     {
                     }
                 }
+                #pragma warning restore CA1849
             }
 
             if (delete(job.Path!))

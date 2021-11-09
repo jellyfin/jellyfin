@@ -675,7 +675,7 @@ namespace Jellyfin.Server
 
         private static string NormalizeCommandLineArgument(string arg)
         {
-            if (!arg.Contains(" ", StringComparison.OrdinalIgnoreCase))
+            if (!arg.Contains(' ', StringComparison.Ordinal))
             {
                 return arg;
             }

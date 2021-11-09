@@ -51,7 +51,7 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
 
-                if (!key.Contains('='))
+                if (!key.Contains('=', StringComparison.Ordinal))
                 {
                     _store = value;
                     return;

@@ -215,7 +215,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                _logger.LogError(ex, "Error in {provider}", provider.Name);
+                _logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
         }
 
@@ -331,7 +331,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
-                _logger.LogError(ex, "Error in {provider}", provider.Name);
+                _logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
         }
 

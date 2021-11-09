@@ -276,7 +276,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error watching path: {path}", path);
+                    _logger.LogError(ex, "Error watching path: {Path}", path);
                 }
             });
         }

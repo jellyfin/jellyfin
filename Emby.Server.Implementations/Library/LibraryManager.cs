@@ -492,7 +492,7 @@ namespace Emby.Server.Implementations.Library
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in {resolver} resolving {path}", resolver.GetType().Name, args.Path);
+                _logger.LogError(ex, "Error in {Resolver} resolving {Path}", resolver.GetType().Name, args.Path);
                 return null;
             }
         }
@@ -799,7 +799,7 @@ namespace Emby.Server.Implementations.Library
                     {
                         var userRootPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
 
-                        _logger.LogDebug("Creating userRootPath at {path}", userRootPath);
+                        _logger.LogDebug("Creating userRootPath at {Path}", userRootPath);
                         Directory.CreateDirectory(userRootPath);
 
                         var newItemId = GetNewItemId(userRootPath, typeof(UserRootFolder));
@@ -810,7 +810,7 @@ namespace Emby.Server.Implementations.Library
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error creating UserRootFolder {path}", newItemId);
+                            _logger.LogError(ex, "Error creating UserRootFolder {Path}", newItemId);
                         }
 
                         if (tmpItem == null)
@@ -827,7 +827,7 @@ namespace Emby.Server.Implementations.Library
                         }
 
                         _userRootFolder = tmpItem;
-                        _logger.LogDebug("Setting userRootFolder: {folder}", _userRootFolder);
+                        _logger.LogDebug("Setting userRootFolder: {Folder}", _userRootFolder);
                     }
                 }
             }
@@ -1213,7 +1213,7 @@ namespace Emby.Server.Implementations.Library
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error resolving shortcut file {file}", i);
+                            _logger.LogError(ex, "Error resolving shortcut file {File}", i);
                             return null;
                         }
                     })
@@ -1698,7 +1698,7 @@ namespace Emby.Server.Implementations.Library
 
                     if (video == null)
                     {
-                        _logger.LogError("Intro resolver returned null for {path}.", info.Path);
+                        _logger.LogError("Intro resolver returned null for {Path}.", info.Path);
                     }
                     else
                     {
@@ -1717,7 +1717,7 @@ namespace Emby.Server.Implementations.Library
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error resolving path {path}.", info.Path);
+                    _logger.LogError(ex, "Error resolving path {Path}.", info.Path);
                 }
             }
             else
