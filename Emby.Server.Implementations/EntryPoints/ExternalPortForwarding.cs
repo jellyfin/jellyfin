@@ -9,7 +9,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;

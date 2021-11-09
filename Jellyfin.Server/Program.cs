@@ -10,11 +10,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.IO;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using Serilog.Extensions.Logging;
+using Serilog.Filters;
 using SQLitePCL;
 using ConfigurationExtensions = MediaBrowser.Controller.Extensions.ConfigurationExtensions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -156,34 +158,36 @@ namespace Jellyfin.Server
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
+            // If hosting the web client, validate the client content path
+            if (startupConfig.HostWebClient())
+            {
+                string? webContentPath = appPaths.WebPath;
+                if (!Directory.Exists(webContentPath) || !Directory.EnumerateFiles(webContentPath).Any())
+                {
+                    _logger.LogError(
+                        "The server is expected to host the web client, but the provided content directory is either " +
+                        "invalid or empty: {WebContentPath}. If you do not want to host the web client with the " +
+                        "server, you may set the '--nowebclient' command line flag, or set" +
+                        "'{ConfigKey}=false' in your config settings.",
+                        webContentPath,
+                        ConfigurationExtensions.HostWebClientKey);
+                    Environment.ExitCode = 1;
+                    return;
+                }
+            }
+
             PerformStaticInitialization();
-            var serviceCollection = new ServiceCollection();
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
-                startupConfig,
-                new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                serviceCollection);
+                startupConfig);
 
             try
             {
-                // If hosting the web client, validate the client content path
-                if (startupConfig.HostWebClient())
-                {
-                    string? webContentPath = appHost.ConfigurationManager.ApplicationPaths.WebPath;
-                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
-                    {
-                        throw new InvalidOperationException(
-                            "The server is expected to host the web client, but the provided content directory is either " +
-                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
-                            "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
-                    }
-                }
-
-                appHost.Init();
+                var serviceCollection = new ServiceCollection();
+                appHost.Init(serviceCollection);
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
@@ -194,9 +198,9 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await webHost.StartAsync().ConfigureAwait(false);
+                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex) when (ex is not TaskCanceledException)
                 {
                     _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
@@ -223,7 +227,7 @@ namespace Jellyfin.Server
             {
                 _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
                 // Run before disposing the application
-                using var context = new JellyfinDbProvider(appHost.ServiceProvider, appPaths).CreateContext();
+                using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
                 if (context.Database.IsSqlite())
                 {
                     context.Database.ExecuteSqlRaw("PRAGMA optimize");
@@ -546,7 +550,7 @@ namespace Jellyfin.Server
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = File.Open(configPath, FileMode.CreateNew);
+            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 
@@ -593,26 +597,50 @@ namespace Jellyfin.Server
             try
             {
                 // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
-                Serilog.Log.Logger = new LoggerConfiguration()
-                    .ReadFrom.Configuration(configuration)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithThreadId()
+                Log.Logger = new LoggerConfiguration()
+                    .WriteTo.Logger(lc =>
+                        lc.ReadFrom.Configuration(configuration)
+                            .Enrich.FromLogContext()
+                            .Enrich.WithThreadId()
+                            .Filter.ByExcluding(Matching.FromSource<ClientEventLogger>()))
+                    .WriteTo.Logger(lc =>
+                        lc.WriteTo.Map(
+                                "ClientName",
+                                (clientName, wt)
+                                    => wt.File(
+                                        Path.Combine(appPaths.LogDirectoryPath, "log_" + clientName + "_.log"),
+                                        rollingInterval: RollingInterval.Day,
+                                        outputTemplate: "{Message:l}{NewLine}{Exception}",
+                                        encoding: Encoding.UTF8))
+                            .Filter.ByIncludingOnly(Matching.FromSource<ClientEventLogger>()))
                     .CreateLogger();
             }
             catch (Exception ex)
             {
-                Serilog.Log.Logger = new LoggerConfiguration()
-                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
-                    .WriteTo.Async(x => x.File(
-                        Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
-                        rollingInterval: RollingInterval.Day,
-                        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message}{NewLine}{Exception}",
-                        encoding: Encoding.UTF8))
-                    .Enrich.FromLogContext()
-                    .Enrich.WithThreadId()
+                Log.Logger = new LoggerConfiguration()
+                    .WriteTo.Logger(lc =>
+                        lc.WriteTo.Async(x => x.File(
+                                Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
+                                rollingInterval: RollingInterval.Day,
+                                outputTemplate: "{Message:l}{NewLine}{Exception}",
+                                encoding: Encoding.UTF8))
+                            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
+                            .Enrich.FromLogContext()
+                            .Enrich.WithThreadId())
+                    .WriteTo.Logger(lc =>
+                        lc
+                            .WriteTo.Map(
+                                "ClientName",
+                                (clientName, wt)
+                                    => wt.File(
+                                        Path.Combine(appPaths.LogDirectoryPath, "log_" + clientName + "_.log"),
+                                        rollingInterval: RollingInterval.Day,
+                                        outputTemplate: "{Message:l}{NewLine}{Exception}",
+                                        encoding: Encoding.UTF8))
+                            .Filter.ByIncludingOnly(Matching.FromSource<ClientEventLogger>()))
                     .CreateLogger();
 
-                Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
+                Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
         }
 
@@ -647,7 +675,7 @@ namespace Jellyfin.Server
 
         private static string NormalizeCommandLineArgument(string arg)
         {
-            if (!arg.Contains(" ", StringComparison.OrdinalIgnoreCase))
+            if (!arg.Contains(' ', StringComparison.Ordinal))
             {
                 return arg;
             }

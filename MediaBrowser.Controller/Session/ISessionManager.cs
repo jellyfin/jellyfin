@@ -10,8 +10,6 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Security;
-using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Session;
 using MediaBrowser.Model.SyncPlay;
 
@@ -159,21 +157,21 @@ namespace MediaBrowser.Controller.Session
         /// <summary>
         /// Sends a SyncPlayCommand to a session.
         /// </summary>
-        /// <param name="session">The session.</param>
+        /// <param name="sessionId">The identifier of the session.</param>
         /// <param name="command">The command.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task SendSyncPlayCommand(SessionInfo session, SendCommand command, CancellationToken cancellationToken);
+        Task SendSyncPlayCommand(string sessionId, SendCommand command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends a SyncPlayGroupUpdate to a session.
         /// </summary>
-        /// <param name="session">The session.</param>
+        /// <param name="sessionId">The identifier of the session.</param>
         /// <param name="command">The group update.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <typeparam name="T">Type of group.</typeparam>
         /// <returns>Task.</returns>
-        Task SendSyncPlayGroupUpdate<T>(SessionInfo session, GroupUpdate<T> command, CancellationToken cancellationToken);
+        Task SendSyncPlayGroupUpdate<T>(string sessionId, GroupUpdate<T> command, CancellationToken cancellationToken);
 
         /// <summary>
         /// Sends the browse command.

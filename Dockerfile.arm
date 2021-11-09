@@ -1,8 +1,8 @@
-# DESIGNED FOR BUILDING ON AMD64 ONLY
+# DESIGNED FOR BUILDING ON ARM ONLY
 #####################################
 # Requires binfm_misc registration
 # https://github.com/multiarch/qemu-user-static#binfmt_misc-register
-ARG DOTNET_VERSION=5.0
+ARG DOTNET_VERSION=6.0
 
 
 FROM node:lts-alpine as web-builder
@@ -14,7 +14,7 @@ RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-
  && mv dist /dist
 
 FROM multiarch/qemu-user-static:x86_64-arm as qemu
-FROM arm32v7/debian:bullseye-slim as app
+FROM arm32v7/debian:stable-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -24,6 +24,8 @@ ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
+
+# curl: setup & healthcheck
 RUN apt-get update \
  && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg curl && \
  curl -ks https://repo.jellyfin.org/debian/jellyfin_team.gpg.key | apt-key add - && \
@@ -42,7 +44,7 @@ RUN apt-get update \
  vainfo \
  libva2 \
  locales \
- && apt-get remove curl gnupg -y \
+ && apt-get remove gnupg -y \
  && apt-get clean autoclean -y \
  && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/* \
@@ -50,7 +52,7 @@ RUN apt-get update \
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -66,6 +68,8 @@ RUN dotnet publish Jellyfin.Server --configuration Release --output="/jellyfin" 
 
 FROM app
 
+ENV HEALTHCHECK_URL=http://localhost:8096/health
+
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
@@ -75,3 +79,6 @@ ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
     "--cachedir", "/cache", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+     CMD curl -Lk "${HEALTHCHECK_URL}" || exit 1

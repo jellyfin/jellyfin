@@ -9,14 +9,15 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Cryptography;
@@ -34,7 +35,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
-        private readonly IApplicationHost _appHost;
         private readonly ICryptoProvider _cryptoProvider;
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
@@ -44,12 +44,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
             IHttpClientFactory httpClientFactory,
-            IApplicationHost appHost,
             ICryptoProvider cryptoProvider)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _appHost = appHost;
             _cryptoProvider = cryptoProvider;
         }
 
@@ -114,18 +112,29 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             options.Headers.TryAddWithoutValidation("token", token);
             using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var dailySchedules = await JsonSerializer.DeserializeAsync<List<DayDto>>(responseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var dailySchedules = await JsonSerializer.DeserializeAsync<IReadOnlyList<DayDto>>(responseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (dailySchedules == null)
+            {
+                return Array.Empty<ProgramInfo>();
+            }
+
             _logger.LogDebug("Found {ScheduleCount} programs on {ChannelID} ScheduleDirect", dailySchedules.Count, channelId);
 
             using var programRequestOptions = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/programs");
             programRequestOptions.Headers.TryAddWithoutValidation("token", token);
 
-            var programsID = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
-            programRequestOptions.Content = new StringContent("[\"" + string.Join("\", \"", programsID) + "\"]", Encoding.UTF8, MediaTypeNames.Application.Json);
+            var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
+            programRequestOptions.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(programIds, _jsonOptions));
+            programRequestOptions.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
 
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var programDetails = await JsonSerializer.DeserializeAsync<List<ProgramDetailsDto>>(innerResponseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            var programDetails = await JsonSerializer.DeserializeAsync<IReadOnlyList<ProgramDetailsDto>>(innerResponseStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (programDetails == null)
+            {
+                return Array.Empty<ProgramInfo>();
+            }
+
             var programDict = programDetails.ToDictionary(p => p.ProgramId, y => y);
 
             var programIdsWithImages = programDetails
@@ -142,6 +151,11 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 //              schedule.ProgramId + " which says it has images? " +
                 //              programDict[schedule.ProgramId].hasImageArtwork);
 
+                if (string.IsNullOrEmpty(schedule.ProgramId))
+                {
+                    continue;
+                }
+
                 if (images != null)
                 {
                     var imageIndex = images.FindIndex(i => i.ProgramId == schedule.ProgramId[..10]);
@@ -149,7 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     {
                         var programEntry = programDict[schedule.ProgramId];
 
-                        var allImages = images[imageIndex].Data ?? new List<ImageDataDto>();
+                        var allImages = images[imageIndex].Data;
                         var imagesWithText = allImages.Where(i => string.Equals(i.Text, "yes", StringComparison.OrdinalIgnoreCase));
                         var imagesWithoutText = allImages.Where(i => string.Equals(i.Text, "no", StringComparison.OrdinalIgnoreCase));
 
@@ -217,7 +231,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         private ProgramInfo GetProgram(string channelId, ProgramDto programInfo, ProgramDetailsDto details)
         {
-            var startAt = GetDate(programInfo.AirDateTime);
+            if (programInfo.AirDateTime == null)
+            {
+                return null;
+            }
+
+            var startAt = programInfo.AirDateTime.Value;
             var endAt = startAt.AddSeconds(programInfo.Duration);
             var audioType = ProgramAudio.Stereo;
 
@@ -225,21 +244,21 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             string newID = programId + "T" + startAt.Ticks + "C" + channelId;
 
-            if (programInfo.AudioProperties != null)
+            if (programInfo.AudioProperties.Count != 0)
             {
-                if (programInfo.AudioProperties.Exists(item => string.Equals(item, "atmos", StringComparison.OrdinalIgnoreCase)))
+                if (programInfo.AudioProperties.Contains("atmos", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Atmos;
                 }
-                else if (programInfo.AudioProperties.Exists(item => string.Equals(item, "dd 5.1", StringComparison.OrdinalIgnoreCase)))
+                else if (programInfo.AudioProperties.Contains("dd 5.1", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Exists(item => string.Equals(item, "dd", StringComparison.OrdinalIgnoreCase)))
+                else if (programInfo.AudioProperties.Contains("dd", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Exists(item => string.Equals(item, "stereo", StringComparison.OrdinalIgnoreCase)))
+                else if (programInfo.AudioProperties.Contains("stereo", StringComparer.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Stereo;
                 }
@@ -355,9 +374,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(details.OriginalAirDate))
+            if (details.OriginalAirDate != null)
             {
-                info.OriginalAirDate = DateTime.Parse(details.OriginalAirDate, CultureInfo.InvariantCulture);
+                info.OriginalAirDate = details.OriginalAirDate;
                 info.ProductionYear = info.OriginalAirDate.Value.Year;
             }
 
@@ -382,18 +401,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             return info;
-        }
-
-        private static DateTime GetDate(string value)
-        {
-            var date = DateTime.ParseExact(value, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'", CultureInfo.InvariantCulture);
-
-            if (date.Kind != DateTimeKind.Utc)
-            {
-                date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
-            }
-
-            return date;
         }
 
         private string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, bool returnDefaultImage, double desiredAspect)
@@ -449,14 +456,14 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return result;
         }
 
-        private async Task<List<ShowImagesDto>> GetImageForPrograms(
+        private async Task<IReadOnlyList<ShowImagesDto>> GetImageForPrograms(
             ListingsProviderInfo info,
             IReadOnlyList<string> programIds,
             CancellationToken cancellationToken)
         {
             if (programIds.Count == 0)
             {
-                return new List<ShowImagesDto>();
+                return Array.Empty<ShowImagesDto>();
             }
 
             StringBuilder str = new StringBuilder("[", 1 + (programIds.Count * 13));
@@ -480,13 +487,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 using var innerResponse2 = await Send(message, true, info, cancellationToken).ConfigureAwait(false);
                 await using var response = await innerResponse2.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                return await JsonSerializer.DeserializeAsync<List<ShowImagesDto>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                return await JsonSerializer.DeserializeAsync<IReadOnlyList<ShowImagesDto>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting image info from schedules direct");
 
-                return new List<ShowImagesDto>();
+                return Array.Empty<ShowImagesDto>();
             }
         }
 
@@ -509,7 +516,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 using var httpResponse = await Send(options, false, info, cancellationToken).ConfigureAwait(false);
                 await using var response = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
-                var root = await JsonSerializer.DeserializeAsync<List<HeadendsDto>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
+                var root = await JsonSerializer.DeserializeAsync<IReadOnlyList<HeadendsDto>>(response, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                 if (root != null)
                 {
@@ -520,7 +527,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             lineups.Add(new NameIdPair
                             {
                                 Name = string.IsNullOrWhiteSpace(lineup.Name) ? lineup.Lineup : lineup.Name,
-                                Id = lineup.Uri[18..]
+                                Id = lineup.Uri?[18..]
                             });
                         }
                     }
@@ -651,7 +658,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await JsonSerializer.DeserializeAsync<TokenDto>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            if (string.Equals(root.Message, "OK", StringComparison.Ordinal))
+            if (string.Equals(root?.Message, "OK", StringComparison.Ordinal))
             {
                 _logger.LogInformation("Authenticated with Schedules Direct token: {Token}", root.Token);
                 return root.Token;
@@ -708,12 +715,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 using var response = httpResponse.Content;
                 var root = await JsonSerializer.DeserializeAsync<LineupsDto>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                return root.Lineups.Any(i => string.Equals(info.ListingsId, i.Lineup, StringComparison.OrdinalIgnoreCase));
+                return root?.Lineups.Any(i => string.Equals(info.ListingsId, i.Lineup, StringComparison.OrdinalIgnoreCase)) ?? false;
             }
             catch (HttpRequestException ex)
             {
                 // SchedulesDirect returns 400 if no lineups are configured.
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                if (ex.StatusCode is HttpStatusCode.BadRequest)
                 {
                     return false;
                 }
@@ -779,10 +786,15 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             using var httpResponse = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var stream = await httpResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             var root = await JsonSerializer.DeserializeAsync<ChannelDto>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
+            if (root == null)
+            {
+                return new List<ChannelInfo>();
+            }
+
             _logger.LogInformation("Found {ChannelCount} channels on the lineup on ScheduleDirect", root.Map.Count);
             _logger.LogInformation("Mapping Stations to Channel");
 
-            var allStations = root.Stations ?? new List<StationDto>();
+            var allStations = root.Stations;
 
             var map = root.Map;
             var list = new List<ChannelInfo>(map.Count);
@@ -790,11 +802,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             {
                 var channelNumber = GetChannelNumber(channel);
 
-                var station = allStations.Find(item => string.Equals(item.StationId, channel.StationId, StringComparison.OrdinalIgnoreCase))
-                    ?? new StationDto
-                    {
-                        StationId = channel.StationId
-                    };
+                var stationIndex = allStations.FindIndex(item => string.Equals(item.StationId, channel.StationId, StringComparison.OrdinalIgnoreCase));
+                var station = stationIndex == -1
+                    ? new StationDto { StationId = channel.StationId }
+                    : allStations[stationIndex];
 
                 var channelInfo = new ChannelInfo
                 {

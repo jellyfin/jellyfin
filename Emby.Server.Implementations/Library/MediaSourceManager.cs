@@ -13,9 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -45,6 +45,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
+        private readonly IDirectoryService _directoryService;
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
@@ -61,7 +62,8 @@ namespace Emby.Server.Implementations.Library
             ILogger<MediaSourceManager> logger,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            IDirectoryService directoryService)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
@@ -72,6 +74,7 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _localizationManager = localizationManager;
             _appPaths = applicationPaths;
+            _directoryService = directoryService;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -104,16 +107,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             return false;
-        }
-
-        public List<MediaStream> GetMediaStreams(string mediaSourceId)
-        {
-            var list = GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = new Guid(mediaSourceId)
-            });
-
-            return GetMediaStreamsForItem(list);
         }
 
         public List<MediaStream> GetMediaStreams(Guid itemId)
@@ -161,7 +154,7 @@ namespace Emby.Server.Implementations.Library
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
             {
                 await item.RefreshMetadata(
-                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    new MetadataRefreshOptions(_directoryService)
                     {
                         EnableRemoteContentProbe = true,
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh
@@ -212,6 +205,7 @@ namespace Emby.Server.Implementations.Library
             return SortMediaSources(list);
         }
 
+        /// <inheritdoc />>
         public MediaProtocol GetPathProtocol(string path)
         {
             if (path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
@@ -258,7 +252,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (path != null)
                 {
-                    if (path.IndexOf(".m3u", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (path.Contains(".m3u", StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -297,7 +291,7 @@ namespace Emby.Server.Implementations.Library
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting media sources");
-                return new List<MediaSourceInfo>();
+                return Enumerable.Empty<MediaSourceInfo>();
             }
         }
 
@@ -494,14 +488,11 @@ namespace Emby.Server.Implementations.Library
                 _liveStreamSemaphore.Release();
             }
 
-            // TODO: Don't hardcode this
-            const bool isAudio = false;
-
             try
             {
                 if (mediaSource.MediaStreams.Any(i => i.Index != -1) || !mediaSource.SupportsProbing)
                 {
-                    AddMediaInfo(mediaSource, isAudio);
+                    AddMediaInfo(mediaSource);
                 }
                 else
                 {
@@ -509,19 +500,19 @@ namespace Emby.Server.Implementations.Library
                     string cacheKey = request.OpenToken;
 
                     await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
-                        .AddMediaInfoWithProbe(mediaSource, isAudio, cacheKey, true, cancellationToken)
+                        .AddMediaInfoWithProbe(mediaSource, false, cacheKey, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error probing live tv stream");
-                AddMediaInfo(mediaSource, isAudio);
+                AddMediaInfo(mediaSource);
             }
 
             // TODO: @bond Fix
             var json = JsonSerializer.SerializeToUtf8Bytes(mediaSource, _jsonOptions);
-            _logger.LogInformation("Live stream opened: " + json);
+            _logger.LogInformation("Live stream opened: {@MediaSource}", mediaSource);
             var clone = JsonSerializer.Deserialize<MediaSourceInfo>(json, _jsonOptions);
 
             if (!request.UserId.Equals(Guid.Empty))
@@ -536,7 +527,7 @@ namespace Emby.Server.Implementations.Library
             return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
 
-        private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
+        private static void AddMediaInfo(MediaSourceInfo mediaSource)
         {
             mediaSource.DefaultSubtitleStreamIndex = null;
 
@@ -587,13 +578,6 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate();
         }
 
-        public Task<IDirectStreamProvider> GetDirectStreamProviderByUniqueId(string uniqueId, CancellationToken cancellationToken)
-        {
-            var info = _openStreams.FirstOrDefault(i => i.Value != null && string.Equals(i.Value.UniqueId, uniqueId, StringComparison.OrdinalIgnoreCase));
-
-            return Task.FromResult(info.Value as IDirectStreamProvider);
-        }
-
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken)
         {
             var result = await OpenLiveStreamInternal(request, cancellationToken).ConfigureAwait(false);
@@ -602,7 +586,8 @@ namespace Emby.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStreamMediaInfo(string id, CancellationToken cancellationToken)
         {
-            var liveStreamInfo = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var liveStreamInfo = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
 
             var mediaSource = liveStreamInfo.MediaSource;
 
@@ -638,7 +623,7 @@ namespace Emby.Server.Implementations.Library
             {
                 try
                 {
-                    await using FileStream jsonStream = File.OpenRead(cacheFilePath);
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cacheFilePath);
                     mediaInfo = await JsonSerializer.DeserializeAsync<MediaInfo>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
 
                     // _logger.LogDebug("Found cached media info");
@@ -771,18 +756,19 @@ namespace Emby.Server.Implementations.Library
             mediaSource.InferTotalBitrate(true);
         }
 
-        public async Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
+        public Task<Tuple<MediaSourceInfo, IDirectStreamProvider>> GetLiveStreamWithDirectStreamProvider(string id, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(id))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var info = await GetLiveStreamInfo(id, cancellationToken).ConfigureAwait(false);
-            return new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider);
+            // TODO probably shouldn't throw here but it is kept for "backwards compatibility"
+            var info = GetLiveStreamInfo(id) ?? throw new ResourceNotFoundException();
+            return Task.FromResult(new Tuple<MediaSourceInfo, IDirectStreamProvider>(info.MediaSource, info as IDirectStreamProvider));
         }
 
-        private Task<ILiveStream> GetLiveStreamInfo(string id, CancellationToken cancellationToken)
+        public ILiveStream GetLiveStreamInfo(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -791,12 +777,16 @@ namespace Emby.Server.Implementations.Library
 
             if (_openStreams.TryGetValue(id, out ILiveStream info))
             {
-                return Task.FromResult(info);
+                return info;
             }
-            else
-            {
-                return Task.FromException<ILiveStream>(new ResourceNotFoundException());
-            }
+
+            return null;
+        }
+
+        /// <inheritdoc />
+        public ILiveStream GetLiveStreamInfoByUniqueId(string uniqueId)
+        {
+            return _openStreams.Values.FirstOrDefault(stream => string.Equals(uniqueId, stream?.UniqueId, StringComparison.OrdinalIgnoreCase));
         }
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
@@ -856,9 +846,7 @@ namespace Emby.Server.Implementations.Library
             return (provider, keyId);
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);

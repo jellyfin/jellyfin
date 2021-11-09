@@ -87,9 +87,9 @@ namespace Emby.Naming.Video
                 year = cleanDateTimeResult.Year;
 
                 if (extraResult.ExtraType == null
-                    && TryCleanString(name, namingOptions, out ReadOnlySpan<char> newName))
+                    && TryCleanString(name, namingOptions, out var newName))
                 {
-                    name = newName.ToString();
+                    name = newName;
                 }
             }
 
@@ -138,7 +138,7 @@ namespace Emby.Naming.Video
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="newName">Clean name.</param>
         /// <returns>True if cleaning of name was successful.</returns>
-        public static bool TryCleanString([NotNullWhen(true)] string? name, NamingOptions namingOptions, out ReadOnlySpan<char> newName)
+        public static bool TryCleanString([NotNullWhen(true)] string? name, NamingOptions namingOptions, out string newName)
         {
             return CleanStringParser.TryClean(name, namingOptions.CleanStringRegexes, out newName);
         }

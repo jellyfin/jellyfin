@@ -19,6 +19,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
@@ -43,18 +44,10 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The trailer folder name.
         /// </summary>
-        public const string TrailerFolderName = "trailers";
+        public const string TrailersFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
-        public const string ThemeSongFilename = "theme";
+        public const string ThemeSongFileName = "theme";
         public const string ThemeVideosFolderName = "backdrops";
-        public const string ExtrasFolderName = "extras";
-        public const string BehindTheScenesFolderName = "behind the scenes";
-        public const string DeletedScenesFolderName = "deleted scenes";
-        public const string InterviewFolderName = "interviews";
-        public const string SceneFolderName = "scenes";
-        public const string SampleFolderName = "samples";
-        public const string ShortsFolderName = "shorts";
-        public const string FeaturettesFolderName = "featurettes";
 
         /// <summary>
         /// The supported image extensions.
@@ -91,17 +84,19 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.Scene
         };
 
-        public static readonly char[] SlugReplaceChars = { '?', '/', '&' };
-        public static readonly string[] AllExtrasTypesFolderNames =
+        /// <summary>
+        /// The supported extra folder names and types. See <see cref="Emby.Naming.Common.NamingOptions" />.
+        /// </summary>
+        public static readonly Dictionary<string, ExtraType> AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
         {
-            ExtrasFolderName,
-            BehindTheScenesFolderName,
-            DeletedScenesFolderName,
-            InterviewFolderName,
-            SceneFolderName,
-            SampleFolderName,
-            ShortsFolderName,
-            FeaturettesFolderName
+            ["extras"] = MediaBrowser.Model.Entities.ExtraType.Unknown,
+            ["behind the scenes"] = MediaBrowser.Model.Entities.ExtraType.BehindTheScenes,
+            ["deleted scenes"] = MediaBrowser.Model.Entities.ExtraType.DeletedScene,
+            ["interviews"] = MediaBrowser.Model.Entities.ExtraType.Interview,
+            ["scenes"] = MediaBrowser.Model.Entities.ExtraType.Scene,
+            ["samples"] = MediaBrowser.Model.Entities.ExtraType.Sample,
+            ["shorts"] = MediaBrowser.Model.Entities.ExtraType.Clip,
+            ["featurettes"] = MediaBrowser.Model.Entities.ExtraType.Clip
         };
 
         private string _sortName;
@@ -357,11 +352,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                // if (IsOffline)
-                // {
-                //    return LocationType.Offline;
-                // }
-
                 var path = Path;
                 if (string.IsNullOrEmpty(path))
                 {
@@ -394,7 +384,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public bool IsFileProtocol => IsPathProtocol(MediaProtocol.File);
+        public bool IsFileProtocol => PathProtocol == MediaProtocol.File;
 
         [JsonIgnore]
         public bool HasPathProtocol => PathProtocol.HasValue;
@@ -586,14 +576,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         [JsonIgnore]
-        public virtual Guid DisplayParentId
-        {
-            get
-            {
-                var parentId = ParentId;
-                return parentId;
-            }
-        }
+        public virtual Guid DisplayParentId => ParentId;
 
         [JsonIgnore]
         public BaseItem DisplayParent
@@ -856,13 +839,6 @@ namespace MediaBrowser.Controller.Entities
             return Id.ToString("N", CultureInfo.InvariantCulture);
         }
 
-        public bool IsPathProtocol(MediaProtocol protocol)
-        {
-            var current = PathProtocol;
-
-            return current.HasValue && current.Value == protocol;
-        }
-
         private List<Tuple<StringBuilder, bool>> GetSortChunks(string s1)
         {
             var list = new List<Tuple<StringBuilder, bool>>();
@@ -990,7 +966,7 @@ namespace MediaBrowser.Controller.Entities
 
             ReadOnlySpan<char> idString = Id.ToString("N", CultureInfo.InvariantCulture);
 
-            return System.IO.Path.Join(basePath, "library", idString.Slice(0, 2), idString);
+            return System.IO.Path.Join(basePath, "library", idString[..2], idString);
         }
 
         /// <summary>
@@ -1305,8 +1281,7 @@ namespace MediaBrowser.Controller.Entities
                 terms.Add(item.Name);
             }
 
-            var video = item as Video;
-            if (video != null)
+            if (item is Video video)
             {
                 if (video.Video3DFormat.HasValue)
                 {
@@ -1341,7 +1316,7 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            return string.Join('/', terms.ToArray());
+            return string.Join('/', terms);
         }
 
         /// <summary>
@@ -1357,16 +1332,14 @@ namespace MediaBrowser.Controller.Entities
 
             // Support plex/xbmc convention
             files.AddRange(fileSystemChildren
-                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFilename, StringComparison.OrdinalIgnoreCase)));
+                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFileName, StringComparison.OrdinalIgnoreCase)));
 
             return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
                 .OfType<Audio.Audio>()
                 .Select(audio =>
                 {
                     // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = LibraryManager.GetItemById(audio.Id) as Audio.Audio;
-
-                    if (dbItem != null)
+                    if (LibraryManager.GetItemById(audio.Id) is Audio.Audio dbItem)
                     {
                         audio = dbItem;
                     }
@@ -1416,39 +1389,24 @@ namespace MediaBrowser.Controller.Entities
 
         protected virtual BaseItem[] LoadExtras(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var extras = new List<Video>();
-
-            var libraryOptions = new LibraryOptions();
-            var folders = fileSystemChildren.Where(i => i.IsDirectory).ToList();
-            foreach (var extraFolderName in AllExtrasTypesFolderNames)
-            {
-                var files = folders
-                    .Where(i => string.Equals(i.Name, extraFolderName, StringComparison.OrdinalIgnoreCase))
-                    .SelectMany(i => FileSystem.GetFiles(i.FullName));
-
-                // Re-using the same instance of LibraryOptions since it looks like it's never being altered.
-                extras.AddRange(LibraryManager.ResolvePaths(files, directoryService, null, libraryOptions)
+            return fileSystemChildren
+                .Where(child => child.IsDirectory && AllExtrasTypesFolderNames.ContainsKey(child.Name))
+                .SelectMany(folder => LibraryManager
+                    .ResolvePaths(FileSystem.GetFiles(folder.FullName), directoryService, null, new LibraryOptions())
                     .OfType<Video>()
-                    .Select(item =>
+                    .Select(video =>
                     {
                         // Try to retrieve it from the db. If we don't find it, use the resolved version
-                        if (LibraryManager.GetItemById(item.Id) is Video dbItem)
+                        if (LibraryManager.GetItemById(video.Id) is Video dbItem)
                         {
-                            item = dbItem;
+                            video = dbItem;
                         }
 
-                        // Use some hackery to get the extra type based on foldername
-                        item.ExtraType = Enum.TryParse(extraFolderName.Replace(" ", string.Empty, StringComparison.Ordinal), true, out ExtraType extraType)
-                            ? extraType
-                            : Model.Entities.ExtraType.Unknown;
-
-                        return item;
-
-                        // Sort them so that the list can be easily compared for changes
-                    }).OrderBy(i => i.Path));
-            }
-
-            return extras.ToArray();
+                        video.ExtraType = AllExtrasTypesFolderNames[folder.Name];
+                        return video;
+                    })
+                    .OrderBy(video => video.Path)) // Sort them so that the list can be easily compared for changes
+                .ToArray();
         }
 
         public Task RefreshMetadata(CancellationToken cancellationToken)
@@ -1494,7 +1452,7 @@ namespace MediaBrowser.Controller.Entities
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error refreshing owned items for {path}", Path ?? Name);
+                    Logger.LogError(ex, "Error refreshing owned items for {Path}", Path ?? Name);
                 }
             }
 
@@ -1588,8 +1546,7 @@ namespace MediaBrowser.Controller.Entities
                     }
                 }
 
-                var hasTrailers = this as IHasTrailers;
-                if (hasTrailers != null)
+                if (this is IHasTrailers hasTrailers)
                 {
                     localTrailersChanged = await RefreshLocalTrailers(hasTrailers, options, fileSystemChildren, cancellationToken).ConfigureAwait(false);
                 }
@@ -2286,22 +2243,17 @@ namespace MediaBrowser.Controller.Entities
 
             var existingImage = GetImageInfo(image.Type, index);
 
-            if (existingImage != null)
+            if (existingImage == null)
+            {
+                AddImage(image);
+            }
+            else
             {
                 existingImage.Path = image.Path;
                 existingImage.DateModified = image.DateModified;
                 existingImage.Width = image.Width;
                 existingImage.Height = image.Height;
                 existingImage.BlurHash = image.BlurHash;
-            }
-            else
-            {
-                var current = ImageInfos;
-                var currentCount = current.Length;
-                var newArr = new ItemImageInfo[currentCount + 1];
-                current.CopyTo(newArr, 0);
-                newArr[currentCount] = image;
-                ImageInfos = newArr;
             }
         }
 
@@ -2316,7 +2268,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (image == null)
             {
-                ImageInfos = ImageInfos.Concat(new[] { GetImageInfo(file, type) }).ToArray();
+                AddImage(GetImageInfo(file, type));
             }
             else
             {
@@ -2360,12 +2312,22 @@ namespace MediaBrowser.Controller.Entities
 
         public void RemoveImage(ItemImageInfo image)
         {
-            RemoveImages(new List<ItemImageInfo> { image });
+            RemoveImages(new[] { image });
         }
 
-        public void RemoveImages(List<ItemImageInfo> deletedImages)
+        public void RemoveImages(IEnumerable<ItemImageInfo> deletedImages)
         {
             ImageInfos = ImageInfos.Except(deletedImages).ToArray();
+        }
+
+        public void AddImage(ItemImageInfo image)
+        {
+            var current = ImageInfos;
+            var currentCount = current.Length;
+            var newArr = new ItemImageInfo[currentCount + 1];
+            current.CopyTo(newArr, 0);
+            newArr[currentCount] = image;
+            ImageInfos = newArr;
         }
 
         public virtual Task UpdateToRepositoryAsync(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -2391,7 +2353,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (deletedImages.Count > 0)
             {
-                ImageInfos = ImageInfos.Except(deletedImages).ToArray();
+                RemoveImages(deletedImages);
             }
 
             return deletedImages.Count > 0;
@@ -2437,6 +2399,17 @@ namespace MediaBrowser.Controller.Entities
                     DateModified = chapter.ImageDateModified,
                     Type = imageType
                 };
+            }
+
+            // Music albums usually don't have dedicated backdrops, so return one from the artist instead
+            if (GetType() == typeof(MusicAlbum) && imageType == ImageType.Backdrop)
+            {
+                var artist = FindParent<MusicArtist>();
+
+                if (artist != null)
+                {
+                    return artist.GetImages(imageType).ElementAtOrDefault(imageIndex);
+                }
             }
 
             return GetImages(imageType)
@@ -2502,11 +2475,11 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <summary>
-        /// Adds the images.
+        /// Adds the images, updating metadata if they already are part of this item.
         /// </summary>
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
-        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if images were added or updated, <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Cannot call AddImages with chapter images.</exception>
         public bool AddImages(ImageType imageType, List<FileSystemMetadata> images)
         {
@@ -2519,7 +2492,6 @@ namespace MediaBrowser.Controller.Entities
                 .ToList();
 
             var newImageList = new List<FileSystemMetadata>();
-            var imageAdded = false;
             var imageUpdated = false;
 
             foreach (var newImage in images)
@@ -2535,7 +2507,6 @@ namespace MediaBrowser.Controller.Entities
                 if (existing == null)
                 {
                     newImageList.Add(newImage);
-                    imageAdded = true;
                 }
                 else
                 {
@@ -2553,19 +2524,6 @@ namespace MediaBrowser.Controller.Entities
 
                         existing.DateModified = newDateModified;
                     }
-                }
-            }
-
-            if (imageAdded || images.Count != existingImages.Count)
-            {
-                var newImagePaths = images.Select(i => i.FullName).ToList();
-
-                var deleted = existingImages
-                    .FindAll(i => i.IsLocalFile && !newImagePaths.Contains(i.Path.AsSpan(), StringComparison.OrdinalIgnoreCase) && !File.Exists(i.Path));
-
-                if (deleted.Count > 0)
-                {
-                    ImageInfos = ImageInfos.Except(deleted).ToArray();
                 }
             }
 
@@ -2619,7 +2577,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool AllowsMultipleImages(ImageType type)
         {
-            return type == ImageType.Backdrop || type == ImageType.Screenshot || type == ImageType.Chapter;
+            return type == ImageType.Backdrop || type == ImageType.Chapter;
         }
 
         public Task SwapImagesAsync(ImageType type, int index1, int index2)
@@ -2737,7 +2695,7 @@ namespace MediaBrowser.Controller.Entities
 
         protected static string GetMappedPath(BaseItem item, string path, MediaProtocol? protocol)
         {
-            if (protocol.HasValue && protocol.Value == MediaProtocol.File)
+            if (protocol == MediaProtocol.File)
             {
                 return LibraryManager.GetPathAfterNetworkSubstitution(path, item);
             }
@@ -2765,8 +2723,10 @@ namespace MediaBrowser.Controller.Entities
 
         protected Task RefreshMetadataForOwnedItem(BaseItem ownedItem, bool copyTitleMetadata, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
-            var newOptions = new MetadataRefreshOptions(options);
-            newOptions.SearchResult = null;
+            var newOptions = new MetadataRefreshOptions(options)
+            {
+                SearchResult = null
+            };
 
             var item = this;
 
@@ -2827,8 +2787,10 @@ namespace MediaBrowser.Controller.Entities
 
         protected Task RefreshMetadataForOwnedVideo(MetadataRefreshOptions options, bool copyTitleMetadata, string path, CancellationToken cancellationToken)
         {
-            var newOptions = new MetadataRefreshOptions(options);
-            newOptions.SearchResult = null;
+            var newOptions = new MetadataRefreshOptions(options)
+            {
+                SearchResult = null
+            };
 
             var id = LibraryManager.GetNewItemId(path, typeof(Video));
 
@@ -2841,14 +2803,6 @@ namespace MediaBrowser.Controller.Entities
 
                 newOptions.ForceSave = true;
             }
-
-            // var parentId = Id;
-            // if (!video.IsOwnedItem || video.ParentId != parentId)
-            // {
-            //    video.IsOwnedItem = true;
-            //    video.ParentId = parentId;
-            //    newOptions.ForceSave = true;
-            // }
 
             if (video == null)
             {
@@ -2933,7 +2887,7 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(i => new Tuple<string, int?>(i, LocalizationManager.GetRatingLevel(i)))
+                .Select(i => (i, LocalizationManager.GetRatingLevel(i)))
                 .OrderBy(i => i.Item2 ?? 1000)
                 .Select(i => i.Item1);
 
@@ -2980,18 +2934,6 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.ExtraType.HasValue && extraTypes.Contains(i.ExtraType.Value));
         }
 
-        public IEnumerable<BaseItem> GetTrailers()
-        {
-            if (this is IHasTrailers)
-            {
-                return ((IHasTrailers)this).LocalTrailerIds.Select(LibraryManager.GetItemById).Where(i => i != null).OrderBy(i => i.SortName);
-            }
-            else
-            {
-                return Array.Empty<BaseItem>();
-            }
-        }
-
         public virtual long GetRunTimeTicksForPlayState()
         {
             return RunTimeTicks ?? 0;
@@ -3004,7 +2946,7 @@ namespace MediaBrowser.Controller.Entities
         }
 
         /// <inheritdoc />
-        public bool Equals(BaseItem other) => object.Equals(Id, other?.Id);
+        public bool Equals(BaseItem other) => Equals(Id, other?.Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => HashCode.Combine(Id);

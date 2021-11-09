@@ -89,7 +89,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
             CancellationToken cancellationToken)
         {
             var attachmentPath = await GetReadableFile(mediaSource.Path, mediaSource.Path, mediaSource, mediaAttachment, cancellationToken).ConfigureAwait(false);
-            return File.OpenRead(attachmentPath);
+            return AsyncFile.OpenRead(attachmentPath);
         }
 
         private async Task<string> GetReadableFile(

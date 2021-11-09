@@ -530,11 +530,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            return new PinRedeemResult
-            {
-                Success = false,
-                UsersReset = Array.Empty<string>()
-            };
+            return new PinRedeemResult();
         }
 
         /// <inheritdoc />
@@ -701,6 +697,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ClearProfileImageAsync(User user)
         {
+            if (user.ProfileImage == null)
+            {
+                return;
+            }
+
             await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);

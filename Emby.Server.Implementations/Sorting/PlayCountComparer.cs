@@ -20,6 +20,24 @@ namespace Emby.Server.Implementations.Sorting
         public User User { get; set; }
 
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.PlayCount;
+
+        /// <summary>
+        /// Gets or sets the user data repository.
+        /// </summary>
+        /// <value>The user data repository.</value>
+        public IUserDataManager UserDataRepository { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user manager.
+        /// </summary>
+        /// <value>The user manager.</value>
+        public IUserManager UserManager { get; set; }
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -41,23 +59,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return userdata == null ? 0 : userdata.PlayCount;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.PlayCount;
-
-        /// <summary>
-        /// Gets or sets the user data repository.
-        /// </summary>
-        /// <value>The user data repository.</value>
-        public IUserDataManager UserDataRepository { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user manager.
-        /// </summary>
-        /// <value>The user manager.</value>
-        public IUserManager UserManager { get; set; }
     }
 }

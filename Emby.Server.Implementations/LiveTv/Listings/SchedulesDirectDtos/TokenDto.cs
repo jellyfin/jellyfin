@@ -1,5 +1,4 @@
-#nullable disable
-
+using System;
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -19,18 +18,30 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the response message.
         /// </summary>
         [JsonPropertyName("message")]
-        public string Message { get; set; }
+        public string? Message { get; set; }
 
         /// <summary>
         /// Gets or sets the server id.
         /// </summary>
         [JsonPropertyName("serverID")]
-        public string ServerId { get; set; }
+        public string? ServerId { get; set; }
 
         /// <summary>
         /// Gets or sets the token.
         /// </summary>
         [JsonPropertyName("token")]
-        public string Token { get; set; }
+        public string? Token { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current datetime.
+        /// </summary>
+        [JsonPropertyName("datetime")]
+        public DateTime? TokenTimestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response message.
+        /// </summary>
+        [JsonPropertyName("response")]
+        public string? Response { get; set; }
     }
 }

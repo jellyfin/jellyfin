@@ -107,6 +107,11 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         public bool HasExited { get; set; }
 
         /// <summary>
+        /// Gets or sets exit code.
+        /// </summary>
+        public int ExitCode { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether is user paused.
         /// </summary>
         public bool IsUserPaused { get; set; }

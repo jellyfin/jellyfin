@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Implementations.Tests.Localization
             await localizationManager.LoadAll();
             var cultures = localizationManager.GetCultures().ToList();
 
-            Assert.Equal(189, cultures.Count);
+            Assert.Equal(190, cultures.Count);
 
             var germany = cultures.FirstOrDefault(x => x.TwoLetterISOLanguageName.Equals("de", StringComparison.Ordinal));
             Assert.NotNull(germany);

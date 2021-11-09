@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,6 +11,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the sub type.
         /// </summary>
         [JsonPropertyName("subType")]
-        public string SubType { get; set; }
+        public string? SubType { get; set; }
     }
 }

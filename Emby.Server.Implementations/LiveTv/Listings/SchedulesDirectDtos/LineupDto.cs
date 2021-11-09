@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,30 +11,36 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the linup.
         /// </summary>
         [JsonPropertyName("lineup")]
-        public string Lineup { get; set; }
+        public string? Lineup { get; set; }
 
         /// <summary>
         /// Gets or sets the lineup name.
         /// </summary>
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the transport.
         /// </summary>
         [JsonPropertyName("transport")]
-        public string Transport { get; set; }
+        public string? Transport { get; set; }
 
         /// <summary>
         /// Gets or sets the location.
         /// </summary>
         [JsonPropertyName("location")]
-        public string Location { get; set; }
+        public string? Location { get; set; }
 
         /// <summary>
         /// Gets or sets the uri.
         /// </summary>
         [JsonPropertyName("uri")]
-        public string Uri { get; set; }
+        public string? Uri { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this lineup was deleted.
+        /// </summary>
+        [JsonPropertyName("isDeleted")]
+        public bool? IsDeleted { get; set; }
     }
 }

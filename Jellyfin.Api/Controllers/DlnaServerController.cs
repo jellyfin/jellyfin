@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Emby.Dlna;
 using Emby.Dlna.Main;
 using Jellyfin.Api.Attributes;
+using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Dlna;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +19,7 @@ namespace Jellyfin.Api.Controllers
     /// Dlna Server Controller.
     /// </summary>
     [Route("Dlna")]
+    [Authorize(Policy = Policies.AnonymousLanAccessPolicy)]
     public class DlnaServerController : BaseJellyfinApiController
     {
         private readonly IDlnaManager _dlnaManager;

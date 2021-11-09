@@ -46,6 +46,7 @@
  - [fruhnow](https://github.com/fruhnow)
  - [geilername](https://github.com/geilername)
  - [gnattu](https://github.com/gnattu)
+ - [GodTamIt](https://github.com/GodTamIt)
  - [grafixeyehero](https://github.com/grafixeyehero)
  - [h1nk](https://github.com/h1nk)
  - [hawken93](https://github.com/hawken93)
@@ -148,6 +149,7 @@
  - [skyfrk](https://github.com/skyfrk)
  - [ianjazz246](https://github.com/ianjazz246)
  - [peterspenler](https://github.com/peterspenler)
+ - [MBR-0001](https://github.com/MBR-0001)
 
 # Emby Contributors
 

@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -192,10 +193,10 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
             }
 
-            return File.OpenRead(fileInfo.Path);
+            return AsyncFile.OpenRead(fileInfo.Path);
         }
 
-        private async Task<SubtitleInfo> GetReadableFile(
+        internal async Task<SubtitleInfo> GetReadableFile(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
@@ -205,9 +206,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 string outputFormat;
                 string outputCodec;
 
-                if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(subtitleStream.Codec, "srt", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(subtitleStream.Codec, "ass", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(subtitleStream.Codec, "ssa", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(subtitleStream.Codec, "srt", StringComparison.OrdinalIgnoreCase))
                 {
                     // Extract
                     outputCodec = "copy";
@@ -238,7 +239,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var currentFormat = (Path.GetExtension(subtitleStream.Path) ?? subtitleStream.Codec)
                 .TrimStart('.');
 
-            if (TryGetReader(currentFormat, out _))
+            if (!TryGetReader(currentFormat, out _))
             {
                 // Convert
                 var outputPath = GetSubtitleCachePath(mediaSource, subtitleStream.Index, ".srt");
@@ -248,12 +249,8 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 return new SubtitleInfo(outputPath, MediaProtocol.File, "srt", true);
             }
 
-            if (subtitleStream.IsExternal)
-            {
-                return new SubtitleInfo(subtitleStream.Path, _mediaSourceManager.GetPathProtocol(subtitleStream.Path), currentFormat, true);
-            }
-
-            return new SubtitleInfo(subtitleStream.Path, mediaSource.Protocol, currentFormat, true);
+            // It's possbile that the subtitleStream and mediaSource don't share the same protocol (e.g. .STRM file with local subs)
+            return new SubtitleInfo(subtitleStream.Path, _mediaSourceManager.GetPathProtocol(subtitleStream.Path), currentFormat, true);
         }
 
         private bool TryGetReader(string format, [NotNullWhen(true)] out ISubtitleParser? value)
@@ -671,7 +668,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             string text;
             Encoding encoding;
 
-            using (var fileStream = File.OpenRead(file))
+            using (var fileStream = AsyncFile.OpenRead(file))
             using (var reader = new StreamReader(fileStream, true))
             {
                 encoding = reader.CurrentEncoding;
@@ -683,8 +680,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 using (var writer = new StreamWriter(fileStream, encoding))
                 {
                     await writer.WriteAsync(newText.AsMemory(), cancellationToken).ConfigureAwait(false);
@@ -750,13 +746,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 }
 
                 case MediaProtocol.File:
-                    return File.OpenRead(path);
+                    return AsyncFile.OpenRead(path);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(protocol));
             }
         }
 
-        private struct SubtitleInfo
+        internal readonly struct SubtitleInfo
         {
             public SubtitleInfo(string path, MediaProtocol protocol, string format, bool isExternal)
             {
@@ -766,13 +762,13 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                 IsExternal = isExternal;
             }
 
-            public string Path { get; set; }
+            public string Path { get; }
 
-            public MediaProtocol Protocol { get; set; }
+            public MediaProtocol Protocol { get; }
 
-            public string Format { get; set; }
+            public string Format { get; }
 
-            public bool IsExternal { get; set; }
+            public bool IsExternal { get; }
         }
     }
 }

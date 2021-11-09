@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,12 +11,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the body.
         /// </summary>
         [JsonPropertyName("body")]
-        public string Body { get; set; }
+        public string? Body { get; set; }
 
         /// <summary>
         /// Gets or sets the code.
         /// </summary>
         [JsonPropertyName("code")]
-        public string Code { get; set; }
+        public string? Code { get; set; }
     }
 }

@@ -303,7 +303,7 @@ namespace MediaBrowser.Controller.Entities
                 if (dictionary.ContainsKey(id))
                 {
                     Logger.LogError(
-                        "Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
+                        "Found folder containing items with duplicate id. Path: {Path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -1013,20 +1013,22 @@ namespace MediaBrowser.Controller.Entities
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
             }
 
+            #pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
-                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.CurrentCultureIgnoreCase) < 1);
+                items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
             }
 
             if (!string.IsNullOrEmpty(query.NameStartsWith))
             {
-                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.CurrentCultureIgnoreCase));
+                items = items.Where(i => i.SortName.StartsWith(query.NameStartsWith, StringComparison.InvariantCultureIgnoreCase));
             }
 
             if (!string.IsNullOrEmpty(query.NameLessThan))
             {
-                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.CurrentCultureIgnoreCase) == 1);
+                items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
+            #pragma warning restore CA1309
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))

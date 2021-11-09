@@ -359,14 +359,17 @@ namespace Emby.Dlna
                 // The stream should exist as we just got its name from GetManifestResourceNames
                 using (var stream = _assembly.GetManifestResourceStream(name)!)
                 {
+                    var length = stream.Length;
                     var fileInfo = _fileSystem.GetFileInfo(path);
 
-                    if (!fileInfo.Exists || fileInfo.Length != stream.Length)
+                    if (!fileInfo.Exists || fileInfo.Length != length)
                     {
                         Directory.CreateDirectory(systemProfilesPath);
 
-                        // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                        var fileOptions = AsyncFile.WriteOptions;
+                        fileOptions.Mode = FileMode.CreateNew;
+                        fileOptions.PreallocationSize = length;
+                        using (var fileStream = new FileStream(path, fileOptions))
                         {
                             await stream.CopyToAsync(fileStream).ConfigureAwait(false);
                         }
@@ -413,7 +416,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public void UpdateProfile(DeviceProfile profile)
+        public void UpdateProfile(string profileId, DeviceProfile profile)
         {
             profile = ReserializeProfile(profile);
 
@@ -427,7 +430,7 @@ namespace Emby.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profileId, StringComparison.OrdinalIgnoreCase));
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);
@@ -486,18 +489,22 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public ImageStream GetIcon(string filename)
+        public ImageStream? GetIcon(string filename)
         {
             var format = filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
                 ? ImageFormat.Png
                 : ImageFormat.Jpg;
 
             var resource = GetType().Namespace + ".Images." + filename.ToLowerInvariant();
-
-            return new ImageStream
+            var stream = _assembly.GetManifestResourceStream(resource);
+            if (stream == null)
             {
-                Format = format,
-                Stream = _assembly.GetManifestResourceStream(resource)
+                return null;
+            }
+
+            return new ImageStream(stream)
+            {
+                Format = format
             };
         }
 

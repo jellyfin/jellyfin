@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -81,7 +82,7 @@ namespace Jellyfin.Api.Helpers
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
-            var url = httpRequest.Path.Value.Split('.')[^1];
+            var url = httpRequest.Path.Value.AsSpan().RightPart('.').ToString();
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {
@@ -147,7 +148,7 @@ namespace Jellyfin.Api.Helpers
 
                     mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                         ? mediaSources[0]
-                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.InvariantCulture));
+                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
                     if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
                     {
@@ -433,7 +434,9 @@ namespace Jellyfin.Api.Helpers
                     return ".ogv";
                 }
 
-                if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "vp8", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".webm";
                 }
