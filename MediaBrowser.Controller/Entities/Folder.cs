@@ -425,7 +425,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (item.IsFileProtocol)
                         {
-                            Logger.LogDebug("Removed item: " + item.Path);
+                            Logger.LogDebug("Removed item: {Path}", item.Path);
 
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
@@ -807,7 +807,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (this is not ICollectionFolder)
                 {
-                    Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
+                    Logger.LogDebug("{Type}: Query requires post-filtering due to LinkedChildren.", GetType().Name);
                     return true;
                 }
             }

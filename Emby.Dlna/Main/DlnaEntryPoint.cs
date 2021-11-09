@@ -218,11 +218,6 @@ namespace Emby.Dlna.Main
             }
         }
 
-        private void LogMessage(string msg)
-        {
-            _logger.LogDebug(msg);
-        }
-
         private void StartDeviceDiscovery(ISsdpCommunicationsServer communicationsServer)
         {
             try
@@ -272,7 +267,7 @@ namespace Emby.Dlna.Main
                     Environment.OSVersion.VersionString,
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)
                 {
-                    LogFunction = LogMessage,
+                    LogFunction = (msg) => _logger.LogDebug("{Msg}", msg),
                     SupportPnpRootDevice = false
                 };
 

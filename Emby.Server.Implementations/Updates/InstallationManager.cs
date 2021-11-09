@@ -571,7 +571,7 @@ namespace Emby.Server.Implementations.Updates
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
 
             await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
+            _logger.LogInformation("Plugin {Action}: {PluginName} {PluginVersion}", plugin == null ? "installed" : "updated", package.Name, package.Version);
 
             return plugin != null;
         }

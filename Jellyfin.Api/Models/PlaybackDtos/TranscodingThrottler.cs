@@ -197,7 +197,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
                 }
             }
 
-            _logger.LogDebug("No throttle data for " + path);
+            _logger.LogDebug("No throttle data for {Path}", path);
             return false;
         }
 

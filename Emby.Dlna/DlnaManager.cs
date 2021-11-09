@@ -112,7 +112,7 @@ namespace Emby.Dlna
 
             if (profile == null)
             {
-                LogUnmatchedProfile(deviceInfo);
+                _logger.LogInformation("No matching device profile found. The default will need to be used. \n{@Profile}", deviceInfo);
             }
             else
             {
@@ -120,23 +120,6 @@ namespace Emby.Dlna
             }
 
             return profile;
-        }
-
-        private void LogUnmatchedProfile(DeviceIdentification profile)
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.Append("FriendlyName: ").AppendLine(profile.FriendlyName);
-            builder.Append("Manufacturer: ").AppendLine(profile.Manufacturer);
-            builder.Append("ManufacturerUrl: ").AppendLine(profile.ManufacturerUrl);
-            builder.Append("ModelDescription: ").AppendLine(profile.ModelDescription);
-            builder.Append("ModelName: ").AppendLine(profile.ModelName);
-            builder.Append("ModelNumber: ").AppendLine(profile.ModelNumber);
-            builder.Append("ModelUrl: ").AppendLine(profile.ModelUrl);
-            builder.Append("SerialNumber: ").AppendLine(profile.SerialNumber);
-
-            _logger.LogInformation(builder.ToString());
         }
 
         /// <summary>

@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.IO
                     if (_fileSystemWatchers.TryAdd(path, newWatcher))
                     {
                         newWatcher.EnableRaisingEvents = true;
-                        _logger.LogInformation("Watching directory " + path);
+                        _logger.LogInformation("Watching directory {Path}", path);
                     }
                     else
                     {

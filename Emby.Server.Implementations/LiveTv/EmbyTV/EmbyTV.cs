@@ -957,7 +957,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<ILiveStream> GetChannelStreamWithDirectStreamProvider(string channelId, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Streaming Channel " + channelId);
+            _logger.LogInformation("Streaming Channel {Id}", channelId);
 
             var result = string.IsNullOrEmpty(streamId) ?
                 null :

@@ -543,8 +543,7 @@ namespace Jellyfin.Api.Helpers
                 state,
                 cancellationTokenSource);
 
-            var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
-            _logger.LogInformation(commandLineLogMessage);
+            _logger.LogInformation("{Filename} {Arguments}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var logFilePrefix = "FFmpeg.Transcode-";
             if (state.VideoRequest != null
@@ -562,8 +561,9 @@ namespace Jellyfin.Api.Helpers
             // FFmpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             Stream logStream = new FileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
+            var commandLineLogMessage = process.StartInfo.FileName + " " + process.StartInfo.Arguments;
             var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(request.Path + Environment.NewLine + Environment.NewLine + JsonSerializer.Serialize(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
-            await logStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
+            await logStream.WriteAsync(commandLineLogMessageBytes, cancellationTokenSource.Token).ConfigureAwait(false);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process, transcodingJob, state);
 

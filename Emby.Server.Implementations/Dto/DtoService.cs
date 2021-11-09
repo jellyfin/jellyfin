@@ -134,14 +134,11 @@ namespace Emby.Server.Implementations.Dto
             var dto = GetBaseItemDtoInternal(item, options, user, owner);
             if (item is LiveTvChannel tvChannel)
             {
-                var list = new List<(BaseItemDto, LiveTvChannel)>(1) { (dto, tvChannel) };
-                LivetvManager.AddChannelInfo(list, options, user);
+                LivetvManager.AddChannelInfo(new[] { (dto, tvChannel) }, options, user);
             }
             else if (item is LiveTvProgram)
             {
-                var list = new List<(BaseItem, BaseItemDto)>(1) { (item, dto) };
-                var task = LivetvManager.AddInfoToProgramDto(list, options.Fields, user);
-                Task.WaitAll(task);
+                LivetvManager.AddInfoToProgramDto(new[] { (item, dto) }, options.Fields, user).GetAwaiter().GetResult();
             }
 
             if (item is IItemByName itemByName
