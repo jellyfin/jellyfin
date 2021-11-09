@@ -634,10 +634,9 @@ namespace Emby.Dlna.ContentDirectory
                 IsVirtualItem = false,
                 ExcludeItemTypes = new[] { nameof(Book) },
                 IsPlaceHolder = false,
-                DtoOptions = GetDtoOptions()
+                DtoOptions = GetDtoOptions(),
+                OrderBy = GetOrderBy(sort, folder.IsPreSorted)
             };
-
-            SetSorting(query, sort, folder.IsPreSorted);
 
             var queryResult = folder.GetItems(query);
 
@@ -658,10 +657,9 @@ namespace Emby.Dlna.ContentDirectory
             {
                 StartIndex = startIndex,
                 Limit = limit,
-                IncludeItemTypes = new[] { nameof(LiveTvChannel) }
+                IncludeItemTypes = new[] { nameof(LiveTvChannel) },
+                OrderBy = GetOrderBy(sort, false)
             };
-
-            SetSorting(query, sort, false);
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -683,9 +681,9 @@ namespace Emby.Dlna.ContentDirectory
             var query = new InternalItemsQuery(user)
             {
                 StartIndex = startIndex,
-                Limit = limit
+                Limit = limit,
+                OrderBy = GetOrderBy(sort, false)
             };
-            SetSorting(query, sort, false);
 
             switch (stubType)
             {
@@ -752,9 +750,9 @@ namespace Emby.Dlna.ContentDirectory
             var query = new InternalItemsQuery(user)
             {
                 StartIndex = startIndex,
-                Limit = limit
+                Limit = limit,
+                OrderBy = GetOrderBy(sort, false)
             };
-            SetSorting(query, sort, false);
 
             switch (stubType)
             {
@@ -835,9 +833,9 @@ namespace Emby.Dlna.ContentDirectory
             var query = new InternalItemsQuery(user)
             {
                 StartIndex = startIndex,
-                Limit = limit
+                Limit = limit,
+                OrderBy = GetOrderBy(sort, false)
             };
-            SetSorting(query, sort, false);
 
             switch (stubType)
             {
@@ -1104,10 +1102,9 @@ namespace Emby.Dlna.ContentDirectory
                 IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
                 StartIndex = startIndex,
-                DtoOptions = GetDtoOptions()
+                DtoOptions = GetDtoOptions(),
+                OrderBy = GetOrderBy(sort, false)
             };
-
-            SetSorting(query, sort, false);
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1136,10 +1133,9 @@ namespace Emby.Dlna.ContentDirectory
                 },
                 Limit = limit,
                 StartIndex = startIndex,
-                DtoOptions = GetDtoOptions()
+                DtoOptions = GetDtoOptions(),
+                OrderBy = GetOrderBy(sort, false)
             };
-
-            SetSorting(query, sort, false);
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1164,10 +1160,9 @@ namespace Emby.Dlna.ContentDirectory
                 IncludeItemTypes = new[] { nameof(MusicAlbum) },
                 Limit = limit,
                 StartIndex = startIndex,
-                DtoOptions = GetDtoOptions()
+                DtoOptions = GetDtoOptions(),
+                OrderBy = GetOrderBy(sort, false)
             };
-
-            SetSorting(query, sort, false);
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1233,21 +1228,13 @@ namespace Emby.Dlna.ContentDirectory
         }
 
         /// <summary>
-        /// Sets the sorting method on a query.
+        /// Gets the sorting method on a query.
         /// </summary>
-        /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <param name="sort">The <see cref="SortCriteria"/>.</param>
         /// <param name="isPreSorted">True if pre-sorted.</param>
-        private static void SetSorting(InternalItemsQuery query, SortCriteria sort, bool isPreSorted)
+        private static (string, SortOrder)[] GetOrderBy(SortCriteria sort, bool isPreSorted)
         {
-            if (isPreSorted)
-            {
-                query.OrderBy = Array.Empty<(string, SortOrder)>();
-            }
-            else
-            {
-                query.OrderBy = new[] { (ItemSortBy.SortName, sort.SortOrder) };
-            }
+            return isPreSorted ? Array.Empty<(string, SortOrder)>() : new[] { (ItemSortBy.SortName, sort.SortOrder) };
         }
 
         /// <summary>
