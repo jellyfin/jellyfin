@@ -455,7 +455,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlayProfile == null)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Profile: {0}, No audio direct play profiles found for {1} with codec {2}",
                     options.Profile.Name ?? "Unknown Profile",
                     item.Path ?? "Unknown path",
@@ -682,7 +682,7 @@ namespace MediaBrowser.Model.Dlna
             bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
             bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
                 item.Path ?? "Unknown path",
@@ -1033,7 +1033,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlay == null)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Container: {Container}, Video: {Video}, Audio: {Audio} cannot be direct played by profile: {Profile} for path: {Path}",
                     container,
                     videoStream?.Codec ?? "no video",
@@ -1198,7 +1198,7 @@ namespace MediaBrowser.Model.Dlna
 
         private void LogConditionFailure(DeviceProfile profile, string type, ProfileCondition condition, MediaSourceInfo mediaSource)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Profile: {0}, DirectPlay=false. Reason={1}.{2} Condition: {3}. ConditionValue: {4}. IsRequired: {5}. Path: {6}",
                 type,
                 profile.Name ?? "Unknown Profile",
@@ -1222,14 +1222,14 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
-                    _logger.LogInformation("Not eligible for {0} due to unsupported subtitles", playMethod);
+                    _logger.LogDebug("Not eligible for {0} due to unsupported subtitles", playMethod);
                     return (false, TranscodeReason.SubtitleCodecNotSupported);
                 }
             }
 
             bool result = IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
 
-            return (result, result ? (TranscodeReason?)null : TranscodeReason.ContainerBitrateExceedsLimit);
+            return (result, result ? null : TranscodeReason.ContainerBitrateExceedsLimit);
         }
 
         public static SubtitleProfile GetSubtitleProfile(
@@ -1404,7 +1404,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (itemBitrate > requestedMaxBitrate)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Bitrate exceeds {PlayBackMethod} limit: media bitrate: {MediaBitrate}, max bitrate: {MaxBitrate}",
                     playMethod,
                     itemBitrate,

@@ -39,7 +39,7 @@
     "MixedContent": "Conteúdo Misto",
     "Movies": "Filmes",
     "Music": "Música",
-    "MusicVideos": "Videoclips",
+    "MusicVideos": "Videoclipes",
     "NameInstallFailed": "{0} falha na instalação",
     "NameSeasonNumber": "Temporada {0}",
     "NameSeasonUnknown": "Temporada Desconhecida",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Limpar registo de atividade",
     "Undefined": "Indefinido",
     "Forced": "Forçado",
-    "Default": "Padrão"
+    "Default": "Padrão",
+    "TaskOptimizeDatabaseDescription": "Base de dados compacta e corta espaço livre. A execução desta tarefa depois de digitalizar a biblioteca ou de fazer outras alterações que impliquem modificações na base de dados pode melhorar o desempenho.",
+    "TaskOptimizeDatabase": "Otimizar base de dados"
 }

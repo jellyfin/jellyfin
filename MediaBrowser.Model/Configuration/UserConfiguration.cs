@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -33,7 +32,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the audio language preference.
         /// </summary>
         /// <value>The audio language preference.</value>
-        public string AudioLanguagePreference { get; set; }
+        public string? AudioLanguagePreference { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [play default audio track].
@@ -45,7 +44,7 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the subtitle language preference.
         /// </summary>
         /// <value>The subtitle language preference.</value>
-        public string SubtitleLanguagePreference { get; set; }
+        public string? SubtitleLanguagePreference { get; set; }
 
         public bool DisplayMissingEpisodes { get; set; }
 

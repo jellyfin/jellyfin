@@ -1,6 +1,6 @@
 using System;
 
-namespace MediaBrowser.MediaEncoding
+namespace MediaBrowser.Common
 {
     /// <summary>
     /// Represents errors that occur during interaction with FFmpeg.

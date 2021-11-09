@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
-            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
             IPAddress localAddress = null;
@@ -101,7 +101,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (localAddress.IsIPv4MappedToIPv6) {
+            if (localAddress.IsIPv4MappedToIPv6)
+            {
                 localAddress = localAddress.MapToIPv4();
             }
 
@@ -196,7 +197,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         cancellationToken,
                         timeOutSource.Token))
                     {
-                        var resTask = udpClient.ReceiveAsync();
+                        var resTask = udpClient.ReceiveAsync(linkedSource.Token).AsTask();
                         if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
                         {
                             resTask.Dispose();

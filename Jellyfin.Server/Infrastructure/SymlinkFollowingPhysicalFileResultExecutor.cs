@@ -26,7 +26,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -55,8 +54,8 @@ namespace Jellyfin.Server.Infrastructure
             // This may or may not be fixed in .NET 6, but looks like it will not https://github.com/dotnet/aspnetcore/issues/34371
             if ((fileInfo.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
             {
-                using Stream thisFileStream = File.OpenRead(path);
-                length = thisFileStream.Length;
+                using var fileHandle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                length = RandomAccess.GetLength(fileHandle);
             }
 
             return new FileMetadata
@@ -68,7 +67,7 @@ namespace Jellyfin.Server.Infrastructure
         }
 
         /// <inheritdoc />
-        protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue range, long rangeLength)
+        protected override Task WriteFileAsync(ActionContext context, PhysicalFileResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {
@@ -132,7 +131,7 @@ namespace Jellyfin.Server.Infrastructure
                 FileAccess.Read,
                 FileShare.ReadWrite,
                 bufferSize: BufferSize,
-                options: (AsyncFile.UseAsyncIO ? FileOptions.Asynchronous : FileOptions.None) | FileOptions.SequentialScan);
+                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
 
             fileStream.Seek(offset, SeekOrigin.Begin);
             await StreamCopyOperation

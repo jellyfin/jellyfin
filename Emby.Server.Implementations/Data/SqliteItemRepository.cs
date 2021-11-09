@@ -46,6 +46,11 @@ namespace Emby.Server.Implementations.Data
         private const string FromText = " from TypedBaseItems A";
         private const string ChaptersTableName = "Chapters2";
 
+        private const string SaveItemCommandText =
+            @"replace into TypedBaseItems
+            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
+            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
+
         private readonly IServerConfigurationManager _config;
         private readonly IServerApplicationHost _appHost;
         private readonly ILocalizationManager _localization;
@@ -54,6 +59,231 @@ namespace Emby.Server.Implementations.Data
 
         private readonly TypeMapper _typeMapper;
         private readonly JsonSerializerOptions _jsonOptions;
+
+        private readonly ItemFields[] _allItemFields = Enum.GetValues<ItemFields>();
+
+        private static readonly string[] _retriveItemColumns =
+        {
+            "type",
+            "data",
+            "StartDate",
+            "EndDate",
+            "ChannelId",
+            "IsMovie",
+            "IsSeries",
+            "EpisodeTitle",
+            "IsRepeat",
+            "CommunityRating",
+            "CustomRating",
+            "IndexNumber",
+            "IsLocked",
+            "PreferredMetadataLanguage",
+            "PreferredMetadataCountryCode",
+            "Width",
+            "Height",
+            "DateLastRefreshed",
+            "Name",
+            "Path",
+            "PremiereDate",
+            "Overview",
+            "ParentIndexNumber",
+            "ProductionYear",
+            "OfficialRating",
+            "ForcedSortName",
+            "RunTimeTicks",
+            "Size",
+            "DateCreated",
+            "DateModified",
+            "guid",
+            "Genres",
+            "ParentId",
+            "Audio",
+            "ExternalServiceId",
+            "IsInMixedFolder",
+            "DateLastSaved",
+            "LockedFields",
+            "Studios",
+            "Tags",
+            "TrailerTypes",
+            "OriginalTitle",
+            "PrimaryVersionId",
+            "DateLastMediaAdded",
+            "Album",
+            "CriticRating",
+            "IsVirtualItem",
+            "SeriesName",
+            "SeasonName",
+            "SeasonId",
+            "SeriesId",
+            "PresentationUniqueKey",
+            "InheritedParentalRatingValue",
+            "ExternalSeriesId",
+            "Tagline",
+            "ProviderIds",
+            "Images",
+            "ProductionLocations",
+            "ExtraIds",
+            "TotalBitrate",
+            "ExtraType",
+            "Artists",
+            "AlbumArtists",
+            "ExternalId",
+            "SeriesPresentationUniqueKey",
+            "ShowId",
+            "OwnerId"
+        };
+
+        private static readonly string _retriveItemColumnsSelectQuery = $"select {string.Join(',', _retriveItemColumns)} from TypedBaseItems where guid = @guid";
+
+        private static readonly string[] _mediaStreamSaveColumns =
+        {
+            "ItemId",
+            "StreamIndex",
+            "StreamType",
+            "Codec",
+            "Language",
+            "ChannelLayout",
+            "Profile",
+            "AspectRatio",
+            "Path",
+            "IsInterlaced",
+            "BitRate",
+            "Channels",
+            "SampleRate",
+            "IsDefault",
+            "IsForced",
+            "IsExternal",
+            "Height",
+            "Width",
+            "AverageFrameRate",
+            "RealFrameRate",
+            "Level",
+            "PixelFormat",
+            "BitDepth",
+            "IsAnamorphic",
+            "RefFrames",
+            "CodecTag",
+            "Comment",
+            "NalLengthSize",
+            "IsAvc",
+            "Title",
+            "TimeBase",
+            "CodecTimeBase",
+            "ColorPrimaries",
+            "ColorSpace",
+            "ColorTransfer"
+        };
+
+        private static readonly string _mediaStreamSaveColumnsInsertQuery =
+            $"insert into mediastreams ({string.Join(',', _mediaStreamSaveColumns)}) values ";
+
+        private static readonly string _mediaStreamSaveColumnsSelectQuery =
+            $"select {string.Join(',', _mediaStreamSaveColumns)} from mediastreams where ItemId=@ItemId";
+
+        private static readonly string[] _mediaAttachmentSaveColumns =
+        {
+            "ItemId",
+            "AttachmentIndex",
+            "Codec",
+            "CodecTag",
+            "Comment",
+            "Filename",
+            "MIMEType"
+        };
+
+        private static readonly string _mediaAttachmentSaveColumnsSelectQuery =
+            $"select {string.Join(',', _mediaAttachmentSaveColumns)} from mediaattachments where ItemId=@ItemId";
+
+        private static readonly string _mediaAttachmentInsertPrefix;
+
+        private static readonly HashSet<string> _programTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Program",
+            "TvChannel",
+            "LiveTvProgram",
+            "LiveTvTvChannel"
+        };
+
+        private static readonly HashSet<string> _programExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Series",
+            "Season",
+            "MusicAlbum",
+            "MusicArtist",
+            "PhotoAlbum"
+        };
+
+        private static readonly HashSet<string> _serviceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "TvChannel",
+            "LiveTvTvChannel"
+        };
+
+        private static readonly HashSet<string> _startDateTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Program",
+            "LiveTvProgram"
+        };
+
+        private static readonly HashSet<string> _seriesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Book",
+            "AudioBook",
+            "Episode",
+            "Season"
+        };
+
+        private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Series",
+            "Season",
+            "PhotoAlbum"
+        };
+
+        private static readonly HashSet<string> _artistsTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Audio",
+            "MusicAlbum",
+            "MusicVideo",
+            "AudioBook",
+            "AudioPodcast"
+        };
+
+        private static readonly Type[] _knownTypes =
+        {
+            typeof(LiveTvProgram),
+            typeof(LiveTvChannel),
+            typeof(Series),
+            typeof(Audio),
+            typeof(MusicAlbum),
+            typeof(MusicArtist),
+            typeof(MusicGenre),
+            typeof(MusicVideo),
+            typeof(Movie),
+            typeof(Playlist),
+            typeof(AudioBook),
+            typeof(Trailer),
+            typeof(BoxSet),
+            typeof(Episode),
+            typeof(Season),
+            typeof(Series),
+            typeof(Book),
+            typeof(CollectionFolder),
+            typeof(Folder),
+            typeof(Genre),
+            typeof(Person),
+            typeof(Photo),
+            typeof(PhotoAlbum),
+            typeof(Studio),
+            typeof(UserRootFolder),
+            typeof(UserView),
+            typeof(Video),
+            typeof(Year),
+            typeof(Channel),
+            typeof(AggregateFolder)
+        };
+
+        private readonly Dictionary<string, string> _types = GetTypeMapDictionary();
 
         static SqliteItemRepository()
         {
@@ -115,6 +345,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Opens the connection to the database.
         /// </summary>
+        /// <param name="userDataRepo">The user data repository.</param>
+        /// <param name="userManager">The user manager.</param>
         public void Initialize(SqliteUserDataRepository userDataRepo, IUserManager userManager)
         {
             const string CreateMediaStreamsTableCommand
@@ -154,7 +386,7 @@ namespace Emby.Server.Implementations.Data
                 "drop index if exists idx_TypedBaseItems",
                 "drop index if exists idx_mediastreams",
                 "drop index if exists idx_mediastreams1",
-                "drop index if exists idx_"+ChaptersTableName,
+                "drop index if exists idx_" + ChaptersTableName,
                 "drop index if exists idx_UserDataKeys1",
                 "drop index if exists idx_UserDataKeys2",
                 "drop index if exists idx_TypeTopParentId3",
@@ -340,151 +572,12 @@ namespace Emby.Server.Implementations.Data
             userDataRepo.Initialize(userManager, WriteLock, WriteConnection);
         }
 
-        private static readonly string[] _retriveItemColumns =
-        {
-            "type",
-            "data",
-            "StartDate",
-            "EndDate",
-            "ChannelId",
-            "IsMovie",
-            "IsSeries",
-            "EpisodeTitle",
-            "IsRepeat",
-            "CommunityRating",
-            "CustomRating",
-            "IndexNumber",
-            "IsLocked",
-            "PreferredMetadataLanguage",
-            "PreferredMetadataCountryCode",
-            "Width",
-            "Height",
-            "DateLastRefreshed",
-            "Name",
-            "Path",
-            "PremiereDate",
-            "Overview",
-            "ParentIndexNumber",
-            "ProductionYear",
-            "OfficialRating",
-            "ForcedSortName",
-            "RunTimeTicks",
-            "Size",
-            "DateCreated",
-            "DateModified",
-            "guid",
-            "Genres",
-            "ParentId",
-            "Audio",
-            "ExternalServiceId",
-            "IsInMixedFolder",
-            "DateLastSaved",
-            "LockedFields",
-            "Studios",
-            "Tags",
-            "TrailerTypes",
-            "OriginalTitle",
-            "PrimaryVersionId",
-            "DateLastMediaAdded",
-            "Album",
-            "CriticRating",
-            "IsVirtualItem",
-            "SeriesName",
-            "SeasonName",
-            "SeasonId",
-            "SeriesId",
-            "PresentationUniqueKey",
-            "InheritedParentalRatingValue",
-            "ExternalSeriesId",
-            "Tagline",
-            "ProviderIds",
-            "Images",
-            "ProductionLocations",
-            "ExtraIds",
-            "TotalBitrate",
-            "ExtraType",
-            "Artists",
-            "AlbumArtists",
-            "ExternalId",
-            "SeriesPresentationUniqueKey",
-            "ShowId",
-            "OwnerId"
-        };
-
-        private static readonly string _retriveItemColumnsSelectQuery = $"select {string.Join(',', _retriveItemColumns)} from TypedBaseItems where guid = @guid";
-
-        private static readonly string[] _mediaStreamSaveColumns =
-        {
-            "ItemId",
-            "StreamIndex",
-            "StreamType",
-            "Codec",
-            "Language",
-            "ChannelLayout",
-            "Profile",
-            "AspectRatio",
-            "Path",
-            "IsInterlaced",
-            "BitRate",
-            "Channels",
-            "SampleRate",
-            "IsDefault",
-            "IsForced",
-            "IsExternal",
-            "Height",
-            "Width",
-            "AverageFrameRate",
-            "RealFrameRate",
-            "Level",
-            "PixelFormat",
-            "BitDepth",
-            "IsAnamorphic",
-            "RefFrames",
-            "CodecTag",
-            "Comment",
-            "NalLengthSize",
-            "IsAvc",
-            "Title",
-            "TimeBase",
-            "CodecTimeBase",
-            "ColorPrimaries",
-            "ColorSpace",
-            "ColorTransfer"
-        };
-
-        private static readonly string _mediaStreamSaveColumnsInsertQuery =
-            $"insert into mediastreams ({string.Join(',', _mediaStreamSaveColumns)}) values ";
-
-        private static readonly string _mediaStreamSaveColumnsSelectQuery =
-            $"select {string.Join(',', _mediaStreamSaveColumns)} from mediastreams where ItemId=@ItemId";
-
-        private static readonly string[] _mediaAttachmentSaveColumns =
-        {
-            "ItemId",
-            "AttachmentIndex",
-            "Codec",
-            "CodecTag",
-            "Comment",
-            "Filename",
-            "MIMEType"
-        };
-
-        private static readonly string _mediaAttachmentSaveColumnsSelectQuery =
-            $"select {string.Join(',', _mediaAttachmentSaveColumns)} from mediaattachments where ItemId=@ItemId";
-
-        private static readonly string _mediaAttachmentInsertPrefix;
-
-        private const string SaveItemCommandText =
-            @"replace into TypedBaseItems
-            (guid,type,data,Path,StartDate,EndDate,ChannelId,IsMovie,IsSeries,EpisodeTitle,IsRepeat,CommunityRating,CustomRating,IndexNumber,IsLocked,Name,OfficialRating,MediaType,Overview,ParentIndexNumber,PremiereDate,ProductionYear,ParentId,Genres,InheritedParentalRatingValue,SortName,ForcedSortName,RunTimeTicks,Size,DateCreated,DateModified,PreferredMetadataLanguage,PreferredMetadataCountryCode,Width,Height,DateLastRefreshed,DateLastSaved,IsInMixedFolder,LockedFields,Studios,Audio,ExternalServiceId,Tags,IsFolder,UnratedType,TopParentId,TrailerTypes,CriticRating,CleanName,PresentationUniqueKey,OriginalTitle,PrimaryVersionId,DateLastMediaAdded,Album,IsVirtualItem,SeriesName,UserDataKey,SeasonName,SeasonId,SeriesId,ExternalSeriesId,Tagline,ProviderIds,Images,ProductionLocations,ExtraIds,TotalBitrate,ExtraType,Artists,AlbumArtists,ExternalId,SeriesPresentationUniqueKey,ShowId,OwnerId)
-            values (@guid,@type,@data,@Path,@StartDate,@EndDate,@ChannelId,@IsMovie,@IsSeries,@EpisodeTitle,@IsRepeat,@CommunityRating,@CustomRating,@IndexNumber,@IsLocked,@Name,@OfficialRating,@MediaType,@Overview,@ParentIndexNumber,@PremiereDate,@ProductionYear,@ParentId,@Genres,@InheritedParentalRatingValue,@SortName,@ForcedSortName,@RunTimeTicks,@Size,@DateCreated,@DateModified,@PreferredMetadataLanguage,@PreferredMetadataCountryCode,@Width,@Height,@DateLastRefreshed,@DateLastSaved,@IsInMixedFolder,@LockedFields,@Studios,@Audio,@ExternalServiceId,@Tags,@IsFolder,@UnratedType,@TopParentId,@TrailerTypes,@CriticRating,@CleanName,@PresentationUniqueKey,@OriginalTitle,@PrimaryVersionId,@DateLastMediaAdded,@Album,@IsVirtualItem,@SeriesName,@UserDataKey,@SeasonName,@SeasonId,@SeriesId,@ExternalSeriesId,@Tagline,@ProviderIds,@Images,@ProductionLocations,@ExtraIds,@TotalBitrate,@ExtraType,@Artists,@AlbumArtists,@ExternalId,@SeriesPresentationUniqueKey,@ShowId,@OwnerId)";
-
         /// <summary>
         /// Save a standard item in the repo.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <exception cref="ArgumentNullException">item</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="item"/> is <c>null</c>.</exception>
         public void SaveItem(BaseItem item, CancellationToken cancellationToken)
         {
             if (item == null)
@@ -509,7 +602,7 @@ namespace Emby.Server.Implementations.Data
                 connection.RunInTransaction(
                 db =>
                 {
-                    using (var saveImagesStatement = base.PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
+                    using (var saveImagesStatement = PrepareStatement(db, "Update TypedBaseItems set Images=@Images where guid=@Id"))
                     {
                         saveImagesStatement.TryBind("@Id", item.Id.ToByteArray());
                         saveImagesStatement.TryBind("@Images", SerializeImages(item.ImageInfos));
@@ -526,9 +619,7 @@ namespace Emby.Server.Implementations.Data
         /// <param name="items">The items.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="ArgumentNullException">
-        /// items
-        /// or
-        /// cancellationToken
+        /// <paramref name="items"/> or <paramref name="cancellationToken"/> is <c>null</c>.
         /// </exception>
         public void SaveItems(IEnumerable<BaseItem> items, CancellationToken cancellationToken)
         {
@@ -1150,7 +1241,7 @@ namespace Emby.Server.Implementations.Data
                 return null;
             }
 
-            if (Enum.TryParse(imageType.ToString(), true, out ImageType type))
+            if (Enum.TryParse(imageType, true, out ImageType type))
             {
                 image.Type = type;
             }
@@ -1216,8 +1307,8 @@ namespace Emby.Server.Implementations.Data
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
-        /// <exception cref="ArgumentNullException">id</exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="id"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException"><paramr name="id"/> is <seealso cref="Guid.Empty"/>.</exception>
         public BaseItem RetrieveItem(Guid id)
         {
             if (id == Guid.Empty)
@@ -1571,7 +1662,6 @@ namespace Emby.Server.Implementations.Data
 
             if (reader.TryGetString(index++, out var audioString))
             {
-                // TODO Span overload coming in the future https://github.com/dotnet/runtime/issues/1916
                 if (Enum.TryParse(audioString, true, out ProgramAudio audio))
                 {
                     item.Audio = audio;
@@ -1610,18 +1700,16 @@ namespace Emby.Server.Implementations.Data
             {
                 if (reader.TryGetString(index++, out var lockedFields))
                 {
-                    IEnumerable<MetadataField> GetLockedFields(string s)
+                    List<MetadataField> fields = null;
+                    foreach (var i in lockedFields.AsSpan().Split('|'))
                     {
-                        foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                        if (Enum.TryParse(i, true, out MetadataField parsedValue))
                         {
-                            if (Enum.TryParse(i, true, out MetadataField parsedValue))
-                            {
-                                yield return parsedValue;
-                            }
+                            (fields ??= new List<MetadataField>()).Add(parsedValue);
                         }
                     }
 
-                    item.LockedFields = GetLockedFields(lockedFields).ToArray();
+                    item.LockedFields = fields?.ToArray() ?? Array.Empty<MetadataField>();
                 }
             }
 
@@ -1647,18 +1735,16 @@ namespace Emby.Server.Implementations.Data
                 {
                     if (reader.TryGetString(index, out var trailerTypes))
                     {
-                        IEnumerable<TrailerType> GetTrailerTypes(string s)
+                        List<TrailerType> types = null;
+                        foreach (var i in trailerTypes.AsSpan().Split('|'))
                         {
-                            foreach (var i in s.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                            if (Enum.TryParse(i, true, out TrailerType parsedValue))
                             {
-                                if (Enum.TryParse(i, true, out TrailerType parsedValue))
-                                {
-                                    yield return parsedValue;
-                                }
+                                (types ??= new List<TrailerType>()).Add(parsedValue);
                             }
                         }
 
-                        trailer.TrailerTypes = GetTrailerTypes(trailerTypes).ToArray();
+                        trailer.TrailerTypes = types?.ToArray() ?? Array.Empty<TrailerType>();
                     }
                 }
 
@@ -1991,6 +2077,8 @@ namespace Emby.Server.Implementations.Data
         /// <summary>
         /// Saves the chapters.
         /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="chapters">The chapters.</param>
         public void SaveChapters(Guid id, IReadOnlyList<ChapterInfo> chapters)
         {
             CheckDisposed();
@@ -2090,8 +2178,6 @@ namespace Emby.Server.Implementations.Data
                     || query.IsLiked.HasValue;
         }
 
-        private readonly ItemFields[] _allFields = Enum.GetValues<ItemFields>();
-
         private bool HasField(InternalItemsQuery query, ItemFields name)
         {
             switch (name)
@@ -2124,23 +2210,6 @@ namespace Emby.Server.Implementations.Data
             }
         }
 
-        private static readonly HashSet<string> _programExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Series",
-            "Season",
-            "MusicAlbum",
-            "MusicArtist",
-            "PhotoAlbum"
-        };
-
-        private static readonly HashSet<string> _programTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Program",
-            "TvChannel",
-            "LiveTvProgram",
-            "LiveTvTvChannel"
-        };
-
         private bool HasProgramAttributes(InternalItemsQuery query)
         {
             if (_programExcludeParentTypes.Contains(query.ParentType))
@@ -2156,12 +2225,6 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Any(x => _programTypes.Contains(x));
         }
 
-        private static readonly HashSet<string> _serviceTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "TvChannel",
-            "LiveTvTvChannel"
-        };
-
         private bool HasServiceName(InternalItemsQuery query)
         {
             if (_programExcludeParentTypes.Contains(query.ParentType))
@@ -2176,12 +2239,6 @@ namespace Emby.Server.Implementations.Data
 
             return query.IncludeItemTypes.Any(x => _serviceTypes.Contains(x));
         }
-
-        private static readonly HashSet<string> _startDateTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Program",
-            "LiveTvProgram"
-        };
 
         private bool HasStartDate(InternalItemsQuery query)
         {
@@ -2218,22 +2275,6 @@ namespace Emby.Server.Implementations.Data
             return query.IncludeItemTypes.Contains("Trailer", StringComparer.OrdinalIgnoreCase);
         }
 
-        private static readonly HashSet<string> _artistExcludeParentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Series",
-            "Season",
-            "PhotoAlbum"
-        };
-
-        private static readonly HashSet<string> _artistsTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Audio",
-            "MusicAlbum",
-            "MusicVideo",
-            "AudioBook",
-            "AudioPodcast"
-        };
-
         private bool HasArtistFields(InternalItemsQuery query)
         {
             if (_artistExcludeParentTypes.Contains(query.ParentType))
@@ -2248,14 +2289,6 @@ namespace Emby.Server.Implementations.Data
 
             return query.IncludeItemTypes.Any(x => _artistsTypes.Contains(x));
         }
-
-        private static readonly HashSet<string> _seriesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "Book",
-            "AudioBook",
-            "Episode",
-            "Season"
-        };
 
         private bool HasSeriesFields(InternalItemsQuery query)
         {
@@ -2274,7 +2307,7 @@ namespace Emby.Server.Implementations.Data
 
         private void SetFinalColumnsToSelect(InternalItemsQuery query, List<string> columns)
         {
-            foreach (var field in _allFields)
+            foreach (var field in _allItemFields)
             {
                 if (!HasField(query, field))
                 {
@@ -4816,40 +4849,6 @@ namespace Emby.Server.Implementations.Data
             return false;
         }
 
-        private static readonly Type[] _knownTypes =
-        {
-            typeof(LiveTvProgram),
-            typeof(LiveTvChannel),
-            typeof(Series),
-            typeof(Audio),
-            typeof(MusicAlbum),
-            typeof(MusicArtist),
-            typeof(MusicGenre),
-            typeof(MusicVideo),
-            typeof(Movie),
-            typeof(Playlist),
-            typeof(AudioBook),
-            typeof(Trailer),
-            typeof(BoxSet),
-            typeof(Episode),
-            typeof(Season),
-            typeof(Series),
-            typeof(Book),
-            typeof(CollectionFolder),
-            typeof(Folder),
-            typeof(Genre),
-            typeof(Person),
-            typeof(Photo),
-            typeof(PhotoAlbum),
-            typeof(Studio),
-            typeof(UserRootFolder),
-            typeof(UserView),
-            typeof(Video),
-            typeof(Year),
-            typeof(Channel),
-            typeof(AggregateFolder)
-        };
-
         public void UpdateInheritedValues()
         {
             string sql = string.Join(
@@ -4890,9 +4889,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
 
             return dict;
         }
-
-        // Not crazy about having this all the way down here, but at least it's in one place
-        private readonly Dictionary<string, string> _types = GetTypeMapDictionary();
 
         private string MapIncludeItemTypes(string value)
         {

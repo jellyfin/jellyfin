@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -146,7 +148,7 @@ namespace MediaBrowser.Providers.Studios
 
                 Directory.CreateDirectory(Path.GetDirectoryName(file));
                 await using var response = await httpClient.GetStreamAsync(url, cancellationToken).ConfigureAwait(false);
-                await using var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
+                await using var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
                 await response.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
@@ -172,19 +174,16 @@ namespace MediaBrowser.Providers.Studios
 
         public IEnumerable<string> GetAvailableImages(string file)
         {
-            using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fileStream = File.OpenRead(file);
             using var reader = new StreamReader(fileStream);
-            var lines = new List<string>();
 
             foreach (var line in reader.ReadAllLines())
             {
                 if (!string.IsNullOrWhiteSpace(line))
                 {
-                    lines.Add(line);
+                    yield return line;
                 }
             }
-
-            return lines;
         }
     }
 }

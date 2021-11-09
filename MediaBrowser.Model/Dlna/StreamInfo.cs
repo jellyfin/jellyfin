@@ -794,7 +794,7 @@ namespace MediaBrowser.Model.Dlna
                 }
 
                 // strip spaces to avoid having to encode h264 profile names
-                list.Add(new NameValuePair(pair.Key, pair.Value.Replace(" ", string.Empty)));
+                list.Add(new NameValuePair(pair.Key, pair.Value.Replace(" ", string.Empty, StringComparison.Ordinal)));
             }
 
             if (!item.IsDirectStream)

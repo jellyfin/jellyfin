@@ -1,5 +1,4 @@
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -14,7 +13,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the year.
         /// </summary>
         [JsonPropertyName("year")]
-        public string Year { get; set; }
+        public string? Year { get; set; }
 
         /// <summary>
         /// Gets or sets the duration.
@@ -26,6 +25,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the list of quality rating.
         /// </summary>
         [JsonPropertyName("qualityRating")]
-        public List<QualityRatingDto> QualityRating { get; set; }
+        public IReadOnlyList<QualityRatingDto> QualityRating { get; set; } = Array.Empty<QualityRatingDto>();
     }
 }

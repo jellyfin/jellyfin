@@ -741,6 +741,8 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Used to report playback progress for an item.
         /// </summary>
+        /// <param name="info">The playback progress info.</param>
+        /// <param name="isAutomated">Whether this is an automated update.</param>
         /// <returns>Task.</returns>
         public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
         {

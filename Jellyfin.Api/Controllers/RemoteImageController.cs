@@ -183,36 +183,5 @@ namespace Jellyfin.Api.Controllers
         {
             return Path.Combine(_applicationPaths.CachePath, "remote-images", filename.Substring(0, 1), filename);
         }
-
-        /// <summary>
-        /// Downloads the image.
-        /// </summary>
-        /// <param name="url">The URL.</param>
-        /// <param name="urlHash">The URL hash.</param>
-        /// <param name="pointerCachePath">The pointer cache path.</param>
-        /// <returns>Task.</returns>
-        private async Task DownloadImage(Uri url, Guid urlHash, string pointerCachePath)
-        {
-            var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-            using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
-            if (response.Content.Headers.ContentType?.MediaType == null)
-            {
-                throw new ResourceNotFoundException(nameof(response.Content.Headers.ContentType));
-            }
-
-            var ext = response.Content.Headers.ContentType.MediaType.AsSpan().RightPart('/').ToString();
-            var fullCachePath = GetFullCachePath(urlHash + "." + ext);
-
-            var fullCacheDirectory = Path.GetDirectoryName(fullCachePath) ?? throw new ResourceNotFoundException($"Provided path ({fullCachePath}) is not valid.");
-            Directory.CreateDirectory(fullCacheDirectory);
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var fileStream = new FileStream(fullCachePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, AsyncFile.UseAsyncIO);
-            await response.Content.CopyToAsync(fileStream).ConfigureAwait(false);
-
-            var pointerCacheDirectory = Path.GetDirectoryName(pointerCachePath) ?? throw new ArgumentException($"Provided path ({pointerCachePath}) is not valid.", nameof(pointerCachePath));
-            Directory.CreateDirectory(pointerCacheDirectory);
-            await System.IO.File.WriteAllTextAsync(pointerCachePath, fullCachePath, CancellationToken.None)
-                .ConfigureAwait(false);
-        }
     }
 }

@@ -64,12 +64,12 @@ namespace Jellyfin.Api.Controllers
             var transcodePath = _serverConfigurationManager.GetTranscodePath();
             file = Path.GetFullPath(Path.Combine(transcodePath, file));
             var fileDir = Path.GetDirectoryName(file);
-            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath))
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture))
             {
                 return BadRequest("Invalid segment.");
             }
 
-            return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file)!, false, HttpContext);
+            return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file), false, HttpContext);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Jellyfin.Api.Controllers
             var transcodePath = _serverConfigurationManager.GetTranscodePath();
             file = Path.GetFullPath(Path.Combine(transcodePath, file));
             var fileDir = Path.GetDirectoryName(file);
-            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath) || Path.GetExtension(file) != ".m3u8")
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodePath, StringComparison.InvariantCulture) || Path.GetExtension(file) != ".m3u8")
             {
                 return BadRequest("Invalid segment.");
             }
@@ -144,7 +144,7 @@ namespace Jellyfin.Api.Controllers
 
             file = Path.GetFullPath(Path.Combine(transcodeFolderPath, file));
             var fileDir = Path.GetDirectoryName(file);
-            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodeFolderPath))
+            if (string.IsNullOrEmpty(fileDir) || !fileDir.StartsWith(transcodeFolderPath, StringComparison.InvariantCulture))
             {
                 return BadRequest("Invalid segment.");
             }
@@ -186,7 +186,7 @@ namespace Jellyfin.Api.Controllers
                 return Task.CompletedTask;
             });
 
-            return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path)!, false, HttpContext);
+            return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path), false, HttpContext);
         }
     }
 }

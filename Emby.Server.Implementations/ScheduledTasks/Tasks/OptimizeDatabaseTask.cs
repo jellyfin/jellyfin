@@ -22,6 +22,9 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
         /// <summary>
         /// Initializes a new instance of the <see cref="OptimizeDatabaseTask" /> class.
         /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="localization">The localization manager.</param>
+        /// <param name="provider">The jellyfin DB context provider.</param>
         public OptimizeDatabaseTask(
             ILogger<OptimizeDatabaseTask> logger,
             ILocalizationManager localization,

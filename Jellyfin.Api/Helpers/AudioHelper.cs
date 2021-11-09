@@ -147,7 +147,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             var outputPath = state.OutputFilePath;
-            var outputPathExists = System.IO.File.Exists(outputPath);
+            var outputPathExists = File.Exists(outputPath);
 
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
             var isTranscodeCached = outputPathExists && transcodingJob != null;

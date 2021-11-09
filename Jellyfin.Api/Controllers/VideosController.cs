@@ -461,7 +461,7 @@ namespace Jellyfin.Api.Controllers
 
                 var liveStream = new ProgressiveFileStream(liveStreamInfo.GetStream());
                 // TODO (moved from MediaBrowser.Api): Don't hardcode contentType
-                return File(liveStream, MimeTypes.GetMimeType("file.ts")!);
+                return File(liveStream, MimeTypes.GetMimeType("file.ts"));
             }
 
             // Static remote stream

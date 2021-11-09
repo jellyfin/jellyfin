@@ -13,6 +13,12 @@ namespace Emby.Server.Implementations.Sorting
     public class RuntimeComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Runtime;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -32,11 +38,5 @@ namespace Emby.Server.Implementations.Sorting
 
             return (x.RunTimeTicks ?? 0).CompareTo(y.RunTimeTicks ?? 0);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Runtime;
     }
 }

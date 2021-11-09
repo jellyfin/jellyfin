@@ -1,5 +1,6 @@
-#nullable disable
 #pragma warning disable CS1591
+
+using System;
 
 namespace MediaBrowser.Model.Users
 {
@@ -15,6 +16,6 @@ namespace MediaBrowser.Model.Users
         /// Gets or sets the users reset.
         /// </summary>
         /// <value>The users reset.</value>
-        public string[] UsersReset { get; set; }
+        public string[] UsersReset { get; set; } = Array.Empty<string>();
     }
 }

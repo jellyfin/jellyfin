@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Jellyfin.Api.Controllers;
 using Xunit;
 
@@ -19,33 +18,28 @@ namespace Jellyfin.Api.Tests.Controllers
             }
         }
 
-        public static IEnumerable<object[]> GetSegmentLengths_Success_TestData()
+        public static TheoryData<long, int, double[]> GetSegmentLengths_Success_TestData()
         {
-            yield return new object[] { 0, 6, Array.Empty<double>() };
-            yield return new object[]
-            {
+            var data = new TheoryData<long, int, double[]>();
+            data.Add(0, 6, Array.Empty<double>());
+            data.Add(
                 TimeSpan.FromSeconds(3).Ticks,
                 6,
-                new double[] { 3 }
-            };
-            yield return new object[]
-            {
+                new double[] { 3 });
+            data.Add(
                 TimeSpan.FromSeconds(6).Ticks,
                 6,
-                new double[] { 6 }
-            };
-            yield return new object[]
-            {
+                new double[] { 6 });
+            data.Add(
                 TimeSpan.FromSeconds(3.3333333).Ticks,
                 6,
-                new double[] { 3.3333333 }
-            };
-            yield return new object[]
-            {
+                new double[] { 3.3333333 });
+            data.Add(
                 TimeSpan.FromSeconds(9.3333333).Ticks,
                 6,
-                new double[] { 6, 3.3333333 }
-            };
+                new double[] { 6, 3.3333333 });
+
+            return data;
         }
     }
 }

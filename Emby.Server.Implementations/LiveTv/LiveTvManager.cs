@@ -1054,7 +1054,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _logger.LogDebug("Refreshing guide from {name}", service.Name);
+                _logger.LogDebug("Refreshing guide from {Name}", service.Name);
 
                 try
                 {
@@ -1135,7 +1135,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error getting channel information for {name}", channelInfo.Item2.Name);
+                    _logger.LogError(ex, "Error getting channel information for {Name}", channelInfo.Item2.Name);
                 }
 
                 numComplete++;
@@ -1248,7 +1248,7 @@ namespace Emby.Server.Implementations.LiveTv
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error getting programs for channel {name}", currentChannel.Name);
+                    _logger.LogError(ex, "Error getting programs for channel {Name}", currentChannel.Name);
                 }
 
                 numComplete++;

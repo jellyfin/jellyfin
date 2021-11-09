@@ -291,9 +291,9 @@ namespace Emby.Dlna.ContentDirectory
             return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<Features xmlns=\"urn:schemas-upnp-org:av:avs\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:schemas-upnp-org:av:avs http://www.upnp.org/schemas/av/avs.xsd\">"
                 + "<Feature name=\"samsung.com_BASICVIEW\" version=\"1\">"
-                + "<container id=\"I\" type=\"object.item.imageItem\"/>"
-                + "<container id=\"A\" type=\"object.item.audioItem\"/>"
-                + "<container id=\"V\" type=\"object.item.videoItem\"/>"
+                + "<container id=\"0\" type=\"object.item.imageItem\"/>"
+                + "<container id=\"0\" type=\"object.item.audioItem\"/>"
+                + "<container id=\"0\" type=\"object.item.videoItem\"/>"
                 + "</Feature>"
                 + "</Features>";
         }
@@ -800,6 +800,11 @@ namespace Emby.Dlna.ContentDirectory
                 }
             };
 
+            if (limit.HasValue)
+            {
+                list = list.Take(limit.Value).ToList();
+            }
+
             return new QueryResult<ServerItem>
             {
                 Items = list,
@@ -883,6 +888,11 @@ namespace Emby.Dlna.ContentDirectory
                     StubType = StubType.Genres
                 }
             };
+
+            if (limit.HasValue)
+            {
+                array = array.Take(limit.Value).ToArray();
+            }
 
             return new QueryResult<ServerItem>
             {
@@ -1010,6 +1020,11 @@ namespace Emby.Dlna.ContentDirectory
                 }
             };
 
+            if (limit.HasValue)
+            {
+                list = list.Take(limit.Value).ToList();
+            }
+
             return new QueryResult<ServerItem>
             {
                 Items = list,
@@ -1037,7 +1052,7 @@ namespace Emby.Dlna.ContentDirectory
             };
 
             query.IsResumable = true;
-            query.Limit = 10;
+            query.Limit = query.Limit ?? 10;
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -1451,7 +1466,7 @@ namespace Emby.Dlna.ContentDirectory
                 new LatestItemsQuery
                 {
                     UserId = user.Id,
-                    Limit = 50,
+                    Limit = query.Limit ?? 50,
                     IncludeItemTypes = new[] { nameof(Episode) },
                     ParentId = parent == null ? Guid.Empty : parent.Id,
                     GroupItems = false
@@ -1476,7 +1491,7 @@ namespace Emby.Dlna.ContentDirectory
                 new LatestItemsQuery
                 {
                     UserId = user.Id,
-                    Limit = 50,
+                    Limit = query.Limit ?? 50,
                     IncludeItemTypes = new[] { nameof(Movie) },
                     ParentId = parent?.Id ?? Guid.Empty,
                     GroupItems = true

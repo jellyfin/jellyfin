@@ -1308,16 +1308,16 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 await recorder.Record(directStreamProvider, mediaStreamInfo, recordPath, duration, onStarted, activeRecordingInfo.CancellationTokenSource.Token).ConfigureAwait(false);
 
                 recordingStatus = RecordingStatus.Completed;
-                _logger.LogInformation("Recording completed: {recordPath}", recordPath);
+                _logger.LogInformation("Recording completed: {RecordPath}", recordPath);
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("Recording stopped: {recordPath}", recordPath);
+                _logger.LogInformation("Recording stopped: {RecordPath}", recordPath);
                 recordingStatus = RecordingStatus.Completed;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error recording to {recordPath}", recordPath);
+                _logger.LogError(ex, "Error recording to {RecordPath}", recordPath);
                 recordingStatus = RecordingStatus.Error;
             }
 
@@ -1404,7 +1404,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {path}", path);
+                    _logger.LogError(ex, "Error deleting 0-byte failed recording file {Path}", path);
                 }
             }
         }
@@ -1848,14 +1848,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
-                    Encoding = Encoding.UTF8,
-                    CloseOutput = false
+                    Encoding = Encoding.UTF8
                 };
 
                 using (var writer = XmlWriter.Create(stream, settings))
@@ -1913,14 +1911,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            using (var stream = new FileStream(nfoPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (var stream = new FileStream(nfoPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 var settings = new XmlWriterSettings
                 {
                     Indent = true,
-                    Encoding = Encoding.UTF8,
-                    CloseOutput = false
+                    Encoding = Encoding.UTF8
                 };
 
                 var options = _config.GetNfoConfiguration();

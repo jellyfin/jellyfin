@@ -1,5 +1,4 @@
-#nullable disable
-
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -14,13 +13,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the program id.
         /// </summary>
         [JsonPropertyName("programID")]
-        public string ProgramId { get; set; }
+        public string? ProgramId { get; set; }
 
         /// <summary>
         /// Gets or sets the air date time.
         /// </summary>
         [JsonPropertyName("airDateTime")]
-        public string AirDateTime { get; set; }
+        public DateTime? AirDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the duration.
@@ -32,25 +31,25 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the md5.
         /// </summary>
         [JsonPropertyName("md5")]
-        public string Md5 { get; set; }
+        public string? Md5 { get; set; }
 
         /// <summary>
         /// Gets or sets the list of audio properties.
         /// </summary>
         [JsonPropertyName("audioProperties")]
-        public List<string> AudioProperties { get; set; }
+        public IReadOnlyList<string> AudioProperties { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets the list of video properties.
         /// </summary>
         [JsonPropertyName("videoProperties")]
-        public List<string> VideoProperties { get; set; }
+        public IReadOnlyList<string> VideoProperties { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// Gets or sets the list of ratings.
         /// </summary>
         [JsonPropertyName("ratings")]
-        public List<RatingDto> Ratings { get; set; }
+        public IReadOnlyList<RatingDto> Ratings { get; set; } = Array.Empty<RatingDto>();
 
         /// <summary>
         /// Gets or sets a value indicating whether this program is new.
@@ -62,13 +61,13 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the multipart object.
         /// </summary>
         [JsonPropertyName("multipart")]
-        public MultipartDto Multipart { get; set; }
+        public MultipartDto? Multipart { get; set; }
 
         /// <summary>
         /// Gets or sets the live tape delay.
         /// </summary>
         [JsonPropertyName("liveTapeDelay")]
-        public string LiveTapeDelay { get; set; }
+        public string? LiveTapeDelay { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this is the premiere.
@@ -86,6 +85,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the premiere or finale.
         /// </summary>
         [JsonPropertyName("isPremiereOrFinale")]
-        public string IsPremiereOrFinale { get; set; }
+        public string? IsPremiereOrFinale { get; set; }
     }
 }

@@ -1,5 +1,3 @@
-#nullable disable
-
 using System.Text.Json.Serialization;
 
 namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
@@ -13,24 +11,24 @@ namespace Emby.Server.Implementations.LiveTv.Listings.SchedulesDirectDtos
         /// Gets or sets the city.
         /// </summary>
         [JsonPropertyName("city")]
-        public string City { get; set; }
+        public string? City { get; set; }
 
         /// <summary>
         /// Gets or sets the state.
         /// </summary>
         [JsonPropertyName("state")]
-        public string State { get; set; }
+        public string? State { get; set; }
 
         /// <summary>
         /// Gets or sets the postal code.
         /// </summary>
         [JsonPropertyName("postalCode")]
-        public string Postalcode { get; set; }
+        public string? Postalcode { get; set; }
 
         /// <summary>
         /// Gets or sets the country.
         /// </summary>
         [JsonPropertyName("country")]
-        public string Country { get; set; }
+        public string? Country { get; set; }
     }
 }

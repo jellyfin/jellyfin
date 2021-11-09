@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS1591
+#pragma warning disable CS1591
 
 using MediaBrowser.Model.Plugins;
 
@@ -12,24 +12,13 @@ namespace MediaBrowser.Providers.Plugins.MusicBrainz
 
         public string Server
         {
-            get
-            {
-                return _server;
-            }
-
-            set
-            {
-                _server = value.TrimEnd('/');
-            }
+            get => _server;
+            set => _server = value.TrimEnd('/');
         }
 
         public long RateLimit
         {
-            get
-            {
-                return _rateLimit;
-            }
-
+            get => _rateLimit;
             set
             {
                 if (value < Plugin.DefaultRateLimit && _server == Plugin.DefaultServer)

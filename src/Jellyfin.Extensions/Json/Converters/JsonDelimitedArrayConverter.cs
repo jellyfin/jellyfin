@@ -44,7 +44,7 @@ namespace Jellyfin.Extensions.Json.Converters
                 {
                     try
                     {
-                        parsedValues[i] = _typeConverter.ConvertFrom(stringEntries[i].Trim());
+                        parsedValues[i] = _typeConverter.ConvertFromInvariantString(stringEntries[i].Trim()) ?? throw new FormatException();
                         convertedCount++;
                     }
                     catch (FormatException)

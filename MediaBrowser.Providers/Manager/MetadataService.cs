@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -711,7 +713,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
@@ -783,7 +785,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError(ex, "Error in {provider}", provider.Name);
+                Logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
         }
 
@@ -835,7 +837,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
                 }
             }
 
