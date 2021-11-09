@@ -1051,6 +1051,7 @@ namespace Emby.Dlna.ContentDirectory
                 {
                     Limit = query.Limit,
                     StartIndex = query.StartIndex,
+                    // User cannot be null here as the caller has set it
                     UserId = query.User!.Id
                 },
                 new[] { parent },
@@ -1073,6 +1074,7 @@ namespace Emby.Dlna.ContentDirectory
             var items = _userViewManager.GetLatestItems(
                 new LatestItemsQuery
                 {
+                    // User cannot be null here as the caller has set it
                     UserId = query.User!.Id,
                     Limit = query.Limit ?? 50,
                     IncludeItemTypes = new[] { itemType },
