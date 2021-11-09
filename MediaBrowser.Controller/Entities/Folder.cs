@@ -1013,6 +1013,7 @@ namespace MediaBrowser.Controller.Entities
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
             }
 
+            #pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
@@ -1027,6 +1028,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
+            #pragma warning restore CA1309
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))

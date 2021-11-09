@@ -125,7 +125,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (attachmentStream != null)
             {
-                return await ExtractAttachment(item, cancellationToken, attachmentStream, mediaSource);
+                return await ExtractAttachment(item, attachmentStream, mediaSource, cancellationToken);
             }
 
             // Fall back to EmbeddedImage streams
@@ -169,7 +169,7 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
-        private async Task<DynamicImageResponse> ExtractAttachment(Video item, CancellationToken cancellationToken, MediaAttachment attachmentStream, MediaSourceInfo mediaSource)
+        private async Task<DynamicImageResponse> ExtractAttachment(Video item, MediaAttachment attachmentStream, MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
             var extension = string.IsNullOrEmpty(attachmentStream.MimeType)
                 ? Path.GetExtension(attachmentStream.FileName)

@@ -19,7 +19,7 @@ namespace Jellyfin.Api.Helpers
             // If any this null throw an exception.
             if (source == null || destination == null)
             {
-                throw new Exception("Source or/and Destination Objects are null");
+                throw new ArgumentException("Source or/and Destination Objects are null");
             }
 
             // Getting the Types of the objects.
