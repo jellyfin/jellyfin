@@ -590,7 +590,7 @@ namespace Emby.Dlna.ContentDirectory
                     return GetGenreItems(item, user, sort, startIndex, limit);
             }
 
-            if (stubType is not StubType.Folder && item is IHasCollectionType collectionFolder)
+            if (stubType != StubType.Folder && item is IHasCollectionType collectionFolder)
             {
                 var collectionType = collectionFolder.CollectionType;
                 if (string.Equals(CollectionType.Music, collectionType, StringComparison.OrdinalIgnoreCase))
