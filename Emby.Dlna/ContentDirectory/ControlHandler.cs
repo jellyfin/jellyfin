@@ -331,75 +331,72 @@ namespace Emby.Dlna.ContentDirectory
 
             int totalCount;
 
-            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
+            var settings = new XmlWriterSettings
             {
-                var settings = new XmlWriterSettings()
+                Encoding = Encoding.UTF8,
+                CloseOutput = false,
+                OmitXmlDeclaration = true,
+                ConformanceLevel = ConformanceLevel.Fragment
+            };
+
+            using (StringWriter builder = new StringWriterWithEncoding(Encoding.UTF8))
+            using (var writer = XmlWriter.Create(builder, settings))
+            {
+                writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
+
+                writer.WriteAttributeString("xmlns", "dc", null, NsDc);
+                writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
+                writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
+
+                DidlBuilder.WriteXmlRootAttributes(_profile, writer);
+
+                var serverItem = GetItemFromObjectId(id);
+                var item = serverItem.Item;
+
+                if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
                 {
-                    Encoding = Encoding.UTF8,
-                    CloseOutput = false,
-                    OmitXmlDeclaration = true,
-                    ConformanceLevel = ConformanceLevel.Fragment
-                };
+                    totalCount = 1;
 
-                using (var writer = XmlWriter.Create(builder, settings))
-                {
-                    writer.WriteStartElement(string.Empty, "DIDL-Lite", NsDidl);
-
-                    writer.WriteAttributeString("xmlns", "dc", null, NsDc);
-                    writer.WriteAttributeString("xmlns", "dlna", null, NsDlna);
-                    writer.WriteAttributeString("xmlns", "upnp", null, NsUpnp);
-
-                    DidlBuilder.WriteXmlRootAttributes(_profile, writer);
-
-                    var serverItem = GetItemFromObjectId(id);
-                    var item = serverItem.Item;
-
-                    if (string.Equals(flag, "BrowseMetadata", StringComparison.Ordinal))
+                    if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
                     {
-                        totalCount = 1;
+                        var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
 
-                        if (item.IsDisplayedAsFolder || serverItem.StubType.HasValue)
-                        {
-                            var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
-
-                            _didlBuilder.WriteFolderElement(writer, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
-                        }
-                        else
-                        {
-                            _didlBuilder.WriteItemElement(writer, item, _user, null, null, deviceId, filter);
-                        }
-
-                        provided++;
+                        _didlBuilder.WriteFolderElement(writer, item, serverItem.StubType, null, childrenResult.TotalRecordCount, filter, id);
                     }
                     else
                     {
-                        var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
-                        totalCount = childrenResult.TotalRecordCount;
-
-                        provided = childrenResult.Items.Count;
-
-                        foreach (var i in childrenResult.Items)
-                        {
-                            var childItem = i.Item;
-                            var displayStubType = i.StubType;
-
-                            if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
-                            {
-                                var childCount = GetUserItems(childItem, displayStubType, _user, sortCriteria, null, 0)
-                                    .TotalRecordCount;
-
-                                _didlBuilder.WriteFolderElement(writer, childItem, displayStubType, item, childCount, filter);
-                            }
-                            else
-                            {
-                                _didlBuilder.WriteItemElement(writer, childItem, _user, item, serverItem.StubType, deviceId, filter);
-                            }
-                        }
+                        _didlBuilder.WriteItemElement(writer, item, _user, null, null, deviceId, filter);
                     }
 
-                    writer.WriteFullEndElement();
+                    provided++;
+                }
+                else
+                {
+                    var childrenResult = GetUserItems(item, serverItem.StubType, _user, sortCriteria, start, requestedCount);
+                    totalCount = childrenResult.TotalRecordCount;
+
+                    provided = childrenResult.Items.Count;
+
+                    foreach (var i in childrenResult.Items)
+                    {
+                        var childItem = i.Item;
+                        var displayStubType = i.StubType;
+
+                        if (childItem.IsDisplayedAsFolder || displayStubType.HasValue)
+                        {
+                            var childCount = GetUserItems(childItem, displayStubType, _user, sortCriteria, null, 0)
+                                .TotalRecordCount;
+
+                            _didlBuilder.WriteFolderElement(writer, childItem, displayStubType, item, childCount, filter);
+                        }
+                        else
+                        {
+                            _didlBuilder.WriteItemElement(writer, childItem, _user, item, serverItem.StubType, deviceId, filter);
+                        }
+                    }
                 }
 
+                writer.WriteFullEndElement();
                 xmlWriter.WriteElementString("Result", builder.ToString());
             }
 
