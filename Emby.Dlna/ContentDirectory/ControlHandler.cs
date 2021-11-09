@@ -711,7 +711,7 @@ namespace Emby.Dlna.ContentDirectory
                     return GetMusicGenres(item, query);
             }
 
-            var list = new List<ServerItem>
+            var serverItems = new ServerItem[]
             {
                 new (item, StubType.Latest),
                 new (item, StubType.Playlists),
@@ -725,15 +725,15 @@ namespace Emby.Dlna.ContentDirectory
                 new (item, StubType.FavoriteSongs)
             };
 
-            if (limit < list.Count)
+            if (limit < serverItems.Length)
             {
-                list = list.Take(limit.Value).ToList();
+                serverItems = serverItems[..limit.Value];
             }
 
             return new QueryResult<ServerItem>
             {
-                Items = list,
-                TotalRecordCount = list.Count
+                Items = serverItems,
+                TotalRecordCount = serverItems.Length
             };
         }
 
@@ -857,7 +857,7 @@ namespace Emby.Dlna.ContentDirectory
                     return GetGenres(item, query);
             }
 
-            var list = new List<ServerItem>
+            var serverItems = new ServerItem[]
             {
                 new (item, StubType.ContinueWatching),
                 new (item, StubType.NextUp),
@@ -868,15 +868,15 @@ namespace Emby.Dlna.ContentDirectory
                 new (item, StubType.Genres)
             };
 
-            if (limit < list.Count)
+            if (limit < serverItems.Length)
             {
-                list = list.Take(limit.Value).ToList();
+                serverItems = serverItems[..limit.Value];
             }
 
             return new QueryResult<ServerItem>
             {
-                Items = list,
-                TotalRecordCount = list.Count
+                Items = serverItems,
+                TotalRecordCount = serverItems.Length
             };
         }
 
@@ -1278,7 +1278,7 @@ namespace Emby.Dlna.ContentDirectory
                 id = parts[23];
             }
 
-            var dividerIndex = id.IndexOf('_');
+            var dividerIndex = id.IndexOf('_', StringComparison.Ordinal);
             if (dividerIndex != -1 && Enum.TryParse<StubType>(id.AsSpan(0, dividerIndex), true, out var parsedStubType))
             {
                 id = id[(dividerIndex + 1)..];
