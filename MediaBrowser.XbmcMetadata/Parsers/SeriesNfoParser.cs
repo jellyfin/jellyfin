@@ -103,7 +103,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             }
                             else
                             {
-                                Logger.LogInformation("Unrecognized series status: " + status);
+                                Logger.LogInformation("Unrecognized series status: {Status}", status);
                             }
                         }
 

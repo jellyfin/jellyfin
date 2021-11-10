@@ -149,7 +149,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         }
                         else
                         {
-                            Logger.LogWarning("Invalid Added value found: " + val);
+                            Logger.LogWarning("Invalid Added value found: {Value}", val);
                         }
                     }
 

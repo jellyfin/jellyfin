@@ -638,7 +638,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        _logger.LogInformation(Name + ": Cancelling");
+                        _logger.LogInformation("{Name}: Cancelling", Name);
                         token.Cancel();
                     }
                     catch (Exception ex)
@@ -652,16 +652,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        _logger.LogInformation(Name + ": Waiting on Task");
+                        _logger.LogInformation("{Name}: Waiting on Task", Name);
                         var exited = task.Wait(2000);
 
                         if (exited)
                         {
-                            _logger.LogInformation(Name + ": Task exited");
+                            _logger.LogInformation("{Name}: Task exited", Name);
                         }
                         else
                         {
-                            _logger.LogInformation(Name + ": Timed out waiting for task to stop");
+                            _logger.LogInformation("{Name}: Timed out waiting for task to stop", Name);
                         }
                     }
                     catch (Exception ex)
@@ -674,7 +674,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        _logger.LogDebug(Name + ": Disposing CancellationToken");
+                        _logger.LogDebug("{Name}: Disposing CancellationToken", Name);
                         token.Dispose();
                     }
                     catch (Exception ex)

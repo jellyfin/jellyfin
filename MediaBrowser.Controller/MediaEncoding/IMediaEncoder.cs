@@ -101,32 +101,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Extracts the video images on interval.
-        /// </summary>
-        /// <param name="inputFile">Input file.</param>
-        /// <param name="container">Video container type.</param>
-        /// <param name="videoStream">Media stream information.</param>
-        /// <param name="mediaSource">Media source information.</param>
-        /// <param name="threedFormat">Video 3D format.</param>
-        /// <param name="interval">Time interval.</param>
-        /// <param name="targetDirectory">Directory to write images.</param>
-        /// <param name="filenamePrefix">Filename prefix to use.</param>
-        /// <param name="maxWidth">Maximum width of image.</param>
-        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        /// <returns>A task.</returns>
-        Task ExtractVideoImagesOnInterval(
-            string inputFile,
-            string container,
-            MediaStream videoStream,
-            MediaSourceInfo mediaSource,
-            Video3DFormat? threedFormat,
-            TimeSpan interval,
-            string targetDirectory,
-            string filenamePrefix,
-            int? maxWidth,
-            CancellationToken cancellationToken);
-
-        /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="request">The request.</param>

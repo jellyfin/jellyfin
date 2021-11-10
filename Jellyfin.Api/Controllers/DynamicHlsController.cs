@@ -1391,7 +1391,7 @@ namespace Jellyfin.Api.Controllers
             }
             else
             {
-                _logger.LogError("Invalid HLS segment container: " + segmentFormat);
+                _logger.LogError("Invalid HLS segment container: {SegmentFormat}", segmentFormat);
             }
 
             var maxMuxingQueueSize = _encodingOptions.MaxMuxingQueueSize > 128

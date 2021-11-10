@@ -636,17 +636,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (failed)
             {
-                var msg = $"ffmpeg subtitle extraction failed for {inputPath} to {outputPath}";
+                _logger.LogError("ffmpeg subtitle extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
 
-                _logger.LogError(msg);
-
-                throw new FfmpegException(msg);
+                throw new FfmpegException(
+                    string.Format(CultureInfo.InvariantCulture, "ffmpeg subtitle extraction failed for {0} to {1}", inputPath, outputPath));
             }
             else
             {
-                var msg = $"ffmpeg subtitle extraction completed for {inputPath} to {outputPath}";
-
-                _logger.LogInformation(msg);
+                _logger.LogInformation("ffmpeg subtitle extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
             }
 
             if (string.Equals(outputCodec, "ass", StringComparison.OrdinalIgnoreCase))

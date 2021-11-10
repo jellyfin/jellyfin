@@ -682,11 +682,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (exitCode == -1 || !file.Exists || file.Length == 0)
                 {
-                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath);
+                    _logger.LogError("ffmpeg image extraction failed for {Path}", inputPath);
 
-                    _logger.LogError(msg);
-
-                    throw new FfmpegException(msg);
+                    throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath));
                 }
 
                 return tempExtractPath;
@@ -703,117 +701,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetTimeParameter(TimeSpan time)
         {
             return time.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
-        }
-
-        public async Task ExtractVideoImagesOnInterval(
-            string inputFile,
-            string container,
-            MediaStream videoStream,
-            MediaSourceInfo mediaSource,
-            Video3DFormat? threedFormat,
-            TimeSpan interval,
-            string targetDirectory,
-            string filenamePrefix,
-            int? maxWidth,
-            CancellationToken cancellationToken)
-        {
-            var inputArgument = GetInputArgument(inputFile, mediaSource);
-
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureInfo.InvariantCulture);
-
-            if (maxWidth.HasValue)
-            {
-                var maxWidthParam = maxWidth.Value.ToString(CultureInfo.InvariantCulture);
-
-                vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
-            }
-
-            Directory.CreateDirectory(targetDirectory);
-            var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
-
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, _threads);
-
-            if (!string.IsNullOrWhiteSpace(container))
-            {
-                var inputFormat = EncodingHelper.GetInputFormat(container);
-                if (!string.IsNullOrWhiteSpace(inputFormat))
-                {
-                    args = "-f " + inputFormat + " " + args;
-                }
-            }
-
-            var processStartInfo = new ProcessStartInfo
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                FileName = _ffmpegPath,
-                Arguments = args,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false
-            };
-
-            _logger.LogInformation(processStartInfo.FileName + " " + processStartInfo.Arguments);
-
-            await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            bool ranToCompletion = false;
-
-            var process = new Process
-            {
-                StartInfo = processStartInfo,
-                EnableRaisingEvents = true
-            };
-            using (var processWrapper = new ProcessWrapper(process, this))
-            {
-                try
-                {
-                    StartProcess(processWrapper);
-
-                    // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
-                    // but we still need to detect if the process hangs.
-                    // Making the assumption that as long as new jpegs are showing up, everything is good.
-
-                    bool isResponsive = true;
-                    int lastCount = 0;
-
-                    while (isResponsive)
-                    {
-                        if (await process.WaitForExitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false))
-                        {
-                            ranToCompletion = true;
-                            break;
-                        }
-
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var jpegCount = _fileSystem.GetFilePaths(targetDirectory)
-                            .Count(i => string.Equals(Path.GetExtension(i), ".jpg", StringComparison.OrdinalIgnoreCase));
-
-                        isResponsive = jpegCount > lastCount;
-                        lastCount = jpegCount;
-                    }
-
-                    if (!ranToCompletion)
-                    {
-                        StopProcess(processWrapper, 1000);
-                    }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
-                }
-
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-
-                if (exitCode == -1)
-                {
-                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputArgument);
-
-                    _logger.LogError(msg);
-
-                    throw new FfmpegException(msg);
-                }
-            }
         }
 
         private void StartProcess(ProcessWrapper process)

@@ -87,8 +87,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 ErrorDialog = false
             };
 
-            var commandLineLogMessage = processStartInfo.FileName + " " + processStartInfo.Arguments;
-            _logger.LogInformation(commandLineLogMessage);
+            _logger.LogInformation("{Filename} {Arguments}", processStartInfo.FileName, processStartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "record-transcode-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
@@ -97,7 +96,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logFileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
             await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
+            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + processStartInfo.FileName + " " + processStartInfo.Arguments + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
 
             _process = new Process
             {

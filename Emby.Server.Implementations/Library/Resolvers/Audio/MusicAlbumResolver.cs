@@ -151,7 +151,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
                 {
                     if (parser.IsMultiPart(path))
                     {
-                        logger.LogDebug("Found multi-disc folder: " + path);
+                        logger.LogDebug("Found multi-disc folder: {Path}", path);
                         Interlocked.Increment(ref discSubfolderCount);
                     }
                     else
