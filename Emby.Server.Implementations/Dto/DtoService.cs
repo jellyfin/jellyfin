@@ -1406,28 +1406,29 @@ namespace Emby.Server.Implementations.Dto
             var width = imageInfo.Width;
             var height = imageInfo.Height;
 
+            if (width > 0 && height > 0)
+            {
+                return (double)width / height;
+            }
+
             // Fallback to the image processor if the image info is somehow incorrect
-            if (width <= 0 || height <= 0)
+            try
             {
-                try
-                {
-                    var size = _imageProcessor.GetImageDimensions(item, imageInfo);
-                    width = size.Width;
-                    height = size.Height;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to determine primary image aspect ratio for {ImagePath}", imageInfo.Path);
-                    return item.GetDefaultPrimaryImageAspectRatio();
-                }
+                var size = _imageProcessor.GetImageDimensions(item, imageInfo);
+                width = size.Width;
+                height = size.Height;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {ImagePath}", imageInfo.Path);
             }
 
-            if (width <= 0 || height <= 0)
+            if (width > 0 && height > 0)
             {
-                return item.GetDefaultPrimaryImageAspectRatio();
+                return (double)width / height;
             }
 
-            return (double)width / height;
+            return item.GetDefaultPrimaryImageAspectRatio();
         }
     }
 }
