@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -648,7 +649,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken)
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
-            var hashedPasswordBytes = _cryptoProvider.ComputeHash("SHA1", Encoding.ASCII.GetBytes(password), Array.Empty<byte>());
+            var hashedPasswordBytes = SHA1.HashData(Encoding.ASCII.GetBytes(password));
             // TODO: remove ToLower when Convert.ToHexString supports lowercase
             // Schedules Direct requires the hex to be lowercase
             string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();
