@@ -9,7 +9,7 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Server.Implementations;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Dto;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -114,6 +114,7 @@ namespace Jellyfin.Server.Migrations.Routines
                     }
 
                     var chromecastVersion = dto.CustomPrefs.TryGetValue("chromecastVersion", out var version)
+                                            && !string.IsNullOrEmpty(version)
                         ? chromecastDict[version]
                         : ChromecastVersion.Stable;
                     dto.CustomPrefs.Remove("chromecastVersion");
