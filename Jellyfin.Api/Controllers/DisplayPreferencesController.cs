@@ -8,7 +8,7 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller;
-using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -143,21 +143,24 @@ namespace Jellyfin.Api.Controllers
 
             existingDisplayPreferences.ScrollDirection = displayPreferences.ScrollDirection;
             existingDisplayPreferences.ChromecastVersion = displayPreferences.CustomPrefs.TryGetValue("chromecastVersion", out var chromecastVersion)
+                                                           && !string.IsNullOrEmpty(chromecastVersion)
                 ? Enum.Parse<ChromecastVersion>(chromecastVersion, true)
                 : ChromecastVersion.Stable;
             displayPreferences.CustomPrefs.Remove("chromecastVersion");
 
-            existingDisplayPreferences.EnableNextVideoInfoOverlay = displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
-                ? bool.Parse(enableNextVideoInfoOverlay)
-                : true;
+            existingDisplayPreferences.EnableNextVideoInfoOverlay = !displayPreferences.CustomPrefs.TryGetValue("enableNextVideoInfoOverlay", out var enableNextVideoInfoOverlay)
+                                                                    || string.IsNullOrEmpty(enableNextVideoInfoOverlay)
+                                                                    || bool.Parse(enableNextVideoInfoOverlay);
             displayPreferences.CustomPrefs.Remove("enableNextVideoInfoOverlay");
 
             existingDisplayPreferences.SkipBackwardLength = displayPreferences.CustomPrefs.TryGetValue("skipBackLength", out var skipBackLength)
+                                                            && !string.IsNullOrEmpty(skipBackLength)
                 ? int.Parse(skipBackLength, CultureInfo.InvariantCulture)
                 : 10000;
             displayPreferences.CustomPrefs.Remove("skipBackLength");
 
             existingDisplayPreferences.SkipForwardLength = displayPreferences.CustomPrefs.TryGetValue("skipForwardLength", out var skipForwardLength)
+                                                           && !string.IsNullOrEmpty(skipForwardLength)
                 ? int.Parse(skipForwardLength, CultureInfo.InvariantCulture)
                 : 30000;
             displayPreferences.CustomPrefs.Remove("skipForwardLength");
@@ -196,7 +199,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var itemPrefs = _displayPreferencesManager.GetItemDisplayPreferences(existingDisplayPreferences.UserId, itemId, existingDisplayPreferences.Client);
-            itemPrefs.SortBy = displayPreferences.SortBy;
+            itemPrefs.SortBy = displayPreferences.SortBy ?? "SortName";
             itemPrefs.SortOrder = displayPreferences.SortOrder;
             itemPrefs.RememberIndexing = displayPreferences.RememberIndexing;
             itemPrefs.RememberSorting = displayPreferences.RememberSorting;
