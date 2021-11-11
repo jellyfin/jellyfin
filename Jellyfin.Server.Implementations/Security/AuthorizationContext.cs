@@ -199,6 +199,7 @@ namespace Jellyfin.Server.Implementations.Security
                     {
                         authInfo.Version = string.Empty;
                     }
+
                     authInfo.IsApiKey = true;
                 }
             }
