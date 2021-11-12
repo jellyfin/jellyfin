@@ -457,7 +457,7 @@ namespace MediaBrowser.Providers.Manager
             CancellationToken cancellationToken)
         {
             var eligibleImages = images
-                .Where(i => i.Type == type && i.Width >= minWidth)
+                .Where(i => i.Type == type && (i.Width == null || i.Width >= minWidth))
                 .ToList();
 
             if (EnableImageStub(item) && eligibleImages.Count > 0)
