@@ -114,7 +114,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 ImageType.Primary => _primaryImageFileNames,
                 ImageType.Backdrop => _backdropImageFileNames,
                 ImageType.Logo => _logoImageFileNames,
-                _ => _primaryImageFileNames
+                _ => throw new ArgumentException("Unexpected image type: " + type)
             };
 
             // Try attachments first
