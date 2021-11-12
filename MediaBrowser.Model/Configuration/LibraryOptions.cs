@@ -93,12 +93,6 @@ namespace MediaBrowser.Model.Configuration
                 }
             }
 
-            if (type == "Trailer")
-            {
-                // fall back to generic extras options (if set)
-                return GetTypeOptions("Video");
-            }
-
             return null;
         }
     }
