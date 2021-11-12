@@ -156,13 +156,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            var format = ImageFormat.Jpg;
             string extractedImagePath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, ".jpg", cancellationToken)
+                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse
             {
-                Format = ImageFormat.Jpg,
+                Format = format,
                 HasImage = true,
                 Path = extractedImagePath,
                 Protocol = MediaProtocol.File
@@ -180,10 +181,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 extension = ".jpg";
             }
 
-            string extractedAttachmentPath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, extension, cancellationToken)
-                    .ConfigureAwait(false);
-
             ImageFormat format = extension switch
             {
                 ".bmp" => ImageFormat.Bmp,
@@ -193,6 +190,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 ".webp" => ImageFormat.Webp,
                 _ => ImageFormat.Jpg
             };
+
+            string extractedAttachmentPath =
+                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
+                    .ConfigureAwait(false);
 
             return new DynamicImageResponse
             {

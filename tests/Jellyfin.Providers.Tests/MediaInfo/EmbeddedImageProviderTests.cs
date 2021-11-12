@@ -57,7 +57,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             for (int i = 1; i <= targetIndex; i++)
             {
                 var name = i == targetIndex ? filename : "unmatched";
-                attachments.Add(new()
+                attachments.Add(new ()
                 {
                     FileName = name,
                     MimeType = mimetype,
@@ -66,8 +66,8 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             }
 
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns<string, string, MediaSourceInfo, MediaStream, int, string, CancellationToken>((_, _, _, _, index, ext, _) => Task.FromResult(pathPrefix + index + ext));
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
+                .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, _, index, ext, _) => Task.FromResult(pathPrefix + index + "." + ext));
             var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object);
 
             var input = GetMovie(attachments, new List<MediaStream>());
@@ -81,7 +81,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             else
             {
                 Assert.True(actual.HasImage);
-                Assert.Equal(pathPrefix + targetIndex + "." + format, actual.Path, StringComparer.InvariantCultureIgnoreCase);
+                Assert.Equal(pathPrefix + targetIndex + "." + format, actual.Path, StringComparer.OrdinalIgnoreCase);
                 Assert.Equal(format, actual.Format);
             }
         }
@@ -97,7 +97,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             for (int i = 1; i <= targetIndex; i++)
             {
                 var comment = i == targetIndex ? label : "unmatched";
-                streams.Add(new()
+                streams.Add(new ()
                 {
                     Type = MediaStreamType.EmbeddedImage,
                     Index = i,
@@ -107,11 +107,11 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var pathPrefix = "path";
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .Returns<string, string, MediaSourceInfo, MediaStream, int, string, CancellationToken>((_, _, _, stream, index, ext, _) =>
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
+                .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, stream, index, ext, _) =>
                 {
                     Assert.Equal(streams[index - 1], stream);
-                    return Task.FromResult(pathPrefix + index + ext);
+                    return Task.FromResult(pathPrefix + index + "." + ext);
                 });
             var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object);
 
@@ -122,7 +122,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             Assert.Equal(hasImage, actual.HasImage);
             if (hasImage)
             {
-                Assert.Equal(pathPrefix + targetIndex + ".jpg", actual.Path);
+                Assert.Equal(pathPrefix + targetIndex + ".jpg", actual.Path, StringComparer.OrdinalIgnoreCase);
                 Assert.Equal(ImageFormat.Jpg, actual.Format);
             }
         }
