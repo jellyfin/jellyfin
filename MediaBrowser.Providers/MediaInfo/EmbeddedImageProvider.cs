@@ -156,7 +156,14 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            var format = ImageFormat.Jpg;
+            var format = imageStream.Codec switch
+            {
+                "mjpeg" => ImageFormat.Jpg,
+                "png" => ImageFormat.Png,
+                "gif" => ImageFormat.Gif,
+                _ => ImageFormat.Jpg
+            };
+
             string extractedImagePath =
                 await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
