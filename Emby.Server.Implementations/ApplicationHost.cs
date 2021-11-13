@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -118,7 +119,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts.
         /// </summary>
-        private readonly List<IDisposable> _disposableParts = new List<IDisposable>();
+        private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new ();
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IConfiguration _startupConfig;
@@ -129,7 +130,6 @@ namespace Emby.Server.Implementations
         private List<Type> _creatingInstances;
         private IMediaEncoder _mediaEncoder;
         private ISessionManager _sessionManager;
-        private string[] _urlPrefixes;
 
         /// <summary>
         /// Gets or sets all concrete types.
@@ -210,7 +210,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// Gets the <see cref="INetworkManager"/> singleton instance.
         /// </summary>
-        public INetworkManager NetManager { get; internal set; }
+        public INetworkManager NetManager { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance has changes that require the entire application to restart.
@@ -232,16 +232,16 @@ namespace Emby.Server.Implementations
         protected ILoggerFactory LoggerFactory { get; }
 
         /// <summary>
-        /// Gets or sets the application paths.
+        /// Gets the application paths.
         /// </summary>
         /// <value>The application paths.</value>
-        protected IServerApplicationPaths ApplicationPaths { get; set; }
+        protected IServerApplicationPaths ApplicationPaths { get; }
 
         /// <summary>
-        /// Gets or sets the configuration manager.
+        /// Gets the configuration manager.
         /// </summary>
         /// <value>The configuration manager.</value>
-        public ServerConfigurationManager ConfigurationManager { get; set; }
+        public ServerConfigurationManager ConfigurationManager { get; }
 
         /// <summary>
         /// Gets or sets the service provider.
@@ -345,22 +345,6 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Creates an instance of type and resolves all constructor dependencies.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        public object CreateInstance(Type type)
-            => ActivatorUtilities.CreateInstance(ServiceProvider, type);
-
-        /// <summary>
-        /// Creates an instance of type and resolves all constructor dependencies.
-        /// </summary>
-        /// <typeparam name="T">The type.</typeparam>
-        /// <returns>T.</returns>
-        public T CreateInstance<T>()
-            => ActivatorUtilities.CreateInstance<T>(ServiceProvider);
-
-        /// <summary>
         /// Creates the instance safe.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -369,7 +353,7 @@ namespace Emby.Server.Implementations
         {
             _creatingInstances ??= new List<Type>();
 
-            if (_creatingInstances.IndexOf(type) != -1)
+            if (_creatingInstances.Contains(type))
             {
                 Logger.LogError("DI Loop detected in the attempted creation of {Type}", type.FullName);
                 foreach (var entry in _creatingInstances)
@@ -379,7 +363,7 @@ namespace Emby.Server.Implementations
 
                 _pluginManager.FailPlugin(type.Assembly);
 
-                throw new ExternalException("DI Loop detected.");
+                throw new TypeLoadException("DI Loop detected");
             }
 
             try
@@ -412,8 +396,15 @@ namespace Emby.Server.Implementations
         public IEnumerable<Type> GetExportTypes<T>()
         {
             var currentType = typeof(T);
-
-            return _allConcreteTypes.Where(i => currentType.IsAssignableFrom(i));
+            var numberOfConcreteTypes = _allConcreteTypes.Length;
+            for (var i = 0; i < numberOfConcreteTypes; i++)
+            {
+                var type = _allConcreteTypes[i];
+                if (currentType.IsAssignableFrom(type))
+                {
+                    yield return type;
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -428,9 +419,9 @@ namespace Emby.Server.Implementations
 
             if (manageLifetime)
             {
-                lock (_disposableParts)
+                foreach (var part in parts.OfType<IDisposable>())
                 {
-                    _disposableParts.AddRange(parts.OfType<IDisposable>());
+                    _disposableParts.TryAdd(part, byte.MinValue);
                 }
             }
 
@@ -449,9 +440,9 @@ namespace Emby.Server.Implementations
 
             if (manageLifetime)
             {
-                lock (_disposableParts)
+                foreach (var part in parts.OfType<IDisposable>())
                 {
-                    _disposableParts.AddRange(parts.OfType<IDisposable>());
+                    _disposableParts.TryAdd(part, byte.MinValue);
                 }
             }
 
@@ -563,7 +554,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IServerConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IApplicationHost>(this);
-            serviceCollection.AddSingleton<IPluginManager>(_pluginManager);
+            serviceCollection.AddSingleton(_pluginManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
             serviceCollection.AddSingleton(_fileSystemManager);
@@ -586,7 +577,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IZipClient, ZipClient>();
 
             serviceCollection.AddSingleton<IServerApplicationHost>(this);
-            serviceCollection.AddSingleton<IServerApplicationPaths>(ApplicationPaths);
+            serviceCollection.AddSingleton(ApplicationPaths);
 
             serviceCollection.AddSingleton<ILocalizationManager, LocalizationManager>();
 
@@ -790,8 +781,6 @@ namespace Emby.Server.Implementations
 
             _pluginManager.CreatePlugins();
 
-            _urlPrefixes = GetUrlPrefixes().ToArray();
-
             Resolve<ILibraryManager>().AddParts(
                 GetExports<IResolverIgnoreRule>(),
                 GetExports<IItemResolver>(),
@@ -859,32 +848,12 @@ namespace Emby.Server.Implementations
             }
         }
 
-        private IEnumerable<string> GetUrlPrefixes()
-        {
-            var hosts = new[] { "+" };
-
-            return hosts.SelectMany(i =>
-            {
-                var prefixes = new List<string>
-                {
-                    "http://" + i + ":" + HttpPort + "/"
-                };
-
-                if (Certificate != null)
-                {
-                    prefixes.Add("https://" + i + ":" + HttpsPort + "/");
-                }
-
-                return prefixes;
-            });
-        }
-
         /// <summary>
         /// Called when [configuration updated].
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void OnConfigurationUpdated(object sender, EventArgs e)
+        private void OnConfigurationUpdated(object sender, EventArgs e)
         {
             var requiresRestart = false;
             var networkConfiguration = ConfigurationManager.GetNetworkConfiguration();
@@ -893,8 +862,8 @@ namespace Emby.Server.Implementations
             if (HttpPort != 0 && HttpsPort != 0)
             {
                 // Need to restart if ports have changed
-                if (networkConfiguration.HttpServerPortNumber != HttpPort ||
-                    networkConfiguration.HttpsPortNumber != HttpsPort)
+                if (networkConfiguration.HttpServerPortNumber != HttpPort
+                    || networkConfiguration.HttpsPortNumber != HttpsPort)
                 {
                     if (ConfigurationManager.Configuration.IsPortAuthorized)
                     {
@@ -904,11 +873,6 @@ namespace Emby.Server.Implementations
                         requiresRestart = true;
                     }
                 }
-            }
-
-            if (!_urlPrefixes.SequenceEqual(GetUrlPrefixes(), StringComparer.OrdinalIgnoreCase))
-            {
-                requiresRestart = true;
             }
 
             if (ValidateSslCertificate(networkConfiguration))
@@ -952,7 +916,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <summary>
-        /// Notifies that the kernel that a change has been made that requires a restart.
+        /// Notifies the kernel that a change has been made that requires a restart.
         /// </summary>
         public void NotifyPendingRestart()
         {
@@ -1093,11 +1057,6 @@ namespace Emby.Server.Implementations
             };
         }
 
-        public IEnumerable<WakeOnLanInfo> GetWakeOnLanInfo()
-            => NetManager.GetMacAddresses()
-                .Select(i => new WakeOnLanInfo(i))
-                .ToList();
-
         public PublicSystemInfo GetPublicSystemInfo(HttpRequest request)
         {
             return new PublicSystemInfo
@@ -1113,7 +1072,7 @@ namespace Emby.Server.Implementations
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(IPAddress remoteAddr, int? port = null)
+        public string GetSmartApiUrl(IPAddress remoteAddr)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -1122,12 +1081,12 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(remoteAddr, out port);
+            string smart = NetManager.GetBindInterface(remoteAddr, out var port);
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(HttpRequest request, int? port = null)
+        public string GetSmartApiUrl(HttpRequest request)
         {
             // Return the host in the HTTP request as the API url
             if (ConfigurationManager.GetNetworkConfiguration().EnablePublishedServerUriByRequest)
@@ -1148,12 +1107,12 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(request, out port);
+            string smart = NetManager.GetBindInterface(request, out var port);
             return GetLocalApiUrl(smart.Trim('/'), request.Scheme, port);
         }
 
         /// <inheritdoc/>
-        public string GetSmartApiUrl(string hostname, int? port = null)
+        public string GetSmartApiUrl(string hostname)
         {
             // Published server ends with a /
             if (!string.IsNullOrEmpty(PublishedServerUrl))
@@ -1162,7 +1121,7 @@ namespace Emby.Server.Implementations
                 return PublishedServerUrl.Trim('/');
             }
 
-            string smart = NetManager.GetBindInterface(hostname, out port);
+            string smart = NetManager.GetBindInterface(hostname, out var port);
             return GetLocalApiUrl(smart.Trim('/'), null, port);
         }
 
@@ -1258,12 +1217,15 @@ namespace Emby.Server.Implementations
 
                 Logger.LogInformation("Disposing {Type}", type.Name);
 
-                var parts = _disposableParts.Distinct().Where(i => i.GetType() != type).ToList();
-                _disposableParts.Clear();
-
-                foreach (var part in parts)
+                foreach (var (part, _) in _disposableParts)
                 {
-                    Logger.LogInformation("Disposing {Type}", part.GetType().Name);
+                    var partType = part.GetType();
+                    if (partType == type)
+                    {
+                        continue;
+                    }
+
+                    Logger.LogInformation("Disposing {Type}", partType.Name);
 
                     try
                     {
@@ -1271,9 +1233,11 @@ namespace Emby.Server.Implementations
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(ex, "Error disposing {Type}", part.GetType().Name);
+                        Logger.LogError(ex, "Error disposing {Type}", partType.Name);
                     }
                 }
+
+                _disposableParts.Clear();
             }
 
             _disposed = true;

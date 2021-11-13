@@ -140,12 +140,5 @@ namespace MediaBrowser.Common
         /// </summary>
         /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
         void Init(IServiceCollection serviceCollection);
-
-        /// <summary>
-        /// Creates the instance.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        object CreateInstance(Type type);
     }
 }
