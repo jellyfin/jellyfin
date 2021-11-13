@@ -24,7 +24,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (!auth.HasToken)
             {
-                throw new AuthenticationException("Request does not contain a token.");
+                return auth;
             }
 
             if (!auth.IsAuthenticated)
