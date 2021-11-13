@@ -45,6 +45,11 @@ namespace Jellyfin.Api.Auth
             try
             {
                 var authorizationInfo = await _authService.Authenticate(Request).ConfigureAwait(false);
+                if (!authorizationInfo.HasToken)
+                {
+                    return AuthenticateResult.NoResult();
+                }
+
                 var role = UserRoles.User;
                 if (authorizationInfo.IsApiKey || authorizationInfo.User.HasPermission(PermissionKind.IsAdministrator))
                 {
