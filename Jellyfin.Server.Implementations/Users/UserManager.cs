@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -13,7 +12,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
@@ -818,11 +816,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 // Check easy password
                 var passwordHash = PasswordHash.Parse(user.EasyPassword);
-                var hash = _cryptoProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(password),
-                    passwordHash.Salt.ToArray());
-                success = passwordHash.Hash.SequenceEqual(hash);
+                success = _cryptoProvider.Verify(passwordHash, password);
             }
 
             return (authenticationProvider, username, success);
