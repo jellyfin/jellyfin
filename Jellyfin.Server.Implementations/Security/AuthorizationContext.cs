@@ -185,9 +185,21 @@ namespace Jellyfin.Server.Implementations.Security
                     authInfo.IsAuthenticated = true;
                     authInfo.Client = key.Name;
                     authInfo.Token = key.AccessToken;
-                    authInfo.DeviceId = string.Empty;
-                    authInfo.Device = string.Empty;
-                    authInfo.Version = string.Empty;
+                    if (string.IsNullOrWhiteSpace(authInfo.DeviceId))
+                    {
+                        authInfo.DeviceId = string.Empty;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(authInfo.Device))
+                    {
+                        authInfo.Device = string.Empty;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(authInfo.Version))
+                    {
+                        authInfo.Version = string.Empty;
+                    }
+
                     authInfo.IsApiKey = true;
                 }
             }
