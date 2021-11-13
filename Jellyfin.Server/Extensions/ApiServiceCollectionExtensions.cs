@@ -416,6 +416,18 @@ namespace Jellyfin.Server.Extensions
                             }
                         })
                 });
+
+            // Support dictionary with nullable string value.
+            options.MapType<Dictionary<string, string?>>(() =>
+                new OpenApiSchema
+                {
+                    Type = "object",
+                    AdditionalProperties = new OpenApiSchema
+                    {
+                        Type = "string",
+                        Nullable = true
+                    }
+                });
         }
     }
 }
