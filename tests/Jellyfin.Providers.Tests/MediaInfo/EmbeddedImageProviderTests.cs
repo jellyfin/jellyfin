@@ -46,6 +46,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Theory]
+        [InlineData("chapter", null, 1, ImageType.Chapter, null)] // unexpected type, nothing found
         [InlineData("unmatched", null, 1, ImageType.Primary, null)] // doesn't default on no match
         [InlineData("clearlogo.png", null, 1, ImageType.Logo, ImageFormat.Png)] // extract extension from name
         [InlineData("backdrop", "image/bmp", 2, ImageType.Backdrop, ImageFormat.Bmp)] // extract extension from mimetype
@@ -87,14 +88,15 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         }
 
         [Theory]
-        [InlineData(null, null, 1, ImageType.Backdrop, false, ImageFormat.Jpg)] // no label, can only find primary
-        [InlineData(null, null, 1, ImageType.Primary, true, ImageFormat.Jpg)] // no label, finds primary
-        [InlineData("backdrop", null, 2, ImageType.Backdrop, true, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
-        [InlineData("cover", null, 2, ImageType.Primary, true, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
-        [InlineData(null, "mjpeg", 1, ImageType.Primary, true, ImageFormat.Jpg)]
-        [InlineData(null, "png", 1, ImageType.Primary, true, ImageFormat.Png)]
-        [InlineData(null, "gif", 1, ImageType.Primary, true, ImageFormat.Gif)]
-        public async void GetImage_Embedded_ReturnsCorrectSelection(string label, string? codec, int targetIndex, ImageType type, bool hasImage, ImageFormat expectedFormat)
+        [InlineData("chapter", null, 1, ImageType.Chapter, null)] // unexpected type, nothing found
+        [InlineData(null, null, 1, ImageType.Backdrop, null)] // no label, can only find primary
+        [InlineData(null, null, 1, ImageType.Primary, ImageFormat.Jpg)] // no label, finds primary
+        [InlineData("backdrop", null, 2, ImageType.Backdrop, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
+        [InlineData("cover", null, 2, ImageType.Primary, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
+        [InlineData(null, "mjpeg", 1, ImageType.Primary, ImageFormat.Jpg)]
+        [InlineData(null, "png", 1, ImageType.Primary, ImageFormat.Png)]
+        [InlineData(null, "gif", 1, ImageType.Primary, ImageFormat.Gif)]
+        public async void GetImage_Embedded_ReturnsCorrectSelection(string label, string? codec, int targetIndex, ImageType type, ImageFormat? expectedFormat)
         {
             var streams = new List<MediaStream>();
             for (int i = 1; i <= targetIndex; i++)
@@ -123,9 +125,13 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            Assert.Equal(hasImage, actual.HasImage);
-            if (hasImage)
+            if (expectedFormat == null)
             {
+                Assert.False(actual.HasImage);
+            }
+            else
+            {
+                Assert.True(actual.HasImage);
                 Assert.Equal(pathPrefix + targetIndex + "." + expectedFormat, actual.Path, StringComparer.OrdinalIgnoreCase);
                 Assert.Equal(expectedFormat, actual.Format);
             }
