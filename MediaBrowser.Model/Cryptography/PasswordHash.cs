@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MediaBrowser.Common.Cryptography
+namespace MediaBrowser.Model.Cryptography
 {
     // Defined from this hash storage spec
     // https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md

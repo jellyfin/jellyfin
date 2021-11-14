@@ -132,6 +132,8 @@ namespace Jellyfin.Api.Tests.Auth
             authorizationInfo.User.AddDefaultPreferences();
             authorizationInfo.User.SetPermission(PermissionKind.IsAdministrator, isAdmin);
             authorizationInfo.IsApiKey = false;
+            authorizationInfo.HasToken = true;
+            authorizationInfo.Token = "fake-token";
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(

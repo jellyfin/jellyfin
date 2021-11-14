@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using MediaBrowser.Common.Cryptography;
+using MediaBrowser.Model.Cryptography;
 using Xunit;
 
-namespace Jellyfin.Common.Tests.Cryptography
+namespace Jellyfin.Model.Tests.Cryptography
 {
     public static class PasswordHashTests
     {
