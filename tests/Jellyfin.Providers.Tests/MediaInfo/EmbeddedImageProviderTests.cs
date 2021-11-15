@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -17,47 +19,25 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class EmbeddedImageProviderTests
     {
-        private static TheoryData<BaseItem> GetSupportedImages_UnsupportedBaseItems_ReturnsEmpty_TestData()
-        {
-            return new ()
-            {
-                new AudioBook(),
-                new BoxSet(),
-                new Series(),
-                new Season(),
-            };
-        }
-
         [Theory]
-        [MemberData(nameof(GetSupportedImages_UnsupportedBaseItems_ReturnsEmpty_TestData))]
-        public void GetSupportedImages_UnsupportedBaseItems_ReturnsEmpty(BaseItem item)
+        [InlineData(typeof(AudioBook))]
+        [InlineData(typeof(BoxSet))]
+        [InlineData(typeof(Series))]
+        [InlineData(typeof(Season))]
+        [InlineData(typeof(Episode), ImageType.Primary)]
+        [InlineData(typeof(Movie), ImageType.Logo, ImageType.Backdrop, ImageType.Primary)]
+        public void GetSupportedImages_AnyBaseItem_ReturnsExpected(Type type, params ImageType[] expected)
         {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
-            Assert.Empty(embeddedImageProvider.GetSupportedImages(item));
-        }
-
-        private static TheoryData<BaseItem, IEnumerable<ImageType>> GetSupportedImages_SupportedBaseItems_ReturnsPopulated_TestData()
-        {
-            return new TheoryData<BaseItem, IEnumerable<ImageType>>
-            {
-                { new Episode(), new List<ImageType> { ImageType.Primary } },
-                { new Movie(), new List<ImageType> { ImageType.Logo, ImageType.Backdrop, ImageType.Primary } },
-            };
-        }
-
-        [Theory]
-        [MemberData(nameof(GetSupportedImages_SupportedBaseItems_ReturnsPopulated_TestData))]
-        public void GetSupportedImages_SupportedBaseItems_ReturnsPopulated(BaseItem item, IEnumerable<ImageType> expected)
-        {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
+            BaseItem item = (BaseItem)Activator.CreateInstance(type)!;
+            var embeddedImageProvider = new EmbeddedImageProvider(Mock.Of<IMediaEncoder>(), new NullLogger<EmbeddedImageProvider>());
             var actual = embeddedImageProvider.GetSupportedImages(item);
             Assert.Equal(expected.OrderBy(i => i.ToString()), actual.OrderBy(i => i.ToString()));
         }
 
         [Fact]
-        public async void GetImage_InputWithNoStreams_ReturnsNoImage()
+        public async void GetImage_NoStreams_ReturnsNoImage()
         {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
+            var embeddedImageProvider = new EmbeddedImageProvider(null, new NullLogger<EmbeddedImageProvider>());
 
             var input = GetMovie(new List<MediaAttachment>(), new List<MediaStream>());
 
@@ -66,136 +46,96 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             Assert.False(actual.HasImage);
         }
 
-        [Fact]
-        public async void GetImage_InputWithUnlabeledAttachments_ReturnsNoImage()
+        [Theory]
+        [InlineData("chapter", null, 1, ImageType.Chapter, null)] // unexpected type, nothing found
+        [InlineData("unmatched", null, 1, ImageType.Primary, null)] // doesn't default on no match
+        [InlineData("clearlogo.png", null, 1, ImageType.Logo, ImageFormat.Png)] // extract extension from name
+        [InlineData("backdrop", "image/bmp", 2, ImageType.Backdrop, ImageFormat.Bmp)] // extract extension from mimetype
+        [InlineData("poster", null, 3, ImageType.Primary, ImageFormat.Jpg)] // default extension to jpg
+        public async void GetImage_Attachment_ReturnsCorrectSelection(string filename, string mimetype, int targetIndex, ImageType type, ImageFormat? expectedFormat)
         {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
-
-            // add an attachment without a filename - has a list to look through but finds nothing
-            var input = GetMovie(
-                new List<MediaAttachment> { new () },
-                new List<MediaStream>());
-
-            var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-            Assert.NotNull(actual);
-            Assert.False(actual.HasImage);
-        }
-
-        [Fact]
-        public async void GetImage_InputWithLabeledAttachments_ReturnsCorrectSelection()
-        {
-            // first tests file extension detection, second uses mimetype, third defaults to jpg
-            MediaAttachment sampleAttachment1 = new () { FileName = "clearlogo.png", Index = 1 };
-            MediaAttachment sampleAttachment2 = new () { FileName = "backdrop", MimeType = "image/bmp", Index = 2 };
-            MediaAttachment sampleAttachment3 = new () { FileName = "poster", Index = 3 };
-            string targetPath1 = "path1.png";
-            string targetPath2 = "path2.bmp";
-            string targetPath3 = "path2.jpg";
+            var attachments = new List<MediaAttachment>();
+            string pathPrefix = "path";
+            for (int i = 1; i <= targetIndex; i++)
+            {
+                var name = i == targetIndex ? filename : "unmatched";
+                attachments.Add(new ()
+                {
+                    FileName = name,
+                    MimeType = mimetype,
+                    Index = i
+                });
+            }
 
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), 1, ".png", CancellationToken.None))
-                .Returns(Task.FromResult(targetPath1));
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), 2, ".bmp", CancellationToken.None))
-                .Returns(Task.FromResult(targetPath2));
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), 3, ".jpg", CancellationToken.None))
-                .Returns(Task.FromResult(targetPath3));
-            var embeddedImageProvider = GetEmbeddedImageProvider(mediaEncoder.Object);
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
+                .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, _, index, ext, _) => Task.FromResult(pathPrefix + index + "." + ext));
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
-            var input = GetMovie(
-                new List<MediaAttachment> { sampleAttachment1, sampleAttachment2, sampleAttachment3 },
-                new List<MediaStream>());
+            var input = GetMovie(attachments, new List<MediaStream>());
 
-            var actualLogo = await embeddedImageProvider.GetImage(input, ImageType.Logo, CancellationToken.None);
-            Assert.NotNull(actualLogo);
-            Assert.True(actualLogo.HasImage);
-            Assert.Equal(targetPath1, actualLogo.Path);
-            Assert.Equal(ImageFormat.Png, actualLogo.Format);
-
-            var actualBackdrop = await embeddedImageProvider.GetImage(input, ImageType.Backdrop, CancellationToken.None);
-            Assert.NotNull(actualBackdrop);
-            Assert.True(actualBackdrop.HasImage);
-            Assert.Equal(targetPath2, actualBackdrop.Path);
-            Assert.Equal(ImageFormat.Bmp, actualBackdrop.Format);
-
-            var actualPrimary = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-            Assert.NotNull(actualPrimary);
-            Assert.True(actualPrimary.HasImage);
-            Assert.Equal(targetPath3, actualPrimary.Path);
-            Assert.Equal(ImageFormat.Jpg, actualPrimary.Format);
-        }
-
-        [Fact]
-        public async void GetImage_InputWithUnlabeledEmbeddedImages_BackdropReturnsNoImage()
-        {
-            var embeddedImageProvider = GetEmbeddedImageProvider(null);
-
-            var input = GetMovie(
-                new List<MediaAttachment>(),
-                new List<MediaStream> { new () { Type = MediaStreamType.EmbeddedImage } });
-
-            var actual = await embeddedImageProvider.GetImage(input, ImageType.Backdrop, CancellationToken.None);
+            var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            Assert.False(actual.HasImage);
+            if (expectedFormat == null)
+            {
+                Assert.False(actual.HasImage);
+            }
+            else
+            {
+                Assert.True(actual.HasImage);
+                Assert.Equal(pathPrefix + targetIndex + "." + expectedFormat, actual.Path, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(expectedFormat, actual.Format);
+            }
         }
 
-        [Fact]
-        public async void GetImage_InputWithUnlabeledEmbeddedImages_PrimaryReturnsImage()
+        [Theory]
+        [InlineData("chapter", null, 1, ImageType.Chapter, null)] // unexpected type, nothing found
+        [InlineData(null, null, 1, ImageType.Backdrop, null)] // no label, can only find primary
+        [InlineData(null, null, 1, ImageType.Primary, ImageFormat.Jpg)] // no label, finds primary
+        [InlineData("backdrop", null, 2, ImageType.Backdrop, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
+        [InlineData("cover", null, 2, ImageType.Primary, ImageFormat.Jpg)] // uses label to find index 2, not just pulling first stream
+        [InlineData(null, "mjpeg", 1, ImageType.Primary, ImageFormat.Jpg)]
+        [InlineData(null, "png", 1, ImageType.Primary, ImageFormat.Png)]
+        [InlineData(null, "gif", 1, ImageType.Primary, ImageFormat.Gif)]
+        public async void GetImage_Embedded_ReturnsCorrectSelection(string label, string? codec, int targetIndex, ImageType type, ImageFormat? expectedFormat)
         {
-            MediaStream sampleStream = new () { Type = MediaStreamType.EmbeddedImage, Index = 1 };
-            string targetPath = "path";
+            var streams = new List<MediaStream>();
+            for (int i = 1; i <= targetIndex; i++)
+            {
+                var comment = i == targetIndex ? label : "unmatched";
+                streams.Add(new ()
+                {
+                    Type = MediaStreamType.EmbeddedImage,
+                    Index = i,
+                    Comment = comment,
+                    Codec = codec
+                });
+            }
 
+            var pathPrefix = "path";
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream, 1, ".jpg", CancellationToken.None))
-                .Returns(Task.FromResult(targetPath));
-            var embeddedImageProvider = GetEmbeddedImageProvider(mediaEncoder.Object);
+            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
+                .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, stream, index, ext, _) =>
+                {
+                    Assert.Equal(streams[index - 1], stream);
+                    return Task.FromResult(pathPrefix + index + "." + ext);
+                });
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
-            var input = GetMovie(
-                new List<MediaAttachment>(),
-                new List<MediaStream> { sampleStream });
+            var input = GetMovie(new List<MediaAttachment>(), streams);
 
-            var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
+            var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
-            Assert.True(actual.HasImage);
-            Assert.Equal(targetPath, actual.Path);
-            Assert.Equal(ImageFormat.Jpg, actual.Format);
-        }
-
-        [Fact]
-        public async void GetImage_InputWithLabeledEmbeddedImages_ReturnsCorrectSelection()
-        {
-            // primary is second stream to ensure it's not defaulting, backdrop is first
-            MediaStream sampleStream1 = new () { Type = MediaStreamType.EmbeddedImage, Index = 1, Comment = "backdrop" };
-            MediaStream sampleStream2 = new () { Type = MediaStreamType.EmbeddedImage, Index = 2, Comment = "cover" };
-            string targetPath1 = "path1.jpg";
-            string targetPath2 = "path2.jpg";
-
-            var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream1, 1, ".jpg", CancellationToken.None))
-                .Returns(Task.FromResult(targetPath1));
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), sampleStream2, 2, ".jpg", CancellationToken.None))
-                .Returns(Task.FromResult(targetPath2));
-            var embeddedImageProvider = GetEmbeddedImageProvider(mediaEncoder.Object);
-
-            var input = GetMovie(
-                new List<MediaAttachment>(),
-                new List<MediaStream> { sampleStream1, sampleStream2 });
-
-            var actualPrimary = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-            Assert.NotNull(actualPrimary);
-            Assert.True(actualPrimary.HasImage);
-            Assert.Equal(targetPath2, actualPrimary.Path);
-            Assert.Equal(ImageFormat.Jpg, actualPrimary.Format);
-
-            var actualBackdrop = await embeddedImageProvider.GetImage(input, ImageType.Backdrop, CancellationToken.None);
-            Assert.NotNull(actualBackdrop);
-            Assert.True(actualBackdrop.HasImage);
-            Assert.Equal(targetPath1, actualBackdrop.Path);
-            Assert.Equal(ImageFormat.Jpg, actualBackdrop.Format);
-        }
-
-        private static EmbeddedImageProvider GetEmbeddedImageProvider(IMediaEncoder? mediaEncoder)
-        {
-            return new EmbeddedImageProvider(mediaEncoder);
+            if (expectedFormat == null)
+            {
+                Assert.False(actual.HasImage);
+            }
+            else
+            {
+                Assert.True(actual.HasImage);
+                Assert.Equal(pathPrefix + targetIndex + "." + expectedFormat, actual.Path, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(expectedFormat, actual.Format);
+            }
         }
 
         private static Movie GetMovie(List<MediaAttachment> mediaAttachments, List<MediaStream> mediaStreams)
