@@ -451,7 +451,7 @@ namespace Jellyfin.Api.Controllers
 
             if (@static.HasValue && @static.Value && state.DirectStreamProvider != null)
             {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
+                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
                 var liveStreamInfo = _mediaSourceManager.GetLiveStreamInfo(streamingRequest.LiveStreamId);
                 if (liveStreamInfo == null)
@@ -467,7 +467,7 @@ namespace Jellyfin.Api.Controllers
             // Static remote stream
             if (@static.HasValue && @static.Value && state.InputProtocol == MediaProtocol.Http)
             {
-                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, startTimeTicks, Request, _dlnaManager);
+                StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
                 return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, HttpContext).ConfigureAwait(false);
@@ -484,7 +484,7 @@ namespace Jellyfin.Api.Controllers
             var transcodingJob = _transcodingJobHelper.GetTranscodingJob(outputPath, TranscodingJobType.Progressive);
             var isTranscodeCached = outputPathExists && transcodingJob != null;
 
-            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, startTimeTicks, Request, _dlnaManager);
+            StreamingHelpers.AddDlnaHeaders(state, Response.Headers, (@static.HasValue && @static.Value) || isTranscodeCached, state.Request.StartTimeTicks, Request, _dlnaManager);
 
             // Static stream
             if (@static.HasValue && @static.Value)
