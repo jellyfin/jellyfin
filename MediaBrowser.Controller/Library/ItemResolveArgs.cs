@@ -36,7 +36,7 @@ namespace MediaBrowser.Controller.Library
             DirectoryService = directoryService;
         }
 
-        // TODO make this shit gone
+        // TODO remove dependencies as properties, they should be injected where it makes sense
         public IDirectoryService DirectoryService { get; }
 
         /// <summary>
