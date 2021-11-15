@@ -395,6 +395,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
 
                 writer.WriteFullEndElement();
+                writer.Flush();
                 xmlWriter.WriteElementString("Result", builder.ToString());
             }
 
@@ -484,6 +485,7 @@ namespace Emby.Dlna.ContentDirectory
                 }
 
                 writer.WriteFullEndElement();
+                writer.Flush();
                 xmlWriter.WriteElementString("Result", builder.ToString());
             }
 
