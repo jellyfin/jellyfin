@@ -114,5 +114,7 @@
     "Artists": "Esitajad",
     "Application": "Rakendus",
     "AppDeviceValues": "Rakendus: {0}, seade: {1}",
-    "Albums": "Albumid"
+    "Albums": "Albumid",
+    "UserOfflineFromDevice": "{0} katkestas ühenduse {1}-ga",
+    "SubtitleDownloadFailureFromForItem": "Subtiitrite allalaadimine {0} > {1} nurjus"
 }
