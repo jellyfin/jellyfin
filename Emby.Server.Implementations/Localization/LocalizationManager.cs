@@ -406,7 +406,7 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Bahasa Indonesia (id)", "id");
             yield return new LocalizationOption("Íslenska (is)", "is");
             yield return new LocalizationOption("Italiano (it)", "it");
-            yield return new LocalizationOption("日本語 (ja), "ja");
+            yield return new LocalizationOption("日本語 (ja)", "ja");
             yield return new LocalizationOption("Qazaqşa (kk)", "kk");
             yield return new LocalizationOption("한국어 (ko)", "ko");
             yield return new LocalizationOption("Lietuvių (lt)", "lt");
