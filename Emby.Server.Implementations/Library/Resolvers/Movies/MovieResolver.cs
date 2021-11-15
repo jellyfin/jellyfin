@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
@@ -25,6 +26,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
     public class MovieResolver : BaseVideoResolver<Video>, IMultiItemResolver
     {
         private readonly IImageProcessor _imageProcessor;
+        private readonly StackResolver _stackResolver;
 
         private string[] _validCollectionTypes = new[]
         {
@@ -38,12 +40,13 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// <summary>
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
         /// <param name="imageProcessor">The image processor.</param>
-        public MovieResolver(ILibraryManager libraryManager, IImageProcessor imageProcessor)
-            : base(libraryManager)
+        /// <param name="namingOptions">The naming options.</param>
+        public MovieResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
+            : base(namingOptions)
         {
             _imageProcessor = imageProcessor;
+            _stackResolver = new StackResolver(NamingOptions);
         }
 
         /// <summary>
@@ -89,9 +92,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                     return null;
                 }
 
-                var files = args.FileSystemChildren
-                    .Where(i => !LibraryManager.IgnoreFile(i, args.Parent))
-                    .ToList();
+                var files = args.GetActualFileSystemChildren().ToList();
 
                 if (string.Equals(collectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase))
                 {
@@ -258,9 +259,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            var namingOptions = LibraryManager.GetNamingOptions();
-
-            var resolverResult = VideoListResolver.Resolve(files, namingOptions, suppportMultiEditions).ToList();
+            var resolverResult = VideoListResolver.Resolve(files, NamingOptions, suppportMultiEditions).ToList();
 
             var result = new MultiItemResolverResult
             {
@@ -438,7 +437,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             if (result.Items.Count == 1)
             {
                 var videoPath = result.Items[0].Path;
-                var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(LibraryManager, videoPath, i.Name));
+                var hasPhotos = photos.Any(i => !PhotoResolver.IsOwnedByResolvedMedia(videoPath, i.Name));
 
                 if (!hasPhotos)
                 {
@@ -511,9 +510,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return null;
             }
 
-            var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
-
-            var result = new StackResolver(namingOptions).ResolveDirectories(folderPaths).ToList();
+            var result = _stackResolver.ResolveDirectories(folderPaths).ToList();
 
             if (result.Count != 1)
             {

@@ -2,16 +2,16 @@
 
 #pragma warning disable CS1591
 
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     public class GenericVideoResolver<T> : BaseVideoResolver<T>
         where T : Video, new()
     {
-        public GenericVideoResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
+        public GenericVideoResolver(NamingOptions namingOptions)
+            : base(namingOptions)
         {
         }
     }

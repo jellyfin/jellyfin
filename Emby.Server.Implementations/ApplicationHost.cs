@@ -19,6 +19,7 @@ using Emby.Dlna;
 using Emby.Dlna.Main;
 using Emby.Dlna.Ssdp;
 using Emby.Drawing;
+using Emby.Naming.Common;
 using Emby.Notifications;
 using Emby.Photos;
 using Emby.Server.Implementations.Archiving;
@@ -596,6 +597,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddTransient(provider => new Lazy<IProviderManager>(provider.GetRequiredService<IProviderManager>));
             serviceCollection.AddTransient(provider => new Lazy<IUserViewManager>(provider.GetRequiredService<IUserViewManager>));
             serviceCollection.AddSingleton<ILibraryManager, LibraryManager>();
+            serviceCollection.AddSingleton<NamingOptions>();
 
             serviceCollection.AddSingleton<IMusicManager, MusicManager>();
 
