@@ -1,6 +1,7 @@
 #nullable disable
 
 using System.Globalization;
+using Emby.Naming.Common;
 using Emby.Naming.TV;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -14,22 +15,22 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     /// </summary>
     public class SeasonResolver : GenericFolderResolver<Season>
     {
-        private readonly ILibraryManager _libraryManager;
         private readonly ILocalizationManager _localization;
         private readonly ILogger<SeasonResolver> _logger;
+        private readonly NamingOptions _namingOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeasonResolver"/> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <param name="localization">The localization.</param>
         /// <param name="logger">The logger.</param>
         public SeasonResolver(
-            ILibraryManager libraryManager,
+            NamingOptions namingOptions,
             ILocalizationManager localization,
             ILogger<SeasonResolver> logger)
         {
-            _libraryManager = libraryManager;
+            _namingOptions = namingOptions;
             _localization = localization;
             _logger = logger;
         }
@@ -43,7 +44,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         {
             if (args.Parent is Series series && args.IsDirectory)
             {
-                var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
+                var namingOptions = _namingOptions;
 
                 var path = args.Path;
 
@@ -65,18 +66,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
 
                     var episodeInfo = resolver.Resolve(testPath, true);
 
-                    if (episodeInfo != null)
+                    if (episodeInfo?.EpisodeNumber != null && episodeInfo.SeasonNumber.HasValue)
                     {
-                        if (episodeInfo.EpisodeNumber.HasValue && episodeInfo.SeasonNumber.HasValue)
-                        {
-                            _logger.LogDebug(
-                                "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
-                                path,
-                                episodeInfo.SeasonNumber.Value,
-                                episodeInfo.EpisodeNumber.Value);
+                        _logger.LogDebug(
+                            "Found folder underneath series with episode number: {0}. Season {1}. Episode {2}",
+                            path,
+                            episodeInfo.SeasonNumber.Value,
+                            episodeInfo.EpisodeNumber.Value);
 
-                            return null;
-                        }
+                        return null;
                     }
                 }
 
