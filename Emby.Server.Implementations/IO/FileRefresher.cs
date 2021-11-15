@@ -1,5 +1,3 @@
-#nullable disable
-
 #pragma warning disable CS1591
 
 using System;
@@ -14,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.IO
 {
-    public class FileRefresher : IDisposable
+    public sealed class FileRefresher : IDisposable
     {
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
@@ -22,7 +20,7 @@ namespace Emby.Server.Implementations.IO
 
         private readonly List<string> _affectedPaths = new List<string>();
         private readonly object _timerLock = new object();
-        private Timer _timer;
+        private Timer? _timer;
         private bool _disposed;
 
         public FileRefresher(string path, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger logger)
@@ -36,7 +34,7 @@ namespace Emby.Server.Implementations.IO
             AddPath(path);
         }
 
-        public event EventHandler<EventArgs> Completed;
+        public event EventHandler<EventArgs>? Completed;
 
         public string Path { get; private set; }
 
@@ -111,7 +109,7 @@ namespace Emby.Server.Implementations.IO
             RestartTimer();
         }
 
-        private void OnTimerCallback(object state)
+        private void OnTimerCallback(object? state)
         {
             List<string> paths;
 
@@ -127,7 +125,7 @@ namespace Emby.Server.Implementations.IO
 
             try
             {
-                ProcessPathChanges(paths.ToList());
+                ProcessPathChanges(paths);
             }
             catch (Exception ex)
             {
@@ -137,12 +135,12 @@ namespace Emby.Server.Implementations.IO
 
         private void ProcessPathChanges(List<string> paths)
         {
-            var itemsToRefresh = paths
+            IEnumerable<BaseItem> itemsToRefresh = paths
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Select(GetAffectedBaseItem)
                 .Where(item => item != null)
-                .GroupBy(x => x.Id)
-                .Select(x => x.First());
+                .GroupBy(x => x!.Id) // Removed null values in the previous .Where()
+                .Select(x => x.First())!;
 
             foreach (var item in itemsToRefresh)
             {
@@ -176,15 +174,15 @@ namespace Emby.Server.Implementations.IO
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>BaseItem.</returns>
-        private BaseItem GetAffectedBaseItem(string path)
+        private BaseItem? GetAffectedBaseItem(string path)
         {
-            BaseItem item = null;
+            BaseItem? item = null;
 
             while (item == null && !string.IsNullOrEmpty(path))
             {
                 item = _libraryManager.FindByPath(path, null);
 
-                path = System.IO.Path.GetDirectoryName(path);
+                path = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
             }
 
             if (item != null)

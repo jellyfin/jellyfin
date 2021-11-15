@@ -34,7 +34,7 @@ namespace Emby.Server.Implementations.Sorting
                 throw new ArgumentNullException(nameof(y));
             }
 
-            return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
