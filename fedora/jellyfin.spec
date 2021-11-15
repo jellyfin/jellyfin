@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.8.0
+Version:        10.8.0~alpha2
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
@@ -137,6 +137,8 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Mon Nov 15 2021 Brian J. Murrell <brian@interlinx.bc.ca>
+- Update to release to be more transparent about which 10.8.0 release this is
 * Fri Dec 04 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
 - Forthcoming stable release
 * Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
