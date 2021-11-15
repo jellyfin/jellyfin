@@ -38,8 +38,14 @@
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA1063: Implement IDisposable correctly -->
+    <Rule Id="CA1063" Action="Error" />
     <!-- error on CA1305: Specify IFormatProvider -->
     <Rule Id="CA1305" Action="Error" />
+    <!-- error on CA1307: Specify StringComparison for clarity -->
+    <Rule Id="CA1307" Action="Error" />
+    <!-- error on CA1309: Use ordinal StringComparison -->
+    <Rule Id="CA1309" Action="Error" />
     <!-- error on CA1725: Parameter names should match base declaration -->
     <Rule Id="CA1725" Action="Error" />
     <!-- error on CA1725: Call async methods when in an async method -->
