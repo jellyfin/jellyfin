@@ -15,6 +15,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -45,14 +46,17 @@ namespace MediaBrowser.Providers.MediaInfo
         };
 
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly ILogger<EmbeddedImageProvider> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedImageProvider"/> class.
         /// </summary>
         /// <param name="mediaEncoder">The media encoder for extracting attached/embedded images.</param>
-        public EmbeddedImageProvider(IMediaEncoder mediaEncoder)
+        /// <param name="logger">The logger.</param>
+        public EmbeddedImageProvider(IMediaEncoder mediaEncoder, ILogger<EmbeddedImageProvider> logger)
         {
             _mediaEncoder = mediaEncoder;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -116,6 +120,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 ImageType.Logo => _logoImageFileNames,
                 _ => Array.Empty<string>()
             };
+
+            if (imageFileNames.Length == 0)
+            {
+                _logger.LogWarning("Attempted to load unexpected image type: {Type}", type);
+                return new DynamicImageResponse { HasImage = false };
+            }
 
             // Try attachments first
             var attachmentStream = item.GetMediaSources(false)

@@ -11,6 +11,7 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Providers.MediaInfo;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         public void GetSupportedImages_AnyBaseItem_ReturnsExpected(Type type, params ImageType[] expected)
         {
             BaseItem item = (BaseItem)Activator.CreateInstance(type)!;
-            var embeddedImageProvider = new EmbeddedImageProvider(Mock.Of<IMediaEncoder>());
+            var embeddedImageProvider = new EmbeddedImageProvider(Mock.Of<IMediaEncoder>(), new NullLogger<EmbeddedImageProvider>());
             var actual = embeddedImageProvider.GetSupportedImages(item);
             Assert.Equal(expected.OrderBy(i => i.ToString()), actual.OrderBy(i => i.ToString()));
         }
@@ -36,7 +37,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [Fact]
         public async void GetImage_NoStreams_ReturnsNoImage()
         {
-            var embeddedImageProvider = new EmbeddedImageProvider(null);
+            var embeddedImageProvider = new EmbeddedImageProvider(null, new NullLogger<EmbeddedImageProvider>());
 
             var input = GetMovie(new List<MediaAttachment>(), new List<MediaStream>());
 
@@ -69,7 +70,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
             mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
                 .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, _, index, ext, _) => Task.FromResult(pathPrefix + index + "." + ext));
-            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object);
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
             var input = GetMovie(attachments, new List<MediaStream>());
 
@@ -119,7 +120,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     Assert.Equal(streams[index - 1], stream);
                     return Task.FromResult(pathPrefix + index + "." + ext);
                 });
-            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object);
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
             var input = GetMovie(new List<MediaAttachment>(), streams);
 
