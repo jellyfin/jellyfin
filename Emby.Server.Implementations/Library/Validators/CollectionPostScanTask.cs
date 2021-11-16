@@ -1,9 +1,14 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using MediaBrowser.Controller.Collections;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Querying;
+using Jellyfin.Data.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Validators
@@ -17,8 +22,16 @@ namespace Emby.Server.Implementations.Library.Validators
         /// The _library manager.
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+
+        /// <summary>
+        /// The collection manager.
+        /// </summary>
         private readonly ICollectionManager _collectionManager;
-        private readonly ILogger<CollectionValidator> _logger;
+
+        /// <summary>
+        /// The logger.
+        /// </summary>
+        private readonly ILogger<CollectionPostScanTask> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionPostScanTask" /> class.
@@ -28,7 +41,7 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="logger">The logger.</param>
         public CollectionPostScanTask(
             ILibraryManager libraryManager,
-            ILogger<CollectionValidator> logger,
+            ILogger<CollectionPostScanTask> logger,
             ICollectionManager collectionManager)
         {
             _libraryManager = libraryManager;
@@ -42,9 +55,101 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="progress">The progress.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task Run(IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            return new CollectionValidator(_libraryManager, _collectionManager, _logger).Run(progress, cancellationToken);
+
+            var movies = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(Movie) },
+                IsVirtualItem = false,
+                OrderBy = new List<ValueTuple<string, SortOrder>>
+                {
+                new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)
+                },
+                Recursive = true
+            });
+
+            var boxSets = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(BoxSet) },
+                CollapseBoxSetItems = false,
+                Recursive = true
+            });
+
+            var numComplete = 0;
+            var count = movies.Count;
+
+            var collectionNameMoviesMap = new Dictionary<string, List<Movie>>();
+            foreach (var m in movies)
+            {
+                var movie = m as Movie;
+                if (movie != null && movie.CollectionName != null)
+                {
+                    var movieList = new List<Movie>();
+                    if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out movieList))
+                    {
+                        if (!movieList.Any(m => m.Id == movie.Id))
+                        {
+                            movieList.Add(movie);
+                            collectionNameMoviesMap[movie.CollectionName] = movieList;
+                        }
+                    }
+                    else
+                    {
+                        collectionNameMoviesMap[movie.CollectionName] = new List<Movie> { movie };
+                    }
+
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= count * 2;
+                percent *= 100;
+
+                progress.Report(percent);
+            }
+
+            foreach (var pair in collectionNameMoviesMap)
+            {
+                try
+                {
+                    var collectionName = pair.Key;
+                    var movieList = pair.Value;
+
+                    var boxSet = boxSets.FirstOrDefault(b => b != null ? b.Name == collectionName : false) as BoxSet;
+                    if (boxSet == null)
+                    {
+                        // won't automatically create collection if only one movie in it
+                        if (movieList.Count >= 2)
+                        {
+                            boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
+                            {
+                                Name = collectionName,
+                                IsLocked = true
+                            });
+
+                            await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
+                        }
+                    }
+                    else
+                    {
+                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
+                    }
+
+                    numComplete++;
+                    double percent = numComplete;
+                    percent /= count * 2;
+                    percent *= 100;
+
+                    progress.Report(percent);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error refreshing {0}, {1}", pair.Key, pair.Value.ToString());
+                }
+            }
+
+            progress.Report(100);
         }
     }
 }
