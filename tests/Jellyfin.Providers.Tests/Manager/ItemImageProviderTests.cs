@@ -336,8 +336,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 remoteInfo[i] = new RemoteImageInfo
                 {
                     Type = imageType,
-                    Url = "image url " + i,
-                    Width = 1 // min width is set to 0, this will always pass
+                    Url = "image url " + i
                 };
             }
 
@@ -403,11 +402,10 @@ namespace Jellyfin.Providers.Tests.Manager
             var remoteInfo = new RemoteImageInfo[targetImageCount];
             for (int i = 0; i < targetImageCount; i++)
             {
-                remoteInfo[i] = new RemoteImageInfo()
+                remoteInfo[i] = new RemoteImageInfo
                 {
                     Type = imageType,
-                    Url = "image url " + i,
-                    Width = 1 // min width is set to 0, this will always pass
+                    Url = "image url " + i
                 };
             }
 
@@ -449,11 +447,10 @@ namespace Jellyfin.Providers.Tests.Manager
             var remoteInfo = new RemoteImageInfo[remoteInfoCount];
             for (int i = 0; i < remoteInfoCount; i++)
             {
-                remoteInfo[i] = new RemoteImageInfo()
+                remoteInfo[i] = new RemoteImageInfo
                 {
                     Type = imageType,
-                    Url = "image url " + i,
-                    Width = 1 // min width is set to 0, this will always pass
+                    Url = "image url " + i
                 };
             }
 
@@ -498,6 +495,62 @@ namespace Jellyfin.Providers.Tests.Manager
 
             Assert.False(result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
             Assert.Equal(imageCount, item.GetImages(imageType).Count());
+        }
+
+        [Theory]
+        [InlineData(9, false)]
+        [InlineData(10, true)]
+        [InlineData(null, true)]
+        public async void RefreshImages_ProviderRemote_FiltersByWidth(int? remoteImageWidth, bool expectedToUpdate)
+        {
+            var imageType = ImageType.Primary;
+
+            var item = new Video();
+
+            var libraryOptions = new LibraryOptions
+            {
+                TypeOptions = new[]
+                {
+                    new TypeOptions
+                    {
+                        Type = item.GetType().Name,
+                        ImageOptions = new[]
+                        {
+                            new ImageOption
+                            {
+                                Type = imageType,
+                                MinWidth = 10
+                            }
+                        }
+                    }
+                }
+            };
+
+            var remoteProvider = new Mock<IRemoteImageProvider>(MockBehavior.Strict);
+            remoteProvider.Setup(rp => rp.Name).Returns("MockRemoteProvider");
+            remoteProvider.Setup(rp => rp.GetSupportedImages(item))
+                .Returns(new[] { imageType });
+
+            var refreshOptions = new ImageRefreshOptions(Mock.Of<IDirectoryService>());
+
+            // set width on image from remote
+            var remoteInfo = new[]
+            {
+                new RemoteImageInfo()
+                {
+                    Type = imageType,
+                    Url = "image url",
+                    Width = remoteImageWidth
+                }
+            };
+
+            var providerManager = new Mock<IProviderManager>(MockBehavior.Strict);
+            providerManager.Setup(pm => pm.GetAvailableRemoteImages(It.IsAny<BaseItem>(), It.IsAny<RemoteImageQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(remoteInfo);
+            var itemImageProvider = GetItemImageProvider(providerManager.Object, null);
+            var result = await itemImageProvider.RefreshImages(item, libraryOptions, new List<IImageProvider> { remoteProvider.Object }, refreshOptions, CancellationToken.None);
+
+            Assert.Equal(expectedToUpdate, result.UpdateType.HasFlag(ItemUpdateType.ImageUpdate));
         }
 
         private static ItemImageProvider GetItemImageProvider(IProviderManager? providerManager, Mock<IFileSystem>? mockFileSystem)
@@ -586,7 +639,6 @@ namespace Jellyfin.Providers.Tests.Manager
                             {
                                 Type = type,
                                 Limit = count,
-                                MinWidth = 0
                             }
                         }
                     }
