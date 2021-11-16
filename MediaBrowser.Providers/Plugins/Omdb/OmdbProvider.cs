@@ -12,7 +12,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Extensions.Json;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -33,7 +32,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <summary>Initializes a new instance of the <see cref="OmdbProvider"/> class.</summary>
         /// <param name="httpClientFactory">HttpClientFactory to use for calls to OMDB service.</param>
         /// <param name="fileSystem">IFileSystem to use for store OMDB data.</param>
-        /// <param name="appHost">IApplicationHost to use.</param>
         /// <param name="configurationManager">IServerConfigurationManager to use.</param>
         public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
