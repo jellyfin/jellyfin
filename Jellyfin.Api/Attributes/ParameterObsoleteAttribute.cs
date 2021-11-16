@@ -6,7 +6,7 @@ namespace Jellyfin.Api.Attributes
     /// Attribute to mark a parameter as obsolete.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter)]
-    public class ParameterObsoleteAttribute : Attribute
+    public sealed class ParameterObsoleteAttribute : Attribute
     {
     }
 }
