@@ -18,19 +18,8 @@ namespace Emby.Server.Implementations.Library.Validators
     /// </summary>
     public class CollectionPostScanTask : ILibraryPostScanTask
     {
-        /// <summary>
-        /// The _library manager.
-        /// </summary>
         private readonly ILibraryManager _libraryManager;
-
-        /// <summary>
-        /// The collection manager.
-        /// </summary>
         private readonly ICollectionManager _collectionManager;
-
-        /// <summary>
-        /// The logger.
-        /// </summary>
         private readonly ILogger<CollectionPostScanTask> _logger;
 
         /// <summary>
@@ -41,8 +30,8 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <param name="logger">The logger.</param>
         public CollectionPostScanTask(
             ILibraryManager libraryManager,
-            ILogger<CollectionPostScanTask> logger,
-            ICollectionManager collectionManager)
+            ICollectionManager collectionManager,
+            ILogger<CollectionPostScanTask> logger)
         {
             _libraryManager = libraryManager;
             _collectionManager = collectionManager;
@@ -57,15 +46,11 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { nameof(Movie) },
                 IsVirtualItem = false,
-                OrderBy = new List<ValueTuple<string, SortOrder>>
-                {
-                new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending)
-                },
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                 Recursive = true
             });
 
@@ -82,16 +67,13 @@ namespace Emby.Server.Implementations.Library.Validators
             var collectionNameMoviesMap = new Dictionary<string, List<Movie>>();
             foreach (var m in movies)
             {
-                var movie = m as Movie;
-                if (movie != null && movie.CollectionName != null)
+                if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName))
                 {
-                    var movieList = new List<Movie>();
-                    if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out movieList))
+                    if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
                     {
                         if (!movieList.Any(m => m.Id == movie.Id))
                         {
                             movieList.Add(movie);
-                            collectionNameMoviesMap[movie.CollectionName] = movieList;
                         }
                     }
                     else
@@ -109,14 +91,11 @@ namespace Emby.Server.Implementations.Library.Validators
                 progress.Report(percent);
             }
 
-            foreach (var pair in collectionNameMoviesMap)
+            foreach (var (collectionName, movieList) in collectionNameMoviesMap)
             {
                 try
                 {
-                    var collectionName = pair.Key;
-                    var movieList = pair.Value;
-
-                    var boxSet = boxSets.FirstOrDefault(b => b != null ? b.Name == collectionName : false) as BoxSet;
+                    var boxSet = boxSets.FirstOrDefault(b => b?.Name == collectionName) as BoxSet;
                     if (boxSet == null)
                     {
                         // won't automatically create collection if only one movie in it
@@ -145,7 +124,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error refreshing {0}, {1}", pair.Key, pair.Value.ToString());
+                    _logger.LogError(ex, "Error refreshing {CollectionName} with {@MovieIds}", collectionName, movieList);
                 }
             }
 
