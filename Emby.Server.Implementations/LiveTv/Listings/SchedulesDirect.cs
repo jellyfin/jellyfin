@@ -21,7 +21,6 @@ using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Cryptography;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -36,7 +35,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         private readonly ILogger<SchedulesDirect> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
-        private readonly ICryptoProvider _cryptoProvider;
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
         private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
@@ -44,12 +42,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
         public SchedulesDirect(
             ILogger<SchedulesDirect> logger,
-            IHttpClientFactory httpClientFactory,
-            ICryptoProvider cryptoProvider)
+            IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _cryptoProvider = cryptoProvider;
         }
 
         /// <inheritdoc />
@@ -170,12 +166,12 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
                         const double DesiredAspect = 2.0 / 3;
 
-                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, true, DesiredAspect) ??
-                                                    GetProgramImage(ApiUrl, allImages, true, DesiredAspect);
+                        programEntry.PrimaryImage = GetProgramImage(ApiUrl, imagesWithText, DesiredAspect) ??
+                                                    GetProgramImage(ApiUrl, allImages, DesiredAspect);
 
                         const double WideAspect = 16.0 / 9;
 
-                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, true, WideAspect);
+                        programEntry.ThumbImage = GetProgramImage(ApiUrl, imagesWithText, WideAspect);
 
                         // Don't supply the same image twice
                         if (string.Equals(programEntry.PrimaryImage, programEntry.ThumbImage, StringComparison.Ordinal))
@@ -183,7 +179,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                             programEntry.ThumbImage = null;
                         }
 
-                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, true, WideAspect);
+                        programEntry.BackdropImage = GetProgramImage(ApiUrl, imagesWithoutText, WideAspect);
 
                         // programEntry.bannerImage = GetProgramImage(ApiUrl, data, "Banner", false) ??
                         //    GetProgramImage(ApiUrl, data, "Banner-L1", false) ??
@@ -404,7 +400,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return info;
         }
 
-        private string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, bool returnDefaultImage, double desiredAspect)
+        private static string GetProgramImage(string apiUrl, IEnumerable<ImageDataDto> images, double desiredAspect)
         {
             var match = images
                 .OrderBy(i => Math.Abs(desiredAspect - GetAspectRatio(i)))

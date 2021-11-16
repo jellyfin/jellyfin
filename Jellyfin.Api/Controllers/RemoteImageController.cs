@@ -30,7 +30,6 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IProviderManager _providerManager;
         private readonly IServerApplicationPaths _applicationPaths;
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
 
         /// <summary>
@@ -38,17 +37,14 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
         /// <param name="applicationPaths">Instance of the <see cref="IServerApplicationPaths"/> interface.</param>
-        /// <param name="httpClientFactory">Instance of the <see cref="IHttpClientFactory"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         public RemoteImageController(
             IProviderManager providerManager,
             IServerApplicationPaths applicationPaths,
-            IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager)
         {
             _providerManager = providerManager;
             _applicationPaths = applicationPaths;
-            _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
         }
 

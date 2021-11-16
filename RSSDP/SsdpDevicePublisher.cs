@@ -15,8 +15,6 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
     {
-        private readonly INetworkManager _networkManager;
-
         private ISsdpCommunicationsServer _CommsServer;
         private string _OSName;
         private string _OSVersion;
@@ -38,17 +36,15 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, INetworkManager networkManager,
-            string osName, string osVersion, bool sendOnlyMatchedHost)
+        public SsdpDevicePublisher(
+            ISsdpCommunicationsServer communicationsServer,
+            string osName,
+            string osVersion,
+            bool sendOnlyMatchedHost)
         {
             if (communicationsServer == null)
             {
                 throw new ArgumentNullException(nameof(communicationsServer));
-            }
-
-            if (networkManager == null)
-            {
-                throw new ArgumentNullException(nameof(networkManager));
             }
 
             if (osName == null)
@@ -77,7 +73,6 @@ namespace Rssdp.Infrastructure
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _Random = new Random();
 
-            _networkManager = networkManager;
             _CommsServer = communicationsServer;
             _CommsServer.RequestReceived += CommsServer_RequestReceived;
             _OSName = osName;

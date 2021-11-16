@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -25,14 +24,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
-        private readonly IApplicationHost _appHost;
 
-        public OmdbImageProvider(IApplicationHost appHost, IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public OmdbImageProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
-            _appHost = appHost;
         }
 
         public string Name => "The Open Movie Database";
@@ -55,7 +52,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
             var list = new List<RemoteImageInfo>();
 
-            var provider = new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager);
+            var provider = new OmdbProvider(_httpClientFactory, _fileSystem, _configurationManager);
 
             if (!string.IsNullOrWhiteSpace(imdbId))
             {
