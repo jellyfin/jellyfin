@@ -262,7 +262,6 @@ namespace Emby.Dlna.Main
             {
                 _publisher = new SsdpDevicePublisher(
                     _communicationsServer,
-                    _networkManager,
                     MediaBrowser.Common.System.OperatingSystem.Name,
                     Environment.OSVersion.VersionString,
                     _config.GetDlnaConfiguration().SendOnlyMatchedHost)
@@ -400,7 +399,6 @@ namespace Emby.Dlna.Main
                         _imageProcessor,
                         _deviceDiscovery,
                         _httpClientFactory,
-                        _config,
                         _userDataManager,
                         _localization,
                         _mediaSourceManager,
