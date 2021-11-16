@@ -509,35 +509,35 @@ namespace MediaBrowser.Controller.Entities
             }).FirstOrDefault();
         }
 
-        protected override List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
+        protected override IEnumerable<(BaseItem, MediaSourceType)> GetAllItemsForMediaSources()
         {
-            var list = new List<Tuple<BaseItem, MediaSourceType>>();
+            var list = new List<(BaseItem, MediaSourceType)>
+            {
+                (this, MediaSourceType.Default)
+            };
 
-            list.Add(new Tuple<BaseItem, MediaSourceType>(this, MediaSourceType.Default));
-            list.AddRange(GetLinkedAlternateVersions().Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Grouping)));
+            list.AddRange(GetLinkedAlternateVersions().Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
 
             if (!string.IsNullOrEmpty(PrimaryVersionId))
             {
-                var primary = LibraryManager.GetItemById(PrimaryVersionId) as Video;
-                if (primary != null)
+                if (LibraryManager.GetItemById(PrimaryVersionId) is Video primary)
                 {
                     var existingIds = list.Select(i => i.Item1.Id).ToList();
-                    list.Add(new Tuple<BaseItem, MediaSourceType>(primary, MediaSourceType.Grouping));
-                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Grouping)));
+                    list.Add((primary, MediaSourceType.Grouping));
+                    list.AddRange(primary.GetLinkedAlternateVersions().Where(i => !existingIds.Contains(i.Id)).Select(i => ((BaseItem)i, MediaSourceType.Grouping)));
                 }
             }
 
             var localAlternates = list
                 .SelectMany(i =>
                 {
-                    var video = i.Item1 as Video;
-                    return video == null ? new List<Guid>() : video.GetLocalAlternateVersionIds();
+                    return i.Item1 is Video video ? video.GetLocalAlternateVersionIds() : Enumerable.Empty<Guid>();
                 })
                 .Select(LibraryManager.GetItemById)
                 .Where(i => i != null)
                 .ToList();
 
-            list.AddRange(localAlternates.Select(i => new Tuple<BaseItem, MediaSourceType>(i, MediaSourceType.Default)));
+            list.AddRange(localAlternates.Select(i => (i, MediaSourceType.Default)));
 
             return list;
         }

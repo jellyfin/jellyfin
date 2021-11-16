@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -332,13 +331,6 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public string ExternalSeriesId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the etag.
-        /// </summary>
-        /// <value>The etag.</value>
-        [JsonIgnore]
-        public string ExternalEtag { get; set; }
 
         [JsonIgnore]
         public virtual bool IsHidden => false;
@@ -1161,9 +1153,9 @@ namespace MediaBrowser.Controller.Entities
             .ToList();
         }
 
-        protected virtual List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
+        protected virtual IEnumerable<(BaseItem, MediaSourceType)> GetAllItemsForMediaSources()
         {
-            return new List<Tuple<BaseItem, MediaSourceType>>();
+            return Enumerable.Empty<(BaseItem, MediaSourceType)>();
         }
 
         private MediaSourceInfo GetVersionInfo(bool enablePathSubstitution, BaseItem item, MediaSourceType type)
