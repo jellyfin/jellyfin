@@ -27,22 +27,16 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
     {
         private readonly ILogger<SeriesResolver> _logger;
         private readonly NamingOptions _namingOptions;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _configurationManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesResolver"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        /// <param name="fileSystem">The file system.</param>
-        /// <param name="configurationManager">The server configuration manager.</param>
-        public SeriesResolver(ILogger<SeriesResolver> logger,  NamingOptions namingOptions, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
+        public SeriesResolver(ILogger<SeriesResolver> logger,  NamingOptions namingOptions)
         {
             _logger = logger;
             _namingOptions = namingOptions;
-            _fileSystem = fileSystem;
-            _configurationManager = configurationManager;
         }
 
         /// <summary>

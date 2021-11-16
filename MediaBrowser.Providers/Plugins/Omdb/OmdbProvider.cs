@@ -28,7 +28,6 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IApplicationHost _appHost;
         private readonly JsonSerializerOptions _jsonOptions;
 
         /// <summary>Initializes a new instance of the <see cref="OmdbProvider"/> class.</summary>
@@ -36,12 +35,11 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         /// <param name="fileSystem">IFileSystem to use for store OMDB data.</param>
         /// <param name="appHost">IApplicationHost to use.</param>
         /// <param name="configurationManager">IServerConfigurationManager to use.</param>
-        public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IApplicationHost appHost, IServerConfigurationManager configurationManager)
+        public OmdbProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _httpClientFactory = httpClientFactory;
             _fileSystem = fileSystem;
             _configurationManager = configurationManager;
-            _appHost = appHost;
 
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
