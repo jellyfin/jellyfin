@@ -87,7 +87,6 @@ namespace Emby.Server.Implementations.Library.Validators
                         {
                             collectionNameMoviesMap[movie.CollectionName] = new List<Movie> { movie };
                         }
-
                     }
                 }
             }
