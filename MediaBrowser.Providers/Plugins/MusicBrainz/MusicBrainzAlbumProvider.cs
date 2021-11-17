@@ -319,6 +319,12 @@ namespace MediaBrowser.Providers.Music
                     {
                         case "name-credit":
                         {
+                            if (reader.IsEmptyElement)
+                            {
+                                reader.Read();
+                                break;
+                            }
+
                             using var subReader = reader.ReadSubtree();
                             return ParseArtistNameCredit(subReader);
                         }
@@ -355,6 +361,12 @@ namespace MediaBrowser.Providers.Music
                     {
                         case "artist":
                             {
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.Read();
+                                    break;
+                                }
+
                                 var id = reader.GetAttribute("id");
                                 using var subReader = reader.ReadSubtree();
                                 return ParseArtistArtistCredit(subReader, id);
@@ -457,8 +469,8 @@ namespace MediaBrowser.Providers.Music
             };
 
             using var reader = XmlReader.Create(oReader, settings);
-            reader.MoveToContent();
-            reader.Read();
+            await reader.MoveToContentAsync().ConfigureAwait(false);
+            await reader.ReadAsync().ConfigureAwait(false);
 
             // Loop through each element
             while (!reader.EOF && reader.ReadState == ReadState.Interactive)
@@ -471,7 +483,7 @@ namespace MediaBrowser.Providers.Music
                         {
                             if (reader.IsEmptyElement)
                             {
-                                reader.Read();
+                                await reader.ReadAsync().ConfigureAwait(false);
                                 continue;
                             }
 
@@ -481,14 +493,14 @@ namespace MediaBrowser.Providers.Music
 
                         default:
                         {
-                            reader.Skip();
+                            await reader.SkipAsync().ConfigureAwait(false);
                             break;
                         }
                     }
                 }
                 else
                 {
-                    reader.Read();
+                    await reader.ReadAsync().ConfigureAwait(false);
                 }
             }
 
@@ -755,6 +767,12 @@ namespace MediaBrowser.Providers.Music
 
                             case "artist-credit":
                                 {
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        reader.Read();
+                                        break;
+                                    }
+
                                     using var subReader = reader.ReadSubtree();
                                     var artist = ParseArtistCredit(subReader);
 
