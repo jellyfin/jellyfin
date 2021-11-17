@@ -10,7 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using Jellyfin.Data.Enums;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
+using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
@@ -47,14 +47,6 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var movies = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { nameof(Movie) },
-                IsVirtualItem = false,
-                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                Recursive = true
-            });
-
             var boxSets = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { nameof(BoxSet) },
@@ -62,35 +54,46 @@ namespace Emby.Server.Implementations.Library.Validators
                 Recursive = true
             });
 
-            var numComplete = 0;
-            var count = movies.Count;
-
             var collectionNameMoviesMap = new Dictionary<string, List<Movie>>();
-            foreach (var m in movies)
-            {
-                if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName))
-                {
-                    if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
-                    {
-                        if (!movieList.Any(m => m.Id == movie.Id))
-                        {
-                            movieList.Add(movie);
-                        }
-                    }
-                    else
-                    {
-                        collectionNameMoviesMap[movie.CollectionName] = new List<Movie> { movie };
-                    }
 
+            foreach (var library in _libraryManager.RootFolder.Children.ToList()) {
+                if (!_libraryManager.GetLibraryOptions(library).AutoCollection) {
+                    continue;
                 }
 
-                numComplete++;
-                double percent = numComplete;
-                percent /= count * 2;
-                percent *= 100;
+                var movies = _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    MediaTypes = new string[] { MediaType.Video }, 
+                    IncludeItemTypes = new[] { nameof(Movie) },
+                    IsVirtualItem = false,
+                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+                    SourceTypes = new[] { SourceType.Library },
+                    Parent = library,
+                    Recursive = true
+                });
 
-                progress.Report(percent);
+                foreach (var m in movies)
+                {
+                    if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName))
+                    {
+                        if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
+                        {
+                            if (!movieList.Any(m => m.Id == movie.Id))
+                            {
+                                movieList.Add(movie);
+                            }
+                        }
+                        else
+                        {
+                            collectionNameMoviesMap[movie.CollectionName] = new List<Movie> { movie };
+                        }
+
+                    }
+                }
             }
+
+            var numComplete = 0;
+            var count = collectionNameMoviesMap.Count;
 
             foreach (var (collectionName, movieList) in collectionNameMoviesMap)
             {
@@ -102,28 +105,23 @@ namespace Emby.Server.Implementations.Library.Validators
                         // won't automatically create collection if only one movie in it
                         if (movieList.Count >= 2)
                         {
-                            var movieIds = FliterMoviesByOption(movieList);
-                            if (movieIds.Count >= 2) {
-                                // at least 2 movies have AutoCollection option enable
-                                boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
-                                {
-                                    Name = collectionName,
-                                    IsLocked = true
-                                });
+                            boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
+                            {
+                                Name = collectionName,
+                                IsLocked = true
+                            });
 
-                                await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
-                            }
+                            await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
                         }
                     }
                     else
                     {
-                        var movieIds = FliterMoviesByOption(movieList);
-                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
+                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
                     }
 
                     numComplete++;
                     double percent = numComplete;
-                    percent /= count * 2;
+                    percent /= count;
                     percent *= 100;
 
                     progress.Report(percent);
@@ -135,18 +133,6 @@ namespace Emby.Server.Implementations.Library.Validators
             }
 
             progress.Report(100);
-        }
-
-        private List<Guid> FliterMoviesByOption(List<Movie> movieList) {
-            List<Guid> movieIds = new List<Guid>();
-            foreach (var movie in movieList)
-            {
-                if (_libraryManager.GetLibraryOptions(movie).AutoCollection)
-                {
-                    movieIds.Add(movie.Id);
-                }
-            }
-            return movieIds;
         }
     }
 }
