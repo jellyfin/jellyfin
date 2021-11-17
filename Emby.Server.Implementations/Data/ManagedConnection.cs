@@ -7,7 +7,7 @@ using SQLitePCL.pretty;
 
 namespace Emby.Server.Implementations.Data
 {
-    public class ManagedConnection : IDisposable
+    public sealed class ManagedConnection : IDisposable
     {
         private readonly SemaphoreSlim _writeLock;
 

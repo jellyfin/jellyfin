@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using DiscUtils.Udf;
+using Emby.Naming.Common;
 using Emby.Naming.Video;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -21,12 +22,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
         where T : Video, new()
     {
-        protected BaseVideoResolver(ILibraryManager libraryManager)
+        protected BaseVideoResolver(NamingOptions namingOptions)
         {
-            LibraryManager = libraryManager;
+            NamingOptions = namingOptions;
         }
 
-        protected ILibraryManager LibraryManager { get; }
+        protected NamingOptions NamingOptions { get; }
 
         /// <summary>
         /// Resolves the specified args.
@@ -48,7 +49,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
         protected virtual TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName)
               where TVideoType : Video, new()
         {
-            var namingOptions = LibraryManager.GetNamingOptions();
+            var namingOptions = NamingOptions;
 
             // If the path is a file check for a matching extensions
             if (args.IsDirectory)
@@ -138,7 +139,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
                     return null;
                 }
 
-                if (LibraryManager.IsVideoFile(args.Path) || videoInfo.IsStub)
+                if (VideoResolver.IsVideoFile(args.Path, NamingOptions) || videoInfo.IsStub)
                 {
                     var path = args.Path;
 
@@ -267,7 +268,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
         protected void Set3DFormat(Video video)
         {
-            var result = Format3DParser.Parse(video.Path, LibraryManager.GetNamingOptions());
+            var result = Format3DParser.Parse(video.Path, NamingOptions);
 
             Set3DFormat(video, result.Is3D, result.Format3D);
         }

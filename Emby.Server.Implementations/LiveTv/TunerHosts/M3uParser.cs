@@ -283,7 +283,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             // #EXTINF:0,84.0 - VOX Schweiz
             if (!string.IsNullOrWhiteSpace(nameInExtInf))
             {
-                var numberIndex = nameInExtInf.IndexOf(' ');
+                var numberIndex = nameInExtInf.IndexOf(' ', StringComparison.Ordinal);
                 if (numberIndex > 0)
                 {
                     var numberPart = nameInExtInf.Substring(0, numberIndex).Trim(new[] { ' ', '.' });

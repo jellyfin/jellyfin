@@ -25,7 +25,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(GetValue(x), GetValue(y), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -35,9 +35,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.String.</returns>
         private static string? GetValue(BaseItem? x)
         {
-            var audio = x as Audio;
-
-            return audio == null ? string.Empty : audio.Album;
+            return x is Audio audio ? audio.Album : string.Empty;
         }
     }
 }

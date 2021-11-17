@@ -63,10 +63,10 @@ namespace MediaBrowser.Model.Dto
         public int PrimaryImageWidth { get; set; }
 
         /// <summary>
-        /// Gets the custom prefs.
+        /// Gets or sets the custom prefs.
         /// </summary>
         /// <value>The custom prefs.</value>
-        public Dictionary<string, string?> CustomPrefs { get; }
+        public Dictionary<string, string?> CustomPrefs { get; set; }
 
         /// <summary>
         /// Gets or sets the scroll direction.

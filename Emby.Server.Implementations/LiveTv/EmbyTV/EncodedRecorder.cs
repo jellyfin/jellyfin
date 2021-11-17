@@ -187,7 +187,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 CultureInfo.InvariantCulture,
                 "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
-                targetFile.Replace("\"", "\\\""), // Escape quotes in filename
+                targetFile.Replace("\"", "\\\"", StringComparison.Ordinal), // Escape quotes in filename
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,

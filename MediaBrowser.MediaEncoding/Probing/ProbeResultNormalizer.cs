@@ -721,15 +721,13 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (string.Equals(streamInfo.CodecType, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase)
-                    ? MediaStreamType.EmbeddedImage
-                    : MediaStreamType.Video;
-
                 stream.AverageFrameRate = GetFrameRate(streamInfo.AverageFrameRate);
                 stream.RealFrameRate = GetFrameRate(streamInfo.RFrameRate);
 
-                if (isAudio || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
+                if (isAudio
+                    || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "gif", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(stream.Codec, "png", StringComparison.OrdinalIgnoreCase))
                 {
                     stream.Type = MediaStreamType.EmbeddedImage;
                 }

@@ -27,7 +27,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly IDeviceDiscovery _deviceDiscovery;
 
         private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
 
@@ -42,17 +41,14 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
-        /// <param name="deviceDiscovery">The device discovery.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
-            IServerConfigurationManager config,
-            IDeviceDiscovery deviceDiscovery)
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _appHost = appHost;
             _config = config;
-            _deviceDiscovery = deviceDiscovery;
         }
 
         private string GetConfigIdentifier()

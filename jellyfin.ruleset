@@ -38,14 +38,24 @@
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA1063: Implement IDisposable correctly -->
+    <Rule Id="CA1063" Action="Error" />
     <!-- error on CA1305: Specify IFormatProvider -->
     <Rule Id="CA1305" Action="Error" />
+    <!-- error on CA1307: Specify StringComparison for clarity -->
+    <Rule Id="CA1307" Action="Error" />
+    <!-- error on CA1309: Use ordinal StringComparison -->
+    <Rule Id="CA1309" Action="Error" />
     <!-- error on CA1725: Parameter names should match base declaration -->
     <Rule Id="CA1725" Action="Error" />
     <!-- error on CA1725: Call async methods when in an async method -->
     <Rule Id="CA1727" Action="Error" />
+    <!-- error on CA1813: Avoid unsealed attributes -->
+    <Rule Id="CA1813" Action="Error" />
     <!-- error on CA1843: Do not use 'WaitAll' with a single task -->
     <Rule Id="CA1843" Action="Error" />
+    <!-- error on CA1845: Use span-based 'string.Concat' -->
+    <Rule Id="CA1845" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
