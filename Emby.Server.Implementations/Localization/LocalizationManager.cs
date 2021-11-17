@@ -421,6 +421,7 @@ namespace Emby.Server.Implementations.Localization
             yield return new LocalizationOption("Norsk nynorsk", "nn");
             yield return new LocalizationOption("ਪੰਜਾਬੀ", "pa");
             yield return new LocalizationOption("Polski", "pl");
+            yield return new LocalizationOption("Pirate", "pr");
             yield return new LocalizationOption("Português", "pt");
             yield return new LocalizationOption("Português (Brasil)", "pt-BR");
             yield return new LocalizationOption("Português (Portugal)", "pt-PT");
