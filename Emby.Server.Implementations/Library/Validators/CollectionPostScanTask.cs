@@ -54,7 +54,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 Recursive = true
             });
 
-            var collectionNameMoviesMap = new Dictionary<string, List<Movie>>();
+            var collectionNameMoviesMap = new Dictionary<string, List<Guid>>();
 
             foreach (var library in _libraryManager.RootFolder.Children.ToList()) {
                 if (!_libraryManager.GetLibraryOptions(library).AutoCollection) {
@@ -78,14 +78,14 @@ namespace Emby.Server.Implementations.Library.Validators
                     {
                         if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
                         {
-                            if (!movieList.Any(m => m.Id == movie.Id))
+                            if (!movieList.Any(m => m == movie.Id))
                             {
-                                movieList.Add(movie);
+                                movieList.Add(movie.Id);
                             }
                         }
                         else
                         {
-                            collectionNameMoviesMap[movie.CollectionName] = new List<Movie> { movie };
+                            collectionNameMoviesMap[movie.CollectionName] = new List<Guid> { movie.Id };
                         }
                     }
                 }
@@ -94,7 +94,7 @@ namespace Emby.Server.Implementations.Library.Validators
             var numComplete = 0;
             var count = collectionNameMoviesMap.Count;
 
-            foreach (var (collectionName, movieList) in collectionNameMoviesMap)
+            foreach (var (collectionName, movieIds) in collectionNameMoviesMap)
             {
                 try
                 {
@@ -102,7 +102,7 @@ namespace Emby.Server.Implementations.Library.Validators
                     if (boxSet == null)
                     {
                         // won't automatically create collection if only one movie in it
-                        if (movieList.Count >= 2)
+                        if (movieIds.Count >= 2)
                         {
                             boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
                             {
@@ -110,12 +110,12 @@ namespace Emby.Server.Implementations.Library.Validators
                                 IsLocked = true
                             });
 
-                            await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
+                            await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
                         }
                     }
                     else
                     {
-                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
+                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
                     }
 
                     numComplete++;
@@ -127,7 +127,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error refreshing {CollectionName} with {@MovieIds}", collectionName, movieList);
+                    _logger.LogError(ex, "Error refreshing {CollectionName} with {@MovieIds}", collectionName, movieIds);
                 }
             }
 
