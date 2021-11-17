@@ -167,7 +167,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             movie.Setup(item => item.GetDefaultVideoStream())
                 .Returns(defaultStream!);
-            movie.Setup(item => item.GetMediaStreams())
+            movie.Setup(item => item.GetMediaStreams(MediaStreamType.Video))
                 .Returns(mediaStreams);
 
             return movie.Object;

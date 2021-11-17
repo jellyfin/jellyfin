@@ -147,7 +147,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
             movie.Setup(item => item.GetMediaSources(It.IsAny<bool>()))
                 .Returns(new List<MediaSourceInfo> { new () { MediaAttachments = mediaAttachments } } );
-            movie.Setup(item => item.GetMediaStreams())
+            movie.Setup(item => item.GetMediaStreams(MediaStreamType.EmbeddedImage))
                 .Returns(mediaStreams);
 
             return movie.Object;

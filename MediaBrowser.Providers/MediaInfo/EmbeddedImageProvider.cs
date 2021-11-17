@@ -139,7 +139,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Fall back to EmbeddedImage streams
-            var imageStreams = item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.EmbeddedImage);
+            var imageStreams = item.GetMediaStreams(MediaStreamType.EmbeddedImage);
 
             if (imageStreams.Count == 0)
             {

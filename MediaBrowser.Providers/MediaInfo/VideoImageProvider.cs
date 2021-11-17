@@ -83,7 +83,7 @@ namespace MediaBrowser.Providers.MediaInfo
                                   ? TimeSpan.FromTicks(item.RunTimeTicks.Value / 10)
                                   : TimeSpan.FromSeconds(10);
 
-            var videoStream = item.GetDefaultVideoStream() ?? item.GetMediaStreams().FirstOrDefault(i => i.Type == MediaStreamType.Video);
+            var videoStream = item.GetDefaultVideoStream() ?? item.GetMediaStreams(MediaStreamType.Video).FirstOrDefault();
 
             if (videoStream == null)
             {
