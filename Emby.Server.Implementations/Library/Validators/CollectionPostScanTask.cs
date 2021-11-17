@@ -10,6 +10,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using Jellyfin.Data.Enums;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace Emby.Server.Implementations.Library.Validators
 {
@@ -101,18 +102,23 @@ namespace Emby.Server.Implementations.Library.Validators
                         // won't automatically create collection if only one movie in it
                         if (movieList.Count >= 2)
                         {
-                            boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
-                            {
-                                Name = collectionName,
-                                IsLocked = true
-                            });
+                            var movieIds = FliterMoviesByOption(movieList);
+                            if (movieIds.Count >= 2) {
+                                // at least 2 movies have AutoCollection option enable
+                                boxSet = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
+                                {
+                                    Name = collectionName,
+                                    IsLocked = true
+                                });
 
-                            await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
+                                await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
+                            }
                         }
                     }
                     else
                     {
-                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieList.Select(m => m.Id));
+                        var movieIds = FliterMoviesByOption(movieList);
+                        await _collectionManager.AddToCollectionAsync(boxSet.Id, movieIds);
                     }
 
                     numComplete++;
@@ -129,6 +135,18 @@ namespace Emby.Server.Implementations.Library.Validators
             }
 
             progress.Report(100);
+        }
+
+        private List<Guid> FliterMoviesByOption(List<Movie> movieList) {
+            List<Guid> movieIds = new List<Guid>();
+            foreach (var movie in movieList)
+            {
+                if (_libraryManager.GetLibraryOptions(movie).AutoCollection)
+                {
+                    movieIds.Add(movie.Id);
+                }
+            }
+            return movieIds;
         }
     }
 }
