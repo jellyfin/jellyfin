@@ -784,7 +784,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "fanart":
                     {
-                        var subtree = reader.ReadSubtree();
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.Read();
+                            break;
+                        }
+
+                        using var subtree = reader.ReadSubtree();
                         if (!subtree.ReadToDescendant("thumb"))
                         {
                             break;
