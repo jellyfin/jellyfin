@@ -54,9 +54,10 @@ namespace Emby.Server.Implementations.Library.Validators
                 Recursive = true
             });
 
-            var collectionNameMoviesMap = new Dictionary<string, List<Guid>>();
+            var collectionNameMoviesMap = new Dictionary<string, HashSet<Guid>>();
 
-            foreach (var library in _libraryManager.RootFolder.Children.ToList()) {
+            foreach (var library in _libraryManager.RootFolder.Children)
+            {
                 if (!_libraryManager.GetLibraryOptions(library).AutoCollection) {
                     continue;
                 }
@@ -67,7 +68,6 @@ namespace Emby.Server.Implementations.Library.Validators
                     IncludeItemTypes = new[] { nameof(Movie) },
                     IsVirtualItem = false,
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                    SourceTypes = new[] { SourceType.Library },
                     Parent = library,
                     Recursive = true
                 });
@@ -78,14 +78,14 @@ namespace Emby.Server.Implementations.Library.Validators
                     {
                         if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
                         {
-                            if (!movieList.Any(m => m == movie.Id))
+                            if (!movieList.Contains(movie.Id))
                             {
                                 movieList.Add(movie.Id);
                             }
                         }
                         else
                         {
-                            collectionNameMoviesMap[movie.CollectionName] = new List<Guid> { movie.Id };
+                            collectionNameMoviesMap[movie.CollectionName] = new HashSet<Guid> { movie.Id };
                         }
                     }
                 }
