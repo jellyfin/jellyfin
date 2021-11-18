@@ -47,18 +47,11 @@ namespace Emby.Server.Implementations.Library.Validators
         /// <returns>Task.</returns>
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var boxSets = _libraryManager.GetItemList(new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { nameof(BoxSet) },
-                CollapseBoxSetItems = false,
-                Recursive = true
-            });
-
             var collectionNameMoviesMap = new Dictionary<string, HashSet<Guid>>();
 
             foreach (var library in _libraryManager.RootFolder.Children)
             {
-                if (!_libraryManager.GetLibraryOptions(library).AutoCollection)
+                if (!_libraryManager.GetLibraryOptions(library).AutomaticallyAddToCollection)
                 {
                     continue;
                 }
@@ -106,6 +99,19 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var numComplete = 0;
             var count = collectionNameMoviesMap.Count;
+
+            if (count == 0)
+            {
+                progress.Report(100);
+                return;
+            }
+
+            var boxSets = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(BoxSet) },
+                CollapseBoxSetItems = false,
+                Recursive = true
+            });
 
             foreach (var (collectionName, movieIds) in collectionNameMoviesMap)
             {
