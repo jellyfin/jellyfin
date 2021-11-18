@@ -175,7 +175,7 @@ namespace Jellyfin.Api.Helpers
         private bool KeepReading(long elapsed)
         {
             // If the job is null it's a live stream and will require user action to close, but don't keep it open indefinitely
-            return (!_job?.HasExited ?? true) && elapsed < _timeoutMs;
+            return !_job?.HasExited ?? elapsed < _timeoutMs;
         }
     }
 }
