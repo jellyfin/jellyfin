@@ -79,12 +79,6 @@ namespace Emby.Server.Implementations.Library.Validators
                         Limit = pagesize,
                         Recursive = true
                     });
-                    startIndex += pagesize;
-
-                    if (!movies.Any())
-                    {
-                        break;
-                    }
 
                     foreach (var m in movies)
                     {
@@ -100,6 +94,13 @@ namespace Emby.Server.Implementations.Library.Validators
                             }
                         }
                     }
+
+                    if (movies.Count < pagesize)
+                    {
+                        break;
+                    }
+
+                    startIndex += pagesize;
                 }
             }
 
