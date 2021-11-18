@@ -71,52 +71,54 @@ namespace Jellyfin.Api.Helpers
         /// <inheritdoc />
         public override void Flush()
         {
-            _stream.Flush();
+            // Not supported
         }
 
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return _stream.Read(buffer, offset, count);
+            int totalBytesRead = 0;
+            var stopwatch = Stopwatch.StartNew();
+
+            while (KeepReading(stopwatch.ElapsedMilliseconds))
+            {
+                totalBytesRead += _stream.Read(buffer, offset, count);
+                if (totalBytesRead > 0)
+                {
+                    break;
+                }
+
+                Thread.Sleep(50);
+            }
+
+            UpdateBytesWritten(totalBytesRead);
+
+            return totalBytesRead;
         }
 
         /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+
+        /// <inheritdoc />
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             int totalBytesRead = 0;
-            int remainingBytesToRead = count;
             var stopwatch = Stopwatch.StartNew();
 
-            int newOffset = offset;
-            while (remainingBytesToRead > 0)
+            while (KeepReading(stopwatch.ElapsedMilliseconds))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                int bytesRead = await _stream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
-
-                remainingBytesToRead -= bytesRead;
-                newOffset += bytesRead;
-
-                if (bytesRead > 0)
+                totalBytesRead += await _stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                if (totalBytesRead > 0)
                 {
-                    _bytesWritten += bytesRead;
-                    totalBytesRead += bytesRead;
-
-                    if (_job != null)
-                    {
-                        _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
-                    }
+                    break;
                 }
-                else
-                {
-                    // If the job is null it's a live stream and will require user action to close, but don't keep it open indefinitely
-                    if (_job?.HasExited ?? stopwatch.ElapsedMilliseconds > _timeoutMs)
-                    {
-                        break;
-                    }
 
-                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-                }
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
+
+            UpdateBytesWritten(totalBytesRead);
 
             return totalBytesRead;
         }
@@ -158,6 +160,22 @@ namespace Jellyfin.Api.Helpers
                 _disposed = true;
                 base.Dispose(disposing);
             }
+        }
+
+        private void UpdateBytesWritten(int totalBytesRead)
+        {
+            _bytesWritten += totalBytesRead;
+
+            if (_job != null)
+            {
+                _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
+            }
+        }
+
+        private bool KeepReading(long elapsed)
+        {
+            // If the job is null it's a live stream and will require user action to close, but don't keep it open indefinitely
+            return (!_job?.HasExited ?? false) || elapsed < _timeoutMs;
         }
     }
 }
