@@ -1108,15 +1108,9 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual List<MediaStream> GetMediaStreams()
         {
-            return GetMediaStreams(null);
-        }
-
-        public virtual List<MediaStream> GetMediaStreams(MediaStreamType? type)
-        {
             return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
             {
-                ItemId = Id,
-                Type = type
+                ItemId = Id
             });
         }
 

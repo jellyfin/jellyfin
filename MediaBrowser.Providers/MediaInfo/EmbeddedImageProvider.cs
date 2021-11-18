@@ -8,7 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -45,16 +47,19 @@ namespace MediaBrowser.Providers.MediaInfo
             "logo",
         };
 
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger<EmbeddedImageProvider> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedImageProvider"/> class.
         /// </summary>
+        /// <param name="mediaSourceManager">The media source manager for fetching item streams and attachments.</param>
         /// <param name="mediaEncoder">The media encoder for extracting attached/embedded images.</param>
         /// <param name="logger">The logger.</param>
-        public EmbeddedImageProvider(IMediaEncoder mediaEncoder, ILogger<EmbeddedImageProvider> logger)
+        public EmbeddedImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ILogger<EmbeddedImageProvider> logger)
         {
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _logger = logger;
         }
@@ -128,8 +133,7 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Try attachments first
-            var attachmentStream = item.GetMediaSources(false)
-                .SelectMany(source => source.MediaAttachments)
+            var attachmentStream = _mediaSourceManager.GetMediaAttachments(item.Id)
                 .FirstOrDefault(attachment => !string.IsNullOrEmpty(attachment.FileName)
                     && imageFileNames.Any(name => attachment.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
 
@@ -139,7 +143,11 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             // Fall back to EmbeddedImage streams
-            var imageStreams = item.GetMediaStreams(MediaStreamType.EmbeddedImage);
+            var imageStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = item.Id,
+                Type = MediaStreamType.EmbeddedImage
+            });
 
             if (imageStreams.Count == 0)
             {

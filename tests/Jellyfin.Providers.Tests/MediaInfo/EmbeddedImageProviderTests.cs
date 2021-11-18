@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -29,7 +31,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         public void GetSupportedImages_AnyBaseItem_ReturnsExpected(Type type, params ImageType[] expected)
         {
             BaseItem item = (BaseItem)Activator.CreateInstance(type)!;
-            var embeddedImageProvider = new EmbeddedImageProvider(Mock.Of<IMediaEncoder>(), new NullLogger<EmbeddedImageProvider>());
+            var embeddedImageProvider = new EmbeddedImageProvider(Mock.Of<IMediaSourceManager>(), Mock.Of<IMediaEncoder>(), new NullLogger<EmbeddedImageProvider>());
             var actual = embeddedImageProvider.GetSupportedImages(item);
             Assert.Equal(expected.OrderBy(i => i.ToString()), actual.OrderBy(i => i.ToString()));
         }
@@ -37,9 +39,10 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [Fact]
         public async void GetImage_NoStreams_ReturnsNoImage()
         {
-            var embeddedImageProvider = new EmbeddedImageProvider(null, new NullLogger<EmbeddedImageProvider>());
+            var input = new Movie();
 
-            var input = GetMovie(new List<MediaAttachment>(), new List<MediaStream>());
+            var mediaSourceManager = GetMediaSourceManager(input, new List<MediaAttachment>(), new List<MediaStream>());
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaSourceManager, null, new NullLogger<EmbeddedImageProvider>());
 
             var actual = await embeddedImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actual);
@@ -67,12 +70,13 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                 });
             }
 
+            var input = new Movie();
+
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
             mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
                 .Returns<string, string, MediaSourceInfo, MediaStream, int, ImageFormat, CancellationToken>((_, _, _, _, index, ext, _) => Task.FromResult(pathPrefix + index + "." + ext));
-            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
-
-            var input = GetMovie(attachments, new List<MediaStream>());
+            var mediaSourceManager = GetMediaSourceManager(input, attachments, new List<MediaStream>());
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaSourceManager, mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
@@ -112,6 +116,8 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                 });
             }
 
+            var input = new Movie();
+
             var pathPrefix = "path";
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
             mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<int>(), It.IsAny<ImageFormat>(), It.IsAny<CancellationToken>()))
@@ -120,9 +126,8 @@ namespace Jellyfin.Providers.Tests.MediaInfo
                     Assert.Equal(streams[index - 1], stream);
                     return Task.FromResult(pathPrefix + index + "." + ext);
                 });
-            var embeddedImageProvider = new EmbeddedImageProvider(mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
-
-            var input = GetMovie(new List<MediaAttachment>(), streams);
+            var mediaSourceManager = GetMediaSourceManager(input, new List<MediaAttachment>(), streams);
+            var embeddedImageProvider = new EmbeddedImageProvider(mediaSourceManager, mediaEncoder.Object, new NullLogger<EmbeddedImageProvider>());
 
             var actual = await embeddedImageProvider.GetImage(input, type, CancellationToken.None);
             Assert.NotNull(actual);
@@ -138,19 +143,14 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             }
         }
 
-        private static Movie GetMovie(List<MediaAttachment> mediaAttachments, List<MediaStream> mediaStreams)
+        private static IMediaSourceManager GetMediaSourceManager(BaseItem item, List<MediaAttachment> mediaAttachments, List<MediaStream> mediaStreams)
         {
-            // Mocking IMediaSourceManager GetMediaAttachments and GetMediaStreams instead of mocking Movie works, but
-            // has concurrency problems between this and VideoImageProviderTests due to BaseItem.MediaSourceManager
-            // being static
-            var movie = new Mock<Movie>();
-
-            movie.Setup(item => item.GetMediaSources(It.IsAny<bool>()))
-                .Returns(new List<MediaSourceInfo> { new () { MediaAttachments = mediaAttachments } } );
-            movie.Setup(item => item.GetMediaStreams(MediaStreamType.EmbeddedImage))
+            var mediaSourceManager = new Mock<IMediaSourceManager>(MockBehavior.Strict);
+            mediaSourceManager.Setup(i => i.GetMediaAttachments(item.Id))
+                .Returns(mediaAttachments);
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId == item.Id && q.Type == MediaStreamType.EmbeddedImage)))
                 .Returns(mediaStreams);
-
-            return movie.Object;
+            return mediaSourceManager.Object;
         }
     }
 }
