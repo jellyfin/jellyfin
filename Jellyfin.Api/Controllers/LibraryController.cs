@@ -739,6 +739,7 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
+                Genres = item.Genres, // Passing items' genres to obtain a more accurate list of its related media
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 SimilarTo = item,
