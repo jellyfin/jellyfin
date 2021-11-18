@@ -62,30 +62,40 @@ namespace Emby.Server.Implementations.Library.Validators
                     continue;
                 }
 
-                var movies = _libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    MediaTypes = new string[] { MediaType.Video }, 
-                    IncludeItemTypes = new[] { nameof(Movie) },
-                    IsVirtualItem = false,
-                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
-                    Parent = library,
-                    Recursive = true
-                });
+                var startIndex = 0;
+                var pagesize = 1000;
 
-                foreach (var m in movies)
+                while (true)
                 {
-                    if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName))
+                    var movies = _libraryManager.GetItemList(new InternalItemsQuery
                     {
-                        if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
+                        MediaTypes = new string[] { MediaType.Video },
+                        IncludeItemTypes = new[] { nameof(Movie) },
+                        IsVirtualItem = false,
+                        OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
+                        Parent = library,
+                        StartIndex = startIndex,
+                        Limit = pagesize,
+                        Recursive = true
+                    });
+                    startIndex += pagesize;
+
+                    if (!movies.Any()) {
+                        break;
+                    }
+
+                    foreach (var m in movies)
+                    {
+                        if (m is Movie movie && !string.IsNullOrEmpty(movie.CollectionName))
                         {
-                            if (!movieList.Contains(movie.Id))
+                            if (collectionNameMoviesMap.TryGetValue(movie.CollectionName, out var movieList))
                             {
                                 movieList.Add(movie.Id);
                             }
-                        }
-                        else
-                        {
-                            collectionNameMoviesMap[movie.CollectionName] = new HashSet<Guid> { movie.Id };
+                            else
+                            {
+                                collectionNameMoviesMap[movie.CollectionName] = new HashSet<Guid> { movie.Id };
+                            }
                         }
                     }
                 }
