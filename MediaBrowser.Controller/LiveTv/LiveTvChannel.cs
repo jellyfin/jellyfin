@@ -154,6 +154,11 @@ namespace MediaBrowser.Controller.LiveTv
             return new List<MediaStream>();
         }
 
+        public override List<MediaStream> GetMediaStreams(MediaStreamType? type)
+        {
+            return new List<MediaStream>();
+        }
+
         protected override string GetInternalMetadataPath(string basePath)
         {
             return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N", CultureInfo.InvariantCulture), "metadata");
