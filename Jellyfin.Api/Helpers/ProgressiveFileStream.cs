@@ -75,13 +75,17 @@ namespace Jellyfin.Api.Helpers
 
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
+            => Read(buffer.AsSpan(offset, count));
+
+        /// <inheritdoc />
+        public override int Read(Span<byte> buffer)
         {
             int totalBytesRead = 0;
             var stopwatch = Stopwatch.StartNew();
 
             while (KeepReading(stopwatch.ElapsedMilliseconds))
             {
-                totalBytesRead += _stream.Read(buffer, offset, count);
+                totalBytesRead += _stream.Read(buffer);
                 if (totalBytesRead > 0)
                 {
                     break;
