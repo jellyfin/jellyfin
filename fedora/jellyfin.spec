@@ -7,7 +7,7 @@
 %endif
 
 Name:           jellyfin
-Version:        10.8.0~alpha2
+Version:        10.8.0~alpha3
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
