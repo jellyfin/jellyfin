@@ -58,7 +58,8 @@ namespace Emby.Server.Implementations.Library.Validators
 
             foreach (var library in _libraryManager.RootFolder.Children)
             {
-                if (!_libraryManager.GetLibraryOptions(library).AutoCollection) {
+                if (!_libraryManager.GetLibraryOptions(library).AutoCollection)
+                {
                     continue;
                 }
 
@@ -80,7 +81,8 @@ namespace Emby.Server.Implementations.Library.Validators
                     });
                     startIndex += pagesize;
 
-                    if (!movies.Any()) {
+                    if (!movies.Any())
+                    {
                         break;
                     }
 
