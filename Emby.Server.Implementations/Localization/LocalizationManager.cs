@@ -372,7 +372,7 @@ namespace Emby.Server.Implementations.Localization
         /// <inheritdoc />
         public IEnumerable<LocalizationOption> GetLocalizationOptions()
         {
-            yield return new LocalizationOption("Afrikaans (af)", "af");
+            yield return new LocalizationOption("Afrikaans", "af");
             yield return new LocalizationOption("العربية", "ar");
             yield return new LocalizationOption("Беларуская", "be");
             yield return new LocalizationOption("Български", "bg-BG");
