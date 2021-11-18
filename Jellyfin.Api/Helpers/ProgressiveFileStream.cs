@@ -17,7 +17,6 @@ namespace Jellyfin.Api.Helpers
         private readonly TranscodingJobDto? _job;
         private readonly TranscodingJobHelper? _transcodingJobHelper;
         private readonly int _timeoutMs;
-        private int _bytesWritten;
         private bool _disposed;
 
         /// <summary>
@@ -108,7 +107,6 @@ namespace Jellyfin.Api.Helpers
 
             while (KeepReading(stopwatch.ElapsedMilliseconds))
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 totalBytesRead += await _stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
                 if (totalBytesRead > 0)
                 {
@@ -164,11 +162,9 @@ namespace Jellyfin.Api.Helpers
 
         private void UpdateBytesWritten(int totalBytesRead)
         {
-            _bytesWritten += totalBytesRead;
-
             if (_job != null)
             {
-                _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
+                _job.BytesDownloaded += totalBytesRead;
             }
         }
 
