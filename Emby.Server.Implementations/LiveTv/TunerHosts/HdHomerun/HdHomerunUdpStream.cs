@@ -165,7 +165,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 {
                     await CopyTo(udpClient, TempFilePath, openTaskCompletionSource, cancellationToken).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException ex)
+                catch (Exception ex) when (ex is OperationCanceledException || ex is TimeoutException)
                 {
                     Logger.LogInformation("HDHR UDP stream cancelled or timed out from {0}", remoteAddress);
                     openTaskCompletionSource.TrySetException(ex);
@@ -191,36 +191,24 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    using (var timeOutSource = new CancellationTokenSource())
-                    using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
-                        timeOutSource.Token))
+                    var res = await udpClient.ReceiveAsync(cancellationToken)
+                        .AsTask()
+                        .WaitAsync(TimeSpan.FromMilliseconds(30000), CancellationToken.None)
+                        .ConfigureAwait(false);
+                    var buffer = res.Buffer;
+
+                    var read = buffer.Length - RtpHeaderBytes;
+
+                    if (read > 0)
                     {
-                        var resTask = udpClient.ReceiveAsync(linkedSource.Token).AsTask();
-                        if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
-                        {
-                            resTask.Dispose();
-                            break;
-                        }
+                        await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), cancellationToken).ConfigureAwait(false);
+                    }
 
-                        // We don't want all these delay tasks to keep running
-                        timeOutSource.Cancel();
-                        var res = await resTask.ConfigureAwait(false);
-                        var buffer = res.Buffer;
-
-                        var read = buffer.Length - RtpHeaderBytes;
-
-                        if (read > 0)
-                        {
-                            await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), linkedSource.Token).ConfigureAwait(false);
-                        }
-
-                        if (!resolved)
-                        {
-                            resolved = true;
-                            DateOpened = DateTime.UtcNow;
-                            openTaskCompletionSource.TrySetResult(true);
-                        }
+                    if (!resolved)
+                    {
+                        resolved = true;
+                        DateOpened = DateTime.UtcNow;
+                        openTaskCompletionSource.TrySetResult(true);
                     }
                 }
             }
