@@ -83,15 +83,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
             // Always use 10 seconds for dvd because our duration could be out of whack
-            var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks is > 0
+            var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks > 0
                                   ? TimeSpan.FromTicks(item.RunTimeTicks.Value / 10)
                                   : TimeSpan.FromSeconds(10);
 
-            var defaultQuery = new MediaStreamQuery { ItemId = item.Id, Index = item.DefaultVideoStreamIndex };
-            var videoQuery = new MediaStreamQuery { ItemId = item.Id, Type = MediaStreamType.Video };
-
-            var videoStream = _mediaSourceManager.GetMediaStreams(defaultQuery).FirstOrDefault()
-                ?? _mediaSourceManager.GetMediaStreams(videoQuery).FirstOrDefault();
+            var query = new MediaStreamQuery { ItemId = item.Id, Index = item.DefaultVideoStreamIndex };
+            var videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
+            if (videoStream == null)
+            {
+                query.Type = MediaStreamType.Video;
+                query.Index = null;
+                videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
+            }
 
             if (videoStream == null)
             {
