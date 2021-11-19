@@ -24,7 +24,22 @@
                         <input is="emby-input" type="number" id="maxCastMembers" pattern="[0-9]*" required min="0" max="1000" label="Max Cast Members" />
                         <div class="fieldDescription">The maximum number of cast members to fetch for an item.</div>
                     </div>
-                    <br />
+                    <div class="verticalSection verticalSection-extrabottompadding">
+                        <h2>Image Scaling</h2>
+                        <p>If size options are not populated then refresh metadata for any item from TMDb and reload this page.</p>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectPosterSize" label="Poster"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectBackdropSize" label="Backdrop"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectProfileSize" label="Profile"></select>
+                        </div>
+                        <div class="selectContainer">
+                            <select is="emby-select" id="selectStillSize" label="Still"></select>
+                        </div>
+                    </div>
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
                     </div>
@@ -51,6 +66,26 @@
                             cancelable: false
                         }));
 
+                        var sizeOptionsGenerator = function (size) {
+                            return '<option value="' + size + '">' + size + '</option>';
+                        }
+
+                        var selPosterSize = document.querySelector('#selectPosterSize');
+                        selPosterSize.innerHTML = config.PosterSizeOptions.map(sizeOptionsGenerator);
+                        selPosterSize.value = config.PosterSize;
+
+                        var selBackdropSize = document.querySelector('#selectBackdropSize');
+                        selBackdropSize.innerHTML = config.BackdropSizeOptions.map(sizeOptionsGenerator);
+                        selBackdropSize.value = config.BackdropSize;
+
+                        var selProfileSize = document.querySelector('#selectProfileSize');
+                        selProfileSize.innerHTML = config.ProfileSizeOptions.map(sizeOptionsGenerator);
+                        selProfileSize.value = config.ProfileSize;
+
+                        var selStillSize = document.querySelector('#selectStillSize');
+                        selStillSize.innerHTML = config.StillSizeOptions.map(sizeOptionsGenerator);
+                        selStillSize.value = config.StillSize;
+
                         Dashboard.hideLoadingMsg();
                     });
                 });
@@ -65,6 +100,10 @@
                         config.ExcludeTagsSeries = document.querySelector('#excludeTagsSeries').checked;
                         config.ExcludeTagsMovies = document.querySelector('#excludeTagsMovies').checked;
                         config.MaxCastMembers = document.querySelector('#maxCastMembers').value;
+                        config.PosterSize = document.querySelector('#selectPosterSize').value;
+                        config.BackdropSize = document.querySelector('#selectBackdropSize').value;
+                        config.ProfileSize = document.querySelector('#selectProfileSize').value;
+                        config.StillSize = document.querySelector('#selectStillSize').value;
                         ApiClient.updatePluginConfiguration(PluginConfig.pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
                     });
 
