@@ -370,6 +370,12 @@ namespace Emby.Server.Implementations.Dto
                     if (item is MusicAlbum || item is Season || item is Playlist)
                     {
                         dto.ChildCount = dto.RecursiveItemCount;
+                        var folderChildCount = folder.LinkedChildren.Length;
+                        // The default is an empty array, so we can't reliably use the count when it's empty
+                        if (folderChildCount > 0)
+                        {
+                            dto.ChildCount ??= folderChildCount;
+                        }
                     }
 
                     if (options.ContainsField(ItemFields.ChildCount))
