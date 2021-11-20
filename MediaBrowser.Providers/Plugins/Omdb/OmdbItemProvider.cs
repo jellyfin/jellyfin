@@ -95,12 +95,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out imdbId);
                 if (searchInfo.IndexNumber.HasValue)
                 {
-                    urlQuery.AppendFormat(CultureInfo.InvariantCulture, "&Episode={0}", searchInfo.IndexNumber);
+                    urlQuery.Append("&Episode=").Append(searchInfo.IndexNumber.Value);
                 }
 
                 if (searchInfo.ParentIndexNumber.HasValue)
                 {
-                    urlQuery.AppendFormat(CultureInfo.InvariantCulture, "&Season={0}", searchInfo.ParentIndexNumber);
+                    urlQuery.Append("&Season=").Append(searchInfo.ParentIndexNumber.Value);
                 }
             }
 
@@ -118,8 +118,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
                 if (year.HasValue)
                 {
-                    urlQuery.Append("&y=")
-                        .Append(year);
+                    urlQuery.Append("&y=").Append(year);
                 }
 
                 // &s means search and returns a list of results as opposed to t
