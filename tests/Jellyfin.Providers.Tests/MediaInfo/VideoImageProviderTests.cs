@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -16,64 +19,56 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 {
     public class VideoImageProviderTests
     {
-        [Fact]
-        public async void GetImage_InputIsPlaceholder_ReturnsNoImage()
+        private static TheoryData<Video> GetImage_UnsupportedInput_ReturnsNoImage_TestData()
         {
-            var videoImageProvider = GetVideoImageProvider(null);
-
-            var input = new Movie
+            return new ()
             {
-                IsPlaceHolder = true
+                new Movie { IsPlaceHolder = true },
+
+                new Movie { DefaultVideoStreamIndex = null },
+
+                // set a default index but don't put anything there (invalid input, but provider shouldn't break)
+                new Movie { DefaultVideoStreamIndex = 0 }
             };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetImage_UnsupportedInput_ReturnsNoImage_TestData))]
+        public async void GetImage_UnsupportedInput_ReturnsNoImage(Video input)
+        {
+            var mediaSourceManager = GetMediaSourceManager(input, null, new List<MediaStream>());
+            var videoImageProvider = new VideoImageProvider(mediaSourceManager, Mock.Of<IMediaEncoder>(), new NullLogger<VideoImageProvider>());
 
             var actual = await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actual);
             Assert.False(actual.HasImage);
         }
 
-        [Fact]
-        public async void GetImage_NoDefaultVideoStream_ReturnsNoImage()
+        [Theory]
+        [InlineData(1, 1)] // default not first stream
+        [InlineData(5, 0)] // default out of valid range
+        public async void GetImage_DefaultVideoStreams_ReturnsCorrectStreamImage(int defaultIndex, int targetIndex)
         {
-            var videoImageProvider = GetVideoImageProvider(null);
+            var input = new Movie { DefaultVideoStreamIndex = defaultIndex };
 
-            var input = new Movie
-            {
-                DefaultVideoStreamIndex = null
-            };
-
-            var actual = await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-            Assert.NotNull(actual);
-            Assert.False(actual.HasImage);
-        }
-
-        [Fact]
-        public async void GetImage_DefaultSetButNoVideoStream_ReturnsNoImage()
-        {
-            var videoImageProvider = GetVideoImageProvider(null);
-
-            // set a default index but don't put anything there (invalid input, but provider shouldn't break)
-            var input = GetMovie(0, null, new List<MediaStream>());
-
-            var actual = await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-            Assert.NotNull(actual);
-            Assert.False(actual.HasImage);
-        }
-
-        [Fact]
-        public async void GetImage_DefaultSetMultipleVideoStreams_ReturnsDefaultStreamImage()
-        {
-            MediaStream firstStream = new () { Type = MediaStreamType.Video, Index = 0 };
-            MediaStream targetStream = new () { Type = MediaStreamType.Video, Index = 1 };
             string targetPath = "path.jpg";
-
+            var mediaStreams = new List<MediaStream>();
             var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), firstStream, It.IsAny<Video3DFormat?>(), It.IsAny<TimeSpan?>(), CancellationToken.None))
-                .Returns(Task.FromResult("wrong stream called!"));
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), targetStream, It.IsAny<Video3DFormat?>(), It.IsAny<TimeSpan?>(), CancellationToken.None))
-                .Returns(Task.FromResult(targetPath));
-            var videoImageProvider = GetVideoImageProvider(mediaEncoder.Object);
 
-            var input = GetMovie(1, targetStream, new List<MediaStream> { firstStream, targetStream } );
+            for (int i = 0; i <= targetIndex; i++)
+            {
+                var mediaStream = new MediaStream { Type = MediaStreamType.Video, Index = i };
+                mediaStreams.Add(mediaStream);
+
+                var path = i == targetIndex ? targetPath : "wrong stream called!";
+                mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), mediaStream, It.IsAny<Video3DFormat?>(), It.IsAny<TimeSpan?>(), It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(path));
+            }
+
+            var defaultStream = defaultIndex < mediaStreams.Count ? mediaStreams[targetIndex] : null;
+            var mediaSourceManager = GetMediaSourceManager(input, defaultStream, mediaStreams);
+
+            var videoImageProvider = new VideoImageProvider(mediaSourceManager, mediaEncoder.Object, new NullLogger<VideoImageProvider>());
 
             var actual = await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
             Assert.NotNull(actual);
@@ -82,31 +77,19 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             Assert.Equal(ImageFormat.Jpg, actual.Format);
         }
 
-        [Fact]
-        public async void GetImage_InvalidDefaultSingleVideoStream_ReturnsFirstVideoStreamImage()
+        [Theory]
+        [InlineData(null, 10)] // default time
+        [InlineData(500, 50)] // calculated time
+        public async void GetImage_TimeSpan_SelectsCorrectTime(int? runTimeSeconds, long expectedSeconds)
         {
             MediaStream targetStream = new () { Type = MediaStreamType.Video, Index = 0 };
-            string targetPath = "path.jpg";
+            var input = new Movie
+            {
+                DefaultVideoStreamIndex = 0,
+                RunTimeTicks = runTimeSeconds * TimeSpan.TicksPerSecond
+            };
 
-            var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), targetStream, It.IsAny<Video3DFormat?>(), It.IsAny<TimeSpan?>(), CancellationToken.None))
-                .Returns(Task.FromResult(targetPath));
-            var videoImageProvider = GetVideoImageProvider(mediaEncoder.Object);
-
-            // provide query results for default (empty) and all streams (populated)
-            var input = GetMovie(5, null, new List<MediaStream> { targetStream });
-
-            var actual = await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-            Assert.NotNull(actual);
-            Assert.True(actual.HasImage);
-            Assert.Equal(targetPath, actual.Path);
-            Assert.Equal(ImageFormat.Jpg, actual.Format);
-        }
-
-        [Fact]
-        public async void GetImage_NoTimeSpanSet_CallsEncoderWithDefaultTime()
-        {
-            MediaStream targetStream = new () { Type = MediaStreamType.Video, Index = 0 };
+            var mediaSourceManager = GetMediaSourceManager(input, targetStream, new List<MediaStream> { targetStream });
 
             // use a callback to catch the actual value
             // provides more information on failure than verifying a specific input was called on the mock
@@ -115,62 +98,29 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<Video3DFormat?>(), It.IsAny<TimeSpan?>(), CancellationToken.None))
                 .Callback<string, string, MediaSourceInfo, MediaStream, Video3DFormat?, TimeSpan?, CancellationToken>((_, _, _, _, _, timeSpan, _) => actualTimeSpan = timeSpan)
                 .Returns(Task.FromResult("path"));
-            var videoImageProvider = GetVideoImageProvider(mediaEncoder.Object);
 
-            var input = GetMovie(0, targetStream, new List<MediaStream> { targetStream });
-
-            // not testing return, just verifying what gets requested for time span
-            await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
-
-            Assert.Equal(TimeSpan.FromSeconds(10), actualTimeSpan);
-        }
-
-        [Fact]
-        public async void GetImage_TimeSpanSet_CallsEncoderWithCalculatedTime()
-        {
-            MediaStream targetStream = new () { Type = MediaStreamType.Video, Index = 0 };
-
-            TimeSpan? actualTimeSpan = null;
-            var mediaEncoder = new Mock<IMediaEncoder>(MockBehavior.Strict);
-            mediaEncoder.Setup(encoder => encoder.ExtractVideoImage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<MediaSourceInfo>(), It.IsAny<MediaStream>(), It.IsAny<Video3DFormat?>(), It.IsAny<TimeSpan?>(), CancellationToken.None))
-                .Callback<string, string, MediaSourceInfo, MediaStream, Video3DFormat?, TimeSpan?, CancellationToken>((_, _, _, _, _, timeSpan, _) => actualTimeSpan = timeSpan)
-                .Returns(Task.FromResult("path"));
-            var videoImageProvider = GetVideoImageProvider(mediaEncoder.Object);
-
-            var input = GetMovie(0, targetStream, new List<MediaStream> { targetStream });
-            input.RunTimeTicks = 5000;
+            var videoImageProvider = new VideoImageProvider(mediaSourceManager, mediaEncoder.Object, new NullLogger<VideoImageProvider>());
 
             // not testing return, just verifying what gets requested for time span
             await videoImageProvider.GetImage(input, ImageType.Primary, CancellationToken.None);
 
-            Assert.Equal(TimeSpan.FromTicks(500), actualTimeSpan);
+            Assert.Equal(TimeSpan.FromSeconds(expectedSeconds), actualTimeSpan);
         }
 
-        private static VideoImageProvider GetVideoImageProvider(IMediaEncoder? mediaEncoder)
+        private static IMediaSourceManager GetMediaSourceManager(Video item, MediaStream? defaultStream, List<MediaStream> mediaStreams)
         {
-            // strict to ensure this isn't accidentally used where a prepared mock is intended
-            mediaEncoder ??= new Mock<IMediaEncoder>(MockBehavior.Strict).Object;
-            return new VideoImageProvider(mediaEncoder, new NullLogger<VideoImageProvider>());
-        }
-
-        private static Movie GetMovie(int defaultVideoStreamIndex, MediaStream? defaultStream, List<MediaStream> mediaStreams)
-        {
-            // Mocking IMediaSourceManager GetMediaStreams instead of mocking Movie works, but has concurrency problems
-            // between this and EmbeddedImageProviderTests due to BaseItem.MediaSourceManager being static
-            var movie = new Mock<Movie>
+            var defaultStreamList = new List<MediaStream>();
+            if (defaultStream != null)
             {
-                Object =
-                {
-                    DefaultVideoStreamIndex = defaultVideoStreamIndex
-                }
-            };
+                defaultStreamList.Add(defaultStream);
+            }
 
-            movie.Setup(item => item.GetDefaultVideoStream())
-                .Returns(defaultStream!);
-            movie.Setup(item => item.GetMediaStreams())
+            var mediaSourceManager = new Mock<IMediaSourceManager>(MockBehavior.Strict);
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId == item.Id && q.Index == item.DefaultVideoStreamIndex)))
+                .Returns(defaultStreamList);
+            mediaSourceManager.Setup(i => i.GetMediaStreams(It.Is<MediaStreamQuery>(q => q.ItemId == item.Id && q.Type == MediaStreamType.Video)))
                 .Returns(mediaStreams);
-
-            return movie.Object;
+            return mediaSourceManager.Object;
         }
     }
 }

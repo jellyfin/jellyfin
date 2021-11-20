@@ -126,15 +126,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.GetBlockUnratedType();
         }
 
-        public List<MediaStream> GetMediaStreams(MediaStreamType type)
-        {
-            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = Id,
-                Type = type
-            });
-        }
-
         public SongInfo GetLookupInfo()
         {
             var info = GetItemLookupInfo<SongInfo>();

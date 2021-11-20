@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -19,16 +21,19 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class VideoImageProvider : IDynamicImageProvider, IHasOrder
     {
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger<VideoImageProvider> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoImageProvider"/> class.
         /// </summary>
+        /// <param name="mediaSourceManager">The media source manager for fetching item streams.</param>
         /// <param name="mediaEncoder">The media encoder for capturing images.</param>
         /// <param name="logger">The logger.</param>
-        public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger)
+        public VideoImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger)
         {
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _logger = logger;
         }
@@ -78,12 +83,18 @@ namespace MediaBrowser.Providers.MediaInfo
 
             // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
             // Always use 10 seconds for dvd because our duration could be out of whack
-            var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
-                              item.RunTimeTicks.Value > 0
+            var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks > 0
                                   ? TimeSpan.FromTicks(item.RunTimeTicks.Value / 10)
                                   : TimeSpan.FromSeconds(10);
 
-            var videoStream = item.GetDefaultVideoStream() ?? item.GetMediaStreams().FirstOrDefault(i => i.Type == MediaStreamType.Video);
+            var query = new MediaStreamQuery { ItemId = item.Id, Index = item.DefaultVideoStreamIndex };
+            var videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
+            if (videoStream == null)
+            {
+                query.Type = MediaStreamType.Video;
+                query.Index = null;
+                videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
+            }
 
             if (videoStream == null)
             {
