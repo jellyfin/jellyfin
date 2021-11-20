@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net.Mime;
+﻿using System.Net.Mime;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
@@ -7,7 +6,6 @@ using Jellyfin.Api.Helpers;
 using Jellyfin.Api.Models.ClientLogDtos;
 using MediaBrowser.Controller.ClientEvent;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Model.ClientLog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,54 +36,6 @@ namespace Jellyfin.Api.Controllers
         }
 
         /// <summary>
-        /// Post event from client.
-        /// </summary>
-        /// <param name="clientLogEventDto">The client log dto.</param>
-        /// <response code="204">Event logged.</response>
-        /// <response code="403">Event logging disabled.</response>
-        /// <returns>Submission status.</returns>
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult LogEvent([FromBody] ClientLogEventDto clientLogEventDto)
-        {
-            if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
-            {
-                return Forbid();
-            }
-
-            var (clientName, clientVersion, userId, deviceId) = GetRequestInformation();
-            Log(clientLogEventDto, userId, clientName, clientVersion, deviceId);
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Bulk post events from client.
-        /// </summary>
-        /// <param name="clientLogEventDtos">The list of client log dtos.</param>
-        /// <response code="204">All events logged.</response>
-        /// <response code="403">Event logging disabled.</response>
-        /// <returns>Submission status.</returns>
-        [HttpPost("Bulk")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public ActionResult LogEvents([FromBody] ClientLogEventDto[] clientLogEventDtos)
-        {
-            if (!_serverConfigurationManager.Configuration.AllowClientLogUpload)
-            {
-                return Forbid();
-            }
-
-            var (clientName, clientVersion, userId, deviceId) = GetRequestInformation();
-            foreach (var dto in clientLogEventDtos)
-            {
-                Log(dto, userId, clientName, clientVersion, deviceId);
-            }
-
-            return NoContent();
-        }
-
-        /// <summary>
         /// Upload a document.
         /// </summary>
         /// <response code="200">Document saved.</response>
@@ -111,39 +61,20 @@ namespace Jellyfin.Api.Controllers
                 return StatusCode(StatusCodes.Status413PayloadTooLarge, $"Payload must be less than {MaxDocumentSize:N0} bytes");
             }
 
-            var (clientName, clientVersion, _, _) = GetRequestInformation();
+            var (clientName, clientVersion) = GetRequestInformation();
             var fileName = await _clientEventLogger.WriteDocumentAsync(clientName, clientVersion, Request.Body)
                 .ConfigureAwait(false);
             return Ok(new ClientLogDocumentResponseDto(fileName));
         }
 
-        private void Log(
-            ClientLogEventDto dto,
-            Guid userId,
-            string clientName,
-            string clientVersion,
-            string deviceId)
-        {
-            _clientEventLogger.Log(new ClientLogEvent(
-                dto.Timestamp,
-                dto.Level,
-                userId,
-                clientName,
-                clientVersion,
-                deviceId,
-                dto.Message));
-        }
-
-        private (string ClientName, string ClientVersion, Guid UserId, string DeviceId) GetRequestInformation()
+        private (string ClientName, string ClientVersion) GetRequestInformation()
         {
             var clientName = ClaimHelpers.GetClient(HttpContext.User) ?? "unknown-client";
             var clientVersion = ClaimHelpers.GetIsApiKey(HttpContext.User)
                 ? "apikey"
                 : ClaimHelpers.GetVersion(HttpContext.User) ?? "unknown-version";
-            var userId = ClaimHelpers.GetUserId(HttpContext.User) ?? Guid.Empty;
-            var deviceId = ClaimHelpers.GetDeviceId(HttpContext.User) ?? "unknown-device-id";
 
-            return (clientName, clientVersion, userId, deviceId);
+            return (clientName, clientVersion);
         }
     }
 }
