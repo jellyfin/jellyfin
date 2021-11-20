@@ -2,8 +2,9 @@
 
 #pragma warning disable CS1591
 
+using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,14 +23,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     public class OmdbImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _configurationManager;
+        private readonly OmdbProvider _omdbProvider;
 
         public OmdbImageProvider(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, IServerConfigurationManager configurationManager)
         {
             _httpClientFactory = httpClientFactory;
-            _fileSystem = fileSystem;
-            _configurationManager = configurationManager;
+            _omdbProvider = new OmdbProvider(_httpClientFactory, fileSystem, configurationManager);
         }
 
         public string Name => "The Open Movie Database";
@@ -49,38 +48,27 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
         {
             var imdbId = item.GetProviderId(MetadataProvider.Imdb);
-
-            var list = new List<RemoteImageInfo>();
-
-            var provider = new OmdbProvider(_httpClientFactory, _fileSystem, _configurationManager);
-
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            if (string.IsNullOrWhiteSpace(imdbId))
             {
-                var rootObject = await provider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
-
-                if (!string.IsNullOrEmpty(rootObject.Poster))
-                {
-                    if (item is Episode)
-                    {
-                        // img.omdbapi.com is returning 404's
-                        list.Add(new RemoteImageInfo
-                        {
-                            ProviderName = Name,
-                            Url = rootObject.Poster
-                        });
-                    }
-                    else
-                    {
-                        list.Add(new RemoteImageInfo
-                        {
-                            ProviderName = Name,
-                            Url = string.Format(CultureInfo.InvariantCulture, "https://img.omdbapi.com/?i={0}&apikey=2c9d9507", imdbId)
-                        });
-                    }
-                }
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            return list;
+            var rootObject = await _omdbProvider.GetRootObject(imdbId, cancellationToken).ConfigureAwait(false);
+
+            if (string.IsNullOrEmpty(rootObject.Poster))
+            {
+                return Enumerable.Empty<RemoteImageInfo>();
+            }
+
+            // the poster url is sometimes higher quality than the poster api
+            return new[]
+            {
+                new RemoteImageInfo
+                {
+                    ProviderName = Name,
+                    Url = rootObject.Poster
+                }
+            };
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)
