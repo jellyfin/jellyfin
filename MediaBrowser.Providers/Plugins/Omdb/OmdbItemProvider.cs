@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 item.PremiereDate = released;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.Poster) && !string.Equals(result.Poster, "N/A", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(result.Poster))
             {
                 item.ImageUrl = result.Poster;
             }
