@@ -350,7 +350,7 @@ namespace Emby.Dlna
                         Directory.CreateDirectory(systemProfilesPath);
 
                         var fileOptions = AsyncFile.WriteOptions;
-                        fileOptions.Mode = FileMode.CreateNew;
+                        fileOptions.Mode = FileMode.Create;
                         fileOptions.PreallocationSize = length;
                         using (var fileStream = new FileStream(path, fileOptions))
                         {
