@@ -26,7 +26,6 @@
                     </div>
                     <div class="verticalSection verticalSection-extrabottompadding">
                         <h2>Image Scaling</h2>
-                        <p>If size options are not populated then refresh metadata for any item from TMDb and reload this page.</p>
                         <div class="selectContainer">
                             <select is="emby-select" id="selectPosterSize" label="Poster"></select>
                         </div>
@@ -54,6 +53,47 @@
             document.querySelector('.configPage')
                 .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
+
+                    var clientConfig, pluginConfig;
+                    var configureImageScaling = function() {
+                        if (clientConfig === null || pluginConfig === null) {
+                            return;
+                        }
+
+                        var sizeOptionsGenerator = function (size) {
+                            return '<option value="' + size + '">' + size + '</option>';
+                        }
+
+                        var selPosterSize = document.querySelector('#selectPosterSize');
+                        selPosterSize.innerHTML = clientConfig.PosterSizes.map(sizeOptionsGenerator);
+                        selPosterSize.value = pluginConfig.PosterSize;
+
+                        var selBackdropSize = document.querySelector('#selectBackdropSize');
+                        selBackdropSize.innerHTML = clientConfig.BackdropSizes.map(sizeOptionsGenerator);
+                        selBackdropSize.value = pluginConfig.BackdropSize;
+
+                        var selProfileSize = document.querySelector('#selectProfileSize');
+                        selProfileSize.innerHTML = clientConfig.ProfileSizes.map(sizeOptionsGenerator);
+                        selProfileSize.value = pluginConfig.ProfileSize;
+
+                        var selStillSize = document.querySelector('#selectStillSize');
+                        selStillSize.innerHTML = clientConfig.StillSizes.map(sizeOptionsGenerator);
+                        selStillSize.value = pluginConfig.StillSize;
+
+                        Dashboard.hideLoadingMsg();
+                    }
+
+                    const request = {
+                        url: ApiClient.getUrl('tmdb/ClientConfiguration'),
+                        dataType: 'json',
+                        type: 'GET',
+                        headers: { accept: 'application/json' }
+                    }
+                    ApiClient.fetch(request).then(function (config) {
+                        clientConfig = config;
+                        configureImageScaling();
+                    });
+
                     ApiClient.getPluginConfiguration(PluginConfig.pluginId).then(function (config) {
                         document.querySelector('#includeAdult').checked = config.IncludeAdult;
                         document.querySelector('#excludeTagsSeries').checked = config.ExcludeTagsSeries;
@@ -66,27 +106,8 @@
                             cancelable: false
                         }));
 
-                        var sizeOptionsGenerator = function (size) {
-                            return '<option value="' + size + '">' + size + '</option>';
-                        }
-
-                        var selPosterSize = document.querySelector('#selectPosterSize');
-                        selPosterSize.innerHTML = config.PosterSizeOptions.map(sizeOptionsGenerator);
-                        selPosterSize.value = config.PosterSize;
-
-                        var selBackdropSize = document.querySelector('#selectBackdropSize');
-                        selBackdropSize.innerHTML = config.BackdropSizeOptions.map(sizeOptionsGenerator);
-                        selBackdropSize.value = config.BackdropSize;
-
-                        var selProfileSize = document.querySelector('#selectProfileSize');
-                        selProfileSize.innerHTML = config.ProfileSizeOptions.map(sizeOptionsGenerator);
-                        selProfileSize.value = config.ProfileSize;
-
-                        var selStillSize = document.querySelector('#selectStillSize');
-                        selStillSize.innerHTML = config.StillSizeOptions.map(sizeOptionsGenerator);
-                        selStillSize.value = config.StillSize;
-
-                        Dashboard.hideLoadingMsg();
+                        pluginConfig = config;
+                        configureImageScaling();
                     });
                 });
 

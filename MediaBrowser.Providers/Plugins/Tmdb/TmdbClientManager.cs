@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dto;
@@ -576,51 +575,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="results">The collection to add the remote images into.</param>
         private void ConvertToRemoteImageInfo(List<ImageData> images, string size, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
         {
-            int? targetHeight = null;
-            int? targetWidth = null;
-            var match = Regex.Match(size, @"(?<dimension>[hw])(?<size>[0-9]+)");
-            if (match.Success)
-            {
-                var targetSize = int.Parse(match.Groups["size"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
-                if (string.Equals(match.Groups["dimension"].Value, "h", StringComparison.OrdinalIgnoreCase))
-                {
-                    targetHeight = targetSize;
-                }
-                else
-                {
-                    targetWidth = targetSize;
-                }
-            }
+            // sizes provided are for original resolution, don't store them when downloading scaled images
+            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
 
             for (var i = 0; i < images.Count; i++)
             {
                 var image = images[i];
-
-                int width;
-                int height;
-                if (targetHeight.HasValue)
-                {
-                    width = (int)Math.Round((double)targetHeight.Value / image.Height * image.Width);
-                    height = targetHeight.Value;
-                }
-                else if (targetWidth.HasValue)
-                {
-                    height = (int)Math.Round((double)targetWidth.Value / image.Width * image.Height);
-                    width = targetWidth.Value;
-                }
-                else
-                {
-                    width = image.Width;
-                    height = image.Height;
-                }
 
                 results.Add(new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
-                    Width = width,
-                    Height = height,
+                    Width = scaleImage ? null : image.Width,
+                    Height = scaleImage ? null : image.Height,
                     Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage),
                     ProviderName = TmdbUtils.ProviderName,
                     Type = type,
@@ -644,29 +612,36 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             var pluginConfig = Plugin.Instance.Configuration;
 
-            pluginConfig.PosterSizeOptions = imageConfig.PosterSizes;
-            if (!pluginConfig.PosterSizeOptions.Contains(pluginConfig.PosterSize))
+            if (!imageConfig.PosterSizes.Contains(pluginConfig.PosterSize))
             {
-                pluginConfig.PosterSize = pluginConfig.PosterSizeOptions[^1];
+                pluginConfig.PosterSize = imageConfig.PosterSizes[^1];
             }
 
-            pluginConfig.BackdropSizeOptions = imageConfig.BackdropSizes;
-            if (!pluginConfig.BackdropSizeOptions.Contains(pluginConfig.BackdropSize))
+            if (!imageConfig.BackdropSizes.Contains(pluginConfig.BackdropSize))
             {
-                pluginConfig.BackdropSize = pluginConfig.BackdropSizeOptions[^1];
+                pluginConfig.BackdropSize = imageConfig.BackdropSizes[^1];
             }
 
-            pluginConfig.ProfileSizeOptions = imageConfig.ProfileSizes;
-            if (!pluginConfig.ProfileSizeOptions.Contains(pluginConfig.ProfileSize))
+            if (!imageConfig.ProfileSizes.Contains(pluginConfig.ProfileSize))
             {
-                pluginConfig.ProfileSize = pluginConfig.ProfileSizeOptions[^1];
+                pluginConfig.ProfileSize = imageConfig.ProfileSizes[^1];
             }
 
-            pluginConfig.StillSizeOptions = imageConfig.StillSizes;
-            if (!pluginConfig.StillSizeOptions.Contains(pluginConfig.StillSize))
+            if (!imageConfig.StillSizes.Contains(pluginConfig.StillSize))
             {
-                pluginConfig.StillSize = pluginConfig.StillSizeOptions[^1];
+                pluginConfig.StillSize = imageConfig.StillSizes[^1];
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TMDbClient"/> configuration.
+        /// </summary>
+        /// <returns>The configuration.</returns>
+        public async Task<TMDbConfig> GetClientConfiguration()
+        {
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            return _tmDbClient.Config;
         }
 
         /// <inheritdoc />

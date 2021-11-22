@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MediaBrowser.Model.Plugins;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb
@@ -34,19 +33,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public string? PosterSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the available options for poster size.
-        /// </summary>
-        public List<string> PosterSizeOptions { get; set; } = new List<string>();
-
-        /// <summary>
         /// Gets or sets a value indicating the backdrop image size to fetch.
         /// </summary>
         public string? BackdropSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the available options for backdrop size.
-        /// </summary>
-        public List<string> BackdropSizeOptions { get; set; } = new List<string>();
 
         /// <summary>
         /// Gets or sets a value indicating the profile image size to fetch.
@@ -54,18 +43,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public string? ProfileSize { get; set; }
 
         /// <summary>
-        /// Gets or sets the available options for profile size.
-        /// </summary>
-        public List<string> ProfileSizeOptions { get; set; } = new List<string>();
-
-        /// <summary>
         /// Gets or sets a value indicating the still image size to fetch.
         /// </summary>
         public string? StillSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the available options for still size.
-        /// </summary>
-        public List<string> StillSizeOptions { get; set; } = new List<string>();
     }
 }
