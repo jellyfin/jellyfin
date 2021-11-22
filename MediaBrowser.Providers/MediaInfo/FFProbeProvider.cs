@@ -50,6 +50,8 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly SubtitleResolver _subtitleResolver;
 
+        private readonly AudioResolver _audioResolver;
+
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
 
         public FFProbeProvider(
@@ -78,6 +80,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _mediaSourceManager = mediaSourceManager;
 
             _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
+            _audioResolver = new AudioResolver(BaseItem.LocalizationManager, mediaEncoder);
         }
 
         public string Name => "ffprobe";
@@ -108,6 +111,14 @@ namespace MediaBrowser.Providers.MediaInfo
                         _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
             {
                 _logger.LogDebug("Refreshing {0} due to external subtitles change.", item.Path);
+                return true;
+            }
+
+            if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
+                && !video.AudioFiles.SequenceEqual(
+                        _audioResolver.GetExternalAudioFiles(video, directoryService, false), StringComparer.Ordinal))
+            {
+                _logger.LogDebug("Refreshing {0} due to external audio change.", item.Path);
                 return true;
             }
 

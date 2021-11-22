@@ -98,6 +98,12 @@ namespace MediaBrowser.Controller.Entities
         public string[] SubtitleFiles { get; set; }
 
         /// <summary>
+        /// Gets or sets the audio paths.
+        /// </summary>
+        /// <value>The audio paths.</value>
+        public string[] AudioFiles { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance has subtitles.
         /// </summary>
         /// <value><c>true</c> if this instance has subtitles; otherwise, <c>false</c>.</value>

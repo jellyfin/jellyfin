@@ -214,6 +214,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
+            AddExternalAudio(video, mediaStreams, options, cancellationToken);
+
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
             if (mediaInfo != null)
@@ -572,6 +574,29 @@ namespace MediaBrowser.Providers.MediaInfo
             video.SubtitleFiles = externalSubtitleStreams.Select(i => i.Path).ToArray();
 
             currentStreams.AddRange(externalSubtitleStreams);
+        }
+
+        /// <summary>
+        /// Adds the external audio.
+        /// </summary>
+        /// <param name="video">The video.</param>
+        /// <param name="currentStreams">The current streams.</param>
+        /// <param name="options">The refreshOptions.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private void AddExternalAudio(
+            Video video,
+            List<MediaStream> currentStreams,
+            MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
+        {
+            var audioResolver = new AudioResolver(_localization, _mediaEncoder, cancellationToken);
+
+            var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
+            var externalAudioStreams = audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false);
+
+            video.AudioFiles = externalAudioStreams.Select(i => i.Path).ToArray();
+
+            currentStreams.AddRange(externalAudioStreams);
         }
 
         /// <summary>
