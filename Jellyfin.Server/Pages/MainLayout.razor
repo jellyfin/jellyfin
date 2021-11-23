@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <main>
+        <nav class="navbar navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" @onclick="@GoHome" href="">Home</a>
+            </div>
+        </nav>
+
+        <div class="container-fluid bg-white px-4">
+            @Body
+        </div>
+    </main>
+</div>
+
+@code {
+
+    [Inject]
+    NavigationManager NavigationManager { get; set; } = null!;
+
+    private void GoHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+
+}

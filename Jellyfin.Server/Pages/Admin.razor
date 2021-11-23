@@ -1,0 +1,28 @@
+﻿@* TODO Remove after testing *@
+
+@page "/Admin"
+@inherits MediaBrowser.Controller.BlazorPages.BaseAdminPage
+
+<h3>Admin</h3>
+
+<button @onclick="@AdminClick">Admin</button>
+<button @onclick="@AuthClick">Auth</button>
+<button @onclick="@TestClick">Test</button>
+
+@code
+{
+    void AdminClick()
+    {
+        Navigate("Admin");
+    }
+
+    void AuthClick()
+    {
+        Navigate("Auth");
+    }
+
+    void TestClick()
+    {
+        Navigate("Test");
+    }
+}

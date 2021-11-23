@@ -21,5 +21,12 @@ namespace MediaBrowser.Controller.Net
         /// <param name="requestContext">The request context.</param>
         /// <returns>A <see cref="Task"/> containing the authorization info.</returns>
         Task<AuthorizationInfo> GetAuthorizationInfo(HttpRequest requestContext);
+
+        /// <summary>
+        /// Gets the authorization information.
+        /// </summary>
+        /// <param name="token">The authorization token.</param>
+        /// <returns>A <see cref="Task"/> containing the authorization info.</returns>
+        Task<AuthorizationInfo> GetAuthorizationInfo(string token);
     }
 }

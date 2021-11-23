@@ -1,0 +1,22 @@
+﻿@using MediaBrowser.Common.Plugins
+
+<Router AppAssembly="@typeof(App).Assembly"
+        AdditionalAssemblies="@BlazorPagesManager.GetAssemblies()"
+        PreferExactMatches="true">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <PageTitle>Not found</PageTitle>
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code{
+
+     [Inject]
+     private IBlazorPagesManager BlazorPagesManager { get; set; } = null!;
+
+}

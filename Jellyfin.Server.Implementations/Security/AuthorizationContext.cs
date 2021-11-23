@@ -40,6 +40,11 @@ namespace Jellyfin.Server.Implementations.Security
             return authInfo;
         }
 
+        public async Task<AuthorizationInfo> GetAuthorizationInfo(string token)
+        {
+            return await GetAuthorizationInfoFromDictionary(null, null, null, requestToken: token).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Gets the authorization.
         /// </summary>
@@ -56,14 +61,15 @@ namespace Jellyfin.Server.Implementations.Security
 
         private async Task<AuthorizationInfo> GetAuthorizationInfoFromDictionary(
             IReadOnlyDictionary<string, string>? auth,
-            IHeaderDictionary headers,
-            IQueryCollection queryString)
+            IHeaderDictionary? headers,
+            IQueryCollection? queryString,
+            string? requestToken = null)
         {
             string? deviceId = null;
             string? deviceName = null;
             string? client = null;
             string? version = null;
-            string? token = null;
+            string? token = requestToken;
 
             if (auth != null)
             {
@@ -75,25 +81,31 @@ namespace Jellyfin.Server.Implementations.Security
             }
 
 #pragma warning disable CA1508 // string.IsNullOrEmpty(token) is always false.
-            if (string.IsNullOrEmpty(token))
+            if (headers != null)
             {
-                token = headers["X-Emby-Token"];
+                if (string.IsNullOrEmpty(token))
+                {
+                    token = headers["X-Emby-Token"];
+                }
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    token = headers["X-MediaBrowser-Token"];
+                }
             }
 
-            if (string.IsNullOrEmpty(token))
+            if (queryString != null)
             {
-                token = headers["X-MediaBrowser-Token"];
-            }
+                if (string.IsNullOrEmpty(token))
+                {
+                    token = queryString["ApiKey"];
+                }
 
-            if (string.IsNullOrEmpty(token))
-            {
-                token = queryString["ApiKey"];
-            }
-
-            // TODO deprecate this query parameter.
-            if (string.IsNullOrEmpty(token))
-            {
-                token = queryString["api_key"];
+                // TODO deprecate this query parameter.
+                if (string.IsNullOrEmpty(token))
+                {
+                    token = queryString["api_key"];
+                }
             }
 
             var authInfo = new AuthorizationInfo

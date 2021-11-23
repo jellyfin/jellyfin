@@ -228,10 +228,6 @@ namespace Jellyfin.Server.Extensions
 
                     opts.ModelBinderProviders.Insert(0, new NullableEnumModelBinderProvider());
                 })
-
-                // Clear app parts to avoid other assemblies being picked up
-                .ConfigureApplicationPartManager(a => a.ApplicationParts.Clear())
-                .AddApplicationPart(typeof(StartupController).Assembly)
                 .AddJsonOptions(options =>
                 {
                     // Update all properties that are set in JsonDefaults

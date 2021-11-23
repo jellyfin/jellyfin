@@ -89,6 +89,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.System;
 using MediaBrowser.Model.Tasks;
@@ -127,6 +128,7 @@ namespace Emby.Server.Implementations
         private readonly IXmlSerializer _xmlSerializer;
         private readonly IStartupOptions _startupOptions;
         private readonly IPluginManager _pluginManager;
+        private readonly IBlazorPagesManager _blazorPagesManager;
 
         private List<Type> _creatingInstances;
         private IMediaEncoder _mediaEncoder;
@@ -176,6 +178,8 @@ namespace Emby.Server.Implementations
                 ConfigurationManager.Configuration,
                 ApplicationPaths.PluginsPath,
                 ApplicationVersion);
+
+            _blazorPagesManager = new BlazorPagesManager();
         }
 
         /// <summary>
@@ -556,6 +560,7 @@ namespace Emby.Server.Implementations
             serviceCollection.AddSingleton<IConfigurationManager>(ConfigurationManager);
             serviceCollection.AddSingleton<IApplicationHost>(this);
             serviceCollection.AddSingleton(_pluginManager);
+            serviceCollection.AddSingleton(_blazorPagesManager);
             serviceCollection.AddSingleton<IApplicationPaths>(ApplicationPaths);
 
             serviceCollection.AddSingleton(_fileSystemManager);
@@ -681,6 +686,11 @@ namespace Emby.Server.Implementations
             ((SqliteItemRepository)Resolve<IItemRepository>()).Initialize(userDataRepo, Resolve<IUserManager>());
 
             FindParts();
+
+            _blazorPagesManager.SetAssemblies(
+                GetExports<IHasBlazorPages>()
+                    .Select(p => p.GetType().Assembly)
+                    .Distinct());
         }
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths)

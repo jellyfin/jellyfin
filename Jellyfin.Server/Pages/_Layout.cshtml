@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace Jellyfin.Server.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="~/"/>
+    <link href="../blazor/site.css" rel="stylesheet"/>
+    <link href="../blazor/bootstrap/bootstrap.min.css" rel="stylesheet"/>
+    <component type="typeof(HeadOutlet)" render-mode="Server"/>
+</head>
+<body>
+
+@RenderBody()
+
+<div id="blazor-error-ui">
+    <environment include="Staging,Production">
+        An error has occurred. This application may no longer respond until reloaded.
+    </environment>
+    <environment include="Development">
+        An unhandled exception has occurred. See browser dev tools for details.
+    </environment>
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<script src="../_framework/blazor.server.js" type="text/javascript"></script>
+<script src="../blazor/bootstrap/bootstrap.min.js" type="text/javascript"></script>
+</body>
+</html>

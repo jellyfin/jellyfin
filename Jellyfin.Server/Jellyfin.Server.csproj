@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="6.0.0" />
@@ -55,15 +56,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="wwwroot\api-docs\redoc\custom.css">
+    <Content Update="wwwroot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="wwwroot\api-docs\swagger\custom.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="wwwroot\api-docs\banner-dark.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
 </Project>

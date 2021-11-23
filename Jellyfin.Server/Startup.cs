@@ -104,6 +104,9 @@ namespace Jellyfin.Server
 
             services.AddHealthChecks()
                 .AddDbContextCheck<JellyfinDb>();
+
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
         }
 
         /// <summary>
@@ -190,6 +193,19 @@ namespace Jellyfin.Server
                     }
 
                     endpoints.MapHealthChecks("/health");
+                });
+
+                mainApp.Map("/blazorpages", blazorApp =>
+                {
+                    blazorApp.UseRouting();
+#pragma warning disable ASP0001
+                    blazorApp.UseAuthorization();
+#pragma warning restore ASP0001
+                    blazorApp.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapBlazorHub();
+                        endpoints.MapFallbackToPage("/_Host");
+                    });
                 });
             });
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
@@ -28,13 +29,14 @@ namespace Jellyfin.Server.Middleware
         /// <returns>The async task.</returns>
         public async Task Invoke(HttpContext httpContext, IWebSocketManager webSocketManager)
         {
-            if (!httpContext.WebSockets.IsWebSocketRequest)
+            if (httpContext.WebSockets.IsWebSocketRequest
+                && (httpContext.Request.Path.Value?.EndsWith("/socket", StringComparison.OrdinalIgnoreCase) ?? false))
             {
-                await _next(httpContext).ConfigureAwait(false);
+                await webSocketManager.WebSocketRequestHandler(httpContext).ConfigureAwait(false);
                 return;
             }
 
-            await webSocketManager.WebSocketRequestHandler(httpContext).ConfigureAwait(false);
+            await _next(httpContext).ConfigureAwait(false);
         }
     }
 }
