@@ -11,7 +11,7 @@
     "Collections": "Gyűjtemények",
     "DeviceOfflineWithName": "{0} kijelentkezett",
     "DeviceOnlineWithName": "{0} belépett",
-    "FailedLoginAttemptWithUserName": "Sikertelen bejelentkezési kísérlet tőle: {0}",
+    "FailedLoginAttemptWithUserName": "Sikertelen bejelentkezési kísérlet innen: {0}",
     "Favorites": "Kedvencek",
     "Folders": "Könyvtárak",
     "Genres": "Műfajok",
