@@ -30,8 +30,6 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -52,7 +50,6 @@ using MediaBrowser.Model.Tasks;
 using MediaBrowser.Providers.MediaInfo;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Prometheus;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using EpisodeInfo = Emby.Naming.TV.EpisodeInfo;
 using Genre = MediaBrowser.Controller.Entities.Genre;
@@ -99,16 +96,6 @@ namespace Emby.Server.Implementations.Library
         private volatile UserRootFolder _userRootFolder;
 
         private bool _wizardCompleted;
-
-        private static readonly Gauge _itemCountGauge = Metrics.CreateGauge("jellyfin_library_items_total", "The number of items in the library", new[] { "item_type" });
-        private static readonly string[] _metricTypes = new string[]
-        {
-            nameof(Movie),
-            nameof(Series), nameof(Season), nameof(Episode),
-            nameof(MusicArtist), nameof(MusicAlbum), nameof(MusicVideo), nameof(Audio),
-            nameof(Book),
-            nameof(PhotoAlbum), nameof(Photo)
-        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryManager" /> class.
@@ -461,18 +448,6 @@ namespace Emby.Server.Implementations.Library
                 _itemRepository.DeleteItem(child.Id);
             }
 
-            if (_metricTypes.Contains(item.GetType().Name))
-            {
-                _itemCountGauge.WithLabels(item.GetType().Name).Dec();
-            }
-            foreach (var child in children)
-            {
-                if (_metricTypes.Contains(child.GetType().Name))
-                {
-                    _itemCountGauge.WithLabels(child.GetType().Name).Dec();
-                }
-            }
-
             _memoryCache.Remove(item.Id);
 
             ReportItemRemoved(item, parent);
@@ -811,8 +786,6 @@ namespace Emby.Server.Implementations.Library
 
             RegisterItem(folder);
 
-            UpdateItemCountGauge();
-
             return rootFolder;
         }
 
@@ -1139,8 +1112,6 @@ namespace Emby.Server.Implementations.Library
             innerProgress.RegisterAction(pct => progress.Report(96 + (pct * .04)));
 
             await RunPostScanTasks(innerProgress, cancellationToken).ConfigureAwait(false);
-
-            UpdateItemCountGauge();
 
             progress.Report(100);
         }
@@ -1865,10 +1836,6 @@ namespace Emby.Server.Implementations.Library
             foreach (var item in items)
             {
                 RegisterItem(item);
-                if (_metricTypes.Contains(item.GetType().Name))
-                {
-                    _itemCountGauge.WithLabels(item.GetType().Name).Inc();
-                }
             }
 
             if (ItemAdded != null)
@@ -3294,19 +3261,6 @@ namespace Emby.Server.Implementations.Library
                 .ToArray();
 
             CollectionFolder.SaveLibraryOptions(virtualFolderPath, libraryOptions);
-        }
-
-        private void UpdateItemCountGauge()
-        {
-            foreach (var type in _metricTypes)
-            {
-                var query = new InternalItemsQuery
-                {
-                    IncludeItemTypes = new[] { type }
-                };
-                int count = GetCount(query);
-                _itemCountGauge.WithLabels(type).Set(count);
-            }
         }
     }
 }
