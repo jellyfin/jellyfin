@@ -591,7 +591,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var audioResolver = new AudioResolver(_localization, _mediaEncoder, cancellationToken);
 
-            var startIndex = currentStreams.Count == 0 ? 0 : (currentStreams.Select(i => i.Index).Max() + 1);
+            var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
             var externalAudioStreams = audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false);
 
             video.AudioFiles = externalAudioStreams.Select(i => i.Path).ToArray();
