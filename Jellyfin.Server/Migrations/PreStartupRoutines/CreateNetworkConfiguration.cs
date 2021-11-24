@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Xml;
 using System.Xml.Serialization;
 using Emby.Server.Implementations;
@@ -111,7 +110,6 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public bool EnableIPV6 { get; set; }
 
-        [DataMember(Name = "EnableIPV4")]
         public bool EnableIPV4 { get; set; } = true;
 
         public bool IgnoreVirtualInterfaces { get; set; } = true;
