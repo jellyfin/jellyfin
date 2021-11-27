@@ -59,7 +59,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
 
             paths.AddRange(GetAudioFilesFromFolder(video.ContainingFolderPath, video.Path, directoryService, namingOptions, clearCache));
-            paths.AddRange(GetAudioFilesFromFolder(video.GetInternalMetadataPath(), video.Path, directoryService, namingOptions, clearCache));
 
             return paths;
         }
