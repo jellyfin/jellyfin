@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class AudioResolver
     {
-        public async Task<List<MediaStream>> GetExternalAudioStreams(
+        public async Task<IAsyncEnumerable<MediaStream>> GetExternalAudioStreams(
             Video video,
             int startIndex,
             IDirectoryService directoryService,
