@@ -1,13 +1,13 @@
-#nullable disable
-
 #pragma warning disable CA1002, CS1591
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Providers;
@@ -21,24 +21,15 @@ namespace MediaBrowser.Providers.MediaInfo
 {
     public class AudioResolver
     {
-        private readonly ILocalizationManager _localization;
-
-        private readonly IMediaEncoder _mediaEncoder;
-
-        private readonly CancellationToken _cancellationToken;
-
-        public AudioResolver(ILocalizationManager localization, IMediaEncoder mediaEncoder, CancellationToken cancellationToken = default)
-        {
-            _localization = localization;
-            _mediaEncoder = mediaEncoder;
-            _cancellationToken = cancellationToken;
-        }
-
-        public List<MediaStream> GetExternalAudioStreams(
+        public async Task<List<MediaStream>> GetExternalAudioStreams(
             Video video,
             int startIndex,
             IDirectoryService directoryService,
-            bool clearCache)
+            NamingOptions namingOptions,
+            bool clearCache,
+            ILocalizationManager localizationManager,
+            IMediaEncoder mediaEncoder,
+            CancellationToken cancellationToken)
         {
             var streams = new List<MediaStream>();
 
@@ -47,198 +38,117 @@ namespace MediaBrowser.Providers.MediaInfo
                 return streams;
             }
 
-            AddExternalAudioStreams(streams, video.ContainingFolderPath, video.Path, startIndex, directoryService, clearCache);
+            List<string> paths = GetExternalAudioFiles(video, directoryService, namingOptions, clearCache);
 
-            startIndex += streams.Count;
-
-            string folder = video.GetInternalMetadataPath();
-
-            if (!Directory.Exists(folder))
-            {
-                return streams;
-            }
-
-            try
-            {
-                AddExternalAudioStreams(streams, folder, video.Path, startIndex, directoryService, clearCache);
-            }
-            catch (IOException)
-            {
-            }
+            await AddExternalAudioStreams(streams, paths, startIndex, localizationManager, mediaEncoder, cancellationToken);
 
             return streams;
         }
 
-        public IEnumerable<string> GetExternalAudioFiles(
+        public List<string> GetExternalAudioFiles(
             Video video,
             IDirectoryService directoryService,
+            NamingOptions namingOptions,
             bool clearCache)
         {
+            List<string> paths = new List<string>();
+
             if (!video.IsFileProtocol)
             {
-                yield break;
+                return paths;
             }
 
-            var streams = GetExternalAudioStreams(video, 0, directoryService, clearCache);
+            paths.AddRange(GetAudioFilesFromFolder(video.ContainingFolderPath, video.Path, directoryService, namingOptions, clearCache));
+            paths.AddRange(GetAudioFilesFromFolder(video.GetInternalMetadataPath(), video.Path, directoryService, namingOptions, clearCache));
 
-            foreach (var stream in streams)
-            {
-                yield return stream.Path;
-            }
+            return paths;
         }
 
-        public void AddExternalAudioStreams(
-            List<MediaStream> streams,
-            string videoPath,
-            int startIndex,
-            IReadOnlyList<string> files)
+        private List<string> GetAudioFilesFromFolder(
+            string folder,
+            string videoFileName,
+            IDirectoryService directoryService,
+            NamingOptions namingOptions,
+            bool clearCache)
         {
-            var videoFileNameWithoutExtension = NormalizeFilenameForAudioComparison(videoPath);
+            List<string> paths = new List<string>();
+            string videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(videoFileName);
 
-            for (var i = 0; i < files.Count; i++)
+            if (!Directory.Exists(folder))
             {
+                return paths;
+            }
 
-                var fullName = files[i];
-                var extension = Path.GetExtension(fullName.AsSpan());
-                if (!IsAudioExtension(extension))
+            var files = directoryService.GetFilePaths(folder, clearCache, true);
+            for (int i = 0; i < files.Count; i++)
+            {
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(files[i]);
+
+                if (!AudioFileParser.IsAudioFile(files[i], namingOptions))
                 {
                     continue;
                 }
-
-                Model.MediaInfo.MediaInfo mediaInfo = GetMediaInfo(fullName).Result;
-                MediaStream mediaStream = mediaInfo.MediaStreams.First();
-                mediaStream.Index = startIndex++;
-                mediaStream.Type = MediaStreamType.Audio;
-                mediaStream.IsExternal = true;
-                mediaStream.Path = fullName;
-                mediaStream.IsDefault = false;
-                mediaStream.Title = null;
-
-                var fileNameWithoutExtension = NormalizeFilenameForAudioComparison(fullName);
 
                 // The audio filename must either be equal to the video filename or start with the video filename followed by a dot
-                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    mediaStream.Path = fullName;
-                }
-                else if (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
+                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) ||
+                    (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
                          && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
-                         && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                         && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)))
                 {
+                    paths.Add(files[i]);
+                }
+            }
 
-                    // Support xbmc naming conventions - 300.spanish.m4a
-                    var languageSpan = fileNameWithoutExtension;
-                    while (languageSpan.Length > 0)
+            return paths;
+        }
+
+        public async Task AddExternalAudioStreams(
+            List<MediaStream> streams,
+            List<string> paths,
+            int startIndex,
+            ILocalizationManager localizationManager,
+            IMediaEncoder mediaEncoder,
+            CancellationToken cancellationToken)
+        {
+            foreach (string path in paths)
+            {
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
+                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(path, mediaEncoder, cancellationToken);
+
+                foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
+                {
+                    mediaStream.Index = startIndex++;
+                    mediaStream.Type = MediaStreamType.Audio;
+                    mediaStream.IsExternal = true;
+                    mediaStream.Path = path;
+                    mediaStream.IsDefault = false;
+                    mediaStream.Title = null;
+
+                    if (mediaStream.Language == null)
                     {
-                        var lastDot = languageSpan.LastIndexOf('.');
-                        var currentSlice = languageSpan[lastDot..];
-                        languageSpan = languageSpan[(lastDot + 1)..];
-                        break;
+                        // Try to translate to three character code
+                        // Be flexible and check against both the full and three character versions
+                        var language = StringExtensions.RightPart(fileNameWithoutExtension, '.').ToString();
+
+                        if (language != fileNameWithoutExtension)
+                        {
+                            var culture = localizationManager.FindLanguageInfo(language);
+
+                            language = culture == null ? language : culture.ThreeLetterISOLanguageName;
+                            mediaStream.Language = language;
+                        }
                     }
 
-                    // Try to translate to three character code
-                    // Be flexible and check against both the full and three character versions
-                    var language = languageSpan.ToString();
-                    var culture = _localization.FindLanguageInfo(language);
-
-                    language = culture == null ? language : culture.ThreeLetterISOLanguageName;
-                    mediaStream.Language = language;
+                    streams.Add(mediaStream);
                 }
-                else
-                {
-                    continue;
-                }
-
-                mediaStream.Codec = extension.TrimStart('.').ToString().ToLowerInvariant();
-
-                streams.Add(mediaStream);
             }
         }
 
-        private static bool IsAudioExtension(ReadOnlySpan<char> extension)
+        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(string path, IMediaEncoder mediaEncoder, CancellationToken cancellationToken)
         {
-            String[] audioExtensions = new[]
-            {
-                ".nsv",
-                ".m4a",
-                ".flac",
-                ".aac",
-                ".strm",
-                ".pls",
-                ".rm",
-                ".mpa",
-                ".wav",
-                ".wma",
-                ".ogg",
-                ".opus",
-                ".mp3",
-                ".mp2",
-                ".mod",
-                ".amf",
-                ".669",
-                ".dmf",
-                ".dsm",
-                ".far",
-                ".gdm",
-                ".imf",
-                ".it",
-                ".m15",
-                ".med",
-                ".okt",
-                ".s3m",
-                ".stm",
-                ".sfx",
-                ".ult",
-                ".uni",
-                ".xm",
-                ".sid",
-                ".ac3",
-                ".dts",
-                ".cue",
-                ".aif",
-                ".aiff",
-                ".ape",
-                ".mac",
-                ".mpc",
-                ".mp+",
-                ".mpp",
-                ".shn",
-                ".wv",
-                ".nsf",
-                ".spc",
-                ".gym",
-                ".adplug",
-                ".adx",
-                ".dsp",
-                ".adp",
-                ".ymf",
-                ".ast",
-                ".afc",
-                ".hps",
-                ".xsp",
-                ".acc",
-                ".m4b",
-                ".oga",
-                ".dsf",
-                ".mka"
-            };
+            cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (String audioExtension in audioExtensions)
-            {
-                if (extension.Equals(audioExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(string path)
-        {
-            _cancellationToken.ThrowIfCancellationRequested();
-
-            return _mediaEncoder.GetMediaInfo(
+            return mediaEncoder.GetMediaInfo(
                 new MediaInfoRequest
                 {
                     MediaType = DlnaProfileType.Audio,
@@ -248,28 +158,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         Protocol = MediaProtocol.File
                     }
                 },
-                _cancellationToken);
-        }
-
-        private static ReadOnlySpan<char> NormalizeFilenameForAudioComparison(string filename)
-        {
-            // Try to account for sloppy file naming
-            filename = filename.Replace("_", string.Empty, StringComparison.Ordinal);
-            filename = filename.Replace(" ", string.Empty, StringComparison.Ordinal);
-            return Path.GetFileNameWithoutExtension(filename.AsSpan());
-        }
-
-        private void AddExternalAudioStreams(
-            List<MediaStream> streams,
-            string folder,
-            string videoPath,
-            int startIndex,
-            IDirectoryService directoryService,
-            bool clearCache)
-        {
-            var files = directoryService.GetFilePaths(folder, clearCache, true);
-
-            AddExternalAudioStreams(streams, videoPath, startIndex, files);
+                cancellationToken);
         }
     }
 }

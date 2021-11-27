@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -50,9 +51,9 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly SubtitleResolver _subtitleResolver;
 
-        private readonly AudioResolver _audioResolver;
-
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
+
+        private readonly NamingOptions _namingOptions;
 
         public FFProbeProvider(
             ILogger<FFProbeProvider> logger,
@@ -65,7 +66,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            NamingOptions namingOptions)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -78,9 +80,9 @@ namespace MediaBrowser.Providers.MediaInfo
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _namingOptions = namingOptions;
 
             _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
-            _audioResolver = new AudioResolver(BaseItem.LocalizationManager, mediaEncoder);
         }
 
         public string Name => "ffprobe";
@@ -114,9 +116,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 return true;
             }
 
+            AudioResolver audioResolver = new AudioResolver();
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.AudioFiles.SequenceEqual(
-                        _audioResolver.GetExternalAudioFiles(video, directoryService, false), StringComparer.Ordinal))
+                        audioResolver.GetExternalAudioFiles(video, directoryService, _namingOptions, false), StringComparer.Ordinal))
             {
                 _logger.LogDebug("Refreshing {0} due to external audio change.", item.Path);
                 return true;
@@ -199,7 +202,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 _config,
                 _subtitleManager,
                 _chapterManager,
-                _libraryManager);
+                _libraryManager,
+                _namingOptions);
 
             return prober.ProbeVideo(item, options, cancellationToken);
         }

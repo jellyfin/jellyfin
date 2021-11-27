@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DvdLib.Ifo;
+using Emby.Naming.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -44,6 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly NamingOptions _namingOptions;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -59,7 +61,8 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            NamingOptions namingOptions)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -71,6 +74,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
+            _namingOptions = namingOptions;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -214,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            AddExternalAudio(video, mediaStreams, options, cancellationToken);
+            await AddExternalAudio(video, mediaStreams, options, cancellationToken);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
@@ -583,18 +587,18 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="currentStreams">The current streams.</param>
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void AddExternalAudio(
+        private async Task AddExternalAudio(
             Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var audioResolver = new AudioResolver(_localization, _mediaEncoder, cancellationToken);
+            var audioResolver = new AudioResolver();
 
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false);
+            var externalAudioStreams = await audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, _namingOptions, false, _localization, _mediaEncoder, cancellationToken);
 
-            video.AudioFiles = externalAudioStreams.Select(i => i.Path).ToArray();
+            video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
 
             currentStreams.AddRange(externalAudioStreams);
         }

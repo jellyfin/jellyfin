@@ -678,12 +678,6 @@ namespace MediaBrowser.Controller.MediaEncoding
             arg.Append("-i ")
                 .Append(GetInputPathArgument(state));
 
-            if (state.AudioStream.IsExternal)
-            {
-                arg.Append(" -i ")
-                    .Append(string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", state.AudioStream.Path));
-            }
-
             if (state.SubtitleStream != null
                 && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode
                 && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream)
@@ -700,6 +694,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
 
                 arg.Append(" -i \"").Append(subtitlePath).Append('\"');
+            }
+
+            if (state.AudioStream != null && state.AudioStream.IsExternal)
+            {
+                arg.Append(" -i ")
+                    .Append(string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", state.AudioStream.Path));
             }
 
             return arg.ToString();
@@ -2007,7 +2007,14 @@ namespace MediaBrowser.Controller.MediaEncoding
             {
                 if (state.AudioStream.IsExternal)
                 {
-                    args += " -map 1:a";
+                    int externalAudioMapIndex = state.SubtitleStream != null && state.SubtitleStream.IsExternal ? 2 : 1;
+                    int externalAudioStream = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
+
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map {0}:{1}",
+                        externalAudioMapIndex,
+                        externalAudioStream);
                 }
                 else
                 {
