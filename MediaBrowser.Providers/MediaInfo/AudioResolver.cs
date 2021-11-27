@@ -89,10 +89,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
 
                 // The audio filename must either be equal to the video filename or start with the video filename followed by a dot
-                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) ||
-                    (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
-                         && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
-                         && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)))
+                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)
+                    || (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
+                        && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
+                        && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)))
                 {
                     paths.Add(files[i]);
                 }
