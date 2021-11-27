@@ -45,7 +45,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return streams;
         }
 
-        public List<string> GetExternalAudioFiles(
+        public IEnumerable<string> GetExternalAudioFiles(
             Video video,
             IDirectoryService directoryService,
             NamingOptions namingOptions,
