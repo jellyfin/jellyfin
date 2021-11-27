@@ -42,7 +42,6 @@ namespace Jellyfin.Server.Migrations
             typeof(Routines.MigrateAuthenticationDb)
         };
 
-
         /// <summary>
         /// Run all needed migrations.
         /// </summary>
