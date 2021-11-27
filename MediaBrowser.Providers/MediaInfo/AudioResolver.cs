@@ -40,7 +40,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             List<string> paths = GetExternalAudioFiles(video, directoryService, namingOptions, clearCache);
 
-            await AddExternalAudioStreams(streams, paths, startIndex, localizationManager, mediaEncoder, cancellationToken);
+            await AddExternalAudioStreams(streams, paths, startIndex, localizationManager, mediaEncoder, cancellationToken).ConfigureAwait(false);
 
             return streams;
         }
