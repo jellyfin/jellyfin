@@ -123,7 +123,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     mediaStream.IsDefault = false;
                     mediaStream.Title = null;
 
-                    if (mediaStream.Language == null)
+                    if (string.IsNullOrEmpty(mediaStream.Language))
                     {
                         // Try to translate to three character code
                         // Be flexible and check against both the full and three character versions
