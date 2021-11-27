@@ -185,7 +185,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <param name="path">The path.</param>
         private static void SetProviderIdFromPath(Series item, string path)
         {
-            var justName = Path.GetFileName(path);
+            var justName = Path.GetFileName(path.AsSpan());
 
             var tvdbId = justName.GetAttributeValue("tvdbid");
             if (!string.IsNullOrEmpty(tvdbId))

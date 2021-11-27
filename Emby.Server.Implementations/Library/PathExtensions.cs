@@ -16,7 +16,7 @@ namespace Emby.Server.Implementations.Library
         /// <param name="attribute">The attrib.</param>
         /// <returns>System.String.</returns>
         /// <exception cref="ArgumentException"><paramref name="str" /> or <paramref name="attribute" /> is empty.</exception>
-        public static string? GetAttributeValue(this string str, string attribute)
+        public static string? GetAttributeValue(this ReadOnlySpan<char> str, ReadOnlySpan<char> attribute)
         {
             if (str.Length == 0)
             {
@@ -28,17 +28,24 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("String can't be empty.", nameof(attribute));
             }
 
-            string srch = "[" + attribute + "=";
-            int start = str.IndexOf(srch, StringComparison.OrdinalIgnoreCase);
-            if (start != -1)
+            var openBracketIndex = str.IndexOf('[');
+            var equalsIndex = str.IndexOf('=');
+            var closingBracketIndex = str.IndexOf(']');
+            while (openBracketIndex < equalsIndex && equalsIndex < closingBracketIndex)
             {
-                start += srch.Length;
-                int end = str.IndexOf(']', start);
-                return str.Substring(start, end - start);
+                if (str[(openBracketIndex + 1)..equalsIndex].Equals(attribute, StringComparison.OrdinalIgnoreCase))
+                {
+                    return str[(equalsIndex + 1)..closingBracketIndex].Trim().ToString();
+                }
+
+                str = str[(closingBracketIndex+ 1)..];
+                openBracketIndex = str.IndexOf('[');
+                equalsIndex = str.IndexOf('=');
+                closingBracketIndex = str.IndexOf(']');
             }
 
             // for imdbid we also accept pattern matching
-            if (string.Equals(attribute, "imdbid", StringComparison.OrdinalIgnoreCase))
+            if (attribute.Equals("imdbid", StringComparison.OrdinalIgnoreCase))
             {
                 var match = ProviderIdParsers.TryFindImdbId(str, out var imdbId);
                 return match ? imdbId.ToString() : null;
