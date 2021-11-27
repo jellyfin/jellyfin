@@ -141,7 +141,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
 
         private bool IsThrottleAllowed(TranscodingJobDto job, int thresholdSeconds)
         {
-            var bytesDownloaded = job.BytesDownloaded ?? 0;
+            var bytesDownloaded = job.BytesDownloaded;
             var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
             var downloadPositionTicks = job.DownloadPositionTicks ?? 0;
 
