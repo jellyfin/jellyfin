@@ -120,6 +120,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     while (languageSpan.Length > 0)
                     {
                         var lastDot = languageSpan.LastIndexOf('.');
+                        if (lastDot < videoFileNameWithoutExtension.Length)
+                        {
+                            languageSpan = ReadOnlySpan<char>.Empty;
+                            break;
+                        }
+
                         var currentSlice = languageSpan[lastDot..];
                         if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
                             || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
@@ -133,12 +139,19 @@ namespace MediaBrowser.Providers.MediaInfo
                         break;
                     }
 
-                    // Try to translate to three character code
-                    // Be flexible and check against both the full and three character versions
                     var language = languageSpan.ToString();
-                    var culture = _localization.FindLanguageInfo(language);
+                    if (string.IsNullOrWhiteSpace(language))
+                    {
+                        language = null;
+                    }
+                    else
+                    {
+                        // Try to translate to three character code
+                        // Be flexible and check against both the full and three character versions
+                        var culture = _localization.FindLanguageInfo(language);
 
-                    language = culture == null ? language : culture.ThreeLetterISOLanguageName;
+                        language = culture == null ? language : culture.ThreeLetterISOLanguageName;
+                    }
 
                     mediaStream = new MediaStream
                     {
