@@ -60,11 +60,13 @@ FROM app
 COPY --from=builder /jellyfin /jellyfin
 COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
-COPY scripts/ffmpeg-jetson-wrapper /usr/bin/ffmpeg-jetson-wapper
+COPY scripts/ffmpeg-jetson-wrapper /usr/bin/ffmpeg-jetson-wrapper
+
+RUN chmod +x /usr/bin/ffmpeg-jetson-wrapper
 
 EXPOSE 8096
 VOLUME /cache /config /media
 ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
     "--cachedir", "/cache", \
-    "--ffmpeg", "/usr/bin/ffmpeg-jetson-wapper"]
+    "--ffmpeg", "/usr/bin/ffmpeg-jetson-wrapper"]
