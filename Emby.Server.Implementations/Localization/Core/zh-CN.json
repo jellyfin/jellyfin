@@ -11,7 +11,7 @@
     "Collections": "合集",
     "DeviceOfflineWithName": "{0} 已断开",
     "DeviceOnlineWithName": "{0} 已连接",
-    "FailedLoginAttemptWithUserName": "来自 {0} 的失败登入",
+    "FailedLoginAttemptWithUserName": "从 {0} 尝试登录失败",
     "Favorites": "我的最爱",
     "Folders": "文件夹",
     "Genres": "风格",
