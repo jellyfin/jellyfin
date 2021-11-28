@@ -130,11 +130,12 @@ namespace MediaBrowser.Providers.TV
         /// <returns>The async task.</returns>
         private async Task FillInMissingSeasonsAsync(Series series, CancellationToken cancellationToken)
         {
-            var episodesInSeriesFolder = series.GetRecursiveChildren(i => i is Episode)
-                .Cast<Episode>()
+            var seriesChildren = series.GetRecursiveChildren(i => i is Episode || i is Season);
+            var episodesInSeriesFolder = seriesChildren
+                .OfType<Episode>()
                 .Where(i => !i.IsInSeasonFolder);
 
-            List<Season> seasons = series.Children.OfType<Season>().ToList();
+            List<Season> seasons = seriesChildren.OfType<Season>().ToList();
 
             // Loop through the unique season numbers
             foreach (var episode in episodesInSeriesFolder)
