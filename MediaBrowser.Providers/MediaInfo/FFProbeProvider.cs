@@ -50,10 +50,9 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly SubtitleResolver _subtitleResolver;
-
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
-
         private readonly NamingOptions _namingOptions;
+        private readonly AudioResolver _audioResolver;
 
         public FFProbeProvider(
             ILogger<FFProbeProvider> logger,
@@ -83,6 +82,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _namingOptions = namingOptions;
 
             _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
+            _audioResolver = new AudioResolver(_localization, _mediaEncoder, namingOptions);
         }
 
         public string Name => "ffprobe";
@@ -102,7 +102,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     var file = directoryService.GetFile(path);
                     if (file != null && file.LastWriteTimeUtc != item.DateModified)
                     {
-                        _logger.LogDebug("Refreshing {0} due to date modified timestamp change.", path);
+                        _logger.LogDebug("Refreshing {ItemPath} due to date modified timestamp change.", path);
                         return true;
                     }
                 }
@@ -112,16 +112,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 && !video.SubtitleFiles.SequenceEqual(
                         _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
             {
-                _logger.LogDebug("Refreshing {0} due to external subtitles change.", item.Path);
+                _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
                 return true;
             }
 
-            AudioResolver audioResolver = new AudioResolver();
             if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
                 && !video.AudioFiles.SequenceEqual(
-                        audioResolver.GetExternalAudioFiles(video, directoryService, _namingOptions, false), StringComparer.Ordinal))
+                        _audioResolver.GetExternalAudioFiles(video, directoryService, false), StringComparer.Ordinal))
             {
-                _logger.LogDebug("Refreshing {0} due to external audio change.", item.Path);
+                _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                 return true;
             }
 
@@ -203,7 +202,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 _subtitleManager,
                 _chapterManager,
                 _libraryManager,
-                _namingOptions);
+                _audioResolver);
 
             return prober.ProbeVideo(item, options, cancellationToken);
         }

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DvdLib.Ifo;
-using Emby.Naming.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
@@ -45,7 +44,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly NamingOptions _namingOptions;
+        private readonly AudioResolver _audioResolver;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly long _dummyChapterDuration = TimeSpan.FromMinutes(5).Ticks;
@@ -62,7 +61,7 @@ namespace MediaBrowser.Providers.MediaInfo
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
             ILibraryManager libraryManager,
-            NamingOptions namingOptions)
+            AudioResolver audioResolver)
         {
             _logger = logger;
             _mediaEncoder = mediaEncoder;
@@ -74,7 +73,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
             _libraryManager = libraryManager;
-            _namingOptions = namingOptions;
+            _audioResolver = audioResolver;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -218,7 +217,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            await AddExternalAudio(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalAudio(video, mediaStreams, options, cancellationToken);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
@@ -593,14 +592,16 @@ namespace MediaBrowser.Providers.MediaInfo
             MetadataRefreshOptions options,
             CancellationToken cancellationToken)
         {
-            var audioResolver = new AudioResolver();
-
             var startIndex = currentStreams.Count == 0 ? 0 : currentStreams.Max(i => i.Index) + 1;
-            var externalAudioStreams = await audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, _namingOptions, false, _localization, _mediaEncoder, cancellationToken);
+            var externalAudioStreams = _audioResolver.GetExternalAudioStreams(video, startIndex, options.DirectoryService, false, cancellationToken);
 
-            video.AudioFiles = externalAudioStreams.Select(i => i.Path).Distinct().ToArray();
+            await foreach (MediaStream externalAudioStream in externalAudioStreams)
+            {
+                currentStreams.Add(externalAudioStream);
+            }
 
-            currentStreams.AddRange(externalAudioStreams);
+            // Select all external audio file paths
+            video.AudioFiles = currentStreams.Where(i => i.Type == MediaStreamType.Audio && i.IsExternal).Select(i => i.Path).Distinct().ToArray();
         }
 
         /// <summary>

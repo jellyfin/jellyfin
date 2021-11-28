@@ -698,8 +698,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null && state.AudioStream.IsExternal)
             {
-                arg.Append(" -i ")
-                    .Append(string.Format(CultureInfo.InvariantCulture, "file:\"{0}\"", state.AudioStream.Path));
+                arg.Append(" -i \"").Append(state.AudioStream.Path).Append("\"");
             }
 
             return arg.ToString();
