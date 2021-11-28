@@ -5,7 +5,7 @@ SHELLDIR=$(dirname "`realpath \"$0\"`")
 FORCE_HW_DECODE=true
 FORCE_HW_ENCODE=true
 
-echo "WRAPPER OLD: " $0 "$@"
+# echo "WRAPPER OLD: " $0 "$@"
 
 skipnext=false
 next_is_input=false
@@ -66,7 +66,7 @@ for arg in "$@"; do
     video_codec=$($SHELLDIR/ffprobe -i "$arg" 2>&1 | sed -nE 's/^\s*Stream .* Video: ([[:alnum:]]*).*$/\1/p')
     # get pixel format
     pix_format=$($SHELLDIR/ffprobe -v error -hide_banner -of default=noprint_wrappers=0 -print_format flat  -select_streams v:0 -show_entries stream=pix_fmt "$arg" 2>&1 | sed 's/streams\.stream\.0\.pix_fmt=//g' | sed 's/"//g')
-    echo "pix: " $pix_format
+    # echo "pix: " $pix_format
     if [ "$pix_format" == "yuv420p" ] || [ "$pix_format" == "yuvj420p" ]; then
         newargs_prepend=("-c:v" "${video_codec}_nvmpi")
     else
@@ -87,6 +87,6 @@ if $FORCE_HW_ENCODE && ! $crf; then
   newargs+=("-rc:v" "vbr")
 fi
 
-echo "WRAPPER NEW: " $SHELLDIR/ffmpeg "${newargs_prepend[@]}" "${newargs_in[@]}" "${newargs_out[@]}"
+# echo "WRAPPER NEW: " $SHELLDIR/ffmpeg "${newargs_prepend[@]}" "${newargs_in[@]}" "${newargs_out[@]}"
 
 exec $SHELLDIR/ffmpeg "${newargs_prepend[@]}" "${newargs_in[@]}" "${newargs_out[@]}"
