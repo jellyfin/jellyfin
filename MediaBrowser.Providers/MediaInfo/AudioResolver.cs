@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Audio;
@@ -40,8 +41,11 @@ namespace MediaBrowser.Providers.MediaInfo
             int startIndex,
             IDirectoryService directoryService,
             bool clearCache,
-            CancellationToken cancellationToken)
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!video.IsFileProtocol)
             {
                 yield break;
