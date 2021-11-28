@@ -25,6 +25,11 @@ namespace MediaBrowser.Model.Dlna
         /// <summary>
         /// Serve the subtitles as a separate HLS stream.
         /// </summary>
-        Hls = 3
+        Hls = 3,
+
+        /// <summary>
+        /// Drop the subtitle.
+        /// </summary>
+        Drop = 4
     }
 }
