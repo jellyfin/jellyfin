@@ -78,7 +78,7 @@ namespace Emby.Server.Implementations.Library.Validators
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error validating IBN entry {person}", person);
+                    _logger.LogError(ex, "Error validating IBN entry {Person}", person);
                 }
 
                 // Update progress

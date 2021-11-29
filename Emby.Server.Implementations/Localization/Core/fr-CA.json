@@ -118,5 +118,7 @@
     "TaskCleanActivityLogDescription": "Éfface les entrées du journal plus anciennes que l'âge configuré.",
     "TaskCleanActivityLog": "Nettoyer le journal d'activité",
     "Undefined": "Indéfini",
-    "Forced": "Forcé"
+    "Forced": "Forcé",
+    "TaskOptimizeDatabaseDescription": "Compacte la base de données et tronque l'espace libre. Lancer cette tâche après avoir scanné la bibliothèque ou faire d'autres changements impliquant des modifications de la base peuvent ameliorer les performances.",
+    "TaskOptimizeDatabase": "Optimiser la base de données"
 }

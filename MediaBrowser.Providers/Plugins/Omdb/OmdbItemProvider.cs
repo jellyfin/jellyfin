@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CS1591, SA1300
 
 using System;
 using System.Collections.Generic;
@@ -6,12 +8,11 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
-using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Json.Converters;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -30,13 +31,10 @@ namespace MediaBrowser.Providers.Plugins.Omdb
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryManager _libraryManager;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _configurationManager;
-        private readonly IApplicationHost _appHost;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly OmdbProvider _omdbProvider;
 
         public OmdbItemProvider(
-            IApplicationHost appHost,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
@@ -44,9 +42,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         {
             _httpClientFactory = httpClientFactory;
             _libraryManager = libraryManager;
-            _fileSystem = fileSystem;
-            _configurationManager = configurationManager;
-            _appHost = appHost;
+            _omdbProvider = new OmdbProvider(_httpClientFactory, fileSystem, configurationManager);
 
             _jsonOptions = new JsonSerializerOptions(JsonDefaults.Options);
             _jsonOptions.Converters.Add(new JsonOmdbNotAvailableStringConverter());
@@ -58,185 +54,166 @@ namespace MediaBrowser.Providers.Plugins.Omdb
         // After primary option
         public int Order => 2;
 
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
+        {
+            return GetSearchResultsInternal(searchInfo, true, cancellationToken);
+        }
+
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            return GetSearchResults(searchInfo, "series", cancellationToken);
+            return GetSearchResultsInternal(searchInfo, true, cancellationToken);
         }
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(MovieInfo searchInfo, CancellationToken cancellationToken)
         {
-            return GetSearchResults(searchInfo, "movie", cancellationToken);
+            return GetSearchResultsInternal(searchInfo, true, cancellationToken);
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(ItemLookupInfo searchInfo, string type, CancellationToken cancellationToken)
+        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            return GetSearchResultsInternal(searchInfo, type, true, cancellationToken);
+            return GetSearchResultsInternal(searchInfo, true, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, string type, bool isSearch, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetSearchResultsInternal(ItemLookupInfo searchInfo, bool isSearch, CancellationToken cancellationToken)
         {
+            var type = searchInfo switch
+            {
+                EpisodeInfo => "episode",
+                SeriesInfo => "series",
+                _ => "movie"
+            };
+
+            // This is a bit hacky?
             var episodeSearchInfo = searchInfo as EpisodeInfo;
+            var indexNumberEnd = episodeSearchInfo?.IndexNumberEnd;
 
             var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
 
-            var urlQuery = "plot=full&r=json";
-            if (type == "episode" && episodeSearchInfo != null)
+            var urlQuery = new StringBuilder("plot=full&r=json");
+            if (episodeSearchInfo != null)
             {
                 episodeSearchInfo.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out imdbId);
-            }
-
-            var name = searchInfo.Name;
-            var year = searchInfo.Year;
-
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                var parsedName = _libraryManager.ParseName(name);
-                var yearInName = parsedName.Year;
-                name = parsedName.Name;
-                year ??= yearInName;
-            }
-
-            if (string.IsNullOrWhiteSpace(imdbId))
-            {
-                if (year.HasValue)
-                {
-                    urlQuery += "&y=" + year.Value.ToString(CultureInfo.InvariantCulture);
-                }
-
-                // &s means search and returns a list of results as opposed to t
-                if (isSearch)
-                {
-                    urlQuery += "&s=" + WebUtility.UrlEncode(name);
-                }
-                else
-                {
-                    urlQuery += "&t=" + WebUtility.UrlEncode(name);
-                }
-
-                urlQuery += "&type=" + type;
-            }
-            else
-            {
-                urlQuery += "&i=" + imdbId;
-                isSearch = false;
-            }
-
-            if (type == "episode")
-            {
                 if (searchInfo.IndexNumber.HasValue)
                 {
-                    urlQuery += string.Format(CultureInfo.InvariantCulture, "&Episode={0}", searchInfo.IndexNumber);
+                    urlQuery.Append("&Episode=").Append(searchInfo.IndexNumber.Value);
                 }
 
                 if (searchInfo.ParentIndexNumber.HasValue)
                 {
-                    urlQuery += string.Format(CultureInfo.InvariantCulture, "&Season={0}", searchInfo.ParentIndexNumber);
+                    urlQuery.Append("&Season=").Append(searchInfo.ParentIndexNumber.Value);
                 }
             }
 
-            var url = OmdbProvider.GetOmdbUrl(urlQuery);
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                var name = searchInfo.Name;
+                var year = searchInfo.Year;
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    var parsedName = _libraryManager.ParseName(name);
+                    var yearInName = parsedName.Year;
+                    name = parsedName.Name;
+                    year ??= yearInName;
+                }
 
-            using var response = await OmdbProvider.GetOmdbResponse(_httpClientFactory.CreateClient(NamedClient.Default), url, cancellationToken).ConfigureAwait(false);
+                if (year.HasValue)
+                {
+                    urlQuery.Append("&y=").Append(year);
+                }
+
+                // &s means search and returns a list of results as opposed to t
+                urlQuery.Append(isSearch ? "&s=" : "&t=");
+                urlQuery.Append(WebUtility.UrlEncode(name));
+                urlQuery.Append("&type=")
+                    .Append(type);
+            }
+            else
+            {
+                urlQuery.Append("&i=")
+                    .Append(imdbId);
+                isSearch = false;
+            }
+
+            var url = OmdbProvider.GetOmdbUrl(urlQuery.ToString());
+
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var resultList = new List<SearchResult>();
 
             if (isSearch)
             {
                 var searchResultList = await JsonSerializer.DeserializeAsync<SearchResultList>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (searchResultList != null && searchResultList.Search != null)
+                if (searchResultList?.Search != null)
                 {
-                    resultList.AddRange(searchResultList.Search);
+                    var resultCount = searchResultList.Search.Count;
+                    var result = new RemoteSearchResult[resultCount];
+                    for (var i = 0; i < resultCount; i++)
+                    {
+                        result[i] = ResultToMetadataResult(searchResultList.Search[i], searchInfo, indexNumberEnd);
+                    }
+
+                    return result;
                 }
             }
             else
             {
                 var result = await JsonSerializer.DeserializeAsync<SearchResult>(stream, _jsonOptions, cancellationToken).ConfigureAwait(false);
-                if (string.Equals(result.Response, "true", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(result?.Response, "true", StringComparison.OrdinalIgnoreCase))
                 {
-                    resultList.Add(result);
+                    return new[] { ResultToMetadataResult(result, searchInfo, indexNumberEnd) };
                 }
             }
 
-            return resultList.Select(result =>
-            {
-                var item = new RemoteSearchResult
-                {
-                    IndexNumber = searchInfo.IndexNumber,
-                    Name = result.Title,
-                    ParentIndexNumber = searchInfo.ParentIndexNumber,
-                    SearchProviderName = Name
-                };
-
-                if (episodeSearchInfo != null && episodeSearchInfo.IndexNumberEnd.HasValue)
-                {
-                    item.IndexNumberEnd = episodeSearchInfo.IndexNumberEnd.Value;
-                }
-
-                item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
-
-                if (result.Year.Length > 0
-                    && int.TryParse(result.Year.AsSpan().Slice(0, Math.Min(result.Year.Length, 4)), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedYear))
-                {
-                    item.ProductionYear = parsedYear;
-                }
-
-                if (!string.IsNullOrEmpty(result.Released)
-                    && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var released))
-                {
-                    item.PremiereDate = released;
-                }
-
-                if (!string.IsNullOrWhiteSpace(result.Poster) && !string.Equals(result.Poster, "N/A", StringComparison.OrdinalIgnoreCase))
-                {
-                    item.ImageUrl = result.Poster;
-                }
-
-                return item;
-            });
+            return Enumerable.Empty<RemoteSearchResult>();
         }
 
         public Task<MetadataResult<Trailer>> GetMetadata(TrailerInfo info, CancellationToken cancellationToken)
         {
-            return GetMovieResult<Trailer>(info, cancellationToken);
+            return GetResult<Trailer>(info, cancellationToken);
         }
 
-        public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(TrailerInfo searchInfo, CancellationToken cancellationToken)
+        public Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
         {
-            return GetSearchResults(searchInfo, "movie", cancellationToken);
-        }
-
-        public async Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
-        {
-            var result = new MetadataResult<Series>
-            {
-                Item = new Series(),
-                QueriedById = true
-            };
-
-            var imdbId = info.GetProviderId(MetadataProvider.Imdb);
-            if (string.IsNullOrWhiteSpace(imdbId))
-            {
-                imdbId = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
-                result.QueriedById = false;
-            }
-
-            if (!string.IsNullOrEmpty(imdbId))
-            {
-                result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
-                result.HasMetadata = true;
-
-                await new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-            }
-
-            return result;
+            return GetResult<Series>(info, cancellationToken);
         }
 
         public Task<MetadataResult<Movie>> GetMetadata(MovieInfo info, CancellationToken cancellationToken)
         {
-            return GetMovieResult<Movie>(info, cancellationToken);
+            return GetResult<Movie>(info, cancellationToken);
         }
 
-        private async Task<MetadataResult<T>> GetMovieResult<T>(ItemLookupInfo info, CancellationToken cancellationToken)
+        private RemoteSearchResult ResultToMetadataResult(SearchResult result, ItemLookupInfo searchInfo, int? indexNumberEnd)
+        {
+            var item = new RemoteSearchResult
+            {
+                IndexNumber = searchInfo.IndexNumber,
+                Name = result.Title,
+                ParentIndexNumber = searchInfo.ParentIndexNumber,
+                SearchProviderName = Name,
+                IndexNumberEnd = indexNumberEnd
+            };
+
+            item.SetProviderId(MetadataProvider.Imdb, result.imdbID);
+
+            if (OmdbProvider.TryParseYear(result.Year, out var parsedYear))
+            {
+                item.ProductionYear = parsedYear;
+            }
+
+            if (!string.IsNullOrEmpty(result.Released)
+                && DateTime.TryParse(result.Released, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out var released))
+            {
+                item.PremiereDate = released;
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.Poster))
+            {
+                item.ImageUrl = result.Poster;
+            }
+
+            return item;
+        }
+
+        private async Task<MetadataResult<T>> GetResult<T>(ItemLookupInfo info, CancellationToken cancellationToken)
             where T : BaseItem, new()
         {
             var result = new MetadataResult<T>
@@ -248,7 +225,7 @@ namespace MediaBrowser.Providers.Plugins.Omdb
             var imdbId = info.GetProviderId(MetadataProvider.Imdb);
             if (string.IsNullOrWhiteSpace(imdbId))
             {
-                imdbId = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
+                imdbId = await GetImdbId(info, cancellationToken).ConfigureAwait(false);
                 result.QueriedById = false;
             }
 
@@ -257,22 +234,15 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 result.Item.SetProviderId(MetadataProvider.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager).Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
+                await _omdbProvider.Fetch(result, imdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
         }
 
-        private async Task<string> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
+        private async Task<string> GetImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
         {
-            var results = await GetSearchResultsInternal(info, "movie", false, cancellationToken).ConfigureAwait(false);
-            var first = results.FirstOrDefault();
-            return first?.GetProviderId(MetadataProvider.Imdb);
-        }
-
-        private async Task<string> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
-        {
-            var results = await GetSearchResultsInternal(info, "series", false, cancellationToken).ConfigureAwait(false);
+            var results = await GetSearchResultsInternal(info, false, cancellationToken).ConfigureAwait(false);
             var first = results.FirstOrDefault();
             return first?.GetProviderId(MetadataProvider.Imdb);
         }

@@ -1,11 +1,13 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Diacritics.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Extensions;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 
@@ -55,7 +57,7 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            if (replaceData || !target.CommunityRating.HasValue || (source.CommunityRating.HasValue && string.Equals(sourceResult.Provider, "The Open Movie Database", StringComparison.OrdinalIgnoreCase)))
+            if (replaceData || !target.CommunityRating.HasValue)
             {
                 target.CommunityRating = source.CommunityRating;
             }
@@ -135,7 +137,7 @@ namespace MediaBrowser.Providers.Manager
             {
                 if (replaceData || !target.RunTimeTicks.HasValue)
                 {
-                    if (!(target is Audio) && !(target is Video))
+                    if (target is not Audio && target is not Video)
                     {
                         target.RunTimeTicks = source.RunTimeTicks;
                     }

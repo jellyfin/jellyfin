@@ -3,7 +3,7 @@
     /// <summary>
     /// Produces file attribute of "image/*".
     /// </summary>
-    public class AcceptsImageFileAttribute : AcceptsFileAttribute
+    public sealed class AcceptsImageFileAttribute : AcceptsFileAttribute
     {
         private const string ContentType = "image/*";
 

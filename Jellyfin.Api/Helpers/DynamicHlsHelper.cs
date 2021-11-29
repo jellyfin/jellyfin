@@ -18,11 +18,9 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -106,6 +104,7 @@ namespace Jellyfin.Api.Helpers
             bool enableAdaptiveBitrateStreaming)
         {
             var isHeadRequest = _httpContextAccessor.HttpContext?.Request.Method == WebRequestMethods.Http.Head;
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
             return await GetMasterPlaylistInternal(
                 streamingRequest,

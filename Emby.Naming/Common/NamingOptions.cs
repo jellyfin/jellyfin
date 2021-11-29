@@ -1,3 +1,5 @@
+#pragma warning disable CA1819
+
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -137,8 +139,11 @@ namespace Emby.Naming.Common
 
             CleanStrings = new[]
             {
-                @"[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
-                @"(\[.*\])"
+                @"^\s*(?<cleaned>.+?)[ _\,\.\(\)\[\]\-](3d|sbs|tab|hsbs|htab|mvc|HDR|HDC|UHD|UltraHD|4k|ac3|dts|custom|dc|divx|divx5|dsr|dsrip|dutch|dvd|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|cd[1-9]|r3|r5|bd5|bd|se|svcd|swedish|german|read.nfo|nfofix|unrated|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|2160p|hrhd|hrhdtv|hddvd|bluray|blu-ray|x264|x265|h264|h265|xvid|xvidvd|xxx|www.www|AAC|DTS|\[.*\])([ _\,\.\(\)\[\]\-]|$)",
+                @"^(?<cleaned>.+?)(\[.*\])",
+                @"^\s*(?<cleaned>.+?)\WE[0-9]+(-|~)E?[0-9]+(\W|$)",
+                @"^\s*\[[^\]]+\](?!\.\w+$)\s*(?<cleaned>.+)",
+                @"^\s*(?<cleaned>.+?)\s+-\s+[0-9]+\s*$"
             };
 
             SubtitleFileExtensions = new[]
@@ -250,6 +255,8 @@ namespace Emby.Naming.Common
                 },
                 // <!-- foo.ep01, foo.EP_01 -->
                 new EpisodeExpression(@"[\._ -]()[Ee][Pp]_?([0-9]+)([^\\/]*)$"),
+                // <!-- foo.E01., foo.e01. -->
+                new EpisodeExpression(@"[^\\/]*?()\.?[Ee]([0-9]+)\.([^\\/]*)$"),
                 new EpisodeExpression("(?<year>[0-9]{4})[\\.-](?<month>[0-9]{2})[\\.-](?<day>[0-9]{2})", true)
                 {
                     DateTimeFormats = new[]
@@ -277,14 +284,14 @@ namespace Emby.Naming.Common
                     IsNamed = true
                 },
 
-                new EpisodeExpression("[\\\\/\\._ \\[\\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\\.[1-9])(?![0-9]))?)([^\\\\/]*)$")
+                new EpisodeExpression(@"[\\\/\._ \[\(-]([0-9]+)x([0-9]+(?:(?:[a-i]|\.[1-9])(?![0-9]))?)([^\\\/]*)$")
                 {
                     SupportsAbsoluteEpisodeNumbers = true
                 },
 
                 // Not a Kodi rule as well, but below rule also causes false positives for triple-digit episode names
                 // [bar] Foo - 1 [baz] special case of below expression to prevent false positives with digits in the series name
-                new EpisodeExpression(@".*?(\[.*?\])+.*?(?<seriesname>[\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
+                new EpisodeExpression(@".*[\\\/]?.*?(\[.*?\])+.*?(?<seriesname>[-\w\s]+?)[\s_]*-[\s_]*(?<epnumber>[0-9]+).*$")
                 {
                     IsNamed = true
                 },
@@ -304,6 +311,12 @@ namespace Emby.Naming.Common
                 },
 
                 // *** End Kodi Standard Naming
+
+                // "Episode 16", "Episode 16 - Title"
+                new EpisodeExpression(@"[Ee]pisode (?<epnumber>[0-9]+)(-(?<endingepnumber>[0-9]+))?[^\\\/]*$")
+                {
+                    IsNamed = true
+                },
 
                 new EpisodeExpression(@".*(\\|\/)[sS]?(?<seasonnumber>[0-9]+)[xX](?<epnumber>[0-9]+)[^\\\/]*$")
                 {
@@ -362,12 +375,20 @@ namespace Emby.Naming.Common
                     IsOptimistic = true,
                     IsNamed = true
                 },
-                // "Episode 16", "Episode 16 - Title"
-                new EpisodeExpression(@".*[\\\/][^\\\/]* (?<epnumber>[0-9]{1,3})(-(?<endingepnumber>[0-9]{2,3}))*[^\\\/]*$")
+
+                // Series and season only expression
+                // "the show/season 1", "the show/s01"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)\/[Ss](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
                 {
-                    IsOptimistic = true,
                     IsNamed = true
-                }
+                },
+
+                // Series and season only expression
+                // "the show S01", "the show season 1"
+                new EpisodeExpression(@"(.*(\\|\/))*(?<seriesname>.+)[\. _\-]+[sS](eason)?[\. _\-]*(?<seasonnumber>[0-9]+)")
+                {
+                    IsNamed = true
+                },
             };
 
             EpisodeWithoutSeasonExpressions = new[]
@@ -476,6 +497,12 @@ namespace Emby.Naming.Common
                     ExtraType.DeletedScene,
                     ExtraRuleType.Suffix,
                     "-deleted",
+                    MediaType.Video),
+
+                new ExtraRule(
+                    ExtraType.DeletedScene,
+                    ExtraRuleType.Suffix,
+                    "-deletedscene",
                     MediaType.Video),
 
                 new ExtraRule(

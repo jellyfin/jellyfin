@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,8 +10,16 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class ProgramInfo
     {
+        public ProgramInfo()
+        {
+            Genres = new List<string>();
+
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         /// <summary>
-        /// Id of the program.
+        /// Gets or sets the id of the program.
         /// </summary>
         public string Id { get; set; }
 
@@ -20,7 +30,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelId { get; set; }
 
         /// <summary>
-        /// Name of the program.
+        /// Gets or sets the name of the program.
         /// </summary>
         public string Name { get; set; }
 
@@ -43,17 +53,17 @@ namespace MediaBrowser.Controller.LiveTv
         public string ShortOverview { get; set; }
 
         /// <summary>
-        /// The start date of the program, in UTC.
+        /// Gets or sets the start date of the program, in UTC.
         /// </summary>
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// The end date of the program, in UTC.
+        /// Gets or sets the end date of the program, in UTC.
         /// </summary>
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// Genre of the program.
+        /// Gets or sets the genre of the program.
         /// </summary>
         public List<string> Genres { get; set; }
 
@@ -69,6 +79,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>true</c> if this instance is hd; otherwise, <c>false</c>.</value>
         public bool? IsHD { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is 3d.
+        /// </summary>
         public bool? Is3D { get; set; }
 
         /// <summary>
@@ -98,13 +111,13 @@ namespace MediaBrowser.Controller.LiveTv
         public string EpisodeTitle { get; set; }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system.
+        /// Gets or sets the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
 
         /// <summary>
-        /// Supply the image url if it can be downloaded.
+        /// Gets or sets the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }
@@ -210,13 +223,5 @@ namespace MediaBrowser.Controller.LiveTv
         public Dictionary<string, string> ProviderIds { get; set; }
 
         public Dictionary<string, string> SeriesProviderIds { get; set; }
-
-        public ProgramInfo()
-        {
-            Genres = new List<string>();
-
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            SeriesProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        }
     }
 }

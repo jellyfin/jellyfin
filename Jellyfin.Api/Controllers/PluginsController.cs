@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.PluginDtos;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
 using MediaBrowser.Model.Net;
@@ -28,7 +28,6 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IInstallationManager _installationManager;
         private readonly IPluginManager _pluginManager;
-        private readonly IConfigurationManager _config;
         private readonly JsonSerializerOptions _serializerOptions;
 
         /// <summary>
@@ -36,16 +35,13 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="installationManager">Instance of the <see cref="IInstallationManager"/> interface.</param>
         /// <param name="pluginManager">Instance of the <see cref="IPluginManager"/> interface.</param>
-        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         public PluginsController(
             IInstallationManager installationManager,
-            IPluginManager pluginManager,
-            IConfigurationManager config)
+            IPluginManager pluginManager)
         {
             _installationManager = installationManager;
             _pluginManager = pluginManager;
             _serializerOptions = JsonDefaults.Options;
-            _config = config;
         }
 
         /// <summary>
@@ -207,12 +203,7 @@ namespace Jellyfin.Api.Controllers
             var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
 
             // Select the un-instanced one first.
-            var plugin = plugins.FirstOrDefault(p => p.Instance == null);
-            if (plugin == null)
-            {
-                // Then by the status.
-                plugin = plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
-            }
+            var plugin = plugins.FirstOrDefault(p => p.Instance == null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
 
             if (plugin != null)
             {

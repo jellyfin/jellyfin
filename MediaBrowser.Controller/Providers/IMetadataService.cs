@@ -11,6 +11,12 @@ namespace MediaBrowser.Controller.Providers
     public interface IMetadataService
     {
         /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>The order.</value>
+        int Order { get; }
+
+        /// <summary>
         /// Determines whether this instance can refresh the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -27,11 +33,5 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task<ItemUpdateType> RefreshMetadata(BaseItem item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        /// <value>The order.</value>
-        int Order { get; }
     }
 }

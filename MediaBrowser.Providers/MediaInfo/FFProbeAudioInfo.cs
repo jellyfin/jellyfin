@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -109,6 +111,11 @@ namespace MediaBrowser.Providers.MediaInfo
             if (!string.IsNullOrEmpty(data.Name))
             {
                 audio.Name = data.Name;
+            }
+
+            if (!string.IsNullOrEmpty(data.ForcedSortName))
+            {
+                audio.ForcedSortName = data.ForcedSortName;
             }
 
             if (audio.SupportsPeople && !audio.LockedFields.Contains(MetadataField.Cast))

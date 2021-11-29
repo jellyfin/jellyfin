@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -47,13 +49,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
-                var fileExtension = Path.GetExtension(f.FullName) ??
-                                    string.Empty;
+                var fileExtension = Path.GetExtension(f.FullName)
+                    ?? string.Empty;
 
                 return _validExtensions.Contains(
                     fileExtension,
-                                                StringComparer
-                                                    .OrdinalIgnoreCase);
+                    StringComparer.OrdinalIgnoreCase);
             }).ToList();
 
             // Don't return a Book if there is more (or less) than one document in the directory

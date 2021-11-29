@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -21,7 +23,6 @@ namespace Emby.Server.Implementations.MediaEncoder
 {
     public class EncodingManager : IEncodingManager
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<EncodingManager> _logger;
         private readonly IMediaEncoder _encoder;
@@ -191,7 +192,7 @@ namespace Emby.Server.Implementations.MediaEncoder
 
         private string GetChapterImagePath(Video video, long chapterPositionTicks)
         {
-            var filename = video.DateModified.Ticks.ToString(_usCulture) + "_" + chapterPositionTicks.ToString(_usCulture) + ".jpg";
+            var filename = video.DateModified.Ticks.ToString(CultureInfo.InvariantCulture) + "_" + chapterPositionTicks.ToString(CultureInfo.InvariantCulture) + ".jpg";
 
             return Path.Combine(GetChapterImagesPath(video), filename);
         }

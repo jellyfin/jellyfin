@@ -15,7 +15,7 @@
     "Favorites": "Favoritter",
     "Folders": "Mapper",
     "Genres": "Genrer",
-    "HeaderAlbumArtists": "Albumkunstnere",
+    "HeaderAlbumArtists": "Kunstnerens album",
     "HeaderContinueWatching": "Fortsæt Afspilning",
     "HeaderFavoriteAlbums": "Favoritalbummer",
     "HeaderFavoriteArtists": "Favoritkunstnere",
@@ -39,7 +39,7 @@
     "MixedContent": "Blandet indhold",
     "Movies": "Film",
     "Music": "Musik",
-    "MusicVideos": "Musikvideoer",
+    "MusicVideos": "Musik videoer",
     "NameInstallFailed": "{0} installationen mislykkedes",
     "NameSeasonNumber": "Sæson {0}",
     "NameSeasonUnknown": "Ukendt Sæson",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Ryd Aktivitetslog",
     "Undefined": "Udefineret",
     "Forced": "Tvunget",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskOptimizeDatabaseDescription": "Kompakter database og forkorter fri plads. Ved at køre denne proces efter at scanne biblioteket eller efter at ændre noget som kunne have indflydelse på databasen, kan forbedre ydeevne.",
+    "TaskOptimizeDatabase": "Optimér database"
 }

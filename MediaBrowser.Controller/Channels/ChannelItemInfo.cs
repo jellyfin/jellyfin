@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1002, CA2227, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,19 @@ namespace MediaBrowser.Controller.Channels
 {
     public class ChannelItemInfo : IHasProviderIds
     {
+        public ChannelItemInfo()
+        {
+            MediaSources = new List<MediaSourceInfo>();
+            TrailerTypes = new List<TrailerType>();
+            Genres = new List<string>();
+            Studios = new List<string>();
+            People = new List<PersonInfo>();
+            Tags = new List<string>();
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Artists = new List<string>();
+            AlbumArtists = new List<string>();
+        }
+
         public string Name { get; set; }
 
         public string SeriesName { get; set; }
@@ -78,18 +93,5 @@ namespace MediaBrowser.Controller.Channels
         public bool IsLiveStream { get; set; }
 
         public string Etag { get; set; }
-
-        public ChannelItemInfo()
-        {
-            MediaSources = new List<MediaSourceInfo>();
-            TrailerTypes = new List<TrailerType>();
-            Genres = new List<string>();
-            Studios = new List<string>();
-            People = new List<PersonInfo>();
-            Tags = new List<string>();
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            Artists = new List<string>();
-            AlbumArtists = new List<string>();
-        }
     }
 }

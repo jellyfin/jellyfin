@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,8 +10,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
@@ -101,12 +99,12 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> CompletedInstallations => _completedInstallationsInternal;
 
         /// <inheritdoc />
-        public async Task<IList<PackageInfo>> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default)
+        public async Task<PackageInfo[]> GetPackages(string manifestName, string manifest, bool filterIncompatible, CancellationToken cancellationToken = default)
         {
             try
             {
-                List<PackageInfo>? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
-                        .GetFromJsonAsync<List<PackageInfo>>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
+                PackageInfo[]? packages = await _httpClientFactory.CreateClient(NamedClient.Default)
+                        .GetFromJsonAsync<PackageInfo[]>(new Uri(manifest), _jsonSerializerOptions, cancellationToken).ConfigureAwait(false);
 
                 if (packages == null)
                 {
@@ -179,20 +177,14 @@ namespace Emby.Server.Implementations.Updates
                     // Where repositories have the same content, the details from the first is taken.
                     foreach (var package in await GetPackages(repository.Name ?? "Unnamed Repo", repository.Url, true, cancellationToken).ConfigureAwait(true))
                     {
-                        if (!Guid.TryParse(package.Id, out var packageGuid))
-                        {
-                            // Package doesn't have a valid GUID, skip.
-                            continue;
-                        }
-
-                        var existing = FilterPackages(result, package.Name, packageGuid).FirstOrDefault();
+                        var existing = FilterPackages(result, package.Name, package.Id).FirstOrDefault();
 
                         // Remove invalid versions from the valid package.
                         for (var i = package.Versions.Count - 1; i >= 0; i--)
                         {
                             var version = package.Versions[i];
 
-                            var plugin = _pluginManager.GetPlugin(packageGuid, version.VersionNumber);
+                            var plugin = _pluginManager.GetPlugin(package.Id, version.VersionNumber);
                             if (plugin != null)
                             {
                                 await _pluginManager.GenerateManifest(package, version.VersionNumber, plugin.Path, plugin.Manifest.Status).ConfigureAwait(false);
@@ -231,7 +223,7 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<PackageInfo> FilterPackages(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? id = default,
+            Guid id = default,
             Version? specificVersion = null)
         {
             if (name != null)
@@ -239,9 +231,9 @@ namespace Emby.Server.Implementations.Updates
                 availablePackages = availablePackages.Where(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (id != Guid.Empty)
+            if (id != default)
             {
-                availablePackages = availablePackages.Where(x => Guid.Parse(x.Id) == id);
+                availablePackages = availablePackages.Where(x => x.Id == id);
             }
 
             if (specificVersion != null)
@@ -256,7 +248,7 @@ namespace Emby.Server.Implementations.Updates
         public IEnumerable<InstallationInfo> GetCompatibleVersions(
             IEnumerable<PackageInfo> availablePackages,
             string? name = null,
-            Guid? id = default,
+            Guid id = default,
             Version? minVersion = null,
             Version? specificVersion = null)
         {
@@ -286,7 +278,7 @@ namespace Emby.Server.Implementations.Updates
                 yield return new InstallationInfo
                 {
                     Changelog = v.Changelog,
-                    Id = new Guid(package.Id),
+                    Id = package.Id,
                     Name = package.Name,
                     Version = v.VersionNumber,
                     SourceUrl = v.SourceUrl,
@@ -579,7 +571,7 @@ namespace Emby.Server.Implementations.Updates
                   ?? _pluginManager.Plugins.FirstOrDefault(p => p.Name.Equals(package.Name, StringComparison.OrdinalIgnoreCase) && p.Version.Equals(package.Version));
 
             await PerformPackageInstallation(package, plugin?.Manifest.Status ?? PluginStatus.Active, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation(plugin == null ? "New plugin installed: {PluginName} {PluginVersion}" : "Plugin updated: {PluginName} {PluginVersion}", package.Name, package.Version);
+            _logger.LogInformation("Plugin {Action}: {PluginName} {PluginVersion}", plugin == null ? "installed" : "updated", package.Name, package.Version);
 
             return plugin != null;
         }

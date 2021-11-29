@@ -75,7 +75,7 @@ namespace Jellyfin.Server.Migrations.Routines
         {
             var existingConfigJson = JToken.Parse(File.ReadAllText(oldConfigPath));
             return _defaultConfigHistory
-                .Select(historicalConfigText => JToken.Parse(historicalConfigText))
+                .Select(JToken.Parse)
                 .Any(historicalConfigJson => JToken.DeepEquals(existingConfigJson, historicalConfigJson));
         }
     }

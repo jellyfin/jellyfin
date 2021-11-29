@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Xunit;
 
 namespace Jellyfin.Server.Integration.Tests.Controllers
@@ -40,7 +40,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(MediaTypeNames.Text.Html, response.Content.Headers.ContentType?.MediaType);
             StreamReader reader = new StreamReader(typeof(TestPlugin).Assembly.GetManifestResourceStream("Jellyfin.Server.Integration.Tests.TestPage.html")!);
-            Assert.Equal(await response.Content.ReadAsStringAsync(), reader.ReadToEnd());
+            Assert.Equal(await response.Content.ReadAsStringAsync().ConfigureAwait(false), await reader.ReadToEndAsync().ConfigureAwait(false));
         }
 
         [Fact]

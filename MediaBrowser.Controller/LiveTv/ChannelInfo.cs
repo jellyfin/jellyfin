@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using MediaBrowser.Model.LiveTv;
@@ -22,7 +24,7 @@ namespace MediaBrowser.Controller.LiveTv
         public string Number { get; set; }
 
         /// <summary>
-        /// Get or sets the Id.
+        /// Gets or sets the Id.
         /// </summary>
         /// <value>The id of the channel.</value>
         public string Id { get; set; }
@@ -52,13 +54,13 @@ namespace MediaBrowser.Controller.LiveTv
         public string ChannelGroup { get; set; }
 
         /// <summary>
-        /// Supply the image path if it can be accessed directly from the file system.
+        /// Gets or sets the the image path if it can be accessed directly from the file system.
         /// </summary>
         /// <value>The image path.</value>
         public string ImagePath { get; set; }
 
         /// <summary>
-        /// Supply the image url if it can be downloaded.
+        /// Gets or sets the image url if it can be downloaded.
         /// </summary>
         /// <value>The image URL.</value>
         public string ImageUrl { get; set; }

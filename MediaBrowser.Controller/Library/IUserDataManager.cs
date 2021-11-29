@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1002, CA1707, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -40,29 +42,35 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the user data dto.
         /// </summary>
+        /// <param name="item">Item to use.</param>
+        /// <param name="user">User to use.</param>
+        /// <returns>User data dto.</returns>
         UserItemDataDto GetUserDataDto(BaseItem item, User user);
 
-        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions dto_options);
+        UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options);
 
         /// <summary>
         /// Get all user data for the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <returns>The user item data.</returns>
         List<UserItemData> GetAllUserData(Guid userId);
 
         /// <summary>
         /// Save the all provided user data for the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="userData"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userData">The array of user data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates playstate for an item and returns true or false indicating if it was played to completion.
         /// </summary>
-        bool UpdatePlayState(BaseItem item, UserItemData data, long? positionTicks);
+        /// <param name="item">Item to update.</param>
+        /// <param name="data">Data to update.</param>
+        /// <param name="reportedPositionTicks">New playstate.</param>
+        /// <returns>True if playstate was updated.</returns>
+        bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks);
     }
 }

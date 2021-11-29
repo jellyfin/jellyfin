@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
@@ -17,9 +18,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -83,7 +82,7 @@ namespace Jellyfin.Api.Helpers
                 throw new ResourceNotFoundException(nameof(httpRequest.Path));
             }
 
-            var url = httpRequest.Path.Value.Split('.')[^1];
+            var url = httpRequest.Path.Value.AsSpan().RightPart('.').ToString();
 
             if (string.IsNullOrEmpty(streamingRequest.AudioCodec))
             {
@@ -101,7 +100,7 @@ namespace Jellyfin.Api.Helpers
                 EnableDlnaHeaders = enableDlnaHeaders
             };
 
-            var auth = authorizationContext.GetAuthorizationInfo(httpRequest);
+            var auth = await authorizationContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
             if (!auth.UserId.Equals(Guid.Empty))
             {
                 state.User = userManager.GetUserById(auth.UserId);
@@ -116,14 +115,14 @@ namespace Jellyfin.Api.Helpers
             if (!string.IsNullOrWhiteSpace(streamingRequest.AudioCodec))
             {
                 state.SupportedAudioCodecs = streamingRequest.AudioCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToAudioCodec(i))
+                state.Request.AudioCodec = state.SupportedAudioCodecs.FirstOrDefault(mediaEncoder.CanEncodeToAudioCodec)
                                            ?? state.SupportedAudioCodecs.FirstOrDefault();
             }
 
             if (!string.IsNullOrWhiteSpace(streamingRequest.SubtitleCodec))
             {
                 state.SupportedSubtitleCodecs = streamingRequest.SubtitleCodec.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(i => mediaEncoder.CanEncodeToSubtitleCodec(i))
+                state.Request.SubtitleCodec = state.SupportedSubtitleCodecs.FirstOrDefault(mediaEncoder.CanEncodeToSubtitleCodec)
                                               ?? state.SupportedSubtitleCodecs.FirstOrDefault();
             }
 
@@ -149,7 +148,7 @@ namespace Jellyfin.Api.Helpers
 
                     mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                         ? mediaSources[0]
-                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.InvariantCulture));
+                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
                     if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
                     {
@@ -222,11 +221,7 @@ namespace Jellyfin.Api.Helpers
                     {
                         var resolution = ResolutionNormalizer.Normalize(
                             state.VideoStream?.BitRate,
-                            state.VideoStream?.Width,
-                            state.VideoStream?.Height,
                             state.OutputVideoBitrate.Value,
-                            state.VideoStream?.Codec,
-                            state.OutputVideoCodec,
                             state.VideoRequest.MaxWidth,
                             state.VideoRequest.MaxHeight);
 
@@ -292,16 +287,14 @@ namespace Jellyfin.Api.Helpers
                 }
             }
 
-            if (profile == null)
-            {
-                profile = dlnaManager.GetDefaultProfile();
-            }
+            profile ??= dlnaManager.GetDefaultProfile();
 
             var audioCodec = state.ActualOutputAudioCodec;
 
             if (!state.IsVideoRequest)
             {
-                responseHeaders.Add("contentFeatures.dlna.org", new ContentFeatureBuilder(profile).BuildAudioHeader(
+                responseHeaders.Add("contentFeatures.dlna.org", ContentFeatureBuilder.BuildAudioHeader(
+                    profile,
                     state.OutputContainer,
                     audioCodec,
                     state.OutputAudioBitrate,
@@ -318,7 +311,7 @@ namespace Jellyfin.Api.Helpers
 
                 responseHeaders.Add(
                     "contentFeatures.dlna.org",
-                    new ContentFeatureBuilder(profile).BuildVideoHeader(state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
+                    ContentFeatureBuilder.BuildVideoHeader(profile, state.OutputContainer, videoCodec, audioCodec, state.OutputWidth, state.OutputHeight, state.TargetVideoBitDepth, state.OutputVideoBitrate, state.TargetTimestamp, isStaticallyStreamed, state.RunTimeTicks, state.TargetVideoProfile, state.TargetVideoLevel, state.TargetFramerate, state.TargetPacketLength, state.TranscodeSeekInfo, state.IsTargetAnamorphic, state.IsTargetInterlaced, state.TargetRefFrames, state.TargetVideoStreamCount, state.TargetAudioStreamCount, state.TargetVideoCodecTag, state.IsTargetAVC).FirstOrDefault() ?? string.Empty);
             }
         }
 
@@ -441,7 +434,9 @@ namespace Jellyfin.Api.Helpers
                     return ".ogv";
                 }
 
-                if (string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(videoCodec, "vp8", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vp9", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(videoCodec, "vpx", StringComparison.OrdinalIgnoreCase))
                 {
                     return ".webm";
                 }

@@ -11,12 +11,18 @@ namespace Emby.Server.Implementations.Sorting
     public class AiredEpisodeOrderComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.AiredEpisodeOrder;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             if (x == null)
             {
@@ -26,16 +32,6 @@ namespace Emby.Server.Implementations.Sorting
             if (y == null)
             {
                 throw new ArgumentNullException(nameof(y));
-            }
-
-            if (x.PremiereDate.HasValue && y.PremiereDate.HasValue)
-            {
-                var val = DateTime.Compare(x.PremiereDate.Value, y.PremiereDate.Value);
-
-                if (val != 0)
-                {
-                    // return val;
-                }
             }
 
             var episode1 = x as Episode;
@@ -156,14 +152,14 @@ namespace Emby.Server.Implementations.Sorting
         {
             var xValue = ((x.ParentIndexNumber ?? -1) * 1000) + (x.IndexNumber ?? -1);
             var yValue = ((y.ParentIndexNumber ?? -1) * 1000) + (y.IndexNumber ?? -1);
+            var comparisonResult = xValue.CompareTo(yValue);
+            // If equal, compare premiere dates
+            if (comparisonResult == 0 && x.PremiereDate.HasValue && y.PremiereDate.HasValue)
+            {
+                comparisonResult = DateTime.Compare(x.PremiereDate.Value, y.PremiereDate.Value);
+            }
 
-            return xValue.CompareTo(yValue);
+            return comparisonResult;
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.AiredEpisodeOrder;
     }
 }

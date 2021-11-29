@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -7,7 +9,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Jellyfin.Data.Events;
 using Jellyfin.Networking.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -26,7 +27,6 @@ namespace Emby.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger<ExternalPortForwarding> _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly IDeviceDiscovery _deviceDiscovery;
 
         private readonly ConcurrentDictionary<IPEndPoint, byte> _createdRules = new ConcurrentDictionary<IPEndPoint, byte>();
 
@@ -41,17 +41,14 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <param name="logger">The logger.</param>
         /// <param name="appHost">The application host.</param>
         /// <param name="config">The configuration manager.</param>
-        /// <param name="deviceDiscovery">The device discovery.</param>
         public ExternalPortForwarding(
             ILogger<ExternalPortForwarding> logger,
             IServerApplicationHost appHost,
-            IServerConfigurationManager config,
-            IDeviceDiscovery deviceDiscovery)
+            IServerConfigurationManager config)
         {
             _logger = logger;
             _appHost = appHost;
             _config = config;
-            _deviceDiscovery = deviceDiscovery;
         }
 
         private string GetConfigIdentifier()
@@ -106,8 +103,6 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.StartDiscovery();
 
             _timer = new Timer((_) => _createdRules.Clear(), null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
-
-            _deviceDiscovery.DeviceDiscovered += OnDeviceDiscoveryDeviceDiscovered;
         }
 
         private void Stop()
@@ -118,13 +113,6 @@ namespace Emby.Server.Implementations.EntryPoints
             NatUtility.DeviceFound -= OnNatUtilityDeviceFound;
 
             _timer?.Dispose();
-
-            _deviceDiscovery.DeviceDiscovered -= OnDeviceDiscoveryDeviceDiscovered;
-        }
-
-        private void OnDeviceDiscoveryDeviceDiscovered(object sender, GenericEventArgs<UpnpDeviceInfo> e)
-        {
-            NatUtility.Search(e.Argument.LocalIpAddress, NatProtocol.Upnp);
         }
 
         private async void OnNatUtilityDeviceFound(object sender, DeviceEventArgs e)

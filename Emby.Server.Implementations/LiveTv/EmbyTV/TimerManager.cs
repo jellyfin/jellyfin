@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
         {
         }
 
-        public event EventHandler<GenericEventArgs<TimerInfo>> TimerFired;
+        public event EventHandler<GenericEventArgs<TimerInfo>>? TimerFired;
 
         public void RestartTimers()
         {
@@ -143,9 +143,9 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        private void TimerCallback(object state)
+        private void TimerCallback(object? state)
         {
-            var timerId = (string)state;
+            var timerId = (string?)state ?? throw new ArgumentNullException(nameof(state));
 
             var timer = GetAll().FirstOrDefault(i => string.Equals(i.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (timer != null)
@@ -154,12 +154,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
-        public TimerInfo GetTimer(string id)
+        public TimerInfo? GetTimer(string id)
         {
             return GetAll().FirstOrDefault(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
         }
 
-        public TimerInfo GetTimerByProgramId(string programId)
+        public TimerInfo? GetTimerByProgramId(string programId)
         {
             return GetAll().FirstOrDefault(r => string.Equals(r.ProgramId, programId, StringComparison.OrdinalIgnoreCase));
         }

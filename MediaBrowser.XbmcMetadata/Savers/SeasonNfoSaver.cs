@@ -52,7 +52,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 return false;
             }
 
-            if (!(item is Season))
+            if (item is not Season)
             {
                 return false;
             }

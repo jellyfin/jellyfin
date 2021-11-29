@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -23,8 +25,6 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class UserDataManager : IUserDataManager
     {
-        public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
-
         private readonly ConcurrentDictionary<string, UserItemData> _userData =
             new ConcurrentDictionary<string, UserItemData>(StringComparer.OrdinalIgnoreCase);
 
@@ -41,6 +41,8 @@ namespace Emby.Server.Implementations.Library
             _userManager = userManager;
             _repository = repository;
         }
+
+        public event EventHandler<UserDataSaveEventArgs> UserDataSaved;
 
         public void SaveUserData(Guid userId, BaseItem item, UserItemData userData, UserDataSaveReason reason, CancellationToken cancellationToken)
         {
@@ -88,10 +90,9 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Save the provided user data for the given user.  Batch operation. Does not fire any events or update the cache.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="userData"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <param name="userData">The user item data.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         public void SaveAllUserData(Guid userId, UserItemData[] userData, CancellationToken cancellationToken)
         {
             var user = _userManager.GetUserById(userId);
@@ -102,8 +103,8 @@ namespace Emby.Server.Implementations.Library
         /// <summary>
         /// Retrieve all user data for the given user.
         /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
+        /// <param name="userId">The user id.</param>
+        /// <returns>A <see cref="List{UserItemData}"/> containing all of the user's item data.</returns>
         public List<UserItemData> GetAllUserData(Guid userId)
         {
             var user = _userManager.GetUserById(userId);
@@ -175,6 +176,7 @@ namespace Emby.Server.Implementations.Library
             return dto;
         }
 
+        /// <inheritdoc />
         public UserItemDataDto GetUserDataDto(BaseItem item, BaseItemDto itemDto, User user, DtoOptions options)
         {
             var userData = GetUserData(user, item);
@@ -189,7 +191,7 @@ namespace Emby.Server.Implementations.Library
         /// </summary>
         /// <param name="data">The data.</param>
         /// <returns>DtoUserItemData.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="data"/> is <c>null</c>.</exception>
         private UserItemDataDto GetUserItemDataDto(UserItemData data)
         {
             if (data == null)
@@ -210,6 +212,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
+        /// <inheritdoc />
         public bool UpdatePlayState(BaseItem item, UserItemData data, long? reportedPositionTicks)
         {
             var playedToCompletion = false;
@@ -220,7 +223,7 @@ namespace Emby.Server.Implementations.Library
             var hasRuntime = runtimeTicks > 0;
 
             // If a position has been reported, and if we know the duration
-            if (positionTicks > 0 && hasRuntime && !(item is AudioBook))
+            if (positionTicks > 0 && hasRuntime && item is not AudioBook && item is not Book)
             {
                 var pctIn = decimal.Divide(positionTicks, runtimeTicks) * 100;
 
@@ -239,7 +242,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     // Enforce MinResumeDuration
                     var durationSeconds = TimeSpan.FromTicks(runtimeTicks).TotalSeconds;
-                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds && !(item is Book))
+                    if (durationSeconds < _config.Configuration.MinResumeDurationSeconds)
                     {
                         positionTicks = 0;
                         data.Played = playedToCompletion = true;

@@ -45,6 +45,7 @@ namespace Emby.Server.Implementations.Archiving
                 options.Overwrite = true;
             }
 
+            Directory.CreateDirectory(targetPath);
             reader.WriteAllToDirectory(targetPath, options);
         }
 
@@ -58,6 +59,7 @@ namespace Emby.Server.Implementations.Archiving
                 Overwrite = overwriteExistingFiles
             };
 
+            Directory.CreateDirectory(targetPath);
             reader.WriteAllToDirectory(targetPath, options);
         }
 
@@ -71,6 +73,7 @@ namespace Emby.Server.Implementations.Archiving
                 Overwrite = overwriteExistingFiles
             };
 
+            Directory.CreateDirectory(targetPath);
             reader.WriteAllToDirectory(targetPath, options);
         }
 
@@ -120,6 +123,7 @@ namespace Emby.Server.Implementations.Archiving
                 Overwrite = overwriteExistingFiles
             };
 
+            Directory.CreateDirectory(targetPath);
             reader.WriteAllToDirectory(targetPath, options);
         }
 
@@ -151,6 +155,7 @@ namespace Emby.Server.Implementations.Archiving
                 Overwrite = overwriteExistingFiles
             };
 
+            Directory.CreateDirectory(targetPath);
             reader.WriteAllToDirectory(targetPath, options);
         }
     }

@@ -1,3 +1,5 @@
+#nullable disable
+
 using System.Threading;
 using MediaBrowser.Controller.Entities;
 
@@ -27,7 +29,6 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
         void Save(BaseItem item, CancellationToken cancellationToken);
     }
 }

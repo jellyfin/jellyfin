@@ -455,10 +455,10 @@ namespace Jellyfin.Networking.Manager
                 }
 
                 // No bind address, so return all internal interfaces.
-                return CreateCollection(_internalInterfaces.Where(p => !p.IsLoopback()));
+                return CreateCollection(_internalInterfaces);
             }
 
-            return new Collection<IPObject>(_bindAddresses);
+            return new Collection<IPObject>(_bindAddresses.Where(a => IsInLocalNetwork(a)).ToArray());
         }
 
         /// <inheritdoc/>
@@ -481,7 +481,7 @@ namespace Jellyfin.Networking.Manager
             }
 
             // As private addresses can be redefined by Configuration.LocalNetworkAddresses
-            return _lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address);
+            return address.IsLoopback() || (_lanSubnets.ContainsAddress(address) && !_excludedSubnets.ContainsAddress(address));
         }
 
         /// <inheritdoc/>
@@ -646,16 +646,6 @@ namespace Jellyfin.Networking.Manager
                     address.Tag = index;
                     _interfaceAddresses.AddItem(address, false);
                     _interfaceNames[parts[2]] = Math.Abs(index);
-                }
-
-                if (IsIP4Enabled)
-                {
-                    _interfaceAddresses.AddItem(IPNetAddress.IP4Loopback);
-                }
-
-                if (IsIP6Enabled)
-                {
-                    _interfaceAddresses.AddItem(IPNetAddress.IP6Loopback);
                 }
             }
 
@@ -1037,17 +1027,14 @@ namespace Jellyfin.Networking.Manager
                     // Subnets are the same as the calculated internal interface.
                     _lanSubnets = new Collection<IPObject>();
 
-                    // We must listen on loopback for LiveTV to function regardless of the settings.
                     if (IsIP6Enabled)
                     {
-                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback);
                         _lanSubnets.AddItem(IPNetAddress.Parse("fc00::/7")); // ULA
                         _lanSubnets.AddItem(IPNetAddress.Parse("fe80::/10")); // Site local
                     }
 
                     if (IsIP4Enabled)
                     {
-                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback);
                         _lanSubnets.AddItem(IPNetAddress.Parse("10.0.0.0/8"));
                         _lanSubnets.AddItem(IPNetAddress.Parse("172.16.0.0/12"));
                         _lanSubnets.AddItem(IPNetAddress.Parse("192.168.0.0/16"));
@@ -1055,19 +1042,8 @@ namespace Jellyfin.Networking.Manager
                 }
                 else
                 {
-                    // We must listen on loopback for LiveTV to function regardless of the settings.
-                    if (IsIP6Enabled)
-                    {
-                        _lanSubnets.AddItem(IPNetAddress.IP6Loopback);
-                    }
-
-                    if (IsIP4Enabled)
-                    {
-                        _lanSubnets.AddItem(IPNetAddress.IP4Loopback);
-                    }
-
                     // Internal interfaces must be private, not excluded and part of the LocalNetworkSubnet.
-                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(i => IsInLocalNetwork(i)));
+                    _internalInterfaces = CreateCollection(_interfaceAddresses.Where(IsInLocalNetwork));
                 }
 
                 _logger.LogInformation("Defined LAN addresses : {0}", _lanSubnets.AsString());

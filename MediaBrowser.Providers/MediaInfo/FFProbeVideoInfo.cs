@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1068, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -111,10 +113,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     }
                 }
 
-                if (streamFileNames == null)
-                {
-                    streamFileNames = Array.Empty<string>();
-                }
+                streamFileNames ??= Array.Empty<string>();
 
                 mediaInfoResult = await GetMediaInfo(item, cancellationToken).ConfigureAwait(false);
 
@@ -150,7 +149,8 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         Path = path,
                         Protocol = protocol,
-                        VideoType = item.VideoType
+                        VideoType = item.VideoType,
+                        IsoType = item.IsoType
                     }
                 },
                 cancellationToken);
@@ -394,6 +394,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            if (video is MusicVideo musicVideo)
+            {
+                musicVideo.Album = data.Album;
+                musicVideo.Artists = data.Artists;
+            }
+
             if (data.ProductionYear.HasValue)
             {
                 if (!video.ProductionYear.HasValue || isFullRefresh)
@@ -435,6 +441,11 @@ namespace MediaBrowser.Providers.MediaInfo
                     {
                         video.Name = data.Name;
                     }
+                }
+
+                if (!string.IsNullOrWhiteSpace(data.ForcedSortName))
+                {
+                    video.ForcedSortName = data.ForcedSortName;
                 }
             }
 
@@ -548,6 +559,7 @@ namespace MediaBrowser.Providers.MediaInfo
                         subtitleDownloadLanguages,
                         libraryOptions.DisabledSubtitleFetchers,
                         libraryOptions.SubtitleFetcherOrder,
+                        true,
                         cancellationToken).ConfigureAwait(false);
 
                 // Rescan

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -11,7 +13,7 @@ using MediaBrowser.Model.IO;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
-    public class SpecialFolderResolver : FolderResolver<Folder>
+    public class SpecialFolderResolver : GenericFolderResolver<Folder>
     {
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationPaths _appPaths;
@@ -65,7 +67,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return args.FileSystemChildren
                 .Where(i =>
                 {
-
                     try
                     {
                         return !i.IsDirectory &&

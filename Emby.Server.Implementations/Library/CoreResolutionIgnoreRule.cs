@@ -1,8 +1,9 @@
 using System;
 using System.IO;
+using Emby.Naming.Audio;
+using Emby.Naming.Common;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.IO;
 
@@ -13,17 +14,17 @@ namespace Emby.Server.Implementations.Library
     /// </summary>
     public class CoreResolutionIgnoreRule : IResolverIgnoreRule
     {
-        private readonly ILibraryManager _libraryManager;
+        private readonly NamingOptions _namingOptions;
         private readonly IServerApplicationPaths _serverApplicationPaths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CoreResolutionIgnoreRule"/> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <param name="serverApplicationPaths">The server application paths.</param>
-        public CoreResolutionIgnoreRule(ILibraryManager libraryManager, IServerApplicationPaths serverApplicationPaths)
+        public CoreResolutionIgnoreRule(NamingOptions namingOptions, IServerApplicationPaths serverApplicationPaths)
         {
-            _libraryManager = libraryManager;
+            _namingOptions = namingOptions;
             _serverApplicationPaths = serverApplicationPaths;
         }
 
@@ -54,7 +55,7 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     // Ignore trailer folders but allow it at the collection level
-                    if (string.Equals(filename, BaseItem.TrailerFolderName, StringComparison.OrdinalIgnoreCase)
+                    if (string.Equals(filename, BaseItem.TrailersFolderName, StringComparison.OrdinalIgnoreCase)
                         && !(parent is AggregateFolder)
                         && !(parent is UserRootFolder))
                     {
@@ -77,8 +78,8 @@ namespace Emby.Server.Implementations.Library
                 if (parent != null)
                 {
                     // Don't resolve these into audio files
-                    if (string.Equals(Path.GetFileNameWithoutExtension(filename), BaseItem.ThemeSongFilename, StringComparison.Ordinal)
-                        && _libraryManager.IsAudioFile(filename))
+                    if (Path.GetFileNameWithoutExtension(filename.AsSpan()).Equals(BaseItem.ThemeSongFileName, StringComparison.Ordinal)
+                        && AudioFileParser.IsAudioFile(filename, _namingOptions))
                     {
                         return true;
                     }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -6,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
@@ -28,22 +29,19 @@ namespace MediaBrowser.Controller.Entities
         private readonly ILogger<BaseItem> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly IServerConfigurationManager _config;
 
         public UserViewBuilder(
             IUserViewManager userViewManager,
             ILibraryManager libraryManager,
             ILogger<BaseItem> logger,
             IUserDataManager userDataManager,
-            ITVSeriesManager tvSeriesManager,
-            IServerConfigurationManager config)
+            ITVSeriesManager tvSeriesManager)
         {
             _userViewManager = userViewManager;
             _libraryManager = libraryManager;
             _logger = logger;
             _userDataManager = userDataManager;
             _tvSeriesManager = tvSeriesManager;
-            _config = config;
         }
 
         public QueryResult<BaseItem> GetUserItems(Folder queryParent, Folder displayParent, string viewType, InternalItemsQuery query)
@@ -53,17 +51,17 @@ namespace MediaBrowser.Controller.Entities
             // if (query.IncludeItemTypes != null &&
             //    query.IncludeItemTypes.Length == 1 &&
             //    string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
-            //{
+            // {
             //    if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             //    {
             //        return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
             //    }
-            //}
+            // }
 
             switch (viewType)
             {
                 case CollectionType.Folders:
-                    return GetResult(_libraryManager.GetUserRootFolder().GetChildren(user, true), queryParent, query);
+                    return GetResult(_libraryManager.GetUserRootFolder().GetChildren(user, true), query);
 
                 case CollectionType.TvShows:
                     return GetTvView(queryParent, user, query);
@@ -108,7 +106,7 @@ namespace MediaBrowser.Controller.Entities
                     return GetMovieMovies(queryParent, user, query);
 
                 case SpecialFolder.MovieCollections:
-                    return GetMovieCollections(queryParent, user, query);
+                    return GetMovieCollections(user, query);
 
                 case SpecialFolder.TvFavoriteEpisodes:
                     return GetFavoriteEpisodes(queryParent, user, query);
@@ -120,7 +118,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (queryParent is UserView)
                         {
-                            return GetResult(GetMediaFolders(user).OfType<Folder>().SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                            return GetResult(GetMediaFolders(user).OfType<Folder>().SelectMany(i => i.GetChildren(user, true)), query);
                         }
 
                         return queryParent.GetItems(query);
@@ -158,7 +156,7 @@ namespace MediaBrowser.Controller.Entities
                 GetUserView(SpecialFolder.MovieGenres, "Genres", "5", parent)
             };
 
-            return GetResult(list, parent, query);
+            return GetResult(list, query);
         }
 
         private QueryResult<BaseItem> GetFavoriteMovies(Folder parent, User user, InternalItemsQuery query)
@@ -205,7 +203,7 @@ namespace MediaBrowser.Controller.Entities
             return _libraryManager.GetItemsResult(query);
         }
 
-        private QueryResult<BaseItem> GetMovieCollections(Folder parent, User user, InternalItemsQuery query)
+        private QueryResult<BaseItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
             query.Parent = null;
             query.IncludeItemTypes = new[] { nameof(BoxSet) };
@@ -217,8 +215,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMovieLatest(Folder parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
-
+            query.OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Descending) };
             query.Recursive = true;
             query.Parent = parent;
             query.SetUser(user);
@@ -230,7 +227,7 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetMovieResume(Folder parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
+            query.OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Descending) };
             query.IsResumable = true;
             query.Recursive = true;
             query.Parent = parent;
@@ -274,9 +271,9 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserViewWithName(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(SpecialFolder.MovieGenre, i.SortName, parent));
 
-            return GetResult(genres, parent, query);
+            return GetResult(genres, query);
         }
 
         private QueryResult<BaseItem> GetMovieGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
@@ -322,13 +319,12 @@ namespace MediaBrowser.Controller.Entities
                 GetUserView(SpecialFolder.TvGenres, "Genres", "6", parent)
             };
 
-            return GetResult(list, parent, query);
+            return GetResult(list, query);
         }
 
         private QueryResult<BaseItem> GetTvLatest(Folder parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new[] { ItemSortBy.DateCreated, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
-
+            query.OrderBy = new[] { (ItemSortBy.DateCreated, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Descending) };
             query.Recursive = true;
             query.Parent = parent;
             query.SetUser(user);
@@ -344,19 +340,21 @@ namespace MediaBrowser.Controller.Entities
             var parentFolders = GetMediaFolders(parent, query.User, new[] { CollectionType.TvShows, string.Empty });
 
             var result = _tvSeriesManager.GetNextUp(
-            new NextUpQuery
-            {
-                Limit = query.Limit,
-                StartIndex = query.StartIndex,
-                UserId = query.User.Id
-            }, parentFolders, query.DtoOptions);
+                new NextUpQuery
+                {
+                    Limit = query.Limit,
+                    StartIndex = query.StartIndex,
+                    UserId = query.User.Id
+                },
+                parentFolders,
+                query.DtoOptions);
 
             return result;
         }
 
         private QueryResult<BaseItem> GetTvResume(Folder parent, User user, InternalItemsQuery query)
         {
-            query.OrderBy = new[] { ItemSortBy.DatePlayed, ItemSortBy.SortName }.Select(i => new ValueTuple<string, SortOrder>(i, SortOrder.Descending)).ToArray();
+            query.OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Descending) };
             query.IsResumable = true;
             query.Recursive = true;
             query.Parent = parent;
@@ -401,9 +399,9 @@ namespace MediaBrowser.Controller.Entities
                     }
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserViewWithName(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
+                .Select(i => GetUserViewWithName(SpecialFolder.TvGenre, i.SortName, parent));
 
-            return GetResult(genres, parent, query);
+            return GetResult(genres, query);
         }
 
         private QueryResult<BaseItem> GetTvGenreItems(Folder queryParent, Folder displayParent, User user, InternalItemsQuery query)
@@ -430,13 +428,12 @@ namespace MediaBrowser.Controller.Entities
 
         private QueryResult<BaseItem> GetResult<T>(
             IEnumerable<T> items,
-            BaseItem queryParent,
             InternalItemsQuery query)
             where T : BaseItem
         {
             items = items.Where(i => Filter(i, query.User, query, _userDataManager, _libraryManager));
 
-            return PostFilterAndSort(items, queryParent, null, query, _libraryManager, _config);
+            return PostFilterAndSort(items, null, query, _libraryManager);
         }
 
         public static bool FilterItem(BaseItem item, InternalItemsQuery query)
@@ -446,11 +443,9 @@ namespace MediaBrowser.Controller.Entities
 
         public static QueryResult<BaseItem> PostFilterAndSort(
             IEnumerable<BaseItem> items,
-            BaseItem queryParent,
             int? totalRecordLimit,
             InternalItemsQuery query,
-            ILibraryManager libraryManager,
-            IServerConfigurationManager configurationManager)
+            ILibraryManager libraryManager)
         {
             var user = query.User;
 
@@ -999,7 +994,7 @@ namespace MediaBrowser.Controller.Entities
             return new BaseItem[] { parent };
         }
 
-        private UserView GetUserViewWithName(string name, string type, string sortName, BaseItem parent)
+        private UserView GetUserViewWithName(string type, string sortName, BaseItem parent)
         {
             return _userViewManager.GetUserSubView(parent.Id, parent.Id.ToString("N", CultureInfo.InvariantCulture), type, sortName);
         }

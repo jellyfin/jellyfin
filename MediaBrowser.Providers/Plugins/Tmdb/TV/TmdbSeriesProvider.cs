@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -300,7 +302,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (ourRelease != null)
             {
-                series.OfficialRating = ourRelease.Rating;
+                series.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Rating);
             }
             else if (usRelease != null)
             {
@@ -329,7 +331,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             if (seriesResult.Credits?.Cast != null)
             {
-                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     var personInfo = new PersonInfo
                     {

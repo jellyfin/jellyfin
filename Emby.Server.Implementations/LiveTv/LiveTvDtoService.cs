@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -391,7 +393,7 @@ namespace Emby.Server.Implementations.LiveTv
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting image info for {name}", info.Name);
+                _logger.LogError(ex, "Error getting image info for {Name}", info.Name);
             }
 
             return null;

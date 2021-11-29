@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.PlaybackDtos;
@@ -13,11 +13,10 @@ namespace Jellyfin.Api.Helpers
     /// </summary>
     public class ProgressiveFileStream : Stream
     {
-        private readonly FileStream _fileStream;
+        private readonly Stream _stream;
         private readonly TranscodingJobDto? _job;
-        private readonly TranscodingJobHelper _transcodingJobHelper;
-        private readonly bool _allowAsyncFileRead;
-        private int _bytesWritten;
+        private readonly TranscodingJobHelper? _transcodingJobHelper;
+        private readonly int _timeoutMs;
         private bool _disposed;
 
         /// <summary>
@@ -26,27 +25,31 @@ namespace Jellyfin.Api.Helpers
         /// <param name="filePath">The path to the transcoded file.</param>
         /// <param name="job">The transcoding job information.</param>
         /// <param name="transcodingJobHelper">The transcoding job helper.</param>
-        public ProgressiveFileStream(string filePath, TranscodingJobDto? job, TranscodingJobHelper transcodingJobHelper)
+        /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
+        public ProgressiveFileStream(string filePath, TranscodingJobDto? job, TranscodingJobHelper transcodingJobHelper, int timeoutMs = 30000)
         {
             _job = job;
             _transcodingJobHelper = transcodingJobHelper;
-            _bytesWritten = 0;
+            _timeoutMs = timeoutMs;
 
-            var fileOptions = FileOptions.SequentialScan;
-            _allowAsyncFileRead = false;
+            _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        }
 
-            // use non-async filestream along with read due to https://github.com/dotnet/corefx/issues/6039
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                fileOptions |= FileOptions.Asynchronous;
-                _allowAsyncFileRead = true;
-            }
-
-            _fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, IODefaults.FileStreamBufferSize, fileOptions);
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressiveFileStream"/> class.
+        /// </summary>
+        /// <param name="stream">The stream to progressively copy.</param>
+        /// <param name="timeoutMs">The timeout duration in milliseconds.</param>
+        public ProgressiveFileStream(Stream stream, int timeoutMs = 30000)
+        {
+            _job = null;
+            _transcodingJobHelper = null;
+            _timeoutMs = timeoutMs;
+            _stream = stream;
         }
 
         /// <inheritdoc />
-        public override bool CanRead => _fileStream.CanRead;
+        public override bool CanRead => _stream.CanRead;
 
         /// <inheritdoc />
         public override bool CanSeek => false;
@@ -67,59 +70,57 @@ namespace Jellyfin.Api.Helpers
         /// <inheritdoc />
         public override void Flush()
         {
-            _fileStream.Flush();
+            // Not supported
         }
 
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
+            => Read(buffer.AsSpan(offset, count));
+
+        /// <inheritdoc />
+        public override int Read(Span<byte> buffer)
         {
-            return _fileStream.Read(buffer, offset, count);
+            int totalBytesRead = 0;
+            var stopwatch = Stopwatch.StartNew();
+
+            while (KeepReading(stopwatch.ElapsedMilliseconds))
+            {
+                totalBytesRead += _stream.Read(buffer);
+                if (totalBytesRead > 0)
+                {
+                    break;
+                }
+
+                Thread.Sleep(50);
+            }
+
+            UpdateBytesWritten(totalBytesRead);
+
+            return totalBytesRead;
         }
 
         /// <inheritdoc />
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            => await ReadAsync(buffer.AsMemory(offset, count), cancellationToken).ConfigureAwait(false);
+
+        /// <inheritdoc />
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             int totalBytesRead = 0;
-            int remainingBytesToRead = count;
+            var stopwatch = Stopwatch.StartNew();
 
-            int newOffset = offset;
-            while (remainingBytesToRead > 0)
+            while (KeepReading(stopwatch.ElapsedMilliseconds))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                int bytesRead;
-                if (_allowAsyncFileRead)
+                totalBytesRead += await _stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                if (totalBytesRead > 0)
                 {
-                    bytesRead = await _fileStream.ReadAsync(buffer, newOffset, remainingBytesToRead, cancellationToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    bytesRead = _fileStream.Read(buffer, newOffset, remainingBytesToRead);
+                    break;
                 }
 
-                remainingBytesToRead -= bytesRead;
-                newOffset += bytesRead;
-
-                if (bytesRead > 0)
-                {
-                    _bytesWritten += bytesRead;
-                    totalBytesRead += bytesRead;
-
-                    if (_job != null)
-                    {
-                        _job.BytesDownloaded = Math.Max(_job.BytesDownloaded ?? _bytesWritten, _bytesWritten);
-                    }
-                }
-                else
-                {
-                    // If the job is null it's a live stream and will require user action to close
-                    if (_job?.HasExited ?? false)
-                    {
-                        break;
-                    }
-
-                    await Task.Delay(50, cancellationToken).ConfigureAwait(false);
-                }
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
+
+            UpdateBytesWritten(totalBytesRead);
 
             return totalBytesRead;
         }
@@ -148,11 +149,11 @@ namespace Jellyfin.Api.Helpers
             {
                 if (disposing)
                 {
-                    _fileStream.Dispose();
+                    _stream.Dispose();
 
                     if (_job != null)
                     {
-                        _transcodingJobHelper.OnTranscodeEndRequest(_job);
+                        _transcodingJobHelper?.OnTranscodeEndRequest(_job);
                     }
                 }
             }
@@ -161,6 +162,20 @@ namespace Jellyfin.Api.Helpers
                 _disposed = true;
                 base.Dispose(disposing);
             }
+        }
+
+        private void UpdateBytesWritten(int totalBytesRead)
+        {
+            if (_job != null)
+            {
+                _job.BytesDownloaded += totalBytesRead;
+            }
+        }
+
+        private bool KeepReading(long elapsed)
+        {
+            // If the job is null it's a live stream and will require user action to close, but don't keep it open indefinitely
+            return !_job?.HasExited ?? elapsed < _timeoutMs;
         }
     }
 }

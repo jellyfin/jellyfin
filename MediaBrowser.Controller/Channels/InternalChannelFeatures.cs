@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1002, CA2227, CS1591
 
 using System.Collections.Generic;
 using MediaBrowser.Model.Channels;
@@ -28,7 +30,7 @@ namespace MediaBrowser.Controller.Channels
         public List<ChannelMediaContentType> ContentTypes { get; set; }
 
         /// <summary>
-        /// Represents the maximum number of records the channel allows retrieving at a time.
+        /// Gets or sets the maximum number of records the channel allows retrieving at a time.
         /// </summary>
         public int? MaxPageSize { get; set; }
 
@@ -39,7 +41,7 @@ namespace MediaBrowser.Controller.Channels
         public List<ChannelItemSortField> DefaultSortFields { get; set; }
 
         /// <summary>
-        /// Indicates if a sort ascending/descending toggle is supported or not.
+        /// Gets or sets a value indicating whether a sort ascending/descending toggle is supported or not.
         /// </summary>
         public bool SupportsSortOrderToggle { get; set; }
 

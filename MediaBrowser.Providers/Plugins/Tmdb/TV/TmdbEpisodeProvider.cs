@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -152,7 +154,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (credits?.Cast != null)
             {
-                foreach (var actor in credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var actor in credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     metadataResult.AddPerson(new PersonInfo
                     {
@@ -166,7 +168,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (credits?.GuestStars != null)
             {
-                foreach (var guest in credits.GuestStars.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var guest in credits.GuestStars.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     metadataResult.AddPerson(new PersonInfo
                     {
