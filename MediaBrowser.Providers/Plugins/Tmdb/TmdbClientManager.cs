@@ -498,7 +498,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
                 return null;
             }
 
-            return _tmDbClient.GetImageUrl(size, path).ToString();
+            return _tmDbClient.GetImageUrl(size, path, true).ToString();
         }
 
         /// <summary>
