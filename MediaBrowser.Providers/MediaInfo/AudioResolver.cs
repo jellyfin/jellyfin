@@ -18,12 +18,21 @@ using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
+    /// <summary>
+    /// Resolves external audios for videos.
+    /// </summary>
     public class AudioResolver
     {
         private readonly ILocalizationManager _localizationManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly NamingOptions _namingOptions;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AudioResolver"/> class.
+        /// </summary>
+        /// <param name="localizationManager">The localization manager.</param>
+        /// <param name="mediaEncoder">The media encoder.</param>
+        /// <param name="namingOptions">The naming options.</param>
         public AudioResolver(
             ILocalizationManager localizationManager,
             IMediaEncoder mediaEncoder,
@@ -34,6 +43,15 @@ namespace MediaBrowser.Providers.MediaInfo
             _namingOptions = namingOptions;
         }
 
+        /// <summary>
+        /// Returns the audio streams found in the external audio files for the given video.
+        /// </summary>
+        /// <param name="video">The video to get the external audio streams from.</param>
+        /// <param name="startIndex">The stream index to start adding audio streams at.</param>
+        /// <param name="directoryService">The directory service to search for files.</param>
+        /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>A list of external audio streams.</returns>
         public async IAsyncEnumerable<MediaStream> GetExternalAudioStreams(
             Video video,
             int startIndex,
@@ -83,6 +101,13 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        /// <summary>
+        /// Returns the external audio file paths for the given video.
+        /// </summary>
+        /// <param name="video">The video to get the external audio file paths from.</param>
+        /// <param name="directoryService">The directory service to search for files.</param>
+        /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
+        /// <returns>A list of external audio file paths.</returns>
         public IEnumerable<string> GetExternalAudioFiles(
             Video video,
             IDirectoryService directoryService,
@@ -123,6 +148,12 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        /// <summary>
+        /// Returns the media info of the given audio file.
+        /// </summary>
+        /// <param name="path">The path to the audio file.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns>The media info for the given audio file.</returns>
         private Task<Model.MediaInfo.MediaInfo> GetMediaInfo(string path, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
