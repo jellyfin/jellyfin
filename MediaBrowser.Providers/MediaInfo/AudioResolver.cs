@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.MediaInfo
             foreach (string path in paths)
             {
                 string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
-                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(path, cancellationToken);
+                Model.MediaInfo.MediaInfo mediaInfo = await GetMediaInfo(path, cancellationToken).ConfigureAwait(false);
 
                 foreach (MediaStream mediaStream in mediaInfo.MediaStreams)
                 {
