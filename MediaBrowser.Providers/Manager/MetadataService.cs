@@ -94,7 +94,7 @@ namespace MediaBrowser.Providers.Manager
 
             var localImagesFailed = false;
 
-            var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
+            var allImageProviders = ProviderManager.GetImageProviders(item, refreshOptions).ToList();
 
             if (refreshOptions.RemoveOldMetadata && refreshOptions.ReplaceAllImages)
             {
@@ -522,7 +522,7 @@ namespace MediaBrowser.Providers.Manager
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
             // Get providers to refresh
-            var providers = ((ProviderManager)ProviderManager).GetMetadataProviders<TItemType>(item, libraryOptions).ToList();
+            var providers = ProviderManager.GetMetadataProviders<TItemType>(item, libraryOptions).ToList();
 
             var metadataRefreshMode = options.MetadataRefreshMode;
 

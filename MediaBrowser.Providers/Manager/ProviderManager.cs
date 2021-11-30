@@ -302,12 +302,7 @@ namespace MediaBrowser.Providers.Manager
             return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
         }
 
-        /// <summary>
-        /// Gets the image providers for the provided item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="refreshOptions">The image refresh options.</param>
-        /// <returns>The image providers for the item.</returns>
+        /// <inheritdoc/>
         public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
         {
             return GetImageProviders(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
@@ -342,13 +337,7 @@ namespace MediaBrowser.Providers.Manager
             .ThenBy(GetOrder);
         }
 
-        /// <summary>
-        /// Gets the metadata providers for the provided item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="libraryOptions">The library options.</param>
-        /// <typeparam name="T">The type of metadata provider.</typeparam>
-        /// <returns>The metadata providers.</returns>
+        /// <inheritdoc />
         public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
             where T : BaseItem
         {
