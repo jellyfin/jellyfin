@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text.Json;
@@ -36,8 +37,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PreferredMetadataLanguage = "nl"
             };
 
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(config, _jsonOptions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+            using var postContent = JsonContent.Create(config, options: _jsonOptions);
             using var postResponse = await client.PostAsync("/Startup/Configuration", postContent).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
@@ -80,8 +80,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Password = "NewPassword"
             };
 
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+            using var postContent = JsonContent.Create(user, options: _jsonOptions);
             var postResponse = await client.PostAsync("/Startup/User", postContent).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 

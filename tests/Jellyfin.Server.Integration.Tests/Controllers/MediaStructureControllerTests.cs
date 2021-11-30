@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text.Json;
@@ -71,8 +72,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Path = "/this/path/doesnt/exist"
             };
 
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(data, _jsonOptions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+            using var postContent = JsonContent.Create(data, options: _jsonOptions);
             var response = await client.PostAsync("Library/VirtualFolders/Paths", postContent).ConfigureAwait(false);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -90,8 +90,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PathInfo = new MediaPathInfo("test")
             };
 
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(data, _jsonOptions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+            using var postContent = JsonContent.Create(data, options: _jsonOptions);
             var response = await client.PostAsync("Library/VirtualFolders/Paths/Update", postContent).ConfigureAwait(false);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
