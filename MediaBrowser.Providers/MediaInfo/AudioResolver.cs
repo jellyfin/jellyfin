@@ -43,7 +43,6 @@ namespace MediaBrowser.Providers.MediaInfo
             bool clearCache,
             [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-
             cancellationToken.ThrowIfCancellationRequested();
 
             if (!video.IsFileProtocol)
