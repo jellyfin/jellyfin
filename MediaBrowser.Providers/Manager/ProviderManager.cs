@@ -354,7 +354,7 @@ namespace MediaBrowser.Providers.Manager
 
             return _metadataProviders.OfType<IMetadataProvider<T>>()
                 .Where(i => CanRefresh(i, item, libraryOptions, includeDisabled, forceEnableInternetMetadata))
-                .OrderBy(i => GetConfiguredOrder(item, i, libraryOptions, globalMetadataOptions))
+                .OrderBy(i => GetConfiguredOrder(item, i, libraryOptions, currentOptions))
                 .ThenBy(GetDefaultOrder);
         }
 
@@ -908,7 +908,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error in {0}.Suports", i.GetType().Name);
+                    _logger.LogError(ex, "Error in {0}.Supports", i.GetType().Name);
                     return false;
                 }
             });
