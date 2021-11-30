@@ -106,13 +106,12 @@ namespace MediaBrowser.Providers.MediaInfo
             for (int i = 0; i < files.Count; i++)
             {
                 string file = files[i];
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
-
                 if (!AudioFileParser.IsAudioFile(file, _namingOptions))
                 {
                     continue;
                 }
 
+                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
                 // The audio filename must either be equal to the video filename or start with the video filename followed by a dot
                 if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)
                     || (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
