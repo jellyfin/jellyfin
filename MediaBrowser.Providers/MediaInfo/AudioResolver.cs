@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.MediaInfo
             for (int i = 0; i < files.Count; i++)
             {
                 string file = files[i];
-                if (!AudioFileParser.IsAudioFile(file, _namingOptions))
+                if (string.Equals(video.Path, file, StringComparison.OrdinalIgnoreCase) || !AudioFileParser.IsAudioFile(file, _namingOptions))
                 {
                     continue;
                 }

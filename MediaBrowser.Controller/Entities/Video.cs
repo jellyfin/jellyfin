@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities
             AdditionalParts = Array.Empty<string>();
             LocalAlternateVersions = Array.Empty<string>();
             SubtitleFiles = Array.Empty<string>();
+            AudioFiles = Array.Empty<string>();
             LinkedAlternateVersions = Array.Empty<LinkedChild>();
         }
 
