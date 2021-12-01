@@ -16,6 +16,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         {
             "h264",
             "hevc",
+            "vp8",
+            "libvpx",
+            "vp9",
+            "libvpx-vp9",
+            "av1",
+            "libdav1d",
             "mpeg2video",
             "mpeg4",
             "msmpeg4",
@@ -30,6 +36,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "vc1_qsv",
             "vp8_qsv",
             "vp9_qsv",
+            "av1_qsv",
             "h264_cuvid",
             "hevc_cuvid",
             "mpeg2_cuvid",
@@ -37,16 +44,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             "mpeg4_cuvid",
             "vp8_cuvid",
             "vp9_cuvid",
+            "av1_cuvid",
             "h264_mmal",
             "mpeg2_mmal",
             "mpeg4_mmal",
             "vc1_mmal",
-            "h264_mediacodec",
-            "hevc_mediacodec",
-            "mpeg2_mediacodec",
-            "mpeg4_mediacodec",
-            "vp8_mediacodec",
-            "vp9_mediacodec",
             "h264_opencl",
             "hevc_opencl",
             "mpeg2_opencl",
@@ -89,20 +91,39 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private static readonly string[] _requiredFilters = new[]
         {
+            // sw
+            "alphasrc",
+            "zscale",
+            // qsv
+            "scale_qsv",
+            "vpp_qsv",
+            "deinterlace_qsv",
+            "overlay_qsv",
+            // cuda
             "scale_cuda",
             "yadif_cuda",
-            "hwupload_cuda",
-            "overlay_cuda",
             "tonemap_cuda",
+            "overlay_cuda",
+            "hwupload_cuda",
+            // opencl
+            "scale_opencl",
             "tonemap_opencl",
+            "overlay_opencl",
+            // vaapi
+            "scale_vaapi",
+            "deinterlace_vaapi",
             "tonemap_vaapi",
+            "overlay_vaapi",
+            "hwupload_vaapi"
         };
 
         private static readonly IReadOnlyDictionary<int, string[]> _filterOptionsDict = new Dictionary<int, string[]>
         {
             { 0, new string[] { "scale_cuda", "Output format (default \"same\")" } },
             { 1, new string[] { "tonemap_cuda", "GPU accelerated HDR to SDR tonemapping" } },
-            { 2, new string[] { "tonemap_opencl", "bt2390" } }
+            { 2, new string[] { "tonemap_opencl", "bt2390" } },
+            { 3, new string[] { "overlay_opencl", "Action to take when encountering EOF from secondary input" } },
+            { 4, new string[] { "overlay_vaapi", "Action to take when encountering EOF from secondary input" } }
         };
 
         // These are the library versions that corresponds to our minimum ffmpeg version 4.x according to the version table below
@@ -144,7 +165,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version");
+                output = GetProcessOutput(_encoderPath, "-version", false);
             }
             catch (Exception ex)
             {
@@ -225,7 +246,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-version");
+                output = GetProcessOutput(_encoderPath, "-version", false);
             }
             catch (Exception ex)
             {
@@ -318,12 +339,38 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return map;
         }
 
+        public bool CheckVaapiDeviceByDriverName(string driverName, string renderNodePath)
+        {
+            if (!OperatingSystem.IsLinux())
+            {
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(driverName) || string.IsNullOrEmpty(renderNodePath))
+            {
+                return false;
+            }
+
+            string output;
+            try
+            {
+                output = GetProcessOutput(_encoderPath, "-v verbose -hide_banner -init_hw_device vaapi=va:" + renderNodePath, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error detecting the given vaapi render node path");
+                return false;
+            }
+
+            return output.Contains(driverName, StringComparison.Ordinal);
+        }
+
         private IEnumerable<string> GetHwaccelTypes()
         {
             string? output = null;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-hwaccels");
+                output = GetProcessOutput(_encoderPath, "-hwaccels", false);
             }
             catch (Exception ex)
             {
@@ -351,7 +398,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-h filter=" + filter);
+                output = GetProcessOutput(_encoderPath, "-h filter=" + filter, false);
             }
             catch (Exception ex)
             {
@@ -375,7 +422,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-" + codecstr);
+                output = GetProcessOutput(_encoderPath, "-" + codecstr, false);
             }
             catch (Exception ex)
             {
@@ -406,7 +453,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-filters");
+                output = GetProcessOutput(_encoderPath, "-filters", false);
             }
             catch (Exception ex)
             {
@@ -444,7 +491,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return dict;
         }
 
-        private string GetProcessOutput(string path, string arguments)
+        private string GetProcessOutput(string path, string arguments, bool readStdErr)
         {
             using (var process = new Process()
             {
@@ -455,7 +502,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     WindowStyle = ProcessWindowStyle.Hidden,
                     ErrorDialog = false,
                     RedirectStandardOutput = true,
-                    // ffmpeg uses stderr to log info, don't show this
                     RedirectStandardError = true
                 }
             })
@@ -464,7 +510,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 process.Start();
 
-                return process.StandardOutput.ReadToEnd();
+                return readStdErr ? process.StandardError.ReadToEnd() : process.StandardOutput.ReadToEnd();
             }
         }
     }

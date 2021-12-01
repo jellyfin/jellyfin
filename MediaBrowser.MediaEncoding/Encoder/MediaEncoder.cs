@@ -65,6 +65,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private List<string> _filters = new List<string>();
         private IDictionary<int, bool> _filtersWithOption = new Dictionary<int, bool>();
 
+        private bool _isVaapiDeviceAmd = false;
+        private bool _isVaapiDeviceInteliHD = false;
+        private bool _isVaapiDeviceInteli965 = false;
+
         private Version _ffmpegVersion = null;
         private string _ffmpegPath = string.Empty;
         private string _ffprobePath;
@@ -114,9 +118,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             // Write the FFmpeg path to the config/encoding.xml file as <EncoderAppPathDisplay> so it appears in UI
-            var config = _configurationManager.GetEncodingOptions();
-            config.EncoderAppPathDisplay = _ffmpegPath ?? string.Empty;
-            _configurationManager.SaveConfiguration("encoding", config);
+            var options = _configurationManager.GetEncodingOptions();
+            options.EncoderAppPathDisplay = _ffmpegPath ?? string.Empty;
+            _configurationManager.SaveConfiguration("encoding", options);
 
             // Only if mpeg path is set, try and set path to probe
             if (_ffmpegPath != null)
@@ -134,7 +138,31 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableHwaccels(validator.GetHwaccels());
                 SetMediaEncoderVersion(validator);
 
-                _threads = EncodingHelper.GetNumberOfThreads(null, _configurationManager.GetEncodingOptions(), null);
+                options = _configurationManager.GetEncodingOptions();
+                _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
+
+                // Check the Vaapi device vendor
+                if (OperatingSystem.IsLinux()
+                    && SupportsHwaccel("vaapi")
+                    && !string.IsNullOrEmpty(options.VaapiDevice)
+                    && string.Equals(options.HardwareAccelerationType, "vaapi", StringComparison.OrdinalIgnoreCase))
+                {
+                    _isVaapiDeviceAmd = validator.CheckVaapiDeviceByDriverName("Mesa Gallium driver", options.VaapiDevice);
+                    _isVaapiDeviceInteliHD = validator.CheckVaapiDeviceByDriverName("Intel iHD driver", options.VaapiDevice);
+                    _isVaapiDeviceInteli965 = validator.CheckVaapiDeviceByDriverName("Intel i965 driver", options.VaapiDevice);
+                    if (_isVaapiDeviceAmd)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} is AMD GPU", options.VaapiDevice);
+                    }
+                    else if (_isVaapiDeviceInteliHD)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (iHD)", options.VaapiDevice);
+                    }
+                    else if (_isVaapiDeviceInteli965)
+                    {
+                        _logger.LogInformation("VAAPI device {RenderNodePath} is Intel GPU (i965)", options.VaapiDevice);
+                    }
+                }
             }
 
             _logger.LogInformation("FFmpeg: {FfmpegPath}", _ffmpegPath ?? string.Empty);
@@ -299,6 +327,21 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return false;
+        }
+
+        public bool IsVaapiDeviceAmd()
+        {
+            return _isVaapiDeviceAmd;
+        }
+
+        public bool IsVaapiDeviceInteliHD()
+        {
+            return _isVaapiDeviceInteliHD;
+        }
+
+        public bool IsVaapiDeviceInteli965()
+        {
+            return _isVaapiDeviceInteli965;
         }
 
         public Version GetMediaEncoderVersion()

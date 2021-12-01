@@ -764,18 +764,23 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 if (!stream.BitDepth.HasValue)
                 {
-                    if (!string.IsNullOrEmpty(streamInfo.PixelFormat)
-                        && streamInfo.PixelFormat.Contains("p10", StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrEmpty(streamInfo.PixelFormat))
                     {
-                        stream.BitDepth = 10;
-                    }
-
-                    if (!string.IsNullOrEmpty(streamInfo.Profile)
-                        && (streamInfo.Profile.Contains("Main 10", StringComparison.OrdinalIgnoreCase)
-                            || streamInfo.Profile.Contains("High 10", StringComparison.OrdinalIgnoreCase)
-                            || streamInfo.Profile.Contains("Profile 2", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        stream.BitDepth = 10;
+                        if (string.Equals(streamInfo.PixelFormat, "yuv420p", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(streamInfo.PixelFormat, "yuv444p", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.BitDepth = 8;
+                        }
+                        else if (string.Equals(streamInfo.PixelFormat, "yuv420p10le", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(streamInfo.PixelFormat, "yuv444p10le", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.BitDepth = 10;
+                        }
+                        else if (string.Equals(streamInfo.PixelFormat, "yuv420p12le", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(streamInfo.PixelFormat, "yuv444p12le", StringComparison.OrdinalIgnoreCase))
+                        {
+                            stream.BitDepth = 12;
+                        }
                     }
                 }
 

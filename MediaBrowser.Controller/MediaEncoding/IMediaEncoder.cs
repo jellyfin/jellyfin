@@ -61,6 +61,24 @@ namespace MediaBrowser.Controller.MediaEncoding
         bool SupportsFilterWithOption(FilterOptionType option);
 
         /// <summary>
+        /// Whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
+        /// </summary>
+        /// <returns><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</returns>
+        bool IsVaapiDeviceAmd();
+
+        /// <summary>
+        /// Whether the configured Vaapi device is from Intel(iHD driver).
+        /// </summary>
+        /// <returns><c>true</c> if the Vaapi device is an Intel(iHD driver) GPU, <c>false</c> otherwise.</returns>
+        bool IsVaapiDeviceInteliHD();
+
+        /// <summary>
+        /// Whether the configured Vaapi device is from Intel(legacy i965 driver).
+        /// </summary>
+        /// <returns><c>true</c> if the Vaapi device is an Intel(legacy i965 driver) GPU, <c>false</c> otherwise.</returns>
+        bool IsVaapiDeviceInteli965();
+
+        /// <summary>
         /// Get the version of media encoder.
         /// </summary>
         /// <returns>The version of media encoder.</returns>

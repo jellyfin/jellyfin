@@ -1567,24 +1567,18 @@ namespace Jellyfin.Api.Controllers
 
                 // args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
-                var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream && state.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode;
-
-                if (hasGraphicalSubs)
-                {
-                    // Graphical subs overlay and resolution params.
-                    args += _encodingHelper.GetGraphicalSubtitleParam(state, _encodingOptions, codec);
-                }
-                else
-                {
-                    // Resolution params.
-                    args += _encodingHelper.GetOutputSizeParam(state, _encodingOptions, codec);
-                }
+                // video processing filters.
+                args += _encodingHelper.GetVideoProcessingFilterParam(state, _encodingOptions, codec);
 
                 // -start_at_zero is necessary to use with -ss when seeking,
                 // otherwise the target position cannot be determined.
-                if (!(state.SubtitleStream != null && state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
+                if (state.SubtitleStream != null)
                 {
-                    args += " -start_at_zero";
+                    // Disable start_at_zero for external graphical subs
+                    if (!(state.SubtitleStream.IsExternal && !state.SubtitleStream.IsTextSubtitleStream))
+                    {
+                        args += " -start_at_zero";
+                    }
                 }
 
                 // args += " -flags -global_header";
