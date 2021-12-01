@@ -37,8 +37,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PreferredMetadataLanguage = "nl"
             };
 
-            using var postContent = JsonContent.Create(config, options: _jsonOptions);
-            using var postResponse = await client.PostAsync("/Startup/Configuration", postContent).ConfigureAwait(false);
+            using var postResponse = await client.PostAsJsonAsync("/Startup/Configuration", config, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
             using var getResponse = await client.GetAsync("/Startup/Configuration").ConfigureAwait(false);
@@ -80,8 +79,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Password = "NewPassword"
             };
 
-            using var postContent = JsonContent.Create(user, options: _jsonOptions);
-            var postResponse = await client.PostAsync("/Startup/User", postContent).ConfigureAwait(false);
+            var postResponse = await client.PostAsJsonAsync("/Startup/User", user, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
             var getResponse = await client.GetAsync("/Startup/User").ConfigureAwait(false);

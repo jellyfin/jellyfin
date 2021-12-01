@@ -32,16 +32,10 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
         }
 
         private Task<HttpResponseMessage> CreateUserByName(HttpClient httpClient, CreateUserByName request)
-        {
-            using var postContent = JsonContent.Create(request, options: _jsonOpions);
-            return httpClient.PostAsync("Users/New", postContent);
-        }
+            => httpClient.PostAsJsonAsync("Users/New", request, _jsonOpions);
 
         private Task<HttpResponseMessage> UpdateUserPassword(HttpClient httpClient, Guid userId, UpdateUserPassword request)
-        {
-            using var postContent = JsonContent.Create(request, options: _jsonOpions);
-            return httpClient.PostAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", postContent);
-        }
+            => httpClient.PostAsJsonAsync("Users/" + userId.ToString("N", CultureInfo.InvariantCulture) + "/Password", request, _jsonOpions);
 
         [Fact]
         [Priority(-1)]

@@ -72,8 +72,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Path = "/this/path/doesnt/exist"
             };
 
-            using var postContent = JsonContent.Create(data, options: _jsonOptions);
-            var response = await client.PostAsync("Library/VirtualFolders/Paths", postContent).ConfigureAwait(false);
+            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths", data, _jsonOptions).ConfigureAwait(false);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -90,8 +89,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PathInfo = new MediaPathInfo("test")
             };
 
-            using var postContent = JsonContent.Create(data, options: _jsonOptions);
-            var response = await client.PostAsync("Library/VirtualFolders/Paths/Update", postContent).ConfigureAwait(false);
+            var response = await client.PostAsJsonAsync("Library/VirtualFolders/Paths/Update", data, _jsonOptions).ConfigureAwait(false);
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
