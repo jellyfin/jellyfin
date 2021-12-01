@@ -267,7 +267,7 @@ namespace Emby.Server.Implementations.IO
                     if (_fileSystemWatchers.TryAdd(path, newWatcher))
                     {
                         newWatcher.EnableRaisingEvents = true;
-                        _logger.LogInformation("Watching directory " + path);
+                        _logger.LogInformation("Watching directory {Path}", path);
                     }
                     else
                     {
@@ -276,7 +276,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error watching path: {path}", path);
+                    _logger.LogError(ex, "Error watching path: {Path}", path);
                 }
             });
         }
@@ -449,12 +449,12 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 var newRefresher = new FileRefresher(path, _configurationManager, _libraryManager, _logger);
-                newRefresher.Completed += NewRefresher_Completed;
+                newRefresher.Completed += OnNewRefresherCompleted;
                 _activeRefreshers.Add(newRefresher);
             }
         }
 
-        private void NewRefresher_Completed(object sender, EventArgs e)
+        private void OnNewRefresherCompleted(object sender, EventArgs e)
         {
             var refresher = (FileRefresher)sender;
             DisposeRefresher(refresher);
@@ -481,6 +481,7 @@ namespace Emby.Server.Implementations.IO
         {
             lock (_activeRefreshers)
             {
+                refresher.Completed -= OnNewRefresherCompleted;
                 refresher.Dispose();
                 _activeRefreshers.Remove(refresher);
             }
@@ -492,6 +493,7 @@ namespace Emby.Server.Implementations.IO
             {
                 foreach (var refresher in _activeRefreshers.ToList())
                 {
+                    refresher.Completed -= OnNewRefresherCompleted;
                     refresher.Dispose();
                 }
 

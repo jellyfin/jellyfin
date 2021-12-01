@@ -80,6 +80,37 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             }
         }
 
+        [Theory]
+        [InlineData("/video/My Video.mkv", "/video/My Video.srt", "srt", null, false, false)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.srt", "srt", null, false, false)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.foreign.srt", "srt", null, true, false)]
+        [InlineData("/video/My Video.mkv", "/video/My Video.forced.srt", "srt", null, true, false)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.default.srt", "srt", null, false, true)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.forced.default.srt", "srt", null, true, true)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.en.srt", "srt", "en", false, false)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.default.en.srt", "srt", "en", false, true)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.default.forced.en.srt", "srt", "en", true, true)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.en.default.forced.srt", "srt", "en", true, true)]
+        public void AddExternalSubtitleStreams_GivenSingleFile_ReturnsExpectedSubtitle(string videoPath, string file, string codec, string? language, bool isForced, bool isDefault)
+        {
+            var streams = new List<MediaStream>();
+            var expected = CreateMediaStream(file, codec, language, 0, isForced, isDefault);
+
+            new SubtitleResolver(Mock.Of<ILocalizationManager>()).AddExternalSubtitleStreams(streams, videoPath, 0, new[] { file });
+
+            Assert.Single(streams);
+
+            var actual = streams[0];
+
+            Assert.Equal(expected.Index, actual.Index);
+            Assert.Equal(expected.Type, actual.Type);
+            Assert.Equal(expected.IsExternal, actual.IsExternal);
+            Assert.Equal(expected.Path, actual.Path);
+            Assert.Equal(expected.IsDefault, actual.IsDefault);
+            Assert.Equal(expected.IsForced, actual.IsForced);
+            Assert.Equal(expected.Language, actual.Language);
+        }
+
         private static MediaStream CreateMediaStream(string path, string codec, string? language, int index, bool isForced = false, bool isDefault = false)
         {
             return new ()

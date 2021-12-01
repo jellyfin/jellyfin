@@ -64,7 +64,7 @@ namespace Emby.Dlna.Service
                 requestInfo = await ParseRequestAsync(reader).ConfigureAwait(false);
             }
 
-            Logger.LogDebug("Received control request {0}", requestInfo.LocalName);
+            Logger.LogDebug("Received control request {LocalName}, params: {@Headers}", requestInfo.LocalName, requestInfo.Headers);
 
             var settings = new XmlWriterSettings
             {

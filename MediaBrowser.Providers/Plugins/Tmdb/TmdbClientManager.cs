@@ -1,10 +1,13 @@
-#nullable disable
+﻿#nullable disable
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using TMDbLib.Client;
 using TMDbLib.Objects.Collections;
@@ -57,11 +60,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
+            var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
+            if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
+            {
+                extraMethods |= MovieMethods.Keywords;
+            }
+
             movie = await _tmDbClient.GetMovieAsync(
                 tmdbId,
                 TmdbUtils.NormalizeLanguage(language),
                 imageLanguages,
-                MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Keywords | MovieMethods.Videos,
+                extraMethods,
                 cancellationToken).ConfigureAwait(false);
 
             if (movie != null)
@@ -123,11 +132,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
+            var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
+            if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
+            {
+                extraMethods |= TvShowMethods.Keywords;
+            }
+
             series = await _tmDbClient.GetTvShowAsync(
                 tmdbId,
                 language: TmdbUtils.NormalizeLanguage(language),
                 includeImageLanguage: imageLanguages,
-                extraMethods: TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.Keywords | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups,
+                extraMethods: extraMethods,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (series != null)
@@ -471,33 +486,29 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Handles bad path checking and builds the absolute url.
+        /// </summary>
+        /// <param name="size">The image size to fetch.</param>
+        /// <param name="path">The relative URL of the image.</param>
+        /// <returns>The absolute URL.</returns>
+        private string GetUrl(string size, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            return _tmDbClient.GetImageUrl(size, path, true).ToString();
+        }
+
+        /// <summary>
         /// Gets the absolute URL of the poster.
         /// </summary>
         /// <param name="posterPath">The relative URL of the poster.</param>
         /// <returns>The absolute URL.</returns>
         public string GetPosterUrl(string posterPath)
         {
-            if (string.IsNullOrEmpty(posterPath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.PosterSizes[^1], posterPath).ToString();
-        }
-
-        /// <summary>
-        /// Gets the absolute URL of the backdrop image.
-        /// </summary>
-        /// <param name="posterPath">The relative URL of the backdrop image.</param>
-        /// <returns>The absolute URL.</returns>
-        public string GetBackdropUrl(string posterPath)
-        {
-            if (string.IsNullOrEmpty(posterPath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.BackdropSizes[^1], posterPath).ToString();
+            return GetUrl(_tmDbClient.Config.Images.PosterSizes[^1], posterPath);
         }
 
         /// <summary>
@@ -507,27 +518,79 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The absolute URL.</returns>
         public string GetProfileUrl(string actorProfilePath)
         {
-            if (string.IsNullOrEmpty(actorProfilePath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.ProfileSizes[^1], actorProfilePath).ToString();
+            return GetUrl(_tmDbClient.Config.Images.ProfileSizes[^1], actorProfilePath);
         }
 
         /// <summary>
-        /// Gets the absolute URL of the still image.
+        /// Converts poster <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
-        /// <param name="filePath">The relative URL of the still image.</param>
-        /// <returns>The absolute URL.</returns>
-        public string GetStillUrl(string filePath)
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertPostersToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return null;
-            }
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.PosterSizes[^1], ImageType.Primary, requestLanguage, results);
+        }
 
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.StillSizes[^1], filePath).ToString();
+        /// <summary>
+        /// Converts backdrop <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertBackdropsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.BackdropSizes[^1], ImageType.Backdrop, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts profile <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertProfilesToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.ProfileSizes[^1], ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts still <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertStillsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.StillSizes[^1], ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="size">The size of the image to fetch.</param>
+        /// <param name="type">The type of the image.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        private void ConvertToRemoteImageInfo(List<ImageData> images, string size, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            for (var i = 0; i < images.Count; i++)
+            {
+                var image = images[i];
+                results.Add(new RemoteImageInfo
+                {
+                    Url = GetUrl(size, image.FilePath),
+                    CommunityRating = image.VoteAverage,
+                    VoteCount = image.VoteCount,
+                    Width = image.Width,
+                    Height = image.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage),
+                    ProviderName = TmdbUtils.ProviderName,
+                    Type = type,
+                    RatingType = RatingType.Score
+                });
+            }
         }
 
         private Task EnsureClientConfigAsync()
@@ -542,7 +605,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             GC.SuppressFinalize(this);
         }
 
-/// <summary>
+        /// <summary>
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>

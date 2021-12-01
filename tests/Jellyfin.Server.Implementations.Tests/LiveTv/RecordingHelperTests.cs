@@ -61,7 +61,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 {
                     Name = "The Big Bang Theory",
                     IsProgramSeries = true,
-                    OriginalAirDate = new DateTime(2018, 12, 6)
+                    OriginalAirDate = new DateTime(2018, 12, 6, 0, 0, 0, DateTimeKind.Local)
                 });
 
             data.Add(
@@ -70,7 +70,7 @@ namespace Jellyfin.Server.Implementations.Tests.LiveTv
                 {
                     Name = "The Big Bang Theory",
                     IsProgramSeries = true,
-                    OriginalAirDate = new DateTime(2018, 12, 6),
+                    OriginalAirDate = new DateTime(2018, 12, 6, 0, 0, 0, DateTimeKind.Local),
                     EpisodeTitle = "The VCR Illumination"
                 });
 

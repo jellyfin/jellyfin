@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -17,24 +16,17 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 {
     public class OmdbEpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
     {
-        private readonly IHttpClientFactory _httpClientFactory;
         private readonly OmdbItemProvider _itemProvider;
-        private readonly IFileSystem _fileSystem;
-        private readonly IServerConfigurationManager _configurationManager;
-        private readonly IApplicationHost _appHost;
+        private readonly OmdbProvider _omdbProvider;
 
         public OmdbEpisodeProvider(
-            IApplicationHost appHost,
             IHttpClientFactory httpClientFactory,
             ILibraryManager libraryManager,
             IFileSystem fileSystem,
             IServerConfigurationManager configurationManager)
         {
-            _httpClientFactory = httpClientFactory;
-            _fileSystem = fileSystem;
-            _configurationManager = configurationManager;
-            _appHost = appHost;
-            _itemProvider = new OmdbItemProvider(_appHost, httpClientFactory, libraryManager, fileSystem, configurationManager);
+            _itemProvider = new OmdbItemProvider(httpClientFactory, libraryManager, fileSystem, configurationManager);
+            _omdbProvider = new OmdbProvider(httpClientFactory, fileSystem, configurationManager);
         }
 
         // After TheTvDb
@@ -44,12 +36,12 @@ namespace MediaBrowser.Providers.Plugins.Omdb
 
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
         {
-            return _itemProvider.GetSearchResults(searchInfo, "episode", cancellationToken);
+            return _itemProvider.GetSearchResults(searchInfo, cancellationToken);
         }
 
         public async Task<MetadataResult<Episode>> GetMetadata(EpisodeInfo info, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<Episode>()
+            var result = new MetadataResult<Episode>
             {
                 Item = new Episode(),
                 QueriedById = true
@@ -61,13 +53,20 @@ namespace MediaBrowser.Providers.Plugins.Omdb
                 return result;
             }
 
-            if (info.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string? seriesImdbId) && !string.IsNullOrEmpty(seriesImdbId))
+            if (info.SeriesProviderIds.TryGetValue(MetadataProvider.Imdb.ToString(), out string? seriesImdbId)
+                && !string.IsNullOrEmpty(seriesImdbId)
+                && info.IndexNumber.HasValue
+                && info.ParentIndexNumber.HasValue)
             {
-                if (info.IndexNumber.HasValue && info.ParentIndexNumber.HasValue)
-                {
-                    result.HasMetadata = await new OmdbProvider(_httpClientFactory, _fileSystem, _appHost, _configurationManager)
-                        .FetchEpisodeData(result, info.IndexNumber.Value, info.ParentIndexNumber.Value, info.GetProviderId(MetadataProvider.Imdb), seriesImdbId, info.MetadataLanguage, info.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-                }
+                result.HasMetadata = await _omdbProvider.FetchEpisodeData(
+                    result,
+                    info.IndexNumber.Value,
+                    info.ParentIndexNumber.Value,
+                    info.GetProviderId(MetadataProvider.Imdb),
+                    seriesImdbId,
+                    info.MetadataLanguage,
+                    info.MetadataCountryCode,
+                    cancellationToken).ConfigureAwait(false);
             }
 
             return result;

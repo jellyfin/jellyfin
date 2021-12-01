@@ -26,7 +26,7 @@ namespace Emby.Drawing
     public sealed class ImageProcessor : IImageProcessor, IDisposable
     {
         // Increment this when there's a change requiring caches to be invalidated
-        private const string Version = "3";
+        private const char Version = '3';
 
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };

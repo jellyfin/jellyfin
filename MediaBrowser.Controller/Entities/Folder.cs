@@ -303,7 +303,7 @@ namespace MediaBrowser.Controller.Entities
                 if (dictionary.ContainsKey(id))
                 {
                     Logger.LogError(
-                        "Found folder containing items with duplicate id. Path: {path}, Child Name: {ChildName}",
+                        "Found folder containing items with duplicate id. Path: {Path}, Child Name: {ChildName}",
                         Path ?? Name,
                         child.Path ?? child.Name);
                 }
@@ -425,7 +425,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (item.IsFileProtocol)
                         {
-                            Logger.LogDebug("Removed item: " + item.Path);
+                            Logger.LogDebug("Removed item: {Path}", item.Path);
 
                             item.SetParent(null);
                             LibraryManager.DeleteItem(item, new DeleteOptions { DeleteFileLocation = false }, this, false);
@@ -807,7 +807,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (this is not ICollectionFolder)
                 {
-                    Logger.LogDebug("Query requires post-filtering due to LinkedChildren. Type: " + GetType().Name);
+                    Logger.LogDebug("{Type}: Query requires post-filtering due to LinkedChildren.", GetType().Name);
                     return true;
                 }
             }
@@ -1013,6 +1013,7 @@ namespace MediaBrowser.Controller.Entities
                 items = CollapseBoxSetItemsIfNeeded(items, query, this, user, ConfigurationManager, CollectionManager);
             }
 
+            #pragma warning disable CA1309
             if (!string.IsNullOrEmpty(query.NameStartsWithOrGreater))
             {
                 items = items.Where(i => string.Compare(query.NameStartsWithOrGreater, i.SortName, StringComparison.InvariantCultureIgnoreCase) < 1);
@@ -1027,6 +1028,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 items = items.Where(i => string.Compare(query.NameLessThan, i.SortName, StringComparison.InvariantCultureIgnoreCase) == 1);
             }
+            #pragma warning restore CA1309
 
             // This must be the last filter
             if (!string.IsNullOrEmpty(query.AdjacentTo))

@@ -19,6 +19,7 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -478,17 +479,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 Protocol = MediaProtocol.File
             };
 
-            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, ".jpg", cancellationToken);
+            return ExtractImage(path, null, null, imageStreamIndex, mediaSource, true, null, null, ImageFormat.Jpg, cancellationToken);
         }
 
         public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream videoStream, Video3DFormat? threedFormat, TimeSpan? offset, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, ".jpg", cancellationToken);
+            return ExtractImage(inputFile, container, videoStream, null, mediaSource, false, threedFormat, offset, ImageFormat.Jpg, cancellationToken);
         }
 
-        public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken)
+        public Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken)
         {
-            return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, outputExtension, cancellationToken);
+            return ExtractImage(inputFile, container, imageStream, imageStreamIndex, mediaSource, false, null, null, targetFormat, cancellationToken);
         }
 
         private async Task<string> ExtractImage(
@@ -500,7 +501,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool isAudio,
             Video3DFormat? threedFormat,
             TimeSpan? offset,
-            string outputExtension,
+            ImageFormat? targetFormat,
             CancellationToken cancellationToken)
         {
             var inputArgument = GetInputArgument(inputFile, mediaSource);
@@ -510,7 +511,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 // The failure of HDR extraction usually occurs when using custom ffmpeg that does not contain the zscale filter.
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, outputExtension, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, true, targetFormat, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -523,7 +524,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, outputExtension, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, true, targetFormat, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -536,7 +537,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, outputExtension, cancellationToken).ConfigureAwait(false);
+                    return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, true, false, targetFormat, cancellationToken).ConfigureAwait(false);
                 }
                 catch (ArgumentException)
                 {
@@ -548,24 +549,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, outputExtension, cancellationToken).ConfigureAwait(false);
+            return await ExtractImageInternal(inputArgument, container, videoStream, imageStreamIndex, threedFormat, offset, false, false, targetFormat, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, string outputExtension, CancellationToken cancellationToken)
+        private async Task<string> ExtractImageInternal(string inputPath, string container, MediaStream videoStream, int? imageStreamIndex, Video3DFormat? threedFormat, TimeSpan? offset, bool useIFrame, bool allowTonemap, ImageFormat? targetFormat, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(inputPath))
             {
                 throw new ArgumentNullException(nameof(inputPath));
             }
 
-            if (string.IsNullOrEmpty(outputExtension))
+            var outputExtension = targetFormat switch
             {
-                outputExtension = ".jpg";
-            }
-            else if (outputExtension[0] != '.')
-            {
-                outputExtension = "." + outputExtension;
-            }
+                ImageFormat.Bmp => ".bmp",
+                ImageFormat.Gif => ".gif",
+                ImageFormat.Jpg => ".jpg",
+                ImageFormat.Png => ".png",
+                ImageFormat.Webp => ".webp",
+                _ => ".jpg"
+            };
 
             var tempExtractPath = Path.Combine(_configurationManager.ApplicationPaths.TempDirectory, Guid.NewGuid() + outputExtension);
             Directory.CreateDirectory(Path.GetDirectoryName(tempExtractPath));
@@ -682,11 +684,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (exitCode == -1 || !file.Exists || file.Length == 0)
                 {
-                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath);
+                    _logger.LogError("ffmpeg image extraction failed for {Path}", inputPath);
 
-                    _logger.LogError(msg);
-
-                    throw new FfmpegException(msg);
+                    throw new FfmpegException(string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputPath));
                 }
 
                 return tempExtractPath;
@@ -703,117 +703,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public string GetTimeParameter(TimeSpan time)
         {
             return time.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture);
-        }
-
-        public async Task ExtractVideoImagesOnInterval(
-            string inputFile,
-            string container,
-            MediaStream videoStream,
-            MediaSourceInfo mediaSource,
-            Video3DFormat? threedFormat,
-            TimeSpan interval,
-            string targetDirectory,
-            string filenamePrefix,
-            int? maxWidth,
-            CancellationToken cancellationToken)
-        {
-            var inputArgument = GetInputArgument(inputFile, mediaSource);
-
-            var vf = "fps=fps=1/" + interval.TotalSeconds.ToString(CultureInfo.InvariantCulture);
-
-            if (maxWidth.HasValue)
-            {
-                var maxWidthParam = maxWidth.Value.ToString(CultureInfo.InvariantCulture);
-
-                vf += string.Format(CultureInfo.InvariantCulture, ",scale=min(iw\\,{0}):trunc(ow/dar/2)*2", maxWidthParam);
-            }
-
-            Directory.CreateDirectory(targetDirectory);
-            var outputPath = Path.Combine(targetDirectory, filenamePrefix + "%05d.jpg");
-
-            var args = string.Format(CultureInfo.InvariantCulture, "-i {0} -threads {3} -v quiet {2} -f image2 \"{1}\"", inputArgument, outputPath, vf, _threads);
-
-            if (!string.IsNullOrWhiteSpace(container))
-            {
-                var inputFormat = EncodingHelper.GetInputFormat(container);
-                if (!string.IsNullOrWhiteSpace(inputFormat))
-                {
-                    args = "-f " + inputFormat + " " + args;
-                }
-            }
-
-            var processStartInfo = new ProcessStartInfo
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                FileName = _ffmpegPath,
-                Arguments = args,
-                WindowStyle = ProcessWindowStyle.Hidden,
-                ErrorDialog = false
-            };
-
-            _logger.LogInformation(processStartInfo.FileName + " " + processStartInfo.Arguments);
-
-            await _thumbnailResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            bool ranToCompletion = false;
-
-            var process = new Process
-            {
-                StartInfo = processStartInfo,
-                EnableRaisingEvents = true
-            };
-            using (var processWrapper = new ProcessWrapper(process, this))
-            {
-                try
-                {
-                    StartProcess(processWrapper);
-
-                    // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
-                    // but we still need to detect if the process hangs.
-                    // Making the assumption that as long as new jpegs are showing up, everything is good.
-
-                    bool isResponsive = true;
-                    int lastCount = 0;
-
-                    while (isResponsive)
-                    {
-                        if (await process.WaitForExitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false))
-                        {
-                            ranToCompletion = true;
-                            break;
-                        }
-
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var jpegCount = _fileSystem.GetFilePaths(targetDirectory)
-                            .Count(i => string.Equals(Path.GetExtension(i), ".jpg", StringComparison.OrdinalIgnoreCase));
-
-                        isResponsive = jpegCount > lastCount;
-                        lastCount = jpegCount;
-                    }
-
-                    if (!ranToCompletion)
-                    {
-                        StopProcess(processWrapper, 1000);
-                    }
-                }
-                finally
-                {
-                    _thumbnailResourcePool.Release();
-                }
-
-                var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-
-                if (exitCode == -1)
-                {
-                    var msg = string.Format(CultureInfo.InvariantCulture, "ffmpeg image extraction failed for {0}", inputArgument);
-
-                    _logger.LogError(msg);
-
-                    throw new FfmpegException(msg);
-                }
-            }
         }
 
         private void StartProcess(ProcessWrapper process)

@@ -1,8 +1,7 @@
-#nullable disable
 using System.Collections.Generic;
 using Jellyfin.Data.Enums;
 
-namespace MediaBrowser.Model.Entities
+namespace MediaBrowser.Model.Dto
 {
     /// <summary>
     /// Defines the display preferences for any item that supports them (usually Folders).
@@ -18,32 +17,32 @@ namespace MediaBrowser.Model.Entities
             PrimaryImageHeight = 250;
             PrimaryImageWidth = 250;
             ShowBackdrop = true;
-            CustomPrefs = new Dictionary<string, string>();
+            CustomPrefs = new Dictionary<string, string?>();
         }
 
         /// <summary>
         /// Gets or sets the user id.
         /// </summary>
         /// <value>The user id.</value>
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the view.
         /// </summary>
         /// <value>The type of the view.</value>
-        public string ViewType { get; set; }
+        public string? ViewType { get; set; }
 
         /// <summary>
         /// Gets or sets the sort by.
         /// </summary>
         /// <value>The sort by.</value>
-        public string SortBy { get; set; }
+        public string? SortBy { get; set; }
 
         /// <summary>
         /// Gets or sets the index by.
         /// </summary>
         /// <value>The index by.</value>
-        public string IndexBy { get; set; }
+        public string? IndexBy { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [remember indexing].
@@ -67,7 +66,7 @@ namespace MediaBrowser.Model.Entities
         /// Gets or sets the custom prefs.
         /// </summary>
         /// <value>The custom prefs.</value>
-        public Dictionary<string, string> CustomPrefs { get; set; }
+        public Dictionary<string, string?> CustomPrefs { get; set; }
 
         /// <summary>
         /// Gets or sets the scroll direction.
@@ -102,6 +101,6 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// Gets or sets the client.
         /// </summary>
-        public string Client { get; set; }
+        public string? Client { get; set; }
     }
 }

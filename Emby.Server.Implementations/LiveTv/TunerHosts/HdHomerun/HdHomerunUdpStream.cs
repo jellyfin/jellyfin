@@ -82,7 +82,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
-            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
             IPAddress localAddress = null;
@@ -147,7 +147,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;

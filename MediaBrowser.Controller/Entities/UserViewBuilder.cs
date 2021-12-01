@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
@@ -30,22 +29,19 @@ namespace MediaBrowser.Controller.Entities
         private readonly ILogger<BaseItem> _logger;
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
-        private readonly IServerConfigurationManager _config;
 
         public UserViewBuilder(
             IUserViewManager userViewManager,
             ILibraryManager libraryManager,
             ILogger<BaseItem> logger,
             IUserDataManager userDataManager,
-            ITVSeriesManager tvSeriesManager,
-            IServerConfigurationManager config)
+            ITVSeriesManager tvSeriesManager)
         {
             _userViewManager = userViewManager;
             _libraryManager = libraryManager;
             _logger = logger;
             _userDataManager = userDataManager;
             _tvSeriesManager = tvSeriesManager;
-            _config = config;
         }
 
         public QueryResult<BaseItem> GetUserItems(Folder queryParent, Folder displayParent, string viewType, InternalItemsQuery query)

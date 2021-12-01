@@ -1,7 +1,3 @@
-#nullable disable
-
-#pragma warning disable CA1002, CS1591
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,15 +8,30 @@ using MediaBrowser.Model.Globalization;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
+    /// <summary>
+    /// Resolves external subtitles for videos.
+    /// </summary>
     public class SubtitleResolver
     {
         private readonly ILocalizationManager _localization;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SubtitleResolver"/> class.
+        /// </summary>
+        /// <param name="localization">The localization manager.</param>
         public SubtitleResolver(ILocalizationManager localization)
         {
             _localization = localization;
         }
 
+        /// <summary>
+        /// Retrieves the external subtitle streams for the provided video.
+        /// </summary>
+        /// <param name="video">The video to search from.</param>
+        /// <param name="startIndex">The stream index to start adding subtitle streams at.</param>
+        /// <param name="directoryService">The directory service to search for files.</param>
+        /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
+        /// <returns>The external subtitle streams located.</returns>
         public List<MediaStream> GetExternalSubtitleStreams(
             Video video,
             int startIndex,
@@ -56,6 +67,13 @@ namespace MediaBrowser.Providers.MediaInfo
             return streams;
         }
 
+        /// <summary>
+        /// Locates the external subtitle files for the provided video.
+        /// </summary>
+        /// <param name="video">The video to search from.</param>
+        /// <param name="directoryService">The directory service to search for files.</param>
+        /// <param name="clearCache">True if the directory service cache should be cleared before searching.</param>
+        /// <returns>The external subtitle file paths located.</returns>
         public IEnumerable<string> GetExternalSubtitleFiles(
             Video video,
             IDirectoryService directoryService,
@@ -74,6 +92,13 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
+        /// <summary>
+        /// Extracts the subtitle files from the provided list and adds them to the list of streams.
+        /// </summary>
+        /// <param name="streams">The list of streams to add external subtitles to.</param>
+        /// <param name="videoPath">The path to the video file.</param>
+        /// <param name="startIndex">The stream index to start adding subtitle streams at.</param>
+        /// <param name="files">The files to add if they are subtitles.</param>
         public void AddExternalSubtitleStreams(
             List<MediaStream> streams,
             string videoPath,
@@ -120,6 +145,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     while (languageSpan.Length > 0)
                     {
                         var lastDot = languageSpan.LastIndexOf('.');
+                        if (lastDot < videoFileNameWithoutExtension.Length)
+                        {
+                            languageSpan = ReadOnlySpan<char>.Empty;
+                            break;
+                        }
+
                         var currentSlice = languageSpan[lastDot..];
                         if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
                             || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
@@ -133,12 +164,19 @@ namespace MediaBrowser.Providers.MediaInfo
                         break;
                     }
 
-                    // Try to translate to three character code
-                    // Be flexible and check against both the full and three character versions
                     var language = languageSpan.ToString();
-                    var culture = _localization.FindLanguageInfo(language);
+                    if (string.IsNullOrWhiteSpace(language))
+                    {
+                        language = null;
+                    }
+                    else
+                    {
+                        // Try to translate to three character code
+                        // Be flexible and check against both the full and three character versions
+                        var culture = _localization.FindLanguageInfo(language);
 
-                    language = culture == null ? language : culture.ThreeLetterISOLanguageName;
+                        language = culture == null ? language : culture.ThreeLetterISOLanguageName;
+                    }
 
                     mediaStream = new MediaStream
                     {

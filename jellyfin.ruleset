@@ -38,13 +38,29 @@
   </Rules>
 
   <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.Design">
+    <!-- error on CA1063: Implement IDisposable correctly -->
+    <Rule Id="CA1063" Action="Error" />
     <!-- error on CA1305: Specify IFormatProvider -->
     <Rule Id="CA1305" Action="Error" />
+    <!-- error on CA1307: Specify StringComparison for clarity -->
+    <Rule Id="CA1307" Action="Error" />
+    <!-- error on CA1309: Use ordinal StringComparison -->
+    <Rule Id="CA1309" Action="Error" />
     <!-- error on CA1725: Parameter names should match base declaration -->
     <Rule Id="CA1725" Action="Error" />
+    <!-- error on CA1725: Call async methods when in an async method -->
+    <Rule Id="CA1727" Action="Error" />
+    <!-- error on CA1813: Avoid unsealed attributes -->
+    <Rule Id="CA1813" Action="Error" />
+    <!-- error on CA1843: Do not use 'WaitAll' with a single task -->
+    <Rule Id="CA1843" Action="Error" />
+    <!-- error on CA1845: Use span-based 'string.Concat' -->
+    <Rule Id="CA1845" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />
+    <!-- error on CA2254: Template should be a static expression -->
+    <Rule Id="CA2254" Action="Error" />
 
     <!-- disable warning CA1014: Mark assemblies with CLSCompliantAttribute -->
     <Rule Id="CA1014" Action="Info" />
@@ -77,6 +93,8 @@
     <Rule Id="CA1822" Action="Info" />
     <!-- disable warning CA2000: Dispose objects before losing scope -->
     <Rule Id="CA2000" Action="Info" />
+    <!-- disable warning CA2253: Named placeholders should not be numeric values -->
+    <Rule Id="CA2253" Action="Info" />
     <!-- disable warning CA5394: Do not use insecure randomness -->
     <Rule Id="CA5394" Action="Info" />
 
@@ -90,6 +108,8 @@
     <Rule Id="CA1303" Action="None" />
     <!-- disable warning CA1308: Normalize strings to uppercase -->
     <Rule Id="CA1308" Action="None" />
+    <!-- disable warning CA1848: Use the LoggerMessage delegates -->
+    <Rule Id="CA1848" Action="None" />
     <!-- disable warning CA2101: Specify marshaling for P/Invoke string arguments -->
     <Rule Id="CA2101" Action="None" />
     <!-- disable warning CA2234: Pass System.Uri objects instead of strings -->

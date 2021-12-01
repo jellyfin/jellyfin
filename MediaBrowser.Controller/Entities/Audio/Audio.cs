@@ -126,15 +126,6 @@ namespace MediaBrowser.Controller.Entities.Audio
             return base.GetBlockUnratedType();
         }
 
-        public List<MediaStream> GetMediaStreams(MediaStreamType type)
-        {
-            return MediaSourceManager.GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = Id,
-                Type = type
-            });
-        }
-
         public SongInfo GetLookupInfo()
         {
             var info = GetItemLookupInfo<SongInfo>();
@@ -146,11 +137,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return info;
         }
 
-        protected override List<Tuple<BaseItem, MediaSourceType>> GetAllItemsForMediaSources()
-        {
-            var list = new List<Tuple<BaseItem, MediaSourceType>>();
-            list.Add(new Tuple<BaseItem, MediaSourceType>(this, MediaSourceType.Default));
-            return list;
-        }
+        protected override IEnumerable<(BaseItem, MediaSourceType)> GetAllItemsForMediaSources()
+            => new[] { ((BaseItem)this, MediaSourceType.Default) };
     }
 }

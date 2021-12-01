@@ -58,7 +58,7 @@ namespace Emby.Server.Implementations.Udp
             _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         }
 
-        private async Task RespondToV2Message(string messageText, EndPoint endpoint, CancellationToken cancellationToken)
+        private async Task RespondToV2Message(EndPoint endpoint, CancellationToken cancellationToken)
         {
             string? localUrl = _config[AddressOverrideConfigKey];
             if (string.IsNullOrEmpty(localUrl))
@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.Udp
 
             try
             {
-                await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint).ConfigureAwait(false);
+                await _udpSocket.SendToAsync(JsonSerializer.SerializeToUtf8Bytes(response), SocketFlags.None, endpoint, cancellationToken).ConfigureAwait(false);
             }
             catch (SocketException ex)
             {
@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.Udp
                     var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
-                        await RespondToV2Message(text, result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
+                        await RespondToV2Message(result.RemoteEndPoint, cancellationToken).ConfigureAwait(false);
                     }
                 }
                 catch (SocketException ex)

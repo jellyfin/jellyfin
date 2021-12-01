@@ -149,7 +149,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         }
                         else
                         {
-                            Logger.LogWarning("Invalid Added value found: " + val);
+                            Logger.LogWarning("Invalid Added value found: {Value}", val);
                         }
                     }
 
@@ -412,7 +412,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var actors = reader.ReadInnerXml();
 
-                    if (actors.Contains("<", StringComparison.Ordinal))
+                    if (actors.Contains('<', StringComparison.Ordinal))
                     {
                         // This is one of the mis-named "Actors" full nodes created by MB2
                         // Create a reader and pass it to the persons node processor

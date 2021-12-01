@@ -134,7 +134,7 @@ namespace Jellyfin.Api.Models.PlaybackDtos
         /// <summary>
         /// Gets or sets bytes downloaded.
         /// </summary>
-        public long? BytesDownloaded { get; set; }
+        public long BytesDownloaded { get; set; }
 
         /// <summary>
         /// Gets or sets bytes transcoded.

@@ -148,7 +148,7 @@ namespace Jellyfin.Api.Helpers
 
                     mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                         ? mediaSources[0]
-                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.InvariantCulture));
+                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
                     if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
                     {

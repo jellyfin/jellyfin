@@ -33,13 +33,6 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the media streams.
         /// </summary>
-        /// <param name="mediaSourceId">The media source identifier.</param>
-        /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
-        List<MediaStream> GetMediaStreams(string mediaSourceId);
-
-        /// <summary>
-        /// Gets the media streams.
-        /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>IEnumerable&lt;MediaStream&gt;.</returns>
         List<MediaStream> GetMediaStreams(MediaStreamQuery query);

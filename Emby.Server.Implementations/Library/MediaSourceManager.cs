@@ -45,6 +45,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILocalizationManager _localizationManager;
         private readonly IApplicationPaths _appPaths;
+        private readonly IDirectoryService _directoryService;
 
         private readonly ConcurrentDictionary<string, ILiveStream> _openStreams = new ConcurrentDictionary<string, ILiveStream>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
@@ -61,7 +62,8 @@ namespace Emby.Server.Implementations.Library
             ILogger<MediaSourceManager> logger,
             IFileSystem fileSystem,
             IUserDataManager userDataManager,
-            IMediaEncoder mediaEncoder)
+            IMediaEncoder mediaEncoder,
+            IDirectoryService directoryService)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
@@ -72,6 +74,7 @@ namespace Emby.Server.Implementations.Library
             _mediaEncoder = mediaEncoder;
             _localizationManager = localizationManager;
             _appPaths = applicationPaths;
+            _directoryService = directoryService;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -104,16 +107,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             return false;
-        }
-
-        public List<MediaStream> GetMediaStreams(string mediaSourceId)
-        {
-            var list = GetMediaStreams(new MediaStreamQuery
-            {
-                ItemId = new Guid(mediaSourceId)
-            });
-
-            return GetMediaStreamsForItem(list);
         }
 
         public List<MediaStream> GetMediaStreams(Guid itemId)
@@ -161,7 +154,7 @@ namespace Emby.Server.Implementations.Library
             if (allowMediaProbe && mediaSources[0].Type != MediaSourceType.Placeholder && !mediaSources[0].MediaStreams.Any(i => i.Type == MediaStreamType.Audio || i.Type == MediaStreamType.Video))
             {
                 await item.RefreshMetadata(
-                    new MetadataRefreshOptions(new DirectoryService(_fileSystem))
+                    new MetadataRefreshOptions(_directoryService)
                     {
                         EnableRemoteContentProbe = true,
                         MetadataRefreshMode = MetadataRefreshMode.FullRefresh
@@ -212,6 +205,7 @@ namespace Emby.Server.Implementations.Library
             return SortMediaSources(list);
         }
 
+        /// <inheritdoc />>
         public MediaProtocol GetPathProtocol(string path)
         {
             if (path.StartsWith("Rtsp", StringComparison.OrdinalIgnoreCase))
@@ -258,7 +252,7 @@ namespace Emby.Server.Implementations.Library
             {
                 if (path != null)
                 {
-                    if (path.IndexOf(".m3u", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (path.Contains(".m3u", StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -297,7 +291,7 @@ namespace Emby.Server.Implementations.Library
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting media sources");
-                return new List<MediaSourceInfo>();
+                return Enumerable.Empty<MediaSourceInfo>();
             }
         }
 
@@ -494,14 +488,11 @@ namespace Emby.Server.Implementations.Library
                 _liveStreamSemaphore.Release();
             }
 
-            // TODO: Don't hardcode this
-            const bool isAudio = false;
-
             try
             {
                 if (mediaSource.MediaStreams.Any(i => i.Index != -1) || !mediaSource.SupportsProbing)
                 {
-                    AddMediaInfo(mediaSource, isAudio);
+                    AddMediaInfo(mediaSource);
                 }
                 else
                 {
@@ -509,14 +500,14 @@ namespace Emby.Server.Implementations.Library
                     string cacheKey = request.OpenToken;
 
                     await new LiveStreamHelper(_mediaEncoder, _logger, _appPaths)
-                        .AddMediaInfoWithProbe(mediaSource, isAudio, cacheKey, true, cancellationToken)
+                        .AddMediaInfoWithProbe(mediaSource, false, cacheKey, true, cancellationToken)
                         .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error probing live tv stream");
-                AddMediaInfo(mediaSource, isAudio);
+                AddMediaInfo(mediaSource);
             }
 
             // TODO: @bond Fix
@@ -536,7 +527,7 @@ namespace Emby.Server.Implementations.Library
             return new Tuple<LiveStreamResponse, IDirectStreamProvider>(new LiveStreamResponse(clone), liveStream as IDirectStreamProvider);
         }
 
-        private static void AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio)
+        private static void AddMediaInfo(MediaSourceInfo mediaSource)
         {
             mediaSource.DefaultSubtitleStreamIndex = null;
 
@@ -855,9 +846,7 @@ namespace Emby.Server.Implementations.Library
             return (provider, keyId);
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
+        /// <inheritdoc />
         public void Dispose()
         {
             Dispose(true);

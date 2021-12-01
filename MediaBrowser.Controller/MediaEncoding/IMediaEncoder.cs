@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
@@ -95,36 +96,10 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="mediaSource">Media source information.</param>
         /// <param name="imageStream">Media stream information.</param>
         /// <param name="imageStreamIndex">Index of the stream to extract from.</param>
-        /// <param name="outputExtension">The extension of the file to write, including the '.'.</param>
+        /// <param name="targetFormat">The format of the file to write.</param>
         /// <param name="cancellationToken">CancellationToken to use for operation.</param>
         /// <returns>Location of video image.</returns>
-        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, string outputExtension, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Extracts the video images on interval.
-        /// </summary>
-        /// <param name="inputFile">Input file.</param>
-        /// <param name="container">Video container type.</param>
-        /// <param name="videoStream">Media stream information.</param>
-        /// <param name="mediaSource">Media source information.</param>
-        /// <param name="threedFormat">Video 3D format.</param>
-        /// <param name="interval">Time interval.</param>
-        /// <param name="targetDirectory">Directory to write images.</param>
-        /// <param name="filenamePrefix">Filename prefix to use.</param>
-        /// <param name="maxWidth">Maximum width of image.</param>
-        /// <param name="cancellationToken">CancellationToken to use for operation.</param>
-        /// <returns>A task.</returns>
-        Task ExtractVideoImagesOnInterval(
-            string inputFile,
-            string container,
-            MediaStream videoStream,
-            MediaSourceInfo mediaSource,
-            Video3DFormat? threedFormat,
-            TimeSpan interval,
-            string targetDirectory,
-            string filenamePrefix,
-            int? maxWidth,
-            CancellationToken cancellationToken);
+        Task<string> ExtractVideoImage(string inputFile, string container, MediaSourceInfo mediaSource, MediaStream imageStream, int? imageStreamIndex, ImageFormat? targetFormat, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the media info.

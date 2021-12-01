@@ -60,21 +60,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new RemoteImageInfo[personResult.Images.Profiles.Count];
+            var profiles = personResult.Images.Profiles;
+            var remoteImages = new List<RemoteImageInfo>(profiles.Count);
 
-            for (var i = 0; i < personResult.Images.Profiles.Count; i++)
-            {
-                var image = personResult.Images.Profiles[i];
-                remoteImages[i] = new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    Width = image.Width,
-                    Height = image.Height,
-                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
-                    Url = _tmdbClientManager.GetProfileUrl(image.FilePath)
-                };
-            }
+            _tmdbClientManager.ConvertProfilesToRemoteImageInfo(profiles, language, remoteImages);
 
             return remoteImages;
         }

@@ -112,7 +112,7 @@ namespace Emby.Dlna
 
             if (profile == null)
             {
-                LogUnmatchedProfile(deviceInfo);
+                _logger.LogInformation("No matching device profile found. The default will need to be used. \n{@Profile}", deviceInfo);
             }
             else
             {
@@ -120,23 +120,6 @@ namespace Emby.Dlna
             }
 
             return profile;
-        }
-
-        private void LogUnmatchedProfile(DeviceIdentification profile)
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine("No matching device profile found. The default will need to be used.");
-            builder.Append("FriendlyName: ").AppendLine(profile.FriendlyName);
-            builder.Append("Manufacturer: ").AppendLine(profile.Manufacturer);
-            builder.Append("ManufacturerUrl: ").AppendLine(profile.ManufacturerUrl);
-            builder.Append("ModelDescription: ").AppendLine(profile.ModelDescription);
-            builder.Append("ModelName: ").AppendLine(profile.ModelName);
-            builder.Append("ModelNumber: ").AppendLine(profile.ModelNumber);
-            builder.Append("ModelUrl: ").AppendLine(profile.ModelUrl);
-            builder.Append("SerialNumber: ").AppendLine(profile.SerialNumber);
-
-            _logger.LogInformation(builder.ToString());
         }
 
         /// <summary>
@@ -367,7 +350,7 @@ namespace Emby.Dlna
                         Directory.CreateDirectory(systemProfilesPath);
 
                         var fileOptions = AsyncFile.WriteOptions;
-                        fileOptions.Mode = FileMode.CreateNew;
+                        fileOptions.Mode = FileMode.Create;
                         fileOptions.PreallocationSize = length;
                         using (var fileStream = new FileStream(path, fileOptions))
                         {
@@ -416,7 +399,7 @@ namespace Emby.Dlna
         }
 
         /// <inheritdoc />
-        public void UpdateProfile(DeviceProfile profile)
+        public void UpdateProfile(string profileId, DeviceProfile profile)
         {
             profile = ReserializeProfile(profile);
 
@@ -430,7 +413,7 @@ namespace Emby.Dlna
                 throw new ArgumentException("Profile is missing Name");
             }
 
-            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profile.Id, StringComparison.OrdinalIgnoreCase));
+            var current = GetProfileInfosInternal().First(i => string.Equals(i.Info.Id, profileId, StringComparison.OrdinalIgnoreCase));
 
             var newFilename = _fileSystem.GetValidFilename(profile.Name) + ".xml";
             var path = Path.Combine(UserProfilesPath, newFilename);

@@ -191,7 +191,7 @@ namespace MediaBrowser.Model.Net
             // Catch-all for all video types that don't require specific mime types
             if (_videoFileExtensions.Contains(ext))
             {
-                return "video/" + ext.Substring(1);
+                return string.Concat("video/", ext.AsSpan(1));
             }
 
             // Type text

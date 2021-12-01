@@ -87,8 +87,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 ErrorDialog = false
             };
 
-            var commandLineLogMessage = processStartInfo.FileName + " " + processStartInfo.Arguments;
-            _logger.LogInformation(commandLineLogMessage);
+            _logger.LogInformation("{Filename} {Arguments}", processStartInfo.FileName, processStartInfo.Arguments);
 
             var logFilePath = Path.Combine(_appPaths.LogDirectoryPath, "record-transcode-" + Guid.NewGuid() + ".txt");
             Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
@@ -97,7 +96,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logFileStream = new FileStream(logFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
 
             await JsonSerializer.SerializeAsync(_logFileStream, mediaSource, _jsonOptions, cancellationToken).ConfigureAwait(false);
-            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
+            await _logFileStream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine + Environment.NewLine + processStartInfo.FileName + " " + processStartInfo.Arguments + Environment.NewLine + Environment.NewLine), cancellationToken).ConfigureAwait(false);
 
             _process = new Process
             {
@@ -188,7 +187,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 CultureInfo.InvariantCulture,
                 "-i \"{0}\" {2} -map_metadata -1 -threads {6} {3}{4}{5} -y \"{1}\"",
                 inputTempFile,
-                targetFile.Replace("\"", "\\\""), // Escape quotes in filename
+                targetFile.Replace("\"", "\\\"", StringComparison.Ordinal), // Escape quotes in filename
                 videoArgs,
                 GetAudioArgs(mediaSource),
                 subtitleArgs,
@@ -225,13 +224,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             {
                 try
                 {
-                    _logger.LogInformation("Stopping ffmpeg recording process for {path}", _targetPath);
+                    _logger.LogInformation("Stopping ffmpeg recording process for {Path}", _targetPath);
 
                     _process.StandardInput.WriteLine("q");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error stopping recording transcoding job for {path}", _targetPath);
+                    _logger.LogError(ex, "Error stopping recording transcoding job for {Path}", _targetPath);
                 }
 
                 if (_hasExited)
@@ -241,7 +240,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _logger.LogInformation("Calling recording process.WaitForExit for {path}", _targetPath);
+                    _logger.LogInformation("Calling recording process.WaitForExit for {Path}", _targetPath);
 
                     if (_process.WaitForExit(10000))
                     {
@@ -250,7 +249,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error waiting for recording process to exit for {path}", _targetPath);
+                    _logger.LogError(ex, "Error waiting for recording process to exit for {Path}", _targetPath);
                 }
 
                 if (_hasExited)
@@ -260,13 +259,13 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 try
                 {
-                    _logger.LogInformation("Killing ffmpeg recording process for {path}", _targetPath);
+                    _logger.LogInformation("Killing ffmpeg recording process for {Path}", _targetPath);
 
                     _process.Kill();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error killing recording transcoding job for {path}", _targetPath);
+                    _logger.LogError(ex, "Error killing recording transcoding job for {Path}", _targetPath);
                 }
             }
         }

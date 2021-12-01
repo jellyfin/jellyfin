@@ -8,13 +8,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
+using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -44,15 +47,21 @@ namespace MediaBrowser.Providers.MediaInfo
             "logo",
         };
 
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly ILogger<EmbeddedImageProvider> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedImageProvider"/> class.
         /// </summary>
+        /// <param name="mediaSourceManager">The media source manager for fetching item streams and attachments.</param>
         /// <param name="mediaEncoder">The media encoder for extracting attached/embedded images.</param>
-        public EmbeddedImageProvider(IMediaEncoder mediaEncoder)
+        /// <param name="logger">The logger.</param>
+        public EmbeddedImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ILogger<EmbeddedImageProvider> logger)
         {
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -114,22 +123,31 @@ namespace MediaBrowser.Providers.MediaInfo
                 ImageType.Primary => _primaryImageFileNames,
                 ImageType.Backdrop => _backdropImageFileNames,
                 ImageType.Logo => _logoImageFileNames,
-                _ => _primaryImageFileNames
+                _ => Array.Empty<string>()
             };
 
+            if (imageFileNames.Length == 0)
+            {
+                _logger.LogWarning("Attempted to load unexpected image type: {Type}", type);
+                return new DynamicImageResponse { HasImage = false };
+            }
+
             // Try attachments first
-            var attachmentStream = item.GetMediaSources(false)
-                .SelectMany(source => source.MediaAttachments)
+            var attachmentStream = _mediaSourceManager.GetMediaAttachments(item.Id)
                 .FirstOrDefault(attachment => !string.IsNullOrEmpty(attachment.FileName)
                     && imageFileNames.Any(name => attachment.FileName.Contains(name, StringComparison.OrdinalIgnoreCase)));
 
             if (attachmentStream != null)
             {
-                return await ExtractAttachment(item, cancellationToken, attachmentStream, mediaSource);
+                return await ExtractAttachment(item, attachmentStream, mediaSource, cancellationToken);
             }
 
             // Fall back to EmbeddedImage streams
-            var imageStreams = item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.EmbeddedImage);
+            var imageStreams = _mediaSourceManager.GetMediaStreams(new MediaStreamQuery
+            {
+                ItemId = item.Id,
+                Type = MediaStreamType.EmbeddedImage
+            });
 
             if (imageStreams.Count == 0)
             {
@@ -156,20 +174,28 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
+            var format = imageStream.Codec switch
+            {
+                "mjpeg" => ImageFormat.Jpg,
+                "png" => ImageFormat.Png,
+                "gif" => ImageFormat.Gif,
+                _ => ImageFormat.Jpg
+            };
+
             string extractedImagePath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, ".jpg", cancellationToken)
+                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, imageStream, imageStream.Index, format, cancellationToken)
                     .ConfigureAwait(false);
 
             return new DynamicImageResponse
             {
-                Format = ImageFormat.Jpg,
+                Format = format,
                 HasImage = true,
                 Path = extractedImagePath,
                 Protocol = MediaProtocol.File
             };
         }
 
-        private async Task<DynamicImageResponse> ExtractAttachment(Video item, CancellationToken cancellationToken, MediaAttachment attachmentStream, MediaSourceInfo mediaSource)
+        private async Task<DynamicImageResponse> ExtractAttachment(Video item, MediaAttachment attachmentStream, MediaSourceInfo mediaSource, CancellationToken cancellationToken)
         {
             var extension = string.IsNullOrEmpty(attachmentStream.MimeType)
                 ? Path.GetExtension(attachmentStream.FileName)
@@ -180,10 +206,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 extension = ".jpg";
             }
 
-            string extractedAttachmentPath =
-                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, extension, cancellationToken)
-                    .ConfigureAwait(false);
-
             ImageFormat format = extension switch
             {
                 ".bmp" => ImageFormat.Bmp,
@@ -193,6 +215,10 @@ namespace MediaBrowser.Providers.MediaInfo
                 ".webp" => ImageFormat.Webp,
                 _ => ImageFormat.Jpg
             };
+
+            string extractedAttachmentPath =
+                await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, null, attachmentStream.Index, format, cancellationToken)
+                    .ConfigureAwait(false);
 
             return new DynamicImageResponse
             {

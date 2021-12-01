@@ -212,10 +212,13 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{WakeOnLanInfo}"/> with the WakeOnLan infos.</returns>
         [HttpGet("WakeOnLanInfo")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Obsolete("This endpoint is obsolete.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
         {
-            var result = _appHost.GetWakeOnLanInfo();
+            var result = _network.GetMacAddresses()
+                .Select(i => new WakeOnLanInfo(i))
+                .ToList();
             return Ok(result);
         }
     }

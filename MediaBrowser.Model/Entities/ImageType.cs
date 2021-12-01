@@ -1,3 +1,5 @@
+using System;
+
 namespace MediaBrowser.Model.Entities
 {
     /// <summary>
@@ -48,6 +50,10 @@ namespace MediaBrowser.Model.Entities
         /// <summary>
         /// The screenshot.
         /// </summary>
+        /// <remarks>
+        /// This enum value is obsolete.
+        /// XmlSerializer does not serialize/deserialize objects that are marked as [Obsolete].
+        /// </remarks>
         Screenshot = 8,
 
         /// <summary>
