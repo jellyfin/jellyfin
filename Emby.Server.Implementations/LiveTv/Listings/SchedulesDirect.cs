@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Security.Cryptography;
@@ -101,11 +102,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     }
                 };
 
-            var requestString = JsonSerializer.Serialize(requestList, _jsonOptions);
-            _logger.LogDebug("Request string for schedules is: {RequestString}", requestString);
+            _logger.LogDebug("Request string for schedules is: {@RequestString}", requestList);
 
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/schedules");
-            options.Content = new StringContent(requestString, Encoding.UTF8, MediaTypeNames.Application.Json);
+            options.Content = JsonContent.Create(requestList, options: _jsonOptions);
             options.Headers.TryAddWithoutValidation("token", token);
             using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -121,8 +121,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             programRequestOptions.Headers.TryAddWithoutValidation("token", token);
 
             var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
-            programRequestOptions.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(programIds, _jsonOptions));
-            programRequestOptions.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+            programRequestOptions.Content = JsonContent.Create(programIds, options: _jsonOptions);
 
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
