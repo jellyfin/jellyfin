@@ -698,7 +698,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null && state.AudioStream.IsExternal)
             {
-                arg.Append(" -i \"").Append(state.AudioStream.Path).Append("\"");
+                arg.Append(" -i \"").Append(state.AudioStream.Path).Append('"');
             }
 
             return arg.ToString();
