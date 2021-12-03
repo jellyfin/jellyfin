@@ -508,7 +508,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The absolute URL.</returns>
         public string GetPosterUrl(string posterPath)
         {
-            return GetUrl(_tmDbClient.Config.Images.PosterSizes[^1], posterPath);
+            return GetUrl(Plugin.Instance.Configuration.PosterSize, posterPath);
         }
 
         /// <summary>
@@ -518,7 +518,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The absolute URL.</returns>
         public string GetProfileUrl(string actorProfilePath)
         {
-            return GetUrl(_tmDbClient.Config.Images.ProfileSizes[^1], actorProfilePath);
+            return GetUrl(Plugin.Instance.Configuration.ProfileSize, actorProfilePath);
         }
 
         /// <summary>
@@ -529,7 +529,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="results">The collection to add the remote images into.</param>
         public void ConvertPostersToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.PosterSizes[^1], ImageType.Primary, requestLanguage, results);
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.PosterSize, ImageType.Primary, requestLanguage, results);
         }
 
         /// <summary>
@@ -540,7 +540,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="results">The collection to add the remote images into.</param>
         public void ConvertBackdropsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.BackdropSizes[^1], ImageType.Backdrop, requestLanguage, results);
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.BackdropSize, ImageType.Backdrop, requestLanguage, results);
         }
 
         /// <summary>
@@ -551,7 +551,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="results">The collection to add the remote images into.</param>
         public void ConvertProfilesToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.ProfileSizes[^1], ImageType.Primary, requestLanguage, results);
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.ProfileSize, ImageType.Primary, requestLanguage, results);
         }
 
         /// <summary>
@@ -562,7 +562,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="results">The collection to add the remote images into.</param>
         public void ConvertStillsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            ConvertToRemoteImageInfo(images, _tmDbClient.Config.Images.StillSizes[^1], ImageType.Primary, requestLanguage, results);
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.StillSize, ImageType.Primary, requestLanguage, results);
         }
 
         /// <summary>
@@ -575,16 +575,20 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="results">The collection to add the remote images into.</param>
         private void ConvertToRemoteImageInfo(List<ImageData> images, string size, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
         {
+            // sizes provided are for original resolution, don't store them when downloading scaled images
+            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
+
             for (var i = 0; i < images.Count; i++)
             {
                 var image = images[i];
+
                 results.Add(new RemoteImageInfo
                 {
                     Url = GetUrl(size, image.FilePath),
                     CommunityRating = image.VoteAverage,
                     VoteCount = image.VoteCount,
-                    Width = image.Width,
-                    Height = image.Height,
+                    Width = scaleImage ? null : image.Width,
+                    Height = scaleImage ? null : image.Height,
                     Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage),
                     ProviderName = TmdbUtils.ProviderName,
                     Type = type,
@@ -593,9 +597,51 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
         }
 
-        private Task EnsureClientConfigAsync()
+        private async Task EnsureClientConfigAsync()
         {
-            return !_tmDbClient.HasConfig ? _tmDbClient.GetConfigAsync() : Task.CompletedTask;
+            if (!_tmDbClient.HasConfig)
+            {
+                var config = await _tmDbClient.GetConfigAsync().ConfigureAwait(false);
+                ValidatePreferences(config);
+            }
+        }
+
+        private static void ValidatePreferences(TMDbConfig config)
+        {
+            var imageConfig = config.Images;
+
+            var pluginConfig = Plugin.Instance.Configuration;
+
+            if (!imageConfig.PosterSizes.Contains(pluginConfig.PosterSize))
+            {
+                pluginConfig.PosterSize = imageConfig.PosterSizes[^1];
+            }
+
+            if (!imageConfig.BackdropSizes.Contains(pluginConfig.BackdropSize))
+            {
+                pluginConfig.BackdropSize = imageConfig.BackdropSizes[^1];
+            }
+
+            if (!imageConfig.ProfileSizes.Contains(pluginConfig.ProfileSize))
+            {
+                pluginConfig.ProfileSize = imageConfig.ProfileSizes[^1];
+            }
+
+            if (!imageConfig.StillSizes.Contains(pluginConfig.StillSize))
+            {
+                pluginConfig.StillSize = imageConfig.StillSizes[^1];
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TMDbClient"/> configuration.
+        /// </summary>
+        /// <returns>The configuration.</returns>
+        public async Task<TMDbConfig> GetClientConfiguration()
+        {
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            return _tmDbClient.Config;
         }
 
         /// <inheritdoc />
