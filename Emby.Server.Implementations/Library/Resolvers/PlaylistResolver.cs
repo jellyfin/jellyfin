@@ -16,9 +16,10 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// <summary>
     /// <see cref="IItemResolver"/> for <see cref="Playlist"/> library items.
     /// </summary>
-    public class PlaylistResolver : FolderResolver<Playlist>
+    public class PlaylistResolver : GenericFolderResolver<Playlist>
     {
-        private string[] _musicPlaylistCollectionTypes = new string[] {
+        private string[] _musicPlaylistCollectionTypes =
+        {
             string.Empty,
             CollectionType.Music
         };

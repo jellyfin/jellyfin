@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -13,7 +12,6 @@ using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Events.Users;
 using MediaBrowser.Common;
-using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Authentication;
@@ -164,15 +162,6 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void UpdateUser(User user)
-        {
-            using var dbContext = _dbProvider.CreateContext();
-            dbContext.Users.Update(user);
-            _users[user.Id] = user;
-            dbContext.SaveChanges();
-        }
-
-        /// <inheritdoc/>
         public async Task UpdateUserAsync(User user)
         {
             await using var dbContext = _dbProvider.CreateContext();
@@ -271,9 +260,9 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ResetEasyPassword(User user)
+        public Task ResetEasyPassword(User user)
         {
-            ChangeEasyPassword(user, string.Empty, null);
+            return ChangeEasyPassword(user, string.Empty, null);
         }
 
         /// <inheritdoc/>
@@ -291,7 +280,7 @@ namespace Jellyfin.Server.Implementations.Users
         }
 
         /// <inheritdoc/>
-        public void ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
+        public async Task ChangeEasyPassword(User user, string newPassword, string? newPasswordSha1)
         {
             if (newPassword != null)
             {
@@ -304,7 +293,7 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             user.EasyPassword = newPasswordSha1;
-            UpdateUser(user);
+            await UpdateUserAsync(user).ConfigureAwait(false);
 
             _eventManager.Publish(new UserPasswordChangedEventArgs(user));
         }
@@ -539,11 +528,7 @@ namespace Jellyfin.Server.Implementations.Users
                 }
             }
 
-            return new PinRedeemResult
-            {
-                Success = false,
-                UsersReset = Array.Empty<string>()
-            };
+            return new PinRedeemResult();
         }
 
         /// <inheritdoc />
@@ -710,6 +695,11 @@ namespace Jellyfin.Server.Implementations.Users
         /// <inheritdoc/>
         public async Task ClearProfileImageAsync(User user)
         {
+            if (user.ProfileImage == null)
+            {
+                return;
+            }
+
             await using var dbContext = _dbProvider.CreateContext();
             dbContext.Remove(user.ProfileImage);
             await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -826,11 +816,7 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 // Check easy password
                 var passwordHash = PasswordHash.Parse(user.EasyPassword);
-                var hash = _cryptoProvider.ComputeHash(
-                    passwordHash.Id,
-                    Encoding.UTF8.GetBytes(password),
-                    passwordHash.Salt.ToArray());
-                success = passwordHash.Hash.SequenceEqual(hash);
+                success = _cryptoProvider.Verify(passwordHash, password);
             }
 
             return (authenticationProvider, username, success);

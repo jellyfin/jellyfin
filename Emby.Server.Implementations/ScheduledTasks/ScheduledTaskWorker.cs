@@ -10,9 +10,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
@@ -24,6 +24,10 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class ScheduledTaskWorker : IScheduledTaskWorker
     {
+        /// <summary>
+        /// The options for the json Serializer.
+        /// </summary>
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Gets or sets the application paths.
@@ -66,11 +70,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// The _id.
         /// </summary>
         private string _id;
-
-        /// <summary>
-        /// The options for the json Serializer.
-        /// </summary>
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduledTaskWorker" /> class.
@@ -267,7 +266,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         }
 
         /// <summary>
-        /// Gets the triggers that define when the task will run.
+        /// Gets or sets the triggers that define when the task will run.
         /// </summary>
         /// <value>The triggers.</value>
         /// <exception cref="ArgumentNullException"><c>value</c> is <c>null</c>.</exception>
@@ -366,7 +365,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// </summary>
         /// <param name="options">Task options.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running</exception>
+        /// <exception cref="InvalidOperationException">Cannot execute a Task that is already running.</exception>
         public async Task Execute(TaskOptions options)
         {
             var task = Task.Run(async () => await ExecuteInternal(options).ConfigureAwait(false));
@@ -639,7 +638,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        _logger.LogInformation(Name + ": Cancelling");
+                        _logger.LogInformation("{Name}: Cancelling", Name);
                         token.Cancel();
                     }
                     catch (Exception ex)
@@ -653,16 +652,16 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        _logger.LogInformation(Name + ": Waiting on Task");
+                        _logger.LogInformation("{Name}: Waiting on Task", Name);
                         var exited = task.Wait(2000);
 
                         if (exited)
                         {
-                            _logger.LogInformation(Name + ": Task exited");
+                            _logger.LogInformation("{Name}: Task exited", Name);
                         }
                         else
                         {
-                            _logger.LogInformation(Name + ": Timed out waiting for task to stop");
+                            _logger.LogInformation("{Name}: Timed out waiting for task to stop", Name);
                         }
                     }
                     catch (Exception ex)
@@ -675,7 +674,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 {
                     try
                     {
-                        _logger.LogDebug(Name + ": Disposing CancellationToken");
+                        _logger.LogDebug("{Name}: Disposing CancellationToken", Name);
                         token.Dispose();
                     }
                     catch (Exception ex)

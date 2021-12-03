@@ -1,4 +1,3 @@
-#nullable disable
 #pragma warning disable CS1591
 
 using System;
@@ -17,6 +16,7 @@ namespace MediaBrowser.Model.Configuration
             SkipSubtitlesIfAudioTrackMatches = true;
             RequirePerfectSubtitleMatch = true;
 
+            AutomaticallyAddToCollection = true;
             EnablePhotos = true;
             SaveSubtitlesWithMedia = true;
             EnableRealtimeMonitor = true;
@@ -52,21 +52,21 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets the preferred metadata language.
         /// </summary>
         /// <value>The preferred metadata language.</value>
-        public string PreferredMetadataLanguage { get; set; }
+        public string? PreferredMetadataLanguage { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata country code.
         /// </summary>
         /// <value>The metadata country code.</value>
-        public string MetadataCountryCode { get; set; }
+        public string? MetadataCountryCode { get; set; }
 
         public string SeasonZeroDisplayName { get; set; }
 
-        public string[] MetadataSavers { get; set; }
+        public string[]? MetadataSavers { get; set; }
 
         public string[] DisabledLocalMetadataReaders { get; set; }
 
-        public string[] LocalMetadataReaderOrder { get; set; }
+        public string[]? LocalMetadataReaderOrder { get; set; }
 
         public string[] DisabledSubtitleFetchers { get; set; }
 
@@ -76,15 +76,17 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SkipSubtitlesIfAudioTrackMatches { get; set; }
 
-        public string[] SubtitleDownloadLanguages { get; set; }
+        public string[]? SubtitleDownloadLanguages { get; set; }
 
         public bool RequirePerfectSubtitleMatch { get; set; }
 
         public bool SaveSubtitlesWithMedia { get; set; }
 
+        public bool AutomaticallyAddToCollection { get; set; }
+
         public TypeOptions[] TypeOptions { get; set; }
 
-        public TypeOptions GetTypeOptions(string type)
+        public TypeOptions? GetTypeOptions(string type)
         {
             foreach (var options in TypeOptions)
             {

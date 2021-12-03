@@ -11,7 +11,6 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.System;
 using MediaBrowser.Providers.Plugins.Tmdb.Movies;
 using MediaBrowser.XbmcMetadata.Parsers;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -205,6 +204,20 @@ namespace Jellyfin.XbmcMetadata.Tests.Parsers
             var item = (Movie)result.Item;
 
             Assert.Equal(id, item.ProviderIds[provider]);
+        }
+
+        [Fact]
+        public void Parse_GivenFileWithFanartTag_Success()
+        {
+            var result = new MetadataResult<Video>()
+            {
+                Item = new Movie()
+            };
+
+            _parser.Fetch(result, "Test Data/Fanart.nfo", CancellationToken.None);
+
+            Assert.Single(result.RemoteImages.Where(x => x.type == ImageType.Backdrop));
+            Assert.Equal("https://assets.fanart.tv/fanart/movies/141052/moviebackground/justice-league-5a5332c7b5e77.jpg", result.RemoteImages.First(x => x.type == ImageType.Backdrop).url);
         }
 
         [Fact]

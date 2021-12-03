@@ -19,16 +19,6 @@ namespace Emby.Server.Implementations.ScheduledTasks
     /// </summary>
     public class TaskManager : ITaskManager
     {
-        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
-
-        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
-
-        /// <summary>
-        /// Gets the list of Scheduled Tasks.
-        /// </summary>
-        /// <value>The scheduled tasks.</value>
-        public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
-
         /// <summary>
         /// The _task queue.
         /// </summary>
@@ -53,10 +43,20 @@ namespace Emby.Server.Implementations.ScheduledTasks
             ScheduledTasks = Array.Empty<IScheduledTaskWorker>();
         }
 
+        public event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
+
+        public event EventHandler<TaskCompletionEventArgs> TaskCompleted;
+
+        /// <summary>
+        /// Gets the list of Scheduled Tasks.
+        /// </summary>
+        /// <value>The scheduled tasks.</value>
+        public IScheduledTaskWorker[] ScheduledTasks { get; private set; }
+
         /// <summary>
         /// Cancels if running and queue.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The task type.</typeparam>
         /// <param name="options">Task options.</param>
         public void CancelIfRunningAndQueue<T>(TaskOptions options)
             where T : IScheduledTask
@@ -76,7 +76,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Cancels if running.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The task type.</typeparam>
         public void CancelIfRunning<T>()
                  where T : IScheduledTask
         {
@@ -87,7 +87,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The task type.</typeparam>
         /// <param name="options">Task options.</param>
         public void QueueScheduledTask<T>(TaskOptions options)
             where T : IScheduledTask

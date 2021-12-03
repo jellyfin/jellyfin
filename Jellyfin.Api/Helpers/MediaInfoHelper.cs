@@ -468,7 +468,7 @@ namespace Jellyfin.Api.Helpers
         /// <returns>A <see cref="Task"/> containing the <see cref="LiveStreamResponse"/>.</returns>
         public async Task<LiveStreamResponse> OpenMediaSource(HttpRequest httpRequest, LiveStreamRequest request)
         {
-            var authInfo = _authContext.GetAuthorizationInfo(httpRequest);
+            var authInfo = await _authContext.GetAuthorizationInfo(httpRequest).ConfigureAwait(false);
 
             var result = await _mediaSourceManager.OpenLiveStream(request, CancellationToken.None).ConfigureAwait(false);
 

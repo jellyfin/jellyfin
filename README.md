@@ -41,6 +41,9 @@
 <a href="https://github.com/jellyfin/jellyfin/commits/master.atom">
 <img alt="Master Commits RSS Feed"" src="https://img.shields.io/badge/rss-commits-ffa500?logo=rss" />
 </a>
+<a href="https://lgtm.com/projects/g/jellyfin/jellyfin/alerts/">
+<img alt="Total LGTM alerts" src="https://img.shields.io/lgtm/alerts/g/jellyfin/jellyfin.svg?logo=lgtm&logoWidth=18"/>
+</a>
 </p>
 
 ---
@@ -80,7 +83,7 @@ These instructions will help you get set up with a local development environment
 
 ### Prerequisites
 
-Before the project can be built, you must first install the [.NET 5.0 SDK](https://dotnet.microsoft.com/download) on your system.
+Before the project can be built, you must first install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet) on your system.
 
 Instructions to run this project from the command line are included here, but you will also need to install an IDE if you want to debug the server while it is running. Any IDE that supports .NET Core development will work, but two options are recent versions of [Visual Studio](https://visualstudio.microsoft.com/downloads/) (at least 2017) and [Visual Studio Code](https://code.visualstudio.com/Download).
 

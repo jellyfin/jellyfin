@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -505,6 +507,11 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
+        /// <param name="item">A media item.</param>
+        /// <param name="libraryOptions">The LibraryOptions to use.</param>
+        /// <param name="options">The MetadataRefreshOptions to use.</param>
+        /// <param name="isFirstRefresh">Specifies first refresh mode.</param>
+        /// <param name="requiresRefresh">Specifies refresh mode.</param>
         /// <returns>IEnumerable{`0}.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
@@ -579,7 +586,7 @@ namespace MediaBrowser.Providers.Manager
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
             // Get providers to refresh
-            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider));
+            var providers = allImageProviders.Where(i => i is not ILocalImageProvider);
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
@@ -706,7 +713,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
@@ -724,7 +731,7 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.Failures += remoteResult.Failures;
             }
 
-            if (providers.Any(i => !(i is ICustomMetadataProvider)))
+            if (providers.Any(i => i is not ICustomMetadataProvider))
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
@@ -743,7 +750,7 @@ namespace MediaBrowser.Providers.Manager
 
             // var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
 
-            foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
+            foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
@@ -778,7 +785,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError(ex, "Error in {provider}", provider.Name);
+                Logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
         }
 
@@ -830,7 +837,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
                 }
             }
 

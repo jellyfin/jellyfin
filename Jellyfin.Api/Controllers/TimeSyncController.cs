@@ -21,10 +21,10 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<UtcTimeResponse> GetUtcTime()
         {
             // Important to keep the following line at the beginning
-            var requestReceptionTime = DateTime.UtcNow.ToUniversalTime();
+            var requestReceptionTime = DateTime.UtcNow;
 
             // Important to keep the following line at the end
-            var responseTransmissionTime = DateTime.UtcNow.ToUniversalTime();
+            var responseTransmissionTime = DateTime.UtcNow;
 
             // Implementing NTP on such a high level results in this useless
             // information being sent. On the other hand it enables future additions.

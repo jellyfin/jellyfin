@@ -17,7 +17,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <inheritdoc />
         public int Compare(BaseItem? x, BaseItem? y)
         {
-            return string.Compare(GetValue(x), GetValue(y), StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(GetValue(x), GetValue(y), StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Emby.Server.Implementations.Sorting
         /// <returns>System.String.</returns>
         private static string? GetValue(BaseItem? x)
         {
-            if (!(x is Audio audio))
+            if (x is not Audio audio)
             {
                 return string.Empty;
             }

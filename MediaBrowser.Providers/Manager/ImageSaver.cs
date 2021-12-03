@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -29,8 +31,6 @@ namespace MediaBrowser.Providers.Manager
     /// </summary>
     public class ImageSaver
     {
-        private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// The _config.
         /// </summary>
@@ -91,7 +91,7 @@ namespace MediaBrowser.Providers.Manager
                 throw new ArgumentNullException(nameof(mimeType));
             }
 
-            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && !(item is Audio);
+            var saveLocally = item.SupportsLocalMetadata && item.IsSaveLocalMetadataEnabled() && !item.ExtraType.HasValue && item is not Audio;
 
             if (type != ImageType.Primary && item is Episode)
             {
@@ -263,8 +263,10 @@ namespace MediaBrowser.Providers.Manager
 
                 _fileSystem.SetAttributes(path, false, false);
 
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                await using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
+                var fileStreamOptions = AsyncFile.WriteOptions;
+                fileStreamOptions.Mode = FileMode.Create;
+                fileStreamOptions.PreallocationSize = source.Length;
+                await using (var fs = new FileStream(path, fileStreamOptions))
                 {
                     await source.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
                 }
@@ -377,7 +379,7 @@ namespace MediaBrowser.Providers.Manager
 
                     var seasonMarker = season.IndexNumber.Value == 0
                                            ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", UsCulture);
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                     var imageFilename = "season" + seasonMarker + "-landscape" + extension;
 
@@ -400,7 +402,7 @@ namespace MediaBrowser.Providers.Manager
 
                     var seasonMarker = season.IndexNumber.Value == 0
                                            ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", UsCulture);
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                     var imageFilename = "season" + seasonMarker + "-banner" + extension;
 
@@ -436,9 +438,6 @@ namespace MediaBrowser.Providers.Manager
                     break;
                 case ImageType.Backdrop:
                     filename = GetBackdropSaveFilename(item.GetImages(type), "backdrop", "backdrop", imageIndex);
-                    break;
-                case ImageType.Screenshot:
-                    filename = GetBackdropSaveFilename(item.GetImages(type), "screenshot", "screenshot", imageIndex);
                     break;
                 default:
                     filename = type.ToString().ToLowerInvariant();
@@ -495,12 +494,12 @@ namespace MediaBrowser.Providers.Manager
             var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
             var current = 1;
-            while (filenames.Contains(numberedIndexPrefix + current.ToString(UsCulture), StringComparer.OrdinalIgnoreCase))
+            while (filenames.Contains(numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
             {
                 current++;
             }
 
-            return numberedIndexPrefix + current.ToString(UsCulture);
+            return numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -539,7 +538,7 @@ namespace MediaBrowser.Providers.Manager
 
                         var seasonMarker = season.IndexNumber.Value == 0
                                                ? "-specials"
-                                               : season.IndexNumber.Value.ToString("00", UsCulture);
+                                               : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                         var imageFilename = "season" + seasonMarker + "-fanart" + extension;
 
@@ -556,7 +555,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (item.IsInMixedFolder)
                 {
-                    return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(UsCulture), extension) };
+                    return new[] { GetSavePathForItemInMixedFolder(item, type, "fanart" + outputIndex.ToString(CultureInfo.InvariantCulture), extension) };
                 }
 
                 var extraFanartFilename = GetBackdropSaveFilename(item.GetImages(ImageType.Backdrop), "fanart", "fanart", outputIndex);
@@ -568,7 +567,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (EnableExtraThumbsDuplication)
                 {
-                    list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(UsCulture) + extension));
+                    list.Add(Path.Combine(item.ContainingFolderPath, "extrathumbs", "thumb" + outputIndex.ToString(CultureInfo.InvariantCulture) + extension));
                 }
 
                 return list.ToArray();
@@ -582,7 +581,7 @@ namespace MediaBrowser.Providers.Manager
 
                     var seasonMarker = season.IndexNumber.Value == 0
                                            ? "-specials"
-                                           : season.IndexNumber.Value.ToString("00", UsCulture);
+                                           : season.IndexNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
                     var imageFilename = "season" + seasonMarker + "-poster" + extension;
 

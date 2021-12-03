@@ -402,8 +402,6 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public bool RequireHttps { get; set; } = false;
 
-        public bool EnableNewOmdbSupport { get; set; } = true;
-
         /// <summary>
         /// Gets or sets the filter for remote IP connectivity. Used in conjuntion with <seealso cref="IsRemoteIPFilterBlacklist"/>.
         /// </summary>
@@ -459,5 +457,10 @@ namespace MediaBrowser.Model.Configuration
         /// Gets or sets a value indicating whether older plugins should automatically be deleted from the plugin folder.
         /// </summary>
         public bool RemoveOldPlugins { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether clients should be allowed to upload logs.
+        /// </summary>
+        public bool AllowClientLogUpload { get; set; } = true;
     }
 }

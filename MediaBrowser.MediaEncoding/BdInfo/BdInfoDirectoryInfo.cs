@@ -75,7 +75,7 @@ namespace MediaBrowser.MediaEncoding.BdInfo
                 x => new BdInfoFileInfo(x));
         }
 
-        public static IDirectoryInfo FromFileSystemPath(Model.IO.IFileSystem fs, string path)
+        public static IDirectoryInfo FromFileSystemPath(IFileSystem fs, string path)
         {
             return new BdInfoDirectoryInfo(fs, path);
         }

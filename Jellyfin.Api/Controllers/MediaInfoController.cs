@@ -123,7 +123,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery, ParameterObsolete] bool? allowAudioStreamCopy,
             [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] PlaybackInfoDto? playbackInfoDto)
         {
-            var authInfo = _authContext.GetAuthorizationInfo(Request);
+            var authInfo = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             var profile = playbackInfoDto?.DeviceProfile;
             _logger.LogInformation("GetPostedPlaybackInfo profile: {@Profile}", profile);
@@ -184,7 +184,7 @@ namespace Jellyfin.Api.Controllers
                         audioStreamIndex,
                         subtitleStreamIndex,
                         maxAudioChannels,
-                        info!.PlaySessionId!,
+                        info.PlaySessionId!,
                         userId ?? Guid.Empty,
                         enableDirectPlay.Value,
                         enableDirectStream.Value,
@@ -316,7 +316,7 @@ namespace Jellyfin.Api.Controllers
             byte[] buffer = ArrayPool<byte>.Shared.Rent(size);
             try
             {
-                new Random().NextBytes(buffer);
+                Random.Shared.NextBytes(buffer);
                 return File(buffer, MediaTypeNames.Application.Octet);
             }
             finally

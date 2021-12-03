@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -17,9 +18,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <summary>
         /// Initializes a new instance of the <see cref="EpisodeResolver"/> class.
         /// </summary>
-        /// <param name="libraryManager">The library manager.</param>
-        public EpisodeResolver(ILibraryManager libraryManager)
-            : base(libraryManager)
+        /// <param name="namingOptions">The naming options.</param>
+        public EpisodeResolver(NamingOptions namingOptions)
+            : base(namingOptions)
         {
         }
 
@@ -47,7 +48,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
             if ((season != null ||
                  string.Equals(args.GetCollectionType(), CollectionType.TvShows, StringComparison.OrdinalIgnoreCase) ||
                  args.HasParent<Series>())
-                && (parent is Series || !BaseItem.AllExtrasTypesFolderNames.Contains(parent.Name, StringComparer.OrdinalIgnoreCase)))
+                && (parent is Series || !BaseItem.AllExtrasTypesFolderNames.ContainsKey(parent.Name)))
             {
                 var episode = ResolveVideo<Episode>(args, false);
 

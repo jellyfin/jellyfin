@@ -1,6 +1,5 @@
-#nullable disable
-
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Jellyfin.Extensions;
@@ -16,7 +15,7 @@ namespace MediaBrowser.Controller.BaseItemManager
     {
         private readonly IServerConfigurationManager _serverConfigurationManager;
 
-        private int _metadataRefreshConcurrency = 0;
+        private int _metadataRefreshConcurrency;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemManager"/> class.
@@ -61,7 +60,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return false;
             }
 
-            var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
+            var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
 
             return itemConfig == null || !itemConfig.DisabledMetadataFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
@@ -92,7 +91,7 @@ namespace MediaBrowser.Controller.BaseItemManager
                 return false;
             }
 
-            var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, GetType().Name, StringComparison.OrdinalIgnoreCase));
+            var itemConfig = _serverConfigurationManager.Configuration.MetadataOptions.FirstOrDefault(i => string.Equals(i.ItemType, baseItem.GetType().Name, StringComparison.OrdinalIgnoreCase));
 
             return itemConfig == null || !itemConfig.DisabledImageFetchers.Contains(name.AsSpan(), StringComparison.OrdinalIgnoreCase);
         }
@@ -101,7 +100,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// Called when the configuration is updated.
         /// It will refresh the metadata throttler if the relevant config changed.
         /// </summary>
-        private void OnConfigurationUpdated(object sender, EventArgs e)
+        private void OnConfigurationUpdated(object? sender, EventArgs e)
         {
             int newMetadataRefreshConcurrency = GetMetadataRefreshConcurrency();
             if (_metadataRefreshConcurrency != newMetadataRefreshConcurrency)
@@ -114,6 +113,7 @@ namespace MediaBrowser.Controller.BaseItemManager
         /// <summary>
         /// Creates the metadata refresh throttler.
         /// </summary>
+        [MemberNotNull(nameof(MetadataRefreshThrottler))]
         private void SetupMetadataThrottler()
         {
             MetadataRefreshThrottler = new SemaphoreSlim(_metadataRefreshConcurrency);

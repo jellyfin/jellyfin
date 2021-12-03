@@ -133,6 +133,7 @@ namespace MediaBrowser.Model.System
         [Obsolete("This should be handled by the package manager")]
         public bool HasUpdateAvailable { get; set; }
 
+        [Obsolete("This isn't set correctly anymore")]
         public FFmpegLocation EncoderLocation { get; set; }
 
         public Architecture SystemArchitecture { get; set; }

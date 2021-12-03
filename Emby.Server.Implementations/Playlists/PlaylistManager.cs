@@ -260,7 +260,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public async Task RemoveFromPlaylistAsync(string playlistId, IEnumerable<string> entryIds)
         {
-            if (!(_libraryManager.GetItemById(playlistId) is Playlist playlist))
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
@@ -293,7 +293,7 @@ namespace Emby.Server.Implementations.Playlists
 
         public async Task MoveItemAsync(string playlistId, string entryId, int newIndex)
         {
-            if (!(_libraryManager.GetItemById(playlistId) is Playlist playlist))
+            if (_libraryManager.GetItemById(playlistId) is not Playlist playlist)
             {
                 throw new ArgumentException("No Playlist exists with the supplied Id");
             }
@@ -527,7 +527,7 @@ namespace Emby.Server.Implementations.Playlists
             var relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
-            if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.CurrentCultureIgnoreCase))
+            if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
             {
                 relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }

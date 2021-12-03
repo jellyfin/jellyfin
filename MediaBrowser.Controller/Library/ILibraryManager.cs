@@ -397,20 +397,6 @@ namespace MediaBrowser.Controller.Library
             string sortName);
 
         /// <summary>
-        /// Determines whether [is video file] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is video file] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsVideoFile(string path);
-
-        /// <summary>
-        /// Determines whether [is audio file] [the specified path].
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <returns><c>true</c> if [is audio file] [the specified path]; otherwise, <c>false</c>.</returns>
-        bool IsAudioFile(string path);
-
-        /// <summary>
         /// Gets the season number from path.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -595,11 +581,11 @@ namespace MediaBrowser.Controller.Library
 
         Task RemoveVirtualFolder(string name, bool refreshLibrary);
 
-        void AddMediaPath(string virtualFolderName, MediaPathInfo path);
+        void AddMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
-        void UpdateMediaPath(string virtualFolderName, MediaPathInfo path);
+        void UpdateMediaPath(string virtualFolderName, MediaPathInfo mediaPath);
 
-        void RemoveMediaPath(string virtualFolderName, string path);
+        void RemoveMediaPath(string virtualFolderName, string mediaPath);
 
         QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
 
@@ -625,11 +611,5 @@ namespace MediaBrowser.Controller.Library
         BaseItem GetParentItem(string parentId, Guid? userId);
 
         BaseItem GetParentItem(Guid? parentId, Guid? userId);
-
-        /// <summary>
-        /// Gets or creates a static instance of <see cref="NamingOptions"/>.
-        /// </summary>
-        /// <returns>An instance of the <see cref="NamingOptions"/> class.</returns>
-        NamingOptions GetNamingOptions();
     }
 }

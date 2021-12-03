@@ -1,9 +1,6 @@
 using System;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
-using MediaBrowser.Common.Cryptography;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Model.Cryptography;
 
@@ -61,33 +58,23 @@ namespace Jellyfin.Server.Implementations.Users
             }
 
             // Handle the case when the stored password is null, but the user tried to login with a password
-            if (resolvedUser.Password != null)
+            if (resolvedUser.Password == null)
             {
-                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-
-                PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
-                if (_cryptographyProvider.GetSupportedHashMethods().Contains(readyHash.Id)
-                    || _cryptographyProvider.DefaultHashMethod == readyHash.Id)
-                {
-                    byte[] calculatedHash = _cryptographyProvider.ComputeHash(
-                        readyHash.Id,
-                        passwordBytes,
-                        readyHash.Salt.ToArray());
-
-                    if (readyHash.Hash.SequenceEqual(calculatedHash))
-                    {
-                        success = true;
-                    }
-                }
-                else
-                {
-                    throw new AuthenticationException($"Requested crypto method not available in provider: {readyHash.Id}");
-                }
+                throw new AuthenticationException("Invalid username or password");
             }
+
+            PasswordHash readyHash = PasswordHash.Parse(resolvedUser.Password);
+            success = _cryptographyProvider.Verify(readyHash, password);
 
             if (!success)
             {
                 throw new AuthenticationException("Invalid username or password");
+            }
+
+            // Migrate old hashes to the new default
+            if (!string.Equals(readyHash.Id, _cryptographyProvider.DefaultHashMethod, StringComparison.Ordinal))
+            {
+                ChangePassword(resolvedUser, password);
             }
 
             return Task.FromResult(new ProviderAuthenticationResult

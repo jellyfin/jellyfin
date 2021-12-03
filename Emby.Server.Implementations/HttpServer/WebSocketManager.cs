@@ -35,7 +35,12 @@ namespace Emby.Server.Implementations.HttpServer
         /// <inheritdoc />
         public async Task WebSocketRequestHandler(HttpContext context)
         {
-            _ = _authService.Authenticate(context.Request);
+            var authorizationInfo = await _authService.Authenticate(context.Request).ConfigureAwait(false);
+            if (!authorizationInfo.IsAuthenticated)
+            {
+                throw new SecurityException("Token is required");
+            }
+
             try
             {
                 _logger.LogInformation("WS {IP} request", context.Connection.RemoteIpAddress);

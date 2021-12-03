@@ -27,7 +27,7 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
+BuildRequires:  dotnet-runtime-6.0, dotnet-sdk-6.0
 Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
@@ -40,7 +40,7 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at, sudo
 
 %description server
 The Jellyfin media server backend.
