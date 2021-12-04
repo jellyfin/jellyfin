@@ -156,7 +156,7 @@ namespace Jellyfin.Model.Tests.Net
         [InlineData("video/x-ms-asf", ".asf")]
         [InlineData("video/x-ms-wmv", ".wmv")]
         [InlineData("video/x-msvideo", ".avi")]
-        public void ToExtension(string input, string expectedResult)
+        public void ToExtension_Valid_ReturnsCorrectResult(string input, string expectedResult)
         {
             Assert.Equal(expectedResult, MimeTypes.ToExtension(input));
         }
