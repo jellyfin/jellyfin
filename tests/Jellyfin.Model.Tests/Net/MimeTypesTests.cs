@@ -87,7 +87,7 @@ namespace Jellyfin.Model.Tests.Net
         [InlineData(".wma", "audio/x-ms-wma")]
         [InlineData(".wv", "audio/x-wavpack")]
         [InlineData(".xsp", "audio/xsp")]
-        public void GetMimeType(string input, string expectedResult)
+        public void GetMimeType_Valid_ReturnsCorrectResult(string input, string expectedResult)
         {
             Assert.Equal(expectedResult, MimeTypes.GetMimeType(input, null));
         }
