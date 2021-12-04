@@ -181,13 +181,8 @@ namespace MediaBrowser.Model.Net
                 return result;
             }
 
-            var extensions = Model.MimeTypes.GetMimeTypeExtensions(mimeType);
-            if (extensions.Any())
-            {
-                return "." + extensions.First();
-            }
-
-            return null;
+            var extension = Model.MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
+            return string.IsNullOrEmpty(extension) ? null : "." + extension;
         }
     }
 }
