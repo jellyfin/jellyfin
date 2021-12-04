@@ -13,9 +13,14 @@ namespace MediaBrowser.Model.Net
     /// Class MimeTypes.
     /// </summary>
     ///
-    /// http://en.wikipedia.org/wiki/Internet_media_type
-    /// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-    /// http://www.iana.org/assignments/media-types/media-types.xhtml
+    /// <remarks>
+    /// For more information on MIME types:
+    /// <list type="bullet">
+    ///     <item>http://en.wikipedia.org/wiki/Internet_media_type</item>
+    ///     <item>https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types</item>
+    ///     <item>http://www.iana.org/assignments/media-types/media-types.xhtml</item>
+    /// </list>
+    /// </remarks>
     public static class MimeTypes
     {
         /// <summary>
