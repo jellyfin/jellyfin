@@ -310,31 +310,25 @@ namespace MediaBrowser.Providers.Manager
 
         private IEnumerable<IImageProvider> GetImageProviders(BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
         {
-            // Avoid implicitly captured closure
-            var currentOptions = options;
-
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
-            var typeFetcherOrder = typeOptions?.ImageFetcherOrder;
+            var fetcherOrder = typeOptions?.ImageFetcherOrder ?? options.ImageFetcherOrder;
 
             return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
-                .OrderBy(i =>
-                {
-                    // See if there's a user-defined order
-                    if (i is not ILocalImageProvider)
-                    {
-                        var fetcherOrder = typeFetcherOrder ?? currentOptions.ImageFetcherOrder;
-                        var index = Array.IndexOf(fetcherOrder, i.Name);
+                .OrderBy(i => GetConfiguredOrder(fetcherOrder, i.Name))
+                .ThenBy(GetOrder);
+        }
 
-                        if (index != -1)
-                        {
-                            return index;
-                        }
-                    }
+        private static int GetConfiguredOrder(string[] order, string providerName)
+        {
+            var index = Array.IndexOf(order, providerName);
 
-                    // Not configured. Just return some high number to put it at the end.
-                    return 100;
-                })
-            .ThenBy(GetOrder);
+            if (index != -1)
+            {
+                return index;
+            }
+
+            // default to end
+            return int.MaxValue;
         }
 
         /// <inheritdoc />
@@ -450,21 +444,6 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        /// <summary>
-        /// Gets the order.
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <returns>System.Int32.</returns>
-        private int GetOrder(IImageProvider provider)
-        {
-            if (provider is not IHasOrder hasOrder)
-            {
-                return 0;
-            }
-
-            return hasOrder.Order;
-        }
-
         private int GetConfiguredOrder(BaseItem item, IMetadataProvider provider, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions)
         {
             // See if there's a user-defined order
@@ -498,6 +477,17 @@ namespace MediaBrowser.Providers.Manager
 
             // Not configured. Just return some high number to put it at the end.
             return 100;
+        }
+
+        private static int GetOrder(object provider)
+        {
+            if (provider is IHasOrder hasOrder)
+            {
+                return hasOrder.Order;
+            }
+
+            // after items that want to be first (~0) but before items that want to be last (~100)
+            return 50;
         }
 
         private int GetDefaultOrder(IMetadataProvider provider)
