@@ -1,5 +1,3 @@
-#nullable disable
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -47,7 +45,7 @@ namespace MediaBrowser.Providers.Manager
     /// </summary>
     public class ProviderManager : IProviderManager, IDisposable
     {
-        private readonly object _refreshQueueLock = new object();
+        private readonly object _refreshQueueLock = new ();
         private readonly ILogger<ProviderManager> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILibraryMonitor _libraryMonitor;
@@ -57,11 +55,11 @@ namespace MediaBrowser.Providers.Manager
         private readonly ISubtitleManager _subtitleManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly IBaseItemManager _baseItemManager;
-        private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new ConcurrentDictionary<Guid, double>();
-        private readonly CancellationTokenSource _disposeCancellationTokenSource = new CancellationTokenSource();
-        private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
-            new SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>>();
+        private readonly ConcurrentDictionary<Guid, double> _activeRefreshes = new ();
+        private readonly CancellationTokenSource _disposeCancellationTokenSource = new ();
+        private readonly SimplePriorityQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue = new ();
 
+        private IImageProvider[] _imageProviders = Array.Empty<IImageProvider>();
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
         private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
         private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
@@ -104,15 +102,13 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<BaseItem>> RefreshStarted;
+        public event EventHandler<GenericEventArgs<BaseItem>>? RefreshStarted;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<BaseItem>> RefreshCompleted;
+        public event EventHandler<GenericEventArgs<BaseItem>>? RefreshCompleted;
 
         /// <inheritdoc/>
-        public event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>> RefreshProgress;
-
-        private IImageProvider[] ImageProviders { get; set; }
+        public event EventHandler<GenericEventArgs<Tuple<BaseItem, double>>>? RefreshProgress;
 
         /// <inheritdoc/>
         public void AddParts(
@@ -122,8 +118,7 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataSaver> metadataSavers,
             IEnumerable<IExternalId> externalIds)
         {
-            ImageProviders = imageProviders.ToArray();
-
+            _imageProviders = imageProviders.ToArray();
             _metadataServices = metadataServices.OrderBy(i => i.Order).ToArray();
             _metadataProviders = metadataProviders.ToArray();
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
@@ -313,7 +308,7 @@ namespace MediaBrowser.Providers.Manager
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
             var fetcherOrder = typeOptions?.ImageFetcherOrder ?? options.ImageFetcherOrder;
 
-            return ImageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
+            return _imageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
                 .OrderBy(i => GetConfiguredOrder(fetcherOrder, i.Name))
                 .ThenBy(GetOrder);
         }
@@ -758,7 +753,7 @@ namespace MediaBrowser.Providers.Manager
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
-            BaseItem referenceItem = null;
+            BaseItem? referenceItem = null;
 
             if (!searchInfo.ItemId.Equals(default))
             {
@@ -768,7 +763,7 @@ namespace MediaBrowser.Providers.Manager
             return GetRemoteSearchResults<TItemType, TLookupType>(searchInfo, referenceItem, cancellationToken);
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem referenceItem, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> GetRemoteSearchResults<TItemType, TLookupType>(RemoteSearchQuery<TLookupType> searchInfo, BaseItem? referenceItem, CancellationToken cancellationToken)
             where TItemType : BaseItem, new()
             where TLookupType : ItemLookupInfo
         {
@@ -930,7 +925,8 @@ namespace MediaBrowser.Providers.Manager
                         i.UrlFormatString,
                         value)
                 };
-            }).Where(i => i != null).Concat(item.GetRelatedUrls());
+            }).Where(i => i != null)
+                .Concat(item.GetRelatedUrls())!; // We just filtered out all the nulls
         }
 
         /// <inheritdoc/>
