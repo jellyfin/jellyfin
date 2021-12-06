@@ -297,18 +297,31 @@ namespace MediaBrowser.Providers.Manager
             return GetRemoteImageProviders(item, true).Select(i => new ImageProviderInfo(i.Name, i.GetSupportedImages(item).ToArray()));
         }
 
+        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(BaseItem item, bool includeDisabled)
+        {
+            var options = GetMetadataOptions(item);
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+
+            return GetImageProvidersInternal(
+                item,
+                libraryOptions,
+                options,
+                new ImageRefreshOptions(new DirectoryService(_fileSystem)),
+                includeDisabled).OfType<IRemoteImageProvider>();
+        }
+
         /// <inheritdoc/>
         public IEnumerable<IImageProvider> GetImageProviders(BaseItem item, ImageRefreshOptions refreshOptions)
         {
-            return GetImageProviders(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
+            return GetImageProvidersInternal(item, _libraryManager.GetLibraryOptions(item), GetMetadataOptions(item), refreshOptions, false);
         }
 
-        private IEnumerable<IImageProvider> GetImageProviders(BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
+        private IEnumerable<IImageProvider> GetImageProvidersInternal(BaseItem item, LibraryOptions libraryOptions, MetadataOptions options, ImageRefreshOptions refreshOptions, bool includeDisabled)
         {
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
             var fetcherOrder = typeOptions?.ImageFetcherOrder ?? options.ImageFetcherOrder;
 
-            return _imageProviders.Where(i => CanRefresh(i, item, libraryOptions, refreshOptions, includeDisabled))
+            return _imageProviders.Where(i => CanRefreshImages(i, item, libraryOptions, refreshOptions, includeDisabled))
                 .OrderBy(i => GetConfiguredOrder(fetcherOrder, i.Name))
                 .ThenBy(GetOrder);
         }
@@ -342,25 +355,12 @@ namespace MediaBrowser.Providers.Manager
             var currentOptions = globalMetadataOptions;
 
             return _metadataProviders.OfType<IMetadataProvider<T>>()
-                .Where(i => CanRefresh(i, item, libraryOptions, includeDisabled, forceEnableInternetMetadata))
+                .Where(i => CanRefreshMetadata(i, item, libraryOptions, includeDisabled, forceEnableInternetMetadata))
                 .OrderBy(i => GetConfiguredOrder(item, i, libraryOptions, currentOptions))
                 .ThenBy(GetDefaultOrder);
         }
 
-        private IEnumerable<IRemoteImageProvider> GetRemoteImageProviders(BaseItem item, bool includeDisabled)
-        {
-            var options = GetMetadataOptions(item);
-            var libraryOptions = _libraryManager.GetLibraryOptions(item);
-
-            return GetImageProviders(
-                item,
-                libraryOptions,
-                options,
-                new ImageRefreshOptions(new DirectoryService(_fileSystem)),
-                includeDisabled).OfType<IRemoteImageProvider>();
-        }
-
-        private bool CanRefresh(
+        private bool CanRefreshMetadata(
             IMetadataProvider provider,
             BaseItem item,
             LibraryOptions libraryOptions,
@@ -401,7 +401,7 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
-        private bool CanRefresh(
+        private bool CanRefreshImages(
             IImageProvider provider,
             BaseItem item,
             LibraryOptions libraryOptions,
@@ -535,7 +535,7 @@ namespace MediaBrowser.Providers.Manager
 
             var libraryOptions = new LibraryOptions();
 
-            var imageProviders = GetImageProviders(
+            var imageProviders = GetImageProvidersInternal(
                 dummy,
                 libraryOptions,
                 options,

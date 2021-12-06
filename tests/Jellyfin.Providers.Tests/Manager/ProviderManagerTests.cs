@@ -100,9 +100,9 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(true, false, true)]
         [InlineData(false, false, false)]
         [InlineData(true, true, false)]
-        public void GetImageProviders_CanRefreshBasic_WhenSupportsWithoutError(bool supports, bool errorOnSupported, bool expected)
+        public void GetImageProviders_CanRefreshImagesBasic_WhenSupportsWithoutError(bool supports, bool errorOnSupported, bool expected)
         {
-            GetImageProviders_CanRefresh_Tester(typeof(IImageProvider), supports, expected, errorOnSupported: errorOnSupported);
+            GetImageProviders_CanRefreshImages_Tester(typeof(IImageProvider), supports, expected, errorOnSupported: errorOnSupported);
         }
 
         [Theory]
@@ -110,9 +110,9 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(typeof(ILocalImageProvider), true, true)]
         [InlineData(typeof(IImageProvider), false, false)]
         [InlineData(typeof(IImageProvider), true, true)]
-        public void GetImageProviders_CanRefreshLocked_WhenLocalOrFullRefresh(Type providerType, bool fullRefresh, bool expected)
+        public void GetImageProviders_CanRefreshImagesLocked_WhenLocalOrFullRefresh(Type providerType, bool fullRefresh, bool expected)
         {
-            GetImageProviders_CanRefresh_Tester(providerType, true, expected, itemLocked: true, fullRefresh: fullRefresh);
+            GetImageProviders_CanRefreshImages_Tester(providerType, true, expected, itemLocked: true, fullRefresh: fullRefresh);
         }
 
         [Theory]
@@ -121,12 +121,12 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(typeof(IDynamicImageProvider), true, true)]
         [InlineData(typeof(IRemoteImageProvider), false, false)]
         [InlineData(typeof(IDynamicImageProvider), false, false)]
-        public void GetImageProviders_CanRefreshEnabled_WhenLocalOrEnabled(Type providerType, bool enabled, bool expected)
+        public void GetImageProviders_CanRefreshImagesEnabled_WhenLocalOrEnabled(Type providerType, bool enabled, bool expected)
         {
-            GetImageProviders_CanRefresh_Tester(providerType, true, expected, baseItemEnabled: enabled);
+            GetImageProviders_CanRefreshImages_Tester(providerType, true, expected, baseItemEnabled: enabled);
         }
 
-        private static void GetImageProviders_CanRefresh_Tester(Type providerType, bool supports, bool expected, bool errorOnSupported = false, bool itemLocked = false, bool fullRefresh = false, bool baseItemEnabled = true)
+        private static void GetImageProviders_CanRefreshImages_Tester(Type providerType, bool supports, bool expected, bool errorOnSupported = false, bool itemLocked = false, bool fullRefresh = false, bool baseItemEnabled = true)
         {
             var item = new Movie
             {
