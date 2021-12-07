@@ -12,37 +12,28 @@ namespace Emby.Naming.Video
     /// <summary>
     /// Resolve <see cref="FileStack"/> from list of paths.
     /// </summary>
-    public class StackResolver
+    public static class StackResolver
     {
-        private readonly NamingOptions _options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StackResolver"/> class.
-        /// </summary>
-        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileStackingRegexes and passes options to <see cref="VideoResolver"/>.</param>
-        public StackResolver(NamingOptions options)
-        {
-            _options = options;
-        }
-
         /// <summary>
         /// Resolves only directories from paths.
         /// </summary>
         /// <param name="files">List of paths.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
-        public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
+        public static IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files, NamingOptions namingOptions)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }), namingOptions);
         }
 
         /// <summary>
         /// Resolves only files from paths.
         /// </summary>
         /// <param name="files">List of paths.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of files.</returns>
-        public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
+        public static IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files, NamingOptions namingOptions)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }), namingOptions);
         }
 
         /// <summary>
@@ -50,7 +41,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="files">List of paths.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
-        public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
+        public static IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
         {
             var groupedDirectoryFiles = files.GroupBy(file => Path.GetDirectoryName(file.Path));
 
@@ -82,15 +73,20 @@ namespace Emby.Naming.Video
         /// Resolves videos from paths.
         /// </summary>
         /// <param name="files">List of paths.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of videos.</returns>
-        public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
+        public static IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files, NamingOptions namingOptions)
         {
             var list = files
-                .Where(i => i.IsDirectory || VideoResolver.IsVideoFile(i.FullName, _options) || VideoResolver.IsStubFile(i.FullName, _options))
+                .Where(i => i.IsDirectory || VideoResolver.IsVideoFile(i.FullName, namingOptions) || VideoResolver.IsStubFile(i.FullName, namingOptions))
                 .OrderBy(i => i.FullName)
+                .Select(f => (f.IsDirectory, FileName: GetFileNameWithExtension(f), f.FullName))
                 .ToList();
 
-            var expressions = _options.VideoFileStackingRegexes;
+            // TODO is there a "nicer" way?
+            var cache = new Dictionary<(string, Regex, int), Match>();
+
+            var expressions = namingOptions.VideoFileStackingRegexes;
 
             for (var i = 0; i < list.Count; i++)
             {
@@ -102,17 +98,17 @@ namespace Emby.Naming.Video
                 while (expressionIndex < expressions.Length)
                 {
                     var exp = expressions[expressionIndex];
-                    var stack = new FileStack();
+                    FileStack? stack = null;
 
                     // (Title)(Volume)(Ignore)(Extension)
-                    var match1 = FindMatch(file1, exp, offset);
+                    var match1 = FindMatch(file1.FileName, exp, offset, cache);
 
                     if (match1.Success)
                     {
-                        var title1 = match1.Groups["title"].Value;
-                        var volume1 = match1.Groups["volume"].Value;
-                        var ignore1 = match1.Groups["ignore"].Value;
-                        var extension1 = match1.Groups["extension"].Value;
+                        var title1 = match1.Groups[1].Value;
+                        var volume1 = match1.Groups[2].Value;
+                        var ignore1 = match1.Groups[3].Value;
+                        var extension1 = match1.Groups[4].Value;
 
                         var j = i + 1;
                         while (j < list.Count)
@@ -126,7 +122,7 @@ namespace Emby.Naming.Video
                             }
 
                             // (Title)(Volume)(Ignore)(Extension)
-                            var match2 = FindMatch(file2, exp, offset);
+                            var match2 = FindMatch(file2.FileName, exp, offset, cache);
 
                             if (match2.Success)
                             {
@@ -142,6 +138,7 @@ namespace Emby.Naming.Video
                                         if (string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase)
                                             && string.Equals(extension1, extension2, StringComparison.OrdinalIgnoreCase))
                                         {
+                                            stack ??= new FileStack();
                                             if (stack.Files.Count == 0)
                                             {
                                                 stack.Name = title1 + ignore1;
@@ -204,7 +201,7 @@ namespace Emby.Naming.Video
                         expressionIndex++;
                     }
 
-                    if (stack.Files.Count > 1)
+                    if (stack?.Files.Count > 1)
                     {
                         yield return stack;
                         i += stack.Files.Count - 1;
@@ -214,26 +211,32 @@ namespace Emby.Naming.Video
             }
         }
 
-        private static string GetRegexInput(FileSystemMetadata file)
+        private static string GetFileNameWithExtension(FileSystemMetadata file)
         {
             // For directories, dummy up an extension otherwise the expressions will fail
-            var input = !file.IsDirectory
-                ? file.FullName
-                : file.FullName + ".mkv";
+            var input = file.FullName;
+            if (file.IsDirectory)
+            {
+                input = Path.ChangeExtension(input, "mkv");
+            }
 
             return Path.GetFileName(input);
         }
 
-        private static Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
+        private static Match FindMatch(string input, Regex regex, int offset, Dictionary<(string, Regex, int), Match> cache)
         {
-            var regexInput = GetRegexInput(input);
-
-            if (offset < 0 || offset >= regexInput.Length)
+            if (offset < 0 || offset >= input.Length)
             {
                 return Match.Empty;
             }
 
-            return regex.Match(regexInput, offset);
+            if (!cache.TryGetValue((input, regex, offset), out var result))
+            {
+                result = regex.Match(input, offset, input.Length - offset);
+                cache.Add((input, regex, offset), result);
+            }
+
+            return result;
         }
     }
 }

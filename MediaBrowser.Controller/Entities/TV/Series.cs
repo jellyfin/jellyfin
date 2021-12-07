@@ -27,9 +27,6 @@ namespace MediaBrowser.Controller.Entities.TV
     {
         public Series()
         {
-            RemoteTrailers = Array.Empty<MediaUrl>();
-            LocalTrailerIds = Array.Empty<Guid>();
-            RemoteTrailerIds = Array.Empty<Guid>();
             AirDays = Array.Empty<DayOfWeek>();
         }
 
@@ -53,10 +50,9 @@ namespace MediaBrowser.Controller.Entities.TV
         public override bool SupportsPeople => true;
 
         /// <inheritdoc />
-        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
-
-        /// <inheritdoc />
-        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
+            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
+            .ToArray();
 
         /// <summary>
         /// Gets or sets the display order.

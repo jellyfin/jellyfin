@@ -30,8 +30,8 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
-            Assert.Single(result);
-            Assert.Single(result[0].Extras);
+            Assert.Single(result.Where(v => v.ExtraType == null));
+            Assert.Single(result.Where(v => v.ExtraType != null));
         }
 
         [Fact]
@@ -53,8 +53,8 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
-            Assert.Single(result);
-            Assert.Single(result[0].Extras);
+            Assert.Single(result.Where(v => v.ExtraType == null));
+            Assert.Single(result.Where(v => v.ExtraType != null));
             Assert.Equal(2, result[0].AlternateVersions.Count);
         }
 
@@ -102,7 +102,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Equal(7, result.Count);
-            Assert.Empty(result[0].Extras);
             Assert.Empty(result[0].AlternateVersions);
         }
 
@@ -130,7 +129,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Empty(result[0].Extras);
             Assert.Equal(7, result[0].AlternateVersions.Count);
         }
 
@@ -159,7 +157,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Equal(9, result.Count);
-            Assert.Empty(result[0].Extras);
             Assert.Empty(result[0].AlternateVersions);
         }
 
@@ -184,7 +181,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Equal(5, result.Count);
-            Assert.Empty(result[0].Extras);
             Assert.Empty(result[0].AlternateVersions);
         }
 
@@ -211,7 +207,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Equal(5, result.Count);
-            Assert.Empty(result[0].Extras);
             Assert.Empty(result[0].AlternateVersions);
         }
 
@@ -239,7 +234,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Empty(result[0].Extras);
             Assert.Equal(7, result[0].AlternateVersions.Count);
             Assert.False(result[0].AlternateVersions[2].Is3D);
             Assert.True(result[0].AlternateVersions[3].Is3D);
@@ -270,7 +264,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Empty(result[0].Extras);
             Assert.Equal(7, result[0].AlternateVersions.Count);
             Assert.False(result[0].AlternateVersions[3].Is3D);
             Assert.True(result[0].AlternateVersions[4].Is3D);
@@ -320,7 +313,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Equal(7, result.Count);
-            Assert.Empty(result[0].Extras);
             Assert.Empty(result[0].AlternateVersions);
         }
 
@@ -347,7 +339,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Equal(5, result.Count);
-            Assert.Empty(result[0].Extras);
             Assert.Empty(result[0].AlternateVersions);
         }
 
@@ -369,7 +360,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Empty(result[0].Extras);
             Assert.Single(result[0].AlternateVersions);
         }
 
@@ -391,7 +381,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Empty(result[0].Extras);
             Assert.Single(result[0].AlternateVersions);
         }
 
@@ -413,7 +402,6 @@ namespace Jellyfin.Naming.Tests.Video
                 _namingOptions).ToList();
 
             Assert.Single(result);
-            Assert.Empty(result[0].Extras);
             Assert.Single(result[0].AlternateVersions);
         }
 

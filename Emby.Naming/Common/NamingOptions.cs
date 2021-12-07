@@ -126,9 +126,9 @@ namespace Emby.Naming.Common
 
             VideoFileStackingExpressions = new[]
             {
-                "(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[0-9]+)(?<ignore>.*?)(?<extension>\\.[^.]+)$",
-                "(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$",
-                "(?<title>.*?)(?<volume>[ ._-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$"
+                "^(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|part|pt|dis[ck])[ _.-]*[0-9]+)(?<ignore>.*?)(?<extension>\\.[^.]+)$",
+                "^(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|part|pt|dis[ck])[ _.-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$",
+                "^(?<title>.*?)(?<volume>[ ._-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$"
             };
 
             CleanDateTimes = new[]
@@ -403,6 +403,12 @@ namespace Emby.Naming.Common
 
             VideoExtraRules = new[]
             {
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.DirectoryName,
+                    "trailers",
+                    MediaType.Video),
+
                 new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Filename,

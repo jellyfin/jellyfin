@@ -22,9 +22,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Bad Boys (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
             TestStackInfo(result[0], "Bad Boys (2006)", 4);
@@ -39,9 +37,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Bad Boys (2007).mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -55,9 +51,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Bad Boys 2007.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -71,9 +65,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 (2007).mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -87,9 +79,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 2007.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -103,9 +93,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Star Trek 2- The wrath of khan.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
             Assert.Empty(result);
         }
 
@@ -119,9 +107,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Red Riding in the Year of Our Lord 1974 (2009).mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -135,9 +121,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "d:/movies/300 2006 part2.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
             TestStackInfo(result[0], "300 2006", 2);
@@ -155,9 +139,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Bad Boys (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
             TestStackInfo(result[0], "Bad Boys (2006).stv.unrated.multi.1080p.bluray.x264-rough", 4);
@@ -175,9 +157,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Bad Boys (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -194,9 +174,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
             TestStackInfo(result[0], "300 (2006)", 4);
@@ -214,9 +192,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Bad Boys (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
             TestStackInfo(result[0], "Bad Boys (2006)", 3);
@@ -238,9 +214,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
             TestStackInfo(result[1], "Bad Boys (2006)", 4);
@@ -256,9 +230,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "blah blah - cd 2"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveDirectories(files).ToList();
+            var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();
 
             Assert.Single(result);
             TestStackInfo(result[0], "blah blah", 2);
@@ -275,9 +247,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
 
@@ -297,9 +267,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Avengers part3.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
 
@@ -328,9 +296,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Equal(3, result.Count);
 
@@ -354,9 +320,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "300 (2006)-trailer.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
 
@@ -375,9 +339,7 @@ namespace Jellyfin.Naming.Tests.Video
                 new FileSystemMetadata { FullName = "300 (2006) part1", IsDirectory = true }
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.Resolve(files).ToList();
+            var result = StackResolver.Resolve(files, _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
             TestStackInfo(result[0], "300 (2006)", 3);
@@ -397,9 +359,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Harry Potter and the Deathly Hallows 4.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Empty(result);
         }
@@ -414,9 +374,7 @@ namespace Jellyfin.Naming.Tests.Video
                 "Neverland (2011)[720p][PG][Voted 6.5][Family-Fantasy]part2.mkv"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveFiles(files).ToList();
+            var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
             Assert.Single(result);
             Assert.Equal(2, result[0].Files.Count);
@@ -432,9 +390,7 @@ namespace Jellyfin.Naming.Tests.Video
                 @"M:/Movies (DVD)/Movies (Musical)/The Sound of Music/The Sound of Music (1965) (Disc 02)"
             };
 
-            var resolver = GetResolver();
-
-            var result = resolver.ResolveDirectories(files).ToList();
+            var result = StackResolver.ResolveDirectories(files, _namingOptions).ToList();
 
             Assert.Single(result);
             Assert.Equal(2, result[0].Files.Count);
@@ -444,11 +400,6 @@ namespace Jellyfin.Naming.Tests.Video
         {
             Assert.Equal(fileCount, stack.Files.Count);
             Assert.Equal(name, stack.Name);
-        }
-
-        private StackResolver GetResolver()
-        {
-            return new StackResolver(_namingOptions);
         }
     }
 }

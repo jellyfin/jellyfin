@@ -40,6 +40,11 @@ namespace Emby.Naming.Video
         /// <returns>True if file is in the stack.</returns>
         public bool ContainsFile(string file, bool isDirectory)
         {
+            if (string.IsNullOrEmpty(file))
+            {
+                return false;
+            }
+
             if (IsDirectoryStack == isDirectory)
             {
                 return Files.Contains(file, StringComparer.OrdinalIgnoreCase);
