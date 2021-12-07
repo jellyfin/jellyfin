@@ -45,7 +45,6 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly FFProbeAudioInfo _audioProber;
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
-        private readonly NamingOptions _namingOptions;
 
         public FFProbeProvider(
             ILogger<FFProbeProvider> logger,
