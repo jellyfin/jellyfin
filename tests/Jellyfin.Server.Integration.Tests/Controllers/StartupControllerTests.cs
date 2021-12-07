@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text.Json;
@@ -36,9 +37,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 PreferredMetadataLanguage = "nl"
             };
 
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(config, _jsonOptions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            using var postResponse = await client.PostAsync("/Startup/Configuration", postContent).ConfigureAwait(false);
+            using var postResponse = await client.PostAsJsonAsync("/Startup/Configuration", config, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
             using var getResponse = await client.GetAsync("/Startup/Configuration").ConfigureAwait(false);
@@ -80,9 +79,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Password = "NewPassword"
             };
 
-            using var postContent = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(user, _jsonOptions));
-            postContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            var postResponse = await client.PostAsync("/Startup/User", postContent).ConfigureAwait(false);
+            var postResponse = await client.PostAsJsonAsync("/Startup/User", user, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, postResponse.StatusCode);
 
             var getResponse = await client.GetAsync("/Startup/User").ConfigureAwait(false);

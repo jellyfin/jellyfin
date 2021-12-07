@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
@@ -62,9 +63,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Name = "ThisProfileDoesNotExist"
             };
 
-            using var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(deviceProfile, _jsonOptions));
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            using var getResponse = await client.PostAsync("/Dlna/Profiles/" + NonExistentProfile, content).ConfigureAwait(false);
+            using var getResponse = await client.PostAsJsonAsync("/Dlna/Profiles/" + NonExistentProfile, deviceProfile, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
         }
 
@@ -80,9 +79,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Name = "ThisProfileIsNew"
             };
 
-            using var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(deviceProfile, _jsonOptions));
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            using var getResponse = await client.PostAsync("/Dlna/Profiles", content).ConfigureAwait(false);
+            using var getResponse = await client.PostAsJsonAsync("/Dlna/Profiles", deviceProfile, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, getResponse.StatusCode);
         }
 
@@ -120,9 +117,7 @@ namespace Jellyfin.Server.Integration.Tests.Controllers
                 Id = _newDeviceProfileId
             };
 
-            using var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(updatedProfile, _jsonOptions));
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
-            using var getResponse = await client.PostAsync("/Dlna/Profiles", content).ConfigureAwait(false);
+            using var getResponse = await client.PostAsJsonAsync("/Dlna/Profiles", updatedProfile, _jsonOptions).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, getResponse.StatusCode);
         }
 

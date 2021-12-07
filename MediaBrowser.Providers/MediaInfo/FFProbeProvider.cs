@@ -39,20 +39,13 @@ namespace MediaBrowser.Providers.MediaInfo
         IHasItemChangeMonitor
     {
         private readonly ILogger<FFProbeProvider> _logger;
-        private readonly IMediaEncoder _mediaEncoder;
-        private readonly IItemRepository _itemRepo;
-        private readonly IBlurayExaminer _blurayExaminer;
-        private readonly ILocalizationManager _localization;
-        private readonly IEncodingManager _encodingManager;
-        private readonly IServerConfigurationManager _config;
-        private readonly ISubtitleManager _subtitleManager;
-        private readonly IChapterManager _chapterManager;
-        private readonly ILibraryManager _libraryManager;
-        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly SubtitleResolver _subtitleResolver;
+        private readonly AudioResolver _audioResolver;
+        private readonly FFProbeVideoInfo _videoProber;
+        private readonly FFProbeAudioInfo _audioProber;
+
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
         private readonly NamingOptions _namingOptions;
-        private readonly AudioResolver _audioResolver;
 
         public FFProbeProvider(
             ILogger<FFProbeProvider> logger,
@@ -69,20 +62,21 @@ namespace MediaBrowser.Providers.MediaInfo
             NamingOptions namingOptions)
         {
             _logger = logger;
-            _mediaEncoder = mediaEncoder;
-            _itemRepo = itemRepo;
-            _blurayExaminer = blurayExaminer;
-            _localization = localization;
-            _encodingManager = encodingManager;
-            _config = config;
-            _subtitleManager = subtitleManager;
-            _chapterManager = chapterManager;
-            _libraryManager = libraryManager;
-            _mediaSourceManager = mediaSourceManager;
-            _namingOptions = namingOptions;
-
+            _audioResolver = new AudioResolver(localization, mediaEncoder, namingOptions);
             _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
-            _audioResolver = new AudioResolver(_localization, _mediaEncoder, namingOptions);
+            _videoProber = new FFProbeVideoInfo(
+                _logger,
+                mediaSourceManager,
+                mediaEncoder,
+                itemRepo,
+                blurayExaminer,
+                localization,
+                encodingManager,
+                config,
+                subtitleManager,
+                chapterManager,
+                libraryManager);
+            _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
         }
 
         public string Name => "ffprobe";
@@ -190,21 +184,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeVideoInfo(
-                _logger,
-                _mediaSourceManager,
-                _mediaEncoder,
-                _itemRepo,
-                _blurayExaminer,
-                _localization,
-                _encodingManager,
-                _config,
-                _subtitleManager,
-                _chapterManager,
-                _libraryManager,
-                _audioResolver);
-
-            return prober.ProbeVideo(item, options, cancellationToken);
+            return _videoProber.ProbeVideo(item, options, cancellationToken);
         }
 
         private string NormalizeStrmLine(string line)
@@ -240,9 +220,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
             }
 
-            var prober = new FFProbeAudioInfo(_mediaSourceManager, _mediaEncoder, _itemRepo, _libraryManager);
-
-            return prober.Probe(item, options, cancellationToken);
+            return _audioProber.Probe(item, options, cancellationToken);
         }
     }
 }

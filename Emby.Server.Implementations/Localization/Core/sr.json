@@ -64,7 +64,7 @@
     "ItemRemovedWithName": "{0} уклоњено из библиотеке",
     "ItemAddedWithName": "{0} додато у библиотеку",
     "Inherit": "Наследи",
-    "HomeVideos": "Кућни видео",
+    "HomeVideos": "Кућни Видео",
     "HeaderRecordingGroups": "Групе снимања",
     "HeaderNextUp": "Следи",
     "HeaderLiveTV": "ТВ уживо",
@@ -117,5 +117,6 @@
     "TaskCleanActivityLog": "Очисти историју активности",
     "Undefined": "Недефинисано",
     "Forced": "Принудно",
-    "Default": "Подразумевано"
+    "Default": "Подразумевано",
+    "TaskOptimizeDatabase": "Оптимизуј датабазу"
 }
