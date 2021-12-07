@@ -37,7 +37,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 { 3, null, null, new int?[] { 2, 1, 0 }, new[] { 2, 1, 0 } }, // full reverse order
 
                 // multiple orders set
-                { 3, new[] { 1 }, new[] { 2, 0, 1 }, null, new[] { 1, 0, 2 } }, // library order first, server order ignored
+                { 3, new[] { 1 }, new[] { 2, 0, 1 }, null, new[] { 1, 0, 2 } }, // partial library order first, server order ignored
                 { 3, new[] { 1 }, null, new int?[] { 2, 0, 1 }, new[] { 1, 2, 0 } }, // library order first, then orderby
                 { 3, new[] { 2, 1, 0 }, new[] { 1, 2, 0 }, new int?[] { 2, 0, 1 }, new[] { 2, 1, 0 } }, // library order wins
             };
@@ -90,10 +90,8 @@ namespace Jellyfin.Providers.Tests.Manager
             var actualProviders = providerManager.GetImageProviders(item, refreshOptions).ToList();
 
             Assert.Equal(providerList.Count, actualProviders.Count);
-            for (var i = 0; i < providerList.Count; i++)
-            {
-                Assert.Equal(i, actualProviders.IndexOf(providerList[expectedOrder[i]]));
-            }
+            var actualOrder = actualProviders.Select(i => providerList.IndexOf(i)).ToArray();
+            Assert.Equal(expectedOrder, actualOrder);
         }
 
         [Theory]
@@ -167,8 +165,129 @@ namespace Jellyfin.Providers.Tests.Manager
             }
         }
 
-        private static IImageProvider MockIImageProvider<T>(string name, BaseItem expectedType, bool supports = true, int? order = null, bool errorOnSupported = false)
-            where T : class, IImageProvider
+        private static TheoryData<string[], int[]?, int[]?, int[]?, int[]?, int?[]?, int[]> GetMetadataProvidersOrderData()
+        {
+            var l = "local";
+            var r = "remote";
+            return new ()
+            {
+                { new[] { l, l, r, r }, null, null, null, null, null, new[] { 0, 1, 2, 3 } }, // no order options set
+
+                // library options ordering
+                { new[] { l, l, r, r }, Array.Empty<int>(), Array.Empty<int>(), null, null, null, new[] { 0, 1, 2, 3 } }, // no order provided
+                // local only
+                { new[] { r, l, l, l }, new[] { 2 }, null, null, null, null, new[] { 2, 0, 1, 3 } }, // one item in order
+                { new[] { r, l, l, l }, new[] { 3, 2, 1 }, null, null, null, null, new[] { 3, 2, 1, 0 } }, // full reverse order
+                // remote only
+                { new[] { l, r, r, r }, null, new[] { 2 }, null, null, null, new[] { 2, 0, 1, 3 } }, // one item in order
+                { new[] { l, r, r, r }, null, new[] { 3, 2, 1 }, null, null, null, new[] { 3, 2, 1, 0 } }, // full reverse order
+                // local and remote, note that results will be interleaved (odd but expected)
+                { new[] { l, l, r, r }, new[] { 1 }, new[] { 3 }, null, null, null, new[] { 1, 3, 0, 2 } }, // one item in each order
+                { new[] { l, l, l, r, r, r }, new[] { 2, 1, 0 }, new[] { 5, 4, 3 }, null, null, null, new[] { 2, 5, 1, 4, 0, 3 } }, // full reverse order
+
+                // // server options ordering
+                { new[] { l, l, r, r }, null, null, Array.Empty<int>(), Array.Empty<int>(), null, new[] { 0, 1, 2, 3 } }, // no order provided
+                // local only
+                { new[] { r, l, l, l }, null, null, new[] { 2 }, null, null, new[] { 2, 0, 1, 3 } }, // one item in order
+                { new[] { r, l, l, l }, null, null, new[] { 3, 2, 1 }, null, null, new[] { 3, 2, 1, 0 } }, // full reverse order
+                // remote only
+                { new[] { l, r, r, r }, null, null, null, new[] { 2 }, null, new[] { 2, 0, 1, 3 } }, // one item in order
+                { new[] { l, r, r, r }, null, null, null, new[] { 3, 2, 1 }, null, new[] { 3, 2, 1, 0 } }, // full reverse order
+                // local and remote, note that results will be interleaved (odd but expected)
+                { new[] { l, l, r, r }, null, null, new[] { 1 }, new[] { 3 }, null, new[] { 1, 3, 0, 2 } }, // one item in each order
+                { new[] { l, l, l, r, r, r }, null, null, new[] { 2, 1, 0 }, new[] { 5, 4, 3 }, null, new[] { 2, 5, 1, 4, 0, 3 } }, // full reverse order
+
+                // IHasOrder ordering (not interleaved, doesn't care about types)
+                // TODO unset goes to beginning, not end
+                { new[] { l, l, r, r }, null, null, null, null, new int?[] { 2, null, 1, null }, new[] { 1, 3, 2, 0 } }, // partially defined
+                { new[] { l, l, r, r }, null, null, null, null, new int?[] { 3, 2, 1, 0 }, new[] { 3, 2, 1, 0 } }, // full reverse order
+                // note odd interaction - orderby determines order of slot when local and remote both have a slot 0
+                { new[] { l, l, r, r }, new[] { 1 }, new[] { 3 }, null, null, new int?[] { null, 2, null, 1 }, new[] { 3, 1, 0, 2 } }, // sorts interleaved results
+
+                // multiple orders set
+                { new[] { l, l, l, r, r, r }, new[] { 1 }, new[] { 4 }, new[] { 2, 1, 0 }, new[] { 5, 4, 3 }, null, new[] { 1, 4, 0, 2, 3, 5 } }, // partial library order first, server order ignored
+                { new[] { l, l, l }, new[] { 1 }, null, null, null, new int?[] { 2, 0, 1 }, new[] { 1, 2, 0 } }, // library order first, then orderby
+                { new[] { l, l, l, r, r, r }, new[] { 2, 1, 0 }, new[] { 5, 4, 3 }, new[] { 1, 2, 0 }, new[] { 4, 5, 3 }, new int?[] { 5, 4, 1, 6, 3, 2 }, new[] { 2, 5, 4, 1, 0, 3 } }, // library order wins (with orderby between local/remote)
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetMetadataProvidersOrderData))]
+        public void GetMetadataProviders_ProviderOrder_MatchesExpected(string[] providers, int[]? libraryLocalOrder, int[]? libraryRemoteOrder, int[]? serverLocalOrder, int[]? serverRemoteOrder, int?[]? hasOrderOrder, int[] expectedOrder)
+        {
+            var item = new MetadataTestItem();
+            var typeNames = new Dictionary<string, string>
+            {
+                { "remote", nameof(IRemoteMetadataProvider) },
+                { "local", nameof(ILocalMetadataProvider) },
+                { "custom", nameof(ICustomMetadataProvider) }
+            };
+
+            var nameProvider = new Func<int, string>(i => "Provider" + i);
+
+            var providerList = new List<IMetadataProvider<MetadataTestItem>>();
+            for (var i = 0; i < providers.Length; i++)
+            {
+                var order = hasOrderOrder?[i];
+                providerList.Add(MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(typeNames[providers[i]], nameProvider(i), order: order));
+            }
+
+            var libraryOptions = new LibraryOptions();
+            if (libraryLocalOrder != null)
+            {
+                libraryOptions.LocalMetadataReaderOrder = libraryLocalOrder.Select(nameProvider).ToArray();
+            }
+
+            if (libraryRemoteOrder != null)
+            {
+                libraryOptions.TypeOptions = new[]
+                {
+                    new TypeOptions
+                    {
+                        Type = item.GetType().Name,
+                        MetadataFetcherOrder = libraryRemoteOrder.Select(nameProvider).ToArray()
+                    }
+                };
+            }
+
+            var serverConfiguration = new ServerConfiguration();
+            if (serverLocalOrder != null || serverRemoteOrder != null)
+            {
+                serverConfiguration.MetadataOptions = new[]
+                {
+                    new MetadataOptions
+                    {
+                        ItemType = item.GetType().Name
+                    }
+                };
+                if (serverLocalOrder != null)
+                {
+                    serverConfiguration.MetadataOptions[0].LocalMetadataReaderOrder = serverLocalOrder.Select(nameProvider).ToArray();
+                }
+
+                if (serverRemoteOrder != null)
+                {
+                    serverConfiguration.MetadataOptions[0].MetadataFetcherOrder = serverRemoteOrder.Select(nameProvider).ToArray();
+                }
+            }
+
+            var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
+            baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<LibraryOptions>(), It.IsAny<string>()))
+                .Returns(true);
+
+            var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, baseItemManager: baseItemManager.Object);
+            AddParts(providerManager, metadataProviders: providerList);
+
+            // TODO why does this take libraryOptions directly while GetImageProviders did not?
+            var actualProviders = providerManager.GetMetadataProviders<MetadataTestItem>(item, libraryOptions).ToList();
+
+            Assert.Equal(providerList.Count, actualProviders.Count);
+            var actualOrder = actualProviders.Select(i => providerList.IndexOf(i)).ToArray();
+            Assert.Equal(expectedOrder, actualOrder);
+        }
+
+        private static IImageProvider MockIImageProvider<TProviderType>(string name, BaseItem expectedType, bool supports = true, int? order = null, bool errorOnSupported = false)
+            where TProviderType : class, IImageProvider
         {
             Mock<IHasOrder>? hasOrder = null;
             if (order != null)
@@ -179,8 +298,8 @@ namespace Jellyfin.Providers.Tests.Manager
             }
 
             var provider = hasOrder == null
-                ? new Mock<T>(MockBehavior.Strict)
-                : hasOrder.As<T>();
+                ? new Mock<TProviderType>(MockBehavior.Strict)
+                : hasOrder.As<TProviderType>();
             provider.Setup(p => p.Name)
                 .Returns(name);
             if (errorOnSupported)
@@ -193,6 +312,38 @@ namespace Jellyfin.Providers.Tests.Manager
                 provider.Setup(p => p.Supports(expectedType))
                     .Returns(supports);
             }
+
+            return provider.Object;
+        }
+
+        private static IMetadataProvider<TItemType> MockIMetadataProviderMapper<TItemType, TLookupInfoType>(string typeName, string providerName, int? order = null)
+            where TItemType : BaseItem, IHasLookupInfo<TLookupInfoType>
+            where TLookupInfoType : ItemLookupInfo, new()
+            => typeName switch
+            {
+                "ILocalMetadataProvider" => MockIMetadataProvider<ILocalMetadataProvider<TItemType>, TItemType>(providerName, order),
+                "IRemoteMetadataProvider" => MockIMetadataProvider<IRemoteMetadataProvider<TItemType, TLookupInfoType>, TItemType>(providerName, order),
+                "ICustomMetadataProvider" => MockIMetadataProvider<ICustomMetadataProvider<TItemType>, TItemType>(providerName, order),
+                _ => MockIMetadataProvider<IMetadataProvider<TItemType>, TItemType>(providerName, order)
+            };
+
+        private static IMetadataProvider<TItemType> MockIMetadataProvider<TProviderType, TItemType>(string name, int? order = null)
+            where TProviderType : class, IMetadataProvider<TItemType>
+            where TItemType : BaseItem
+        {
+            Mock<IHasOrder>? hasOrder = null;
+            if (order != null)
+            {
+                hasOrder = new Mock<IHasOrder>(MockBehavior.Strict);
+                hasOrder.Setup(i => i.Order)
+                    .Returns((int)order);
+            }
+
+            var provider = hasOrder == null
+                ? new Mock<TProviderType>(MockBehavior.Strict)
+                : hasOrder.As<TProviderType>();
+            provider.Setup(p => p.Name)
+                .Returns(name);
 
             return provider.Object;
         }
@@ -236,6 +387,23 @@ namespace Jellyfin.Providers.Tests.Manager
             externalIds ??= Array.Empty<IExternalId>();
 
             providerManager.AddParts(imageProviders, metadataServices, metadataProviders, metadataSavers, externalIds);
+        }
+
+        /// <summary>
+        /// Simple <see cref="BaseItem"/> extension to force SupportsLocalMetadata to true.
+        /// </summary>
+        public class MetadataTestItem : BaseItem, IHasLookupInfo<MetadataTestItemInfo>
+        {
+            public override bool SupportsLocalMetadata => true;
+
+            public MetadataTestItemInfo GetLookupInfo()
+            {
+                return GetItemLookupInfo<MetadataTestItemInfo>();
+            }
+        }
+
+        public class MetadataTestItemInfo : ItemLookupInfo
+        {
         }
     }
 }
