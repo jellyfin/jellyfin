@@ -276,8 +276,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 var path = firstVideo.Path;
                 if (video.ExtraType != null)
                 {
-                    // TODO
-                    result.ExtraFiles.Add(files.First(f => string.Equals(f.FullName, path, StringComparison.OrdinalIgnoreCase)));
+                    result.ExtraFiles.Add(files.Find(f => string.Equals(f.FullName, path, StringComparison.OrdinalIgnoreCase)));
                     continue;
                 }
 

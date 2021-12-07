@@ -107,6 +107,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
         }
@@ -128,6 +129,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
         }
@@ -150,6 +152,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(3, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
             Assert.Equal(ExtraType.Trailer, result[2].ExtraType);
@@ -173,6 +176,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(3, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
             Assert.Equal(ExtraType.Trailer, result[2].ExtraType);
@@ -195,6 +199,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
         }
@@ -308,6 +313,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(4, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
             Assert.Equal(ExtraType.Trailer, result[2].ExtraType);
@@ -431,6 +437,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
         }
@@ -452,6 +459,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
         }
@@ -473,6 +481,7 @@ namespace Jellyfin.Naming.Tests.Video
                 }).ToList(),
                 _namingOptions).ToList();
 
+            Assert.Equal(2, result.Count);
             Assert.False(result[0].ExtraType.HasValue);
             Assert.Equal(ExtraType.Trailer, result[1].ExtraType);
         }
