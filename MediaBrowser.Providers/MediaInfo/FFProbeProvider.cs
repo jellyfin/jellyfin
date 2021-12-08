@@ -74,7 +74,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 config,
                 subtitleManager,
                 chapterManager,
-                libraryManager);
+                libraryManager,
+                _audioResolver);
             _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
         }
 
