@@ -586,7 +586,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="currentStreams">The current streams.</param>
         /// <param name="options">The refreshOptions.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private async Task AddExternalAudio(
+        private async Task AddExternalAudioAsync(
             Video video,
             List<MediaStream> currentStreams,
             MetadataRefreshOptions options,
