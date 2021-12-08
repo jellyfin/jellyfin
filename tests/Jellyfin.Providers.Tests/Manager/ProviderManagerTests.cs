@@ -167,8 +167,8 @@ namespace Jellyfin.Providers.Tests.Manager
 
         private static TheoryData<string[], int[]?, int[]?, int[]?, int[]?, int?[]?, int[]> GetMetadataProvidersOrderData()
         {
-            var l = "local";
-            var r = "remote";
+            var l = nameof(ILocalMetadataProvider);
+            var r = nameof(IRemoteMetadataProvider);
             return new ()
             {
                 { new[] { l, l, r, r }, null, null, null, null, null, new[] { 0, 1, 2, 3 } }, // no order options set
@@ -198,8 +198,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 { new[] { l, l, l, r, r, r }, null, null, new[] { 2, 1, 0 }, new[] { 5, 4, 3 }, null, new[] { 2, 5, 1, 4, 0, 3 } }, // full reverse order
 
                 // IHasOrder ordering (not interleaved, doesn't care about types)
-                // TODO unset goes to beginning, not end
-                { new[] { l, l, r, r }, null, null, null, null, new int?[] { 2, null, 1, null }, new[] { 1, 3, 2, 0 } }, // partially defined
+                { new[] { l, l, r, r }, null, null, null, null, new int?[] { 2, null, 1, null }, new[] { 2, 0, 1, 3 } }, // partially defined
                 { new[] { l, l, r, r }, null, null, null, null, new int?[] { 3, 2, 1, 0 }, new[] { 3, 2, 1, 0 } }, // full reverse order
                 // note odd interaction - orderby determines order of slot when local and remote both have a slot 0
                 { new[] { l, l, r, r }, new[] { 1 }, new[] { 3 }, null, null, new int?[] { null, 2, null, 1 }, new[] { 3, 1, 0, 2 } }, // sorts interleaved results
@@ -216,12 +215,6 @@ namespace Jellyfin.Providers.Tests.Manager
         public void GetMetadataProviders_ProviderOrder_MatchesExpected(string[] providers, int[]? libraryLocalOrder, int[]? libraryRemoteOrder, int[]? serverLocalOrder, int[]? serverRemoteOrder, int?[]? hasOrderOrder, int[] expectedOrder)
         {
             var item = new MetadataTestItem();
-            var typeNames = new Dictionary<string, string>
-            {
-                { "remote", nameof(IRemoteMetadataProvider) },
-                { "local", nameof(ILocalMetadataProvider) },
-                { "custom", nameof(ICustomMetadataProvider) }
-            };
 
             var nameProvider = new Func<int, string>(i => "Provider" + i);
 
@@ -229,7 +222,7 @@ namespace Jellyfin.Providers.Tests.Manager
             for (var i = 0; i < providers.Length; i++)
             {
                 var order = hasOrderOrder?[i];
-                providerList.Add(MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(typeNames[providers[i]], nameProvider(i), order: order));
+                providerList.Add(MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(providers[i], nameProvider(i), order: order));
             }
 
             var libraryOptions = new LibraryOptions();
@@ -278,7 +271,6 @@ namespace Jellyfin.Providers.Tests.Manager
             var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, baseItemManager: baseItemManager.Object);
             AddParts(providerManager, metadataProviders: providerList);
 
-            // TODO why does this take libraryOptions directly while GetImageProviders did not?
             var actualProviders = providerManager.GetMetadataProviders<MetadataTestItem>(item, libraryOptions).ToList();
 
             Assert.Equal(providerList.Count, actualProviders.Count);

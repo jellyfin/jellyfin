@@ -323,20 +323,7 @@ namespace MediaBrowser.Providers.Manager
 
             return _imageProviders.Where(i => CanRefreshImages(i, item, libraryOptions, refreshOptions, includeDisabled))
                 .OrderBy(i => GetConfiguredOrder(fetcherOrder, i.Name))
-                .ThenBy(GetOrder);
-        }
-
-        private static int GetConfiguredOrder(string[] order, string providerName)
-        {
-            var index = Array.IndexOf(order, providerName);
-
-            if (index != -1)
-            {
-                return index;
-            }
-
-            // default to end
-            return int.MaxValue;
+                .ThenBy(GetDefaultOrder);
         }
 
         /// <inheritdoc />
@@ -351,12 +338,23 @@ namespace MediaBrowser.Providers.Manager
         private IEnumerable<IMetadataProvider<T>> GetMetadataProvidersInternal<T>(BaseItem item, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions, bool includeDisabled, bool forceEnableInternetMetadata)
             where T : BaseItem
         {
-            // Avoid implicitly captured closure
-            var currentOptions = globalMetadataOptions;
+            var localMetadataReaderOrder = libraryOptions.LocalMetadataReaderOrder ?? globalMetadataOptions.LocalMetadataReaderOrder;
+            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var metadataFetcherOrder = typeOptions?.MetadataFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
 
             return _metadataProviders.OfType<IMetadataProvider<T>>()
                 .Where(i => CanRefreshMetadata(i, item, libraryOptions, includeDisabled, forceEnableInternetMetadata))
-                .OrderBy(i => GetConfiguredOrder(item, i, libraryOptions, currentOptions))
+                .OrderBy(i =>
+                {
+                    // local and remote providers will be interleaved in the final order
+                    // only relative order within a type matters: consumers of the list filter to one or the other
+                    switch (i)
+                    {
+                        case ILocalMetadataProvider: return GetConfiguredOrder(localMetadataReaderOrder, i.Name);
+                        case IRemoteMetadataProvider: return GetConfiguredOrder(metadataFetcherOrder, i.Name);
+                        default: return int.MaxValue; // default to end
+                    }
+                })
                 .ThenBy(GetDefaultOrder);
         }
 
@@ -439,42 +437,20 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        private int GetConfiguredOrder(BaseItem item, IMetadataProvider provider, LibraryOptions libraryOptions, MetadataOptions globalMetadataOptions)
+        private static int GetConfiguredOrder(string[] order, string providerName)
         {
-            // See if there's a user-defined order
-            if (provider is ILocalMetadataProvider)
+            var index = Array.IndexOf(order, providerName);
+
+            if (index != -1)
             {
-                var configuredOrder = libraryOptions.LocalMetadataReaderOrder ?? globalMetadataOptions.LocalMetadataReaderOrder;
-
-                var index = Array.IndexOf(configuredOrder, provider.Name);
-
-                if (index != -1)
-                {
-                    return index;
-                }
+                return index;
             }
 
-            // See if there's a user-defined order
-            if (provider is IRemoteMetadataProvider)
-            {
-                var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
-                var typeFetcherOrder = typeOptions?.MetadataFetcherOrder;
-
-                var fetcherOrder = typeFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
-
-                var index = Array.IndexOf(fetcherOrder, provider.Name);
-
-                if (index != -1)
-                {
-                    return index;
-                }
-            }
-
-            // Not configured. Just return some high number to put it at the end.
-            return 100;
+            // default to end
+            return int.MaxValue;
         }
 
-        private static int GetOrder(object provider)
+        private static int GetDefaultOrder(object provider)
         {
             if (provider is IHasOrder hasOrder)
             {
@@ -483,16 +459,6 @@ namespace MediaBrowser.Providers.Manager
 
             // after items that want to be first (~0) but before items that want to be last (~100)
             return 50;
-        }
-
-        private int GetDefaultOrder(IMetadataProvider provider)
-        {
-            if (provider is IHasOrder hasOrder)
-            {
-                return hasOrder.Order;
-            }
-
-            return 0;
         }
 
         /// <inheritdoc/>
