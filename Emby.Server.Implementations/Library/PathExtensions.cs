@@ -29,18 +29,19 @@ namespace Emby.Server.Implementations.Library
             }
 
             var openBracketIndex = str.IndexOf('[');
-            var equalsIndex = str.IndexOf('=');
+            var attributeIndex = str.IndexOf(attribute);
             var closingBracketIndex = str.IndexOf(']');
-            while (openBracketIndex < equalsIndex && equalsIndex < closingBracketIndex)
+            while (openBracketIndex < attributeIndex && attributeIndex < closingBracketIndex)
             {
-                if (str[(openBracketIndex + 1)..equalsIndex].Equals(attribute, StringComparison.OrdinalIgnoreCase))
+                if (openBracketIndex + 1 == attributeIndex
+                    && str[attributeIndex + attribute.Length] == '=')
                 {
-                    return str[(equalsIndex + 1)..closingBracketIndex].Trim().ToString();
+                    return str[(attributeIndex + attribute.Length + 1)..closingBracketIndex].Trim().ToString();
                 }
 
-                str = str[(closingBracketIndex+ 1)..];
+                str = str[(closingBracketIndex + 1)..];
                 openBracketIndex = str.IndexOf('[');
-                equalsIndex = str.IndexOf('=');
+                attributeIndex = str.IndexOf(attribute);
                 closingBracketIndex = str.IndexOf(']');
             }
 
