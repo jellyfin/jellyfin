@@ -103,7 +103,7 @@
     "HeaderFavoriteEpisodes": "Tập Phim Yêu Thích",
     "HeaderFavoriteArtists": "Nghệ Sĩ Yêu Thích",
     "HeaderFavoriteAlbums": "Album Ưa Thích",
-    "FailedLoginAttemptWithUserName": "Nỗ lực đăng nhập thất bại từ {0}",
+    "FailedLoginAttemptWithUserName": "Đăng nhập không thành công thử từ {0}",
     "DeviceOnlineWithName": "{0} đã kết nối",
     "DeviceOfflineWithName": "{0} đã ngắt kết nối",
     "ChapterNameValue": "Phân Cảnh {0}",
