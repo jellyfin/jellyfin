@@ -217,7 +217,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            await AddExternalAudio(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
+            await AddExternalAudioAsync(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             var libraryOptions = _libraryManager.GetLibraryOptions(video);
 
