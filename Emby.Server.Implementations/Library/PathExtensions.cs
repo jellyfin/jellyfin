@@ -28,21 +28,26 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("String can't be empty.", nameof(attribute));
             }
 
-            var openBracketIndex = str.IndexOf('[');
             var attributeIndex = str.IndexOf(attribute);
-            var closingBracketIndex = str.IndexOf(']');
-            while (openBracketIndex < attributeIndex && attributeIndex < closingBracketIndex)
+
+            // Must be at least 3 characters after the attribute =, ], any character.
+            var maxIndex = str.Length - attribute.Length - 3;
+            while (attributeIndex > -1 && attributeIndex < maxIndex)
             {
-                if (openBracketIndex + 1 == attributeIndex
-                    && str[attributeIndex + attribute.Length] == '=')
+                var attributeEnd = attributeIndex + attribute.Length;
+                if (attributeIndex > 0
+                    && str[attributeIndex - 1] == '['
+                    && str[attributeEnd] == '=')
                 {
-                    return str[(attributeIndex + attribute.Length + 1)..closingBracketIndex].Trim().ToString();
+                    var closingIndex = str[attributeEnd..].IndexOf(']');
+                    if (closingIndex != -1)
+                    {
+                        return str[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim().ToString();
+                    }
                 }
 
-                str = str[(closingBracketIndex + 1)..];
-                openBracketIndex = str.IndexOf('[');
+                str = str[attributeEnd..];
                 attributeIndex = str.IndexOf(attribute);
-                closingBracketIndex = str.IndexOf(']');
             }
 
             // for imdbid we also accept pattern matching
