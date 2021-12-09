@@ -28,7 +28,7 @@ namespace Emby.Server.Implementations.Library
                 throw new ArgumentException("String can't be empty.", nameof(attribute));
             }
 
-            var attributeIndex = str.IndexOf(attribute);
+            var attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
 
             // Must be at least 3 characters after the attribute =, ], any character.
             var maxIndex = str.Length - attribute.Length - 3;
@@ -47,7 +47,7 @@ namespace Emby.Server.Implementations.Library
                 }
 
                 str = str[attributeEnd..];
-                attributeIndex = str.IndexOf(attribute);
+                attributeIndex = str.IndexOf(attribute, StringComparison.OrdinalIgnoreCase);
             }
 
             // for imdbid we also accept pattern matching
