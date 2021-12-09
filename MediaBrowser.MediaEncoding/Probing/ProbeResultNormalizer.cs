@@ -45,6 +45,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         {
             "AC/DC",
             "Au/Ra",
+            "Bremer/McCoy", 
             "이달의 소녀 1/3",
             "LOONA 1/3",
             "LOONA / yyxy",
