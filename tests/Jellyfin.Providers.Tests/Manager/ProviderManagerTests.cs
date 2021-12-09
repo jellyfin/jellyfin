@@ -57,33 +57,10 @@ namespace Jellyfin.Providers.Tests.Manager
                 providerList.Add(MockIImageProvider<IImageProvider>(nameProvider(i), item, order: order));
             }
 
-            var libraryOptions = new LibraryOptions();
-            if (libraryOrder != null)
-            {
-                libraryOptions.TypeOptions = new[]
-                {
-                    new TypeOptions
-                    {
-                        Type = item.GetType().Name,
-                        ImageFetcherOrder = libraryOrder.Select(nameProvider).ToArray()
-                    }
-                };
-            }
+            var libraryOptions = CreateLibraryOptions(item.GetType().Name, imageFetcherOrder: libraryOrder?.Select(nameProvider).ToArray());
+            var serverConfiguration = CreateServerConfiguration(item.GetType().Name, imageFetcherOrder: serverOrder?.Select(nameProvider).ToArray());
 
-            var serverConfiguration = new ServerConfiguration();
-            if (serverOrder != null)
-            {
-                serverConfiguration.MetadataOptions = new[]
-                {
-                    new MetadataOptions
-                    {
-                        ItemType = item.GetType().Name,
-                        ImageFetcherOrder = serverOrder.Select(nameProvider).ToArray()
-                    }
-                };
-            }
-
-            var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, libraryOptions: libraryOptions);
+            using var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, libraryOptions: libraryOptions);
             AddParts(providerManager, imageProviders: providerList);
 
             var refreshOptions = new ImageRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
@@ -119,12 +96,19 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(typeof(IDynamicImageProvider), true, true)]
         [InlineData(typeof(IRemoteImageProvider), false, false)]
         [InlineData(typeof(IDynamicImageProvider), false, false)]
-        public void GetImageProviders_CanRefreshImagesEnabled_WhenLocalOrEnabled(Type providerType, bool enabled, bool expected)
+        public void GetImageProviders_CanRefreshImagesBaseItemEnabled_WhenLocalOrEnabled(Type providerType, bool enabled, bool expected)
         {
             GetImageProviders_CanRefreshImages_Tester(providerType, true, expected, baseItemEnabled: enabled);
         }
 
-        private static void GetImageProviders_CanRefreshImages_Tester(Type providerType, bool supports, bool expected, bool errorOnSupported = false, bool itemLocked = false, bool fullRefresh = false, bool baseItemEnabled = true)
+        private static void GetImageProviders_CanRefreshImages_Tester(
+            Type providerType,
+            bool supports,
+            bool expected,
+            bool errorOnSupported = false,
+            bool itemLocked = false,
+            bool fullRefresh = false,
+            bool baseItemEnabled = true)
         {
             var item = new Movie
             {
@@ -150,19 +134,12 @@ namespace Jellyfin.Providers.Tests.Manager
             baseItemManager.Setup(i => i.IsImageFetcherEnabled(item, It.IsAny<LibraryOptions>(), providerName))
                 .Returns(baseItemEnabled);
 
-            var providerManager = GetProviderManager(baseItemManager: baseItemManager.Object);
+            using var providerManager = GetProviderManager(baseItemManager: baseItemManager.Object);
             AddParts(providerManager, imageProviders: new[] { provider });
 
-            var actualProviders = providerManager.GetImageProviders(item, refreshOptions);
+            var actualProviders = providerManager.GetImageProviders(item, refreshOptions).ToArray();
 
-            if (expected)
-            {
-                Assert.Single(actualProviders);
-            }
-            else
-            {
-                Assert.Empty(actualProviders);
-            }
+            Assert.Equal(expected ? 1 : 0, actualProviders.Length);
         }
 
         private static TheoryData<string[], int[]?, int[]?, int[]?, int[]?, int?[]?, int[]> GetMetadataProvidersOrderData()
@@ -212,7 +189,14 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [MemberData(nameof(GetMetadataProvidersOrderData))]
-        public void GetMetadataProviders_ProviderOrder_MatchesExpected(string[] providers, int[]? libraryLocalOrder, int[]? libraryRemoteOrder, int[]? serverLocalOrder, int[]? serverRemoteOrder, int?[]? hasOrderOrder, int[] expectedOrder)
+        public void GetMetadataProviders_ProviderOrder_MatchesExpected(
+            string[] providers,
+            int[]? libraryLocalOrder,
+            int[]? libraryRemoteOrder,
+            int[]? serverLocalOrder,
+            int[]? serverRemoteOrder,
+            int?[]? hasOrderOrder,
+            int[] expectedOrder)
         {
             var item = new MetadataTestItem();
 
@@ -225,50 +209,20 @@ namespace Jellyfin.Providers.Tests.Manager
                 providerList.Add(MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(providers[i], nameProvider(i), order: order));
             }
 
-            var libraryOptions = new LibraryOptions();
-            if (libraryLocalOrder != null)
-            {
-                libraryOptions.LocalMetadataReaderOrder = libraryLocalOrder.Select(nameProvider).ToArray();
-            }
-
-            if (libraryRemoteOrder != null)
-            {
-                libraryOptions.TypeOptions = new[]
-                {
-                    new TypeOptions
-                    {
-                        Type = item.GetType().Name,
-                        MetadataFetcherOrder = libraryRemoteOrder.Select(nameProvider).ToArray()
-                    }
-                };
-            }
-
-            var serverConfiguration = new ServerConfiguration();
-            if (serverLocalOrder != null || serverRemoteOrder != null)
-            {
-                serverConfiguration.MetadataOptions = new[]
-                {
-                    new MetadataOptions
-                    {
-                        ItemType = item.GetType().Name
-                    }
-                };
-                if (serverLocalOrder != null)
-                {
-                    serverConfiguration.MetadataOptions[0].LocalMetadataReaderOrder = serverLocalOrder.Select(nameProvider).ToArray();
-                }
-
-                if (serverRemoteOrder != null)
-                {
-                    serverConfiguration.MetadataOptions[0].MetadataFetcherOrder = serverRemoteOrder.Select(nameProvider).ToArray();
-                }
-            }
+            var libraryOptions = CreateLibraryOptions(
+                item.GetType().Name,
+                localMetadataReaderOrder: libraryLocalOrder?.Select(nameProvider).ToArray(),
+                metadataFetcherOrder: libraryRemoteOrder?.Select(nameProvider).ToArray());
+            var serverConfiguration = CreateServerConfiguration(
+                item.GetType().Name,
+                localMetadataReaderOrder: serverLocalOrder?.Select(nameProvider).ToArray(),
+                metadataFetcherOrder: serverRemoteOrder?.Select(nameProvider).ToArray());
 
             var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
             baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<LibraryOptions>(), It.IsAny<string>()))
                 .Returns(true);
 
-            var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, baseItemManager: baseItemManager.Object);
+            using var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, baseItemManager: baseItemManager.Object);
             AddParts(providerManager, metadataProviders: providerList);
 
             var actualProviders = providerManager.GetMetadataProviders<MetadataTestItem>(item, libraryOptions).ToList();
@@ -276,6 +230,87 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal(providerList.Count, actualProviders.Count);
             var actualOrder = actualProviders.Select(i => providerList.IndexOf(i)).ToArray();
             Assert.Equal(expectedOrder, actualOrder);
+        }
+
+        [Theory]
+        [InlineData(typeof(IMetadataProvider))]
+        [InlineData(typeof(ILocalMetadataProvider))]
+        [InlineData(typeof(IRemoteMetadataProvider))]
+        [InlineData(typeof(ICustomMetadataProvider))]
+        public void GetMetadataProviders_CanRefreshMetadataBasic_ReturnsTrue(Type providerType)
+        {
+            GetMetadataProviders_CanRefreshMetadata_Tester(providerType, true);
+        }
+
+        [Theory]
+        [InlineData(typeof(ILocalMetadataProvider), false, true)]
+        [InlineData(typeof(IRemoteMetadataProvider), false, false)]
+        [InlineData(typeof(ICustomMetadataProvider), false, false)]
+        [InlineData(typeof(ILocalMetadataProvider), true, true)]
+        [InlineData(typeof(ICustomMetadataProvider), true, false)]
+        public void GetMetadataProviders_CanRefreshMetadataLocked_WhenLocalOrForced(Type providerType, bool forced, bool expected)
+        {
+            GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, itemLocked: true, providerForced: forced);
+        }
+
+        [Theory]
+        [InlineData(typeof(ILocalMetadataProvider), false, true)]
+        [InlineData(typeof(ICustomMetadataProvider), false, true)]
+        [InlineData(typeof(IRemoteMetadataProvider), false, false)]
+        [InlineData(typeof(IRemoteMetadataProvider), true, true)]
+        public void GetMetadataProviders_CanRefreshMetadataBaseItemEnabled_WhenEnabledOrNotRemote(Type providerType, bool baseItemEnabled, bool expected)
+        {
+            GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, baseItemEnabled: baseItemEnabled);
+        }
+
+        [Theory]
+        [InlineData(typeof(IRemoteMetadataProvider), false, true)]
+        [InlineData(typeof(ICustomMetadataProvider), false, true)]
+        [InlineData(typeof(ILocalMetadataProvider), false, false)]
+        [InlineData(typeof(ILocalMetadataProvider), true, true)]
+        public void GetMetadataProviders_CanRefreshMetadataSupportsLocal_WhenSupportsOrNotLocal(Type providerType, bool supportsLocalMetadata, bool expected)
+        {
+            GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, supportsLocalMetadata: supportsLocalMetadata);
+        }
+
+        [Theory]
+        [InlineData(typeof(ICustomMetadataProvider), true)]
+        [InlineData(typeof(IRemoteMetadataProvider), false)]
+        [InlineData(typeof(ILocalMetadataProvider), false)]
+        public void GetMetadataProviders_CanRefreshMetadataOwned_WhenNotLocal(Type providerType, bool expected)
+        {
+            GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, ownedItem: true);
+        }
+
+        private static void GetMetadataProviders_CanRefreshMetadata_Tester(
+            Type providerType,
+            bool expected,
+            bool itemLocked = false,
+            bool baseItemEnabled = true,
+            bool providerForced = false,
+            bool supportsLocalMetadata = true,
+            bool ownedItem = false)
+        {
+            var item = new MetadataTestItem
+            {
+                IsLocked = itemLocked,
+                OwnerId = ownedItem ? Guid.NewGuid() : Guid.Empty,
+                EnableLocalMetadata = supportsLocalMetadata
+            };
+
+            var providerName = "provider";
+            var provider = MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(providerType.Name, providerName, forced: providerForced);
+
+            var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
+            baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<LibraryOptions>(), providerName))
+                .Returns(baseItemEnabled);
+
+            using var providerManager = GetProviderManager(baseItemManager: baseItemManager.Object);
+            AddParts(providerManager, metadataProviders: new[] { provider });
+
+            var actualProviders = providerManager.GetMetadataProviders<MetadataTestItem>(item, new LibraryOptions()).ToArray();
+
+            Assert.Equal(expected ? 1 : 0, actualProviders.Length);
         }
 
         private static IImageProvider MockIImageProvider<TProviderType>(string name, BaseItem expectedType, bool supports = true, int? order = null, bool errorOnSupported = false)
@@ -297,7 +332,7 @@ namespace Jellyfin.Providers.Tests.Manager
             if (errorOnSupported)
             {
                 provider.Setup(p => p.Supports(It.IsAny<BaseItem>()))
-                    .Throws(new ArgumentException());
+                    .Throws(new ArgumentException("Provider threw exception on Supports(item)"));
             }
             else
             {
@@ -308,25 +343,31 @@ namespace Jellyfin.Providers.Tests.Manager
             return provider.Object;
         }
 
-        private static IMetadataProvider<TItemType> MockIMetadataProviderMapper<TItemType, TLookupInfoType>(string typeName, string providerName, int? order = null)
+        private static IMetadataProvider<TItemType> MockIMetadataProviderMapper<TItemType, TLookupInfoType>(string typeName, string providerName, int? order = null, bool forced = false)
             where TItemType : BaseItem, IHasLookupInfo<TLookupInfoType>
             where TLookupInfoType : ItemLookupInfo, new()
             => typeName switch
             {
-                "ILocalMetadataProvider" => MockIMetadataProvider<ILocalMetadataProvider<TItemType>, TItemType>(providerName, order),
-                "IRemoteMetadataProvider" => MockIMetadataProvider<IRemoteMetadataProvider<TItemType, TLookupInfoType>, TItemType>(providerName, order),
-                "ICustomMetadataProvider" => MockIMetadataProvider<ICustomMetadataProvider<TItemType>, TItemType>(providerName, order),
-                _ => MockIMetadataProvider<IMetadataProvider<TItemType>, TItemType>(providerName, order)
+                "ILocalMetadataProvider" => MockIMetadataProvider<ILocalMetadataProvider<TItemType>, TItemType>(providerName, order, forced),
+                "IRemoteMetadataProvider" => MockIMetadataProvider<IRemoteMetadataProvider<TItemType, TLookupInfoType>, TItemType>(providerName, order, forced),
+                "ICustomMetadataProvider" => MockIMetadataProvider<ICustomMetadataProvider<TItemType>, TItemType>(providerName, order, forced),
+                _ => MockIMetadataProvider<IMetadataProvider<TItemType>, TItemType>(providerName, order, forced)
             };
 
-        private static IMetadataProvider<TItemType> MockIMetadataProvider<TProviderType, TItemType>(string name, int? order = null)
+        private static IMetadataProvider<TItemType> MockIMetadataProvider<TProviderType, TItemType>(string name, int? order = null, bool forced = false)
             where TProviderType : class, IMetadataProvider<TItemType>
             where TItemType : BaseItem
         {
+            Mock<IForcedProvider>? forcedProvider = null;
+            if (forced)
+            {
+                forcedProvider = new Mock<IForcedProvider>();
+            }
+
             Mock<IHasOrder>? hasOrder = null;
             if (order != null)
             {
-                hasOrder = new Mock<IHasOrder>(MockBehavior.Strict);
+                hasOrder = forcedProvider == null ? new Mock<IHasOrder>() : forcedProvider.As<IHasOrder>();
                 hasOrder.Setup(i => i.Order)
                     .Returns((int)order);
             }
@@ -340,7 +381,71 @@ namespace Jellyfin.Providers.Tests.Manager
             return provider.Object;
         }
 
-        private static ProviderManager GetProviderManager(ServerConfiguration? serverConfiguration = null, LibraryOptions? libraryOptions = null, IBaseItemManager? baseItemManager = null)
+        private static LibraryOptions CreateLibraryOptions(
+            string typeName,
+            string[]? imageFetcherOrder = null,
+            string[]? localMetadataReaderOrder = null,
+            string[]? metadataFetcherOrder = null)
+        {
+            var libraryOptions = new LibraryOptions
+            {
+                LocalMetadataReaderOrder = localMetadataReaderOrder
+            };
+
+            // only create type options if populating it with something
+            if (imageFetcherOrder != null || metadataFetcherOrder != null)
+            {
+                imageFetcherOrder ??= Array.Empty<string>();
+                metadataFetcherOrder ??= Array.Empty<string>();
+
+                libraryOptions.TypeOptions = new[]
+                {
+                    new TypeOptions
+                    {
+                        Type = typeName,
+                        ImageFetcherOrder = imageFetcherOrder,
+                        MetadataFetcherOrder = metadataFetcherOrder
+                    }
+                };
+            }
+
+            return libraryOptions;
+        }
+
+        private static ServerConfiguration CreateServerConfiguration(
+            string typeName,
+            string[]? imageFetcherOrder = null,
+            string[]? localMetadataReaderOrder = null,
+            string[]? metadataFetcherOrder = null)
+        {
+            var serverConfiguration = new ServerConfiguration();
+
+            // only create type options if populating it with something
+            if (imageFetcherOrder != null || localMetadataReaderOrder != null || metadataFetcherOrder != null)
+            {
+                imageFetcherOrder ??= Array.Empty<string>();
+                localMetadataReaderOrder ??= Array.Empty<string>();
+                metadataFetcherOrder ??= Array.Empty<string>();
+
+                serverConfiguration.MetadataOptions = new[]
+                {
+                    new MetadataOptions
+                    {
+                        ItemType = typeName,
+                        ImageFetcherOrder = imageFetcherOrder,
+                        LocalMetadataReaderOrder = localMetadataReaderOrder,
+                        MetadataFetcherOrder = metadataFetcherOrder
+                    }
+                };
+            }
+
+            return serverConfiguration;
+        }
+
+        private static ProviderManager GetProviderManager(
+            ServerConfiguration? serverConfiguration = null,
+            LibraryOptions? libraryOptions = null,
+            IBaseItemManager? baseItemManager = null)
         {
             var serverConfigurationManager = new Mock<IServerConfigurationManager>(MockBehavior.Strict);
             serverConfigurationManager.Setup(i => i.Configuration)
@@ -382,11 +487,13 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         /// <summary>
-        /// Simple <see cref="BaseItem"/> extension to force SupportsLocalMetadata to true.
+        /// Simple <see cref="BaseItem"/> extension to make SupportsLocalMetadata directly settable.
         /// </summary>
         public class MetadataTestItem : BaseItem, IHasLookupInfo<MetadataTestItemInfo>
         {
-            public override bool SupportsLocalMetadata => true;
+            public bool EnableLocalMetadata { get; set; } = true;
+
+            public override bool SupportsLocalMetadata => EnableLocalMetadata;
 
             public MetadataTestItemInfo GetLookupInfo()
             {
