@@ -128,7 +128,7 @@ namespace Jellyfin.Naming.Tests.Video
         }
 
         [Fact]
-        public void TestDirtyNames()
+        public void ResolveFiles_GivenPartInMiddleOfName_ReturnsNoStack()
         {
             var files = new[]
             {
@@ -141,12 +141,11 @@ namespace Jellyfin.Naming.Tests.Video
 
             var result = StackResolver.ResolveFiles(files, _namingOptions).ToList();
 
-            Assert.Single(result);
-            TestStackInfo(result[0], "Bad Boys (2006).stv.unrated.multi.1080p.bluray.x264-rough", 4);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void TestNumberedFiles()
+        public void ResolveFiles_FileNamesWithMissingPartType_ReturnsNoStack()
         {
             var files = new[]
             {

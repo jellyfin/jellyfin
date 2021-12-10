@@ -489,7 +489,7 @@ namespace Jellyfin.Naming.Tests.Video
         [Fact]
         public void TestDirectoryStack()
         {
-            var stack = new FileStack();
+            var stack = new FileStack(string.Empty, false, Array.Empty<string>());
             Assert.False(stack.ContainsFile("XX", true));
         }
     }
