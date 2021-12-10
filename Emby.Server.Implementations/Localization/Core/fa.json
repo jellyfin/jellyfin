@@ -118,5 +118,6 @@
     "Default": "پیشفرض",
     "TaskCleanActivityLogDescription": "ورودی‌های قدیمی‌تر از سن تنظیم شده در سیاهه فعالیت را حذف می‌کند.",
     "TaskCleanActivityLog": "پاکسازی سیاهه فعالیت",
-    "Undefined": "تعریف نشده"
+    "Undefined": "تعریف نشده",
+    "TaskOptimizeDatabase": "بهینه سازی پایگاه داده"
 }
