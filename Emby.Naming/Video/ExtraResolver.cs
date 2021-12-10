@@ -98,7 +98,6 @@ namespace Emby.Naming.Video
         {
             var parentDir = videoInfo.IsDirectory ? videoInfo.Path : Path.GetDirectoryName(videoInfo.Path.AsSpan());
 
-            var trimmedFileName = TrimFilenameDelimiters(videoInfo.Name, videoFlagDelimiters);
             var trimmedFileNameWithoutExtension = TrimFilenameDelimiters(videoInfo.FileNameWithoutExtension, videoFlagDelimiters);
             var trimmedVideoInfoName = TrimFilenameDelimiters(videoInfo.Name, videoFlagDelimiters);
 
@@ -117,7 +116,6 @@ namespace Emby.Naming.Video
 
                 // first check filenames
                 bool isValid = StartsWith(trimmedCurrentFileName, trimmedFileNameWithoutExtension)
-                               || (StartsWith(trimmedCurrentFileName, trimmedFileName) && currentFile.Year == videoInfo.Year)
                                || (StartsWith(trimmedCurrentFileName, trimmedVideoInfoName) && currentFile.Year == videoInfo.Year);
 
                 // then by directory
