@@ -73,8 +73,10 @@ done
 
 if [[ ${new_version} == *"-"* ]]; then
     new_version_pkg="$( sed 's/-/~/g' <<<"${new_version}" )"
+    new_version_deb_sup=""
 else
-    new_version_pkg="${new_version}-1"
+    new_version_pkg="${new_version}"
+    new_version_deb_sup="-1"
 fi
 
 # Update the metapackage equivs file
@@ -85,7 +87,7 @@ sed -i "s/${old_version_sed}/${new_version_pkg}/g" ${debian_equivs_file}
 debian_changelog_file="debian/changelog"
 debian_changelog_temp="$( mktemp )"
 # Create new temp file with our changelog
-echo -e "jellyfin-server (${new_version_pkg}) unstable; urgency=medium
+echo -e "jellyfin-server (${new_version_pkg}${new_version_deb_sup}) unstable; urgency=medium
 
   * New upstream version ${new_version}; release changelog at https://github.com/jellyfin/jellyfin/releases/tag/v${new_version}
 
