@@ -39,6 +39,14 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
+    displayName: Set release version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
+  - script: './bump-version $(JellyfinVersion)'
+    displayName: Bump internal version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
   - script: 'docker build -f deployment/Dockerfile.$(BuildConfiguration) -t jellyfin-server-$(BuildConfiguration) deployment'
     displayName: 'Build Dockerfile'
 
@@ -80,6 +88,14 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
+    displayName: Set release version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
+  - script: './bump-version $(JellyfinVersion)'
+    displayName: Bump internal version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
   - task: DownloadPipelineArtifact@2
     displayName: 'Download OpenAPI Spec'
     inputs:
@@ -125,6 +141,10 @@ jobs:
   steps:
   - script: echo "##vso[task.setvariable variable=JellyfinVersion]$( awk -F '/' '{ print $NF }' <<<'$(Build.SourceBranch)' | sed 's/^v//' )"
     displayName: Set release version (stable)
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+
+  - script: './bump-version $(JellyfinVersion)'
+    displayName: Bump internal version (stable)
     condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
 
   - task: Docker@2
