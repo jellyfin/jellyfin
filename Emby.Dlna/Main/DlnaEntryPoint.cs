@@ -124,7 +124,7 @@ namespace Emby.Dlna.Main
                 config);
             Current = this;
 
-            var netConfig = config.GetConfiguration<NetworkConfiguration>("network");
+            var netConfig = config.GetConfiguration<NetworkConfiguration>(NetworkConfigurationStore.StoreKey);
             _disabled = appHost.ListenWithHttps && netConfig.RequireHttps;
 
             if (_disabled && _config.GetDlnaConfiguration().EnableServer)

@@ -1,6 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Emby.Server.Implementations;
+using Emby.Server.Implementations.Serialization;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -11,6 +16,14 @@ namespace Jellyfin.Server.Migrations
     /// </summary>
     public sealed class MigrationRunner
     {
+        /// <summary>
+        /// The list of known pre-startup migrations, in order of applicability.
+        /// </summary>
+        private static readonly Type[] _preStartupMigrationTypes =
+        {
+            typeof(PreStartupRoutines.CreateNetworkConfiguration)
+        };
+
         /// <summary>
         /// The list of known migrations, in order of applicability.
         /// </summary>
@@ -41,17 +54,50 @@ namespace Jellyfin.Server.Migrations
                 .Select(m => ActivatorUtilities.CreateInstance(host.ServiceProvider, m))
                 .OfType<IMigrationRoutine>()
                 .ToArray();
-            var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
 
-            if (!host.ConfigurationManager.Configuration.IsStartupWizardCompleted && migrationOptions.Applied.Count == 0)
+            var migrationOptions = host.ConfigurationManager.GetConfiguration<MigrationOptions>(MigrationsListStore.StoreKey);
+            HandleStartupWizardCondition(migrations, migrationOptions, host.ConfigurationManager.Configuration.IsStartupWizardCompleted, logger);
+            PerformMigrations(migrations, migrationOptions, options => host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, options), logger);
+        }
+
+        /// <summary>
+        /// Run all needed pre-startup migrations.
+        /// </summary>
+        /// <param name="appPaths">Application paths.</param>
+        /// <param name="loggerFactory">Factory for making the logger.</param>
+        public static void RunPreStartup(ServerApplicationPaths appPaths, ILoggerFactory loggerFactory)
+        {
+            var logger = loggerFactory.CreateLogger<MigrationRunner>();
+            var migrations = _preStartupMigrationTypes
+                .Select(m => Activator.CreateInstance(m, appPaths, loggerFactory))
+                .OfType<IMigrationRoutine>()
+                .ToArray();
+
+            var xmlSerializer = new MyXmlSerializer();
+            var migrationConfigPath = Path.Join(appPaths.ConfigurationDirectoryPath, MigrationsListStore.StoreKey.ToLowerInvariant() + ".xml");
+            var migrationOptions = (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!;
+
+            // We have to deserialize it manually since the configuration manager may overwrite it
+            var serverConfig = (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!;
+            HandleStartupWizardCondition(migrations, migrationOptions, serverConfig.IsStartupWizardCompleted, logger);
+            PerformMigrations(migrations, migrationOptions, options => xmlSerializer.SerializeToFile(options, migrationConfigPath), logger);
+        }
+
+        private static void HandleStartupWizardCondition(IEnumerable<IMigrationRoutine> migrations, MigrationOptions migrationOptions, bool isStartWizardCompleted, ILogger logger)
+        {
+            if (isStartWizardCompleted || migrationOptions.Applied.Count != 0)
             {
-                // If startup wizard is not finished, this is a fresh install.
-                // Don't run any migrations, just mark all of them as applied.
-                logger.LogInformation("Marking all known migrations as applied because this is a fresh install");
-                migrationOptions.Applied.AddRange(migrations.Where(m => !m.PerformOnNewInstall).Select(m => (m.Id, m.Name)));
-                host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                return;
             }
 
+            // If startup wizard is not finished, this is a fresh install.
+            var onlyOldInstalls = migrations.Where(m => !m.PerformOnNewInstall).ToArray();
+            logger.LogInformation("Marking following migrations as applied because this is a fresh install: {@OnlyOldInstalls}", onlyOldInstalls.Select(m => m.Name));
+            migrationOptions.Applied.AddRange(onlyOldInstalls.Select(m => (m.Id, m.Name)));
+        }
+
+        private static void PerformMigrations(IMigrationRoutine[] migrations, MigrationOptions migrationOptions, Action<MigrationOptions> saveConfiguration, ILogger logger)
+        {
             var appliedMigrationIds = migrationOptions.Applied.Select(m => m.Id).ToHashSet();
 
             for (var i = 0; i < migrations.Length; i++)
@@ -78,7 +124,7 @@ namespace Jellyfin.Server.Migrations
                 // Mark the migration as completed
                 logger.LogInformation("Migration '{Name}' applied successfully", migrationRoutine.Name);
                 migrationOptions.Applied.Add((migrationRoutine.Id, migrationRoutine.Name));
-                host.ConfigurationManager.SaveConfiguration(MigrationsListStore.StoreKey, migrationOptions);
+                saveConfiguration(migrationOptions);
                 logger.LogDebug("Migration '{Name}' marked as applied in configuration.", migrationRoutine.Name);
             }
         }

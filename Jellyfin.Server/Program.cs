@@ -175,6 +175,7 @@ namespace Jellyfin.Server
             }
 
             PerformStaticInitialization();
+            Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
 
             var appHost = new CoreAppHost(
                 appPaths,
