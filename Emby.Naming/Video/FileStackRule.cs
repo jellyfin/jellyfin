@@ -41,7 +41,7 @@ public class FileStackRule
             return false;
         }
 
-        var partType = match.Groups["parttype"].Success ? match.Groups["parttype"].Value : "vol";
+        var partType = match.Groups["parttype"].Success ? match.Groups["parttype"].Value : "unknown";
         result = (match.Groups["filename"].Value, partType, match.Groups["number"].Value);
         return true;
     }
