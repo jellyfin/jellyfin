@@ -126,4 +126,4 @@ rm -rf ${fedora_spec_temp_dir}
 
 # Stage the changed files for commit
 git add .
-git status
+git status -v
