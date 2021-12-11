@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Naming.Common;
 using MediaBrowser.Controller.Chapters;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -39,6 +40,7 @@ namespace MediaBrowser.Providers.MediaInfo
     {
         private readonly ILogger<FFProbeProvider> _logger;
         private readonly SubtitleResolver _subtitleResolver;
+        private readonly AudioResolver _audioResolver;
         private readonly FFProbeVideoInfo _videoProber;
         private readonly FFProbeAudioInfo _audioProber;
 
@@ -55,10 +57,11 @@ namespace MediaBrowser.Providers.MediaInfo
             IServerConfigurationManager config,
             ISubtitleManager subtitleManager,
             IChapterManager chapterManager,
-            ILibraryManager libraryManager)
+            ILibraryManager libraryManager,
+            NamingOptions namingOptions)
         {
             _logger = logger;
-
+            _audioResolver = new AudioResolver(localization, mediaEncoder, namingOptions);
             _subtitleResolver = new SubtitleResolver(BaseItem.LocalizationManager);
             _videoProber = new FFProbeVideoInfo(
                 _logger,
@@ -71,7 +74,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 config,
                 subtitleManager,
                 chapterManager,
-                libraryManager);
+                libraryManager,
+                _audioResolver);
             _audioProber = new FFProbeAudioInfo(mediaSourceManager, mediaEncoder, itemRepo, libraryManager);
         }
 
@@ -92,7 +96,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     var file = directoryService.GetFile(path);
                     if (file != null && file.LastWriteTimeUtc != item.DateModified)
                     {
-                        _logger.LogDebug("Refreshing {0} due to date modified timestamp change.", path);
+                        _logger.LogDebug("Refreshing {ItemPath} due to date modified timestamp change.", path);
                         return true;
                     }
                 }
@@ -102,7 +106,15 @@ namespace MediaBrowser.Providers.MediaInfo
                 && !video.SubtitleFiles.SequenceEqual(
                         _subtitleResolver.GetExternalSubtitleFiles(video, directoryService, false), StringComparer.Ordinal))
             {
-                _logger.LogDebug("Refreshing {0} due to external subtitles change.", item.Path);
+                _logger.LogDebug("Refreshing {ItemPath} due to external subtitles change.", item.Path);
+                return true;
+            }
+
+            if (item.SupportsLocalMetadata && video != null && !video.IsPlaceHolder
+                && !video.AudioFiles.SequenceEqual(
+                        _audioResolver.GetExternalAudioFiles(video, directoryService, false), StringComparer.Ordinal))
+            {
+                _logger.LogDebug("Refreshing {ItemPath} due to external audio change.", item.Path);
                 return true;
             }
 
