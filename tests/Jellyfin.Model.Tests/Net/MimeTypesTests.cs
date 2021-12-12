@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using Xunit;
 
@@ -129,7 +124,7 @@ namespace Jellyfin.Model.Tests.Net
         [InlineData("font/woff2", ".woff2")]
         [InlineData("image/bmp", ".bmp")]
         [InlineData("image/gif", ".gif")]
-        [InlineData("image/jpg", ".jpg")]
+        [InlineData("image/jpeg", ".jpg")]
         [InlineData("image/png", ".png")]
         [InlineData("image/svg+xml", ".svg")]
         [InlineData("image/tiff", ".tif")]
