@@ -40,7 +40,8 @@ namespace Emby.Server.Implementations.Library
                     && str[attributeEnd] == '=')
                 {
                     var closingIndex = str[attributeEnd..].IndexOf(']');
-                    if (closingIndex != -1)
+                    // Must be at least 1 character before the closing bracket.
+                    if (closingIndex > 1)
                     {
                         return str[(attributeEnd + 1)..(attributeEnd + closingIndex)].Trim().ToString();
                     }
