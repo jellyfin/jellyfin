@@ -20,6 +20,7 @@ Source13:       jellyfin.sudoers
 Source14:       restart.sh
 Source15:       jellyfin.override.conf
 Source16:       jellyfin-firewalld.xml
+Source17:       jellyfin-server-lowports.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -45,6 +46,16 @@ Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at, sudo
 %description server
 The Jellyfin media server backend.
 
+%package server-lowports
+# RPMfusion free
+Summary:        The Free Software Media System Server backend.  Low-port binding.
+Requires:       jellyfin-server
+
+%description server-lowports
+The Jellyfin media server backend low port binding package.  This package
+enables binding to ports < 1024.  You would install this if you want
+the Jellyfin server to bind to ports 80 and/or 443 for example.
+
 %prep
 %autosetup -n jellyfin-server-%{version} -b 0
 
@@ -57,6 +68,7 @@ dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin
     "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE
 %{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
+%{__install} -D -m 0644 %{SOURCE17} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
 %{__mkdir} -p %{buildroot}%{_bindir}
 tee %{buildroot}%{_bindir}/jellyfin << EOF
@@ -94,6 +106,9 @@ EOF
 %attr(-,jellyfin,jellyfin) %dir %{_var}/log/jellyfin
 %attr(750,jellyfin,jellyfin) %dir %{_var}/cache/jellyfin
 %{_datadir}/licenses/jellyfin/LICENSE
+
+%files server-lowports
+%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 
 %pre server
 getent group jellyfin >/dev/null || groupadd -r jellyfin
@@ -137,6 +152,9 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Mon Nov 29 2021 Brian J. Murrell <brian@interlinx.bc.ca>
+- Add jellyfin-server-lowports.service drop-in in a server-lowports
+  subpackage to allow binding to low ports
 * Fri Dec 04 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
 - Forthcoming stable release
 * Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
