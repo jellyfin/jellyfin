@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
@@ -1133,7 +1134,7 @@ namespace MediaBrowser.Providers.Manager
             var albums = _libraryManager
                 .GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(MusicAlbum) },
+                    IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
                     ArtistIds = new[] { item.Id },
                     DtoOptions = new DtoOptions(false)
                     {

@@ -297,7 +297,7 @@ namespace Jellyfin.Api.Controllers
                 new LatestItemsQuery
                 {
                     GroupItems = groupItems,
-                    IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                    IncludeItemTypes = includeItemTypes,
                     IsPlayed = isPlayed,
                     Limit = limit,
                     ParentId = parentId ?? Guid.Empty,

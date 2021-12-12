@@ -157,7 +157,7 @@ namespace Jellyfin.Api.Controllers
 
             var itemsResult = _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(Episode) },
+                IncludeItemTypes = new[] { BaseItemKind.Episode },
                 OrderBy = new[] { (ItemSortBy.PremiereDate, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                 MinPremiereDate = minPremiereDate,
                 StartIndex = startIndex,

@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.Images
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
                 Genres = new[] { item.Name },
-                IncludeItemTypes = new[] { nameof(Series), nameof(Movie) },
+                IncludeItemTypes = new[] { BaseItemKind.Series, BaseItemKind.Movie },
                 OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,
                 Recursive = true,

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Drawing;
@@ -161,7 +162,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { nameof(Series) },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Thumb },
@@ -204,7 +205,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 ExternalSeriesId = programSeriesId,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Primary },
@@ -255,7 +256,7 @@ namespace Emby.Server.Implementations.LiveTv
         {
             var librarySeries = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { nameof(Series) },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Thumb },
@@ -298,7 +299,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var program = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new string[] { nameof(Series) },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Name = seriesName,
                 Limit = 1,
                 ImageTypes = new ImageType[] { ImageType.Primary },
@@ -309,7 +310,7 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 program = _libraryManager.GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
+                    IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                     ExternalSeriesId = programSeriesId,
                     Limit = 1,
                     ImageTypes = new ImageType[] { ImageType.Primary },
