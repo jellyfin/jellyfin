@@ -116,7 +116,7 @@ namespace MediaBrowser.Model.Net
             { "audio/x-wavpack", ".wv" },
 
             // Type image
-            { "image/jpg", ".jpg" },
+            { "image/jpeg", ".jpg" },
             { "image/x-png", ".png" },
 
             // Type text
@@ -137,7 +137,7 @@ namespace MediaBrowser.Model.Net
         /// <param name="filename">The filename to find the MIME type of.</param>
         /// <param name="defaultValue">The default value to return if no fitting MIME type is found.</param>
         /// <returns>The correct MIME type for the given filename, or <paramref name="defaultValue"/> if it wasn't found.</returns>
-        [return: NotNullIfNotNullAttribute("defaultValue")]
+        [return: NotNullIfNotNull("defaultValue")]
         public static string? GetMimeType(string filename, string? defaultValue = null)
         {
             if (filename.Length == 0)
