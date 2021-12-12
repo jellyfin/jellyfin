@@ -106,7 +106,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             if (!item.IsFileProtocol)
             {
-                yield break;
+                return Enumerable.Empty<FileSystemMetadata>();
             }
 
             var path = item.ContainingFolderPath;
@@ -114,21 +114,14 @@ namespace MediaBrowser.LocalMetadata.Images
             // Exit if the cache dir does not exist, alternative solution is to create it, but that's a lot of empty dirs...
             if (!Directory.Exists(path))
             {
-                yield break;
+                return Enumerable.Empty<FileSystemMetadata>();
             }
 
-            var files = directoryService.GetFileSystemEntries(path).OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
-            var count = BaseItem.SupportedImageExtensions.Length;
-            foreach (var file in files)
-            {
-                for (var i = 0; i < count; i++)
-                {
-                    if ((includeDirectories && file.IsDirectory) || string.Equals(BaseItem.SupportedImageExtensions[i], file.Extension, StringComparison.OrdinalIgnoreCase))
-                    {
-                        yield return file;
-                    }
-                }
-            }
+            return directoryService.GetFiles(path)
+                .Where(i =>
+                    (includeDirectories && i.IsDirectory)
+                    || Array.FindIndex(BaseItem.SupportedImageExtensions, ext => string.Equals(ext, i.Extension, StringComparison.OrdinalIgnoreCase)) != -1)
+                .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 
         /// <inheritdoc />
