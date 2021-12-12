@@ -1451,7 +1451,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder)
+            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder || this.GetType() == typeof(Folder))
             {
                 return false;
             }
