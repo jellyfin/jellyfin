@@ -22,6 +22,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
         [InlineData("tmdbid=618355", "tmdbid", null)]
         [InlineData("tmdbid=", "tmdbid", null)]
         [InlineData("tmdbid", "tmdbid", null)]
+        [InlineData("[tmdbid=][imdbid=tt10985510]", "tmdbid", null)]
         public void GetAttributeValue_ValidArgs_Correct(string input, string attribute, string? expectedResult)
         {
             Assert.Equal(expectedResult, PathExtensions.GetAttributeValue(input, attribute));
