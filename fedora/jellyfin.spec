@@ -12,7 +12,7 @@ Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
 URL:            https://jellyfin.org
-# Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
+# Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%%{version}.tar.gz`
 Source0:        jellyfin-server-%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
