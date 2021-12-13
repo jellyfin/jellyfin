@@ -60,9 +60,9 @@ namespace Emby.Naming.Video
                 {
                     var filename = Path.GetFileName(path);
 
-                    var regex = new Regex(rule.Token, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    var isMatch = Regex.IsMatch(filename, rule.Token, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-                    if (regex.IsMatch(filename))
+                    if (isMatch)
                     {
                         result.ExtraType = rule.ExtraType;
                         result.Rule = rule;
