@@ -111,7 +111,7 @@ namespace Emby.Naming.Video
                     continue;
                 }
 
-                var currentFile = files[pos].Files[0];
+                var currentFile = current.Files[0];
                 var trimmedCurrentFileName = TrimFilenameDelimiters(currentFile.Name, videoFlagDelimiters);
 
                 // first check filenames
