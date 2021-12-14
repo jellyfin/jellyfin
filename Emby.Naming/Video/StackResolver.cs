@@ -77,14 +77,14 @@ namespace Emby.Naming.Video
             var potentialStacks = new Dictionary<string, StackMetadata>();
             foreach (var file in potentialFiles)
             {
+                var name = file.Name;
+                if (string.IsNullOrEmpty(name))
+                {
+                    name = Path.GetFileName(file.FullName);
+                }
+
                 for (var i = 0; i < namingOptions.VideoFileStackingRules.Length; i++)
                 {
-                    var name = file.Name;
-                    if (string.IsNullOrEmpty(name))
-                    {
-                        name = Path.GetFileName(file.FullName);
-                    }
-
                     var rule = namingOptions.VideoFileStackingRules[i];
                     if (!rule.Match(name, out var stackParsingResult))
                     {
