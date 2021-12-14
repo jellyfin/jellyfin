@@ -117,7 +117,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 return Enumerable.Empty<FileSystemMetadata>();
             }
 
-            return directoryService.GetFiles(path)
+            return directoryService.GetFileSystemEntries(path)
                 .Where(i =>
                     (includeDirectories && i.IsDirectory)
                     || Array.FindIndex(BaseItem.SupportedImageExtensions, ext => string.Equals(ext, i.Extension, StringComparison.OrdinalIgnoreCase)) != -1)
