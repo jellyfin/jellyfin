@@ -196,7 +196,7 @@ namespace Emby.Server.Implementations.Data
 
         private static readonly string _mediaAttachmentInsertPrefix;
 
-        private static readonly HashSet<BaseItemKind> _programTypes = new()
+        private static readonly BaseItemKind[] _programTypes = new[]
         {
             BaseItemKind.Program,
             BaseItemKind.TvChannel,
@@ -204,7 +204,7 @@ namespace Emby.Server.Implementations.Data
             BaseItemKind.LiveTvChannel
         };
 
-        private static readonly HashSet<BaseItemKind> _programExcludeParentTypes = new()
+        private static readonly BaseItemKind[] _programExcludeParentTypes = new[]
         {
             BaseItemKind.Series,
             BaseItemKind.Season,
@@ -213,19 +213,19 @@ namespace Emby.Server.Implementations.Data
             BaseItemKind.PhotoAlbum
         };
 
-        private static readonly HashSet<BaseItemKind> _serviceTypes = new()
+        private static readonly BaseItemKind[] _serviceTypes = new[]
         {
             BaseItemKind.TvChannel,
             BaseItemKind.LiveTvChannel
         };
 
-        private static readonly HashSet<BaseItemKind> _startDateTypes = new()
+        private static readonly BaseItemKind[] _startDateTypes = new[]
         {
             BaseItemKind.Program,
             BaseItemKind.LiveTvProgram
         };
 
-        private static readonly HashSet<BaseItemKind> _seriesTypes = new()
+        private static readonly BaseItemKind[] _seriesTypes = new[]
         {
             BaseItemKind.Book,
             BaseItemKind.AudioBook,
@@ -233,14 +233,14 @@ namespace Emby.Server.Implementations.Data
             BaseItemKind.Season
         };
 
-        private static readonly HashSet<BaseItemKind> _artistExcludeParentTypes = new()
+        private static readonly BaseItemKind[] _artistExcludeParentTypes = new[]
         {
             BaseItemKind.Series,
             BaseItemKind.Season,
             BaseItemKind.PhotoAlbum
         };
 
-        private static readonly HashSet<BaseItemKind> _artistsTypes = new()
+        private static readonly BaseItemKind[] _artistsTypes = new[]
         {
             BaseItemKind.Audio,
             BaseItemKind.MusicAlbum,
