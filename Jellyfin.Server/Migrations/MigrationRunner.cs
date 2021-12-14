@@ -80,7 +80,10 @@ namespace Jellyfin.Server.Migrations
                  : new MigrationOptions();
 
             // We have to deserialize it manually since the configuration manager may overwrite it
-            var serverConfig = (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!;
+            var serverConfig = File.Exists(appPaths.SystemConfigurationFilePath)
+                ? (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!
+                : new ServerConfiguration();
+
             HandleStartupWizardCondition(migrations, migrationOptions, serverConfig.IsStartupWizardCompleted, logger);
             PerformMigrations(migrations, migrationOptions, options => xmlSerializer.SerializeToFile(options, migrationConfigPath), logger);
         }
