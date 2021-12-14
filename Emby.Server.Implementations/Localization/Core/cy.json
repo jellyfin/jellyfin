@@ -10,5 +10,8 @@
     "AuthenticationSucceededWithUserName": "{0} wedi’i ddilysu’n llwyddiannus",
     "Artists": "Artistiaid",
     "AppDeviceValues": "Ap: {0}, Dyfais: {1}",
-    "Albums": "Albwmau"
+    "Albums": "Albwmau",
+    "Genres": "Genres",
+    "Folders": "Ffolderi",
+    "Favorites": "Ffefrynnau"
 }
