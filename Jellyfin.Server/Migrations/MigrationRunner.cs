@@ -75,11 +75,9 @@ namespace Jellyfin.Server.Migrations
 
             var xmlSerializer = new MyXmlSerializer();
             var migrationConfigPath = Path.Join(appPaths.ConfigurationDirectoryPath, MigrationsListStore.StoreKey.ToLowerInvariant() + ".xml");
-            if (!File.Exists(migrationConfigPath))
-            {
-                return;
-            }
-            var migrationOptions = (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!;
+            var migrationOptions = File.Exists(migrationConfigPath)
+                 ? (MigrationOptions)xmlSerializer.DeserializeFromFile(typeof(MigrationOptions), migrationConfigPath)!
+                 : new MigrationOptions();
 
             // We have to deserialize it manually since the configuration manager may overwrite it
             var serverConfig = (ServerConfiguration)xmlSerializer.DeserializeFromFile(typeof(ServerConfiguration), appPaths.SystemConfigurationFilePath)!;
