@@ -75,7 +75,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var cacheKey = GetCacheKey(userId, item.Id);
-            _userData.AddOrUpdate(cacheKey, userData, (k, v) => userData);
+            _userData.AddOrUpdate(cacheKey, userData, (_, _) => userData);
 
             UserDataSaved?.Invoke(this, new UserDataSaveEventArgs
             {
@@ -125,7 +125,7 @@ namespace Emby.Server.Implementations.Library
 
             var cacheKey = GetCacheKey(userId, itemId);
 
-            return _userData.GetOrAdd(cacheKey, k => GetUserDataInternal(userId, keys));
+            return _userData.GetOrAdd(cacheKey, _ => GetUserDataInternal(userId, keys));
         }
 
         private UserItemData GetUserDataInternal(long internalUserId, List<string> keys)

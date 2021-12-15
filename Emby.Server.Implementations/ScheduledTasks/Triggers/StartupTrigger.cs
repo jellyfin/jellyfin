@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Triggers
 {
     /// <summary>
     /// Class StartupTaskTrigger.
@@ -40,7 +40,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="logger">The logger.</param>
         /// <param name="taskName">The name of the task.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public async void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
+        public async void Start(TaskResult? lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             if (isApplicationStartup)
             {

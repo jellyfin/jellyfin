@@ -250,7 +250,6 @@ namespace Emby.Server.Implementations.SyncPlay
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
                     _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
-                    return;
                 }
             }
         }
@@ -365,7 +364,7 @@ namespace Emby.Server.Implementations.SyncPlay
         {
             var session = e.SessionInfo;
 
-            if (_sessionToGroupMap.TryGetValue(session.Id, out var group))
+            if (_sessionToGroupMap.TryGetValue(session.Id, out _))
             {
                 var leaveGroupRequest = new LeaveGroupRequest();
                 LeaveGroup(session, leaveGroupRequest, CancellationToken.None);
@@ -378,7 +377,7 @@ namespace Emby.Server.Implementations.SyncPlay
             var newSessionsCounter = _activeUsers.AddOrUpdate(
                 userId,
                 1,
-                (key, sessionsCounter) => sessionsCounter + toAdd);
+                (_, sessionsCounter) => sessionsCounter + toAdd);
 
             // Should never happen.
             if (newSessionsCounter < 0)

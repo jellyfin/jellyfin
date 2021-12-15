@@ -242,7 +242,7 @@ namespace Emby.Drawing
             return ImageFormat.Jpg;
         }
 
-        private string? GetMimeType(ImageFormat format, string path)
+        private string GetMimeType(ImageFormat format, string path)
             => format switch
             {
                 ImageFormat.Bmp => MimeTypes.GetMimeType("i.bmp"),

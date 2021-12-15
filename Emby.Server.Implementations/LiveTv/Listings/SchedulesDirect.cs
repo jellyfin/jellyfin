@@ -159,8 +159,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                         var programEntry = programDict[schedule.ProgramId];
 
                         var allImages = images[imageIndex].Data;
-                        var imagesWithText = allImages.Where(i => string.Equals(i.Text, "yes", StringComparison.OrdinalIgnoreCase));
-                        var imagesWithoutText = allImages.Where(i => string.Equals(i.Text, "no", StringComparison.OrdinalIgnoreCase));
+                        var imagesWithText = allImages.Where(i => string.Equals(i.Text, "yes", StringComparison.OrdinalIgnoreCase)).ToList();
+                        var imagesWithoutText = allImages.Where(i => string.Equals(i.Text, "no", StringComparison.OrdinalIgnoreCase)).ToList();
 
                         const double DesiredAspect = 2.0 / 3;
 
@@ -819,11 +819,6 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             }
 
             return list;
-        }
-
-        private static string NormalizeName(string value)
-        {
-            return value.Replace(" ", string.Empty, StringComparison.Ordinal).Replace("-", string.Empty, StringComparison.Ordinal);
         }
     }
 }

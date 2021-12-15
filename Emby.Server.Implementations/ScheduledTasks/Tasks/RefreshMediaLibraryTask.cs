@@ -9,7 +9,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
     /// Class RefreshMediaLibraryTask.

@@ -50,7 +50,7 @@ namespace Emby.Naming.TV
                 if (expression.IsNamed)
                 {
                     result.SeriesName = match.Groups["seriesname"].Value;
-                    result.Success = !string.IsNullOrEmpty(result.SeriesName) && !string.IsNullOrEmpty(match.Groups["seasonnumber"]?.Value);
+                    result.Success = !string.IsNullOrEmpty(result.SeriesName) && !match.Groups["seasonnumber"].ValueSpan.IsEmpty;
                 }
             }
 

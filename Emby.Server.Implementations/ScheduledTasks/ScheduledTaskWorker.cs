@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Emby.Server.Implementations.ScheduledTasks.Triggers;
 using Jellyfin.Data.Events;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Configuration;
