@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
             {
                 IncludeItemTypes = new[]
                 {
-                    nameof(Movie),
+                    BaseItemKind.Movie,
                     // nameof(Trailer),
                     // nameof(LiveTvProgram)
                 },
@@ -99,11 +99,11 @@ namespace Jellyfin.Api.Controllers
 
             var recentlyPlayedMovies = _libraryManager.GetItemList(query);
 
-            var itemTypes = new List<string> { nameof(Movie) };
+            var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
             {
-                itemTypes.Add(nameof(Trailer));
-                itemTypes.Add(nameof(LiveTvProgram));
+                itemTypes.Add(BaseItemKind.Trailer);
+                itemTypes.Add(BaseItemKind.LiveTvProgram);
             }
 
             var likedMovies = _libraryManager.GetItemList(new InternalItemsQuery(user)
@@ -182,11 +182,11 @@ namespace Jellyfin.Api.Controllers
             DtoOptions dtoOptions,
             RecommendationType type)
         {
-            var itemTypes = new List<string> { nameof(Movie) };
+            var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
             {
-                itemTypes.Add(nameof(Trailer));
-                itemTypes.Add(nameof(LiveTvProgram));
+                itemTypes.Add(BaseItemKind.Trailer);
+                itemTypes.Add(BaseItemKind.LiveTvProgram);
             }
 
             foreach (var name in names)
@@ -224,11 +224,11 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<RecommendationDto> GetWithActor(User? user, IEnumerable<string> names, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
-            var itemTypes = new List<string> { nameof(Movie) };
+            var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
             {
-                itemTypes.Add(nameof(Trailer));
-                itemTypes.Add(nameof(LiveTvProgram));
+                itemTypes.Add(BaseItemKind.Trailer);
+                itemTypes.Add(BaseItemKind.LiveTvProgram);
             }
 
             foreach (var name in names)
@@ -264,11 +264,11 @@ namespace Jellyfin.Api.Controllers
 
         private IEnumerable<RecommendationDto> GetSimilarTo(User? user, IEnumerable<BaseItem> baselineItems, int itemLimit, DtoOptions dtoOptions, RecommendationType type)
         {
-            var itemTypes = new List<string> { nameof(Movie) };
+            var itemTypes = new List<BaseItemKind> { BaseItemKind.Movie };
             if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
             {
-                itemTypes.Add(nameof(Trailer));
-                itemTypes.Add(nameof(LiveTvProgram));
+                itemTypes.Add(BaseItemKind.Trailer);
+                itemTypes.Add(BaseItemKind.LiveTvProgram);
             }
 
             foreach (var item in baselineItems)

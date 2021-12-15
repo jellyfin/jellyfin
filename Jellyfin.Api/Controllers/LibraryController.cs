@@ -14,6 +14,7 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -413,14 +414,14 @@ namespace Jellyfin.Api.Controllers
 
             var counts = new ItemCounts
             {
-                AlbumCount = GetCount(typeof(MusicAlbum), user, isFavorite),
-                EpisodeCount = GetCount(typeof(Episode), user, isFavorite),
-                MovieCount = GetCount(typeof(Movie), user, isFavorite),
-                SeriesCount = GetCount(typeof(Series), user, isFavorite),
-                SongCount = GetCount(typeof(Audio), user, isFavorite),
-                MusicVideoCount = GetCount(typeof(MusicVideo), user, isFavorite),
-                BoxSetCount = GetCount(typeof(BoxSet), user, isFavorite),
-                BookCount = GetCount(typeof(Book), user, isFavorite)
+                AlbumCount = GetCount(BaseItemKind.MusicAlbum, user, isFavorite),
+                EpisodeCount = GetCount(BaseItemKind.Episode, user, isFavorite),
+                MovieCount = GetCount(BaseItemKind.Movie, user, isFavorite),
+                SeriesCount = GetCount(BaseItemKind.Series, user, isFavorite),
+                SongCount = GetCount(BaseItemKind.Audio, user, isFavorite),
+                MusicVideoCount = GetCount(BaseItemKind.MusicVideo, user, isFavorite),
+                BoxSetCount = GetCount(BaseItemKind.BoxSet, user, isFavorite),
+                BookCount = GetCount(BaseItemKind.Book, user, isFavorite)
             };
 
             return counts;
@@ -529,7 +530,7 @@ namespace Jellyfin.Api.Controllers
         {
             var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(Series) },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
@@ -559,7 +560,7 @@ namespace Jellyfin.Api.Controllers
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(Movie) },
+                IncludeItemTypes = new[] { BaseItemKind.Movie },
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
@@ -715,26 +716,26 @@ namespace Jellyfin.Api.Controllers
             bool? isMovie = item is Movie || (program != null && program.IsMovie) || item is Trailer;
             bool? isSeries = item is Series || (program != null && program.IsSeries);
 
-            var includeItemTypes = new List<string>();
+            var includeItemTypes = new List<BaseItemKind>();
             if (isMovie.Value)
             {
-                includeItemTypes.Add(nameof(Movie));
+                includeItemTypes.Add(BaseItemKind.Movie);
                 if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
                 {
-                    includeItemTypes.Add(nameof(Trailer));
-                    includeItemTypes.Add(nameof(LiveTvProgram));
+                    includeItemTypes.Add(BaseItemKind.Trailer);
+                    includeItemTypes.Add(BaseItemKind.LiveTvProgram);
                 }
             }
             else if (isSeries.Value)
             {
-                includeItemTypes.Add(nameof(Series));
+                includeItemTypes.Add(BaseItemKind.Series);
             }
             else
             {
                 // For non series and movie types these columns are typically null
                 isSeries = null;
                 isMovie = null;
-                includeItemTypes.Add(item.GetType().Name);
+                includeItemTypes.Add(item.GetBaseItemKind());
             }
 
             var query = new InternalItemsQuery(user)
@@ -871,11 +872,11 @@ namespace Jellyfin.Api.Controllers
             return result;
         }
 
-        private int GetCount(Type type, User? user, bool? isFavorite)
+        private int GetCount(BaseItemKind itemKind, User? user, bool? isFavorite)
         {
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { type.Name },
+                IncludeItemTypes = new[] { itemKind },
                 Limit = 0,
                 Recursive = true,
                 IsVirtualItem = false,

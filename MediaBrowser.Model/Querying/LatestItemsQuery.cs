@@ -2,6 +2,7 @@
 #pragma warning disable CS1591
 
 using System;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Model.Querying
@@ -48,7 +49,7 @@ namespace MediaBrowser.Model.Querying
         /// Gets or sets the include item types.
         /// </summary>
         /// <value>The include item types.</value>
-        public string[] IncludeItemTypes { get; set; }
+        public BaseItemKind[] IncludeItemTypes { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is played.

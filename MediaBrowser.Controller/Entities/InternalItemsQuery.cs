@@ -27,13 +27,13 @@ namespace MediaBrowser.Controller.Entities
             ExcludeArtistIds = Array.Empty<Guid>();
             ExcludeInheritedTags = Array.Empty<string>();
             ExcludeItemIds = Array.Empty<Guid>();
-            ExcludeItemTypes = Array.Empty<string>();
+            ExcludeItemTypes = Array.Empty<BaseItemKind>();
             ExcludeTags = Array.Empty<string>();
             GenreIds = Array.Empty<Guid>();
             Genres = Array.Empty<string>();
             GroupByPresentationUniqueKey = true;
             ImageTypes = Array.Empty<ImageType>();
-            IncludeItemTypes = Array.Empty<string>();
+            IncludeItemTypes = Array.Empty<BaseItemKind>();
             ItemIds = Array.Empty<Guid>();
             MediaTypes = Array.Empty<string>();
             MinSimilarityScore = 20;
@@ -87,9 +87,9 @@ namespace MediaBrowser.Controller.Entities
 
         public string[] MediaTypes { get; set; }
 
-        public string[] IncludeItemTypes { get; set; }
+        public BaseItemKind[] IncludeItemTypes { get; set; }
 
-        public string[] ExcludeItemTypes { get; set; }
+        public BaseItemKind[] ExcludeItemTypes { get; set; }
 
         public string[] ExcludeTags { get; set; }
 
@@ -229,7 +229,7 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid ParentId { get; set; }
 
-        public string? ParentType { get; set; }
+        public BaseItemKind? ParentType { get; set; }
 
         public Guid[] AncestorIds { get; set; }
 
@@ -314,7 +314,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     ParentId = value.Id;
-                    ParentType = value.GetType().Name;
+                    ParentType = value.GetBaseItemKind();
                 }
             }
         }

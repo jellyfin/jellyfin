@@ -55,35 +55,5 @@ namespace Jellyfin.Api.Tests.Helpers
 
             return data;
         }
-
-        [Fact]
-        public static void GetItemTypeStrings_Empty_Empty()
-        {
-            Assert.Empty(RequestHelpers.GetItemTypeStrings(Array.Empty<BaseItemKind>()));
-        }
-
-        [Fact]
-        public static void GetItemTypeStrings_Valid_Success()
-        {
-            BaseItemKind[] input =
-            {
-                BaseItemKind.AggregateFolder,
-                BaseItemKind.Audio,
-                BaseItemKind.BasePluginFolder,
-                BaseItemKind.CollectionFolder
-            };
-
-            string[] expected =
-            {
-                "AggregateFolder",
-                "Audio",
-                "BasePluginFolder",
-                "CollectionFolder"
-            };
-
-            var res = RequestHelpers.GetItemTypeStrings(input);
-
-            Assert.Equal(expected, res);
-        }
     }
 }

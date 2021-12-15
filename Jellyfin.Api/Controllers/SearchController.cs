@@ -110,8 +110,8 @@ namespace Jellyfin.Api.Controllers
                 IncludeStudios = includeStudios,
                 StartIndex = startIndex,
                 UserId = userId ?? Guid.Empty,
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                IncludeItemTypes = includeItemTypes,
+                ExcludeItemTypes = excludeItemTypes,
                 MediaTypes = mediaTypes,
                 ParentId = parentId,
 

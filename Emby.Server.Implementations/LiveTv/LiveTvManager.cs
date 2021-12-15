@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.LiveTv
                 IsKids = query.IsKids,
                 IsSports = query.IsSports,
                 IsSeries = query.IsSeries,
-                IncludeItemTypes = new[] { nameof(LiveTvChannel) },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvChannel },
                 TopParentIds = new[] { topFolder.Id },
                 IsFavorite = query.IsFavorite,
                 IsLiked = query.IsLiked,
@@ -810,7 +810,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(LiveTvProgram) },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 MinEndDate = query.MinEndDate,
                 MinStartDate = query.MinStartDate,
                 MaxEndDate = query.MaxEndDate,
@@ -874,7 +874,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var internalQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(LiveTvProgram) },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 IsAiring = query.IsAiring,
                 HasAired = query.HasAired,
                 IsNews = query.IsNews,
@@ -1085,8 +1085,8 @@ namespace Emby.Server.Implementations.LiveTv
 
             if (cleanDatabase)
             {
-                CleanDatabaseInternal(newChannelIdList.ToArray(), new[] { nameof(LiveTvChannel) }, progress, cancellationToken);
-                CleanDatabaseInternal(newProgramIdList.ToArray(), new[] { nameof(LiveTvProgram) }, progress, cancellationToken);
+                CleanDatabaseInternal(newChannelIdList.ToArray(), new[] { BaseItemKind.LiveTvChannel }, progress, cancellationToken);
+                CleanDatabaseInternal(newProgramIdList.ToArray(), new[] { BaseItemKind.LiveTvProgram }, progress, cancellationToken);
             }
 
             var coreService = _services.OfType<EmbyTV.EmbyTV>().FirstOrDefault();
@@ -1177,7 +1177,7 @@ namespace Emby.Server.Implementations.LiveTv
 
                     var existingPrograms = _libraryManager.GetItemList(new InternalItemsQuery
                     {
-                        IncludeItemTypes = new string[] { nameof(LiveTvProgram) },
+                        IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                         ChannelIds = new Guid[] { currentChannel.Id },
                         DtoOptions = new DtoOptions(true)
                     }).Cast<LiveTvProgram>().ToDictionary(i => i.Id);
@@ -1261,7 +1261,7 @@ namespace Emby.Server.Implementations.LiveTv
             return new Tuple<List<Guid>, List<Guid>>(channels, programs);
         }
 
-        private void CleanDatabaseInternal(Guid[] currentIdList, string[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
+        private void CleanDatabaseInternal(Guid[] currentIdList, BaseItemKind[] validTypes, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var list = _itemRepo.GetItemIdsList(new InternalItemsQuery
             {
@@ -1328,25 +1328,25 @@ namespace Emby.Server.Implementations.LiveTv
                 .Select(i => i.Id)
                 .ToList();
 
-            var excludeItemTypes = new List<string>();
+            var excludeItemTypes = new List<BaseItemKind>();
 
             if (folderIds.Count == 0)
             {
                 return new QueryResult<BaseItem>();
             }
 
-            var includeItemTypes = new List<string>();
+            var includeItemTypes = new List<BaseItemKind>();
             var genres = new List<string>();
 
             if (query.IsMovie.HasValue)
             {
                 if (query.IsMovie.Value)
                 {
-                    includeItemTypes.Add(nameof(Movie));
+                    includeItemTypes.Add(BaseItemKind.Movie);
                 }
                 else
                 {
-                    excludeItemTypes.Add(nameof(Movie));
+                    excludeItemTypes.Add(BaseItemKind.Movie);
                 }
             }
 
@@ -1354,11 +1354,11 @@ namespace Emby.Server.Implementations.LiveTv
             {
                 if (query.IsSeries.Value)
                 {
-                    includeItemTypes.Add(nameof(Episode));
+                    includeItemTypes.Add(BaseItemKind.Episode);
                 }
                 else
                 {
-                    excludeItemTypes.Add(nameof(Episode));
+                    excludeItemTypes.Add(BaseItemKind.Episode);
                 }
             }
 
@@ -1878,7 +1878,7 @@ namespace Emby.Server.Implementations.LiveTv
 
             var programs = options.AddCurrentProgram ? _libraryManager.GetItemList(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(LiveTvProgram) },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
                 ChannelIds = channelIds,
                 MaxStartDate = now,
                 MinEndDate = now,

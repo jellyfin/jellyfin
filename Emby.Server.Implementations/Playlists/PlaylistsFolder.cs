@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Querying;
@@ -45,7 +46,7 @@ namespace Emby.Server.Implementations.Playlists
             }
 
             query.Recursive = true;
-            query.IncludeItemTypes = new[] { "Playlist" };
+            query.IncludeItemTypes = new[] { BaseItemKind.Playlist };
             query.Parent = null;
             return LibraryManager.GetItemsResult(query);
         }
