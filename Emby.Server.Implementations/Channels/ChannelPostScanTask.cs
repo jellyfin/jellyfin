@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -51,7 +52,7 @@ namespace Emby.Server.Implementations.Channels
 
             var uninstalledChannels = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(Channel) },
+                IncludeItemTypes = new[] { BaseItemKind.Channel },
                 ExcludeItemIds = installedChannelIds.ToArray()
             });
 

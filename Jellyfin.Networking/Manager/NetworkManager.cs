@@ -727,7 +727,7 @@ namespace Jellyfin.Networking.Manager
 
         private void ConfigurationUpdated(object? sender, ConfigurationUpdateEventArgs evt)
         {
-            if (evt.Key.Equals("network", StringComparison.Ordinal))
+            if (evt.Key.Equals(NetworkConfigurationStore.StoreKey, StringComparison.Ordinal))
             {
                 UpdateSettings((NetworkConfiguration)evt.NewConfiguration);
             }

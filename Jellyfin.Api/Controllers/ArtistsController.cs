@@ -133,8 +133,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
                 MediaTypes = mediaTypes,
                 StartIndex = startIndex,
                 Limit = limit,
@@ -337,8 +337,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
                 MediaTypes = mediaTypes,
                 StartIndex = startIndex,
                 Limit = limit,

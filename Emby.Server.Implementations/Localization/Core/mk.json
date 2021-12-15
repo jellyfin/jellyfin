@@ -97,5 +97,8 @@
     "TasksChannelsCategory": "Интернет Канали",
     "TasksApplicationCategory": "Апликација",
     "TasksLibraryCategory": "Библиотека",
-    "TasksMaintenanceCategory": "Одржување"
+    "TasksMaintenanceCategory": "Одржување",
+    "Undefined": "Недефинирано",
+    "Forced": "Принудно",
+    "Default": "Зададено"
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -41,7 +42,7 @@ namespace Emby.Server.Implementations.Images
                 User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Person" },
+                ExcludeItemTypes = new[] { BaseItemKind.UserView, BaseItemKind.CollectionFolder, BaseItemKind.Person },
                 DtoOptions = new DtoOptions(false)
             });
 

@@ -40,6 +40,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public abstract class BaseItem : IHasProviderIds, IHasLookupInfo<ItemLookupInfo>, IEquatable<BaseItem>
     {
+        private BaseItemKind? _baseItemKind;
+
         public const string TrailerFileName = "trailer";
         public const string TrailersFolderName = "trailers";
         public const string ThemeSongsFolderName = "theme-music";
@@ -1808,7 +1810,7 @@ namespace MediaBrowser.Controller.Entities
 
         public BaseItemKind GetBaseItemKind()
         {
-            return Enum.Parse<BaseItemKind>(GetClientTypeName());
+            return _baseItemKind ??= Enum.Parse<BaseItemKind>(GetClientTypeName());
         }
 
         /// <summary>

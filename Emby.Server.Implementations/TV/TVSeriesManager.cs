@@ -116,7 +116,7 @@ namespace Emby.Server.Implementations.TV
                 .GetItemList(
                     new InternalItemsQuery(user)
                     {
-                        IncludeItemTypes = new[] { nameof(Episode) },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
                         OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
@@ -191,7 +191,7 @@ namespace Emby.Server.Implementations.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { nameof(Episode) },
+                IncludeItemTypes = new[] { BaseItemKind.Episode },
                 OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
@@ -209,7 +209,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
-                    IncludeItemTypes = new[] { nameof(Episode) },
+                    IncludeItemTypes = new[] { BaseItemKind.Episode },
                     OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,
@@ -226,7 +226,7 @@ namespace Emby.Server.Implementations.TV
                         AncestorWithPresentationUniqueKey = null,
                         SeriesPresentationUniqueKey = seriesKey,
                         ParentIndexNumber = 0,
-                        IncludeItemTypes = new[] { nameof(Episode) },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
                         IsPlayed = false,
                         IsVirtualItem = false,
                         DtoOptions = dtoOptions

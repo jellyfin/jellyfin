@@ -963,7 +963,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(MusicArtist) },
+                    IncludeItemTypes = new[] { BaseItemKind.MusicArtist },
                     Name = name,
                     DtoOptions = options
                 }).Cast<MusicArtist>()

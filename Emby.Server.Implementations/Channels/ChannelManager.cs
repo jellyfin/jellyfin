@@ -541,7 +541,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(Channel) },
+                    IncludeItemTypes = new[] { BaseItemKind.Channel },
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
                 }).Select(i => GetChannelFeatures(i)).ToArray();
         }

@@ -362,9 +362,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             if (item is Movie || item is MusicVideo)
             {
                 // We need to only look at the name of this actual item (not parents)
-                var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path) : Path.GetFileName(item.ContainingFolderPath);
+                var justName = item.IsInMixedFolder ? Path.GetFileName(item.Path.AsSpan()) : Path.GetFileName(item.ContainingFolderPath.AsSpan());
 
-                if (!string.IsNullOrEmpty(justName))
+                if (!justName.IsEmpty)
                 {
                     // check for tmdb id
                     var tmdbid = justName.GetAttributeValue("tmdbid");
@@ -378,7 +378,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 if (!string.IsNullOrEmpty(item.Path))
                 {
                     // check for imdb id - we use full media path, as we can assume, that this will match in any use case (wither id in parent dir or in file name)
-                    var imdbid = item.Path.GetAttributeValue("imdbid");
+                    var imdbid = item.Path.AsSpan().GetAttributeValue("imdbid");
 
                     if (!string.IsNullOrWhiteSpace(imdbid))
                     {

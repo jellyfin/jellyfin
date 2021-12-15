@@ -300,11 +300,11 @@ namespace Emby.Server.Implementations.Library
                 {
                     if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)))
                     {
-                        includeItemTypes = new string[] { "Movie" };
+                        includeItemTypes = new[] { BaseItemKind.Movie };
                     }
                     else if (hasCollectionType.All(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)))
                     {
-                        includeItemTypes = new string[] { "Episode" };
+                        includeItemTypes = new[] { BaseItemKind.Episode };
                     }
                 }
             }
@@ -344,13 +344,13 @@ namespace Emby.Server.Implementations.Library
             var excludeItemTypes = includeItemTypes.Length == 0 && mediaTypes.Count == 0
                 ? new[]
                 {
-                    nameof(Person),
-                    nameof(Studio),
-                    nameof(Year),
-                    nameof(MusicGenre),
-                    nameof(Genre)
+                    BaseItemKind.Person,
+                    BaseItemKind.Studio,
+                    BaseItemKind.Year,
+                    BaseItemKind.MusicGenre,
+                    BaseItemKind.Genre
                 }
-                : Array.Empty<string>();
+                : Array.Empty<BaseItemKind>();
 
             var query = new InternalItemsQuery(user)
             {
