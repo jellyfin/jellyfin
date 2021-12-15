@@ -24,7 +24,7 @@ namespace Jellyfin.MediaEncoding.Tests.Probing
         [InlineData("25/1", 25f)]
         [InlineData("120/1", 120f)]
         [InlineData("1704753000/71073479", 23.98578237601117f)]
-        [InlineData("0/0", 0f)]
+        [InlineData("0/0", null)]
         [InlineData("1/1000", 0.001f)]
         [InlineData("1/90000", 1.1111111E-05f)]
         [InlineData("1/48000", 2.0833333E-05f)]
