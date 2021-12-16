@@ -1,41 +1,55 @@
-VERSION := $(shell sed -ne '/^Version:/s/.*  *//p' fedora/jellyfin.spec)
-outdir  ?= fedora/
+DIR     := $(dir $(lastword $(MAKEFILE_LIST)))
+INSTGIT := $(shell if [ "$$(id -u)" = "0" ]; then dnf -y install git; fi)
+NAME    := jellyfin-server
+VERSION := $(shell sed -ne '/^Version:/s/.*  *//p' $(DIR)/jellyfin.spec)
+RELEASE := $(shell sed -ne '/^Release:/s/.*  *\(.*\)%{.*}.*/\1/p' $(DIR)/jellyfin.spec)
+GIT_VER := $(shell git describe --tags | sed -e 's/^v//' -e 's/-[0-9]*-g.*$$//')
+SRPM    := jellyfin-$(subst -,~,$(GIT_VER))-$(RELEASE)$(shell rpm --eval %dist).src.rpm
+TARBALL :=$(NAME)-$(subst -,~,$(GIT_VER)).tar.gz
+
+epel-7-x86_64_repos := https://packages.microsoft.com/rhel/7/prod/
+epel-8-x86_64_repos := https://download.copr.fedorainfracloud.org/results/@dotnet-sig/dotnet-preview/$(TARGET)/
+fedora_repos        := https://download.copr.fedorainfracloud.org/results/@dotnet-sig/dotnet-preview/$(TARGET)/
+fedora-34-x86_64_repos := $(fedora_repos)
+fedora-35-x86_64_repos := $(fedora_repos)
+fedora-34-x86_64_repos := $(fedora_repos)
+
+outdir  ?= $(PWD)/$(DIR)/
 TARGET  ?= fedora-35-x86_64
 
-srpm:
-	pushd fedora/;                                              \
-	if [ "$$(id -u)" = "0" ]; then                              \
-	    dnf -y install git;                                     \
-	fi;                                                         \
-	version=$$(git describe --tags | sed -e 's/^v//'            \
-	                                     -e 's/-[0-9]*-g.*$$//' \
-	                                     -e 's/-/~/');          \
-	SOURCE_DIR=..                                               \
-	WORKDIR="$${PWD}";                                          \
-	tar                                                         \
-	--transform "s,^\.,jellyfin-server-$$version,"              \
-	--exclude='.git*'                                           \
-	--exclude='**/.git'                                         \
-	--exclude='**/.hg'                                          \
-	--exclude='**/.vs'                                          \
-	--exclude='**/.vscode'                                      \
-	--exclude=deployment                                        \
-	--exclude='**/bin'                                          \
-	--exclude='**/obj'                                          \
-	--exclude='**/.nuget'                                       \
-	--exclude='*.deb'                                           \
-	--exclude='*.rpm'                                           \
-	--exclude=jellyfin-server-$$version.tar.gz                  \
-	-czf "jellyfin-server-$$version.tar.gz"                     \
-	-C $${SOURCE_DIR} ./;                                       \
-	popd;                                                       \
-	./bump_version $$version
-	cd fedora/;                              \
+srpm: $(DIR)/$(SRPM)
+tarball: $(DIR)/$(TARBALL)
+
+$(DIR)/$(TARBALL):
+	cd $(DIR)/;                                          \
+	SOURCE_DIR=..                                        \
+	WORKDIR="$${PWD}";                                   \
+	version=$(GIT_VER);                                  \
+	tar                                                  \
+	--transform "s,^\.,$(NAME)-$(subst -,~,$(GIT_VER))," \
+	--exclude='.git*'                                    \
+	--exclude='**/.git'                                  \
+	--exclude='**/.hg'                                   \
+	--exclude='**/.vs'                                   \
+	--exclude='**/.vscode'                               \
+	--exclude=deployment                                 \
+	--exclude='**/bin'                                   \
+	--exclude='**/obj'                                   \
+	--exclude='**/.nuget'                                \
+	--exclude='*.deb'                                    \
+	--exclude='*.rpm'                                    \
+	--exclude=$(notdir $@)                               \
+	-czf $(notdir $@)                                    \
+	-C $${SOURCE_DIR} ./
+
+$(DIR)/$(SRPM): $(DIR)/$(TARBALL) $(DIR)/jellyfin.spec
+	./bump_version $(GIT_VER)
+	cd $(DIR)/;                              \
 	rpmbuild -bs jellyfin.spec               \
 	         --define "_sourcedir $$PWD/"    \
 	         --define "_srcrpmdir $(outdir)"
 
-rpms: fedora/jellyfin-$(shell git describe --tags | sed -e 's/^v//' -e 's/-[0-9]*-g.*$$//' -e 's/-/~/')-1$(shell rpm --eval %dist).src.rpm
-	mock --addrepo=https://download.copr.fedorainfracloud.org/results/@dotnet-sig/dotnet-preview/$(TARGET)/ \
-	     --enable-network                                                                                   \
+rpms: $(DIR)/$(SRPM)
+	mock $(addprefix --addrepo=, $($(TARGET)_repos)) \
+	     --enable-network                            \
 	     -r $(TARGET) $<
