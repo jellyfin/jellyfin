@@ -62,7 +62,7 @@ namespace Emby.Server.Implementations.Data
 
         private readonly ItemFields[] _allItemFields = Enum.GetValues<ItemFields>();
 
-        private static readonly string[] _retriveItemColumns =
+        private static readonly string[] _retrieveItemColumns =
         {
             "type",
             "data",
@@ -133,7 +133,7 @@ namespace Emby.Server.Implementations.Data
             "OwnerId"
         };
 
-        private static readonly string _retriveItemColumnsSelectQuery = $"select {string.Join(',', _retriveItemColumns)} from TypedBaseItems where guid = @guid";
+        private static readonly string _retrieveItemColumnsSelectQuery = $"select {string.Join(',', _retrieveItemColumns)} from TypedBaseItems where guid = @guid";
 
         private static readonly string[] _mediaStreamSaveColumns =
         {
@@ -283,6 +283,43 @@ namespace Emby.Server.Implementations.Data
         };
 
         private readonly Dictionary<string, string> _types = GetTypeMapDictionary();
+
+        private static readonly Dictionary<BaseItemKind, string> _baseItemKindNames = new()
+        {
+            { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
+            { BaseItemKind.Audio, typeof(Audio).FullName },
+            { BaseItemKind.AudioBook, typeof(AudioBook).FullName },
+            { BaseItemKind.BasePluginFolder, typeof(BasePluginFolder).FullName },
+            { BaseItemKind.Book, typeof(Book).FullName },
+            { BaseItemKind.BoxSet, typeof(BoxSet).FullName },
+            { BaseItemKind.Channel, typeof(Channel).FullName },
+            { BaseItemKind.CollectionFolder, typeof(CollectionFolder).FullName },
+            { BaseItemKind.Episode, typeof(Episode).FullName },
+            { BaseItemKind.Folder, typeof(Folder).FullName },
+            { BaseItemKind.Genre, typeof(Genre).FullName },
+            { BaseItemKind.Movie, typeof(Movie).FullName },
+            { BaseItemKind.LiveTvChannel, typeof(LiveTvChannel).FullName },
+            { BaseItemKind.LiveTvProgram, typeof(LiveTvProgram).FullName },
+            { BaseItemKind.MusicAlbum, typeof(MusicAlbum).FullName },
+            { BaseItemKind.MusicArtist, typeof(MusicArtist).FullName },
+            { BaseItemKind.MusicGenre, typeof(MusicGenre).FullName },
+            { BaseItemKind.MusicVideo, typeof(MusicVideo).FullName },
+            { BaseItemKind.Person, typeof(Person).FullName },
+            { BaseItemKind.Photo, typeof(Photo).FullName },
+            { BaseItemKind.PhotoAlbum, typeof(PhotoAlbum).FullName },
+            { BaseItemKind.Playlist, typeof(Playlist).FullName },
+            { BaseItemKind.PlaylistsFolder, typeof(PlaylistsFolder).FullName },
+            { BaseItemKind.Season, typeof(Season).FullName },
+            { BaseItemKind.Series, typeof(Series).FullName },
+            { BaseItemKind.Studio, typeof(Studio).FullName },
+            { BaseItemKind.Trailer, typeof(Trailer).FullName },
+            { BaseItemKind.TvChannel, typeof(LiveTvChannel).FullName },
+            { BaseItemKind.TvProgram, typeof(LiveTvProgram).FullName },
+            { BaseItemKind.UserRootFolder, typeof(UserRootFolder).FullName },
+            { BaseItemKind.UserView, typeof(UserView).FullName },
+            { BaseItemKind.Video, typeof(Video).FullName },
+            { BaseItemKind.Year, typeof(Year).FullName }
+        };
 
         static SqliteItemRepository()
         {
@@ -1319,7 +1356,7 @@ namespace Emby.Server.Implementations.Data
 
             using (var connection = GetConnection(true))
             {
-                using (var statement = PrepareStatement(connection, _retriveItemColumnsSelectQuery))
+                using (var statement = PrepareStatement(connection, _retrieveItemColumnsSelectQuery))
                 {
                     statement.TryBind("@guid", id);
 
@@ -2629,7 +2666,7 @@ namespace Emby.Server.Implementations.Data
                 query.Limit = query.Limit.Value + 4;
             }
 
-            var columns = _retriveItemColumns.ToList();
+            var columns = _retrieveItemColumns.ToList();
             SetFinalColumnsToSelect(query, columns);
             var commandTextBuilder = new StringBuilder("select ", 1024)
                 .AppendJoin(',', columns)
@@ -2820,7 +2857,7 @@ namespace Emby.Server.Implementations.Data
                 query.Limit = query.Limit.Value + 4;
             }
 
-            var columns = _retriveItemColumns.ToList();
+            var columns = _retrieveItemColumns.ToList();
             SetFinalColumnsToSelect(query, columns);
             var commandTextBuilder = new StringBuilder("select ", 512)
                 .AppendJoin(',', columns)
@@ -3569,24 +3606,74 @@ namespace Emby.Server.Implementations.Data
                 var excludeTypes = query.ExcludeItemTypes;
                 if (excludeTypes.Length == 1)
                 {
-                    whereClauses.Add("type<>@type");
-                    statement?.TryBind("@type", excludeTypes[0].ToString());
+                    if (_baseItemKindNames.TryGetValue(excludeTypes[0], out var excludeTypeName))
+                    {
+                        whereClauses.Add("type<>@type");
+                        statement?.TryBind("@type", excludeTypeName);
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", excludeTypes[0]);
+                    }
                 }
                 else if (excludeTypes.Length > 1)
                 {
-                    var inClause = string.Join(',', excludeTypes.Select(i => "'" + i + "'"));
-                    whereClauses.Add($"type not in ({inClause})");
+                    var whereBuilder = new StringBuilder("type not in (");
+                    foreach (var excludeType in excludeTypes)
+                    {
+                        if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
+                        {
+                            whereBuilder
+                                .Append('\'')
+                                .Append(baseItemKindName)
+                                .Append("',");
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", excludeType);
+                        }
+                    }
+
+                    // Remove trailing comma.
+                    whereBuilder.Length--;
+                    whereBuilder.Append(')');
+                    whereClauses.Add(whereBuilder.ToString());
                 }
             }
             else if (includeTypes.Length == 1)
             {
-                whereClauses.Add("type=@type");
-                statement?.TryBind("@type", includeTypes[0].ToString());
+                if (_baseItemKindNames.TryGetValue(includeTypes[0], out var includeTypeName))
+                {
+                    whereClauses.Add("type=@type");
+                    statement?.TryBind("@type", includeTypeName);
+                }
+                else
+                {
+                    Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", includeTypes[0]);
+                }
             }
             else if (includeTypes.Length > 1)
             {
-                var inClause = string.Join(',', includeTypes.Select(i => "'" + i + "'"));
-                whereClauses.Add($"type in ({inClause})");
+                var whereBuilder = new StringBuilder("type in (");
+                foreach (var includeType in includeTypes)
+                {
+                    if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
+                    {
+                        whereBuilder
+                            .Append('\'')
+                            .Append(baseItemKindName)
+                            .Append("',");
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", includeType);
+                    }
+                }
+
+                // Remove trailing comma.
+                whereBuilder.Length--;
+                whereBuilder.Append(')');
+                whereClauses.Add(whereBuilder.ToString());
             }
 
             if (query.ChannelIds.Count == 1)
@@ -5334,7 +5421,7 @@ AND Type = @InternalPersonType)");
                 stringBuilder.Clear();
             }
 
-            List<string> columns = _retriveItemColumns.ToList();
+            List<string> columns = _retrieveItemColumns.ToList();
             // Unfortunately we need to add it to columns to ensure the order of the columns in the select
             if (!string.IsNullOrEmpty(itemCountColumns))
             {
