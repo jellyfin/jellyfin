@@ -3611,15 +3611,32 @@ namespace Emby.Server.Implementations.Data
                         whereClauses.Add("type<>@type");
                         statement?.TryBind("@type", excludeTypeName);
                     }
+                    else
+                    {
+                        Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", excludeTypes[0]);
+                    }
                 }
                 else if (excludeTypes.Length > 1)
                 {
-                    var inClause = string.Join(
-                        ',',
-                        excludeTypes
-                            .Select(i => _baseItemKindNames.TryGetValue(i, out var baseItemKindName) ? "'" + baseItemKindName + "'" : null)
-                            .Where(i => !string.IsNullOrEmpty(i)));
-                    whereClauses.Add($"type not in ({inClause})");
+                    var whereBuilder = new StringBuilder();
+                    foreach (var excludeType in excludeTypes)
+                    {
+                        if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
+                        {
+                            whereBuilder
+                                .Append('\'')
+                                .Append(baseItemKindName)
+                                .Append("',");
+                        }
+                        else
+                        {
+                            Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", excludeType);
+                        }
+                    }
+
+                    // Remove trailing comma.
+                    whereBuilder.Length--;
+                    whereClauses.Add($"type not in ({whereBuilder})");
                 }
             }
             else if (includeTypes.Length == 1)
@@ -3629,15 +3646,32 @@ namespace Emby.Server.Implementations.Data
                     whereClauses.Add("type=@type");
                     statement?.TryBind("@type", includeTypeName);
                 }
+                else
+                {
+                    Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", includeTypes[0]);
+                }
             }
             else if (includeTypes.Length > 1)
             {
-                var inClause = string.Join(
-                    ',',
-                    includeTypes
-                        .Select(i => _baseItemKindNames.TryGetValue(i, out var baseItemKindName) ? "'" + baseItemKindName + "'" : null)
-                        .Where(i => !string.IsNullOrEmpty(i)));
-                whereClauses.Add($"type in ({inClause})");
+                var whereBuilder = new StringBuilder();
+                foreach (var includeType in includeTypes)
+                {
+                    if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
+                    {
+                        whereBuilder
+                            .Append('\'')
+                            .Append(baseItemKindName)
+                            .Append("',");
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Undefined BaseItemKind to Type mapping: {BaseItemKind}", includeType);
+                    }
+                }
+
+                // Remove trailing comma.
+                whereBuilder.Length--;
+                whereClauses.Add($"type in ({whereBuilder})");
             }
 
             if (query.ChannelIds.Count == 1)
