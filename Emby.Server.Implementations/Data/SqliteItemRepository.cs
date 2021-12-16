@@ -3618,7 +3618,7 @@ namespace Emby.Server.Implementations.Data
                 }
                 else if (excludeTypes.Length > 1)
                 {
-                    var whereBuilder = new StringBuilder();
+                    var whereBuilder = new StringBuilder("type not in (");
                     foreach (var excludeType in excludeTypes)
                     {
                         if (_baseItemKindNames.TryGetValue(excludeType, out var baseItemKindName))
@@ -3636,7 +3636,8 @@ namespace Emby.Server.Implementations.Data
 
                     // Remove trailing comma.
                     whereBuilder.Length--;
-                    whereClauses.Add($"type not in ({whereBuilder})");
+                    whereBuilder.Append(')');
+                    whereClauses.Add(whereBuilder.ToString());
                 }
             }
             else if (includeTypes.Length == 1)
@@ -3653,7 +3654,7 @@ namespace Emby.Server.Implementations.Data
             }
             else if (includeTypes.Length > 1)
             {
-                var whereBuilder = new StringBuilder();
+                var whereBuilder = new StringBuilder("type in (");
                 foreach (var includeType in includeTypes)
                 {
                     if (_baseItemKindNames.TryGetValue(includeType, out var baseItemKindName))
@@ -3671,7 +3672,8 @@ namespace Emby.Server.Implementations.Data
 
                 // Remove trailing comma.
                 whereBuilder.Length--;
-                whereClauses.Add($"type in ({whereBuilder})");
+                whereBuilder.Append(')');
+                whereClauses.Add(whereBuilder.ToString());
             }
 
             if (query.ChannelIds.Count == 1)
