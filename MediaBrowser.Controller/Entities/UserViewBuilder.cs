@@ -745,10 +745,9 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.HasTrailer.Value;
                 var trailerCount = 0;
 
-                var hasTrailers = item as IHasTrailers;
-                if (hasTrailers != null)
+                if (item is IHasTrailers hasTrailers)
                 {
-                    trailerCount = hasTrailers.GetTrailerIds().Count;
+                    trailerCount = hasTrailers.GetTrailerCount();
                 }
 
                 var ok = val ? trailerCount > 0 : trailerCount == 0;
@@ -763,7 +762,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeSong.Value;
 
-                var themeCount = item.ThemeSongIds.Length;
+                var themeCount = item.GetThemeSongs().Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -776,7 +775,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeVideo.Value;
 
-                var themeCount = item.ThemeVideoIds.Length;
+                var themeCount = item.GetThemeVideos().Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)

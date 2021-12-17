@@ -117,16 +117,10 @@ namespace MediaBrowser.LocalMetadata.Images
                 return Enumerable.Empty<FileSystemMetadata>();
             }
 
-            if (includeDirectories)
-            {
-                return directoryService.GetFileSystemEntries(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) || i.IsDirectory)
-
-                .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
-            }
-
-            return directoryService.GetFiles(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+            return directoryService.GetFileSystemEntries(path)
+                .Where(i =>
+                    (includeDirectories && i.IsDirectory)
+                    || Array.FindIndex(BaseItem.SupportedImageExtensions, ext => string.Equals(ext, i.Extension, StringComparison.OrdinalIgnoreCase)) != -1)
                 .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 

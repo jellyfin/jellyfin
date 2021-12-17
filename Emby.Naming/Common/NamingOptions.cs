@@ -124,11 +124,11 @@ namespace Emby.Naming.Common
                     token: "DSR")
             };
 
-            VideoFileStackingExpressions = new[]
+            VideoFileStackingRules = new[]
             {
-                "(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[0-9]+)(?<ignore>.*?)(?<extension>\\.[^.]+)$",
-                "(?<title>.*?)(?<volume>[ _.-]*(?:cd|dvd|p(?:ar)?t|dis[ck])[ _.-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$",
-                "(?<title>.*?)(?<volume>[ ._-]*[a-d])(?<ignore>.*?)(?<extension>\\.[^.]+)$"
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[0-9]+)[\)\]]?(?:\.[^.]+)?$", true),
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]+)[\(\[]?(?<parttype>cd|dvd|part|pt|dis[ck])[ _.-]*(?<number>[a-d])[\)\]]?(?:\.[^.]+)?$", false),
+                new FileStackRule(@"^(?<filename>.*?)(?:(?<=[\]\)\}])|[ _.-]?)(?<number>[a-d])(?:\.[^.]+)?$", false)
             };
 
             CleanDateTimes = new[]
@@ -403,6 +403,12 @@ namespace Emby.Naming.Common
 
             VideoExtraRules = new[]
             {
+                new ExtraRule(
+                    ExtraType.Trailer,
+                    ExtraRuleType.DirectoryName,
+                    "trailers",
+                    MediaType.Video),
+
                 new ExtraRule(
                     ExtraType.Trailer,
                     ExtraRuleType.Filename,
@@ -759,9 +765,9 @@ namespace Emby.Naming.Common
         public Format3DRule[] Format3DRules { get; set; }
 
         /// <summary>
-        /// Gets or sets list of raw video file-stacking expressions strings.
+        /// Gets the file stacking rules.
         /// </summary>
-        public string[] VideoFileStackingExpressions { get; set; }
+        public FileStackRule[] VideoFileStackingRules { get; }
 
         /// <summary>
         /// Gets or sets list of raw clean DateTimes regular expressions strings.
@@ -782,11 +788,6 @@ namespace Emby.Naming.Common
         /// Gets or sets list of extra rules for videos.
         /// </summary>
         public ExtraRule[] VideoExtraRules { get; set; }
-
-        /// <summary>
-        /// Gets list of video file-stack regular expressions.
-        /// </summary>
-        public Regex[] VideoFileStackingRegexes { get; private set; } = Array.Empty<Regex>();
 
         /// <summary>
         /// Gets list of clean datetime regular expressions.
@@ -813,7 +814,6 @@ namespace Emby.Naming.Common
         /// </summary>
         public void Compile()
         {
-            VideoFileStackingRegexes = VideoFileStackingExpressions.Select(Compile).ToArray();
             CleanDateTimeRegexes = CleanDateTimes.Select(Compile).ToArray();
             CleanStringRegexes = CleanStrings.Select(Compile).ToArray();
             EpisodeWithoutSeasonRegexes = EpisodeWithoutSeasonExpressions.Select(Compile).ToArray();
