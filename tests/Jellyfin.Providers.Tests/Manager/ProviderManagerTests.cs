@@ -54,7 +54,7 @@ namespace Jellyfin.Providers.Tests.Manager
             for (var i = 0; i < providerCount; i++)
             {
                 var order = hasOrderOrder?[i];
-                providerList.Add(MockIImageProvider<IImageProvider>(nameProvider(i), item, order: order));
+                providerList.Add(MockIImageProvider<ILocalImageProvider>(nameProvider(i), item, order: order));
             }
 
             var libraryOptions = CreateLibraryOptions(item.GetType().Name, imageFetcherOrder: libraryOrder?.Select(nameProvider).ToArray());
@@ -275,7 +275,7 @@ namespace Jellyfin.Providers.Tests.Manager
 
         [Theory]
         [InlineData(nameof(ICustomMetadataProvider), true)]
-        [InlineData(nameof(IRemoteMetadataProvider), false)]
+        [InlineData(nameof(IRemoteMetadataProvider), true)]
         [InlineData(nameof(ILocalMetadataProvider), false)]
         public void GetMetadataProviders_CanRefreshMetadataOwned_WhenNotLocal(string providerType, bool expected)
         {

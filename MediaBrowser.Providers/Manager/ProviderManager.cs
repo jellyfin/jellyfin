@@ -326,6 +326,39 @@ namespace MediaBrowser.Providers.Manager
                 .ThenBy(GetDefaultOrder);
         }
 
+        private bool CanRefreshImages(
+            IImageProvider provider,
+            BaseItem item,
+            TypeOptions? libraryTypeOptions,
+            ImageRefreshOptions refreshOptions,
+            bool includeDisabled)
+        {
+            try
+            {
+                if (!provider.Supports(item))
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{ProviderName} failed in Supports for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
+                return false;
+            }
+
+            if (includeDisabled || provider is ILocalImageProvider)
+            {
+                return true;
+            }
+
+            if (item.IsLocked && refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)
+            {
+                return false;
+            }
+
+            return _baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, provider.Name);
+        }
+
         /// <inheritdoc />
         public IEnumerable<IMetadataProvider<T>> GetMetadataProviders<T>(BaseItem item, LibraryOptions libraryOptions)
             where T : BaseItem
@@ -365,76 +398,34 @@ namespace MediaBrowser.Providers.Manager
             bool includeDisabled,
             bool forceEnableInternetMetadata)
         {
-            if (!includeDisabled)
-            {
-                // If locked only allow local providers
-                if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
-                {
-                    return false;
-                }
-
-                if (provider is IRemoteMetadataProvider)
-                {
-                    if (!forceEnableInternetMetadata && !_baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, provider.Name))
-                    {
-                        return false;
-                    }
-                }
-            }
-
             if (!item.SupportsLocalMetadata && provider is ILocalMetadataProvider)
             {
                 return false;
             }
 
-            // If this restriction is ever lifted, movie xml providers will have to be updated to prevent owned items like trailers from reading those files
-            if (!item.OwnerId.Equals(default))
+            // Prevent owned items from reading the same local metadata file as their owner
+            if (!item.OwnerId.Equals(default) && provider is ILocalMetadataProvider)
             {
-                if (provider is ILocalMetadataProvider || provider is IRemoteMetadataProvider)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private bool CanRefreshImages(
-            IImageProvider provider,
-            BaseItem item,
-            TypeOptions? libraryTypeOptions,
-            ImageRefreshOptions refreshOptions,
-            bool includeDisabled)
-        {
-            if (!includeDisabled)
-            {
-                // If locked only allow local providers
-                if (item.IsLocked && provider is not ILocalImageProvider)
-                {
-                    if (refreshOptions.ImageRefreshMode != MetadataRefreshMode.FullRefresh)
-                    {
-                        return false;
-                    }
-                }
-
-                if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
-                {
-                    if (!_baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, provider.Name))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            try
-            {
-                return provider.Supports(item);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{ProviderName} failed in Supports for type {ItemType} at {ItemPath}", provider.GetType().Name, item.GetType().Name, item.Path);
                 return false;
             }
+
+            if (includeDisabled)
+            {
+                return true;
+            }
+
+            // If locked only allow local providers
+            if (item.IsLocked && provider is not ILocalMetadataProvider && provider is not IForcedProvider)
+            {
+                return false;
+            }
+
+            if (forceEnableInternetMetadata || provider is not IRemoteMetadataProvider)
+            {
+                return true;
+            }
+
+            return _baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, provider.Name);
         }
 
         private static int GetConfiguredOrder(string[] order, string providerName)
