@@ -1027,27 +1027,32 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>System.Nullable{System.Single}.</returns>
-        private float? GetFrameRate(string value)
+        internal static float? GetFrameRate(ReadOnlySpan<char> value)
         {
-            if (string.IsNullOrEmpty(value))
+            if (value.IsEmpty)
             {
                 return null;
             }
 
-            var parts = value.Split('/');
-
-            float result;
-
-            if (parts.Length == 2)
+            int index = value.IndexOf('/');
+            if (index == -1)
             {
-                result = float.Parse(parts[0], CultureInfo.InvariantCulture) / float.Parse(parts[1], CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                result = float.Parse(parts[0], CultureInfo.InvariantCulture);
+                // REVIEW: is this branch actually required? (i.e. does ffprobe ever output something other than a fraction?)
+                if (float.TryParse(value, NumberStyles.AllowThousands | NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+
+                return null;
             }
 
-            return float.IsNaN(result) ? null : result;
+            if (!float.TryParse(value[..index], NumberStyles.Integer, CultureInfo.InvariantCulture, out var dividend)
+                || !float.TryParse(value[(index + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var divisor))
+            {
+                return null;
+            }
+
+            return divisor == 0f ? null : dividend / divisor;
         }
 
         private void SetAudioRuntimeTicks(InternalMediaInfoResult result, MediaInfo data)
