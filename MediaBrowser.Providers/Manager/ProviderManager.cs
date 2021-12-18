@@ -321,7 +321,7 @@ namespace MediaBrowser.Providers.Manager
             var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
             var fetcherOrder = typeOptions?.ImageFetcherOrder ?? options.ImageFetcherOrder;
 
-            return _imageProviders.Where(i => CanRefreshImages(i, item, libraryOptions, refreshOptions, includeDisabled))
+            return _imageProviders.Where(i => CanRefreshImages(i, item, typeOptions, refreshOptions, includeDisabled))
                 .OrderBy(i => GetConfiguredOrder(fetcherOrder, i.Name))
                 .ThenBy(GetDefaultOrder);
         }
@@ -343,7 +343,7 @@ namespace MediaBrowser.Providers.Manager
             var metadataFetcherOrder = typeOptions?.MetadataFetcherOrder ?? globalMetadataOptions.MetadataFetcherOrder;
 
             return _metadataProviders.OfType<IMetadataProvider<T>>()
-                .Where(i => CanRefreshMetadata(i, item, libraryOptions, includeDisabled, forceEnableInternetMetadata))
+                .Where(i => CanRefreshMetadata(i, item, typeOptions, includeDisabled, forceEnableInternetMetadata))
                 .OrderBy(i =>
                 {
                     // local and remote providers will be interleaved in the final order
@@ -361,7 +361,7 @@ namespace MediaBrowser.Providers.Manager
         private bool CanRefreshMetadata(
             IMetadataProvider provider,
             BaseItem item,
-            LibraryOptions libraryOptions,
+            TypeOptions? libraryTypeOptions,
             bool includeDisabled,
             bool forceEnableInternetMetadata)
         {
@@ -375,7 +375,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteMetadataProvider)
                 {
-                    if (!forceEnableInternetMetadata && !_baseItemManager.IsMetadataFetcherEnabled(item, libraryOptions, provider.Name))
+                    if (!forceEnableInternetMetadata && !_baseItemManager.IsMetadataFetcherEnabled(item, libraryTypeOptions, provider.Name))
                     {
                         return false;
                     }
@@ -402,7 +402,7 @@ namespace MediaBrowser.Providers.Manager
         private bool CanRefreshImages(
             IImageProvider provider,
             BaseItem item,
-            LibraryOptions libraryOptions,
+            TypeOptions? libraryTypeOptions,
             ImageRefreshOptions refreshOptions,
             bool includeDisabled)
         {
@@ -419,7 +419,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteImageProvider || provider is IDynamicImageProvider)
                 {
-                    if (!_baseItemManager.IsImageFetcherEnabled(item, libraryOptions, provider.Name))
+                    if (!_baseItemManager.IsImageFetcherEnabled(item, libraryTypeOptions, provider.Name))
                     {
                         return false;
                     }

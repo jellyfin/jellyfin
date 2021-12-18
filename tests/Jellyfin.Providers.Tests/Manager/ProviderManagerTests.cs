@@ -131,7 +131,7 @@ namespace Jellyfin.Providers.Tests.Manager
             };
 
             var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
-            baseItemManager.Setup(i => i.IsImageFetcherEnabled(item, It.IsAny<LibraryOptions>(), providerName))
+            baseItemManager.Setup(i => i.IsImageFetcherEnabled(item, It.IsAny<TypeOptions>(), providerName))
                 .Returns(baseItemEnabled);
 
             using var providerManager = GetProviderManager(baseItemManager: baseItemManager.Object);
@@ -219,7 +219,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 metadataFetcherOrder: serverRemoteOrder?.Select(nameProvider).ToArray());
 
             var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
-            baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<LibraryOptions>(), It.IsAny<string>()))
+            baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<TypeOptions>(), It.IsAny<string>()))
                 .Returns(true);
 
             using var providerManager = GetProviderManager(serverConfiguration: serverConfiguration, baseItemManager: baseItemManager.Object);
@@ -302,7 +302,7 @@ namespace Jellyfin.Providers.Tests.Manager
             var provider = MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(providerType.Name, providerName, forced: providerForced);
 
             var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
-            baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<LibraryOptions>(), providerName))
+            baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<TypeOptions>(), providerName))
                 .Returns(baseItemEnabled);
 
             using var providerManager = GetProviderManager(baseItemManager: baseItemManager.Object);
