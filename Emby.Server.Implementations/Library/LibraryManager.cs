@@ -2890,11 +2890,12 @@ namespace Emby.Server.Implementations.Library
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
 
+            var existingNameCount = 1; // first numbered name will be 2
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
             while (Directory.Exists(virtualFolderPath))
             {
-                name += "1";
-                virtualFolderPath = Path.Combine(rootFolderPath, name);
+                existingNameCount++;
+                virtualFolderPath = Path.Combine(rootFolderPath, name + " " + existingNameCount);
             }
 
             var mediaPathInfos = options.PathInfos;
