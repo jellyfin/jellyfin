@@ -77,32 +77,32 @@ namespace Jellyfin.Providers.Tests.Manager
         [InlineData(true, true, false)]
         public void GetImageProviders_CanRefreshImagesBasic_WhenSupportsWithoutError(bool supports, bool errorOnSupported, bool expected)
         {
-            GetImageProviders_CanRefreshImages_Tester(typeof(IImageProvider), supports, expected, errorOnSupported: errorOnSupported);
+            GetImageProviders_CanRefreshImages_Tester(nameof(IImageProvider), supports, expected, errorOnSupported: errorOnSupported);
         }
 
         [Theory]
-        [InlineData(typeof(ILocalImageProvider), false, true)]
-        [InlineData(typeof(ILocalImageProvider), true, true)]
-        [InlineData(typeof(IImageProvider), false, false)]
-        [InlineData(typeof(IImageProvider), true, true)]
-        public void GetImageProviders_CanRefreshImagesLocked_WhenLocalOrFullRefresh(Type providerType, bool fullRefresh, bool expected)
+        [InlineData(nameof(ILocalImageProvider), false, true)]
+        [InlineData(nameof(ILocalImageProvider), true, true)]
+        [InlineData(nameof(IImageProvider), false, false)]
+        [InlineData(nameof(IImageProvider), true, true)]
+        public void GetImageProviders_CanRefreshImagesLocked_WhenLocalOrFullRefresh(string providerType, bool fullRefresh, bool expected)
         {
             GetImageProviders_CanRefreshImages_Tester(providerType, true, expected, itemLocked: true, fullRefresh: fullRefresh);
         }
 
         [Theory]
-        [InlineData(typeof(ILocalImageProvider), false, true)]
-        [InlineData(typeof(IRemoteImageProvider), true, true)]
-        [InlineData(typeof(IDynamicImageProvider), true, true)]
-        [InlineData(typeof(IRemoteImageProvider), false, false)]
-        [InlineData(typeof(IDynamicImageProvider), false, false)]
-        public void GetImageProviders_CanRefreshImagesBaseItemEnabled_WhenLocalOrEnabled(Type providerType, bool enabled, bool expected)
+        [InlineData(nameof(ILocalImageProvider), false, true)]
+        [InlineData(nameof(IRemoteImageProvider), true, true)]
+        [InlineData(nameof(IDynamicImageProvider), true, true)]
+        [InlineData(nameof(IRemoteImageProvider), false, false)]
+        [InlineData(nameof(IDynamicImageProvider), false, false)]
+        public void GetImageProviders_CanRefreshImagesBaseItemEnabled_WhenLocalOrEnabled(string providerType, bool enabled, bool expected)
         {
             GetImageProviders_CanRefreshImages_Tester(providerType, true, expected, baseItemEnabled: enabled);
         }
 
         private static void GetImageProviders_CanRefreshImages_Tester(
-            Type providerType,
+            string providerType,
             bool supports,
             bool expected,
             bool errorOnSupported = false,
@@ -116,7 +116,7 @@ namespace Jellyfin.Providers.Tests.Manager
             };
 
             var providerName = "provider";
-            IImageProvider provider = providerType.Name switch
+            IImageProvider provider = providerType switch
             {
                 "IImageProvider" => MockIImageProvider<IImageProvider>(providerName, item, supports: supports, errorOnSupported: errorOnSupported),
                 "ILocalImageProvider" => MockIImageProvider<ILocalImageProvider>(providerName, item, supports: supports, errorOnSupported: errorOnSupported),
@@ -233,57 +233,57 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
-        [InlineData(typeof(IMetadataProvider))]
-        [InlineData(typeof(ILocalMetadataProvider))]
-        [InlineData(typeof(IRemoteMetadataProvider))]
-        [InlineData(typeof(ICustomMetadataProvider))]
-        public void GetMetadataProviders_CanRefreshMetadataBasic_ReturnsTrue(Type providerType)
+        [InlineData(nameof(IMetadataProvider))]
+        [InlineData(nameof(ILocalMetadataProvider))]
+        [InlineData(nameof(IRemoteMetadataProvider))]
+        [InlineData(nameof(ICustomMetadataProvider))]
+        public void GetMetadataProviders_CanRefreshMetadataBasic_ReturnsTrue(string providerType)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, true);
         }
 
         [Theory]
-        [InlineData(typeof(ILocalMetadataProvider), false, true)]
-        [InlineData(typeof(IRemoteMetadataProvider), false, false)]
-        [InlineData(typeof(ICustomMetadataProvider), false, false)]
-        [InlineData(typeof(ILocalMetadataProvider), true, true)]
-        [InlineData(typeof(ICustomMetadataProvider), true, false)]
-        public void GetMetadataProviders_CanRefreshMetadataLocked_WhenLocalOrForced(Type providerType, bool forced, bool expected)
+        [InlineData(nameof(ILocalMetadataProvider), false, true)]
+        [InlineData(nameof(IRemoteMetadataProvider), false, false)]
+        [InlineData(nameof(ICustomMetadataProvider), false, false)]
+        [InlineData(nameof(ILocalMetadataProvider), true, true)]
+        [InlineData(nameof(ICustomMetadataProvider), true, false)]
+        public void GetMetadataProviders_CanRefreshMetadataLocked_WhenLocalOrForced(string providerType, bool forced, bool expected)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, itemLocked: true, providerForced: forced);
         }
 
         [Theory]
-        [InlineData(typeof(ILocalMetadataProvider), false, true)]
-        [InlineData(typeof(ICustomMetadataProvider), false, true)]
-        [InlineData(typeof(IRemoteMetadataProvider), false, false)]
-        [InlineData(typeof(IRemoteMetadataProvider), true, true)]
-        public void GetMetadataProviders_CanRefreshMetadataBaseItemEnabled_WhenEnabledOrNotRemote(Type providerType, bool baseItemEnabled, bool expected)
+        [InlineData(nameof(ILocalMetadataProvider), false, true)]
+        [InlineData(nameof(ICustomMetadataProvider), false, true)]
+        [InlineData(nameof(IRemoteMetadataProvider), false, false)]
+        [InlineData(nameof(IRemoteMetadataProvider), true, true)]
+        public void GetMetadataProviders_CanRefreshMetadataBaseItemEnabled_WhenEnabledOrNotRemote(string providerType, bool baseItemEnabled, bool expected)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, baseItemEnabled: baseItemEnabled);
         }
 
         [Theory]
-        [InlineData(typeof(IRemoteMetadataProvider), false, true)]
-        [InlineData(typeof(ICustomMetadataProvider), false, true)]
-        [InlineData(typeof(ILocalMetadataProvider), false, false)]
-        [InlineData(typeof(ILocalMetadataProvider), true, true)]
-        public void GetMetadataProviders_CanRefreshMetadataSupportsLocal_WhenSupportsOrNotLocal(Type providerType, bool supportsLocalMetadata, bool expected)
+        [InlineData(nameof(IRemoteMetadataProvider), false, true)]
+        [InlineData(nameof(ICustomMetadataProvider), false, true)]
+        [InlineData(nameof(ILocalMetadataProvider), false, false)]
+        [InlineData(nameof(ILocalMetadataProvider), true, true)]
+        public void GetMetadataProviders_CanRefreshMetadataSupportsLocal_WhenSupportsOrNotLocal(string providerType, bool supportsLocalMetadata, bool expected)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, supportsLocalMetadata: supportsLocalMetadata);
         }
 
         [Theory]
-        [InlineData(typeof(ICustomMetadataProvider), true)]
-        [InlineData(typeof(IRemoteMetadataProvider), false)]
-        [InlineData(typeof(ILocalMetadataProvider), false)]
-        public void GetMetadataProviders_CanRefreshMetadataOwned_WhenNotLocal(Type providerType, bool expected)
+        [InlineData(nameof(ICustomMetadataProvider), true)]
+        [InlineData(nameof(IRemoteMetadataProvider), false)]
+        [InlineData(nameof(ILocalMetadataProvider), false)]
+        public void GetMetadataProviders_CanRefreshMetadataOwned_WhenNotLocal(string providerType, bool expected)
         {
             GetMetadataProviders_CanRefreshMetadata_Tester(providerType, expected, ownedItem: true);
         }
 
         private static void GetMetadataProviders_CanRefreshMetadata_Tester(
-            Type providerType,
+            string providerType,
             bool expected,
             bool itemLocked = false,
             bool baseItemEnabled = true,
@@ -299,7 +299,7 @@ namespace Jellyfin.Providers.Tests.Manager
             };
 
             var providerName = "provider";
-            var provider = MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(providerType.Name, providerName, forced: providerForced);
+            var provider = MockIMetadataProviderMapper<MetadataTestItem, MetadataTestItemInfo>(providerType, providerName, forced: providerForced);
 
             var baseItemManager = new Mock<IBaseItemManager>(MockBehavior.Strict);
             baseItemManager.Setup(i => i.IsMetadataFetcherEnabled(item, It.IsAny<TypeOptions>(), providerName))
