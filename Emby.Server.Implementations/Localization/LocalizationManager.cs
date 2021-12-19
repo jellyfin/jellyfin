@@ -310,7 +310,7 @@ namespace Emby.Server.Implementations.Localization
 
             return _dictionaries.GetOrAdd(
                 culture,
-                (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
+                static (key, localizationManager) => localizationManager.GetDictionary(Prefix, key, DefaultCulture + ".json").GetAwaiter().GetResult(),
                 this);
         }
 
