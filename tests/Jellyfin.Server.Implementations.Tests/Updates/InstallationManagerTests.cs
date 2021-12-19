@@ -44,7 +44,6 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
                 ConfigureMembers = true
             });
             _fixture.Inject(http);
-            _fixture.Inject<IZipClient>(new ZipClient());
             _installationManager = _fixture.Create<InstallationManager>();
         }
 
