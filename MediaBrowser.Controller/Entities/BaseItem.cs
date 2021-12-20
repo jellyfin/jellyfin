@@ -1385,7 +1385,7 @@ namespace MediaBrowser.Controller.Entities
             var newExtraIds = extras.Select(i => i.Id).ToArray();
             var extrasChanged = !item.ExtraIds.SequenceEqual(newExtraIds);
 
-            if (!extrasChanged)
+            if (!extrasChanged && !options.ReplaceAllMetadata && options.MetadataRefreshMode != MetadataRefreshMode.FullRefresh)
             {
                 return false;
             }
