@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -9,6 +11,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Providers.Manager;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -17,6 +20,95 @@ namespace Jellyfin.Providers.Tests.Manager
 {
     public class ProviderManagerTests
     {
+        private static readonly ILogger<ProviderManager> _logger = new NullLogger<ProviderManager>();
+
+        private static TheoryData<Mock<IMetadataService>[], int> RefreshSingleItemOrderData()
+            => new ()
+            {
+                // no order set, uses provided order
+                {
+                    new[]
+                    {
+                        MockIMetadataService(true, true),
+                        MockIMetadataService(true, true)
+                    },
+                    0
+                },
+                // sort order sets priority when all match
+                {
+                    new[]
+                    {
+                        MockIMetadataService(true, true, 1),
+                        MockIMetadataService(true, true, 0),
+                        MockIMetadataService(true, true, 2)
+                    },
+                    1
+                },
+                // CanRefreshPrimary prioritized
+                {
+                    new[]
+                    {
+                        MockIMetadataService(false, true),
+                        MockIMetadataService(true, true),
+                    },
+                    1
+                },
+                // falls back to CanRefresh
+                {
+                    new[]
+                    {
+                        MockIMetadataService(false, false),
+                        MockIMetadataService(false, true)
+                    },
+                    1
+                },
+            };
+
+        [Theory]
+        [MemberData(nameof(RefreshSingleItemOrderData))]
+        public void RefreshSingleItem_ServiceOrdering_FollowsPriority(Mock<IMetadataService>[] servicesList, int expectedIndex)
+        {
+            var item = new Movie();
+
+            using var providerManager = GetProviderManager();
+            AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
+
+            var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
+            var actual = providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
+
+            Assert.Equal(ItemUpdateType.MetadataDownload, actual.Result);
+            for (var i = 0; i < servicesList.Length; i++)
+            {
+                if (i == expectedIndex)
+                {
+                    servicesList[i].Verify(mock => mock.RefreshMetadata(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()), Times.Once());
+                }
+                else
+                {
+                    servicesList[i].Verify(mock => mock.RefreshMetadata(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()), Times.Never());
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RefreshSingleItem_RefreshMetadata_WhenServiceFound(bool serviceFound)
+        {
+            var item = new Movie();
+
+            var servicesList = new[] { MockIMetadataService(false, serviceFound) };
+
+            using var providerManager = GetProviderManager();
+            AddParts(providerManager, metadataServices: servicesList.Select(s => s.Object).ToArray());
+
+            var refreshOptions = new MetadataRefreshOptions(Mock.Of<IDirectoryService>(MockBehavior.Strict));
+            var actual = providerManager.RefreshSingleItem(item, refreshOptions, CancellationToken.None);
+
+            var expectedResult = serviceFound ? ItemUpdateType.MetadataDownload : ItemUpdateType.None;
+            Assert.Equal(expectedResult, actual.Result);
+        }
+
         private static TheoryData<int, int[]?, int[]?, int?[]?, int[]> GetImageProvidersOrderData()
             => new ()
             {
@@ -313,6 +405,20 @@ namespace Jellyfin.Providers.Tests.Manager
             Assert.Equal(expected ? 1 : 0, actualProviders.Length);
         }
 
+        private static Mock<IMetadataService> MockIMetadataService(bool refreshPrimary, bool canRefresh, int order = 0)
+        {
+            var service = new Mock<IMetadataService>(MockBehavior.Strict);
+            service.Setup(s => s.Order)
+                .Returns(order);
+            service.Setup(s => s.CanRefreshPrimary(It.IsAny<Type>()))
+                .Returns(refreshPrimary);
+            service.Setup(s => s.CanRefresh(It.IsAny<BaseItem>()))
+                .Returns(canRefresh);
+            service.Setup(s => s.RefreshMetadata(It.IsAny<BaseItem>(), It.IsAny<MetadataRefreshOptions>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(ItemUpdateType.MetadataDownload));
+            return service;
+        }
+
         private static IImageProvider MockIImageProvider<TProviderType>(string name, BaseItem expectedType, bool supports = true, int? order = null, bool errorOnSupported = false)
             where TProviderType : class, IImageProvider
         {
@@ -460,11 +566,11 @@ namespace Jellyfin.Providers.Tests.Manager
                 null,
                 serverConfigurationManager.Object,
                 null,
-                new NullLogger<ProviderManager>(),
+                _logger,
                 null,
                 null,
                 libraryManager.Object,
-                baseItemManager);
+                baseItemManager!);
 
             return providerManager;
         }
