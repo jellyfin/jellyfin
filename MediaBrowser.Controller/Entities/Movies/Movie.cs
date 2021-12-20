@@ -19,24 +19,11 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// </summary>
     public class Movie : Video, IHasSpecialFeatures, IHasTrailers, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping
     {
-        private IReadOnlyList<Guid> _specialFeatureIds;
-
         /// <inheritdoc />
-        public IReadOnlyList<Guid> SpecialFeatureIds
-        {
-            get
-            {
-                return _specialFeatureIds ??= GetExtras()
-                    .Where(extra => extra.ExtraType != Model.Entities.ExtraType.Trailer)
-                    .Select(song => song.Id)
-                    .ToArray();
-            }
-
-            set
-            {
-                _specialFeatureIds = value;
-            }
-        }
+        public IReadOnlyList<Guid> SpecialFeatureIds => GetExtras()
+            .Where(extra => extra.ExtraType != null && extra is Video)
+            .Select(extra => extra.Id)
+            .ToArray();
 
         /// <inheritdoc />
         public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
