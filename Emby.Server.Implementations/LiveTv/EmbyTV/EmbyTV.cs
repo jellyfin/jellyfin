@@ -17,6 +17,7 @@ using System.Xml;
 using Emby.Server.Implementations.Library;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -227,7 +228,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
             foreach (var virtualFolder in virtualFolders)
             {
-                if (!virtualFolder.Locations.Contains(path, StringComparer.OrdinalIgnoreCase))
+                if (!virtualFolder.Locations.Contains(path, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
@@ -891,7 +892,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 throw new ArgumentNullException(nameof(tunerHostId));
             }
 
-            return info.EnabledTuners.Contains(tunerHostId, StringComparer.OrdinalIgnoreCase);
+            return info.EnabledTuners.Contains(tunerHostId, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -2332,7 +2333,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 var deletes = _timerProvider.GetAll()
                     .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
-                    .Where(i => !allTimerIds.Contains(i.Id, StringComparer.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
+                    .Where(i => !allTimerIds.Contains(i.Id, StringComparison.OrdinalIgnoreCase) && i.StartDate > DateTime.UtcNow)
                     .Where(i => deleteStatuses.Contains(i.Status))
                     .ToList();
 
@@ -2621,7 +2622,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
 
                 if (newDevicesOnly)
                 {
-                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparer.OrdinalIgnoreCase))
+                    discoveredDevices = discoveredDevices.Where(d => !configuredDeviceIds.Contains(d.DeviceId, StringComparison.OrdinalIgnoreCase))
                             .ToList();
                 }
 

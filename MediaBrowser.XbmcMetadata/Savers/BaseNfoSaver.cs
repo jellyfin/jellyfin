@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -1003,7 +1004,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                         var name = reader.Name;
 
                         if (!_commonTags.Contains(name)
-                            && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
+                            && !xmlTagsUsed.Contains(name, StringComparison.OrdinalIgnoreCase))
                         {
                             writer.WriteNode(reader, false);
                         }

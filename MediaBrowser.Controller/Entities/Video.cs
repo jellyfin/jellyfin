@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -192,7 +193,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 if (SourceType == SourceType.Channel)
                 {
-                    return !Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase);
+                    return !Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase);
                 }
 
                 return !IsActiveRecording();

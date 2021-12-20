@@ -1362,8 +1362,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
 
                 // Don't add artist/album artist name to studios, even if it's listed there
-                if (info.Artists.Contains(studio, StringComparer.OrdinalIgnoreCase)
-                    || info.AlbumArtists.Contains(studio, StringComparer.OrdinalIgnoreCase))
+                if (info.Artists.Contains(studio, StringComparison.OrdinalIgnoreCase)
+                    || info.AlbumArtists.Contains(studio, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }

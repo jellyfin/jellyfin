@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
@@ -660,7 +661,7 @@ namespace MediaBrowser.Providers.Manager
         /// <inheritdoc/>
         public void SaveMetadata(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers)
         {
-            SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparer.OrdinalIgnoreCase)));
+            SaveMetadata(item, updateType, _savers.Where(i => savers.Contains(i.Name, StringComparison.OrdinalIgnoreCase)));
         }
 
         /// <summary>
@@ -737,7 +738,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     if (libraryOptions.MetadataSavers == null)
                     {
-                        if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
+                        if (options.DisabledMetadataSavers.Contains(saver.Name, StringComparison.OrdinalIgnoreCase))
                         {
                             return false;
                         }
@@ -763,7 +764,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        if (!libraryOptions.MetadataSavers.Contains(saver.Name, StringComparer.OrdinalIgnoreCase))
+                        if (!libraryOptions.MetadataSavers.Contains(saver.Name, StringComparison.OrdinalIgnoreCase))
                         {
                             return false;
                         }

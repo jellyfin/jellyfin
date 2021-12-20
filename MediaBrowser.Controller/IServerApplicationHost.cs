@@ -2,7 +2,6 @@
 
 #pragma warning disable CS1591
 
-using System.Collections.Generic;
 using System.Net;
 using MediaBrowser.Common;
 using MediaBrowser.Model.System;

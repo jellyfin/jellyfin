@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Video
 {
@@ -50,7 +50,7 @@ namespace Emby.Naming.Video
                 return false;
             }
 
-            return IsDirectoryStack == isDirectory && Files.Contains(file, StringComparer.OrdinalIgnoreCase);
+            return IsDirectoryStack == isDirectory && Files.Contains(file, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

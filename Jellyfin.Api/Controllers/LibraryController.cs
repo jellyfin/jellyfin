@@ -15,6 +15,7 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -23,7 +24,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
@@ -37,7 +37,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -786,7 +785,7 @@ namespace Jellyfin.Api.Controllers
             var typesList = types.ToList();
 
             var plugins = _providerManager.GetAllMetadataPlugins()
-                .Where(i => types.Contains(i.ItemType, StringComparer.OrdinalIgnoreCase))
+                .Where(i => types.Contains(i.ItemType, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => typesList.IndexOf(i.ItemType))
                 .ToList();
 
@@ -941,10 +940,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
-                .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
-            return metadataOptions.Length == 0 || metadataOptions.Any(i => !i.DisabledMetadataSavers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return metadataOptions.Length == 0 || metadataOptions.Any(i => !i.DisabledMetadataSavers.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsMetadataFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -968,7 +967,7 @@ namespace Jellyfin.Api.Controllers
                 .ToArray();
 
             return metadataOptions.Length == 0
-               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -998,7 +997,7 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
-            return metadataOptions.Any(i => !i.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return metadataOptions.Any(i => !i.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

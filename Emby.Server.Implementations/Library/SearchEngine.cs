@@ -10,12 +10,9 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Search;
-using Genre = MediaBrowser.Controller.Entities.Genre;
-using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {

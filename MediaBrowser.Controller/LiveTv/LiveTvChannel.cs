@@ -5,9 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -74,7 +74,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
         [JsonIgnore]
-        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
+        public bool IsKids => Tags.Contains("Kids", StringComparison.OrdinalIgnoreCase);
 
         [JsonIgnore]
         public bool IsRepeat { get; set; }

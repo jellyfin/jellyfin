@@ -1,4 +1,3 @@
-using System.Globalization;
 using Emby.Naming.Common;
 
 namespace Emby.Naming.TV
