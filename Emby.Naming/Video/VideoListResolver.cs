@@ -16,7 +16,7 @@ namespace Emby.Naming.Video
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
-        /// <param name="files">List of related video files.</param>
+        /// <param name="videoInfos">List of related video files.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <param name="parseName">Whether to parse the name or use the filename.</param>
