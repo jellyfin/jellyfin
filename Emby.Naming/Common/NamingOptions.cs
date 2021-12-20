@@ -1,6 +1,7 @@
 #pragma warning disable CA1819
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Emby.Naming.Video;
@@ -476,6 +477,12 @@ namespace Emby.Naming.Common
                     MediaType.Audio),
 
                 new ExtraRule(
+                    ExtraType.ThemeSong,
+                    ExtraRuleType.DirectoryName,
+                    "theme-music",
+                    MediaType.Audio),
+
+                new ExtraRule(
                     ExtraType.Scene,
                     ExtraRuleType.Suffix,
                     "-scene",
@@ -569,7 +576,7 @@ namespace Emby.Naming.Common
                     ExtraType.Unknown,
                     ExtraRuleType.DirectoryName,
                     "extras",
-                    MediaType.Video),
+                    MediaType.Video)
             };
 
             Format3DRules = new[]
@@ -681,8 +688,28 @@ namespace Emby.Naming.Common
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
+            AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["trailers"] = ExtraType.Trailer,
+                ["theme-music"] = ExtraType.ThemeSong,
+                ["backdrops"] = ExtraType.ThemeVideo,
+                ["extras"] = ExtraType.Unknown,
+                ["behind the scenes"] = ExtraType.BehindTheScenes,
+                ["deleted scenes"] = ExtraType.DeletedScene,
+                ["interviews"] = ExtraType.Interview,
+                ["scenes"] = ExtraType.Scene,
+                ["samples"] = ExtraType.Sample,
+                ["shorts"] = ExtraType.Clip,
+                ["featurettes"] = ExtraType.Clip
+            };
+
             Compile();
         }
+
+        /// <summary>
+        /// Gets or sets the folder name to extra types mapping.
+        /// </summary>
+        public Dictionary<string, ExtraType> AllExtrasTypesFolderNames { get; set; }
 
         /// <summary>
         /// Gets or sets list of audio file extensions.

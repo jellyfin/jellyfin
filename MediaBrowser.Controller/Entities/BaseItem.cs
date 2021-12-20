@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -22,7 +21,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -42,11 +40,7 @@ namespace MediaBrowser.Controller.Entities
     {
         private BaseItemKind? _baseItemKind;
 
-        public const string TrailerFileName = "trailer";
-        public const string TrailersFolderName = "trailers";
-        public const string ThemeSongsFolderName = "theme-music";
         public const string ThemeSongFileName = "theme";
-        public const string ThemeVideosFolderName = "backdrops";
 
         /// <summary>
         /// The supported image extensions.
@@ -81,21 +75,6 @@ namespace MediaBrowser.Controller.Entities
             Model.Entities.ExtraType.Interview,
             Model.Entities.ExtraType.Sample,
             Model.Entities.ExtraType.Scene
-        };
-
-        /// <summary>
-        /// The supported extra folder names and types. See <see cref="Emby.Naming.Common.NamingOptions" />.
-        /// </summary>
-        public static readonly Dictionary<string, ExtraType> AllExtrasTypesFolderNames = new Dictionary<string, ExtraType>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["extras"] = MediaBrowser.Model.Entities.ExtraType.Unknown,
-            ["behind the scenes"] = MediaBrowser.Model.Entities.ExtraType.BehindTheScenes,
-            ["deleted scenes"] = MediaBrowser.Model.Entities.ExtraType.DeletedScene,
-            ["interviews"] = MediaBrowser.Model.Entities.ExtraType.Interview,
-            ["scenes"] = MediaBrowser.Model.Entities.ExtraType.Scene,
-            ["samples"] = MediaBrowser.Model.Entities.ExtraType.Sample,
-            ["shorts"] = MediaBrowser.Model.Entities.ExtraType.Clip,
-            ["featurettes"] = MediaBrowser.Model.Entities.ExtraType.Clip
         };
 
         private string _sortName;
@@ -1275,74 +1254,6 @@ namespace MediaBrowser.Controller.Entities
             return string.Join('/', terms);
         }
 
-        /// <summary>
-        /// Loads the theme songs.
-        /// </summary>
-        /// <returns>List{Audio.Audio}.</returns>
-        private static Audio.Audio[] LoadThemeSongs(List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var files = fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => string.Equals(i.Name, ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => FileSystem.GetFiles(i.FullName))
-                .ToList();
-
-            // Support plex/xbmc convention
-            files.AddRange(fileSystemChildren
-                .Where(i => !i.IsDirectory && System.IO.Path.GetFileNameWithoutExtension(i.FullName.AsSpan()).Equals(ThemeSongFileName, StringComparison.OrdinalIgnoreCase)));
-
-            return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
-                .OfType<Audio.Audio>()
-                .Select(audio =>
-                {
-                    // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    if (LibraryManager.GetItemById(audio.Id) is Audio.Audio dbItem)
-                    {
-                        audio = dbItem;
-                    }
-                    else
-                    {
-                        // item is new
-                        audio.ExtraType = MediaBrowser.Model.Entities.ExtraType.ThemeSong;
-                    }
-
-                    return audio;
-
-                    // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path).ToArray();
-        }
-
-        /// <summary>
-        /// Loads the video backdrops.
-        /// </summary>
-        /// <returns>List{Video}.</returns>
-        private static Video[] LoadThemeVideos(IEnumerable<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var files = fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => string.Equals(i.Name, ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => FileSystem.GetFiles(i.FullName));
-
-            return LibraryManager.ResolvePaths(files, directoryService, null, new LibraryOptions())
-                .OfType<Video>()
-                .Select(item =>
-                {
-                    // Try to retrieve it from the db. If we don't find it, use the resolved version
-
-                    if (LibraryManager.GetItemById(item.Id) is Video dbItem)
-                    {
-                        item = dbItem;
-                    }
-                    else
-                    {
-                        // item is new
-                        item.ExtraType = Model.Entities.ExtraType.ThemeVideo;
-                    }
-
-                    return item;
-
-                    // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path).ToArray();
-        }
-
         public Task RefreshMetadata(CancellationToken cancellationToken)
         {
             return RefreshMetadata(new MetadataRefreshOptions(new DirectoryService(FileSystem)), cancellationToken);
@@ -1453,7 +1364,7 @@ namespace MediaBrowser.Controller.Entities
         /// <returns><c>true</c> if any items have changed, else <c>false</c>.</returns>
         protected virtual async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder || this.GetType() == typeof(Folder))
+            if (!IsFileProtocol || !SupportsOwnedItems || IsInMixedFolder || this is ICollectionFolder or UserRootFolder or AggregateFolder || this.GetType() == typeof(Folder))
             {
                 return false;
             }
@@ -1470,7 +1381,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<bool> RefreshExtras(BaseItem item, MetadataRefreshOptions options, List<FileSystemMetadata> fileSystemChildren, CancellationToken cancellationToken)
         {
-            var extras = LibraryManager.FindExtras(item, fileSystemChildren).ToArray();
+            var extras = LibraryManager.FindExtras(item, fileSystemChildren, options.DirectoryService).ToArray();
             var newExtraIds = extras.Select(i => i.Id).ToArray();
             var extrasChanged = !item.ExtraIds.SequenceEqual(newExtraIds);
 
