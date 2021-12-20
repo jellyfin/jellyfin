@@ -132,26 +132,15 @@ namespace MediaBrowser.Providers.Manager
             var type = item.GetType();
 
             var service = _metadataServices.FirstOrDefault(current => current.CanRefreshPrimary(type));
+            service ??= _metadataServices.FirstOrDefault(current => current.CanRefresh(item));
 
             if (service == null)
             {
-                foreach (var current in _metadataServices)
-                {
-                    if (current.CanRefresh(item))
-                    {
-                        service = current;
-                        break;
-                    }
-                }
+                _logger.LogError("Unable to find a metadata service for item of type {TypeName}", item.GetType().Name);
+                return Task.FromResult(ItemUpdateType.None);
             }
 
-            if (service != null)
-            {
-                return service.RefreshMetadata(item, options, cancellationToken);
-            }
-
-            _logger.LogError("Unable to find a metadata service for item of type {TypeName}", item.GetType().Name);
-            return Task.FromResult(ItemUpdateType.None);
+            return service.RefreshMetadata(item, options, cancellationToken);
         }
 
         /// <inheritdoc/>
