@@ -26,6 +26,7 @@ namespace MediaBrowser.Model.Session
         VideoProfileNotSupported = 19,
         AudioBitDepthNotSupported = 20,
         SubtitleCodecNotSupported = 21,
-        DirectPlayError = 22
+        DirectPlayError = 22,
+        AudioIsExternal = 23
     }
 }
