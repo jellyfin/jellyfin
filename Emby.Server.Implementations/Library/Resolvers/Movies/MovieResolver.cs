@@ -132,7 +132,15 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
             // Handle owned items
             if (args.Parent == null)
             {
-                return base.Resolve(args);
+                var ownedItem = base.Resolve(args);
+
+                // Re-resolve items that have their own type
+                if (ownedItem.ExtraType == ExtraType.Trailer)
+                {
+                    ownedItem = ResolveVideo<Trailer>(args, false);
+                }
+
+                return ownedItem;
             }
 
             if (IsInvalid(args.Parent, collectionType))
