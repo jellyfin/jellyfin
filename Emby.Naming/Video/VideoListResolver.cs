@@ -16,18 +16,13 @@ namespace Emby.Naming.Video
         /// <summary>
         /// Resolves alternative versions and extras from list of video files.
         /// </summary>
-        /// <param name="files">List of related video files.</param>
+        /// <param name="videoInfos">List of related video files.</param>
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="supportMultiVersion">Indication we should consider multi-versions of content.</param>
         /// <param name="parseName">Whether to parse the name or use the filename.</param>
         /// <returns>Returns enumerable of <see cref="VideoInfo"/> which groups files together when related.</returns>
-        public static IReadOnlyList<VideoInfo> Resolve(IEnumerable<FileSystemMetadata> files, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true)
+        public static IReadOnlyList<VideoInfo> Resolve(IReadOnlyList<VideoFileInfo> videoInfos, NamingOptions namingOptions, bool supportMultiVersion = true, bool parseName = true)
         {
-            var videoInfos = files
-                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, namingOptions, parseName))
-                .OfType<VideoFileInfo>()
-                .ToList();
-
             // Filter out all extras, otherwise they could cause stacks to not be resolved
             // See the unit test TestStackedWithTrailer
             var nonExtras = videoInfos

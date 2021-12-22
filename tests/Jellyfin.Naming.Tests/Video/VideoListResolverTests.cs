@@ -42,11 +42,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(11, result.Count);
@@ -80,11 +76,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Single(result);
@@ -100,11 +92,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -122,11 +110,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -145,11 +129,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(3, result.Count);
@@ -169,11 +149,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(3, result.Count);
@@ -192,11 +168,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -218,11 +190,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(5, result.Count);
@@ -238,11 +206,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = true,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, true, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Single(result);
@@ -259,11 +223,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = true,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, true, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -281,11 +241,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(3, result.Count);
@@ -306,11 +262,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(4, result.Count);
@@ -332,11 +284,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -351,11 +299,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Single(result);
@@ -370,11 +314,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Single(result);
@@ -390,11 +330,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Single(result);
@@ -410,11 +346,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -430,11 +362,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -452,11 +380,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);
@@ -474,11 +398,7 @@ namespace Jellyfin.Naming.Tests.Video
             };
 
             var result = VideoListResolver.Resolve(
-                files.Select(i => new FileSystemMetadata
-                {
-                    IsDirectory = false,
-                    FullName = i
-                }).ToList(),
+                files.Select(i => VideoResolver.Resolve(i, false, _namingOptions)).OfType<VideoFileInfo>().ToList(),
                 _namingOptions).ToList();
 
             Assert.Equal(2, result.Count);

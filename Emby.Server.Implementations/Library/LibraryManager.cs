@@ -531,8 +531,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
-            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null, IDirectoryService directoryService = null)
+            => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -652,7 +652,7 @@ namespace Emby.Server.Implementations.Library
             return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
-        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, string collectionType)
+        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, string collectionType = null)
         {
             return ResolvePaths(files, directoryService, parent, libraryOptions, collectionType, EntityResolvers);
         }
@@ -2683,7 +2683,7 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren)
+        public IEnumerable<BaseItem> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
             var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions);
             if (ownerVideoInfo == null)
@@ -2692,17 +2692,36 @@ namespace Emby.Server.Implementations.Library
             }
 
             var count = fileSystemChildren.Count;
-            var files = new List<FileSystemMetadata>();
+            var files = new List<VideoFileInfo>();
+            var nonVideoFiles = new List<FileSystemMetadata>();
             for (var i = 0; i < count; i++)
             {
                 var current = fileSystemChildren[i];
-                if (current.IsDirectory && BaseItem.AllExtrasTypesFolderNames.ContainsKey(current.Name))
+                if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
-                    files.AddRange(_fileSystem.GetFiles(current.FullName, _namingOptions.VideoFileExtensions, false, false));
+                    var filesInSubFolder = _fileSystem.GetFiles(current.FullName, _namingOptions.VideoFileExtensions, false, false);
+                    foreach (var file in filesInSubFolder)
+                    {
+                        var videoInfo = VideoResolver.Resolve(file.FullName, file.IsDirectory, _namingOptions);
+                        if (videoInfo == null)
+                        {
+                            nonVideoFiles.Add(file);
+                            continue;
+                        }
+
+                        files.Add(videoInfo);
+                    }
                 }
                 else if (!current.IsDirectory)
                 {
-                    files.Add(current);
+                    var videoInfo = VideoResolver.Resolve(current.FullName, current.IsDirectory, _namingOptions);
+                    if (videoInfo == null)
+                    {
+                        nonVideoFiles.Add(current);
+                        continue;
+                    }
+
+                    files.Add(videoInfo);
                 }
             }
 
@@ -2714,11 +2733,10 @@ namespace Emby.Server.Implementations.Library
             var videos = VideoListResolver.Resolve(files, _namingOptions);
             // owner video info cannot be null as that implies it has no path
             var extras = ExtraResolver.GetExtras(videos, ownerVideoInfo, _namingOptions.VideoFlagDelimiters);
-
             for (var i = 0; i < extras.Count; i++)
             {
                 var currentExtra = extras[i];
-                var resolved = ResolvePath(_fileSystem.GetFileInfo(currentExtra.Path));
+                var resolved = ResolvePath(_fileSystem.GetFileInfo(currentExtra.Path), null, directoryService);
                 if (resolved is not Video video)
                 {
                     continue;
@@ -2734,6 +2752,35 @@ namespace Emby.Server.Implementations.Library
                 video.ParentId = Guid.Empty;
                 video.OwnerId = owner.Id;
                 yield return video;
+            }
+
+            // TODO: theme songs must be handled "manually" (but should we?) since they aren't video files
+            for (var i = 0; i < nonVideoFiles.Count; i++)
+            {
+                var current = nonVideoFiles[i];
+                var extraInfo = ExtraResolver.GetExtraInfo(current.FullName, _namingOptions);
+                if (extraInfo.ExtraType != ExtraType.ThemeSong)
+                {
+                    continue;
+                }
+
+                var resolved = ResolvePath(current, null, directoryService);
+                if (resolved is not Audio themeSong)
+                {
+                    continue;
+                }
+
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                if (GetItemById(themeSong.Id) is Audio dbItem)
+                {
+                    themeSong = dbItem;
+                }
+
+                themeSong.ExtraType = ExtraType.ThemeSong;
+                themeSong.OwnerId = owner.Id;
+                themeSong.ParentId = Guid.Empty;
+
+                yield return themeSong;
             }
         }
 
