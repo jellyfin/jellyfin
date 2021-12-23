@@ -261,7 +261,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 }
             }
 
-            var resolverResult = VideoListResolver.Resolve(files, NamingOptions, supportMultiEditions, parseName);
+            var videoInfos = files
+                .Select(i => VideoResolver.Resolve(i.FullName, i.IsDirectory, NamingOptions, parseName))
+                .Where(f => f != null)
+                .ToList();
+
+            var resolverResult = VideoListResolver.Resolve(videoInfos, NamingOptions, supportMultiEditions, parseName);
 
             var result = new MultiItemResolverResult
             {

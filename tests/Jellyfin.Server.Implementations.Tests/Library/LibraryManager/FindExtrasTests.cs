@@ -5,11 +5,13 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers;
+using Emby.Server.Implementations.Library.Resolvers.Audio;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
@@ -22,6 +24,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library.LibraryManager;
 public class FindExtrasTests
 {
     private readonly Emby.Server.Implementations.Library.LibraryManager _libraryManager;
+    private readonly Mock<IFileSystem> _fileSystemMock;
 
     public FindExtrasTests()
     {
@@ -29,11 +32,11 @@ public class FindExtrasTests
         fixture.Register(() => new NamingOptions());
         var configMock = fixture.Freeze<Mock<IServerConfigurationManager>>();
         configMock.Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
-        var fileSystemMock = fixture.Freeze<Mock<IFileSystem>>();
-        fileSystemMock.Setup(f => f.GetFileInfo(It.IsAny<string>())).Returns<string>(path => new FileSystemMetadata { FullName = path });
+        _fileSystemMock = fixture.Freeze<Mock<IFileSystem>>();
+        _fileSystemMock.Setup(f => f.GetFileInfo(It.IsAny<string>())).Returns<string>(path => new FileSystemMetadata { FullName = path });
         _libraryManager = fixture.Build<Emby.Server.Implementations.Library.LibraryManager>().Do(s => s.AddParts(
                 fixture.Create<IEnumerable<IResolverIgnoreRule>>(),
-                new List<IItemResolver> { new GenericVideoResolver<Video>(fixture.Create<NamingOptions>()) },
+                new List<IItemResolver> { new GenericVideoResolver<Video>(fixture.Create<NamingOptions>()), new AudioResolver(fixture.Create<NamingOptions>()) },
                 fixture.Create<IEnumerable<IIntroProvider>>(),
                 fixture.Create<IEnumerable<IBaseItemComparer>>(),
                 fixture.Create<IEnumerable<ILibraryPostScanTask>>()))
@@ -62,7 +65,7 @@ public class FindExtrasTests
             IsDirectory = false
         }).ToList();
 
-        var extras = _libraryManager.FindExtras(owner, files).OrderBy(e => e.ExtraType).ToList();
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
         Assert.Equal(2, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
@@ -77,26 +80,77 @@ public class FindExtrasTests
         {
             "/movies/Up/Up.mkv",
             "/movies/Up/Up - trailer.mkv",
-            "/movies/Up/trailers/some trailer.mkv",
-            "/movies/Up/behind the scenes/the making of Up.mkv",
+            "/movies/Up/trailers",
+            "/movies/Up/theme-music",
+            "/movies/Up/theme.mp3",
+            "/movies/Up/not a theme.mp3",
+            "/movies/Up/behind the scenes",
             "/movies/Up/behind the scenes.mkv",
             "/movies/Up/Up - sample.mkv",
             "/movies/Up/Up something else.mkv"
         };
 
+        _fileSystemMock.Setup(f => f.GetFiles(
+                "/movies/Up/trailers",
+                It.IsAny<string[]>(),
+                false,
+                false))
+            .Returns(new List<FileSystemMetadata>
+            {
+                new ()
+                {
+                    FullName = "/movies/Up/trailers/some trailer.mkv",
+                    Name = "some trailer.mkv",
+                    IsDirectory = false
+                }
+            });
+
+        _fileSystemMock.Setup(f => f.GetFiles(
+                "/movies/Up/behind the scenes",
+                It.IsAny<string[]>(),
+                false,
+                false))
+            .Returns(new List<FileSystemMetadata>
+            {
+                new ()
+                {
+                    FullName = "/movies/Up/behind the scenes/the making of Up.mkv",
+                    Name = "the making of Up.mkv",
+                    IsDirectory = false
+                }
+            });
+
+        _fileSystemMock.Setup(f => f.GetFiles(
+                "/movies/Up/theme-music",
+                It.IsAny<string[]>(),
+                false,
+                false))
+            .Returns(new List<FileSystemMetadata>
+            {
+                new ()
+                {
+                    FullName = "/movies/Up/theme-music/theme2.mp3",
+                    Name = "theme2.mp3",
+                    IsDirectory = false
+                }
+            });
+
         var files = paths.Select(p => new FileSystemMetadata
         {
             FullName = p,
-            IsDirectory = false
+            Name = Path.GetFileName(p),
+            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
         }).ToList();
 
-        var extras = _libraryManager.FindExtras(owner, files).OrderBy(e => e.ExtraType).ToList();
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
-        Assert.Equal(4, extras.Count);
+        Assert.Equal(6, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
         Assert.Equal(ExtraType.Trailer, extras[1].ExtraType);
         Assert.Equal(ExtraType.BehindTheScenes, extras[2].ExtraType);
         Assert.Equal(ExtraType.Sample, extras[3].ExtraType);
+        Assert.Equal(ExtraType.ThemeSong, extras[4].ExtraType);
+        Assert.Equal(ExtraType.ThemeSong, extras[5].ExtraType);
     }
 
     [Fact]
@@ -116,7 +170,7 @@ public class FindExtrasTests
             IsDirectory = false
         }).ToList();
 
-        var extras = _libraryManager.FindExtras(owner, files).OrderBy(e => e.ExtraType).ToList();
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
         Assert.Single(extras);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
@@ -142,7 +196,7 @@ public class FindExtrasTests
             IsDirectory = false
         }).ToList();
 
-        var extras = _libraryManager.FindExtras(owner, files).OrderBy(e => e.ExtraType).ToList();
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
         Assert.Single(extras);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
@@ -167,7 +221,7 @@ public class FindExtrasTests
             IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
         }).ToList();
 
-        var extras = _libraryManager.FindExtras(owner, files).OrderBy(e => e.ExtraType).ToList();
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
         Assert.Equal(2, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);

@@ -58,10 +58,12 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
+        /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
-            Folder parent = null);
+            Folder parent = null,
+            IDirectoryService directoryService = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
@@ -430,10 +432,9 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="owner">The owner.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
-        /// <returns>IEnumerable&lt;Video&gt;.</returns>
-        IEnumerable<Video> FindExtras(
-            BaseItem owner,
-            List<FileSystemMetadata> fileSystemChildren);
+        /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
+        /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService);
 
         /// <summary>
         /// Gets the collection folders.
