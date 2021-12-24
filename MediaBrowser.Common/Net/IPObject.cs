@@ -53,7 +53,7 @@ namespace MediaBrowser.Common.Net
         /// <param name="address">IP Address to convert.</param>
         /// <param name="prefixLength">Subnet prefix.</param>
         /// <returns>IPAddress.</returns>
-        public static (IPAddress address, byte prefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
+        public static (IPAddress Address, byte PrefixLength) NetworkAddressOf(IPAddress address, byte prefixLength)
         {
             if (address == null)
             {

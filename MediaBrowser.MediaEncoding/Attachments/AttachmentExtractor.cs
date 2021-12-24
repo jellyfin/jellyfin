@@ -50,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         }
 
         /// <inheritdoc />
-        public async Task<(MediaAttachment attachment, Stream stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
+        public async Task<(MediaAttachment Attachment, Stream Stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
         {
             if (item == null)
             {

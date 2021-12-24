@@ -39,7 +39,6 @@ namespace MediaBrowser.Model.Session
         SetRepeatMode = 29,
         ChannelUp = 30,
         ChannelDown = 31,
-        SetMaxStreamingBitrate = 31,
         Guide = 32,
         ToggleStats = 33,
         PlayMediaSource = 34,
@@ -48,6 +47,7 @@ namespace MediaBrowser.Model.Session
         PlayState = 37,
         PlayNext = 38,
         ToggleOsdMenu = 39,
-        Play = 40
+        Play = 40,
+        SetMaxStreamingBitrate = 41
     }
 }

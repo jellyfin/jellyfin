@@ -68,9 +68,9 @@ namespace Emby.Server.Implementations.Images
                 DtoOptions = new DtoOptions(false),
                 ImageTypes = new ImageType[] { ImageType.Primary },
                 Limit = 8,
-                OrderBy = new ValueTuple<string, SortOrder>[]
+                OrderBy = new[]
                 {
-                    new ValueTuple<string, SortOrder>(ItemSortBy.Random, SortOrder.Ascending)
+                    (ItemSortBy.Random, SortOrder.Ascending)
                 },
                 IncludeItemTypes = includeItemTypes
             });

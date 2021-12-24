@@ -197,16 +197,16 @@ namespace Jellyfin.Api.Controllers
             {
                 filters.Genres = _libraryManager.GetMusicGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {
-                    Name = i.Item1.Name,
-                    Id = i.Item1.Id
+                    Name = i.Item.Name,
+                    Id = i.Item.Id
                 }).ToArray();
             }
             else
             {
                 filters.Genres = _libraryManager.GetGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {
-                    Name = i.Item1.Name,
-                    Id = i.Item1.Id
+                    Name = i.Item.Name,
+                    Id = i.Item.Id
                 }).ToArray();
             }
 

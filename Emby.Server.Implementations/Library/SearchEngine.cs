@@ -190,7 +190,7 @@ namespace Emby.Server.Implementations.Library
                 searchQuery.ParentId = Guid.Empty;
                 searchQuery.IncludeItemsByName = true;
                 searchQuery.IncludeItemTypes = Array.Empty<BaseItemKind>();
-                mediaItems = _libraryManager.GetAllArtists(searchQuery).Items.Select(i => i.Item1).ToList();
+                mediaItems = _libraryManager.GetAllArtists(searchQuery).Items.Select(i => i.Item).ToList();
             }
             else
             {

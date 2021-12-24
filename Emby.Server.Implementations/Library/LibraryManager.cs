@@ -1373,7 +1373,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetItemIdsList(query);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1384,7 +1384,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetStudios(query);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1395,7 +1395,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetGenres(query);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1406,7 +1406,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetMusicGenres(query);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1417,7 +1417,7 @@ namespace Emby.Server.Implementations.Library
             return _itemRepository.GetAllArtists(query);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1458,7 +1458,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             if (query.User != null)
             {
@@ -1757,7 +1757,7 @@ namespace Emby.Server.Implementations.Library
             return orderedItems ?? items;
         }
 
-        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy)
+        public IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(string OrderBy, SortOrder SortOrder)> orderBy)
         {
             var isFirst = true;
 

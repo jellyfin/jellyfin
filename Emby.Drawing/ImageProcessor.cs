@@ -101,7 +101,7 @@ namespace Emby.Drawing
         public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
-            using (var fileStream = AsyncFile.OpenRead(file.path))
+            using (var fileStream = AsyncFile.OpenRead(file.Path))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }
@@ -116,7 +116,7 @@ namespace Emby.Drawing
             => _transparentImageTypes.Contains(Path.GetExtension(path));
 
         /// <inheritdoc />
-        public async Task<(string path, string? mimeType, DateTime dateModified)> ProcessImage(ImageProcessingOptions options)
+        public async Task<(string Path, string? MimeType, DateTime DateModified)> ProcessImage(ImageProcessingOptions options)
         {
             ItemImageInfo originalImage = options.Image;
             BaseItem item = options.Item;
@@ -135,14 +135,14 @@ namespace Emby.Drawing
             }
 
             var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
-            originalImagePath = supportedImageInfo.path;
+            originalImagePath = supportedImageInfo.Path;
 
             if (!File.Exists(originalImagePath))
             {
                 return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
             }
 
-            dateModified = supportedImageInfo.dateModified;
+            dateModified = supportedImageInfo.DateModified;
             bool requiresTransparency = _transparentImageTypes.Contains(Path.GetExtension(originalImagePath));
 
             bool autoOrient = false;
@@ -436,7 +436,7 @@ namespace Emby.Drawing
                 .ToString("N", CultureInfo.InvariantCulture);
         }
 
-        private async Task<(string path, DateTime dateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
+        private async Task<(string Path, DateTime DateModified)> GetSupportedImage(string originalImagePath, DateTime dateModified)
         {
             var inputFormat = Path.GetExtension(originalImagePath)
                 .TrimStart('.')

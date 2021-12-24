@@ -248,40 +248,6 @@ namespace Emby.Server.Implementations.Data
             BaseItemKind.AudioBook
         };
 
-        private static readonly Type[] _knownTypes =
-        {
-            typeof(LiveTvProgram),
-            typeof(LiveTvChannel),
-            typeof(Series),
-            typeof(Audio),
-            typeof(MusicAlbum),
-            typeof(MusicArtist),
-            typeof(MusicGenre),
-            typeof(MusicVideo),
-            typeof(Movie),
-            typeof(Playlist),
-            typeof(AudioBook),
-            typeof(Trailer),
-            typeof(BoxSet),
-            typeof(Episode),
-            typeof(Season),
-            typeof(Series),
-            typeof(Book),
-            typeof(CollectionFolder),
-            typeof(Folder),
-            typeof(Genre),
-            typeof(Person),
-            typeof(Photo),
-            typeof(PhotoAlbum),
-            typeof(Studio),
-            typeof(UserRootFolder),
-            typeof(UserView),
-            typeof(Video),
-            typeof(Year),
-            typeof(Channel),
-            typeof(AggregateFolder)
-        };
-
         private static readonly Dictionary<BaseItemKind, string> _baseItemKindNames = new()
         {
             { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
@@ -688,13 +654,13 @@ namespace Emby.Server.Implementations.Data
                 connection.RunInTransaction(
                     db =>
                     {
-                        SaveItemsInTranscation(db, tuples);
+                        SaveItemsInTransaction(db, tuples);
                     },
                     TransactionMode);
             }
         }
 
-        private void SaveItemsInTranscation(IDatabaseConnection db, IEnumerable<(BaseItem, List<Guid>, BaseItem, string, List<string>)> tuples)
+        private void SaveItemsInTransaction(IDatabaseConnection db, IEnumerable<(BaseItem Item, List<Guid> AncestorIds, BaseItem TopParent, string UserDataKey, List<string> InheritedTags)> tuples)
         {
             var statements = PrepareAll(db, new string[]
             {
@@ -713,17 +679,17 @@ namespace Emby.Server.Implementations.Data
                         saveItemStatement.Reset();
                     }
 
-                    var item = tuple.Item1;
-                    var topParent = tuple.Item3;
-                    var userDataKey = tuple.Item4;
+                    var item = tuple.Item;
+                    var topParent = tuple.TopParent;
+                    var userDataKey = tuple.UserDataKey;
 
                     SaveItem(item, topParent, userDataKey, saveItemStatement);
 
-                    var inheritedTags = tuple.Item5;
+                    var inheritedTags = tuple.InheritedTags;
 
                     if (item.SupportsAncestors)
                     {
-                        UpdateAncestors(item.Id, tuple.Item2, db, deleteAncestorsStatement);
+                        UpdateAncestors(item.Id, tuple.AncestorIds, db, deleteAncestorsStatement);
                     }
 
                     UpdateItemValues(item.Id, GetItemValuesToSave(item, inheritedTags), db);
@@ -2201,7 +2167,7 @@ namespace Emby.Server.Implementations.Data
                 return false;
             }
 
-            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.Item1), StringComparer.OrdinalIgnoreCase);
+            var sortingFields = new HashSet<string>(query.OrderBy.Select(i => i.OrderBy), StringComparer.OrdinalIgnoreCase);
 
             return sortingFields.Contains(ItemSortBy.IsFavoriteOrLiked)
                     || sortingFields.Contains(ItemSortBy.IsPlayed)
@@ -3049,88 +3015,86 @@ namespace Emby.Server.Implementations.Data
 
             return " ORDER BY " + string.Join(',', orderBy.Select(i =>
             {
-                var columnMap = MapOrderByField(i.Item1, query);
+                var columnMap = MapOrderByField(i.OrderBy, query);
 
-                var sortOrder = i.Item2 == SortOrder.Ascending ? "ASC" : "DESC";
-
-                return columnMap.Item1 + " " + sortOrder;
+                return columnMap.SortBy + " " + columnMap.SortOrder;
             }));
         }
 
-        private (string, bool) MapOrderByField(string name, InternalItemsQuery query)
+        private (string SortBy, SortOrder SortOrder) MapOrderByField(string name, InternalItemsQuery query)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
                 // TODO
-                return ("SortName", false);
+                return ("SortName", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RuntimeTicks", false);
+                return ("RuntimeTicks", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RANDOM()", false);
+                return ("RANDOM()", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 if (query.GroupBySeriesPresentationUniqueKey)
                 {
-                    return ("MAX(LastPlayedDate)", false);
+                    return ("MAX(LastPlayedDate)", SortOrder.Descending);
                 }
 
-                return ("LastPlayedDate", false);
+                return ("LastPlayedDate", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
             {
-                return ("PlayCount", false);
+                return ("PlayCount", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", true);
+                return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
             {
-                return ("IsFolder", true);
+                return ("IsFolder", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return ("played", true);
+                return ("played", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
             {
-                return ("played", false);
+                return ("played", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
             {
-                return ("DateLastMediaAdded", false);
+                return ("DateLastMediaAdded", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", false);
+                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", false);
+                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
             {
-                return ("InheritedParentalRatingValue", false);
+                return ("InheritedParentalRatingValue", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", false);
+                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", false);
+                return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
             {
-                return ("SeriesName", false);
+                return ("SeriesName", SortOrder.Descending);
             }
 
-            return (name, false);
+            return (name, SortOrder.Descending);
         }
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
@@ -5230,32 +5194,32 @@ AND Type = @InternalPersonType)");
             }
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0, 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 0 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 1 }, typeof(MusicArtist).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 3 }, typeof(Studio).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(Genre).FullName);
         }
 
-        public QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query)
+        public QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query)
         {
             return GetItemValues(query, new[] { 2 }, typeof(MusicGenre).FullName);
         }
@@ -5351,7 +5315,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
-        private QueryResult<(BaseItem, ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
+        private QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetItemValues(InternalItemsQuery query, int[] itemValueTypes, string returnType)
         {
             if (query == null)
             {
@@ -5676,7 +5640,7 @@ AND Type = @InternalPersonType)");
             return counts;
         }
 
-        private List<(int, string)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
+        private List<(int MagicNumber, string Value)> GetItemValuesToSave(BaseItem item, List<string> inheritedTags)
         {
             var list = new List<(int, string)>();
 
@@ -5701,7 +5665,7 @@ AND Type = @InternalPersonType)");
             return list;
         }
 
-        private void UpdateItemValues(Guid itemId, List<(int, string)> values, IDatabaseConnection db)
+        private void UpdateItemValues(Guid itemId, List<(int MagicNumber, string Value)> values, IDatabaseConnection db)
         {
             if (itemId.Equals(Guid.Empty))
             {
@@ -5723,7 +5687,7 @@ AND Type = @InternalPersonType)");
             InsertItemValues(guidBlob, values, db);
         }
 
-        private void InsertItemValues(byte[] idBlob, List<(int, string)> values, IDatabaseConnection db)
+        private void InsertItemValues(byte[] idBlob, List<(int MagicNumber, string Value)> values, IDatabaseConnection db)
         {
             const int Limit = 100;
             var startIndex = 0;
@@ -5755,7 +5719,7 @@ AND Type = @InternalPersonType)");
 
                         var currentValueInfo = values[i];
 
-                        var itemValue = currentValueInfo.Item2;
+                        var itemValue = currentValueInfo.Value;
 
                         // Don't save if invalid
                         if (string.IsNullOrWhiteSpace(itemValue))
@@ -5763,7 +5727,7 @@ AND Type = @InternalPersonType)");
                             continue;
                         }
 
-                        statement.TryBind("@Type" + index, currentValueInfo.Item1);
+                        statement.TryBind("@Type" + index, currentValueInfo.MagicNumber);
                         statement.TryBind("@Value" + index, itemValue);
                         statement.TryBind("@CleanValue" + index, GetCleanValue(itemValue));
                     }

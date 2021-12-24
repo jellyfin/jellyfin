@@ -872,7 +872,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             else
             {
                 // only allow one item of each type
-                if (itemResult.RemoteImages.Any(x => x.type == imageType))
+                if (itemResult.RemoteImages.Any(x => x.Type == imageType))
                 {
                     return;
                 }
