@@ -196,7 +196,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 added = AddImage(files, images, "logo", imagePrefix, isInMixedFolder, ImageType.Logo);
                 if (!added)
                 {
-                    added = AddImage(files, images, "clearlogo", imagePrefix, isInMixedFolder, ImageType.Logo);
+                    AddImage(files, images, "clearlogo", imagePrefix, isInMixedFolder, ImageType.Logo);
                 }
             }
 
@@ -213,7 +213,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
                 if (!added)
                 {
-                    added = AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
+                    AddImage(files, images, "disc", imagePrefix, isInMixedFolder, ImageType.Disc);
                 }
             }
             else if (item is Video || item is BoxSet)
@@ -227,7 +227,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
                 if (!added)
                 {
-                    added = AddImage(files, images, "discart", imagePrefix, isInMixedFolder, ImageType.Disc);
+                    AddImage(files, images, "discart", imagePrefix, isInMixedFolder, ImageType.Disc);
                 }
             }
 
@@ -243,7 +243,7 @@ namespace MediaBrowser.LocalMetadata.Images
                 added = AddImage(files, images, "landscape", imagePrefix, isInMixedFolder, ImageType.Thumb);
                 if (!added)
                 {
-                    added = AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
+                    AddImage(files, images, "thumb", imagePrefix, isInMixedFolder, ImageType.Thumb);
                 }
             }
 

@@ -365,7 +365,7 @@ namespace Jellyfin.Api.Controllers
             }
             else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
-                var outputFmp4HeaderArg = string.Empty;
+                string outputFmp4HeaderArg;
                 if (OperatingSystem.IsWindows())
                 {
                     // on Windows, the path of fmp4 header file needs to be configured
