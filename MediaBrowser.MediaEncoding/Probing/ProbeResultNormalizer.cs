@@ -1057,7 +1057,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 return null;
             }
 
-            return divisor == 0f ? null : dividend / divisor;
+            return divisor == 0f || dividend == 0f ? null : dividend / divisor;
         }
 
         private void SetAudioRuntimeTicks(InternalMediaInfoResult result, MediaInfo data)
