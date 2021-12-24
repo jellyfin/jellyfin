@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
@@ -20,12 +19,10 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Api.Controllers
@@ -140,7 +137,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="cpuCoreLimit">Optional. The limit of how many cpu cores to use.</param>
         /// <param name="liveStreamId">The live stream id.</param>
         /// <param name="enableMpegtsM2TsMode">Optional. Whether to enable the MpegtsM2Ts mode.</param>
-        /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vpx, wmv.</param>
+        /// <param name="videoCodec">Optional. Specify a video codec to encode to, e.g. h264. If omitted the server will auto-select using the url's extension. Options: h265, h264, mpeg4, theora, vp8, vp9, vpx (deprecated), wmv.</param>
         /// <param name="subtitleCodec">Optional. Specify a subtitle codec to encode to.</param>
         /// <param name="transcodeReasons">Optional. The transcoding reason.</param>
         /// <param name="audioStreamIndex">Optional. The index of the audio stream to use. If omitted the first audio stream will be used.</param>
@@ -265,7 +262,11 @@ namespace Jellyfin.Api.Controllers
                 EnableSubtitlesInManifest = enableSubtitlesInManifest ?? true
             };
 
+            // CTS lifecycle is managed internally.
             var cancellationTokenSource = new CancellationTokenSource();
+            // Due to CTS.Token calling ThrowIfDisposed (https://github.com/dotnet/runtime/issues/29970) we have to "cache" the token
+            // since it gets disposed when ffmpeg exits
+            var cancellationToken = cancellationTokenSource.Token;
             using var state = await StreamingHelpers.GetStreamingState(
                     streamingRequest,
                     Request,
@@ -280,7 +281,7 @@ namespace Jellyfin.Api.Controllers
                     _deviceManager,
                     _transcodingJobHelper,
                     TranscodingJobType,
-                    cancellationTokenSource.Token)
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             TranscodingJobDto? job = null;
@@ -289,7 +290,7 @@ namespace Jellyfin.Api.Controllers
             if (!System.IO.File.Exists(playlistPath))
             {
                 var transcodingLock = _transcodingJobHelper.GetTranscodingLock(playlistPath);
-                await transcodingLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+                await transcodingLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
                     if (!System.IO.File.Exists(playlistPath))
@@ -316,7 +317,7 @@ namespace Jellyfin.Api.Controllers
                         minSegments = state.MinSegments;
                         if (minSegments > 0)
                         {
-                            await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationTokenSource.Token).ConfigureAwait(false);
+                            await HlsHelpers.WaitForMinimumSegmentCount(playlistPath, minSegments, _logger, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -365,8 +366,7 @@ namespace Jellyfin.Api.Controllers
             else if (string.Equals(segmentFormat, "mp4", StringComparison.OrdinalIgnoreCase))
             {
                 var outputFmp4HeaderArg = string.Empty;
-                var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                if (isWindows)
+                if (OperatingSystem.IsWindows())
                 {
                     // on Windows, the path of fmp4 header file needs to be configured
                     outputFmp4HeaderArg = " -hls_fmp4_init_filename \"" + outputPrefix + "-1" + outputExtension + "\"";
@@ -484,7 +484,7 @@ namespace Jellyfin.Api.Controllers
                 args += " -ar " + state.OutputAudioSampleRate.Value.ToString(CultureInfo.InvariantCulture);
             }
 
-            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions, true);
+            args += _encodingHelper.GetAudioFilterParam(state, _encodingOptions);
 
             return args;
         }

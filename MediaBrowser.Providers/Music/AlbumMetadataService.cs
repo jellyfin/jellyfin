@@ -81,7 +81,7 @@ namespace MediaBrowser.Providers.Music
             if (!item.AlbumArtists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
                 item.AlbumArtists = artists;
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;
@@ -100,7 +100,7 @@ namespace MediaBrowser.Providers.Music
             if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
                 item.Artists = artists;
-                updateType = updateType | ItemUpdateType.MetadataEdit;
+                updateType |= ItemUpdateType.MetadataEdit;
             }
 
             return updateType;

@@ -1,8 +1,11 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -30,7 +33,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 
             var extension = Path.GetExtension(args.Path);
 
-            if (extension != null && _validExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            if (extension != null && _validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 // It's a book
                 return new Book
@@ -47,13 +50,12 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
         {
             var bookFiles = args.FileSystemChildren.Where(f =>
             {
-                var fileExtension = Path.GetExtension(f.FullName) ??
-                                    string.Empty;
+                var fileExtension = Path.GetExtension(f.FullName)
+                    ?? string.Empty;
 
                 return _validExtensions.Contains(
                     fileExtension,
-                                                StringComparer
-                                                    .OrdinalIgnoreCase);
+                    StringComparer.OrdinalIgnoreCase);
             }).ToList();
 
             // Don't return a Book if there is more (or less) than one document in the directory

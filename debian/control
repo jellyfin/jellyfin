@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Jellyfin Team <team@jellyfin.org>
 Build-Depends:  debhelper (>= 9),
-                dotnet-sdk-5.0,
+                dotnet-sdk-6.0,
                 libc6-dev,
                 libcurl4-openssl-dev,
                 libfontconfig1-dev,
@@ -23,6 +23,6 @@ Depends: at,
          libfontconfig1,
          libfreetype6,
          libssl1.1
-Recommends: jellyfin-web
+Recommends: jellyfin-web, sudo
 Description: Jellyfin is the Free Software Media System.
  This package provides the Jellyfin server backend and API.

@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,13 +28,13 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets the id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Identity, Indexed, Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the path.
@@ -58,7 +56,7 @@ namespace Jellyfin.Data.Entities.Libraries
 
         /// <inheritdoc />
         [ConcurrencyCheck]
-        public uint RowVersion { get; set; }
+        public uint RowVersion { get; private set; }
 
         /// <inheritdoc />
         public void OnSavingChanges()

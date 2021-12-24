@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.IO;
 using System.Linq;
@@ -44,6 +42,11 @@ namespace Emby.Server.Implementations.Library
 
             // Make sure DateCreated and DateModified have values
             var fileInfo = directoryService.GetFile(item.Path);
+            if (fileInfo == null)
+            {
+                throw new FileNotFoundException("Can't find item path.", item.Path);
+            }
+
             SetDateCreated(item, fileInfo);
 
             EnsureName(item, fileInfo);

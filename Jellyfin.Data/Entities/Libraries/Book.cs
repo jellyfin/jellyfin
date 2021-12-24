@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System.Collections.Generic;
 using Jellyfin.Data.Interfaces;
 
@@ -21,11 +19,11 @@ namespace Jellyfin.Data.Entities.Libraries
         }
 
         /// <summary>
-        /// Gets or sets a collection containing the metadata for this book.
+        /// Gets a collection containing the metadata for this book.
         /// </summary>
-        public virtual ICollection<BookMetadata> BookMetadata { get; protected set; }
+        public virtual ICollection<BookMetadata> BookMetadata { get; private set; }
 
         /// <inheritdoc />
-        public virtual ICollection<Release> Releases { get; protected set; }
+        public virtual ICollection<Release> Releases { get; private set; }
     }
 }

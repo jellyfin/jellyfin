@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,13 +8,14 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Jellyfin.Extensions.Json;
+using Jellyfin.Extensions.Json.Converters;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
-using MediaBrowser.Common.Json.Converters;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,19 +38,6 @@ namespace Emby.Server.Implementations.Plugins
         private readonly Version _minimumVersion;
 
         private IHttpClientFactory? _httpClientFactory;
-
-        private IHttpClientFactory HttpClientFactory
-        {
-            get
-            {
-                if (_httpClientFactory == null)
-                {
-                    _httpClientFactory = _appHost.Resolve<IHttpClientFactory>();
-                }
-
-                return _httpClientFactory;
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PluginManager"/> class.
@@ -90,6 +76,14 @@ namespace Emby.Server.Implementations.Plugins
             _appHost = appHost;
             _minimumVersion = new Version(0, 0, 0, 1);
             _plugins = Directory.Exists(_pluginsPath) ? DiscoverPlugins().ToList() : new List<LocalPlugin>();
+        }
+
+        private IHttpClientFactory HttpClientFactory
+        {
+            get
+            {
+                return _httpClientFactory ??= _appHost.Resolve<IHttpClientFactory>();
+            }
         }
 
         /// <summary>
@@ -132,7 +126,8 @@ namespace Emby.Server.Implementations.Plugins
                     {
                         assembly = Assembly.LoadFrom(file);
 
-                        assembly.GetExportedTypes();
+                        // Load all required types to verify that the plugin will load
+                        assembly.GetTypes();
                     }
                     catch (FileLoadException ex)
                     {
@@ -140,7 +135,7 @@ namespace Emby.Server.Implementations.Plugins
                         ChangePluginState(plugin, PluginStatus.Malfunctioned);
                         continue;
                     }
-                    catch (TypeLoadException ex) // Undocumented exception
+                    catch (SystemException ex) when (ex is TypeLoadException or ReflectionTypeLoadException) // Undocumented exception
                     {
                         _logger.LogError(ex, "Failed to load assembly {Path}. This error occurs when a plugin references an incompatible version of one of the shared libraries. Disabling plugin.", file);
                         ChangePluginState(plugin, PluginStatus.NotSupported);
@@ -166,9 +161,7 @@ namespace Emby.Server.Implementations.Plugins
         /// </summary>
         public void CreatePlugins()
         {
-            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance)
-                .Where(i => i != null)
-                .ToArray();
+            _ = _appHost.GetExports<IPlugin>(CreatePluginInstance);
         }
 
         /// <summary>
@@ -278,11 +271,7 @@ namespace Emby.Server.Implementations.Plugins
                 // If no version is given, return the current instance.
                 var plugins = _plugins.Where(p => p.Id.Equals(id)).ToList();
 
-                plugin = plugins.FirstOrDefault(p => p.Instance != null);
-                if (plugin == null)
-                {
-                    plugin = plugins.OrderByDescending(p => p.Version).FirstOrDefault();
-                }
+                plugin = plugins.FirstOrDefault(p => p.Instance != null) ?? plugins.OrderByDescending(p => p.Version).FirstOrDefault();
             }
             else
             {
@@ -384,7 +373,7 @@ namespace Emby.Server.Implementations.Plugins
                 var url = new Uri(packageInfo.ImageUrl);
                 imagePath = Path.Join(path, url.Segments[^1]);
 
-                await using var fileStream = File.OpenWrite(imagePath);
+                await using var fileStream = AsyncFile.OpenWrite(imagePath);
 
                 try
                 {
@@ -407,7 +396,7 @@ namespace Emby.Server.Implementations.Plugins
                 Category = packageInfo.Category,
                 Changelog = versionInfo.Changelog ?? string.Empty,
                 Description = packageInfo.Description,
-                Id = new Guid(packageInfo.Id),
+                Id = packageInfo.Id,
                 Name = packageInfo.Name,
                 Overview = packageInfo.Overview,
                 Owner = packageInfo.Owner,
@@ -468,7 +457,8 @@ namespace Emby.Server.Implementations.Plugins
             try
             {
                 _logger.LogDebug("Creating instance of {Type}", type);
-                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider, type);
+                // _appHost.ServiceProvider is already assigned when we create the plugins
+                var instance = (IPlugin)ActivatorUtilities.CreateInstance(_appHost.ServiceProvider!, type);
                 if (plugin == null)
                 {
                     // Create a dummy record for the providers.

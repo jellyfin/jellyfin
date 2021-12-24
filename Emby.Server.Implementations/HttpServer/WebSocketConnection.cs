@@ -1,5 +1,3 @@
-﻿#nullable enable
-
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
@@ -9,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
@@ -64,7 +62,7 @@ namespace Emby.Server.Implementations.HttpServer
         public event EventHandler<EventArgs>? Closed;
 
         /// <summary>
-        /// Gets or sets the remote end point.
+        /// Gets the remote end point.
         /// </summary>
         public IPAddress? RemoteEndPoint { get; }
 
@@ -84,7 +82,7 @@ namespace Emby.Server.Implementations.HttpServer
         public DateTime LastKeepAliveDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the query string.
+        /// Gets the query string.
         /// </summary>
         /// <value>The query string.</value>
         public IQueryCollection QueryString { get; }
@@ -98,7 +96,7 @@ namespace Emby.Server.Implementations.HttpServer
         /// <summary>
         /// Sends a message asynchronously.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
@@ -152,8 +150,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     await ProcessInternal(pipe.Reader).ConfigureAwait(false);
                 }
-            } while (
-                (_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
+            }
+            while ((_socket.State == WebSocketState.Open || _socket.State == WebSocketState.Connecting)
                 && receiveresult.MessageType != WebSocketMessageType.Close);
 
             Closed?.Invoke(this, EventArgs.Empty);

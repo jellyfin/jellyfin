@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1819, CS1591
 
 using System;
 using System.Collections.Generic;
@@ -20,6 +22,9 @@ namespace MediaBrowser.Controller.Entities
         {
             TrailerTypes = Array.Empty<TrailerType>();
         }
+
+        [JsonIgnore]
+        public override bool StopRefreshIfLocalMetadataFound => false;
 
         public TrailerType[] TrailerTypes { get; set; }
 
@@ -43,9 +48,9 @@ namespace MediaBrowser.Controller.Entities
             return info;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!ProductionYear.HasValue)
             {
@@ -95,8 +100,5 @@ namespace MediaBrowser.Controller.Entities
 
             return list;
         }
-
-        [JsonIgnore]
-        public override bool StopRefreshIfLocalMetadataFound => false;
     }
 }

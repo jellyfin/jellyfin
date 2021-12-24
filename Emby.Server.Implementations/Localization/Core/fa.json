@@ -6,7 +6,7 @@
     "AuthenticationSucceededWithUserName": "{0} با موفقیت تایید اعتبار شد",
     "Books": "کتاب‌ها",
     "CameraImageUploadedFrom": "یک عکس جدید از دوربین ارسال شده است {0}",
-    "Channels": "کانال‌ها",
+    "Channels": "کانالها",
     "ChapterNameValue": "قسمت {0}",
     "Collections": "مجموعه‌ها",
     "DeviceOfflineWithName": "ارتباط {0} قطع شد",
@@ -34,10 +34,10 @@
     "Latest": "جدیدترین‌ها",
     "MessageApplicationUpdated": "سرور Jellyfin بروزرسانی شد",
     "MessageApplicationUpdatedTo": "سرور Jellyfin به نسخه {0} بروزرسانی شد",
-    "MessageNamedServerConfigurationUpdatedWithValue": "پکربندی بخش {0} سرور  بروزرسانی شد",
+    "MessageNamedServerConfigurationUpdatedWithValue": "پکربندی بخش {0} سرور بروزرسانی شد",
     "MessageServerConfigurationUpdated": "پیکربندی سرور بروزرسانی شد",
     "MixedContent": "محتوای مخلوط",
-    "Movies": "فیلم‌ها",
+    "Movies": "فیلم ها",
     "Music": "موسیقی",
     "MusicVideos": "موزیک ویدیوها",
     "NameInstallFailed": "{0} نصب با مشکل مواجه شد",
@@ -118,5 +118,6 @@
     "Default": "پیشفرض",
     "TaskCleanActivityLogDescription": "ورودی‌های قدیمی‌تر از سن تنظیم شده در سیاهه فعالیت را حذف می‌کند.",
     "TaskCleanActivityLog": "پاکسازی سیاهه فعالیت",
-    "Undefined": "تعریف نشده"
+    "Undefined": "تعریف نشده",
+    "TaskOptimizeDatabase": "بهینه سازی پایگاه داده"
 }

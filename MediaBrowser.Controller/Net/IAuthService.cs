@@ -1,5 +1,4 @@
-#nullable enable
-
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace MediaBrowser.Controller.Net
@@ -14,6 +13,6 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>Authorization information. Null if unauthenticated.</returns>
-        AuthorizationInfo Authenticate(HttpRequest request);
+        Task<AuthorizationInfo> Authenticate(HttpRequest request);
     }
 }

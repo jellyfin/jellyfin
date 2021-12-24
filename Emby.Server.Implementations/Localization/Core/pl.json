@@ -25,7 +25,7 @@
     "HeaderLiveTV": "Telewizja",
     "HeaderNextUp": "Do obejrzenia",
     "HeaderRecordingGroups": "Grupy nagrań",
-    "HomeVideos": "Nagrania prywatne",
+    "HomeVideos": "Nagrania domowe",
     "Inherit": "Dziedzicz",
     "ItemAddedWithName": "{0} zostało dodane do biblioteki",
     "ItemRemovedWithName": "{0} zostało usunięte z biblioteki",
@@ -47,7 +47,7 @@
     "NotificationOptionApplicationUpdateAvailable": "Dostępna aktualizacja aplikacji",
     "NotificationOptionApplicationUpdateInstalled": "Zaktualizowano aplikację",
     "NotificationOptionAudioPlayback": "Rozpoczęto odtwarzanie muzyki",
-    "NotificationOptionAudioPlaybackStopped": "Odtwarzane dźwięku zatrzymane",
+    "NotificationOptionAudioPlaybackStopped": "Odtwarzanie dźwięku zatrzymane",
     "NotificationOptionCameraImageUploaded": "Przekazano obraz z urządzenia przenośnego",
     "NotificationOptionInstallationFailed": "Nieudana instalacja",
     "NotificationOptionNewLibraryContent": "Dodano nową zawartość",
@@ -98,7 +98,7 @@
     "TaskRefreshChannels": "Odśwież kanały",
     "TaskCleanTranscodeDescription": "Usuwa transkodowane pliki starsze niż 1 dzień.",
     "TaskCleanTranscode": "Wyczyść folder transkodowania",
-    "TaskUpdatePluginsDescription": "Pobiera i instaluje aktualizacje dla pluginów które są skonfigurowane do automatycznej aktualizacji.",
+    "TaskUpdatePluginsDescription": "Pobiera i instaluje aktualizacje dla pluginów, które są skonfigurowane do automatycznej aktualizacji.",
     "TaskUpdatePlugins": "Aktualizuj pluginy",
     "TaskRefreshPeopleDescription": "Odświeża metadane o aktorów i reżyserów w Twojej bibliotece mediów.",
     "TaskRefreshPeople": "Odśwież obsadę",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Czyść dziennik aktywności",
     "Undefined": "Nieustalony",
     "Forced": "Wymuszony",
-    "Default": "Domyślne"
+    "Default": "Domyślne",
+    "TaskOptimizeDatabase": "Optymalizuj bazę danych",
+    "TaskOptimizeDatabaseDescription": "Kompaktuje bazę danych i obcina wolne miejsce. Uruchomienie tego zadania po przeskanowaniu biblioteki lub dokonaniu innych zmian, które pociągają za sobą modyfikacje bazy danych, może poprawić wydajność."
 }

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -11,9 +13,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 using TMDbLib.Objects.Find;
 
@@ -83,42 +83,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new List<RemoteImageInfo>();
+            var posters = movie.Images.Posters;
+            var backdrops = movie.Images.Backdrops;
+            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count);
 
-            for (var i = 0; i < movie.Images.Posters.Count; i++)
-            {
-                var poster = movie.Images.Posters[i];
-                remoteImages.Add(new RemoteImageInfo
-                {
-                    Url = _tmdbClientManager.GetPosterUrl(poster.FilePath),
-                    CommunityRating = poster.VoteAverage,
-                    VoteCount = poster.VoteCount,
-                    Width = poster.Width,
-                    Height = poster.Height,
-                    Language = TmdbUtils.AdjustImageLanguage(poster.Iso_639_1, language),
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    RatingType = RatingType.Score
-                });
-            }
+            _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
+            _tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language, remoteImages);
 
-            for (var i = 0; i < movie.Images.Backdrops.Count; i++)
-            {
-                var backdrop = movie.Images.Backdrops[i];
-                remoteImages.Add(new RemoteImageInfo
-                {
-                    Url = _tmdbClientManager.GetPosterUrl(backdrop.FilePath),
-                    CommunityRating = backdrop.VoteAverage,
-                    VoteCount = backdrop.VoteCount,
-                    Width = backdrop.Width,
-                    Height = backdrop.Height,
-                    ProviderName = Name,
-                    Type = ImageType.Backdrop,
-                    RatingType = RatingType.Score
-                });
-            }
-
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

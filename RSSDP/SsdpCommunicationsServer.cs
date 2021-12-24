@@ -42,7 +42,7 @@ namespace Rssdp.Infrastructure
         private HttpResponseParser _ResponseParser;
         private readonly ILogger _logger;
         private ISocketFactory _SocketFactory;
-        private readonly INetworkManager _networkManager;        
+        private readonly INetworkManager _networkManager;
 
         private int _LocalPort;
         private int _MulticastTtl;
@@ -68,7 +68,7 @@ namespace Rssdp.Infrastructure
             INetworkManager networkManager, ILogger logger, bool enableMultiSocketBinding)
             : this(socketFactory, 0, SsdpConstants.SsdpDefaultMulticastTimeToLive, networkManager, logger, enableMultiSocketBinding)
         {
-            
+
         }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace Rssdp.Infrastructure
                     {
                         // Not support IPv6 right now
                         continue;
-                    }                  
+                    }
 
                     try
                     {
@@ -395,7 +395,7 @@ namespace Rssdp.Infrastructure
                         // Strange cannot convert compiler error here if I don't explicitly
                         // assign or cast to Action first. Assignment is easier to read,
                         // so went with that.
-                        ProcessMessage(System.Text.UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
+                        ProcessMessage(UTF8Encoding.UTF8.GetString(result.Buffer, 0, result.ReceivedBytes), result.RemoteEndPoint, result.LocalIPAddress);
                     }
                 }
                 catch (ObjectDisposedException)
@@ -415,10 +415,7 @@ namespace Rssdp.Infrastructure
             {
                 lock (_SendSocketSynchroniser)
                 {
-                    if (_sendSockets == null)
-                    {
-                        _sendSockets = CreateSocketAndListenForResponsesAsync();
-                    }
+                    _sendSockets ??= CreateSocketAndListenForResponsesAsync();
                 }
             }
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Rssdp.Infrastructure
@@ -45,11 +46,11 @@ namespace Rssdp.Infrastructure
 
             const string ArgFormat = "{0}: {1}\r\n";
 
-            builder.AppendFormat("{0}\r\n", header);
+            builder.AppendFormat(CultureInfo.InvariantCulture, "{0}\r\n", header);
 
             foreach (var pair in values)
             {
-                builder.AppendFormat(ArgFormat, pair.Key, pair.Value);
+                builder.AppendFormat(CultureInfo.InvariantCulture, ArgFormat, pair.Key, pair.Value);
             }
 
             builder.Append("\r\n");

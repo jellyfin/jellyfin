@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -29,11 +27,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// API key to use when performing an API call.
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
-
-        /// <summary>
-        /// Maximum number of cast members to pull.
-        /// </summary>
-        public const int MaxCastMembers = 15;
 
         /// <summary>
         /// The crew types to keep.
@@ -148,6 +141,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (parts.Length == 2)
             {
+                // TMDB doesn't support Switzerland (de-CH, it-CH or fr-CH) so use the language (de, it or fr) without country code
+                if (string.Equals(parts[1], "CH", StringComparison.OrdinalIgnoreCase))
+                {
+                    return parts[0];
+                }
+
                 language = parts[0] + "-" + parts[1].ToUpperInvariant();
             }
 
@@ -172,6 +171,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return imageLanguage;
+        }
+
+        /// <summary>
+        /// Combines the metadata country code and the parental rating from the Api into the value we store in our database.
+        /// </summary>
+        /// <param name="countryCode">The Iso 3166-1 country code of the rating country.</param>
+        /// <param name="ratingValue">The rating value returned by the Tmdb Api.</param>
+        /// <returns>The combined parental rating of country code+rating value.</returns>
+        public static string BuildParentalRating(string countryCode, string ratingValue)
+        {
+            // exclude US because we store us values as TV-14 without the country code.
+            var ratingPrefix = string.Equals(countryCode, "US", StringComparison.OrdinalIgnoreCase) ? string.Empty : countryCode + "-";
+            var newRating = ratingPrefix + ratingValue;
+
+            return newRating.Replace("DE-", "FSK-", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

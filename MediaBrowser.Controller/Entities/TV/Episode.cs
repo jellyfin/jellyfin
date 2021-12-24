@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -18,21 +20,13 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Episode : Video, IHasTrailers, IHasLookupInfo<EpisodeInfo>, IHasSeries
     {
-        public Episode()
-        {
-            RemoteTrailers = Array.Empty<MediaUrl>();
-            LocalTrailerIds = Array.Empty<Guid>();
-            RemoteTrailerIds = Array.Empty<Guid>();
-        }
-
         /// <inheritdoc />
-        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
-
-        /// <inheritdoc />
-        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
+            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
+            .ToArray();
 
         /// <summary>
-        /// Gets the season in which it aired.
+        /// Gets or sets the season in which it aired.
         /// </summary>
         /// <value>The aired season.</value>
         public int? AirsBeforeSeasonNumber { get; set; }
@@ -42,16 +36,10 @@ namespace MediaBrowser.Controller.Entities.TV
         public int? AirsBeforeEpisodeNumber { get; set; }
 
         /// <summary>
-        /// This is the ending episode number for double episodes.
+        /// Gets or sets the ending episode number for double episodes.
         /// </summary>
         /// <value>The index number.</value>
         public int? IndexNumberEnd { get; set; }
-
-        public string FindSeriesSortName()
-        {
-            var series = Series;
-            return series == null ? SeriesName : series.SortName;
-        }
 
         [JsonIgnore]
         protected override bool SupportsOwnedItems => IsStacked || MediaSourceCount > 1;
@@ -74,47 +62,8 @@ namespace MediaBrowser.Controller.Entities.TV
         [JsonIgnore]
         protected override bool EnableDefaultVideoUserDataKeys => false;
 
-        public override double GetDefaultPrimaryImageAspectRatio()
-        {
-            // hack for tv plugins
-            if (SourceType == SourceType.Channel)
-            {
-                return 0;
-            }
-
-            return 16.0 / 9;
-        }
-
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            var series = Series;
-            if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
-            {
-                var seriesUserDataKeys = series.GetUserDataKeys();
-                var take = seriesUserDataKeys.Count;
-                if (seriesUserDataKeys.Count > 1)
-                {
-                    take--;
-                }
-
-                var newList = seriesUserDataKeys.GetRange(0, take);
-                var suffix = ParentIndexNumber.Value.ToString("000", CultureInfo.InvariantCulture) + IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
-                for (int i = 0; i < take; i++)
-                {
-                    newList[i] = newList[i] + suffix;
-                }
-
-                newList.AddRange(list);
-                list = newList;
-            }
-
-            return list;
-        }
-
         /// <summary>
-        /// This Episode's Series Instance.
+        /// Gets the Episode's Series Instance.
         /// </summary>
         /// <value>The series.</value>
         [JsonIgnore]
@@ -158,6 +107,74 @@ namespace MediaBrowser.Controller.Entities.TV
 
         [JsonIgnore]
         public string SeasonName { get; set; }
+
+        [JsonIgnore]
+        public override bool SupportsRemoteImageDownloading
+        {
+            get
+            {
+                if (IsMissingEpisode)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        [JsonIgnore]
+        public bool IsMissingEpisode => LocationType == LocationType.Virtual;
+
+        [JsonIgnore]
+        public Guid SeasonId { get; set; }
+
+        [JsonIgnore]
+        public Guid SeriesId { get; set; }
+
+        public string FindSeriesSortName()
+        {
+            var series = Series;
+            return series == null ? SeriesName : series.SortName;
+        }
+
+        public override double GetDefaultPrimaryImageAspectRatio()
+        {
+            // hack for tv plugins
+            if (SourceType == SourceType.Channel)
+            {
+                return 0;
+            }
+
+            return 16.0 / 9;
+        }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            var series = Series;
+            if (series != null && ParentIndexNumber.HasValue && IndexNumber.HasValue)
+            {
+                var seriesUserDataKeys = series.GetUserDataKeys();
+                var take = seriesUserDataKeys.Count;
+                if (seriesUserDataKeys.Count > 1)
+                {
+                    take--;
+                }
+
+                var newList = seriesUserDataKeys.GetRange(0, take);
+                var suffix = ParentIndexNumber.Value.ToString("000", CultureInfo.InvariantCulture) + IndexNumber.Value.ToString("000", CultureInfo.InvariantCulture);
+                for (int i = 0; i < take; i++)
+                {
+                    newList[i] = newList[i] + suffix;
+                }
+
+                newList.AddRange(list);
+                list = newList;
+            }
+
+            return list;
+        }
 
         public string FindSeriesPresentationUniqueKey()
         {
@@ -216,8 +233,8 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateSortName()
         {
-            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ") : "")
-                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ") : "") + Name;
+            return (ParentIndexNumber != null ? ParentIndexNumber.Value.ToString("000 - ", CultureInfo.InvariantCulture) : string.Empty)
+                    + (IndexNumber != null ? IndexNumber.Value.ToString("0000 - ", CultureInfo.InvariantCulture) : string.Empty) + Name;
         }
 
         /// <summary>
@@ -239,28 +256,6 @@ namespace MediaBrowser.Controller.Entities.TV
 
             return false;
         }
-
-        [JsonIgnore]
-        public override bool SupportsRemoteImageDownloading
-        {
-            get
-            {
-                if (IsMissingEpisode)
-                {
-                    return false;
-                }
-
-                return true;
-            }
-        }
-
-        [JsonIgnore]
-        public bool IsMissingEpisode => LocationType == LocationType.Virtual;
-
-        [JsonIgnore]
-        public Guid SeasonId { get; set; }
-        [JsonIgnore]
-        public Guid SeriesId { get; set; }
 
         public Guid FindSeriesId()
         {
@@ -284,7 +279,8 @@ namespace MediaBrowser.Controller.Entities.TV
 
         public override IEnumerable<FileSystemMetadata> GetDeletePaths()
         {
-            return new[] {
+            return new[]
+            {
                 new FileSystemMetadata
                 {
                     FullName = Path,
@@ -316,9 +312,9 @@ namespace MediaBrowser.Controller.Entities.TV
             return id;
         }
 
-        public override bool BeforeMetadataRefresh(bool replaceAllMetdata)
+        public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
-            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetdata);
+            var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
 
             if (!IsLocked)
             {
@@ -326,7 +322,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     try
                     {
-                        if (LibraryManager.FillMissingEpisodeNumbersFromPath(this, replaceAllMetdata))
+                        if (LibraryManager.FillMissingEpisodeNumbersFromPath(this, replaceAllMetadata))
                         {
                             hasChanges = true;
                         }

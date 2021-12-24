@@ -3,7 +3,7 @@
     /// <summary>
     /// Produces file attribute of "image/*".
     /// </summary>
-    public class ProducesPlaylistFileAttribute : ProducesFileAttribute
+    public sealed class ProducesPlaylistFileAttribute : ProducesFileAttribute
     {
         private const string ContentType = "application/x-mpegURL";
 

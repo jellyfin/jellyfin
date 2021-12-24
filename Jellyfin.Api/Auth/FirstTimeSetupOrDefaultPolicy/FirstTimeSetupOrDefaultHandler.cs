@@ -32,18 +32,18 @@ namespace Jellyfin.Api.Auth.FirstTimeSetupOrDefaultPolicy
         }
 
         /// <inheritdoc />
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupOrDefaultRequirement firstTimeSetupOrDefaultRequirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FirstTimeSetupOrDefaultRequirement requirement)
         {
             if (!_configurationManager.CommonConfiguration.IsStartupWizardCompleted)
             {
-                context.Succeed(firstTimeSetupOrDefaultRequirement);
+                context.Succeed(requirement);
                 return Task.CompletedTask;
             }
 
             var validated = ValidateClaims(context.User);
             if (validated)
             {
-                context.Succeed(firstTimeSetupOrDefaultRequirement);
+                context.Succeed(requirement);
             }
             else
             {

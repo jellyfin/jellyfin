@@ -1,4 +1,4 @@
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 

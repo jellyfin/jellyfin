@@ -1,5 +1,5 @@
 {
-    "HeaderLiveTV": "Live TV",
+    "HeaderLiveTV": "Suora TV",
     "NewVersionIsAvailable": "Uusi versio Jellyfin-palvelimesta on ladattavissa.",
     "NameSeasonUnknown": "Tuntematon kausi",
     "NameSeasonNumber": "Kausi {0}",
@@ -117,5 +117,7 @@
     "Default": "Oletus",
     "TaskCleanActivityLogDescription": "Poistaa määritettyä ikää vanhemmat tapahtumat toimintahistoriasta.",
     "TaskCleanActivityLog": "Tyhjennä toimintahistoria",
-    "Undefined": "Määrittelemätön"
+    "Undefined": "Määrittelemätön",
+    "TaskOptimizeDatabaseDescription": "Tiivistää ja puhdistaa tietokannan. Tämän toiminnon suorittaminen kirjastojen skannauksen tai muiden tietokantaan liittyvien muutoksien jälkeen voi parantaa suorituskykyä.",
+    "TaskOptimizeDatabase": "Optimoi tietokanta"
 }

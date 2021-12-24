@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -14,11 +16,7 @@ namespace Emby.Server.Implementations.Net
 
     public sealed class UdpSocket : ISocket, IDisposable
     {
-        private Socket _socket;
         private readonly int _localPort;
-        private bool _disposed = false;
-
-        public Socket Socket => _socket;
 
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
@@ -30,6 +28,8 @@ namespace Emby.Server.Implementations.Net
             SocketFlags = SocketFlags.None
         };
 
+        private Socket _socket;
+        private bool _disposed = false;
         private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
         private TaskCompletionSource<int> _currentSendTaskCompletionSource;
 
@@ -61,6 +61,8 @@ namespace Emby.Server.Implementations.Net
 
             InitReceiveSocketAsyncEventArgs();
         }
+
+        public Socket Socket => _socket;
 
         public IPAddress LocalIPAddress { get; }
 
@@ -189,7 +191,7 @@ namespace Emby.Server.Implementations.Net
             return taskCompletion.Task;
         }
 
-        public Task SendToAsync(byte[] buffer, int offset, int size, IPEndPoint endPoint, CancellationToken cancellationToken)
+        public Task SendToAsync(byte[] buffer, int offset, int bytes, IPEndPoint endPoint, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -212,7 +214,7 @@ namespace Emby.Server.Implementations.Net
                 }
             };
 
-            var result = BeginSendTo(buffer, offset, size, endPoint, new AsyncCallback(callback), null);
+            var result = BeginSendTo(buffer, offset, bytes, endPoint, new AsyncCallback(callback), null);
 
             if (result.CompletedSynchronously)
             {

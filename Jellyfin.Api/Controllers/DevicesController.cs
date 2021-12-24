@@ -1,8 +1,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
+using Jellyfin.Data.Dtos;
+using Jellyfin.Data.Entities.Security;
+using Jellyfin.Data.Queries;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
 using MediaBrowser.Model.Querying;
@@ -19,22 +22,18 @@ namespace Jellyfin.Api.Controllers
     public class DevicesController : BaseJellyfinApiController
     {
         private readonly IDeviceManager _deviceManager;
-        private readonly IAuthenticationRepository _authenticationRepository;
         private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DevicesController"/> class.
         /// </summary>
         /// <param name="deviceManager">Instance of <see cref="IDeviceManager"/> interface.</param>
-        /// <param name="authenticationRepository">Instance of <see cref="IAuthenticationRepository"/> interface.</param>
         /// <param name="sessionManager">Instance of <see cref="ISessionManager"/> interface.</param>
         public DevicesController(
             IDeviceManager deviceManager,
-            IAuthenticationRepository authenticationRepository,
             ISessionManager sessionManager)
         {
             _deviceManager = deviceManager;
-            _authenticationRepository = authenticationRepository;
             _sessionManager = sessionManager;
         }
 
@@ -47,10 +46,9 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="OkResult"/> containing the list of devices.</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<QueryResult<DeviceInfo>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
+        public async Task<ActionResult<QueryResult<DeviceInfo>>> GetDevices([FromQuery] bool? supportsSync, [FromQuery] Guid? userId)
         {
-            var deviceQuery = new DeviceQuery { SupportsSync = supportsSync, UserId = userId ?? Guid.Empty };
-            return _deviceManager.GetDevices(deviceQuery);
+            return await _deviceManager.GetDevicesForUser(userId, supportsSync).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -63,9 +61,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Info")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceInfo> GetDeviceInfo([FromQuery, Required] string id)
+        public async Task<ActionResult<DeviceInfo>> GetDeviceInfo([FromQuery, Required] string id)
         {
-            var deviceInfo = _deviceManager.GetDevice(id);
+            var deviceInfo = await _deviceManager.GetDevice(id).ConfigureAwait(false);
             if (deviceInfo == null)
             {
                 return NotFound();
@@ -84,9 +82,9 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Options")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<DeviceOptions> GetDeviceOptions([FromQuery, Required] string id)
+        public async Task<ActionResult<DeviceOptions>> GetDeviceOptions([FromQuery, Required] string id)
         {
-            var deviceInfo = _deviceManager.GetDeviceOptions(id);
+            var deviceInfo = await _deviceManager.GetDeviceOptions(id).ConfigureAwait(false);
             if (deviceInfo == null)
             {
                 return NotFound();
@@ -101,22 +99,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="id">Device Id.</param>
         /// <param name="deviceOptions">Device Options.</param>
         /// <response code="204">Device options updated.</response>
-        /// <response code="404">Device not found.</response>
-        /// <returns>A <see cref="NoContentResult"/> on success, or a <see cref="NotFoundResult"/> if the device could not be found.</returns>
+        /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Options")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult UpdateDeviceOptions(
+        public async Task<ActionResult> UpdateDeviceOptions(
             [FromQuery, Required] string id,
-            [FromBody, Required] DeviceOptions deviceOptions)
+            [FromBody, Required] DeviceOptionsDto deviceOptions)
         {
-            var existingDeviceOptions = _deviceManager.GetDeviceOptions(id);
-            if (existingDeviceOptions == null)
-            {
-                return NotFound();
-            }
-
-            _deviceManager.UpdateDeviceOptions(id, deviceOptions);
+            await _deviceManager.UpdateDeviceOptions(id, deviceOptions.CustomName).ConfigureAwait(false);
             return NoContent();
         }
 
@@ -130,19 +120,19 @@ namespace Jellyfin.Api.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeleteDevice([FromQuery, Required] string id)
+        public async Task<ActionResult> DeleteDevice([FromQuery, Required] string id)
         {
-            var existingDevice = _deviceManager.GetDevice(id);
+            var existingDevice = await _deviceManager.GetDevice(id).ConfigureAwait(false);
             if (existingDevice == null)
             {
                 return NotFound();
             }
 
-            var sessions = _authenticationRepository.Get(new AuthenticationInfoQuery { DeviceId = id }).Items;
+            var sessions = await _deviceManager.GetDevices(new DeviceQuery { DeviceId = id }).ConfigureAwait(false);
 
-            foreach (var session in sessions)
+            foreach (var session in sessions.Items)
             {
-                _sessionManager.Logout(session);
+                await _sessionManager.Logout(session).ConfigureAwait(false);
             }
 
             return NoContent();

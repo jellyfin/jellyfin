@@ -23,7 +23,7 @@ namespace Jellyfin.Server.Configuration
         }
 
         /// <inheritdoc />
-        public Task<CorsPolicy> GetPolicyAsync(HttpContext context, string policyName)
+        public Task<CorsPolicy?> GetPolicyAsync(HttpContext context, string? policyName)
         {
             var corsHosts = _serverConfigurationManager.Configuration.CorsHosts;
             var builder = new CorsPolicyBuilder()
@@ -43,7 +43,7 @@ namespace Jellyfin.Server.Configuration
                     .AllowCredentials();
             }
 
-            return Task.FromResult(builder.Build());
+            return Task.FromResult<CorsPolicy?>(builder.Build());
         }
     }
 }

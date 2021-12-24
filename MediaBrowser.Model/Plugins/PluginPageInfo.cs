@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace MediaBrowser.Model.Plugins
 {
     /// <summary>

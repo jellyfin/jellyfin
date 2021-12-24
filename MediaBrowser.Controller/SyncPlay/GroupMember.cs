@@ -1,3 +1,6 @@
+#nullable disable
+
+using System;
 using MediaBrowser.Controller.Session;
 
 namespace MediaBrowser.Controller.SyncPlay
@@ -13,14 +16,28 @@ namespace MediaBrowser.Controller.SyncPlay
         /// <param name="session">The session.</param>
         public GroupMember(SessionInfo session)
         {
-            Session = session;
+            SessionId = session.Id;
+            UserId = session.UserId;
+            UserName = session.UserName;
         }
 
         /// <summary>
-        /// Gets the session.
+        /// Gets the identifier of the session.
         /// </summary>
-        /// <value>The session.</value>
-        public SessionInfo Session { get; }
+        /// <value>The session identifier.</value>
+        public string SessionId { get; }
+
+        /// <summary>
+        /// Gets the identifier of the user.
+        /// </summary>
+        /// <value>The user identifier.</value>
+        public Guid UserId { get; }
+
+        /// <summary>
+        /// Gets the username.
+        /// </summary>
+        /// <value>The username.</value>
+        public string UserName { get; }
 
         /// <summary>
         /// Gets or sets the ping, in milliseconds.

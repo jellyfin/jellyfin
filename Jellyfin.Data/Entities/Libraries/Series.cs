@@ -1,5 +1,3 @@
-#pragma warning disable CA2227
-
 using System;
 using System.Collections.Generic;
 
@@ -16,7 +14,6 @@ namespace Jellyfin.Data.Entities.Libraries
         /// <param name="library">The library.</param>
         public Series(Library library) : base(library)
         {
-            DateAdded = DateTime.UtcNow;
             Seasons = new HashSet<Season>();
             SeriesMetadata = new HashSet<SeriesMetadata>();
         }
@@ -37,13 +34,13 @@ namespace Jellyfin.Data.Entities.Libraries
         public DateTime? FirstAired { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the series metadata.
+        /// Gets a collection containing the series metadata.
         /// </summary>
-        public virtual ICollection<SeriesMetadata> SeriesMetadata { get; protected set; }
+        public virtual ICollection<SeriesMetadata> SeriesMetadata { get; private set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the seasons.
+        /// Gets a collection containing the seasons.
         /// </summary>
-        public virtual ICollection<Season> Seasons { get; protected set; }
+        public virtual ICollection<Season> Seasons { get; private set; }
     }
 }

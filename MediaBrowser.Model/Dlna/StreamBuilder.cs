@@ -455,7 +455,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlayProfile == null)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Profile: {0}, No audio direct play profiles found for {1} with codec {2}",
                     options.Profile.Name ?? "Unknown Profile",
                     item.Path ?? "Unknown path",
@@ -677,12 +677,12 @@ namespace MediaBrowser.Model.Dlna
             var videoStream = item.VideoStream;
 
             // TODO: This doesn't account for situations where the device is able to handle the media's bitrate, but the connection isn't fast enough
-            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, subtitleStream, options, PlayMethod.DirectPlay);
-            var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, subtitleStream, options, PlayMethod.DirectStream);
+            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, subtitleStream, audioStream, options, PlayMethod.DirectPlay);
+            var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, subtitleStream, audioStream, options, PlayMethod.DirectStream);
             bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
             bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
 
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
                 item.Path ?? "Unknown path",
@@ -694,7 +694,7 @@ namespace MediaBrowser.Model.Dlna
             if (isEligibleForDirectPlay || isEligibleForDirectStream)
             {
                 // See if it can be direct played
-                var directPlayInfo = GetVideoDirectPlayProfile(options, item, videoStream, audioStream, isEligibleForDirectPlay, isEligibleForDirectStream);
+                var directPlayInfo = GetVideoDirectPlayProfile(options, item, videoStream, audioStream, isEligibleForDirectStream);
                 var directPlay = directPlayInfo.Item1;
 
                 if (directPlay != null)
@@ -810,7 +810,7 @@ namespace MediaBrowser.Model.Dlna
                 // Honor requested max channels
                 playlistItem.GlobalMaxAudioChannels = options.MaxAudioChannels;
 
-                int audioBitrate = GetAudioBitrate(playlistItem.SubProtocol, options.GetMaxBitrate(false) ?? 0, playlistItem.TargetAudioCodec, audioStream, playlistItem);
+                int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(false) ?? 0, playlistItem.TargetAudioCodec, audioStream, playlistItem);
                 playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
                 isFirstAppliedCodecProfile = true;
@@ -907,7 +907,7 @@ namespace MediaBrowser.Model.Dlna
             return 192000;
         }
 
-        private static int GetAudioBitrate(string subProtocol, long maxTotalBitrate, string[] targetAudioCodecs, MediaStream audioStream, StreamInfo item)
+        private static int GetAudioBitrate(long maxTotalBitrate, string[] targetAudioCodecs, MediaStream audioStream, StreamInfo item)
         {
             string targetAudioCodec = targetAudioCodecs.Length == 0 ? null : targetAudioCodecs[0];
 
@@ -1005,7 +1005,6 @@ namespace MediaBrowser.Model.Dlna
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
             MediaStream audioStream,
-            bool isEligibleForDirectPlay,
             bool isEligibleForDirectStream)
         {
             if (options.ForceDirectPlay)
@@ -1034,7 +1033,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (directPlay == null)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Container: {Container}, Video: {Video}, Audio: {Audio} cannot be direct played by profile: {Profile} for path: {Path}",
                     container,
                     videoStream?.Codec ?? "no video",
@@ -1146,7 +1145,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 string audioCodec = audioStream.Codec;
                 conditions = new List<ProfileCondition>();
-                bool? isSecondaryAudio = audioStream == null ? null : mediaSource.IsSecondaryAudio(audioStream);
+                bool? isSecondaryAudio = mediaSource.IsSecondaryAudio(audioStream);
 
                 foreach (var i in profile.CodecProfiles)
                 {
@@ -1199,7 +1198,7 @@ namespace MediaBrowser.Model.Dlna
 
         private void LogConditionFailure(DeviceProfile profile, string type, ProfileCondition condition, MediaSourceInfo mediaSource)
         {
-            _logger.LogInformation(
+            _logger.LogDebug(
                 "Profile: {0}, DirectPlay=false. Reason={1}.{2} Condition: {3}. ConditionValue: {4}. IsRequired: {5}. Path: {6}",
                 type,
                 profile.Name ?? "Unknown Profile",
@@ -1214,6 +1213,7 @@ namespace MediaBrowser.Model.Dlna
             MediaSourceInfo item,
             long maxBitrate,
             MediaStream subtitleStream,
+            MediaStream audioStream,
             VideoOptions options,
             PlayMethod playMethod)
         {
@@ -1221,16 +1221,27 @@ namespace MediaBrowser.Model.Dlna
             {
                 var subtitleProfile = GetSubtitleProfile(item, subtitleStream, options.Profile.SubtitleProfiles, playMethod, _transcoderSupport, item.Container, null);
 
-                if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
+                if (subtitleProfile.Method != SubtitleDeliveryMethod.Drop
+                    && subtitleProfile.Method != SubtitleDeliveryMethod.External
+                    && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
-                    _logger.LogInformation("Not eligible for {0} due to unsupported subtitles", playMethod);
+                    _logger.LogDebug("Not eligible for {0} due to unsupported subtitles", playMethod);
                     return (false, TranscodeReason.SubtitleCodecNotSupported);
                 }
             }
 
             bool result = IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
+            if (!result)
+            {
+                return (false, TranscodeReason.ContainerBitrateExceedsLimit);
+            }
 
-            return (result, result ? (TranscodeReason?)null : TranscodeReason.ContainerBitrateExceedsLimit);
+            if (audioStream.IsExternal)
+            {
+                return (false, TranscodeReason.AudioIsExternal);
+            }
+
+            return (true, null);
         }
 
         public static SubtitleProfile GetSubtitleProfile(
@@ -1262,7 +1273,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (playMethod == PlayMethod.Transcode && !IsSubtitleEmbedSupported(subtitleStream, profile, transcodingSubProtocol, outputContainer))
+                    if (playMethod == PlayMethod.Transcode && !IsSubtitleEmbedSupported(outputContainer))
                     {
                         continue;
                     }
@@ -1291,7 +1302,7 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (playMethod == PlayMethod.Transcode && !IsSubtitleEmbedSupported(subtitleStream, profile, transcodingSubProtocol, outputContainer))
+                    if (playMethod == PlayMethod.Transcode && !IsSubtitleEmbedSupported(outputContainer))
                     {
                         continue;
                     }
@@ -1313,7 +1324,7 @@ namespace MediaBrowser.Model.Dlna
                 };
         }
 
-        private static bool IsSubtitleEmbedSupported(MediaStream subtitleStream, SubtitleProfile subtitleProfile, string transcodingSubProtocol, string transcodingContainer)
+        private static bool IsSubtitleEmbedSupported(string transcodingContainer)
         {
             if (!string.IsNullOrEmpty(transcodingContainer))
             {
@@ -1405,7 +1416,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (itemBitrate > requestedMaxBitrate)
             {
-                _logger.LogInformation(
+                _logger.LogDebug(
                     "Bitrate exceeds {PlayBackMethod} limit: media bitrate: {MediaBitrate}, max bitrate: {MaxBitrate}",
                     playMethod,
                     itemBitrate,
@@ -1728,18 +1739,14 @@ namespace MediaBrowser.Model.Dlna
                                 continue;
                             }
 
-                            if (!string.IsNullOrEmpty(value))
+                            // change from split by | to comma
+                            // strip spaces to avoid having to encode
+                            var values = value
+                                .Split('|', StringSplitOptions.RemoveEmptyEntries);
+
+                            if (condition.Condition == ProfileConditionType.Equals || condition.Condition == ProfileConditionType.EqualsAny)
                             {
-                                // change from split by | to comma
-
-                                // strip spaces to avoid having to encode
-                                var values = value
-                                    .Split('|', StringSplitOptions.RemoveEmptyEntries);
-
-                                if (condition.Condition == ProfileConditionType.Equals || condition.Condition == ProfileConditionType.EqualsAny)
-                                {
-                                    item.SetOption(qualifier, "profile", string.Join(',', values));
-                                }
+                                item.SetOption(qualifier, "profile", string.Join(',', values));
                             }
 
                             break;

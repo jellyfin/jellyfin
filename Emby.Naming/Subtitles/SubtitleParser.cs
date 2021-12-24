@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Subtitles
 {
@@ -34,7 +35,7 @@ namespace Emby.Naming.Subtitles
             }
 
             var extension = Path.GetExtension(path);
-            if (!_options.SubtitleFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            if (!_options.SubtitleFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -42,11 +43,11 @@ namespace Emby.Naming.Subtitles
             var flags = GetFlags(path);
             var info = new SubtitleInfo(
                 path,
-                _options.SubtitleDefaultFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase)),
-                _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparer.OrdinalIgnoreCase)));
+                _options.SubtitleDefaultFlags.Any(i => flags.Contains(i, StringComparison.OrdinalIgnoreCase)),
+                _options.SubtitleForcedFlags.Any(i => flags.Contains(i, StringComparison.OrdinalIgnoreCase)));
 
-            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparer.OrdinalIgnoreCase)
-                && !_options.SubtitleForcedFlags.Contains(i, StringComparer.OrdinalIgnoreCase))
+            var parts = flags.Where(i => !_options.SubtitleDefaultFlags.Contains(i, StringComparison.OrdinalIgnoreCase)
+                && !_options.SubtitleForcedFlags.Contains(i, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             // Should have a name, language and file extension

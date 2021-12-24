@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -147,7 +149,7 @@ namespace Emby.Server.Implementations.EntryPoints
 
         private static bool EnableRefreshMessage(BaseItem item)
         {
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 return false;
             }
@@ -401,7 +403,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 return false;
             }
 
-            if (item is IItemByName && !(item is MusicArtist))
+            if (item is IItemByName && item is not MusicArtist)
             {
                 return false;
             }
@@ -434,7 +436,7 @@ namespace Emby.Server.Implementations.EntryPoints
         /// <summary>
         /// Translates the physical item to user library.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">The type of item.</typeparam>
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>

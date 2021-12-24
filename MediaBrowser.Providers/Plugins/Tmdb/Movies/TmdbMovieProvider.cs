@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -7,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -154,7 +157,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                 var movieResultFromImdbId = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
                 if (movieResultFromImdbId?.MovieResults.Count > 0)
                 {
-                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString();
+                    tmdbId = movieResultFromImdbId.MovieResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
@@ -206,12 +209,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
                 if (ourRelease != null)
                 {
-                    var ratingPrefix = string.Equals(info.MetadataCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? string.Empty : info.MetadataCountryCode + "-";
-                    var newRating = ratingPrefix + ourRelease.Certification;
-
-                    newRating = newRating.Replace("de-", "FSK-", StringComparison.OrdinalIgnoreCase);
-
-                    movie.OfficialRating = newRating;
+                    movie.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Certification);
                 }
                 else if (usRelease != null)
                 {
@@ -244,8 +242,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
 
             if (movieResult.Credits?.Cast != null)
             {
-                // TODO configurable
-                foreach (var actor in movieResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var actor in movieResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     var personInfo = new PersonInfo
                     {
@@ -283,8 +280,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.Movies
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase) &&
-                        !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    if (!keepTypes.Contains(type, StringComparison.OrdinalIgnoreCase) &&
+                        !keepTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

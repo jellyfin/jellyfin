@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -20,32 +22,26 @@ namespace MediaBrowser.Controller.Playlists
 {
     public class Playlist : Folder, IHasShares
     {
-        public static string[] SupportedExtensions =
-            {
-                ".m3u",
-                ".m3u8",
-                ".pls",
-                ".wpl",
-                ".zpl"
-            };
-
-        public Guid OwnerUserId { get; set; }
-
-        public Share[] Shares { get; set; }
+        public static readonly IReadOnlyList<string> SupportedExtensions = new[]
+        {
+            ".m3u",
+            ".m3u8",
+            ".pls",
+            ".wpl",
+            ".zpl"
+        };
 
         public Playlist()
         {
             Shares = Array.Empty<Share>();
         }
 
+        public Guid OwnerUserId { get; set; }
+
+        public Share[] Shares { get; set; }
+
         [JsonIgnore]
         public bool IsFile => IsPlaylistFile(Path);
-
-        public static bool IsPlaylistFile(string path)
-        {
-            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
-            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
-        }
 
         [JsonIgnore]
         public override string ContainingFolderPath
@@ -78,6 +74,41 @@ namespace MediaBrowser.Controller.Playlists
         [JsonIgnore]
         public override bool SupportsCumulativeRunTimeTicks => true;
 
+        [JsonIgnore]
+        public override bool IsPreSorted => true;
+
+        public string PlaylistMediaType { get; set; }
+
+        [JsonIgnore]
+        public override string MediaType => PlaylistMediaType;
+
+        [JsonIgnore]
+        private bool IsSharedItem
+        {
+            get
+            {
+                var path = Path;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    return false;
+                }
+
+                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
+            }
+        }
+
+        public static bool IsPlaylistFile(string path)
+        {
+            // The path will sometimes be a directory and "Path.HasExtension" returns true if the name contains a '.' (dot).
+            return System.IO.Path.HasExtension(path) && !Directory.Exists(path);
+        }
+
+        public void SetMediaType(string value)
+        {
+            PlaylistMediaType = value;
+        }
+
         public override double GetDefaultPrimaryImageAspectRatio()
         {
             return 1;
@@ -99,7 +130,7 @@ namespace MediaBrowser.Controller.Playlists
             return new List<BaseItem>();
         }
 
-        protected override Task ValidateChildrenInternal(IProgress<double> progress, CancellationToken cancellationToken, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService)
+        protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, MetadataRefreshOptions refreshOptions, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -126,10 +157,7 @@ namespace MediaBrowser.Controller.Playlists
 
         private List<BaseItem> GetPlayableItems(User user, InternalItemsQuery query)
         {
-            if (query == null)
-            {
-                query = new InternalItemsQuery(user);
-            }
+            query ??= new InternalItemsQuery(user);
 
             query.IsFolder = false;
 
@@ -161,7 +189,7 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { nameof(Audio) },
+                    IncludeItemTypes = new[] { BaseItemKind.Audio },
                     GenreIds = new[] { musicGenre.Id },
                     OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
@@ -173,7 +201,7 @@ namespace MediaBrowser.Controller.Playlists
                 return LibraryManager.GetItemList(new InternalItemsQuery(user)
                 {
                     Recursive = true,
-                    IncludeItemTypes = new[] { nameof(Audio) },
+                    IncludeItemTypes = new[] { BaseItemKind.Audio },
                     ArtistIds = new[] { musicArtist.Id },
                     OrderBy = new[] { (ItemSortBy.AlbumArtist, SortOrder.Ascending), (ItemSortBy.Album, SortOrder.Ascending), (ItemSortBy.SortName, SortOrder.Ascending) },
                     DtoOptions = options
@@ -196,35 +224,6 @@ namespace MediaBrowser.Controller.Playlists
             }
 
             return new[] { item };
-        }
-
-        [JsonIgnore]
-        public override bool IsPreSorted => true;
-
-        public string PlaylistMediaType { get; set; }
-
-        [JsonIgnore]
-        public override string MediaType => PlaylistMediaType;
-
-        public void SetMediaType(string value)
-        {
-            PlaylistMediaType = value;
-        }
-
-        [JsonIgnore]
-        private bool IsSharedItem
-        {
-            get
-            {
-                var path = Path;
-
-                if (string.IsNullOrEmpty(path))
-                {
-                    return false;
-                }
-
-                return FileSystem.ContainsSubPath(ConfigurationManager.ApplicationPaths.DataPath, path);
-            }
         }
 
         public override bool IsVisible(User user)

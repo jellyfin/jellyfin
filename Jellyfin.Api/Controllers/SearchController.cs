@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Drawing;
@@ -110,8 +109,8 @@ namespace Jellyfin.Api.Controllers
                 IncludeStudios = includeStudios,
                 StartIndex = startIndex,
                 UserId = userId ?? Guid.Empty,
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                IncludeItemTypes = includeItemTypes,
+                ExcludeItemTypes = excludeItemTypes,
                 MediaTypes = mediaTypes,
                 ParentId = parentId,
 
@@ -228,10 +227,7 @@ namespace Jellyfin.Api.Controllers
                 itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
-            if (itemWithImage == null)
-            {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Thumb);
-            }
+            itemWithImage ??= GetParentWithImage<BaseItem>(item, ImageType.Thumb);
 
             if (itemWithImage != null)
             {

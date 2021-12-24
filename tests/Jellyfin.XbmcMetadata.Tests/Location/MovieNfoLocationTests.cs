@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.System;
 using MediaBrowser.XbmcMetadata.Savers;
 using Xunit;
 
@@ -28,7 +28,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
             var path2 = "/media/movies/Avengers Endgame/movie.nfo";
 
             // uses ContainingFolderPath which uses Operating system specific paths
-            if (MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows)
+            if (OperatingSystem.IsWindows())
             {
                 movie.Path = movie.Path.Replace('/', '\\');
                 path1 = path1.Replace('/', '\\');
@@ -49,7 +49,7 @@ namespace Jellyfin.XbmcMetadata.Tests.Location
             var path2 = "/media/movies/Avengers Endgame/VIDEO_TS/VIDEO_TS.nfo";
 
             // uses ContainingFolderPath which uses Operating system specific paths
-            if (MediaBrowser.Common.System.OperatingSystem.Id == OperatingSystemId.Windows)
+            if (OperatingSystem.IsWindows())
             {
                 movie.Path = movie.Path.Replace('/', '\\');
                 path1 = path1.Replace('/', '\\');
