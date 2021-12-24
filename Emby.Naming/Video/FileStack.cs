@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Video
 {
@@ -12,25 +12,30 @@ namespace Emby.Naming.Video
         /// <summary>
         /// Initializes a new instance of the <see cref="FileStack"/> class.
         /// </summary>
-        public FileStack()
+        /// <param name="name">The stack name.</param>
+        /// <param name="isDirectory">Whether the stack files are directories.</param>
+        /// <param name="files">The stack files.</param>
+        public FileStack(string name, bool isDirectory, IReadOnlyList<string> files)
         {
-            Files = new List<string>();
+            Name = name;
+            IsDirectoryStack = isDirectory;
+            Files = files;
         }
 
         /// <summary>
-        /// Gets or sets name of file stack.
+        /// Gets the name of file stack.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; }
 
         /// <summary>
-        /// Gets or sets list of paths in stack.
+        /// Gets the list of paths in stack.
         /// </summary>
-        public List<string> Files { get; set; }
+        public IReadOnlyList<string> Files { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether stack is directory stack.
+        /// Gets a value indicating whether stack is directory stack.
         /// </summary>
-        public bool IsDirectoryStack { get; set; }
+        public bool IsDirectoryStack { get; }
 
         /// <summary>
         /// Helper function to determine if path is in the stack.
@@ -40,12 +45,12 @@ namespace Emby.Naming.Video
         /// <returns>True if file is in the stack.</returns>
         public bool ContainsFile(string file, bool isDirectory)
         {
-            if (IsDirectoryStack == isDirectory)
+            if (string.IsNullOrEmpty(file))
             {
-                return Files.Contains(file, StringComparer.OrdinalIgnoreCase);
+                return false;
             }
 
-            return false;
+            return IsDirectoryStack == isDirectory && Files.Contains(file, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

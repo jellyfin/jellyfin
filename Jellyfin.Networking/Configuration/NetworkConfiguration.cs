@@ -1,7 +1,6 @@
 #pragma warning disable CA1819 // Properties should not return arrays
 
 using System;
-using MediaBrowser.Model.Configuration;
 
 namespace Jellyfin.Networking.Configuration
 {
@@ -224,8 +223,13 @@ namespace Jellyfin.Networking.Configuration
         public string[] LocalNetworkAddresses { get; set; } = Array.Empty<string>();
 
         /// <summary>
-        /// Gets or sets the known proxies.
+        /// Gets or sets the known proxies. If the proxy is a network, it's added to the KnownNetworks.
         /// </summary>
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the published server uri is based on information in HTTP requests.
+        /// </summary>
+        public bool EnablePublishedServerUriByRequest { get; set; } = false;
     }
 }

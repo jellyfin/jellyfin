@@ -1,7 +1,6 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using MediaBrowser.Model.Entities;
 using TMDbLib.Objects.General;
 
@@ -12,6 +11,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public static class TmdbUtils
     {
+        private static readonly Regex _nonWords = new (@"[\W_]+", RegexOptions.Compiled);
+
         /// <summary>
         /// URL of the TMDB instance to use.
         /// </summary>
@@ -28,11 +29,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
 
         /// <summary>
-        /// Maximum number of cast members to pull.
-        /// </summary>
-        public const int MaxCastMembers = 15;
-
-        /// <summary>
         /// The crew types to keep.
         /// </summary>
         public static readonly string[] WantedCrewTypes =
@@ -43,25 +39,36 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         };
 
         /// <summary>
+        /// Cleans the name according to TMDb requirements.
+        /// </summary>
+        /// <param name="name">The name of the entity.</param>
+        /// <returns>The cleaned name.</returns>
+        public static string CleanName(string name)
+        {
+            // TMDb expects a space separated list of words make sure that is the case
+            return _nonWords.Replace(name, " ");
+        }
+
+        /// <summary>
         /// Maps the TMDB provided roles for crew members to Jellyfin roles.
         /// </summary>
         /// <param name="crew">Crew member to map against the Jellyfin person types.</param>
         /// <returns>The Jellyfin person type.</returns>
         public static string MapCrewToPersonType(Crew crew)
         {
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("director", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("director", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Director;
             }
 
-            if (crew.Department.Equals("production", StringComparison.InvariantCultureIgnoreCase)
-                && crew.Job.Contains("producer", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("production", StringComparison.OrdinalIgnoreCase)
+                && crew.Job.Contains("producer", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Producer;
             }
 
-            if (crew.Department.Equals("writing", StringComparison.InvariantCultureIgnoreCase))
+            if (crew.Department.Equals("writing", StringComparison.OrdinalIgnoreCase))
             {
                 return PersonType.Writer;
             }
@@ -134,6 +141,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             if (parts.Length == 2)
             {
+                // TMDB doesn't support Switzerland (de-CH, it-CH or fr-CH) so use the language (de, it or fr) without country code
+                if (string.Equals(parts[1], "CH", StringComparison.OrdinalIgnoreCase))
+                {
+                    return parts[0];
+                }
+
                 language = parts[0] + "-" + parts[1].ToUpperInvariant();
             }
 
@@ -158,6 +171,21 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return imageLanguage;
+        }
+
+        /// <summary>
+        /// Combines the metadata country code and the parental rating from the Api into the value we store in our database.
+        /// </summary>
+        /// <param name="countryCode">The Iso 3166-1 country code of the rating country.</param>
+        /// <param name="ratingValue">The rating value returned by the Tmdb Api.</param>
+        /// <returns>The combined parental rating of country code+rating value.</returns>
+        public static string BuildParentalRating(string countryCode, string ratingValue)
+        {
+            // exclude US because we store us values as TV-14 without the country code.
+            var ratingPrefix = string.Equals(countryCode, "US", StringComparison.OrdinalIgnoreCase) ? string.Empty : countryCode + "-";
+            var newRating = ratingPrefix + ratingValue;
+
+            return newRating.Replace("DE-", "FSK-", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

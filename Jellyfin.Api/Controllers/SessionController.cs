@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
@@ -124,9 +125,9 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/{sessionId}/Viewing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult DisplayContent(
+        public async Task<ActionResult> DisplayContent(
             [FromRoute, Required] string sessionId,
-            [FromQuery, Required] string itemType,
+            [FromQuery, Required] BaseItemKind itemType,
             [FromQuery, Required] string itemId,
             [FromQuery, Required] string itemName)
         {
@@ -137,11 +138,12 @@ namespace Jellyfin.Api.Controllers
                 ItemType = itemType
             };
 
-            _sessionManager.SendBrowseCommand(
-                RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
+            await _sessionManager.SendBrowseCommand(
+                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
                 sessionId,
                 command,
-                CancellationToken.None);
+                CancellationToken.None)
+                .ConfigureAwait(false);
 
             return NoContent();
         }
@@ -153,29 +155,42 @@ namespace Jellyfin.Api.Controllers
         /// <param name="playCommand">The type of play command to issue (PlayNow, PlayNext, PlayLast). Clients who have not yet implemented play next and play last may play now.</param>
         /// <param name="itemIds">The ids of the items to play, comma delimited.</param>
         /// <param name="startPositionTicks">The starting position of the first item.</param>
+        /// <param name="mediaSourceId">Optional. The media source id.</param>
+        /// <param name="audioStreamIndex">Optional. The index of the audio stream to play.</param>
+        /// <param name="subtitleStreamIndex">Optional. The index of the subtitle stream to play.</param>
+        /// <param name="startIndex">Optional. The start index.</param>
         /// <response code="204">Instruction sent to session.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Playing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult Play(
+        public async Task<ActionResult> Play(
             [FromRoute, Required] string sessionId,
             [FromQuery, Required] PlayCommand playCommand,
             [FromQuery, Required, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] itemIds,
-            [FromQuery] long? startPositionTicks)
+            [FromQuery] long? startPositionTicks,
+            [FromQuery] string? mediaSourceId,
+            [FromQuery] int? audioStreamIndex,
+            [FromQuery] int? subtitleStreamIndex,
+            [FromQuery] int? startIndex)
         {
             var playRequest = new PlayRequest
             {
                 ItemIds = itemIds,
                 StartPositionTicks = startPositionTicks,
-                PlayCommand = playCommand
+                PlayCommand = playCommand,
+                MediaSourceId = mediaSourceId,
+                AudioStreamIndex = audioStreamIndex,
+                SubtitleStreamIndex = subtitleStreamIndex,
+                StartIndex = startIndex
             };
 
-            _sessionManager.SendPlayCommand(
-                RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
+            await _sessionManager.SendPlayCommand(
+                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
                 sessionId,
                 playRequest,
-                CancellationToken.None);
+                CancellationToken.None)
+                .ConfigureAwait(false);
 
             return NoContent();
         }
@@ -192,14 +207,14 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/{sessionId}/Playing/{command}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SendPlaystateCommand(
+        public async Task<ActionResult> SendPlaystateCommand(
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] PlaystateCommand command,
             [FromQuery] long? seekPositionTicks,
             [FromQuery] string? controllingUserId)
         {
-            _sessionManager.SendPlaystateCommand(
-                RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id,
+            await _sessionManager.SendPlaystateCommand(
+                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
                 sessionId,
                 new PlaystateRequest()
                 {
@@ -207,7 +222,8 @@ namespace Jellyfin.Api.Controllers
                     ControllingUserId = controllingUserId,
                     SeekPositionTicks = seekPositionTicks,
                 },
-                CancellationToken.None);
+                CancellationToken.None)
+                .ConfigureAwait(false);
 
             return NoContent();
         }
@@ -222,18 +238,18 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/{sessionId}/System/{command}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SendSystemCommand(
+        public async Task<ActionResult> SendSystemCommand(
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] GeneralCommandType command)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
+            var currentSession = await RequestHelpers.GetSession(_sessionManager, _authContext, Request).ConfigureAwait(false);
             var generalCommand = new GeneralCommand
             {
                 Name = command,
                 ControllingUserId = currentSession.UserId
             };
 
-            _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
+            await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
 
             return NoContent();
         }
@@ -248,11 +264,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/{sessionId}/Command/{command}")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SendGeneralCommand(
+        public async Task<ActionResult> SendGeneralCommand(
             [FromRoute, Required] string sessionId,
             [FromRoute, Required] GeneralCommandType command)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
+            var currentSession = await RequestHelpers.GetSession(_sessionManager, _authContext, Request).ConfigureAwait(false);
 
             var generalCommand = new GeneralCommand
             {
@@ -260,7 +276,8 @@ namespace Jellyfin.Api.Controllers
                 ControllingUserId = currentSession.UserId
             };
 
-            _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None);
+            await _sessionManager.SendGeneralCommand(currentSession.Id, sessionId, generalCommand, CancellationToken.None)
+                .ConfigureAwait(false);
 
             return NoContent();
         }
@@ -275,11 +292,12 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/{sessionId}/Command")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SendFullGeneralCommand(
+        public async Task<ActionResult> SendFullGeneralCommand(
             [FromRoute, Required] string sessionId,
             [FromBody, Required] GeneralCommand command)
         {
-            var currentSession = RequestHelpers.GetSession(_sessionManager, _authContext, Request);
+            var currentSession = await RequestHelpers.GetSession(_sessionManager, _authContext, Request)
+                .ConfigureAwait(false);
 
             if (command == null)
             {
@@ -288,11 +306,12 @@ namespace Jellyfin.Api.Controllers
 
             command.ControllingUserId = currentSession.UserId;
 
-            _sessionManager.SendGeneralCommand(
+            await _sessionManager.SendGeneralCommand(
                 currentSession.Id,
                 sessionId,
                 command,
-                CancellationToken.None);
+                CancellationToken.None)
+                .ConfigureAwait(false);
 
             return NoContent();
         }
@@ -301,28 +320,27 @@ namespace Jellyfin.Api.Controllers
         /// Issues a command to a client to display a message to the user.
         /// </summary>
         /// <param name="sessionId">The session id.</param>
-        /// <param name="text">The message test.</param>
-        /// <param name="header">The message header.</param>
-        /// <param name="timeoutMs">The message timeout. If omitted the user will have to confirm viewing the message.</param>
+        /// <param name="command">The <see cref="MessageCommand" /> object containing Header, Message Text, and TimeoutMs.</param>
         /// <response code="204">Message sent.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Sessions/{sessionId}/Message")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult SendMessageCommand(
+        public async Task<ActionResult> SendMessageCommand(
             [FromRoute, Required] string sessionId,
-            [FromQuery, Required] string text,
-            [FromQuery] string? header,
-            [FromQuery] long? timeoutMs)
+            [FromBody, Required] MessageCommand command)
         {
-            var command = new MessageCommand
+            if (string.IsNullOrWhiteSpace(command.Header))
             {
-                Header = string.IsNullOrEmpty(header) ? "Message from Server" : header,
-                TimeoutMs = timeoutMs,
-                Text = text
-            };
+                command.Header = "Message from Server";
+            }
 
-            _sessionManager.SendMessageCommand(RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id, sessionId, command, CancellationToken.None);
+            await _sessionManager.SendMessageCommand(
+                await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false),
+                sessionId,
+                command,
+                CancellationToken.None)
+                .ConfigureAwait(false);
 
             return NoContent();
         }
@@ -377,7 +395,7 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/Capabilities")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostCapabilities(
+        public async Task<ActionResult> PostCapabilities(
             [FromQuery] string? id,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] playableMediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] GeneralCommandType[] supportedCommands,
@@ -387,7 +405,7 @@ namespace Jellyfin.Api.Controllers
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+                id = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             }
 
             _sessionManager.ReportCapabilities(id, new ClientCapabilities
@@ -411,13 +429,13 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/Capabilities/Full")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostFullCapabilities(
+        public async Task<ActionResult> PostFullCapabilities(
             [FromQuery] string? id,
             [FromBody, Required] ClientCapabilitiesDto capabilities)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
-                id = RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+                id = await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
             }
 
             _sessionManager.ReportCapabilities(id, capabilities.ToClientCapabilities());
@@ -435,11 +453,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/Viewing")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult ReportViewing(
+        public async Task<ActionResult> ReportViewing(
             [FromQuery] string? sessionId,
             [FromQuery, Required] string? itemId)
         {
-            string session = sessionId ?? RequestHelpers.GetSession(_sessionManager, _authContext, Request).Id;
+            string session = sessionId ?? await RequestHelpers.GetSessionId(_sessionManager, _authContext, Request).ConfigureAwait(false);
 
             _sessionManager.ReportNowViewingItem(session, itemId);
             return NoContent();
@@ -453,11 +471,11 @@ namespace Jellyfin.Api.Controllers
         [HttpPost("Sessions/Logout")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult ReportSessionEnded()
+        public async Task<ActionResult> ReportSessionEnded()
         {
-            AuthorizationInfo auth = _authContext.GetAuthorizationInfo(Request);
+            AuthorizationInfo auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
-            _sessionManager.Logout(auth.Token);
+            await _sessionManager.Logout(auth.Token).ConfigureAwait(false);
             return NoContent();
         }
 

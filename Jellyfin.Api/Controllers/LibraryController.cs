@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Api.Models.LibraryDtos;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -23,7 +24,6 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Activity;
@@ -37,7 +37,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Book = MediaBrowser.Controller.Entities.Book;
 
 namespace Jellyfin.Api.Controllers
 {
@@ -115,7 +114,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path));
+            return PhysicalFile(item.Path, MimeTypes.GetMimeType(item.Path), true);
         }
 
         /// <summary>
@@ -304,7 +303,7 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <response code="204">Library scan started.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
-        [HttpGet("Library/Refresh")]
+        [HttpPost("Library/Refresh")]
         [Authorize(Policy = Policies.RequiresElevation)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> RefreshLibrary()
@@ -332,10 +331,10 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItem(Guid itemId)
+        public async Task<ActionResult> DeleteItem(Guid itemId)
         {
             var item = _libraryManager.GetItemById(itemId);
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
             var user = auth.User;
 
             if (!item.CanDelete(user))
@@ -362,7 +361,7 @@ namespace Jellyfin.Api.Controllers
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
+        public async Task<ActionResult> DeleteItems([FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] Guid[] ids)
         {
             if (ids.Length == 0)
             {
@@ -372,7 +371,7 @@ namespace Jellyfin.Api.Controllers
             foreach (var i in ids)
             {
                 var item = _libraryManager.GetItemById(i);
-                var auth = _authContext.GetAuthorizationInfo(Request);
+                var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
                 var user = auth.User;
 
                 if (!item.CanDelete(user))
@@ -414,14 +413,14 @@ namespace Jellyfin.Api.Controllers
 
             var counts = new ItemCounts
             {
-                AlbumCount = GetCount(typeof(MusicAlbum), user, isFavorite),
-                EpisodeCount = GetCount(typeof(Episode), user, isFavorite),
-                MovieCount = GetCount(typeof(Movie), user, isFavorite),
-                SeriesCount = GetCount(typeof(Series), user, isFavorite),
-                SongCount = GetCount(typeof(Audio), user, isFavorite),
-                MusicVideoCount = GetCount(typeof(MusicVideo), user, isFavorite),
-                BoxSetCount = GetCount(typeof(BoxSet), user, isFavorite),
-                BookCount = GetCount(typeof(Book), user, isFavorite)
+                AlbumCount = GetCount(BaseItemKind.MusicAlbum, user, isFavorite),
+                EpisodeCount = GetCount(BaseItemKind.Episode, user, isFavorite),
+                MovieCount = GetCount(BaseItemKind.Movie, user, isFavorite),
+                SeriesCount = GetCount(BaseItemKind.Series, user, isFavorite),
+                SongCount = GetCount(BaseItemKind.Audio, user, isFavorite),
+                MusicVideoCount = GetCount(BaseItemKind.MusicVideo, user, isFavorite),
+                BoxSetCount = GetCount(BaseItemKind.BoxSet, user, isFavorite),
+                BookCount = GetCount(BaseItemKind.Book, user, isFavorite)
             };
 
             return counts;
@@ -530,7 +529,7 @@ namespace Jellyfin.Api.Controllers
         {
             var series = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(Series) },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
@@ -560,7 +559,7 @@ namespace Jellyfin.Api.Controllers
         {
             var movies = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(Movie) },
+                IncludeItemTypes = new[] { BaseItemKind.Movie },
                 DtoOptions = new DtoOptions(false)
                 {
                     EnableImages = false
@@ -591,17 +590,17 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Reports that new movies have been added by an external source.
         /// </summary>
-        /// <param name="updates">A list of updated media paths.</param>
+        /// <param name="dto">The update paths.</param>
         /// <response code="204">Report success.</response>
         /// <returns>A <see cref="NoContentResult"/>.</returns>
         [HttpPost("Library/Media/Updated")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public ActionResult PostUpdatedMedia([FromBody, Required] MediaUpdateInfoDto[] updates)
+        public ActionResult PostUpdatedMedia([FromBody, Required] MediaUpdateInfoDto dto)
         {
-            foreach (var item in updates)
+            foreach (var item in dto.Updates)
             {
-                _libraryMonitor.ReportFileSystemChanged(item.Path);
+                _libraryMonitor.ReportFileSystemChanged(item.Path ?? throw new ArgumentException("Item path can't be null."));
             }
 
             return NoContent();
@@ -628,7 +627,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var auth = _authContext.GetAuthorizationInfo(Request);
+            var auth = await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false);
 
             var user = auth.User;
 
@@ -667,7 +666,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             // TODO determine non-ASCII validity.
-            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename);
+            return PhysicalFile(path, MimeTypes.GetMimeType(path), filename, true);
         }
 
         /// <summary>
@@ -701,7 +700,7 @@ namespace Jellyfin.Api.Controllers
                     : _libraryManager.RootFolder)
                 : _libraryManager.GetItemById(itemId);
 
-            if (item is Episode || (item is IItemByName && !(item is MusicArtist)))
+            if (item is Episode || (item is IItemByName && item is not MusicArtist))
             {
                 return new QueryResult<BaseItemDto>();
             }
@@ -716,30 +715,31 @@ namespace Jellyfin.Api.Controllers
             bool? isMovie = item is Movie || (program != null && program.IsMovie) || item is Trailer;
             bool? isSeries = item is Series || (program != null && program.IsSeries);
 
-            var includeItemTypes = new List<string>();
+            var includeItemTypes = new List<BaseItemKind>();
             if (isMovie.Value)
             {
-                includeItemTypes.Add(nameof(Movie));
+                includeItemTypes.Add(BaseItemKind.Movie);
                 if (_serverConfigurationManager.Configuration.EnableExternalContentInSuggestions)
                 {
-                    includeItemTypes.Add(nameof(Trailer));
-                    includeItemTypes.Add(nameof(LiveTvProgram));
+                    includeItemTypes.Add(BaseItemKind.Trailer);
+                    includeItemTypes.Add(BaseItemKind.LiveTvProgram);
                 }
             }
             else if (isSeries.Value)
             {
-                includeItemTypes.Add(nameof(Series));
+                includeItemTypes.Add(BaseItemKind.Series);
             }
             else
             {
                 // For non series and movie types these columns are typically null
                 isSeries = null;
                 isMovie = null;
-                includeItemTypes.Add(item.GetType().Name);
+                includeItemTypes.Add(item.GetBaseItemKind());
             }
 
             var query = new InternalItemsQuery(user)
             {
+                Genres = item.Genres,
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 SimilarTo = item,
@@ -778,7 +778,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<LibraryOptionsResultDto> GetLibraryOptionsInfo(
             [FromQuery] string? libraryContentType,
-            [FromQuery] bool isNewLibrary)
+            [FromQuery] bool isNewLibrary = false)
         {
             var result = new LibraryOptionsResultDto();
 
@@ -786,7 +786,7 @@ namespace Jellyfin.Api.Controllers
             var typesList = types.ToList();
 
             var plugins = _providerManager.GetAllMetadataPlugins()
-                .Where(i => types.Contains(i.ItemType, StringComparer.OrdinalIgnoreCase))
+                .Where(i => types.Contains(i.ItemType, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => typesList.IndexOf(i.ItemType))
                 .ToList();
 
@@ -872,11 +872,11 @@ namespace Jellyfin.Api.Controllers
             return result;
         }
 
-        private int GetCount(Type type, User? user, bool? isFavorite)
+        private int GetCount(BaseItemKind itemKind, User? user, bool? isFavorite)
         {
             var query = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { type.Name },
+                IncludeItemTypes = new[] { itemKind },
                 Limit = 0,
                 Recursive = true,
                 IsVirtualItem = false,
@@ -941,10 +941,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             var metadataOptions = _serverConfigurationManager.Configuration.MetadataOptions
-                .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                .Where(i => itemTypes.Contains(i.ItemType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
-            return metadataOptions.Length == 0 || metadataOptions.Any(i => !i.DisabledMetadataSavers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return metadataOptions.Length == 0 || metadataOptions.Any(i => !i.DisabledMetadataSavers.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsMetadataFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -968,7 +968,7 @@ namespace Jellyfin.Api.Controllers
                 .ToArray();
 
             return metadataOptions.Length == 0
-               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+               || metadataOptions.Any(i => !i.DisabledMetadataFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool IsImageFetcherEnabledByDefault(string name, string type, bool isNewLibrary)
@@ -998,7 +998,7 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
-            return metadataOptions.Any(i => !i.DisabledImageFetchers.Contains(name, StringComparer.OrdinalIgnoreCase));
+            return metadataOptions.Any(i => !i.DisabledImageFetchers.Contains(name, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

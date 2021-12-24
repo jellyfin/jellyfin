@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -83,8 +83,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] Guid? userId,
             [FromQuery, Required] string searchTerm,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery] Guid? parentId,
             [FromQuery] bool? isMovie,
@@ -227,10 +227,7 @@ namespace Jellyfin.Api.Controllers
                 itemWithImage = GetParentWithImage<Series>(item, ImageType.Thumb);
             }
 
-            if (itemWithImage == null)
-            {
-                itemWithImage = GetParentWithImage<BaseItem>(item, ImageType.Thumb);
-            }
+            itemWithImage ??= GetParentWithImage<BaseItem>(item, ImageType.Thumb);
 
             if (itemWithImage != null)
             {

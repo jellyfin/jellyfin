@@ -1,22 +1,18 @@
-ARG DOTNET_VERSION=5.0
+# DESIGNED FOR BUILDING ON AMD64 ONLY
+#####################################
+# Requires binfm_misc registration
+# https://github.com/multiarch/qemu-user-static#binfmt_misc-register
+ARG DOTNET_VERSION=6.0
 
-FROM node:alpine as web-builder
+FROM node:lts-alpine as web-builder
 ARG JELLYFIN_WEB_VERSION=master
-RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-sdk automake libtool make gcc musl-dev nasm python \
+RUN apk add curl git zlib zlib-dev autoconf g++ make libpng-dev gifsicle alpine-sdk automake libtool make gcc musl-dev nasm python3 \
  && curl -L https://github.com/jellyfin/jellyfin-web/archive/${JELLYFIN_WEB_VERSION}.tar.gz | tar zxf - \
  && cd jellyfin-web-* \
- && yarn install \
+ && npm ci --no-audit --unsafe-perm \
  && mv dist /dist
 
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION}-buster-slim as builder
-WORKDIR /repo
-COPY . .
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
-# because of changes in docker and systemd we need to not build in parallel at the moment
-# see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
-RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=false;DebugType=none"
-
-FROM debian:buster-slim
+FROM debian:stable-slim as app
 
 # https://askubuntu.com/questions/972516/debian-frontend-environment-variable
 ARG DEBIAN_FRONTEND="noninteractive"
@@ -25,19 +21,17 @@ ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 # https://github.com/NVIDIA/nvidia-docker/wiki/Installation-(Native-GPU-Support)
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 
-COPY --from=builder /jellyfin /jellyfin
-COPY --from=web-builder /dist /jellyfin/jellyfin-web
-
 # https://github.com/intel/compute-runtime/releases
-ARG GMMLIB_VERSION=20.3.2
-ARG IGC_VERSION=1.0.5435
-ARG NEO_VERSION=20.46.18421
-ARG LEVEL_ZERO_VERSION=1.0.18421
+ARG GMMLIB_VERSION=21.2.1
+ARG IGC_VERSION=1.0.8517
+ARG NEO_VERSION=21.35.20826
+ARG LEVEL_ZERO_VERSION=1.2.20826
 
 # Install dependencies:
 # mesa-va-drivers: needed for AMD VAAPI. Mesa >= 20.1 is required for HEVC transcoding.
+# curl: healthcheck
 RUN apt-get update \
- && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg wget apt-transport-https \
+ && apt-get install --no-install-recommends --no-install-suggests -y ca-certificates gnupg wget apt-transport-https curl \
  && wget -O - https://repo.jellyfin.org/jellyfin_team.gpg.key | apt-key add - \
  && echo "deb [arch=$( dpkg --print-architecture )] https://repo.jellyfin.org/$( awk -F'=' '/^ID=/{ print $NF }' /etc/os-release ) $( awk -F'=' '/^VERSION_CODENAME=/{ print $NF }' /etc/os-release ) main" | tee /etc/apt/sources.list.d/jellyfin.list \
  && apt-get update \
@@ -68,10 +62,25 @@ RUN apt-get update \
  && chmod 777 /cache /config /media \
  && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen
 
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+# ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} as builder
+WORKDIR /repo
+COPY . .
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+# because of changes in docker and systemd we need to not build in parallel at the moment
+# see https://success.docker.com/article/how-to-reserve-resource-temporarily-unavailable-errors-due-to-tasksmax-setting
+RUN dotnet publish Jellyfin.Server --disable-parallel --configuration Release --output="/jellyfin" --self-contained --runtime linux-x64 "-p:DebugSymbols=false;DebugType=none"
+
+FROM app
+
+ENV HEALTHCHECK_URL=http://localhost:8096/health
+
+COPY --from=builder /jellyfin /jellyfin
+COPY --from=web-builder /dist /jellyfin/jellyfin-web
 
 EXPOSE 8096
 VOLUME /cache /config /media
@@ -79,3 +88,6 @@ ENTRYPOINT ["./jellyfin/jellyfin", \
     "--datadir", "/config", \
     "--cachedir", "/cache", \
     "--ffmpeg", "/usr/lib/jellyfin-ffmpeg/ffmpeg"]
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+     CMD curl -Lk "${HEALTHCHECK_URL}" || exit 1

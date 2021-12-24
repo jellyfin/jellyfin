@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -212,7 +212,7 @@ namespace Jellyfin.Api.Controllers
 
             if (item is IHasTrailers hasTrailers)
             {
-                var trailers = hasTrailers.GetTrailers();
+                var trailers = hasTrailers.LocalTrailers;
                 var dtosTrailers = _dtoService.GetBaseItemDtos(trailers, dtoOptions, user, item);
                 var allTrailers = new BaseItemDto[dtosExtras.Length + dtosTrailers.Count];
                 dtosExtras.CopyTo(allTrailers, 0);
@@ -269,7 +269,7 @@ namespace Jellyfin.Api.Controllers
             [FromRoute, Required] Guid userId,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery] bool? isPlayed,
             [FromQuery] bool? enableImages,
             [FromQuery] int? imageTypeLimit,

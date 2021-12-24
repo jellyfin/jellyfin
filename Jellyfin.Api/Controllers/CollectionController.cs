@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Dto;
@@ -59,7 +58,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] Guid? parentId,
             [FromQuery] bool isLocked = false)
         {
-            var userId = _authContext.GetAuthorizationInfo(Request).UserId;
+            var userId = (await _authContext.GetAuthorizationInfo(Request).ConfigureAwait(false)).UserId;
 
             var item = await _collectionManager.CreateCollectionAsync(new CollectionCreationOptions
             {

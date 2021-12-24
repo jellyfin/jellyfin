@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -10,6 +12,11 @@ namespace MediaBrowser.Controller.Entities
 {
     public class Book : BaseItem, IHasLookupInfo<BookInfo>, IHasSeries
     {
+        public Book()
+        {
+            this.RunTimeTicks = TimeSpan.TicksPerSecond;
+        }
+
         [JsonIgnore]
         public override string MediaType => Model.Entities.MediaType.Book;
 
@@ -25,11 +32,6 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public Guid SeriesId { get; set; }
-
-        public Book()
-        {
-            this.RunTimeTicks = TimeSpan.TicksPerSecond;
-        }
 
         public string FindSeriesSortName()
         {

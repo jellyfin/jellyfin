@@ -5,19 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 using Emby.Server.Implementations;
-using Emby.Server.Implementations.IO;
-using Jellyfin.Api.Controllers;
+using Jellyfin.Server.Implementations;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Extensions;
+using MediaBrowser.Model.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -121,11 +120,11 @@ namespace Jellyfin.Server
 
             // Log uncaught exceptions to the logging instead of std error
             AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionToConsole;
-            AppDomain.CurrentDomain.UnhandledException += (sender, e)
+            AppDomain.CurrentDomain.UnhandledException += (_, e)
                 => _logger.LogCritical((Exception)e.ExceptionObject, "Unhandled Exception");
 
             // Intercept Ctrl+C and Ctrl+Break
-            Console.CancelKeyPress += (sender, e) =>
+            Console.CancelKeyPress += (_, e) =>
             {
                 if (_tokenSource.IsCancellationRequested)
                 {
@@ -139,7 +138,7 @@ namespace Jellyfin.Server
             };
 
             // Register a SIGTERM handler
-            AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
             {
                 if (_tokenSource.IsCancellationRequested)
                 {
@@ -157,33 +156,37 @@ namespace Jellyfin.Server
 
             ApplicationHost.LogEnvironmentInfo(_logger, appPaths);
 
+            // If hosting the web client, validate the client content path
+            if (startupConfig.HostWebClient())
+            {
+                string? webContentPath = appPaths.WebPath;
+                if (!Directory.Exists(webContentPath) || !Directory.EnumerateFiles(webContentPath).Any())
+                {
+                    _logger.LogError(
+                        "The server is expected to host the web client, but the provided content directory is either " +
+                        "invalid or empty: {WebContentPath}. If you do not want to host the web client with the " +
+                        "server, you may set the '--nowebclient' command line flag, or set" +
+                        "'{ConfigKey}=false' in your config settings.",
+                        webContentPath,
+                        ConfigurationExtensions.HostWebClientKey);
+                    Environment.ExitCode = 1;
+                    return;
+                }
+            }
+
             PerformStaticInitialization();
-            var serviceCollection = new ServiceCollection();
+            Migrations.MigrationRunner.RunPreStartup(appPaths, _loggerFactory);
 
             var appHost = new CoreAppHost(
                 appPaths,
                 _loggerFactory,
                 options,
-                new ManagedFileSystem(_loggerFactory.CreateLogger<ManagedFileSystem>(), appPaths),
-                serviceCollection);
+                startupConfig);
 
             try
             {
-                // If hosting the web client, validate the client content path
-                if (startupConfig.HostWebClient())
-                {
-                    string? webContentPath = appHost.ServerConfigurationManager.ApplicationPaths.WebPath;
-                    if (!Directory.Exists(webContentPath) || Directory.GetFiles(webContentPath).Length == 0)
-                    {
-                        throw new InvalidOperationException(
-                            "The server is expected to host the web client, but the provided content directory is either " +
-                            $"invalid or empty: {webContentPath}. If you do not want to host the web client with the " +
-                            "server, you may set the '--nowebclient' command line flag, or set" +
-                            $"'{MediaBrowser.Controller.Extensions.ConfigurationExtensions.HostWebClientKey}=false' in your config settings.");
-                    }
-                }
-
-                appHost.Init();
+                var serviceCollection = new ServiceCollection();
+                appHost.Init(serviceCollection);
 
                 var webHost = new WebHostBuilder().ConfigureWebHostBuilder(appHost, serviceCollection, options, startupConfig, appPaths).Build();
 
@@ -194,15 +197,15 @@ namespace Jellyfin.Server
 
                 try
                 {
-                    await webHost.StartAsync().ConfigureAwait(false);
+                    await webHost.StartAsync(_tokenSource.Token).ConfigureAwait(false);
                 }
-                catch
+                catch (Exception ex) when (ex is not TaskCanceledException)
                 {
-                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in system.xml and try again.");
+                    _logger.LogError("Kestrel failed to start! This is most likely due to an invalid address or port bind - correct your bind configuration in network.xml and try again.");
                     throw;
                 }
 
-                await appHost.RunStartupTasksAsync().ConfigureAwait(false);
+                await appHost.RunStartupTasksAsync(_tokenSource.Token).ConfigureAwait(false);
 
                 stopWatch.Stop();
 
@@ -221,7 +224,15 @@ namespace Jellyfin.Server
             }
             finally
             {
-                appHost?.Dispose();
+                _logger.LogInformation("Running query planner optimizations in the database... This might take a while");
+                // Run before disposing the application
+                using var context = appHost.Resolve<JellyfinDbProvider>().CreateContext();
+                if (context.Database.IsSqlite())
+                {
+                    context.Database.ExecuteSqlRaw("PRAGMA optimize");
+                }
+
+                appHost.Dispose();
             }
 
             if (_restartOnShutdown)
@@ -280,7 +291,7 @@ namespace Jellyfin.Server
                     bool flagged = false;
                     foreach (IPObject netAdd in addresses)
                     {
-                        _logger.LogInformation("Kestrel listening on {0}", netAdd);
+                        _logger.LogInformation("Kestrel listening on {Address}", netAdd.Address == IPAddress.IPv6Any ? "All Addresses" : netAdd);
                         options.Listen(netAdd.Address, appHost.HttpPort);
                         if (appHost.ListenWithHttps)
                         {
@@ -309,8 +320,8 @@ namespace Jellyfin.Server
                         }
                     }
 
-                    // Bind to unix socket (only on macOS and Linux)
-                    if (startupConfig.UseUnixSocket() && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    // Bind to unix socket (only on unix systems)
+                    if (startupConfig.UseUnixSocket() && Environment.OSVersion.Platform == PlatformID.Unix)
                     {
                         var socketPath = startupConfig.GetUnixSocketPath();
                         if (string.IsNullOrEmpty(socketPath))
@@ -395,7 +406,7 @@ namespace Jellyfin.Server
                 {
                     if (options.DataDir != null
                         || Directory.Exists(Path.Combine(dataDir, "config"))
-                        || RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        || OperatingSystem.IsWindows())
                     {
                         // Hang config folder off already set dataDir
                         configDir = Path.Combine(dataDir, "config");
@@ -433,7 +444,7 @@ namespace Jellyfin.Server
 
                 if (string.IsNullOrEmpty(cacheDir))
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (OperatingSystem.IsWindows())
                     {
                         // Hang cache folder off already set dataDir
                         cacheDir = Path.Combine(dataDir, "cache");
@@ -534,11 +545,11 @@ namespace Jellyfin.Server
             // Get a stream of the resource contents
             // NOTE: The .csproj name is used instead of the assembly name in the resource path
             const string ResourcePath = "Jellyfin.Server.Resources.Configuration.logging.json";
-            await using Stream? resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
+            await using Stream resource = typeof(Program).Assembly.GetManifestResourceStream(ResourcePath)
                 ?? throw new InvalidOperationException($"Invalid resource path: '{ResourcePath}'");
 
             // Copy the resource contents to the expected file path for the config file
-            await using Stream dst = File.Open(configPath, FileMode.CreateNew);
+            await using Stream dst = new FileStream(configPath, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             await resource.CopyToAsync(dst).ConfigureAwait(false);
         }
 
@@ -585,7 +596,7 @@ namespace Jellyfin.Server
             try
             {
                 // Serilog.Log is used by SerilogLoggerFactory when no logger is specified
-                Serilog.Log.Logger = new LoggerConfiguration()
+                Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
                     .Enrich.FromLogContext()
                     .Enrich.WithThreadId()
@@ -593,7 +604,7 @@ namespace Jellyfin.Server
             }
             catch (Exception ex)
             {
-                Serilog.Log.Logger = new LoggerConfiguration()
+                Log.Logger = new LoggerConfiguration()
                     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}] [{Level:u3}] [{ThreadId}] {SourceContext}: {Message:lj}{NewLine}{Exception}")
                     .WriteTo.Async(x => x.File(
                         Path.Combine(appPaths.LogDirectoryPath, "log_.log"),
@@ -604,7 +615,7 @@ namespace Jellyfin.Server
                     .Enrich.WithThreadId()
                     .CreateLogger();
 
-                Serilog.Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
+                Log.Logger.Fatal(ex, "Failed to create/read logger configuration");
             }
         }
 
@@ -622,7 +633,7 @@ namespace Jellyfin.Server
             string commandLineArgsString;
             if (options.RestartArgs != null)
             {
-                commandLineArgsString = options.RestartArgs ?? string.Empty;
+                commandLineArgsString = options.RestartArgs;
             }
             else
             {
@@ -639,7 +650,7 @@ namespace Jellyfin.Server
 
         private static string NormalizeCommandLineArgument(string arg)
         {
-            if (!arg.Contains(" ", StringComparison.OrdinalIgnoreCase))
+            if (!arg.Contains(' ', StringComparison.Ordinal))
             {
                 return arg;
             }

@@ -1,20 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Models.PluginDtos;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Updates;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +27,6 @@ namespace Jellyfin.Api.Controllers
     {
         private readonly IInstallationManager _installationManager;
         private readonly IPluginManager _pluginManager;
-        private readonly IConfigurationManager _config;
         private readonly JsonSerializerOptions _serializerOptions;
 
         /// <summary>
@@ -39,16 +34,13 @@ namespace Jellyfin.Api.Controllers
         /// </summary>
         /// <param name="installationManager">Instance of the <see cref="IInstallationManager"/> interface.</param>
         /// <param name="pluginManager">Instance of the <see cref="IPluginManager"/> interface.</param>
-        /// <param name="config">Instance of the <see cref="IConfigurationManager"/> interface.</param>
         public PluginsController(
             IInstallationManager installationManager,
-            IPluginManager pluginManager,
-            IConfigurationManager config)
+            IPluginManager pluginManager)
         {
             _installationManager = installationManager;
             _pluginManager = pluginManager;
-            _serializerOptions = JsonDefaults.GetOptions();
-            _config = config;
+            _serializerOptions = JsonDefaults.Options;
         }
 
         /// <summary>
@@ -210,12 +202,7 @@ namespace Jellyfin.Api.Controllers
             var plugins = _pluginManager.Plugins.Where(p => p.Id.Equals(pluginId));
 
             // Select the un-instanced one first.
-            var plugin = plugins.FirstOrDefault(p => p.Instance == null);
-            if (plugin == null)
-            {
-                // Then by the status.
-                plugin = plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
-            }
+            var plugin = plugins.FirstOrDefault(p => p.Instance == null) ?? plugins.OrderBy(p => p.Manifest.Status).FirstOrDefault();
 
             if (plugin != null)
             {
@@ -300,9 +287,7 @@ namespace Jellyfin.Api.Controllers
             }
 
             var imagePath = Path.Combine(plugin.Path, plugin.Manifest.ImagePath ?? string.Empty);
-            if (((ServerConfiguration)_config.CommonConfiguration).DisablePluginImages
-                || plugin.Manifest.ImagePath == null
-                || !System.IO.File.Exists(imagePath))
+            if (plugin.Manifest.ImagePath == null || !System.IO.File.Exists(imagePath))
             {
                 return NotFound();
             }

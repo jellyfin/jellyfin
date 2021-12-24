@@ -1,11 +1,13 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -16,23 +18,6 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvChannel : BaseItem, IHasMediaSources, IHasProgramAttributes
     {
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            if (!ConfigurationManager.Configuration.DisableLiveTvChannelUserDataName)
-            {
-                list.Insert(0, GetClientTypeName() + "-" + Name);
-            }
-
-            return list;
-        }
-
-        public override UnratedItem GetBlockUnratedType()
-        {
-            return UnratedItem.LiveTvChannel;
-        }
-
         [JsonIgnore]
         public override bool SupportsPositionTicksResume => false;
 
@@ -57,6 +42,67 @@ namespace MediaBrowser.Controller.LiveTv
         [JsonIgnore]
         public override LocationType LocationType => LocationType.Remote;
 
+        [JsonIgnore]
+        public override string MediaType => ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
+
+        [JsonIgnore]
+        public bool IsMovie { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is sports.
+        /// </summary>
+        /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsSports { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is series.
+        /// </summary>
+        /// <value><c>true</c> if this instance is series; otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsSeries { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is news.
+        /// </summary>
+        /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsNews { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
+        [JsonIgnore]
+        public bool IsKids => Tags.Contains("Kids", StringComparison.OrdinalIgnoreCase);
+
+        [JsonIgnore]
+        public bool IsRepeat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the episode title.
+        /// </summary>
+        /// <value>The episode title.</value>
+        [JsonIgnore]
+        public string EpisodeTitle { get; set; }
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            if (!ConfigurationManager.Configuration.DisableLiveTvChannelUserDataName)
+            {
+                list.Insert(0, GetClientTypeName() + "-" + Name);
+            }
+
+            return list;
+        }
+
+        public override UnratedItem GetBlockUnratedType()
+        {
+            return UnratedItem.LiveTvChannel;
+        }
+
         protected override string CreateSortName()
         {
             if (!string.IsNullOrEmpty(Number))
@@ -72,15 +118,12 @@ namespace MediaBrowser.Controller.LiveTv
             return (Number ?? string.Empty) + "-" + (Name ?? string.Empty);
         }
 
-        [JsonIgnore]
-        public override string MediaType => ChannelType == ChannelType.Radio ? Model.Entities.MediaType.Audio : Model.Entities.MediaType.Video;
-
         public override string GetClientTypeName()
         {
             return "TvChannel";
         }
 
-        public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
+        public IEnumerable<BaseItem> GetTaggedItems()
         {
             return new List<BaseItem>();
         }
@@ -120,46 +163,5 @@ namespace MediaBrowser.Controller.LiveTv
         {
             return false;
         }
-
-        [JsonIgnore]
-        public bool IsMovie { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is sports.
-        /// </summary>
-        /// <value><c>true</c> if this instance is sports; otherwise, <c>false</c>.</value>
-        [JsonIgnore]
-        public bool IsSports { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is series.
-        /// </summary>
-        /// <value><c>true</c> if this instance is series; otherwise, <c>false</c>.</value>
-        [JsonIgnore]
-        public bool IsSeries { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is news.
-        /// </summary>
-        /// <value><c>true</c> if this instance is news; otherwise, <c>false</c>.</value>
-        [JsonIgnore]
-        public bool IsNews { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is kids.
-        /// </summary>
-        /// <value><c>true</c> if this instance is kids; otherwise, <c>false</c>.</value>
-        [JsonIgnore]
-        public bool IsKids => Tags.Contains("Kids", StringComparer.OrdinalIgnoreCase);
-
-        [JsonIgnore]
-        public bool IsRepeat { get; set; }
-
-        /// <summary>
-        /// Gets or sets the episode title.
-        /// </summary>
-        /// <value>The episode title.</value>
-        [JsonIgnore]
-        public string EpisodeTitle { get; set; }
     }
 }

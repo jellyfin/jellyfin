@@ -93,7 +93,7 @@ namespace Jellyfin.Api.Controllers
             NetworkConfiguration settings = _config.GetNetworkConfiguration();
             settings.EnableRemoteAccess = startupRemoteAccessDto.EnableRemoteAccess;
             settings.EnableUPnP = startupRemoteAccessDto.EnableAutomaticPortMapping;
-            _config.SaveConfiguration("network", settings);
+            _config.SaveConfiguration(NetworkConfigurationStore.StoreKey, settings);
             return NoContent();
         }
 
@@ -132,7 +132,10 @@ namespace Jellyfin.Api.Controllers
         {
             var user = _userManager.Users.First();
 
-            user.Username = startupUserDto.Name;
+            if (startupUserDto.Name != null)
+            {
+                user.Username = startupUserDto.Name;
+            }
 
             await _userManager.UpdateUserAsync(user).ConfigureAwait(false);
 

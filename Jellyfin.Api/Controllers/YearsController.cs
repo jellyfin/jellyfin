@@ -7,6 +7,8 @@ using Jellyfin.Api.Extensions;
 using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -70,13 +72,13 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetYears(
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
-            [FromQuery] string? sortOrder,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
@@ -192,22 +194,23 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private bool FilterItem(BaseItem f, IReadOnlyCollection<string> excludeItemTypes, IReadOnlyCollection<string> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
+        private bool FilterItem(BaseItem f, IReadOnlyCollection<BaseItemKind> excludeItemTypes, IReadOnlyCollection<BaseItemKind> includeItemTypes, IReadOnlyCollection<string> mediaTypes)
         {
+            var baseItemKind = f.GetBaseItemKind();
             // Exclude item types
-            if (excludeItemTypes.Count > 0 && excludeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+            if (excludeItemTypes.Count > 0 && excludeItemTypes.Contains(baseItemKind))
             {
                 return false;
             }
 
             // Include item types
-            if (includeItemTypes.Count > 0 && !includeItemTypes.Contains(f.GetType().Name, StringComparer.OrdinalIgnoreCase))
+            if (includeItemTypes.Count > 0 && !includeItemTypes.Contains(baseItemKind))
             {
                 return false;
             }
 
             // Include MediaTypes
-            if (mediaTypes.Count > 0 && !mediaTypes.Contains(f.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (mediaTypes.Count > 0 && !mediaTypes.Contains(f.MediaType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

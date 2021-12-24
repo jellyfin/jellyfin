@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -60,8 +61,6 @@ namespace MediaBrowser.LocalMetadata.Images
 
         private readonly IFileSystem _fileSystem;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
         /// </summary>
@@ -108,7 +107,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             if (!item.IsFileProtocol)
             {
-                return new List<FileSystemMetadata>();
+                return Enumerable.Empty<FileSystemMetadata>();
             }
 
             var path = item.ContainingFolderPath;
@@ -116,24 +115,18 @@ namespace MediaBrowser.LocalMetadata.Images
             // Exit if the cache dir does not exist, alternative solution is to create it, but that's a lot of empty dirs...
             if (!Directory.Exists(path))
             {
-                return Array.Empty<FileSystemMetadata>();
+                return Enumerable.Empty<FileSystemMetadata>();
             }
 
-            if (includeDirectories)
-            {
-                return directoryService.GetFileSystemEntries(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) || i.IsDirectory)
-
-                .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
-            }
-
-            return directoryService.GetFiles(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+            return directoryService.GetFileSystemEntries(path)
+                .Where(i =>
+                    (includeDirectories && i.IsDirectory)
+                    || BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 
         /// <inheritdoc />
-        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var files = GetFiles(item, true, directoryService).ToList();
 
@@ -151,7 +144,7 @@ namespace MediaBrowser.LocalMetadata.Images
         /// <param name="path">The images path.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <returns>The local image info.</returns>
-        public List<LocalImageInfo> GetImages(BaseItem item, string path, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, string path, IDirectoryService directoryService)
         {
             return GetImages(item, new[] { path }, directoryService);
         }
@@ -163,7 +156,7 @@ namespace MediaBrowser.LocalMetadata.Images
         /// <param name="paths">The image paths.</param>
         /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <returns>The local image info.</returns>
-        public List<LocalImageInfo> GetImages(BaseItem item, IEnumerable<string> paths, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IEnumerable<string> paths, IDirectoryService directoryService)
         {
             IEnumerable<FileSystemMetadata> files = paths.SelectMany(i => _fileSystem.GetFiles(i, BaseItem.SupportedImageExtensions, true, false));
 
@@ -181,9 +174,7 @@ namespace MediaBrowser.LocalMetadata.Images
         {
             if (supportParentSeriesFiles)
             {
-                var season = item as Season;
-
-                if (season != null)
+                if (item is Season season)
                 {
                     PopulateSeasonImagesFromSeriesFolder(season, images, directoryService);
                 }
@@ -260,11 +251,6 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder);
             }
-
-            if (item is IHasScreenshots)
-            {
-                PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
-            }
         }
 
         private void PopulatePrimaryImages(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
@@ -285,7 +271,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 imageFileNames = _seriesImageFileNames;
             }
-            else if (item is Video && !(item is Episode))
+            else if (item is Video && item is not Episode)
             {
                 imageFileNames = _videoImageFileNames;
             }
@@ -367,11 +353,6 @@ namespace MediaBrowser.LocalMetadata.Images
             }));
         }
 
-        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
-        {
-            PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", isInMixedFolder, ImageType.Screenshot);
-        }
-
         private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)
         {
             AddImage(files, images, imagePrefix + firstFileName, type);
@@ -436,7 +417,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var seasonMarker = seasonNumber.Value == 0
                                    ? "-specials"
-                                   : seasonNumber.Value.ToString("00", _usCulture);
+                                   : seasonNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
             // Get this one directly from the file system since we have to go up a level
             if (!string.Equals(prefix, seasonMarker, StringComparison.OrdinalIgnoreCase))
@@ -468,7 +449,7 @@ namespace MediaBrowser.LocalMetadata.Images
             return added;
         }
 
-        private bool AddImage(IEnumerable<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
+        private bool AddImage(List<FileSystemMetadata> files, List<LocalImageInfo> images, string name, ImageType type)
         {
             var image = GetImage(files, name);
 
@@ -486,9 +467,20 @@ namespace MediaBrowser.LocalMetadata.Images
             return false;
         }
 
-        private FileSystemMetadata? GetImage(IEnumerable<FileSystemMetadata> files, string name)
+        private static FileSystemMetadata? GetImage(IReadOnlyList<FileSystemMetadata> files, string name)
         {
-            return files.FirstOrDefault(i => !i.IsDirectory && string.Equals(name, _fileSystem.GetFileNameWithoutExtension(i), StringComparison.OrdinalIgnoreCase) && i.Length > 0);
+            for (var i = 0; i < files.Count; i++)
+            {
+                var file = files[i];
+                if (!file.IsDirectory
+                    && file.Length > 0
+                    && Path.GetFileNameWithoutExtension(file.FullName.AsSpan()).Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return file;
+                }
+            }
+
+            return null;
         }
     }
 }

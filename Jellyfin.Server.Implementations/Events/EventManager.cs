@@ -30,7 +30,7 @@ namespace Jellyfin.Server.Implementations.Events
         public void Publish<T>(T eventArgs)
             where T : EventArgs
         {
-            Task.WaitAll(PublishInternal(eventArgs));
+            PublishInternal(eventArgs).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
@@ -43,7 +43,12 @@ namespace Jellyfin.Server.Implementations.Events
         private async Task PublishInternal<T>(T eventArgs)
             where T : EventArgs
         {
-            using var scope = _appHost.ServiceProvider.CreateScope();
+            using var scope = _appHost.ServiceProvider?.CreateScope();
+            if (scope == null)
+            {
+                return;
+            }
+
             foreach (var service in scope.ServiceProvider.GetServices<IEventConsumer<T>>())
             {
                 try
@@ -52,7 +57,7 @@ namespace Jellyfin.Server.Implementations.Events
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Uncaught exception in EventConsumer {type}: ", service.GetType());
+                    _logger.LogError(e, "Uncaught exception in EventConsumer {Type}: ", service.GetType());
                 }
             }
         }

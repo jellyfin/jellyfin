@@ -11,12 +11,18 @@ namespace Emby.Server.Implementations.Sorting
     public class NameComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Name;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
         /// <param name="y">The y.</param>
         /// <returns>System.Int32.</returns>
-        public int Compare(BaseItem x, BaseItem y)
+        public int Compare(BaseItem? x, BaseItem? y)
         {
             if (x == null)
             {
@@ -28,13 +34,7 @@ namespace Emby.Server.Implementations.Sorting
                 throw new ArgumentNullException(nameof(y));
             }
 
-            return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Name;
     }
 }

@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun

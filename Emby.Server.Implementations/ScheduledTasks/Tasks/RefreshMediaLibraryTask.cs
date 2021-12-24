@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Server.Implementations.Library;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Model.Globalization;
+using MediaBrowser.Model.Tasks;
 
 namespace Emby.Server.Implementations.ScheduledTasks
 {
@@ -32,6 +32,18 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _libraryManager = libraryManager;
             _localization = localization;
         }
+
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskRefreshLibrary");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskRefreshLibraryDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+
+        /// <inheritdoc />
+        public string Key => "RefreshLibrary";
 
         /// <summary>
         /// Creates the triggers that define when the task will run.
@@ -60,26 +72,5 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
             return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }
-
-        /// <inheritdoc />
-        public string Name => _localization.GetLocalizedString("TaskRefreshLibrary");
-
-        /// <inheritdoc />
-        public string Description => _localization.GetLocalizedString("TaskRefreshLibraryDescription");
-
-        /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
-
-        /// <inheritdoc />
-        public string Key => "RefreshLibrary";
-
-        /// <inheritdoc />
-        public bool IsHidden => false;
-
-        /// <inheritdoc />
-        public bool IsEnabled => true;
-
-        /// <inheritdoc />
-        public bool IsLogged => true;
     }
 }

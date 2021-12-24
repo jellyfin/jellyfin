@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -166,19 +167,16 @@ namespace MediaBrowser.XbmcMetadata.Savers
         /// <inheritdoc />
         public abstract bool IsEnabledFor(BaseItem item, ItemUpdateType updateType);
 
-        protected virtual List<string> GetTagsUsed(BaseItem item)
+        protected virtual IEnumerable<string> GetTagsUsed(BaseItem item)
         {
-            var list = new List<string>();
             foreach (var providerKey in item.ProviderIds.Keys)
             {
                 var providerIdTagName = GetTagForProviderKey(providerKey);
                 if (!_commonTags.Contains(providerIdTagName))
                 {
-                    list.Add(providerIdTagName);
+                    yield return providerIdTagName;
                 }
             }
-
-            return list;
         }
 
         /// <inheritdoc />
@@ -203,10 +201,18 @@ namespace MediaBrowser.XbmcMetadata.Savers
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
 
-            // On Windows, savint the file will fail if the file is hidden or readonly
+            // On Windows, saving the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            var fileStreamOptions = new FileStreamOptions()
+            {
+                Mode = FileMode.Create,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                PreallocationSize = stream.Length
+            };
+
+            using (var filestream = new FileStream(path, fileStreamOptions))
             {
                 stream.CopyTo(filestream);
             }
@@ -260,7 +266,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                     AddMediaInfo(hasMediaSources, writer);
                 }
 
-                var tagsUsed = GetTagsUsed(item);
+                var tagsUsed = GetTagsUsed(item).ToList();
 
                 try
                 {
@@ -350,10 +356,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
 
                 var scanType = stream.IsInterlaced ? "interlaced" : "progressive";
-                if (!string.IsNullOrEmpty(scanType))
-                {
-                    writer.WriteElementString("scantype", scanType);
-                }
+                writer.WriteElementString("scantype", scanType);
 
                 if (stream.Channels.HasValue)
                 {
@@ -450,15 +453,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("plot", overview);
             }
 
-            if (item is Video)
-            {
-                var outline = (item.Tagline ?? string.Empty)
-                    .StripHtml()
-                    .Replace("&quot;", "'", StringComparison.Ordinal);
-
-                writer.WriteElementString("outline", outline);
-            }
-            else
+            if (item is not Video)
             {
                 writer.WriteElementString("outline", overview);
             }
@@ -472,7 +467,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("lockedfields", string.Join("|", item.LockedFields));
+                writer.WriteElementString("lockedfields", string.Join('|', item.LockedFields));
             }
 
             writer.WriteElementString("dateadded", item.DateCreated.ToLocalTime().ToString(DateAddedFormat, CultureInfo.InvariantCulture));
@@ -568,7 +563,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
 
             // Series xml saver already saves this
-            if (!(item is Series))
+            if (item is not Series)
             {
                 var tvdb = item.GetProviderId(MetadataProvider.Tvdb);
                 if (!string.IsNullOrEmpty(tvdb))
@@ -595,7 +590,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("countrycode", item.PreferredMetadataCountryCode);
             }
 
-            if (item.PremiereDate.HasValue && !(item is Episode))
+            if (item.PremiereDate.HasValue && item is not Episode)
             {
                 var formatString = options.ReleaseDateFormat;
 
@@ -618,7 +613,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             if (item.EndDate.HasValue)
             {
-                if (!(item is Episode))
+                if (item is not Episode)
                 {
                     var formatString = options.ReleaseDateFormat;
 
@@ -975,7 +970,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             => string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
 
-        private void AddCustomTags(string path, List<string> xmlTagsUsed, XmlWriter writer, ILogger<BaseNfoSaver> logger)
+        private void AddCustomTags(string path, IReadOnlyCollection<string> xmlTagsUsed, XmlWriter writer, ILogger<BaseNfoSaver> logger)
         {
             var settings = new XmlReaderSettings()
             {
@@ -1009,7 +1004,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                         var name = reader.Name;
 
                         if (!_commonTags.Contains(name)
-                            && !xmlTagsUsed.Contains(name, StringComparer.OrdinalIgnoreCase))
+                            && !xmlTagsUsed.Contains(name, StringComparison.OrdinalIgnoreCase))
                         {
                             writer.WriteNode(reader, false);
                         }

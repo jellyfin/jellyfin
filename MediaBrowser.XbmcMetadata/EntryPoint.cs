@@ -60,17 +60,7 @@ namespace MediaBrowser.XbmcMetadata
 
         private void SaveMetadataForItem(BaseItem item, ItemUpdateType updateReason)
         {
-            if (!item.IsFileProtocol)
-            {
-                return;
-            }
-
-            if (!item.SupportsLocalMetadata)
-            {
-                return;
-            }
-
-            if (!item.IsSaveLocalMetadataEnabled())
+            if (!item.IsFileProtocol || !item.SupportsLocalMetadata)
             {
                 return;
             }
@@ -81,7 +71,7 @@ namespace MediaBrowser.XbmcMetadata
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving metadata for {path}", item.Path ?? item.Name);
+                _logger.LogError(ex, "Error saving metadata for {Path}", item.Path ?? item.Name);
             }
         }
     }

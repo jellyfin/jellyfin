@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using Xunit;
@@ -10,33 +8,33 @@ namespace Jellyfin.Naming.Tests.AudioBook
     {
         private readonly NamingOptions _namingOptions = new NamingOptions();
 
-        public static IEnumerable<object[]> GetResolveFileTestData()
+        public static TheoryData<AudioBookFileInfo> Resolve_ValidFileNameTestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<AudioBookFileInfo>();
+
+            data.Add(
                 new AudioBookFileInfo(
                     @"/server/AudioBooks/Larry Potter/Larry Potter.mp3",
-                    "mp3")
-            };
-            yield return new object[]
-            {
+                    "mp3"));
+
+            data.Add(
                 new AudioBookFileInfo(
                     @"/server/AudioBooks/Berry Potter/Chapter 1 .ogg",
                     "ogg",
-                    chapterNumber: 1)
-            };
-            yield return new object[]
-            {
+                    chapterNumber: 1));
+
+            data.Add(
                 new AudioBookFileInfo(
                     @"/server/AudioBooks/Nerry Potter/Part 3 - Chapter 2.mp3",
                     "mp3",
                     chapterNumber: 2,
-                    partNumber: 3)
-            };
+                    partNumber: 3));
+
+            return data;
         }
 
         [Theory]
-        [MemberData(nameof(GetResolveFileTestData))]
+        [MemberData(nameof(Resolve_ValidFileNameTestData))]
         public void Resolve_ValidFileName_Success(AudioBookFileInfo expectedResult)
         {
             var result = new AudioBookResolver(_namingOptions).Resolve(expectedResult.Path);

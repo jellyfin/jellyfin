@@ -1,8 +1,8 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using System.Globalization;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Model.Dlna
@@ -167,7 +167,7 @@ namespace MediaBrowser.Model.Dlna
             switch (condition.Condition)
             {
                 case ProfileConditionType.EqualsAny:
-                    return expected.Split('|').Contains(currentValue, StringComparer.OrdinalIgnoreCase);
+                    return expected.Split('|').Contains(currentValue, StringComparison.OrdinalIgnoreCase);
                 case ProfileConditionType.Equals:
                     return string.Equals(currentValue, expected, StringComparison.OrdinalIgnoreCase);
                 case ProfileConditionType.NotEquals:

@@ -1,3 +1,5 @@
+#nullable disable
+
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -7,10 +9,16 @@ namespace Emby.Server.Implementations.Library.Resolvers
     /// <summary>
     /// Class ItemResolver.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of BaseItem.</typeparam>
     public abstract class ItemResolver<T> : IItemResolver
         where T : BaseItem, new()
     {
+        /// <summary>
+        /// Gets the priority.
+        /// </summary>
+        /// <value>The priority.</value>
+        public virtual ResolverPriority Priority => ResolverPriority.First;
+
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
@@ -20,12 +28,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
         {
             return null;
         }
-
-        /// <summary>
-        /// Gets the priority.
-        /// </summary>
-        /// <value>The priority.</value>
-        public virtual ResolverPriority Priority => ResolverPriority.First;
 
         /// <summary>
         /// Sets initial values on the newly resolved item.

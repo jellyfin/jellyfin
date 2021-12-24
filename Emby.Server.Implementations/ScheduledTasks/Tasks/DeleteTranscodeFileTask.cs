@@ -141,11 +141,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
                     }
                     catch (UnauthorizedAccessException ex)
                     {
-                        _logger.LogError(ex, "Error deleting directory {path}", directory);
+                        _logger.LogError(ex, "Error deleting directory {Path}", directory);
                     }
                     catch (IOException ex)
                     {
-                        _logger.LogError(ex, "Error deleting directory {path}", directory);
+                        _logger.LogError(ex, "Error deleting directory {Path}", directory);
                     }
                 }
             }
@@ -159,11 +159,11 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogError(ex, "Error deleting file {path}", path);
+                _logger.LogError(ex, "Error deleting file {Path}", path);
             }
             catch (IOException ex)
             {
-                _logger.LogError(ex, "Error deleting file {path}", path);
+                _logger.LogError(ex, "Error deleting file {Path}", path);
             }
         }
     }

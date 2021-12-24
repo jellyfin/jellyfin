@@ -31,7 +31,7 @@ namespace Emby.Dlna.ConnectionManager
         }
 
         /// <inheritdoc />
-        protected override void WriteResult(string methodName, IDictionary<string, string> methodParams, XmlWriter xmlWriter)
+        protected override void WriteResult(string methodName, IReadOnlyDictionary<string, string> methodParams, XmlWriter xmlWriter)
         {
             if (string.Equals(methodName, "GetProtocolInfo", StringComparison.OrdinalIgnoreCase))
             {

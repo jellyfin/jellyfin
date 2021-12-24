@@ -128,13 +128,17 @@ namespace Jellyfin.Api.Tests.Auth
         {
             var authorizationInfo = _fixture.Create<AuthorizationInfo>();
             authorizationInfo.User = _fixture.Create<User>();
+            authorizationInfo.User.AddDefaultPermissions();
+            authorizationInfo.User.AddDefaultPreferences();
             authorizationInfo.User.SetPermission(PermissionKind.IsAdministrator, isAdmin);
             authorizationInfo.IsApiKey = false;
+            authorizationInfo.HasToken = true;
+            authorizationInfo.Token = "fake-token";
 
             _jellyfinAuthServiceMock.Setup(
                     a => a.Authenticate(
                         It.IsAny<HttpRequest>()))
-                .Returns(authorizationInfo);
+                .Returns(Task.FromResult(authorizationInfo));
 
             return authorizationInfo;
         }

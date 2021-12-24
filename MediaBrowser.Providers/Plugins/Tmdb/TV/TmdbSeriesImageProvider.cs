@@ -11,9 +11,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.TV
@@ -54,13 +52,14 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (string.IsNullOrEmpty(tmdbId))
             {
-                return null;
+                return Enumerable.Empty<RemoteImageInfo>();
             }
 
             var language = item.GetPreferredMetadataLanguage();
 
+            // TODO use image languages if All Languages isn't toggled, but there's currently no way to get that value in here
             var series = await _tmdbClientManager
-                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), language, TmdbUtils.GetImageLanguagesParam(language), cancellationToken)
+                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), null, null, cancellationToken)
                 .ConfigureAwait(false);
 
             if (series?.Images == null)
@@ -70,43 +69,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var posters = series.Images.Posters;
             var backdrops = series.Images.Backdrops;
+            var remoteImages = new List<RemoteImageInfo>(posters.Count + backdrops.Count);
 
-            var remoteImages = new RemoteImageInfo[posters.Count + backdrops.Count];
+            _tmdbClientManager.ConvertPostersToRemoteImageInfo(posters, language, remoteImages);
+            _tmdbClientManager.ConvertBackdropsToRemoteImageInfo(backdrops, language, remoteImages);
 
-            for (var i = 0; i < posters.Count; i++)
-            {
-                var poster = posters[i];
-                remoteImages[i] = new RemoteImageInfo
-                {
-                    Url = _tmdbClientManager.GetPosterUrl(poster.FilePath),
-                    CommunityRating = poster.VoteAverage,
-                    VoteCount = poster.VoteCount,
-                    Width = poster.Width,
-                    Height = poster.Height,
-                    Language = TmdbUtils.AdjustImageLanguage(poster.Iso_639_1, language),
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    RatingType = RatingType.Score
-                };
-            }
-
-            for (var i = 0; i < backdrops.Count; i++)
-            {
-                var backdrop = series.Images.Backdrops[i];
-                remoteImages[posters.Count + i] = new RemoteImageInfo
-                {
-                    Url = _tmdbClientManager.GetBackdropUrl(backdrop.FilePath),
-                    CommunityRating = backdrop.VoteAverage,
-                    VoteCount = backdrop.VoteCount,
-                    Width = backdrop.Width,
-                    Height = backdrop.Height,
-                    ProviderName = Name,
-                    Type = ImageType.Backdrop,
-                    RatingType = RatingType.Score
-                };
-            }
-
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

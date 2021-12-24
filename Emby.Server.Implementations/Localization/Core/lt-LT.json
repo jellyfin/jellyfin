@@ -1,7 +1,7 @@
 {
     "Albums": "Albumai",
     "AppDeviceValues": "Programa: {0}, Įrenginys: {1}",
-    "Application": "Programa",
+    "Application": "Programėlė",
     "Artists": "Atlikėjai",
     "AuthenticationSucceededWithUserName": "{0} sėkmingai autentifikuota",
     "Books": "Knygos",
@@ -113,5 +113,10 @@
     "TasksChannelsCategory": "Internetiniai Kanalai",
     "TasksApplicationCategory": "Programa",
     "TasksLibraryCategory": "Mediateka",
-    "TasksMaintenanceCategory": "Priežiūra"
+    "TasksMaintenanceCategory": "Priežiūra",
+    "TaskCleanActivityLog": "Išvalyti veiklos žurnalą",
+    "Undefined": "Neapibrėžtas",
+    "Forced": "Priverstas",
+    "Default": "Numatytas",
+    "TaskCleanActivityLogDescription": "Ištrina veiklos žuranlo įrašus, kurie yra senesni nei nustatytas amžius."
 }

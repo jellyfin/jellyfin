@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Entities;
 using MediaBrowser.Controller.Dto;
@@ -27,7 +26,6 @@ namespace Jellyfin.Api.Controllers
         private readonly ILibraryManager _libraryManager;
         private readonly IDtoService _dtoService;
         private readonly IUserManager _userManager;
-        private readonly IUserDataManager _userDataManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonsController"/> class.
@@ -35,17 +33,14 @@ namespace Jellyfin.Api.Controllers
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         public PersonsController(
             ILibraryManager libraryManager,
             IDtoService dtoService,
-            IUserManager userManager,
-            IUserDataManager userDataManager)
+            IUserManager userManager)
         {
             _libraryManager = libraryManager;
             _dtoService = dtoService;
             _userManager = userManager;
-            _userDataManager = userDataManager;
         }
 
         /// <summary>
@@ -95,10 +90,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             var isFavoriteInFilters = filters.Any(f => f == ItemFilter.IsFavorite);
-            var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery
+            var peopleItems = _libraryManager.GetPeopleItems(new InternalPeopleQuery(
+                personTypes,
+                excludePersonTypes)
             {
-                PersonTypes = personTypes,
-                ExcludePersonTypes = excludePersonTypes,
                 NameContains = searchTerm,
                 User = user,
                 IsFavorite = !isFavorite.HasValue && isFavoriteInFilters ? true : isFavorite,

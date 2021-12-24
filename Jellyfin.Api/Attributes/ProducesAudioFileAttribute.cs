@@ -3,7 +3,7 @@
     /// <summary>
     /// Produces file attribute of "image/*".
     /// </summary>
-    public class ProducesAudioFileAttribute : ProducesFileAttribute
+    public sealed class ProducesAudioFileAttribute : ProducesFileAttribute
     {
         private const string ContentType = "audio/*";
 

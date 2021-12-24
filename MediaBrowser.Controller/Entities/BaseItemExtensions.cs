@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 
+using System;
 using System.Linq;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -43,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="file">The file.</param>
         public static void SetImagePath(this BaseItem item, ImageType imageType, string file)
         {
-            if (file.StartsWith("http", System.StringComparison.OrdinalIgnoreCase))
+            if (file.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 item.SetImage(
                 new ItemImageInfo
@@ -63,10 +64,22 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <param name="source">The source object.</param>
         /// <param name="dest">The destination object.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <typeparam name="TU">Destination type.</typeparam>
         public static void DeepCopy<T, TU>(this T source, TU dest)
-        where T : BaseItem
-        where TU : BaseItem
+            where T : BaseItem
+            where TU : BaseItem
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (dest == null)
+            {
+                throw new ArgumentNullException(nameof(dest));
+            }
+
             var destProps = typeof(TU).GetProperties().Where(x => x.CanWrite).ToList();
 
             foreach (var sourceProp in typeof(T).GetProperties())
@@ -98,9 +111,12 @@ namespace MediaBrowser.Controller.Entities
         /// Copies all properties on newly created object. Skips properties that do not exist.
         /// </summary>
         /// <param name="source">The source object.</param>
+        /// <typeparam name="T">Source type.</typeparam>
+        /// <typeparam name="TU">Destination type.</typeparam>
+        /// <returns>Destination object.</returns>
         public static TU DeepCopy<T, TU>(this T source)
-        where T : BaseItem
-        where TU : BaseItem, new()
+            where T : BaseItem
+            where TU : BaseItem, new()
         {
             var dest = new TU();
             source.DeepCopy(dest);

@@ -1,8 +1,9 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -18,8 +19,6 @@ namespace Emby.Dlna.PlayTo
     {
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
         private const string FriendlyName = "Jellyfin";
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly IHttpClientFactory _httpClientFactory;
 
@@ -44,11 +43,13 @@ namespace Emby.Dlna.PlayTo
                     header,
                     cancellationToken)
                 .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return XDocument.Parse(
-                await reader.ReadToEndAsync().ConfigureAwait(false),
-                LoadOptions.PreserveWhitespace);
+            return await XDocument.LoadAsync(
+                stream,
+                LoadOptions.None,
+                cancellationToken).ConfigureAwait(false);
         }
 
         private static string NormalizeServiceUrl(string baseUrl, string serviceUrl)
@@ -77,14 +78,15 @@ namespace Emby.Dlna.PlayTo
         {
             using var options = new HttpRequestMessage(new HttpMethod("SUBSCRIBE"), url);
             options.Headers.UserAgent.ParseAdd(USERAGENT);
-            options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(_usCulture));
-            options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(_usCulture) + ">");
+            options.Headers.TryAddWithoutValidation("HOST", ip + ":" + port.ToString(CultureInfo.InvariantCulture));
+            options.Headers.TryAddWithoutValidation("CALLBACK", "<" + localIp + ":" + eventport.ToString(CultureInfo.InvariantCulture) + ">");
             options.Headers.TryAddWithoutValidation("NT", "upnp:event");
-            options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(_usCulture));
+            options.Headers.TryAddWithoutValidation("TIMEOUT", "Second-" + timeOut.ToString(CultureInfo.InvariantCulture));
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default)
                 .SendAsync(options, HttpCompletionOption.ResponseHeadersRead)
                 .ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<XDocument> GetDataAsync(string url, CancellationToken cancellationToken)
@@ -93,11 +95,19 @@ namespace Emby.Dlna.PlayTo
             options.Headers.UserAgent.ParseAdd(USERAGENT);
             options.Headers.TryAddWithoutValidation("FriendlyName.DLNA.ORG", FriendlyName);
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).SendAsync(options, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return XDocument.Parse(
-                await reader.ReadToEndAsync().ConfigureAwait(false),
-                LoadOptions.PreserveWhitespace);
+            try
+            {
+                return await XDocument.LoadAsync(
+                    stream,
+                    LoadOptions.None,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private async Task<HttpResponseMessage> PostSoapDataAsync(

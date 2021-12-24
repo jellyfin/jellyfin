@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -28,8 +30,6 @@ namespace Emby.Dlna.PlayTo
 {
     public class PlayToController : ISessionController, IDisposable
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
-
         private readonly SessionInfo _session;
         private readonly ISessionManager _sessionManager;
         private readonly ILibraryManager _libraryManager;
@@ -102,6 +102,22 @@ namespace Emby.Dlna.PlayTo
             _deviceDiscovery.DeviceLeft += OnDeviceDiscoveryDeviceLeft;
         }
 
+        /*
+         * Send a message to the DLNA device to notify what is the next track in the playlist.
+         */
+        private async Task SendNextTrackMessage(int currentPlayListItemIndex, CancellationToken cancellationToken)
+        {
+            if (currentPlayListItemIndex >= 0 && currentPlayListItemIndex < _playlist.Count - 1)
+            {
+                // The current playing item is indeed in the play list and we are not yet at the end of the playlist.
+                var nextItemIndex = currentPlayListItemIndex + 1;
+                var nextItem = _playlist[nextItemIndex];
+
+                // Send the SetNextAvTransport message.
+                await _device.SetNextAvTransport(nextItem.StreamUrl, GetDlnaHeaders(nextItem), nextItem.Didl, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         private void OnDeviceUnavailable()
         {
             try
@@ -132,7 +148,7 @@ namespace Emby.Dlna.PlayTo
 
         private async void OnDeviceMediaChanged(object sender, MediaChangedEventArgs e)
         {
-            if (_disposed)
+            if (_disposed || string.IsNullOrEmpty(e.OldMediaInfo.Url))
             {
                 return;
             }
@@ -156,6 +172,15 @@ namespace Emby.Dlna.PlayTo
                 var newItemProgress = GetProgressInfo(streamInfo);
 
                 await _sessionManager.OnPlaybackStart(newItemProgress).ConfigureAwait(false);
+
+                // Send a message to the DLNA device to notify what is the next track in the playlist.
+                var currentItemIndex = _playlist.FindIndex(item => item.StreamInfo.ItemId == streamInfo.ItemId);
+                if (currentItemIndex >= 0)
+                {
+                    _currentPlaylistIndex = currentItemIndex;
+                }
+
+                await SendNextTrackMessage(currentItemIndex, CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -425,6 +450,11 @@ namespace Emby.Dlna.PlayTo
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
+
+                    // Send a message to the DLNA device to notify what is the next track in the play list.
+                    var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+
                     return;
                 }
 
@@ -499,8 +529,8 @@ namespace Emby.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Audio)
             {
-                return new ContentFeatureBuilder(profile)
-                    .BuildAudioHeader(
+                return ContentFeatureBuilder.BuildAudioHeader(
+                        profile,
                         streamInfo.Container,
                         streamInfo.TargetAudioCodec.FirstOrDefault(),
                         streamInfo.TargetAudioBitrate,
@@ -514,8 +544,8 @@ namespace Emby.Dlna.PlayTo
 
             if (streamInfo.MediaType == DlnaProfileType.Video)
             {
-                var list = new ContentFeatureBuilder(profile)
-                    .BuildVideoHeader(
+                var list = ContentFeatureBuilder.BuildVideoHeader(
+                        profile,
                         streamInfo.Container,
                         streamInfo.TargetVideoCodec.FirstOrDefault(),
                         streamInfo.TargetAudioCodec.FirstOrDefault(),
@@ -623,6 +653,9 @@ namespace Emby.Dlna.PlayTo
 
             await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl, cancellationToken).ConfigureAwait(false);
 
+            // Send a message to the DLNA device to notify what is the next track in the play list.
+            await SendNextTrackMessage(index, cancellationToken);
+
             var streamInfo = currentitem.StreamInfo;
             if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
             {
@@ -681,7 +714,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetAudioStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out string index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                         {
                             return SetAudioStreamIndex(val);
                         }
@@ -693,7 +726,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetSubtitleStreamIndex:
                     if (command.Arguments.TryGetValue("Index", out index))
                     {
-                        if (int.TryParse(index, NumberStyles.Integer, _usCulture, out var val))
+                        if (int.TryParse(index, NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                         {
                             return SetSubtitleStreamIndex(val);
                         }
@@ -705,7 +738,7 @@ namespace Emby.Dlna.PlayTo
                 case GeneralCommandType.SetVolume:
                     if (command.Arguments.TryGetValue("Volume", out string vol))
                     {
-                        if (int.TryParse(vol, NumberStyles.Integer, _usCulture, out var volume))
+                        if (int.TryParse(vol, NumberStyles.Integer, CultureInfo.InvariantCulture, out var volume))
                         {
                             return _device.SetVolume(volume, cancellationToken);
                         }
@@ -736,6 +769,10 @@ namespace Emby.Dlna.PlayTo
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
 
+                    // Send a message to the DLNA device to notify what is the next track in the play list.
+                    var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+
                     if (EnableClientSideSeek(newItem.StreamInfo))
                     {
                         await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
@@ -761,6 +798,10 @@ namespace Emby.Dlna.PlayTo
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl, CancellationToken.None).ConfigureAwait(false);
 
+                    // Send a message to the DLNA device to notify what is the next track in the play list.
+                    var newItemIndex = _playlist.FindIndex(item => item.StreamUrl == newItem.StreamUrl);
+                    await SendNextTrackMessage(newItemIndex, CancellationToken.None);
+
                     if (EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0)
                     {
                         await SeekAfterTransportChange(newPosition, CancellationToken.None).ConfigureAwait(false);
@@ -777,7 +818,7 @@ namespace Emby.Dlna.PlayTo
             var currentWait = 0;
             while (_device.TransportState != TransportState.Playing && currentWait < MaxWait)
             {
-                await Task.Delay(Interval).ConfigureAwait(false);
+                await Task.Delay(Interval, cancellationToken).ConfigureAwait(false);
                 currentWait += Interval;
             }
 
@@ -896,16 +937,16 @@ namespace Emby.Dlna.PlayTo
 
                 var parts = url.Split('/');
 
-                for (var i = 0; i < parts.Length; i++)
+                for (var i = 0; i < parts.Length - 1; i++)
                 {
                     var part = parts[i];
 
                     if (string.Equals(part, "audio", StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(part, "videos", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (parts.Length > i + 1)
+                        if (Guid.TryParse(parts[i + 1], out var result))
                         {
-                            return Guid.Parse(parts[i + 1]);
+                            return result;
                         }
                     }
                 }
@@ -943,11 +984,7 @@ namespace Emby.Dlna.PlayTo
                 request.DeviceId = values.GetValueOrDefault("DeviceId");
                 request.MediaSourceId = values.GetValueOrDefault("MediaSourceId");
                 request.LiveStreamId = values.GetValueOrDefault("LiveStreamId");
-
-                // Be careful, IsDirectStream==true by default (Static != false or not in query).
-                // See initialization of StreamingRequestDto in AudioController.GetAudioStream() method : Static = @static ?? true.
-                request.IsDirectStream = !string.Equals("false", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
-
+                request.IsDirectStream = string.Equals("true", values.GetValueOrDefault("Static"), StringComparison.OrdinalIgnoreCase);
                 request.AudioStreamIndex = GetIntValue(values, "AudioStreamIndex");
                 request.SubtitleStreamIndex = GetIntValue(values, "SubtitleStreamIndex");
                 request.StartPositionTicks = GetLongValue(values, "StartPositionTicks");

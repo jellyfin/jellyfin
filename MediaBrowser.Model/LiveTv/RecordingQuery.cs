@@ -12,6 +12,11 @@ namespace MediaBrowser.Model.LiveTv
     /// </summary>
     public class RecordingQuery
     {
+        public RecordingQuery()
+        {
+            EnableTotalRecordCount = true;
+        }
+
         /// <summary>
         /// Gets or sets the channel identifier.
         /// </summary>
@@ -31,13 +36,13 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
 
         /// <summary>
-        /// Skips over a given number of items within the results. Use for paging.
+        /// Gets or sets the start index. Use for paging.
         /// </summary>
         /// <value>The start index.</value>
         public int? StartIndex { get; set; }
 
         /// <summary>
-        /// The maximum number of items to return.
+        /// Gets or sets the maximum number of items to return.
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
@@ -61,7 +66,7 @@ namespace MediaBrowser.Model.LiveTv
         public string SeriesTimerId { get; set; }
 
         /// <summary>
-        /// Fields to return within the items, in addition to basic information.
+        /// Gets or sets the fields to return within the items, in addition to basic information.
         /// </summary>
         /// <value>The fields.</value>
         public ItemFields[] Fields { get; set; }
@@ -85,10 +90,5 @@ namespace MediaBrowser.Model.LiveTv
         public ImageType[] EnableImageTypes { get; set; }
 
         public bool EnableTotalRecordCount { get; set; }
-
-        public RecordingQuery()
-        {
-            EnableTotalRecordCount = true;
-        }
     }
 }

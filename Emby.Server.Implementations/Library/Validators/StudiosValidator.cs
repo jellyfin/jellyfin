@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -80,19 +81,22 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var deadEntities = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(Studio) },
+                IncludeItemTypes = new[] { BaseItemKind.Studio },
                 IsDeadStudio = true,
                 IsLocked = false
             });
 
             foreach (var item in deadEntities)
             {
-                _logger.LogInformation("Deleting dead {2} {0} {1}.", item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name, item.GetType().Name);
+                _logger.LogInformation("Deleting dead {ItemType} {ItemId} {ItemName}", item.GetType().Name, item.Id.ToString("N", CultureInfo.InvariantCulture), item.Name);
 
-                _libraryManager.DeleteItem(item, new DeleteOptions
-                {
-                    DeleteFileLocation = false
-                }, false);
+                _libraryManager.DeleteItem(
+                    item,
+                    new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    },
+                    false);
             }
 
             progress.Report(100);

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -7,9 +9,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -22,15 +26,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
     public class TmdbSeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasOrder
     {
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILibraryManager _libraryManager;
         private readonly TmdbClientManager _tmdbClientManager;
 
         public TmdbSeriesProvider(
+            ILibraryManager libraryManager,
             IHttpClientFactory httpClientFactory,
             TmdbClientManager tmdbClientManager)
         {
+            _libraryManager = libraryManager;
             _httpClientFactory = httpClientFactory;
             _tmdbClientManager = tmdbClientManager;
-            Current = this;
         }
 
         public string Name => TmdbUtils.ProviderName;
@@ -38,13 +44,9 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         // After TheTVDB
         public int Order => 1;
 
-        internal static TmdbSeriesProvider Current { get; private set; }
-
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
-            var tmdbId = searchInfo.GetProviderId(MetadataProvider.Tmdb);
-
-            if (!string.IsNullOrEmpty(tmdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tmdb, out var tmdbId))
             {
                 var series = await _tmdbClientManager
                     .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), searchInfo.MetadataLanguage, searchInfo.MetadataLanguage, cancellationToken)
@@ -58,9 +60,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var imdbId = searchInfo.GetProviderId(MetadataProvider.Imdb);
-
-            if (!string.IsNullOrEmpty(imdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Imdb, out var imdbId))
             {
                 var findResult = await _tmdbClientManager
                     .FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, searchInfo.MetadataLanguage, cancellationToken)
@@ -81,9 +81,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvdbId = searchInfo.GetProviderId(MetadataProvider.Tvdb);
-
-            if (!string.IsNullOrEmpty(tvdbId))
+            if (searchInfo.TryGetProviderId(MetadataProvider.Tvdb, out var tvdbId))
             {
                 var findResult = await _tmdbClientManager
                     .FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, searchInfo.MetadataLanguage, cancellationToken)
@@ -104,7 +102,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken)
+            var tvSearchResults = await _tmdbClientManager.SearchSeriesAsync(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             var remoteResults = new RemoteSearchResult[tvSearchResults.Count];
@@ -170,40 +168,32 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             var tmdbId = info.GetProviderId(MetadataProvider.Tmdb);
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrEmpty(tmdbId) && info.TryGetProviderId(MetadataProvider.Imdb, out var imdbId))
             {
-                var imdbId = info.GetProviderId(MetadataProvider.Imdb);
-
-                if (!string.IsNullOrEmpty(imdbId))
+                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (searchResult?.TvResults.Count > 0)
                 {
-                    var searchResult = await _tmdbClientManager.FindByExternalIdAsync(imdbId, FindExternalSource.Imdb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                    if (searchResult != null)
-                    {
-                        tmdbId = searchResult.TvResults.FirstOrDefault()?.Id.ToString(CultureInfo.InvariantCulture);
-                    }
+                    tmdbId = searchResult.TvResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrEmpty(tmdbId) && info.TryGetProviderId(MetadataProvider.Tvdb, out var tvdbId))
             {
-                var tvdbId = info.GetProviderId(MetadataProvider.Tvdb);
-
-                if (!string.IsNullOrEmpty(tvdbId))
+                var searchResult = await _tmdbClientManager.FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                if (searchResult?.TvResults.Count > 0)
                 {
-                    var searchResult = await _tmdbClientManager.FindByExternalIdAsync(tvdbId, FindExternalSource.TvDb, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
-
-                    if (searchResult != null)
-                    {
-                        tmdbId = searchResult.TvResults.FirstOrDefault()?.Id.ToString(CultureInfo.InvariantCulture);
-                    }
+                    tmdbId = searchResult.TvResults[0].Id.ToString(CultureInfo.InvariantCulture);
                 }
             }
 
             if (string.IsNullOrEmpty(tmdbId))
             {
                 result.QueriedById = false;
-                var searchResults = await _tmdbClientManager.SearchSeriesAsync(info.Name, info.MetadataLanguage, cancellationToken).ConfigureAwait(false);
+                // ParseName is required here.
+                // Caller provides the filename with extension stripped and NOT the parsed filename
+                var parsedName = _libraryManager.ParseName(info.Name);
+                var cleanedName = TmdbUtils.CleanName(parsedName.Name);
+                var searchResults = await _tmdbClientManager.SearchSeriesAsync(cleanedName, info.MetadataLanguage, info.Year ?? parsedName.Year ?? 0, cancellationToken).ConfigureAwait(false);
 
                 if (searchResults.Count > 0)
                 {
@@ -211,32 +201,34 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                 }
             }
 
-            if (!string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrEmpty(tmdbId))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var tvShow = await _tmdbClientManager
-                    .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
-                    .ConfigureAwait(false);
-
-                result = new MetadataResult<Series>
-                {
-                    Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
-                    ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
-                };
-
-                foreach (var person in GetPersons(tvShow))
-                {
-                    result.AddPerson(person);
-                }
-
-                result.HasMetadata = result.Item != null;
+                return result;
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var tvShow = await _tmdbClientManager
+                .GetSeriesAsync(Convert.ToInt32(tmdbId, CultureInfo.InvariantCulture), info.MetadataLanguage, TmdbUtils.GetImageLanguagesParam(info.MetadataLanguage), cancellationToken)
+                .ConfigureAwait(false);
+
+            result = new MetadataResult<Series>
+            {
+                Item = MapTvShowToSeries(tvShow, info.MetadataCountryCode),
+                ResultLanguage = info.MetadataLanguage ?? tvShow.OriginalLanguage
+            };
+
+            foreach (var person in GetPersons(tvShow))
+            {
+                result.AddPerson(person);
+            }
+
+            result.HasMetadata = result.Item != null;
 
             return result;
         }
 
-        private Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
+        private static Series MapTvShowToSeries(TvShow seriesResult, string preferredCountryCode)
         {
             var series = new Series
             {
@@ -311,7 +303,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
 
             if (ourRelease != null)
             {
-                series.OfficialRating = ourRelease.Rating;
+                series.OfficialRating = TmdbUtils.BuildParentalRating(ourRelease.Iso_3166_1, ourRelease.Rating);
             }
             else if (usRelease != null)
             {
@@ -340,7 +332,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             if (seriesResult.Credits?.Cast != null)
             {
-                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     var personInfo = new PersonInfo
                     {
@@ -374,8 +366,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
-                        && !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    if (!keepTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                        && !keepTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

@@ -1,9 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,6 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public class JobLogger
     {
-        private static readonly CultureInfo _usCulture = CultureInfo.ReadOnly(new CultureInfo("en-US"));
         private readonly ILogger _logger;
 
         public JobLogger(ILogger logger)
@@ -86,7 +86,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var rate = parts[i + 1];
 
-                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                    if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                     {
                         framerate = val;
                     }
@@ -95,7 +95,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var rate = part.Split('=', 2)[^1];
 
-                    if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                    if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                     {
                         framerate = val;
                     }
@@ -105,7 +105,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 {
                     var time = part.Split('=', 2)[^1];
 
-                    if (TimeSpan.TryParse(time, _usCulture, out var val))
+                    if (TimeSpan.TryParse(time, CultureInfo.InvariantCulture, out var val))
                     {
                         var currentMs = startMs + val.TotalMilliseconds;
 
@@ -119,7 +119,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var size = part.Split('=', 2)[^1];
 
                     int? scale = null;
-                    if (size.IndexOf("kb", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (size.Contains("kb", StringComparison.OrdinalIgnoreCase))
                     {
                         scale = 1024;
                         size = size.Replace("kb", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        if (long.TryParse(size, NumberStyles.Any, _usCulture, out var val))
+                        if (long.TryParse(size, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                         {
                             bytesTranscoded = val * scale.Value;
                         }
@@ -138,7 +138,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                     var rate = part.Split('=', 2)[^1];
 
                     int? scale = null;
-                    if (rate.IndexOf("kbits/s", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (rate.Contains("kbits/s", StringComparison.OrdinalIgnoreCase))
                     {
                         scale = 1024;
                         rate = rate.Replace("kbits/s", string.Empty, StringComparison.OrdinalIgnoreCase);
@@ -146,7 +146,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 
                     if (scale.HasValue)
                     {
-                        if (float.TryParse(rate, NumberStyles.Any, _usCulture, out var val))
+                        if (float.TryParse(rate, NumberStyles.Any, CultureInfo.InvariantCulture, out var val))
                         {
                             bitRate = (int)Math.Ceiling(val * scale.Value);
                         }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
-using MediaBrowser.Controller.Configuration;
+using System.Linq;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -14,22 +14,18 @@ namespace MediaBrowser.LocalMetadata.Images
     /// </summary>
     public class InternalMetadataFolderImageProvider : ILocalImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<InternalMetadataFolderImageProvider> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InternalMetadataFolderImageProvider"/> class.
         /// </summary>
-        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{InternalMetadataFolderImageProvider}"/> interface.</param>
         public InternalMetadataFolderImageProvider(
-            IServerConfigurationManager config,
             IFileSystem fileSystem,
             ILogger<InternalMetadataFolderImageProvider> logger)
         {
-            _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
         }
@@ -69,13 +65,13 @@ namespace MediaBrowser.LocalMetadata.Images
         }
 
         /// <inheritdoc />
-        public List<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
+        public IEnumerable<LocalImageInfo> GetImages(BaseItem item, IDirectoryService directoryService)
         {
             var path = item.GetInternalMetadataPath();
 
             if (!Directory.Exists(path))
             {
-                return new List<LocalImageInfo>();
+                return Enumerable.Empty<LocalImageInfo>();
             }
 
             try
@@ -85,7 +81,7 @@ namespace MediaBrowser.LocalMetadata.Images
             catch (IOException ex)
             {
                 _logger.LogError(ex, "Error while getting images for {Library}", item.Name);
-                return new List<LocalImageInfo>();
+                return Enumerable.Empty<LocalImageInfo>();
             }
         }
     }

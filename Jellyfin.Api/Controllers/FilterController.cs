@@ -2,12 +2,10 @@ using System;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.ModelBinders;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Querying;
 using Microsoft.AspNetCore.Authorization;
@@ -51,7 +49,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryFiltersLegacy> GetQueryFiltersLegacy(
             [FromQuery] Guid? userId,
             [FromQuery] Guid? parentId,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes)
         {
             var user = userId.HasValue && !userId.Equals(Guid.Empty)
@@ -60,10 +58,10 @@ namespace Jellyfin.Api.Controllers
 
             BaseItem? item = null;
             if (includeItemTypes.Length != 1
-                || !(string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(includeItemTypes[0], nameof(Trailer), StringComparison.OrdinalIgnoreCase)
-                     || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
+                || !(includeItemTypes[0] == BaseItemKind.BoxSet
+                     || includeItemTypes[0] == BaseItemKind.Playlist
+                     || includeItemTypes[0] == BaseItemKind.Trailer
+                     || includeItemTypes[0] == BaseItemKind.Program))
             {
                 item = _libraryManager.GetParentItem(parentId, user?.Id);
             }
@@ -137,7 +135,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryFilters> GetQueryFilters(
             [FromQuery] Guid? userId,
             [FromQuery] Guid? parentId,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery] bool? isAiring,
             [FromQuery] bool? isMovie,
             [FromQuery] bool? isSports,
@@ -152,10 +150,10 @@ namespace Jellyfin.Api.Controllers
 
             BaseItem? parentItem = null;
             if (includeItemTypes.Length == 1
-                && (string.Equals(includeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Playlist), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Trailer), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], "Program", StringComparison.OrdinalIgnoreCase)))
+                && (includeItemTypes[0] == BaseItemKind.BoxSet
+                    || includeItemTypes[0] == BaseItemKind.Playlist
+                    || includeItemTypes[0] == BaseItemKind.Trailer
+                    || includeItemTypes[0] == BaseItemKind.Program))
             {
                 parentItem = null;
             }
@@ -192,10 +190,10 @@ namespace Jellyfin.Api.Controllers
             }
 
             if (includeItemTypes.Length == 1
-                && (string.Equals(includeItemTypes[0], nameof(MusicAlbum), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(MusicVideo), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(MusicArtist), StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(includeItemTypes[0], nameof(Audio), StringComparison.OrdinalIgnoreCase)))
+                && (includeItemTypes[0] == BaseItemKind.MusicAlbum
+                    || includeItemTypes[0] == BaseItemKind.MusicVideo
+                    || includeItemTypes[0] == BaseItemKind.MusicArtist
+                    || includeItemTypes[0] == BaseItemKind.Audio))
             {
                 filters.Genres = _libraryManager.GetMusicGenres(genreQuery).Items.Select(i => new NameGuidPair
                 {

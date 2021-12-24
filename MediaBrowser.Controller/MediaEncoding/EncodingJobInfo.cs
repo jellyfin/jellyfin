@@ -1,4 +1,6 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CS1591, SA1401
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +11,6 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
@@ -19,6 +20,44 @@ namespace MediaBrowser.Controller.MediaEncoding
     // For now, a common base class until the API and MediaEncoding classes are unified
     public class EncodingJobInfo
     {
+        public int? OutputAudioBitrate;
+        public int? OutputAudioChannels;
+
+        private TranscodeReason[] _transcodeReasons = null;
+
+        public EncodingJobInfo(TranscodingJobType jobType)
+        {
+            TranscodingType = jobType;
+            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            SupportedAudioCodecs = Array.Empty<string>();
+            SupportedVideoCodecs = Array.Empty<string>();
+            SupportedSubtitleCodecs = Array.Empty<string>();
+        }
+
+        public TranscodeReason[] TranscodeReasons
+        {
+            get
+            {
+                if (_transcodeReasons == null)
+                {
+                    if (BaseRequest.TranscodeReasons == null)
+                    {
+                        return Array.Empty<TranscodeReason>();
+                    }
+
+                    _transcodeReasons = BaseRequest.TranscodeReasons
+                        .Split(',')
+                        .Where(i => !string.IsNullOrEmpty(i))
+                        .Select(v => (TranscodeReason)Enum.Parse(typeof(TranscodeReason), v, true))
+                        .ToArray();
+                }
+
+                return _transcodeReasons;
+            }
+        }
+
+        public IProgress<double> Progress { get; set; }
+
         public MediaStream VideoStream { get; set; }
 
         public VideoType VideoType { get; set; }
@@ -56,39 +95,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         public string OutputFilePath { get; set; }
 
         public string MimeType { get; set; }
-
-        public string GetMimeType(string outputPath, bool enableStreamDefault = true)
-        {
-            if (!string.IsNullOrEmpty(MimeType))
-            {
-                return MimeType;
-            }
-
-            return MimeTypes.GetMimeType(outputPath, enableStreamDefault);
-        }
-
-        private TranscodeReason[] _transcodeReasons = null;
-        public TranscodeReason[] TranscodeReasons
-        {
-            get
-            {
-                if (_transcodeReasons == null)
-                {
-                    if (BaseRequest.TranscodeReasons == null)
-                    {
-                        return Array.Empty<TranscodeReason>();
-                    }
-
-                    _transcodeReasons = BaseRequest.TranscodeReasons
-                        .Split(',')
-                        .Where(i => !string.IsNullOrEmpty(i))
-                        .Select(v => (TranscodeReason)Enum.Parse(typeof(TranscodeReason), v, true))
-                        .ToArray();
-                }
-
-                return _transcodeReasons;
-            }
-        }
 
         public bool IgnoreInputDts => MediaSource.IgnoreDts;
 
@@ -142,12 +148,406 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public BaseEncodingJobOptions BaseRequest { get; set; }
 
+        public bool IsVideoRequest { get; set; }
+
+        public TranscodingJobType TranscodingType { get; set; }
+
         public long? StartTimeTicks => BaseRequest.StartTimeTicks;
 
         public bool CopyTimestamps => BaseRequest.CopyTimestamps;
 
-        public int? OutputAudioBitrate;
-        public int? OutputAudioChannels;
+        public bool IsSegmentedLiveStream
+            => TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
+
+        public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
+
+        public int? OutputWidth
+        {
+            get
+            {
+                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                {
+                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
+
+                    var newSize = DrawingUtils.Resize(
+                        size,
+                        BaseRequest.Width ?? 0,
+                        BaseRequest.Height ?? 0,
+                        BaseRequest.MaxWidth ?? 0,
+                        BaseRequest.MaxHeight ?? 0);
+
+                    return newSize.Width;
+                }
+
+                if (!IsVideoRequest)
+                {
+                    return null;
+                }
+
+                return BaseRequest.MaxWidth ?? BaseRequest.Width;
+            }
+        }
+
+        public int? OutputHeight
+        {
+            get
+            {
+                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
+                {
+                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
+
+                    var newSize = DrawingUtils.Resize(
+                        size,
+                        BaseRequest.Width ?? 0,
+                        BaseRequest.Height ?? 0,
+                        BaseRequest.MaxWidth ?? 0,
+                        BaseRequest.MaxHeight ?? 0);
+
+                    return newSize.Height;
+                }
+
+                if (!IsVideoRequest)
+                {
+                    return null;
+                }
+
+                return BaseRequest.MaxHeight ?? BaseRequest.Height;
+            }
+        }
+
+        public int? OutputAudioSampleRate
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputAudioCodec))
+                {
+                    if (AudioStream != null)
+                    {
+                        return AudioStream.SampleRate;
+                    }
+                }
+                else if (BaseRequest.AudioSampleRate.HasValue)
+                {
+                    // Don't exceed what the encoder supports
+                    // Seeing issues of attempting to encode to 88200
+                    return BaseRequest.AudioSampleRate.Value;
+                }
+
+                return null;
+            }
+        }
+
+        public int? OutputAudioBitDepth
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputAudioCodec))
+                {
+                    if (AudioStream != null)
+                    {
+                        return AudioStream.BitDepth;
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target video level.
+        /// </summary>
+        public double? TargetVideoLevel
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.Level;
+                }
+
+                var level = GetRequestedLevel(ActualOutputVideoCodec);
+                if (!string.IsNullOrEmpty(level)
+                    && double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target video bit depth.
+        /// </summary>
+        public int? TargetVideoBitDepth
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.BitDepth;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target reference frames.
+        /// </summary>
+        /// <value>The target reference frames.</value>
+        public int? TargetRefFrames
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.RefFrames;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target framerate.
+        /// </summary>
+        public float? TargetFramerate
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream == null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
+                }
+
+                return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
+            }
+        }
+
+        public TransportStreamTimestamp TargetTimestamp
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return InputTimestamp;
+                }
+
+                return string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ?
+                    TransportStreamTimestamp.Valid :
+                    TransportStreamTimestamp.None;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target packet length.
+        /// </summary>
+        public int? TargetPacketLength
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.PacketLength;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the target video profile.
+        /// </summary>
+        public string TargetVideoProfile
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.Profile;
+                }
+
+                var requestedProfile = GetRequestedProfiles(ActualOutputVideoCodec).FirstOrDefault();
+                if (!string.IsNullOrEmpty(requestedProfile))
+                {
+                    return requestedProfile;
+                }
+
+                return null;
+            }
+        }
+
+        public string TargetVideoCodecTag
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.CodecTag;
+                }
+
+                return null;
+            }
+        }
+
+        public bool? IsTargetAnamorphic
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.IsAnamorphic;
+                }
+
+                return false;
+            }
+        }
+
+        public string ActualOutputVideoCodec
+        {
+            get
+            {
+                if (VideoStream == null)
+                {
+                    return null;
+                }
+
+                if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream.Codec;
+                }
+
+                return OutputVideoCodec;
+            }
+        }
+
+        public string ActualOutputAudioCodec
+        {
+            get
+            {
+                if (AudioStream == null)
+                {
+                    return null;
+                }
+
+                if (EncodingHelper.IsCopyCodec(OutputAudioCodec))
+                {
+                    return AudioStream.Codec;
+                }
+
+                return OutputAudioCodec;
+            }
+        }
+
+        public bool? IsTargetInterlaced
+        {
+            get
+            {
+                if (BaseRequest.Static
+                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.IsInterlaced;
+                }
+
+                if (DeInterlace(ActualOutputVideoCodec, true))
+                {
+                    return false;
+                }
+
+                return VideoStream?.IsInterlaced;
+            }
+        }
+
+        public bool? IsTargetAVC
+        {
+            get
+            {
+                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
+                {
+                    return VideoStream?.IsAVC;
+                }
+
+                return false;
+            }
+        }
+
+        public int? TargetVideoStreamCount
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
+                }
+
+                return GetMediaStreamCount(MediaStreamType.Video, 1);
+            }
+        }
+
+        public int? TargetAudioStreamCount
+        {
+            get
+            {
+                if (BaseRequest.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
+                }
+
+                return GetMediaStreamCount(MediaStreamType.Audio, 1);
+            }
+        }
+
+        public int HlsListSize => 0;
+
+        public bool EnableBreakOnNonKeyFrames(string videoCodec)
+        {
+            if (TranscodingType != TranscodingJobType.Progressive)
+            {
+                if (IsSegmentedLiveStream)
+                {
+                    return false;
+                }
+
+                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
+            }
+
+            return false;
+        }
+
+        private int? GetMediaStreamCount(MediaStreamType type, int limit)
+        {
+            var count = MediaSource.GetStreamCount(type);
+
+            if (count.HasValue)
+            {
+                count = Math.Min(count.Value, limit);
+            }
+
+            return count;
+        }
+
+        public string GetMimeType(string outputPath, bool enableStreamDefault = true)
+        {
+            if (!string.IsNullOrEmpty(MimeType))
+            {
+                return MimeType;
+            }
+
+            if (enableStreamDefault)
+            {
+                return MimeTypes.GetMimeType(outputPath);
+            }
+
+            return MimeTypes.GetMimeType(outputPath, null);
+        }
 
         public bool DeInterlace(string videoCodec, bool forceDeinterlaceIfSourceIsInterlaced)
         {
@@ -173,7 +573,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                 }
             }
 
-            return forceDeinterlaceIfSourceIsInterlaced && isInputInterlaced;
+            return forceDeinterlaceIfSourceIsInterlaced;
         }
 
         public string[] GetRequestedProfiles(string codec)
@@ -273,6 +673,16 @@ namespace MediaBrowser.Controller.MediaEncoding
 
         public int? GetRequestedAudioChannels(string codec)
         {
+            if (!string.IsNullOrEmpty(codec))
+            {
+                var value = BaseRequest.GetOption(codec, "audiochannels");
+                if (!string.IsNullOrEmpty(value)
+                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                {
+                    return result;
+                }
+            }
+
             if (BaseRequest.MaxAudioChannels.HasValue)
             {
                 return BaseRequest.MaxAudioChannels;
@@ -288,436 +698,12 @@ namespace MediaBrowser.Controller.MediaEncoding
                 return BaseRequest.TranscodingMaxAudioChannels;
             }
 
-            if (!string.IsNullOrEmpty(codec))
-            {
-                var value = BaseRequest.GetOption(codec, "audiochannels");
-                if (!string.IsNullOrEmpty(value)
-                    && int.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
-            }
-
             return null;
         }
-
-        public bool IsVideoRequest { get; set; }
-
-        public TranscodingJobType TranscodingType { get; set; }
-
-        public EncodingJobInfo(TranscodingJobType jobType)
-        {
-            TranscodingType = jobType;
-            RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            SupportedAudioCodecs = Array.Empty<string>();
-            SupportedVideoCodecs = Array.Empty<string>();
-            SupportedSubtitleCodecs = Array.Empty<string>();
-        }
-
-        public bool IsSegmentedLiveStream
-            => TranscodingType != TranscodingJobType.Progressive && !RunTimeTicks.HasValue;
-
-        public bool EnableBreakOnNonKeyFrames(string videoCodec)
-        {
-            if (TranscodingType != TranscodingJobType.Progressive)
-            {
-                if (IsSegmentedLiveStream)
-                {
-                    return false;
-                }
-
-                return BaseRequest.BreakOnNonKeyFrames && EncodingHelper.IsCopyCodec(videoCodec);
-            }
-
-            return false;
-        }
-
-        public int? TotalOutputBitrate => (OutputAudioBitrate ?? 0) + (OutputVideoBitrate ?? 0);
-
-        public int? OutputWidth
-        {
-            get
-            {
-                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
-                {
-                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
-
-                    var newSize = DrawingUtils.Resize(
-                        size,
-                        BaseRequest.Width ?? 0,
-                        BaseRequest.Height ?? 0,
-                        BaseRequest.MaxWidth ?? 0,
-                        BaseRequest.MaxHeight ?? 0);
-
-                    return newSize.Width;
-                }
-
-                if (!IsVideoRequest)
-                {
-                    return null;
-                }
-
-                return BaseRequest.MaxWidth ?? BaseRequest.Width;
-            }
-        }
-
-        public int? OutputHeight
-        {
-            get
-            {
-                if (VideoStream != null && VideoStream.Width.HasValue && VideoStream.Height.HasValue)
-                {
-                    var size = new ImageDimensions(VideoStream.Width.Value, VideoStream.Height.Value);
-
-                    var newSize = DrawingUtils.Resize(
-                        size,
-                        BaseRequest.Width ?? 0,
-                        BaseRequest.Height ?? 0,
-                        BaseRequest.MaxWidth ?? 0,
-                        BaseRequest.MaxHeight ?? 0);
-
-                    return newSize.Height;
-                }
-
-                if (!IsVideoRequest)
-                {
-                    return null;
-                }
-
-                return BaseRequest.MaxHeight ?? BaseRequest.Height;
-            }
-        }
-
-        public int? OutputAudioSampleRate
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputAudioCodec))
-                {
-                    if (AudioStream != null)
-                    {
-                        return AudioStream.SampleRate;
-                    }
-                }
-                else if (BaseRequest.AudioSampleRate.HasValue)
-                {
-                    // Don't exceed what the encoder supports
-                    // Seeing issues of attempting to encode to 88200
-                    return BaseRequest.AudioSampleRate.Value;
-                }
-
-                return null;
-            }
-        }
-
-        public int? OutputAudioBitDepth
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputAudioCodec))
-                {
-                    if (AudioStream != null)
-                    {
-                        return AudioStream.BitDepth;
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
-        /// </summary>
-        public double? TargetVideoLevel
-        {
-            get
-            {
-                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.Level;
-                }
-
-                var level = GetRequestedLevel(ActualOutputVideoCodec);
-                if (!string.IsNullOrEmpty(level)
-                    && double.TryParse(level, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
-                {
-                    return result;
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
-        /// </summary>
-        public int? TargetVideoBitDepth
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.BitDepth;
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the target reference frames.
-        /// </summary>
-        /// <value>The target reference frames.</value>
-        public int? TargetRefFrames
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.RefFrames;
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
-        /// </summary>
-        public float? TargetFramerate
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream == null ? null : (VideoStream.AverageFrameRate ?? VideoStream.RealFrameRate);
-                }
-
-                return BaseRequest.MaxFramerate ?? BaseRequest.Framerate;
-            }
-        }
-
-        public TransportStreamTimestamp TargetTimestamp
-        {
-            get
-            {
-                if (BaseRequest.Static)
-                {
-                    return InputTimestamp;
-                }
-
-                return string.Equals(OutputContainer, "m2ts", StringComparison.OrdinalIgnoreCase) ?
-                    TransportStreamTimestamp.Valid :
-                    TransportStreamTimestamp.None;
-            }
-        }
-
-        /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
-        /// </summary>
-        public int? TargetPacketLength
-        {
-            get
-            {
-                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.PacketLength;
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Predicts the audio sample rate that will be in the output stream.
-        /// </summary>
-        public string TargetVideoProfile
-        {
-            get
-            {
-                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.Profile;
-                }
-
-                var requestedProfile = GetRequestedProfiles(ActualOutputVideoCodec).FirstOrDefault();
-                if (!string.IsNullOrEmpty(requestedProfile))
-                {
-                    return requestedProfile;
-                }
-
-                return null;
-            }
-        }
-
-        public string TargetVideoCodecTag
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.CodecTag;
-                }
-
-                return null;
-            }
-        }
-
-        public bool? IsTargetAnamorphic
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.IsAnamorphic;
-                }
-
-                return false;
-            }
-        }
-
-        public string ActualOutputVideoCodec
-        {
-            get
-            {
-                if (VideoStream == null)
-                {
-                    return null;
-                }
-
-                if (EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.Codec;
-                }
-
-                return OutputVideoCodec;
-            }
-        }
-
-        public string ActualOutputAudioCodec
-        {
-            get
-            {
-                if (AudioStream == null)
-                {
-                    return null;
-                }
-
-                if (EncodingHelper.IsCopyCodec(OutputAudioCodec))
-                {
-                    return AudioStream?.Codec;
-                }
-
-                return OutputAudioCodec;
-            }
-        }
-
-        public bool? IsTargetInterlaced
-        {
-            get
-            {
-                if (BaseRequest.Static
-                    || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.IsInterlaced;
-                }
-
-                if (DeInterlace(ActualOutputVideoCodec, true))
-                {
-                    return false;
-                }
-
-                return VideoStream?.IsInterlaced;
-            }
-        }
-
-        public bool? IsTargetAVC
-        {
-            get
-            {
-                if (BaseRequest.Static || EncodingHelper.IsCopyCodec(OutputVideoCodec))
-                {
-                    return VideoStream?.IsAVC;
-                }
-
-                return false;
-            }
-        }
-
-        public int? TargetVideoStreamCount
-        {
-            get
-            {
-                if (BaseRequest.Static)
-                {
-                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
-                }
-
-                return GetMediaStreamCount(MediaStreamType.Video, 1);
-            }
-        }
-
-        public int? TargetAudioStreamCount
-        {
-            get
-            {
-                if (BaseRequest.Static)
-                {
-                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
-                }
-
-                return GetMediaStreamCount(MediaStreamType.Audio, 1);
-            }
-        }
-
-        public int HlsListSize => 0;
-
-        private int? GetMediaStreamCount(MediaStreamType type, int limit)
-        {
-            var count = MediaSource.GetStreamCount(type);
-
-            if (count.HasValue)
-            {
-                count = Math.Min(count.Value, limit);
-            }
-
-            return count;
-        }
-
-        public IProgress<double> Progress { get; set; }
 
         public virtual void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded, int? bitRate)
         {
             Progress.Report(percentComplete.Value);
         }
-    }
-
-    /// <summary>
-    /// Enum TranscodingJobType.
-    /// </summary>
-    public enum TranscodingJobType
-    {
-        /// <summary>
-        /// The progressive.
-        /// </summary>
-        Progressive,
-
-        /// <summary>
-        /// The HLS.
-        /// </summary>
-        Hls,
-
-        /// <summary>
-        /// The dash.
-        /// </summary>
-        Dash
     }
 }

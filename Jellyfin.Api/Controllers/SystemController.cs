@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Mime;
-using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
@@ -67,7 +65,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<SystemInfo> GetSystemInfo()
         {
-            return _appHost.GetSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+            return _appHost.GetSystemInfo(Request);
         }
 
         /// <summary>
@@ -79,7 +77,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<PublicSystemInfo> GetPublicSystemInfo()
         {
-            return _appHost.GetPublicSystemInfo(Request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback);
+            return _appHost.GetPublicSystemInfo(Request);
         }
 
         /// <summary>
@@ -202,7 +200,7 @@ namespace Jellyfin.Api.Controllers
 
             // For older files, assume fully static
             var fileShare = file.LastWriteTimeUtc < DateTime.UtcNow.AddHours(-1) ? FileShare.Read : FileShare.ReadWrite;
-            FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare);
+            FileStream stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, fileShare, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
             return File(stream, "text/plain; charset=utf-8");
         }
 
@@ -213,10 +211,13 @@ namespace Jellyfin.Api.Controllers
         /// <returns>An <see cref="IEnumerable{WakeOnLanInfo}"/> with the WakeOnLan infos.</returns>
         [HttpGet("WakeOnLanInfo")]
         [Authorize(Policy = Policies.DefaultAuthorization)]
+        [Obsolete("This endpoint is obsolete.")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<IEnumerable<WakeOnLanInfo>> GetWakeOnLanInfo()
         {
-            var result = _appHost.GetWakeOnLanInfo();
+            var result = _network.GetMacAddresses()
+                .Select(i => new WakeOnLanInfo(i))
+                .ToList();
             return Ok(result);
         }
     }

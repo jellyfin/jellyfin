@@ -1,7 +1,10 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
@@ -10,6 +13,12 @@ namespace Emby.Server.Implementations.Sorting
 {
     public class StudioComparer : IBaseItemComparer
     {
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.Studio;
+
         /// <summary>
         /// Compares the specified x.
         /// </summary>
@@ -28,13 +37,7 @@ namespace Emby.Server.Implementations.Sorting
                 throw new ArgumentNullException(nameof(y));
             }
 
-            return AlphanumComparator.CompareValues(x.Studios.FirstOrDefault() ?? string.Empty, y.Studios.FirstOrDefault() ?? string.Empty);
+            return AlphanumericComparator.CompareValues(x.Studios.FirstOrDefault(), y.Studios.FirstOrDefault());
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.Studio;
     }
 }

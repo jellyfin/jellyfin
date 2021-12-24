@@ -29,20 +29,13 @@ namespace Jellyfin.Data.Entities
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemDisplayPreferences"/> class.
-        /// </summary>
-        protected ItemDisplayPreferences()
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the Id.
+        /// Gets the id.
         /// </summary>
         /// <remarks>
         /// Required.
         /// </remarks>
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
 
         /// <summary>
         /// Gets or sets the user Id.
@@ -66,7 +59,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required. Max Length = 32.
         /// </remarks>
-        [Required]
         [MaxLength(32)]
         [StringLength(32)]
         public string Client { get; set; }
@@ -106,7 +98,6 @@ namespace Jellyfin.Data.Entities
         /// <remarks>
         /// Required.
         /// </remarks>
-        [Required]
         [MaxLength(64)]
         [StringLength(64)]
         public string SortBy { get; set; }

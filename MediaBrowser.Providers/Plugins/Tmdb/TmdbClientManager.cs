@@ -1,8 +1,13 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Caching.Memory;
 using TMDbLib.Client;
 using TMDbLib.Objects.Collections;
@@ -18,7 +23,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// <summary>
     /// Manager class for abstracting the TMDb API client library.
     /// </summary>
-    public class TmdbClientManager
+    public class TmdbClientManager : IDisposable
     {
         private const int CacheDurationInHours = 1;
 
@@ -55,11 +60,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
+            var extraMethods = MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Videos;
+            if (!(Plugin.Instance?.Configuration.ExcludeTagsMovies).GetValueOrDefault())
+            {
+                extraMethods |= MovieMethods.Keywords;
+            }
+
             movie = await _tmDbClient.GetMovieAsync(
                 tmdbId,
                 TmdbUtils.NormalizeLanguage(language),
                 imageLanguages,
-                MovieMethods.Credits | MovieMethods.Releases | MovieMethods.Images | MovieMethods.Keywords | MovieMethods.Videos,
+                extraMethods,
                 cancellationToken).ConfigureAwait(false);
 
             if (movie != null)
@@ -121,11 +132,17 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
+            var extraMethods = TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings | TvShowMethods.EpisodeGroups;
+            if (!(Plugin.Instance?.Configuration.ExcludeTagsSeries).GetValueOrDefault())
+            {
+                extraMethods |= TvShowMethods.Keywords;
+            }
+
             series = await _tmDbClient.GetTvShowAsync(
                 tmdbId,
                 language: TmdbUtils.NormalizeLanguage(language),
                 includeImageLanguage: imageLanguages,
-                extraMethods: TvShowMethods.Credits | TvShowMethods.Images | TvShowMethods.Keywords | TvShowMethods.ExternalIds | TvShowMethods.Videos | TvShowMethods.ContentRatings,
+                extraMethods: extraMethods,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (series != null)
@@ -134,6 +151,56 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             }
 
             return series;
+        }
+
+        /// <summary>
+        /// Gets a tv show episode group from the TMDb API based on the show id and the display order.
+        /// </summary>
+        /// <param name="tvShowId">The tv show's TMDb id.</param>
+        /// <param name="displayOrder">The display order.</param>
+        /// <param name="language">The tv show's language.</param>
+        /// <param name="imageLanguages">A comma-separated list of image languages.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The TMDb tv show episode group information or null if not found.</returns>
+        private async Task<TvGroupCollection> GetSeriesGroupAsync(int tvShowId, string displayOrder, string language, string imageLanguages, CancellationToken cancellationToken)
+        {
+            TvGroupType? groupType =
+                string.Equals(displayOrder, "absolute", StringComparison.Ordinal) ? TvGroupType.Absolute :
+                string.Equals(displayOrder, "dvd", StringComparison.Ordinal) ? TvGroupType.DVD :
+                null;
+
+            if (groupType == null)
+            {
+                return null;
+            }
+
+            var key = $"group-{tvShowId.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
+            if (_memoryCache.TryGetValue(key, out TvGroupCollection group))
+            {
+                return group;
+            }
+
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            var series = await GetSeriesAsync(tvShowId, language, imageLanguages, cancellationToken).ConfigureAwait(false);
+            var episodeGroupId = series?.EpisodeGroups.Results.Find(g => g.Type == groupType)?.Id;
+
+            if (episodeGroupId == null)
+            {
+                return null;
+            }
+
+            group = await _tmDbClient.GetTvEpisodeGroupsAsync(
+                episodeGroupId,
+                language: TmdbUtils.NormalizeLanguage(language),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            if (group != null)
+            {
+                _memoryCache.Set(key, group, TimeSpan.FromHours(CacheDurationInHours));
+            }
+
+            return group;
         }
 
         /// <summary>
@@ -177,19 +244,33 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <param name="tvShowId">The tv show's TMDb id.</param>
         /// <param name="seasonNumber">The season number.</param>
         /// <param name="episodeNumber">The episode number.</param>
+        /// <param name="displayOrder">The display order.</param>
         /// <param name="language">The episode's language.</param>
         /// <param name="imageLanguages">A comma-separated list of image languages.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv episode information or null if not found.</returns>
-        public async Task<TvEpisode> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string language, string imageLanguages, CancellationToken cancellationToken)
+        public async Task<TvEpisode> GetEpisodeAsync(int tvShowId, int seasonNumber, int episodeNumber, string displayOrder, string language, string imageLanguages, CancellationToken cancellationToken)
         {
-            var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{language}";
+            var key = $"episode-{tvShowId.ToString(CultureInfo.InvariantCulture)}-s{seasonNumber.ToString(CultureInfo.InvariantCulture)}e{episodeNumber.ToString(CultureInfo.InvariantCulture)}-{displayOrder}-{language}";
             if (_memoryCache.TryGetValue(key, out TvEpisode episode))
             {
                 return episode;
             }
 
             await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            var group = await GetSeriesGroupAsync(tvShowId, displayOrder, language, imageLanguages, cancellationToken).ConfigureAwait(false);
+            if (group != null)
+            {
+                var season = group.Groups.Find(s => s.Order == seasonNumber);
+                // Episode order starts at 0
+                var ep = season?.Episodes.Find(e => e.Order == episodeNumber - 1);
+                if (ep != null)
+                {
+                    seasonNumber = ep.SeasonNumber;
+                    episodeNumber = ep.EpisodeNumber;
+                }
+            }
 
             episode = await _tmDbClient.GetTvEpisodeAsync(
                 tvShowId,
@@ -212,11 +293,12 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// Gets a person eg. cast or crew member from the TMDb API based on its TMDb id.
         /// </summary>
         /// <param name="personTmdbId">The person's TMDb id.</param>
+        /// <param name="language">The episode's language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb person information or null if not found.</returns>
-        public async Task<Person> GetPersonAsync(int personTmdbId, CancellationToken cancellationToken)
+        public async Task<Person> GetPersonAsync(int personTmdbId, string language, CancellationToken cancellationToken)
         {
-            var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}";
+            var key = $"person-{personTmdbId.ToString(CultureInfo.InvariantCulture)}-{language}";
             if (_memoryCache.TryGetValue(key, out Person person))
             {
                 return person;
@@ -226,6 +308,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
 
             person = await _tmDbClient.GetPersonAsync(
                 personTmdbId,
+                TmdbUtils.NormalizeLanguage(language),
                 PersonMethods.TvCredits | PersonMethods.MovieCredits | PersonMethods.Images | PersonMethods.ExternalIds,
                 cancellationToken).ConfigureAwait(false);
 
@@ -278,9 +361,10 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// </summary>
         /// <param name="name">The name of the tv show.</param>
         /// <param name="language">The tv show's language.</param>
+        /// <param name="year">The year the tv show first aired.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The TMDb tv show information.</returns>
-        public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<SearchTv>> SearchSeriesAsync(string name, string language, int year = 0, CancellationToken cancellationToken = default)
         {
             var key = $"searchseries-{name}-{language}";
             if (_memoryCache.TryGetValue(key, out SearchContainer<SearchTv> series))
@@ -291,7 +375,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language), cancellationToken: cancellationToken)
+                .SearchTvShowAsync(name, TmdbUtils.NormalizeLanguage(language), includeAdult: Plugin.Instance.Configuration.IncludeAdult, firstAirDateYear: year, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
@@ -319,7 +403,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchPersonAsync(name, cancellationToken: cancellationToken)
+                .SearchPersonAsync(name, includeAdult: Plugin.Instance.Configuration.IncludeAdult, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
@@ -361,7 +445,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
             await EnsureClientConfigAsync().ConfigureAwait(false);
 
             var searchResults = await _tmDbClient
-                .SearchMovieAsync(name, TmdbUtils.NormalizeLanguage(language), year: year, cancellationToken: cancellationToken)
+                .SearchMovieAsync(name, TmdbUtils.NormalizeLanguage(language), includeAdult: Plugin.Instance.Configuration.IncludeAdult, year: year, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
             if (searchResults.Results.Count > 0)
@@ -402,33 +486,29 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         }
 
         /// <summary>
+        /// Handles bad path checking and builds the absolute url.
+        /// </summary>
+        /// <param name="size">The image size to fetch.</param>
+        /// <param name="path">The relative URL of the image.</param>
+        /// <returns>The absolute URL.</returns>
+        private string GetUrl(string size, string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return null;
+            }
+
+            return _tmDbClient.GetImageUrl(size, path, true).ToString();
+        }
+
+        /// <summary>
         /// Gets the absolute URL of the poster.
         /// </summary>
         /// <param name="posterPath">The relative URL of the poster.</param>
         /// <returns>The absolute URL.</returns>
         public string GetPosterUrl(string posterPath)
         {
-            if (string.IsNullOrEmpty(posterPath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.PosterSizes[^1], posterPath).ToString();
-        }
-
-        /// <summary>
-        /// Gets the absolute URL of the backdrop image.
-        /// </summary>
-        /// <param name="posterPath">The relative URL of the backdrop image.</param>
-        /// <returns>The absolute URL.</returns>
-        public string GetBackdropUrl(string posterPath)
-        {
-            if (string.IsNullOrEmpty(posterPath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.BackdropSizes[^1], posterPath).ToString();
+            return GetUrl(Plugin.Instance.Configuration.PosterSize, posterPath);
         }
 
         /// <summary>
@@ -438,32 +518,150 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// <returns>The absolute URL.</returns>
         public string GetProfileUrl(string actorProfilePath)
         {
-            if (string.IsNullOrEmpty(actorProfilePath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.ProfileSizes[^1], actorProfilePath).ToString();
+            return GetUrl(Plugin.Instance.Configuration.ProfileSize, actorProfilePath);
         }
 
         /// <summary>
-        /// Gets the absolute URL of the still image.
+        /// Converts poster <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
         /// </summary>
-        /// <param name="filePath">The relative URL of the still image.</param>
-        /// <returns>The absolute URL.</returns>
-        public string GetStillUrl(string filePath)
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertPostersToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                return null;
-            }
-
-            return _tmDbClient.GetImageUrl(_tmDbClient.Config.Images.StillSizes[^1], filePath).ToString();
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.PosterSize, ImageType.Primary, requestLanguage, results);
         }
 
-        private Task EnsureClientConfigAsync()
+        /// <summary>
+        /// Converts backdrop <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertBackdropsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
         {
-            return !_tmDbClient.HasConfig ? _tmDbClient.GetConfigAsync() : Task.CompletedTask;
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.BackdropSize, ImageType.Backdrop, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts profile <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertProfilesToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.ProfileSize, ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts still <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        public void ConvertStillsToRemoteImageInfo(List<ImageData> images, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            ConvertToRemoteImageInfo(images, Plugin.Instance.Configuration.StillSize, ImageType.Primary, requestLanguage, results);
+        }
+
+        /// <summary>
+        /// Converts <see cref="ImageData"/>s into <see cref="RemoteImageInfo"/>s.
+        /// </summary>
+        /// <param name="images">The input images.</param>
+        /// <param name="size">The size of the image to fetch.</param>
+        /// <param name="type">The type of the image.</param>
+        /// <param name="requestLanguage">The requested language.</param>
+        /// <param name="results">The collection to add the remote images into.</param>
+        private void ConvertToRemoteImageInfo(List<ImageData> images, string size, ImageType type, string requestLanguage, List<RemoteImageInfo> results)
+        {
+            // sizes provided are for original resolution, don't store them when downloading scaled images
+            var scaleImage = !string.Equals(size, "original", StringComparison.OrdinalIgnoreCase);
+
+            for (var i = 0; i < images.Count; i++)
+            {
+                var image = images[i];
+
+                results.Add(new RemoteImageInfo
+                {
+                    Url = GetUrl(size, image.FilePath),
+                    CommunityRating = image.VoteAverage,
+                    VoteCount = image.VoteCount,
+                    Width = scaleImage ? null : image.Width,
+                    Height = scaleImage ? null : image.Height,
+                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, requestLanguage),
+                    ProviderName = TmdbUtils.ProviderName,
+                    Type = type,
+                    RatingType = RatingType.Score
+                });
+            }
+        }
+
+        private async Task EnsureClientConfigAsync()
+        {
+            if (!_tmDbClient.HasConfig)
+            {
+                var config = await _tmDbClient.GetConfigAsync().ConfigureAwait(false);
+                ValidatePreferences(config);
+            }
+        }
+
+        private static void ValidatePreferences(TMDbConfig config)
+        {
+            var imageConfig = config.Images;
+
+            var pluginConfig = Plugin.Instance.Configuration;
+
+            if (!imageConfig.PosterSizes.Contains(pluginConfig.PosterSize))
+            {
+                pluginConfig.PosterSize = imageConfig.PosterSizes[^1];
+            }
+
+            if (!imageConfig.BackdropSizes.Contains(pluginConfig.BackdropSize))
+            {
+                pluginConfig.BackdropSize = imageConfig.BackdropSizes[^1];
+            }
+
+            if (!imageConfig.ProfileSizes.Contains(pluginConfig.ProfileSize))
+            {
+                pluginConfig.ProfileSize = imageConfig.ProfileSizes[^1];
+            }
+
+            if (!imageConfig.StillSizes.Contains(pluginConfig.StillSize))
+            {
+                pluginConfig.StillSize = imageConfig.StillSizes[^1];
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TMDbClient"/> configuration.
+        /// </summary>
+        /// <returns>The configuration.</returns>
+        public async Task<TMDbConfig> GetClientConfiguration()
+        {
+            await EnsureClientConfigAsync().ConfigureAwait(false);
+
+            return _tmDbClient.Config;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _memoryCache?.Dispose();
+                _tmDbClient?.Dispose();
+            }
         }
     }
 }

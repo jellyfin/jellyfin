@@ -7,12 +7,12 @@
 %endif
 
 Name:           jellyfin
-Version:        10.7.0
+Version:        10.8.0
 Release:        1%{?dist}
 Summary:        The Free Software Media System
 License:        GPLv3
 URL:            https://jellyfin.org
-# Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%{version}.tar.gz`
+# Jellyfin Server tarball created by `make -f .copr/Makefile srpm`, real URL ends with `v%%{version}.tar.gz`
 Source0:        jellyfin-server-%{version}.tar.gz
 Source11:       jellyfin.service
 Source12:       jellyfin.env
@@ -20,6 +20,7 @@ Source13:       jellyfin.sudoers
 Source14:       restart.sh
 Source15:       jellyfin.override.conf
 Source16:       jellyfin-firewalld.xml
+Source17:       jellyfin-server-lowports.conf
 
 %{?systemd_requires}
 BuildRequires:  systemd
@@ -27,8 +28,8 @@ BuildRequires:  libcurl-devel, fontconfig-devel, freetype-devel, openssl-devel, 
 # Requirements not packaged in main repos
 # COPR @dotnet-sig/dotnet or
 # https://packages.microsoft.com/rhel/7/prod/
-BuildRequires:  dotnet-runtime-5.0, dotnet-sdk-5.0
-Requires: %{name}-server = %{version}-%{release}, %{name}-web >= 10.6, %{name}-web < 10.7
+BuildRequires:  dotnet-runtime-6.0, dotnet-sdk-6.0
+Requires: %{name}-server = %{version}-%{release}, %{name}-web = %{version}-%{release}
 # Disable Automatic Dependency Processing
 AutoReqProv:    no
 
@@ -40,10 +41,20 @@ Jellyfin is a free software media system that puts you in control of managing an
 Summary:        The Free Software Media System Server backend
 Requires(pre):  shadow-utils
 Requires:       ffmpeg
-Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at
+Requires:       libcurl, fontconfig, freetype, openssl, glibc, libicu, at, sudo
 
 %description server
 The Jellyfin media server backend.
+
+%package server-lowports
+# RPMfusion free
+Summary:        The Free Software Media System Server backend.  Low-port binding.
+Requires:       jellyfin-server
+
+%description server-lowports
+The Jellyfin media server backend low port binding package.  This package
+enables binding to ports < 1024.  You would install this if you want
+the Jellyfin server to bind to ports 80 and/or 443 for example.
 
 %prep
 %autosetup -n jellyfin-server-%{version} -b 0
@@ -53,10 +64,12 @@ The Jellyfin media server backend.
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+export PATH=$PATH:/usr/local/bin
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
     "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE
 %{__install} -D -m 0644 %{SOURCE15} %{buildroot}%{_sysconfdir}/systemd/system/jellyfin.service.d/override.conf
+%{__install} -D -m 0644 %{SOURCE17} %{buildroot}%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 %{__install} -D -m 0644 Jellyfin.Server/Resources/Configuration/logging.json %{buildroot}%{_sysconfdir}/jellyfin/logging.json
 %{__mkdir} -p %{buildroot}%{_bindir}
 tee %{buildroot}%{_bindir}/jellyfin << EOF
@@ -94,6 +107,9 @@ EOF
 %attr(-,jellyfin,jellyfin) %dir %{_var}/log/jellyfin
 %attr(750,jellyfin,jellyfin) %dir %{_var}/cache/jellyfin
 %{_datadir}/licenses/jellyfin/LICENSE
+
+%files server-lowports
+%{_unitdir}/jellyfin.service.d/jellyfin-server-lowports.conf
 
 %pre server
 getent group jellyfin >/dev/null || groupadd -r jellyfin
@@ -137,6 +153,11 @@ fi
 %systemd_postun_with_restart jellyfin.service
 
 %changelog
+* Mon Nov 29 2021 Brian J. Murrell <brian@interlinx.bc.ca>
+- Add jellyfin-server-lowports.service drop-in in a server-lowports
+  subpackage to allow binding to low ports
+* Fri Dec 04 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
+- Forthcoming stable release
 * Mon Jul 27 2020 Jellyfin Packaging Team <packaging@jellyfin.org>
 - Forthcoming stable release
 * Mon Mar 23 2020 Jellyfin Packaging Team <packaging@jellyfin.org>

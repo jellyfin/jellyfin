@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CA1813 // Avoid unsealed attributes
+
+using System;
 
 namespace Jellyfin.Api.Attributes
 {

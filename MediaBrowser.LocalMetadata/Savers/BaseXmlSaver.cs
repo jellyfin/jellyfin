@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -26,24 +25,18 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// </summary>
         public const string DateAddedFormat = "yyyy-MM-dd HH:mm:ss";
 
-        private static readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseXmlSaver"/> class.
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="configurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="libraryManager">Instance of the <see cref="ILibraryManager"/> interface.</param>
-        /// <param name="userManager">Instance of the <see cref="IUserManager"/> interface.</param>
-        /// <param name="userDataManager">Instance of the <see cref="IUserDataManager"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BaseXmlSaver}"/> interface.</param>
-        public BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, IUserManager userManager, IUserDataManager userDataManager, ILogger<BaseXmlSaver> logger)
+        protected BaseXmlSaver(IFileSystem fileSystem, IServerConfigurationManager configurationManager, ILibraryManager libraryManager, ILogger<BaseXmlSaver> logger)
         {
             FileSystem = fileSystem;
             ConfigurationManager = configurationManager;
             LibraryManager = libraryManager;
-            UserManager = userManager;
-            UserDataManager = userDataManager;
             Logger = logger;
         }
 
@@ -61,16 +54,6 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// Gets the library manager.
         /// </summary>
         protected ILibraryManager LibraryManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user manager.
-        /// </summary>
-        protected IUserManager UserManager { get; private set; }
-
-        /// <summary>
-        /// Gets the user data manager.
-        /// </summary>
-        protected IUserDataManager UserDataManager { get; private set; }
 
         /// <summary>
         /// Gets the logger.
@@ -130,10 +113,19 @@ namespace MediaBrowser.LocalMetadata.Savers
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
+
             // On Windows, savint the file will fail if the file is hidden or readonly
             FileSystem.SetAttributes(path, false, false);
 
-            using (var filestream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
+            var fileStreamOptions = new FileStreamOptions()
+            {
+                Mode = FileMode.Create,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                PreallocationSize = stream.Length
+            };
+
+            using (var filestream = new FileStream(path, fileStreamOptions))
             {
                 stream.CopyTo(filestream);
             }
@@ -152,7 +144,7 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error setting hidden attribute on {path}", path);
+                Logger.LogError(ex, "Error setting hidden attribute on {Path}", path);
             }
         }
 
@@ -214,12 +206,12 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (item.LockedFields.Length > 0)
             {
-                writer.WriteElementString("LockedFields", string.Join("|", item.LockedFields));
+                writer.WriteElementString("LockedFields", string.Join('|', item.LockedFields));
             }
 
             if (item.CriticRating.HasValue)
             {
-                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(_usCulture));
+                writer.WriteElementString("CriticRating", item.CriticRating.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (!string.IsNullOrEmpty(item.Overview))
@@ -237,7 +229,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteElementString("CustomRating", item.CustomRating);
             }
 
-            if (!string.IsNullOrEmpty(item.Name) && !(item is Episode))
+            if (!string.IsNullOrEmpty(item.Name) && item is not Episode)
             {
                 writer.WriteElementString("LocalTitle", item.Name);
             }
@@ -254,7 +246,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     writer.WriteElementString("BirthDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
-                else if (!(item is Episode))
+                else if (item is not Episode)
                 {
                     writer.WriteElementString("PremiereDate", item.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
@@ -266,7 +258,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 {
                     writer.WriteElementString("DeathDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
-                else if (!(item is Episode))
+                else if (item is not Episode)
                 {
                     writer.WriteElementString("EndDate", item.EndDate.Value.ToLocalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 }
@@ -296,24 +288,22 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            var hasDisplayOrder = item as IHasDisplayOrder;
-            if (hasDisplayOrder != null && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
+            if (item is IHasDisplayOrder hasDisplayOrder && !string.IsNullOrEmpty(hasDisplayOrder.DisplayOrder))
             {
                 writer.WriteElementString("DisplayOrder", hasDisplayOrder.DisplayOrder);
             }
 
             if (item.CommunityRating.HasValue)
             {
-                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(_usCulture));
+                writer.WriteElementString("Rating", item.CommunityRating.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            if (item.ProductionYear.HasValue && !(item is Person))
+            if (item.ProductionYear.HasValue && item is not Person)
             {
-                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(_usCulture));
+                writer.WriteElementString("ProductionYear", item.ProductionYear.Value.ToString(CultureInfo.InvariantCulture));
             }
 
-            var hasAspectRatio = item as IHasAspectRatio;
-            if (hasAspectRatio != null)
+            if (item is IHasAspectRatio hasAspectRatio)
             {
                 if (!string.IsNullOrEmpty(hasAspectRatio.AspectRatio))
                 {
@@ -336,9 +326,9 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             if (runTimeTicks.HasValue)
             {
-                var timespan = TimeSpan.FromTicks(runTimeTicks!.Value);
+                var timespan = TimeSpan.FromTicks(runTimeTicks.Value);
 
-                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(_usCulture));
+                writer.WriteElementString("RunningTime", Math.Floor(timespan.TotalMinutes).ToString(CultureInfo.InvariantCulture));
             }
 
             if (item.ProviderIds != null)
@@ -411,7 +401,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
                     if (person.SortOrder.HasValue)
                     {
-                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(_usCulture));
+                        writer.WriteElementString("SortOrder", person.SortOrder.Value.ToString(CultureInfo.InvariantCulture));
                     }
 
                     writer.WriteEndElement();
@@ -420,20 +410,17 @@ namespace MediaBrowser.LocalMetadata.Savers
                 writer.WriteEndElement();
             }
 
-            var boxset = item as BoxSet;
-            if (boxset != null)
+            if (item is BoxSet boxset)
             {
                 AddLinkedChildren(boxset, writer, "CollectionItems", "CollectionItem");
             }
 
-            var playlist = item as Playlist;
-            if (playlist != null && !Playlist.IsPlaylistFile(playlist.Path))
+            if (item is Playlist playlist && !Playlist.IsPlaylistFile(playlist.Path))
             {
                 AddLinkedChildren(playlist, writer, "PlaylistItems", "PlaylistItem");
             }
 
-            var hasShares = item as IHasShares;
-            if (hasShares != null)
+            if (item is IHasShares hasShares)
             {
                 AddShares(hasShares, writer);
             }
@@ -540,11 +527,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
 
             writer.WriteEndElement();
-        }
-
-        private bool IsPersonType(PersonInfo person, string type)
-        {
-            return string.Equals(person.Type, type, StringComparison.OrdinalIgnoreCase) || string.Equals(person.Role, type, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,7 +1,10 @@
-#pragma warning disable CS1591
+#nullable disable
+
+#pragma warning disable CA1819, CS1591
 
 using System;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Providers;
 
@@ -9,21 +12,6 @@ namespace MediaBrowser.Controller.Providers
 {
     public class MetadataRefreshOptions : ImageRefreshOptions
     {
-        /// <summary>
-        /// When paired with MetadataRefreshMode=FullRefresh, all existing data will be overwritten with new data from the providers.
-        /// </summary>
-        public bool ReplaceAllMetadata { get; set; }
-
-        public MetadataRefreshMode MetadataRefreshMode { get; set; }
-
-        public RemoteSearchResult SearchResult { get; set; }
-
-        public string[] RefreshPaths { get; set; }
-
-        public bool ForceSave { get; set; }
-
-        public bool EnableRemoteContentProbe { get; set; }
-
         public MetadataRefreshOptions(IDirectoryService directoryService)
             : base(directoryService)
         {
@@ -45,20 +33,33 @@ namespace MediaBrowser.Controller.Providers
 
             if (copy.RefreshPaths != null && copy.RefreshPaths.Length > 0)
             {
-                if (RefreshPaths == null)
-                {
-                    RefreshPaths = Array.Empty<string>();
-                }
+                RefreshPaths ??= Array.Empty<string>();
 
                 RefreshPaths = copy.RefreshPaths.ToArray();
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether all existing data should be overwritten with new data from providers
+        /// when paired with MetadataRefreshMode=FullRefresh.
+        /// </summary>
+        public bool ReplaceAllMetadata { get; set; }
+
+        public MetadataRefreshMode MetadataRefreshMode { get; set; }
+
+        public RemoteSearchResult SearchResult { get; set; }
+
+        public string[] RefreshPaths { get; set; }
+
+        public bool ForceSave { get; set; }
+
+        public bool EnableRemoteContentProbe { get; set; }
+
         public bool RefreshItem(BaseItem item)
         {
             if (RefreshPaths != null && RefreshPaths.Length > 0)
             {
-                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                return RefreshPaths.Contains(item.Path ?? string.Empty, StringComparison.OrdinalIgnoreCase);
             }
 
             return true;

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Jellyfin.Data.Entities;
+using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,12 @@ namespace Jellyfin.Server.Implementations
         public virtual DbSet<AccessSchedule> AccessSchedules { get; set; }
 
         public virtual DbSet<ActivityLog> ActivityLogs { get; set; }
+
+        public virtual DbSet<ApiKey> ApiKeys { get; set; }
+
+        public virtual DbSet<Device> Devices { get; set; }
+
+        public virtual DbSet<DeviceOptions> DeviceOptions { get; set; }
 
         public virtual DbSet<DisplayPreferences> DisplayPreferences { get; set; }
 
@@ -146,24 +153,10 @@ namespace Jellyfin.Server.Implementations
         {
             modelBuilder.SetDefaultDateTimeKind(DateTimeKind.Utc);
             base.OnModelCreating(modelBuilder);
-
             modelBuilder.HasDefaultSchema("jellyfin");
 
-            modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => entity.UserId)
-                .IsUnique(false);
-
-            modelBuilder.Entity<DisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client })
-                .IsUnique();
-
-            modelBuilder.Entity<CustomItemDisplayPreferences>()
-                .HasIndex(entity => entity.UserId)
-                .IsUnique(false);
-
-            modelBuilder.Entity<CustomItemDisplayPreferences>()
-                .HasIndex(entity => new { entity.UserId, entity.ItemId, entity.Client, entity.Key })
-                .IsUnique();
+            // Configuration for each entity is in it's own class inside 'ModelConfiguration'.
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(JellyfinDb).Assembly);
         }
     }
 }

@@ -14,13 +14,7 @@ namespace MediaBrowser.Controller.Plugins
         /// <summary>
         /// Run the initialization for this module. This method is invoked at application start.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task RunAsync();
-    }
-
-    /// <summary>
-    /// Indicates that a <see cref="IServerEntryPoint"/> should be invoked as a pre-startup task.
-    /// </summary>
-    public interface IRunBeforeStartup
-    {
     }
 }

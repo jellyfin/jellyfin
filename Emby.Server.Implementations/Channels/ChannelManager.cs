@@ -1,16 +1,18 @@
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Json;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -49,7 +51,7 @@ namespace Emby.Server.Implementations.Channels
         private readonly IProviderManager _providerManager;
         private readonly IMemoryCache _memoryCache;
         private readonly SemaphoreSlim _resourcePool = new SemaphoreSlim(1, 1);
-        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.GetOptions();
+        private readonly JsonSerializerOptions _jsonOptions = JsonDefaults.Options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelManager"/> class.
@@ -101,7 +103,7 @@ namespace Emby.Server.Implementations.Channels
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
-            return !(channel is IDisableMediaSourceDisplay);
+            return channel is not IDisableMediaSourceDisplay;
         }
 
         /// <inheritdoc />
@@ -178,7 +180,7 @@ namespace Emby.Server.Implementations.Channels
                     try
                     {
                         return (GetChannelProvider(i) is IHasFolderAttributes hasAttributes
-                            && hasAttributes.Attributes.Contains("Recordings", StringComparer.OrdinalIgnoreCase)) == val;
+                            && hasAttributes.Attributes.Contains("Recordings", StringComparison.OrdinalIgnoreCase)) == val;
                     }
                     catch
                     {
@@ -336,19 +338,19 @@ namespace Emby.Server.Implementations.Channels
             return GetChannel(GetInternalChannelId(channel.Name)) ?? GetChannel(channel, CancellationToken.None).Result;
         }
 
-        private List<MediaSourceInfo> GetSavedMediaSources(BaseItem item)
+        private MediaSourceInfo[] GetSavedMediaSources(BaseItem item)
         {
             var path = Path.Combine(item.GetInternalMetadataPath(), "channelmediasourceinfos.json");
 
             try
             {
-                var jsonString = File.ReadAllText(path, Encoding.UTF8);
-                return JsonSerializer.Deserialize<List<MediaSourceInfo>>(jsonString, _jsonOptions)
-                    ?? new List<MediaSourceInfo>();
+                var bytes = File.ReadAllBytes(path);
+                return JsonSerializer.Deserialize<MediaSourceInfo[]>(bytes, _jsonOptions)
+                    ?? Array.Empty<MediaSourceInfo>();
             }
             catch
             {
-                return new List<MediaSourceInfo>();
+                return Array.Empty<MediaSourceInfo>();
             }
         }
 
@@ -540,7 +542,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(Channel) },
+                    IncludeItemTypes = new[] { BaseItemKind.Channel },
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
                 }).Select(i => GetChannelFeatures(i)).ToArray();
         }
@@ -585,7 +587,7 @@ namespace Emby.Server.Implementations.Channels
         {
             var supportsLatest = provider is ISupportsLatestMedia;
 
-            return new ChannelFeatures
+            return new ChannelFeatures(channel.Name, channel.Id)
             {
                 CanFilter = !features.MaxPageSize.HasValue,
                 CanSearch = provider is ISearchableChannel,
@@ -595,8 +597,6 @@ namespace Emby.Server.Implementations.Channels
                 MediaTypes = features.MediaTypes.ToArray(),
                 SupportsSortOrderToggle = features.SupportsSortOrderToggle,
                 SupportsLatestMedia = supportsLatest,
-                Name = channel.Name,
-                Id = channel.Id.ToString("N", CultureInfo.InvariantCulture),
                 SupportsContentDownloading = features.SupportsContentDownloading,
                 AutoRefreshLevels = features.AutoRefreshLevels
             };
@@ -814,7 +814,7 @@ namespace Emby.Server.Implementations.Channels
             {
                 if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                 {
-                    await using FileStream jsonStream = File.OpenRead(cachePath);
+                    await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                     var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                     if (cachedResult != null)
                     {
@@ -837,7 +837,7 @@ namespace Emby.Server.Implementations.Channels
                 {
                     if (_fileSystem.GetLastWriteTimeUtc(cachePath).Add(cacheLength) > DateTime.UtcNow)
                     {
-                        await using FileStream jsonStream = File.OpenRead(cachePath);
+                        await using FileStream jsonStream = AsyncFile.OpenRead(cachePath);
                         var cachedResult = await JsonSerializer.DeserializeAsync<ChannelItemResult>(jsonStream, _jsonOptions, cancellationToken).ConfigureAwait(false);
                         if (cachedResult != null)
                         {
@@ -879,7 +879,7 @@ namespace Emby.Server.Implementations.Channels
             }
         }
 
-        private async Task CacheResponse(object result, string path)
+        private async Task CacheResponse(ChannelItemResult result, string path)
         {
             try
             {
@@ -1076,14 +1076,6 @@ namespace Emby.Server.Implementations.Channels
                 forceUpdate = true;
             }
 
-            // was used for status
-            // if (!string.Equals(item.ExternalEtag ?? string.Empty, info.Etag ?? string.Empty, StringComparison.Ordinal))
-            //{
-            //    item.ExternalEtag = info.Etag;
-            //    forceUpdate = true;
-            //    _logger.LogDebug("Forcing update due to ExternalEtag {0}", item.Name);
-            //}
-
             if (!internalChannelId.Equals(item.ChannelId))
             {
                 forceUpdate = true;
@@ -1144,7 +1136,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (!info.IsLiveStream)
             {
-                if (item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
+                if (item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Except(new[] { "livestream" }, StringComparer.OrdinalIgnoreCase).ToArray();
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
@@ -1153,7 +1145,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                if (!item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
+                if (!item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Concat(new[] { "livestream" }).ToArray();
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);

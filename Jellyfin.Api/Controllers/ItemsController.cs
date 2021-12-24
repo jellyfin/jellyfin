@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
@@ -9,8 +8,8 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
@@ -34,6 +33,7 @@ namespace Jellyfin.Api.Controllers
         private readonly ILocalizationManager _localization;
         private readonly IDtoService _dtoService;
         private readonly ILogger<ItemsController> _logger;
+        private readonly ISessionManager _sessionManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsController"/> class.
@@ -43,18 +43,21 @@ namespace Jellyfin.Api.Controllers
         /// <param name="localization">Instance of the <see cref="ILocalizationManager"/> interface.</param>
         /// <param name="dtoService">Instance of the <see cref="IDtoService"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger"/> interface.</param>
+        /// <param name="sessionManager">Instance of the <see cref="ISessionManager"/> interface.</param>
         public ItemsController(
             IUserManager userManager,
             ILibraryManager libraryManager,
             ILocalizationManager localization,
             IDtoService dtoService,
-            ILogger<ItemsController> logger)
+            ILogger<ItemsController> logger,
+            ISessionManager sessionManager)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
             _localization = localization;
             _dtoService = dtoService;
             _logger = logger;
+            _sessionManager = sessionManager;
         }
 
         /// <summary>
@@ -144,7 +147,7 @@ namespace Jellyfin.Api.Controllers
         [HttpGet("Items")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<QueryResult<BaseItemDto>> GetItems(
-            [FromQuery] Guid? userId,
+            [FromQuery] Guid userId,
             [FromQuery] string? maxOfficialRating,
             [FromQuery] bool? hasThemeSong,
             [FromQuery] bool? hasThemeVideo,
@@ -175,16 +178,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? sortOrder,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -225,16 +228,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = userId.HasValue && !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId.Value)
+            var user = !userId.Equals(Guid.Empty)
+                ? _userManager.GetUserById(userId)
                 : null;
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);
 
             if (includeItemTypes.Length == 1
-                && (includeItemTypes[0].Equals("Playlist", StringComparison.OrdinalIgnoreCase)
-                    || includeItemTypes[0].Equals("BoxSet", StringComparison.OrdinalIgnoreCase)))
+                && (includeItemTypes[0] == BaseItemKind.Playlist
+                    || includeItemTypes[0] == BaseItemKind.BoxSet))
             {
                 parentId = null;
             }
@@ -242,16 +245,21 @@ namespace Jellyfin.Api.Controllers
             var item = _libraryManager.GetParentItem(parentId, userId);
             QueryResult<BaseItem> result;
 
-            if (!(item is Folder folder))
+            if (item is not Folder folder)
             {
                 folder = _libraryManager.GetUserRootFolder();
             }
 
-            if (folder is IHasCollectionType hasCollectionType
-                && string.Equals(hasCollectionType.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+            string? collectionType = null;
+            if (folder is IHasCollectionType hasCollectionType)
+            {
+                collectionType = hasCollectionType.CollectionType;
+            }
+
+            if (string.Equals(collectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
             {
                 recursive = true;
-                includeItemTypes = new[] { "Playlist" };
+                includeItemTypes = new[] { BaseItemKind.Playlist };
             }
 
             var enabledChannels = user!.GetPreferenceValues<Guid>(PreferenceKind.EnabledChannels);
@@ -271,18 +279,19 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            if (!(item is UserRootFolder)
+            if (item is not UserRootFolder
                 && !isInEnabledFolder
                 && !user.HasPermission(PermissionKind.EnableAllFolders)
-                && !user.HasPermission(PermissionKind.EnableAllChannels))
+                && !user.HasPermission(PermissionKind.EnableAllChannels)
+                && !string.Equals(collectionType, CollectionType.Folders, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("{UserName} is not permitted to access Library {ItemName}.", user.Username, item.Name);
                 return Unauthorized($"{user.Username} is not permitted to access Library {item.Name}.");
             }
 
-            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || !(item is UserRootFolder))
+            if ((recursive.HasValue && recursive.Value) || ids.Length != 0 || item is not UserRootFolder)
             {
-                var query = new InternalItemsQuery(user!)
+                var query = new InternalItemsQuery(user)
                 {
                     IsPlayed = isPlayed,
                     MediaTypes = mediaTypes,
@@ -449,7 +458,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     query.AlbumIds = albums.SelectMany(i =>
                     {
-                        return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { nameof(MusicAlbum) }, Name = i, Limit = 1 });
+                        return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }, Name = i, Limit = 1 });
                     }).ToArray();
                 }
 
@@ -473,7 +482,7 @@ namespace Jellyfin.Api.Controllers
                 if (query.OrderBy.Count == 0)
                 {
                     // Albums by artist
-                    if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], "MusicAlbum", StringComparison.OrdinalIgnoreCase))
+                    if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.MusicAlbum)
                     {
                         query.OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending), new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) };
                     }
@@ -608,16 +617,16 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? limit,
             [FromQuery] bool? recursive,
             [FromQuery] string? searchTerm,
-            [FromQuery] string? sortOrder,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] Guid? parentId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFields[] fields,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ItemFilter[] filters,
             [FromQuery] bool? isFavorite,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaTypes,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] imageTypes,
-            [FromQuery] string? sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
             [FromQuery] bool? isPlayed,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] genres,
             [FromQuery, ModelBinder(typeof(PipeDelimitedArrayModelBinder))] string[] officialRatings,
@@ -758,6 +767,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="includeItemTypes">Optional. If specified, results will be filtered based on the item type. This allows multiple, comma delimited.</param>
         /// <param name="enableTotalRecordCount">Optional. Enable the total record count.</param>
         /// <param name="enableImages">Optional. Include image information in output.</param>
+        /// <param name="excludeActiveSessions">Optional. Whether to exclude the currently active sessions.</param>
         /// <response code="200">Items returned.</response>
         /// <returns>A <see cref="QueryResult{BaseItemDto}"/> with the items that are resumable.</returns>
         [HttpGet("Users/{userId}/Items/Resume")]
@@ -773,10 +783,11 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? enableUserData,
             [FromQuery] int? imageTypeLimit,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] ImageType[] enableImageTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] excludeItemTypes,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] includeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] excludeItemTypes,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] includeItemTypes,
             [FromQuery] bool enableTotalRecordCount = true,
-            [FromQuery] bool? enableImages = true)
+            [FromQuery] bool? enableImages = true,
+            [FromQuery] bool excludeActiveSessions = false)
         {
             var user = _userManager.GetUserById(userId);
             var parentIdGuid = parentId ?? Guid.Empty;
@@ -796,6 +807,15 @@ namespace Jellyfin.Api.Controllers
                     .ToArray();
             }
 
+            var excludeItemIds = Array.Empty<Guid>();
+            if (excludeActiveSessions)
+            {
+                excludeItemIds = _sessionManager.Sessions
+                    .Where(s => s.UserId == userId && s.NowPlayingItem != null)
+                    .Select(s => s.NowPlayingItem.Id)
+                    .ToArray();
+            }
+
             var itemsResult = _libraryManager.GetItemsResult(new InternalItemsQuery(user)
             {
                 OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
@@ -812,7 +832,8 @@ namespace Jellyfin.Api.Controllers
                 AncestorIds = ancestorIds,
                 IncludeItemTypes = includeItemTypes,
                 ExcludeItemTypes = excludeItemTypes,
-                SearchTerm = searchTerm
+                SearchTerm = searchTerm,
+                ExcludeItemIds = excludeItemIds
             });
 
             var returnItems = _dtoService.GetBaseItemDtos(itemsResult.Items, dtoOptions, user);

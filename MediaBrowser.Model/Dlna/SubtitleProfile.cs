@@ -2,8 +2,8 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using System.Xml.Serialization;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Dlna
 {
@@ -42,7 +42,7 @@ namespace MediaBrowser.Model.Dlna
             }
 
             var languages = GetLanguages();
-            return languages.Length == 0 || languages.Contains(subLanguage, StringComparer.OrdinalIgnoreCase);
+            return languages.Length == 0 || languages.Contains(subLanguage, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
