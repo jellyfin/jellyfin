@@ -33,7 +33,6 @@ namespace Emby.Naming.AudioBook
         /// <returns>Returns IEnumerable of <see cref="AudioBookInfo"/>.</returns>
         public IEnumerable<AudioBookInfo> Resolve(IEnumerable<FileSystemMetadata> files)
         {
-
             // File with empty fullname will be sorted out here.
             var audiobookFileInfos = files
                 .Select(i => _audioBookResolver.Resolve(i.FullName))

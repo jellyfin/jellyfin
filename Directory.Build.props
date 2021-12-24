@@ -6,7 +6,7 @@
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 

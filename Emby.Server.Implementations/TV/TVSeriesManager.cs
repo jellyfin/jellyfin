@@ -122,7 +122,8 @@ namespace Emby.Server.Implementations.TV
                         Limit = limit,
                         DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
                         GroupBySeriesPresentationUniqueKey = true
-                    }, parentsFolders.ToList())
+                    },
+                    parentsFolders.ToList())
                 .Cast<Episode>()
                 .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
                 .Select(GetUniqueSeriesKey);

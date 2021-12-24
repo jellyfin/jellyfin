@@ -679,8 +679,8 @@ namespace MediaBrowser.Model.Dlna
             // TODO: This doesn't account for situations where the device is able to handle the media's bitrate, but the connection isn't fast enough
             var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, subtitleStream, audioStream, options, PlayMethod.DirectPlay);
             var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, subtitleStream, audioStream, options, PlayMethod.DirectStream);
-            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
-            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
+            bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.directPlay);
+            bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.directPlay);
 
             _logger.LogDebug(
                 "Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
@@ -695,7 +695,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 // See if it can be direct played
                 var directPlayInfo = GetVideoDirectPlayProfile(options, item, videoStream, audioStream, isEligibleForDirectStream);
-                var directPlay = directPlayInfo.Item1;
+                var directPlay = directPlayInfo.playMethod;
 
                 if (directPlay != null)
                 {
@@ -713,17 +713,17 @@ namespace MediaBrowser.Model.Dlna
                     return playlistItem;
                 }
 
-                transcodeReasons.AddRange(directPlayInfo.Item2);
+                transcodeReasons.AddRange(directPlayInfo.transcodeReasons);
             }
 
-            if (directPlayEligibilityResult.Item2.HasValue)
+            if (directPlayEligibilityResult.reason.HasValue)
             {
-                transcodeReasons.Add(directPlayEligibilityResult.Item2.Value);
+                transcodeReasons.Add(directPlayEligibilityResult.reason.Value);
             }
 
-            if (directStreamEligibilityResult.Item2.HasValue)
+            if (directStreamEligibilityResult.reason.HasValue)
             {
-                transcodeReasons.Add(directStreamEligibilityResult.Item2.Value);
+                transcodeReasons.Add(directStreamEligibilityResult.reason.Value);
             }
 
             // Can't direct play, find the transcoding profile
@@ -1000,7 +1000,7 @@ namespace MediaBrowser.Model.Dlna
             return 7168000;
         }
 
-        private (PlayMethod?, List<TranscodeReason>) GetVideoDirectPlayProfile(
+        private (PlayMethod? playMethod, List<TranscodeReason> transcodeReasons) GetVideoDirectPlayProfile(
             VideoOptions options,
             MediaSourceInfo mediaSource,
             MediaStream videoStream,

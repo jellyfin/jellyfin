@@ -301,7 +301,8 @@ namespace Jellyfin.Api.Controllers
                     Limit = limit,
                     ParentId = parentId ?? Guid.Empty,
                     UserId = userId,
-                }, dtoOptions);
+                },
+                dtoOptions);
 
             var dtos = list.Select(i =>
             {

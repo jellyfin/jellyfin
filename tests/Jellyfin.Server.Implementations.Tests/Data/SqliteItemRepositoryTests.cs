@@ -173,7 +173,7 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                 "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Primary*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN|test|1234||ss",
                 new ItemImageInfo[]
                 {
-                    new ()
+                    new()
                     {
                         Path = "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg",
                         Type = ImageType.Primary,

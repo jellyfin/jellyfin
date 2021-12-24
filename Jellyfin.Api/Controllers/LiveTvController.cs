@@ -278,25 +278,26 @@ namespace Jellyfin.Api.Controllers
 
             return _liveTvManager.GetRecordings(
                 new RecordingQuery
-            {
-                ChannelId = channelId,
-                UserId = userId ?? Guid.Empty,
-                StartIndex = startIndex,
-                Limit = limit,
-                Status = status,
-                SeriesTimerId = seriesTimerId,
-                IsInProgress = isInProgress,
-                EnableTotalRecordCount = enableTotalRecordCount,
-                IsMovie = isMovie,
-                IsNews = isNews,
-                IsSeries = isSeries,
-                IsKids = isKids,
-                IsSports = isSports,
-                IsLibraryItem = isLibraryItem,
-                Fields = fields,
-                ImageTypeLimit = imageTypeLimit,
-                EnableImages = enableImages
-            }, dtoOptions);
+                {
+                    ChannelId = channelId,
+                    UserId = userId ?? Guid.Empty,
+                    StartIndex = startIndex,
+                    Limit = limit,
+                    Status = status,
+                    SeriesTimerId = seriesTimerId,
+                    IsInProgress = isInProgress,
+                    EnableTotalRecordCount = enableTotalRecordCount,
+                    IsMovie = isMovie,
+                    IsNews = isNews,
+                    IsSeries = isSeries,
+                    IsKids = isKids,
+                    IsSports = isSports,
+                    IsLibraryItem = isLibraryItem,
+                    Fields = fields,
+                    ImageTypeLimit = imageTypeLimit,
+                    EnableImages = enableImages
+                },
+                dtoOptions);
         }
 
         /// <summary>
@@ -489,14 +490,14 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool? isScheduled)
         {
             return await _liveTvManager.GetTimers(
-                    new TimerQuery
-                    {
-                        ChannelId = channelId,
-                        SeriesTimerId = seriesTimerId,
-                        IsActive = isActive,
-                        IsScheduled = isScheduled
-                    }, CancellationToken.None)
-                .ConfigureAwait(false);
+                new TimerQuery
+                {
+                    ChannelId = channelId,
+                    SeriesTimerId = seriesTimerId,
+                    IsActive = isActive,
+                    IsScheduled = isScheduled
+                },
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -867,7 +868,8 @@ namespace Jellyfin.Api.Controllers
                 {
                     SortOrder = sortOrder ?? SortOrder.Ascending,
                     SortBy = sortBy
-                }, CancellationToken.None).ConfigureAwait(false);
+                },
+                CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>

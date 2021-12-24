@@ -690,16 +690,16 @@ namespace Emby.Dlna.ContentDirectory
 
             var serverItems = new ServerItem[]
             {
-                new (item, StubType.Latest),
-                new (item, StubType.Playlists),
-                new (item, StubType.Albums),
-                new (item, StubType.AlbumArtists),
-                new (item, StubType.Artists),
-                new (item, StubType.Songs),
-                new (item, StubType.Genres),
-                new (item, StubType.FavoriteArtists),
-                new (item, StubType.FavoriteAlbums),
-                new (item, StubType.FavoriteSongs)
+                new(item, StubType.Latest),
+                new(item, StubType.Playlists),
+                new(item, StubType.Albums),
+                new(item, StubType.AlbumArtists),
+                new(item, StubType.Artists),
+                new(item, StubType.Songs),
+                new(item, StubType.Genres),
+                new(item, StubType.FavoriteArtists),
+                new(item, StubType.FavoriteAlbums),
+                new(item, StubType.FavoriteSongs)
             };
 
             if (limit < serverItems.Length)
@@ -751,12 +751,12 @@ namespace Emby.Dlna.ContentDirectory
 
             var array = new ServerItem[]
             {
-                new (item, StubType.ContinueWatching),
-                new (item, StubType.Latest),
-                new (item, StubType.Movies),
-                new (item, StubType.Collections),
-                new (item, StubType.Favorites),
-                new (item, StubType.Genres)
+                new(item, StubType.ContinueWatching),
+                new(item, StubType.Latest),
+                new(item, StubType.Movies),
+                new(item, StubType.Collections),
+                new(item, StubType.Favorites),
+                new(item, StubType.Genres)
             };
 
             if (limit < array.Length)
@@ -836,13 +836,13 @@ namespace Emby.Dlna.ContentDirectory
 
             var serverItems = new ServerItem[]
             {
-                new (item, StubType.ContinueWatching),
-                new (item, StubType.NextUp),
-                new (item, StubType.Latest),
-                new (item, StubType.Series),
-                new (item, StubType.FavoriteSeries),
-                new (item, StubType.FavoriteEpisodes),
-                new (item, StubType.Genres)
+                new(item, StubType.ContinueWatching),
+                new(item, StubType.NextUp),
+                new(item, StubType.Latest),
+                new(item, StubType.Series),
+                new(item, StubType.FavoriteSeries),
+                new(item, StubType.FavoriteEpisodes),
+                new(item, StubType.Genres)
             };
 
             if (limit < serverItems.Length)

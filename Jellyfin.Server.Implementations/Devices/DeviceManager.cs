@@ -24,7 +24,7 @@ namespace Jellyfin.Server.Implementations.Devices
     {
         private readonly JellyfinDbProvider _dbProvider;
         private readonly IUserManager _userManager;
-        private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new ();
+        private readonly ConcurrentDictionary<string, ClientCapabilities> _capabilitiesMap = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceManager"/> class.

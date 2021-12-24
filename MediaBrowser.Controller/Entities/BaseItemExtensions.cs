@@ -47,11 +47,12 @@ namespace MediaBrowser.Controller.Entities
             if (file.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 item.SetImage(
-                new ItemImageInfo
-                {
-                    Path = file,
-                    Type = imageType
-                }, 0);
+                    new ItemImageInfo
+                    {
+                        Path = file,
+                        Type = imageType
+                    },
+                    0);
             }
             else
             {

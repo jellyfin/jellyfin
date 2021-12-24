@@ -31,7 +31,7 @@ namespace Jellyfin.Data.Enums
         Book = 4,
 
         /// <summary>
-        /// A live TV channel
+        /// A live TV channel.
         /// </summary>
         LiveTvChannel = 5,
 

@@ -34,7 +34,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "default"
         };
 
-
         public PhotoResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
         {
             _imageProcessor = imageProcessor;

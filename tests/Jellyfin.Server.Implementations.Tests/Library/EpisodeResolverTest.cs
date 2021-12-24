@@ -14,7 +14,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 {
     public class EpisodeResolverTest
     {
-        private static readonly NamingOptions _namingOptions = new ();
+        private static readonly NamingOptions _namingOptions = new();
 
         [Fact]
         public void Resolve_GivenVideoInExtrasFolder_DoesNotResolveToEpisode()
@@ -65,7 +65,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
             {
             }
 
-            protected override TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName) => new ();
+            protected override TVideoType ResolveVideo<TVideoType>(ItemResolveArgs args, bool parseName) => new();
         }
     }
 }
