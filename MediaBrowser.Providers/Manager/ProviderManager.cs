@@ -367,16 +367,15 @@ namespace MediaBrowser.Providers.Manager
             return _metadataProviders.OfType<IMetadataProvider<T>>()
                 .Where(i => CanRefreshMetadata(i, item, typeOptions, includeDisabled, forceEnableInternetMetadata))
                 .OrderBy(i =>
-                {
                     // local and remote providers will be interleaved in the final order
                     // only relative order within a type matters: consumers of the list filter to one or the other
-                    switch (i)
+                    i switch
                     {
-                        case ILocalMetadataProvider: return GetConfiguredOrder(localMetadataReaderOrder, i.Name);
-                        case IRemoteMetadataProvider: return GetConfiguredOrder(metadataFetcherOrder, i.Name);
-                        default: return int.MaxValue; // default to end
-                    }
-                })
+                        ILocalMetadataProvider => GetConfiguredOrder(localMetadataReaderOrder, i.Name),
+                        IRemoteMetadataProvider => GetConfiguredOrder(metadataFetcherOrder, i.Name),
+                        // Default to end
+                        _ => int.MaxValue
+                    })
                 .ThenBy(GetDefaultOrder);
         }
 
