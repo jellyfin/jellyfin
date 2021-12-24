@@ -5,8 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Extensions;
+using Diacritics.Extensions;
+using Jellyfin.Data.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -66,10 +66,10 @@ namespace MediaBrowser.Controller.Entities
             query.GenreIds = new[] { Id };
             query.ExcludeItemTypes = new[]
             {
-                nameof(MusicVideo),
-                nameof(Entities.Audio.Audio),
-                nameof(MusicAlbum),
-                nameof(MusicArtist)
+                BaseItemKind.MusicVideo,
+                BaseItemKind.Audio,
+                BaseItemKind.MusicAlbum,
+                BaseItemKind.MusicArtist
             };
 
             return LibraryManager.GetItemList(query);

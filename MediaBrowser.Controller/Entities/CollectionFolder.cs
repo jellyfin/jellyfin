@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Json;
+using Jellyfin.Extensions.Json;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
@@ -41,6 +41,23 @@ namespace MediaBrowser.Controller.Entities
             PhysicalFolderIds = Array.Empty<Guid>();
         }
 
+        /// <summary>
+        /// Gets the display preferences id.
+        /// </summary>
+        /// <remarks>
+        /// Allow different display preferences for each collection folder.
+        /// </remarks>
+        /// <value>The display prefs id.</value>
+        [JsonIgnore]
+        public override Guid DisplayPreferencesId => Id;
+
+        [JsonIgnore]
+        public override string[] PhysicalLocations => PhysicalLocationsList;
+
+        public string[] PhysicalLocationsList { get; set; }
+
+        public Guid[] PhysicalFolderIds { get; set; }
+
         public static IXmlSerializer XmlSerializer { get; set; }
 
         public static IServerApplicationHost ApplicationHost { get; set; }
@@ -63,6 +80,9 @@ namespace MediaBrowser.Controller.Entities
         [JsonIgnore]
         public override IEnumerable<BaseItem> Children => GetActualChildren();
 
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
         public override bool CanDelete()
         {
             return false;
@@ -77,8 +97,7 @@ namespace MediaBrowser.Controller.Entities
         {
             try
             {
-                var result = XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) as LibraryOptions;
-                if (result == null)
+                if (XmlSerializer.DeserializeFromFile(typeof(LibraryOptions), GetLibraryOptionsPath(path)) is not LibraryOptions result)
                 {
                     return new LibraryOptions();
                 }
@@ -159,23 +178,6 @@ namespace MediaBrowser.Controller.Entities
                 _libraryOptions.Clear();
             }
         }
-
-        /// <summary>
-        /// Gets the display preferences id.
-        /// </summary>
-        /// <remarks>
-        /// Allow different display preferences for each collection folder.
-        /// </remarks>
-        /// <value>The display prefs id.</value>
-        [JsonIgnore]
-        public override Guid DisplayPreferencesId => Id;
-
-        [JsonIgnore]
-        public override string[] PhysicalLocations => PhysicalLocationsList;
-
-        public string[] PhysicalLocationsList { get; set; }
-
-        public Guid[] PhysicalFolderIds { get; set; }
 
         public override bool IsSaveLocalMetadataEnabled()
         {
@@ -373,8 +375,5 @@ namespace MediaBrowser.Controller.Entities
 
             return result;
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
     }
 }

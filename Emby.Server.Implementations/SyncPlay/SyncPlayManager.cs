@@ -160,7 +160,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     _logger.LogWarning("Session {SessionId} tried to join group {GroupId} that does not exist.", session.Id, request.GroupId);
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.GroupDoesNotExist, string.Empty);
-                    _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                    _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                     return;
                 }
 
@@ -172,7 +172,7 @@ namespace Emby.Server.Implementations.SyncPlay
                         _logger.LogWarning("Session {SessionId} tried to join group {GroupId} but does not have access to some content of the playing queue.", session.Id, group.GroupId.ToString());
 
                         var error = new GroupUpdate<string>(group.GroupId, GroupUpdateType.LibraryAccessDenied, string.Empty);
-                        _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                        _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                         return;
                     }
 
@@ -249,7 +249,7 @@ namespace Emby.Server.Implementations.SyncPlay
                     _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
                     var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
-                    _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                    _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
                     return;
                 }
             }
@@ -329,7 +329,7 @@ namespace Emby.Server.Implementations.SyncPlay
                 _logger.LogWarning("Session {SessionId} does not belong to any group.", session.Id);
 
                 var error = new GroupUpdate<string>(Guid.Empty, GroupUpdateType.NotInGroup, string.Empty);
-                _sessionManager.SendSyncPlayGroupUpdate(session, error, CancellationToken.None);
+                _sessionManager.SendSyncPlayGroupUpdate(session.Id, error, CancellationToken.None);
             }
         }
 

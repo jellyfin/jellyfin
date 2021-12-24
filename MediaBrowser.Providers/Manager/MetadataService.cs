@@ -1,8 +1,11 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Configuration;
@@ -505,6 +508,11 @@ namespace MediaBrowser.Providers.Manager
         /// <summary>
         /// Gets the providers.
         /// </summary>
+        /// <param name="item">A media item.</param>
+        /// <param name="libraryOptions">The LibraryOptions to use.</param>
+        /// <param name="options">The MetadataRefreshOptions to use.</param>
+        /// <param name="isFirstRefresh">Specifies first refresh mode.</param>
+        /// <param name="requiresRefresh">Specifies refresh mode.</param>
         /// <returns>IEnumerable{`0}.</returns>
         protected IEnumerable<IMetadataProvider> GetProviders(BaseItem item, LibraryOptions libraryOptions, MetadataRefreshOptions options, bool isFirstRefresh, bool requiresRefresh)
         {
@@ -579,7 +587,7 @@ namespace MediaBrowser.Providers.Manager
         protected virtual IEnumerable<IImageProvider> GetNonLocalImageProviders(BaseItem item, IEnumerable<IImageProvider> allImageProviders, ImageRefreshOptions options)
         {
             // Get providers to refresh
-            var providers = allImageProviders.Where(i => !(i is ILocalImageProvider));
+            var providers = allImageProviders.Where(i => i is not ILocalImageProvider);
 
             var dateLastImageRefresh = item.DateLastRefreshed;
 
@@ -617,7 +625,7 @@ namespace MediaBrowser.Providers.Manager
             MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
-            List<IMetadataProvider> providers,
+            ICollection<IMetadataProvider> providers,
             ItemImageProvider imageService,
             CancellationToken cancellationToken)
         {
@@ -672,8 +680,15 @@ namespace MediaBrowser.Providers.Manager
                     {
                         foreach (var remoteImage in localItem.RemoteImages)
                         {
-                            await ProviderManager.SaveImage(item, remoteImage.url, remoteImage.type, null, cancellationToken).ConfigureAwait(false);
-                            refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+                            try
+                            {
+                                await ProviderManager.SaveImage(item, remoteImage.url, remoteImage.type, null, cancellationToken).ConfigureAwait(false);
+                                refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
+                            }
+                            catch (HttpRequestException ex)
+                            {
+                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.type), remoteImage.url);
+                            }
                         }
 
                         if (imageService.MergeImages(item, localItem.Images))
@@ -706,7 +721,7 @@ namespace MediaBrowser.Providers.Manager
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
 
                     // If a local provider fails, consider that a failure
                     refreshResult.ErrorMessage = ex.Message;
@@ -724,7 +739,7 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.Failures += remoteResult.Failures;
             }
 
-            if (providers.Any(i => !(i is ICustomMetadataProvider)))
+            if (providers.Any(i => i is not ICustomMetadataProvider))
             {
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
@@ -743,7 +758,7 @@ namespace MediaBrowser.Providers.Manager
 
             // var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;
 
-            foreach (var provider in customProviders.Where(i => !(i is IPreRefreshProvider)))
+            foreach (var provider in customProviders.Where(i => i is not IPreRefreshProvider))
             {
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
@@ -778,7 +793,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 refreshResult.ErrorMessage = ex.Message;
-                Logger.LogError(ex, "Error in {provider}", provider.Name);
+                Logger.LogError(ex, "Error in {Provider}", provider.Name);
             }
         }
 
@@ -830,7 +845,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     refreshResult.Failures++;
                     refreshResult.ErrorMessage = ex.Message;
-                    Logger.LogError(ex, "Error in {provider}", provider.Name);
+                    Logger.LogError(ex, "Error in {Provider}", provider.Name);
                 }
             }
 

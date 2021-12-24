@@ -15,7 +15,7 @@
     "Favorites": "Favoriter",
     "Folders": "Mappar",
     "Genres": "Genrer",
-    "HeaderAlbumArtists": "Albumartister",
+    "HeaderAlbumArtists": "Albumsartister",
     "HeaderContinueWatching": "Fortsätt kolla",
     "HeaderFavoriteAlbums": "Favoritalbum",
     "HeaderFavoriteArtists": "Favoritartister",
@@ -25,7 +25,7 @@
     "HeaderLiveTV": "Live-TV",
     "HeaderNextUp": "Nästa",
     "HeaderRecordingGroups": "Inspelningsgrupper",
-    "HomeVideos": "Hemvideor",
+    "HomeVideos": "Hemmavideor",
     "Inherit": "Ärv",
     "ItemAddedWithName": "{0} lades till i biblioteket",
     "ItemRemovedWithName": "{0} togs bort från biblioteket",
@@ -96,8 +96,8 @@
     "TaskDownloadMissingSubtitles": "Ladda ned saknade undertexter",
     "TaskRefreshChannelsDescription": "Uppdaterar information för internetkanaler.",
     "TaskRefreshChannels": "Uppdatera kanaler",
-    "TaskCleanTranscodeDescription": "Raderar transkodningsfiler som är mer än en dag gamla.",
-    "TaskCleanTranscode": "Töm transkodningskatalog",
+    "TaskCleanTranscodeDescription": "Raderar omkodningsfiler som är mer än en dag gamla.",
+    "TaskCleanTranscode": "Töm omkodningskatalog",
     "TaskUpdatePluginsDescription": "Laddar ned och installerar uppdateringar till insticksprogram som är konfigurerade att uppdateras automatiskt.",
     "TaskUpdatePlugins": "Uppdatera insticksprogram",
     "TaskRefreshPeopleDescription": "Uppdaterar metadata för skådespelare och regissörer i ditt mediabibliotek.",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Rensa Aktivitets Logg",
     "Undefined": "odefinierad",
     "Forced": "Tvingad",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskOptimizeDatabase": "Optimera databasen",
+    "TaskOptimizeDatabaseDescription": "Komprimerar databasen och trunkerar ledigt utrymme. Prestandan kan förbättras genom att köra denna task efter att du har skannat biblioteket eller gjort andra förändringar som indikerar att databasen har modifierats."
 }

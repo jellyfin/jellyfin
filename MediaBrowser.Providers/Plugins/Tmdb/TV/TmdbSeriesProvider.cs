@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -7,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -329,7 +332,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
         {
             if (seriesResult.Credits?.Cast != null)
             {
-                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(TmdbUtils.MaxCastMembers))
+                foreach (var actor in seriesResult.Credits.Cast.OrderBy(a => a.Order).Take(Plugin.Instance.Configuration.MaxCastMembers))
                 {
                     var personInfo = new PersonInfo
                     {
@@ -363,8 +366,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!keepTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
-                        && !keepTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    if (!keepTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                        && !keepTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

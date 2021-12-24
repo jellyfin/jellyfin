@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
@@ -39,6 +40,12 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <summary>
         /// Initializes a new instance of the <see cref="ChapterImagesTask" /> class.
         /// </summary>
+        /// <param name="libraryManager">The library manager.</param>.
+        /// <param name="itemRepo">The item repository.</param>
+        /// <param name="appPaths">The application paths.</param>
+        /// <param name="encodingManager">The encoding manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        /// <param name="localization">The localization manager.</param>
         public ChapterImagesTask(
             ILibraryManager libraryManager,
             IItemRepository itemRepo,
@@ -55,9 +62,19 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _localization = localization;
         }
 
-        /// <summary>
-        /// Creates the triggers that define when the task will run.
-        /// </summary>
+        /// <inheritdoc />
+        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
+
+        /// <inheritdoc />
+        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
+
+        /// <inheritdoc />
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+
+        /// <inheritdoc />
+        public string Key => "RefreshChapterImages";
+
+        /// <inheritdoc />
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
@@ -127,7 +144,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
 
                 var key = video.Path + video.DateModified.Ticks;
 
-                var extract = !previouslyFailedImages.Contains(key, StringComparer.OrdinalIgnoreCase);
+                var extract = !previouslyFailedImages.Contains(key, StringComparison.OrdinalIgnoreCase);
 
                 try
                 {
@@ -162,26 +179,5 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 }
             }
         }
-
-        /// <inheritdoc />
-        public string Name => _localization.GetLocalizedString("TaskRefreshChapterImages");
-
-        /// <inheritdoc />
-        public string Description => _localization.GetLocalizedString("TaskRefreshChapterImagesDescription");
-
-        /// <inheritdoc />
-        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
-
-        /// <inheritdoc />
-        public string Key => "RefreshChapterImages";
-
-        /// <inheritdoc />
-        public bool IsHidden => false;
-
-        /// <inheritdoc />
-        public bool IsEnabled => true;
-
-        /// <inheritdoc />
-        public bool IsLogged => true;
     }
 }

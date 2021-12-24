@@ -1,4 +1,4 @@
-#pragma warning disable CS1591
+#pragma warning disable CA1711, CS1591
 
 using System;
 using System.IO;
@@ -8,11 +8,16 @@ namespace MediaBrowser.Controller.Drawing
 {
     public class ImageStream : IDisposable
     {
+        public ImageStream(Stream stream)
+        {
+            Stream = stream;
+        }
+
         /// <summary>
-        /// Gets or sets the stream.
+        /// Gets the stream.
         /// </summary>
         /// <value>The stream.</value>
-        public Stream? Stream { get; set; }
+        public Stream Stream { get; }
 
         /// <summary>
         /// Gets or sets the format.

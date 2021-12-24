@@ -1,5 +1,3 @@
-#pragma warning disable CS1591
-
 using MediaBrowser.Controller.Entities;
 
 namespace Emby.Dlna.ContentDirectory
@@ -13,24 +11,29 @@ namespace Emby.Dlna.ContentDirectory
         /// Initializes a new instance of the <see cref="ServerItem"/> class.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/>.</param>
-        public ServerItem(BaseItem item)
+        /// <param name="stubType">The stub type.</param>
+        public ServerItem(BaseItem item, StubType? stubType)
         {
             Item = item;
 
-            if (item is IItemByName && !(item is Folder))
+            if (stubType.HasValue)
+            {
+                StubType = stubType;
+            }
+            else if (item is IItemByName and not Folder)
             {
                 StubType = Dlna.ContentDirectory.StubType.Folder;
             }
         }
 
         /// <summary>
-        /// Gets or sets the underlying base item.
+        /// Gets the underlying base item.
         /// </summary>
-        public BaseItem Item { get; set; }
+        public BaseItem Item { get; }
 
         /// <summary>
-        /// Gets or sets the DLNA item type.
+        /// Gets the DLNA item type.
         /// </summary>
-        public StubType? StubType { get; set; }
+        public StubType? StubType { get; }
     }
 }

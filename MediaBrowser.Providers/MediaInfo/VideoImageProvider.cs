@@ -1,57 +1,63 @@
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.MediaInfo;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
+    /// <summary>
+    /// Uses <see cref="IMediaEncoder"/> to create still images from the main video.
+    /// </summary>
     public class VideoImageProvider : IDynamicImageProvider, IHasOrder
     {
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
         private readonly ILogger<VideoImageProvider> _logger;
-        private readonly IFileSystem _fileSystem;
 
-        public VideoImageProvider(IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger, IFileSystem fileSystem)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoImageProvider"/> class.
+        /// </summary>
+        /// <param name="mediaSourceManager">The media source manager for fetching item streams.</param>
+        /// <param name="mediaEncoder">The media encoder for capturing images.</param>
+        /// <param name="logger">The logger.</param>
+        public VideoImageProvider(IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, ILogger<VideoImageProvider> logger)
         {
+            _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
             _logger = logger;
-            _fileSystem = fileSystem;
         }
 
+        /// <inheritdoc />
         public string Name => "Screen Grabber";
 
+        /// <inheritdoc />
         // Make sure this comes after internet image providers
         public int Order => 100;
 
+        /// <inheritdoc />
         public IEnumerable<ImageType> GetSupportedImages(BaseItem item)
         {
-            return new List<ImageType> { ImageType.Primary };
+            return new[] { ImageType.Primary };
         }
 
+        /// <inheritdoc />
         public Task<DynamicImageResponse> GetImage(BaseItem item, ImageType type, CancellationToken cancellationToken)
         {
             var video = (Video)item;
 
-            // No support for this
-            if (video.IsPlaceHolder)
-            {
-                return Task.FromResult(new DynamicImageResponse { HasImage = false });
-            }
-
-            // No support for this
-            if (video.VideoType == VideoType.Dvd)
+            // No support for these
+            if (video.IsPlaceHolder || video.VideoType == VideoType.Dvd)
             {
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
@@ -59,79 +65,44 @@ namespace MediaBrowser.Providers.MediaInfo
             // Can't extract if we didn't find a video stream in the file
             if (!video.DefaultVideoStreamIndex.HasValue)
             {
-                _logger.LogInformation("Skipping image extraction due to missing DefaultVideoStreamIndex for {0}.", video.Path ?? string.Empty);
+                _logger.LogInformation("Skipping image extraction due to missing DefaultVideoStreamIndex for {Path}.", video.Path ?? string.Empty);
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 
             return GetVideoImage(video, cancellationToken);
         }
 
-        public async Task<DynamicImageResponse> GetVideoImage(Video item, CancellationToken cancellationToken)
+        private async Task<DynamicImageResponse> GetVideoImage(Video item, CancellationToken cancellationToken)
         {
-            var protocol = item.PathProtocol ?? MediaProtocol.File;
-
-            var inputPath = item.Path;
-
-            var mediaStreams =
-                item.GetMediaStreams();
-
-            var imageStreams =
-                mediaStreams
-                    .Where(i => i.Type == MediaStreamType.EmbeddedImage)
-                    .ToList();
-
-            var imageStream = imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("front", StringComparison.OrdinalIgnoreCase) != -1) ??
-                imageStreams.FirstOrDefault(i => (i.Comment ?? string.Empty).IndexOf("cover", StringComparison.OrdinalIgnoreCase) != -1) ??
-                imageStreams.FirstOrDefault();
-
-            string extractedImagePath;
-
-            if (imageStream != null)
+            MediaSourceInfo mediaSource = new MediaSourceInfo
             {
-                // Instead of using the raw stream index, we need to use nth video/embedded image stream
-                var videoIndex = -1;
-                foreach (var mediaStream in mediaStreams)
-                {
-                    if (mediaStream.Type == MediaStreamType.Video ||
-                        mediaStream.Type == MediaStreamType.EmbeddedImage)
-                    {
-                        videoIndex++;
-                    }
+                VideoType = item.VideoType,
+                IsoType = item.IsoType,
+                Protocol = item.PathProtocol ?? MediaProtocol.File,
+            };
 
-                    if (mediaStream == imageStream)
-                    {
-                        break;
-                    }
-                }
+            // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
+            // Always use 10 seconds for dvd because our duration could be out of whack
+            var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks > 0
+                                  ? TimeSpan.FromTicks(item.RunTimeTicks.Value / 10)
+                                  : TimeSpan.FromSeconds(10);
 
-                MediaSourceInfo mediaSource = new MediaSourceInfo
-                {
-                    VideoType = item.VideoType,
-                    IsoType = item.IsoType,
-                    Protocol = item.PathProtocol.Value,
-                };
-
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, imageStream, videoIndex, cancellationToken).ConfigureAwait(false);
-            }
-            else
+            var query = new MediaStreamQuery { ItemId = item.Id, Index = item.DefaultVideoStreamIndex };
+            var videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
+            if (videoStream == null)
             {
-                // If we know the duration, grab it from 10% into the video. Otherwise just 10 seconds in.
-                // Always use 10 seconds for dvd because our duration could be out of whack
-                var imageOffset = item.VideoType != VideoType.Dvd && item.RunTimeTicks.HasValue &&
-                                  item.RunTimeTicks.Value > 0
-                                      ? TimeSpan.FromTicks(Convert.ToInt64(item.RunTimeTicks.Value * .1))
-                                      : TimeSpan.FromSeconds(10);
-
-                var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
-                var mediaSource = new MediaSourceInfo
-                {
-                    VideoType = item.VideoType,
-                    IsoType = item.IsoType,
-                    Protocol = item.PathProtocol.Value,
-                };
-
-                extractedImagePath = await _mediaEncoder.ExtractVideoImage(inputPath, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
+                query.Type = MediaStreamType.Video;
+                query.Index = null;
+                videoStream = _mediaSourceManager.GetMediaStreams(query).FirstOrDefault();
             }
+
+            if (videoStream == null)
+            {
+                _logger.LogInformation("Skipping image extraction: no video stream found for {Path}.", item.Path ?? string.Empty);
+                return new DynamicImageResponse { HasImage = false };
+            }
+
+            string extractedImagePath = await _mediaEncoder.ExtractVideoImage(item.Path, item.Container, mediaSource, videoStream, item.Video3DFormat, imageOffset, cancellationToken).ConfigureAwait(false);
 
             return new DynamicImageResponse
             {
@@ -142,6 +113,7 @@ namespace MediaBrowser.Providers.MediaInfo
             };
         }
 
+        /// <inheritdoc />
         public bool Supports(BaseItem item)
         {
             if (item.IsShortcut)
@@ -154,12 +126,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return false;
             }
 
-            if (item is Video video && !video.IsPlaceHolder && video.IsCompleteMedia)
-            {
-                return true;
-            }
-
-            return false;
+            return item is Video video && !video.IsPlaceHolder && video.IsCompleteMedia;
         }
     }
 }

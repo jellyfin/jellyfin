@@ -17,6 +17,12 @@ namespace MediaBrowser.Controller.Channels
 {
     public class Channel : Folder
     {
+        [JsonIgnore]
+        public override bool SupportsInheritedParentImages => false;
+
+        [JsonIgnore]
+        public override SourceType SourceType => SourceType.Channel;
+
         public override bool IsVisible(User user)
         {
             var blockedChannelsPreference = user.GetPreferenceValues<Guid>(PreferenceKind.BlockedChannels);
@@ -38,12 +44,6 @@ namespace MediaBrowser.Controller.Channels
 
             return base.IsVisible(user);
         }
-
-        [JsonIgnore]
-        public override bool SupportsInheritedParentImages => false;
-
-        [JsonIgnore]
-        public override SourceType SourceType => SourceType.Channel;
 
         protected override QueryResult<BaseItem> GetItemsInternal(InternalItemsQuery query)
         {

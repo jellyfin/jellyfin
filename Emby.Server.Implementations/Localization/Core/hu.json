@@ -11,11 +11,11 @@
     "Collections": "Gyűjtemények",
     "DeviceOfflineWithName": "{0} kijelentkezett",
     "DeviceOnlineWithName": "{0} belépett",
-    "FailedLoginAttemptWithUserName": "Sikertelen bejelentkezési kísérlet tőle: {0}",
+    "FailedLoginAttemptWithUserName": "Sikertelen bejelentkezési kísérlet innen: {0}",
     "Favorites": "Kedvencek",
     "Folders": "Könyvtárak",
     "Genres": "Műfajok",
-    "HeaderAlbumArtists": "Album előadók",
+    "HeaderAlbumArtists": "Album előadó(k)",
     "HeaderContinueWatching": "Megtekintés folytatása",
     "HeaderFavoriteAlbums": "Kedvenc albumok",
     "HeaderFavoriteArtists": "Kedvenc előadók",
@@ -118,5 +118,7 @@
     "TaskCleanActivityLog": "Tevékenységnapló törlése",
     "Undefined": "Meghatározatlan",
     "Forced": "Kényszerített",
-    "Default": "Alapértelmezett"
+    "Default": "Alapértelmezett",
+    "TaskOptimizeDatabaseDescription": "Tömöríti az adatbázist és csonkolja a szabad helyet. A feladat futtatása a könyvtár beolvasása után, vagy egyéb, adatbázis-módosítást igénylő változtatások végrehajtása javíthatja a teljesítményt.",
+    "TaskOptimizeDatabase": "Adatbázis optimalizálása"
 }

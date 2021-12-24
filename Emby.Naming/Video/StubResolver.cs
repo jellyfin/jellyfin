@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Video
 {
@@ -28,7 +28,7 @@ namespace Emby.Naming.Video
 
             var extension = Path.GetExtension(path);
 
-            if (!options.StubFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            if (!options.StubFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

@@ -15,7 +15,6 @@ namespace Emby.Dlna.Server
     {
         private readonly DeviceProfile _profile;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _serverUdn;
         private readonly string _serverAddress;
         private readonly string _serverName;
@@ -193,10 +192,10 @@ namespace Emby.Dlna.Server
                     .Append(SecurityElement.Escape(icon.MimeType ?? string.Empty))
                     .Append("</mimetype>");
                 builder.Append("<width>")
-                    .Append(SecurityElement.Escape(icon.Width.ToString(_usCulture)))
+                    .Append(SecurityElement.Escape(icon.Width.ToString(CultureInfo.InvariantCulture)))
                     .Append("</width>");
                 builder.Append("<height>")
-                    .Append(SecurityElement.Escape(icon.Height.ToString(_usCulture)))
+                    .Append(SecurityElement.Escape(icon.Height.ToString(CultureInfo.InvariantCulture)))
                     .Append("</height>");
                 builder.Append("<depth>")
                     .Append(SecurityElement.Escape(icon.Depth ?? string.Empty))
@@ -250,8 +249,7 @@ namespace Emby.Dlna.Server
 
             url = _serverAddress.TrimEnd('/') + "/dlna/" + _serverUdn + "/" + url.TrimStart('/');
 
-            // TODO: @bond remove null-coalescing operator when https://github.com/dotnet/runtime/pull/52442 is merged/released
-            return SecurityElement.Escape(url) ?? string.Empty;
+            return SecurityElement.Escape(url);
         }
 
         private IEnumerable<DeviceIcon> GetIcons()

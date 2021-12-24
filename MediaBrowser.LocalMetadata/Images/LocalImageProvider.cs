@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -59,8 +60,6 @@ namespace MediaBrowser.LocalMetadata.Images
         };
 
         private readonly IFileSystem _fileSystem;
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalImageProvider"/> class.
@@ -119,16 +118,10 @@ namespace MediaBrowser.LocalMetadata.Images
                 return Enumerable.Empty<FileSystemMetadata>();
             }
 
-            if (includeDirectories)
-            {
-                return directoryService.GetFileSystemEntries(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) || i.IsDirectory)
-
-                .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
-            }
-
-            return directoryService.GetFiles(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+            return directoryService.GetFileSystemEntries(path)
+                .Where(i =>
+                    (includeDirectories && i.IsDirectory)
+                    || BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 
@@ -258,11 +251,6 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 PopulateBackdrops(item, images, files, imagePrefix, isInMixedFolder);
             }
-
-            if (item is IHasScreenshots)
-            {
-                PopulateScreenshots(images, files, imagePrefix, isInMixedFolder);
-            }
         }
 
         private void PopulatePrimaryImages(BaseItem item, List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
@@ -283,7 +271,7 @@ namespace MediaBrowser.LocalMetadata.Images
             {
                 imageFileNames = _seriesImageFileNames;
             }
-            else if (item is Video && !(item is Episode))
+            else if (item is Video && item is not Episode)
             {
                 imageFileNames = _videoImageFileNames;
             }
@@ -365,11 +353,6 @@ namespace MediaBrowser.LocalMetadata.Images
             }));
         }
 
-        private void PopulateScreenshots(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, bool isInMixedFolder)
-        {
-            PopulateBackdrops(images, files, imagePrefix, "screenshot", "screenshot", isInMixedFolder, ImageType.Screenshot);
-        }
-
         private void PopulateBackdrops(List<LocalImageInfo> images, List<FileSystemMetadata> files, string imagePrefix, string firstFileName, string subsequentFileNamePrefix, bool isInMixedFolder, ImageType type)
         {
             AddImage(files, images, imagePrefix + firstFileName, type);
@@ -434,7 +417,7 @@ namespace MediaBrowser.LocalMetadata.Images
 
             var seasonMarker = seasonNumber.Value == 0
                                    ? "-specials"
-                                   : seasonNumber.Value.ToString("00", _usCulture);
+                                   : seasonNumber.Value.ToString("00", CultureInfo.InvariantCulture);
 
             // Get this one directly from the file system since we have to go up a level
             if (!string.Equals(prefix, seasonMarker, StringComparison.OrdinalIgnoreCase))

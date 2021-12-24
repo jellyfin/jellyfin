@@ -6,9 +6,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Diacritics.Extensions;
 using Emby.Dlna.Didl;
 using MediaBrowser.Controller.Configuration;
-using MediaBrowser.Controller.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Emby.Dlna.Service
@@ -64,7 +64,7 @@ namespace Emby.Dlna.Service
                 requestInfo = await ParseRequestAsync(reader).ConfigureAwait(false);
             }
 
-            Logger.LogDebug("Received control request {0}", requestInfo.LocalName);
+            Logger.LogDebug("Received control request {LocalName}, params: {@Headers}", requestInfo.LocalName, requestInfo.Headers);
 
             var settings = new XmlWriterSettings
             {
@@ -95,11 +95,7 @@ namespace Emby.Dlna.Service
 
             var xml = builder.ToString().Replace("xmlns:m=", "xmlns:u=", StringComparison.Ordinal);
 
-            var controlResponse = new ControlResponse
-            {
-                Xml = xml,
-                IsSuccessful = true
-            };
+            var controlResponse = new ControlResponse(xml, true);
 
             controlResponse.Headers.Add("EXT", string.Empty);
 

@@ -69,7 +69,7 @@
     "UserDeletedWithName": "प्रयोगकर्ता {0} हटाइएको छ",
     "UserCreatedWithName": "प्रयोगकर्ता {0} सिर्जना गरिएको छ",
     "User": "प्रयोगकर्ता",
-    "PluginInstalledWithName": "",
+    "PluginInstalledWithName": "{0} सभएको थियो",
     "StartupEmbyServerIsLoading": "Jellyfin सर्भर लोड हुँदैछ। कृपया छिट्टै फेरि प्रयास गर्नुहोस्।",
     "Songs": "गीतहरू",
     "Shows": "शोहरू",

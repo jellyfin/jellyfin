@@ -82,7 +82,7 @@ namespace Rssdp.Infrastructure
                 throw new ArgumentNullException(nameof(versionData));
             }
 
-            var versionSeparatorIndex = versionData.IndexOf('/');
+            var versionSeparatorIndex = versionData.IndexOf('/', StringComparison.Ordinal);
             if (versionSeparatorIndex <= 0 || versionSeparatorIndex == versionData.Length)
             {
                 throw new ArgumentException("request header line is invalid. Http Version not supplied or incorrect format.", nameof(versionData));
@@ -101,7 +101,7 @@ namespace Rssdp.Infrastructure
         {
             // Header format is
             // name: value
-            var headerKeySeparatorIndex = line.IndexOf(":", StringComparison.OrdinalIgnoreCase);
+            var headerKeySeparatorIndex = line.IndexOf(':', StringComparison.Ordinal);
             var headerName = line.Substring(0, headerKeySeparatorIndex).Trim();
             var headerValue = line.Substring(headerKeySeparatorIndex + 1).Trim();
 
@@ -172,7 +172,7 @@ namespace Rssdp.Infrastructure
             else
             {
                 var segments = headerValue.Split(SeparatorCharacters);
-                if (headerValue.Contains('"'))
+                if (headerValue.Contains('"', StringComparison.Ordinal))
                 {
                     for (int segmentIndex = 0; segmentIndex < segments.Length; segmentIndex++)
                     {

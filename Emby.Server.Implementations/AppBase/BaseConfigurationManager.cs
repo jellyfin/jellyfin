@@ -301,7 +301,7 @@ namespace Emby.Server.Implementations.AppBase
         {
             return _configurations.GetOrAdd(
                 key,
-                (k, configurationManager) =>
+                static (k, configurationManager) =>
                 {
                     var file = configurationManager.GetConfigurationFile(k);
 

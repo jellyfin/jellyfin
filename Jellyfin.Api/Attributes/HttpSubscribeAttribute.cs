@@ -7,7 +7,7 @@ namespace Jellyfin.Api.Attributes
     /// <summary>
     /// Identifies an action that supports the HTTP GET method.
     /// </summary>
-    public class HttpSubscribeAttribute : HttpMethodAttribute
+    public sealed class HttpSubscribeAttribute : HttpMethodAttribute
     {
         private static readonly IEnumerable<string> _supportedMethods = new[] { "SUBSCRIBE" };
 

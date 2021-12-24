@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MediaBrowser.Controller.Extensions;
+using Diacritics.Extensions;
 
 namespace MediaBrowser.Controller.Library
 {

@@ -6,6 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Emby.Naming.Common;
+using Emby.Naming.Video;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -16,7 +19,8 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public class PhotoResolver : ItemResolver<Photo>
     {
         private readonly IImageProcessor _imageProcessor;
-        private readonly ILibraryManager _libraryManager;
+        private readonly NamingOptions _namingOptions;
+
         private static readonly HashSet<string> _ignoreFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "folder",
@@ -30,10 +34,11 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "default"
         };
 
-        public PhotoResolver(IImageProcessor imageProcessor, ILibraryManager libraryManager)
+
+        public PhotoResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
         {
             _imageProcessor = imageProcessor;
-            _libraryManager = libraryManager;
+            _namingOptions = namingOptions;
         }
 
         /// <summary>
@@ -60,7 +65,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
 
                         foreach (var file in files)
                         {
-                            if (IsOwnedByMedia(_libraryManager, file.FullName, filename))
+                            if (IsOwnedByMedia(_namingOptions, file.FullName, filename))
                             {
                                 return null;
                             }
@@ -77,17 +82,12 @@ namespace Emby.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        internal static bool IsOwnedByMedia(ILibraryManager libraryManager, string file, string imageFilename)
+        internal static bool IsOwnedByMedia(NamingOptions namingOptions, string file, string imageFilename)
         {
-            if (libraryManager.IsVideoFile(file))
-            {
-                return IsOwnedByResolvedMedia(libraryManager, file, imageFilename);
-            }
-
-            return false;
+            return VideoResolver.IsVideoFile(file, namingOptions) && IsOwnedByResolvedMedia(file, imageFilename);
         }
 
-        internal static bool IsOwnedByResolvedMedia(ILibraryManager libraryManager, string file, string imageFilename)
+        internal static bool IsOwnedByResolvedMedia(string file, string imageFilename)
             => imageFilename.StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase);
 
         internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
@@ -110,7 +110,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             }
 
             string extension = Path.GetExtension(path).TrimStart('.');
-            return imageProcessor.SupportedInputFormats.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            return imageProcessor.SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

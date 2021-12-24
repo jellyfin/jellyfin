@@ -7,10 +7,10 @@
     "MessageApplicationUpdated": "Jellyfin Server sudah diperbarui",
     "Latest": "Terbaru",
     "LabelIpAddressValue": "Alamat IP: {0}",
-    "ItemRemovedWithName": "{0} sudah dikeluarkan dari pustaka",
+    "ItemRemovedWithName": "{0} sudah dihapus dari pustaka",
     "ItemAddedWithName": "{0} telah dimasukkan ke dalam pustaka",
-    "Inherit": "Warisan",
-    "HomeVideos": "Video Rumah",
+    "Inherit": "Warisi",
+    "HomeVideos": "Video Rumahan",
     "HeaderRecordingGroups": "Grup Rekaman",
     "HeaderNextUp": "Selanjutnya",
     "HeaderLiveTV": "TV Live",
@@ -73,7 +73,7 @@
     "NotificationOptionCameraImageUploaded": "Gambar kamera terunggah",
     "NotificationOptionApplicationUpdateInstalled": "Pembaruan aplikasi terpasang",
     "NotificationOptionApplicationUpdateAvailable": "Pembaruan aplikasi tersedia",
-    "NewVersionIsAvailable": "Versi baru dari Jellyfin Server tersedia untuk diunduh.",
+    "NewVersionIsAvailable": "Versi baru dari Jellyfin Server sudah tersedia untuk diunduh.",
     "NameSeasonUnknown": "Musim tak diketahui",
     "NameSeasonNumber": "Musim {0}",
     "NameInstallFailed": "{0} penginstalan gagal",
@@ -117,5 +117,7 @@
     "TaskCleanActivityLog": "Bersihkan Log Aktivitas",
     "Undefined": "Tidak terdefinisi",
     "Forced": "Dipaksa",
-    "Default": "Bawaan"
+    "Default": "Bawaan",
+    "TaskOptimizeDatabaseDescription": "Rapihkan basis data dan membersihkan ruang kosong. Menjalankan tugas ini setelah memindai pustaka atau melakukan perubahan lain yang menyiratkan modifikasi basis data dapat meningkatkan kinerja.",
+    "TaskOptimizeDatabase": "Optimalkan basis data"
 }

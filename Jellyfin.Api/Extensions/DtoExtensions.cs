@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Jellyfin.Api.Helpers;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;

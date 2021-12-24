@@ -16,15 +16,17 @@ namespace MediaBrowser.Model.SyncPlay
         /// <param name="playlist">The playlist.</param>
         /// <param name="playingItemIndex">The playing item index in the playlist.</param>
         /// <param name="startPositionTicks">The start position ticks.</param>
+        /// <param name="isPlaying">The playing item status.</param>
         /// <param name="shuffleMode">The shuffle mode.</param>
         /// <param name="repeatMode">The repeat mode.</param>
-        public PlayQueueUpdate(PlayQueueUpdateReason reason, DateTime lastUpdate, IReadOnlyList<QueueItem> playlist, int playingItemIndex, long startPositionTicks, GroupShuffleMode shuffleMode, GroupRepeatMode repeatMode)
+        public PlayQueueUpdate(PlayQueueUpdateReason reason, DateTime lastUpdate, IReadOnlyList<QueueItem> playlist, int playingItemIndex, long startPositionTicks, bool isPlaying, GroupShuffleMode shuffleMode, GroupRepeatMode repeatMode)
         {
             Reason = reason;
             LastUpdate = lastUpdate;
             Playlist = playlist;
             PlayingItemIndex = playingItemIndex;
             StartPositionTicks = startPositionTicks;
+            IsPlaying = isPlaying;
             ShuffleMode = shuffleMode;
             RepeatMode = repeatMode;
         }
@@ -58,6 +60,12 @@ namespace MediaBrowser.Model.SyncPlay
         /// </summary>
         /// <value>The start position ticks.</value>
         public long StartPositionTicks { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the current item is playing.
+        /// </summary>
+        /// <value>The playing item status.</value>
+        public bool IsPlaying { get; }
 
         /// <summary>
         /// Gets the shuffle mode.

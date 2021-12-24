@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -29,11 +27,6 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
         /// API key to use when performing an API call.
         /// </summary>
         public const string ApiKey = "4219e299c89411838049ab0dab19ebd5";
-
-        /// <summary>
-        /// Maximum number of cast members to pull.
-        /// </summary>
-        public const int MaxCastMembers = 15;
 
         /// <summary>
         /// The crew types to keep.

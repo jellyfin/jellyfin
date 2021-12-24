@@ -26,7 +26,7 @@ namespace Emby.Drawing
     public sealed class ImageProcessor : IImageProcessor, IDisposable
     {
         // Increment this when there's a change requiring caches to be invalidated
-        private const string Version = "3";
+        private const char Version = '3';
 
         private static readonly HashSet<string> _transparentImageTypes
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { ".png", ".webp", ".gif" };
@@ -102,7 +102,7 @@ namespace Emby.Drawing
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
 
-            using (var fileStream = new FileStream(file.Item1, FileMode.Open, FileAccess.Read, FileShare.Read, IODefaults.FileStreamBufferSize, true))
+            using (var fileStream = AsyncFile.OpenRead(file.Item1))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }

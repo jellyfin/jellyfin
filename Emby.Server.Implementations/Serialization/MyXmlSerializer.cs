@@ -21,7 +21,7 @@ namespace Emby.Server.Implementations.Serialization
         private static XmlSerializer GetSerializer(Type type)
             => _serializers.GetOrAdd(
                 type.FullName ?? throw new ArgumentException($"Invalid type {type}."),
-                (_, t) => new XmlSerializer(t),
+                static (_, t) => new XmlSerializer(t),
                 type);
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Serialization
         /// <param name="file">The file.</param>
         public void SerializeToFile(object obj, string file)
         {
-            using (var stream = new FileStream(file, FileMode.Create))
+            using (var stream = new FileStream(file, FileMode.Create, FileAccess.Write))
             {
                 SerializeToStream(obj, stream);
             }

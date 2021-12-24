@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StreamingDtos;
@@ -39,7 +38,7 @@ namespace Jellyfin.Api.Helpers
                         FileAccess.Read,
                         FileShare.ReadWrite,
                         IODefaults.FileStreamBufferSize,
-                        FileOptions.SequentialScan);
+                        FileOptions.Asynchronous | FileOptions.SequentialScan);
                     await using (fileStream.ConfigureAwait(false))
                     {
                         using var reader = new StreamReader(fileStream);
@@ -99,8 +98,7 @@ namespace Jellyfin.Api.Helpers
                 return fmp4InitFileName;
             }
 
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            if (isWindows)
+            if (OperatingSystem.IsWindows())
             {
                 // on Windows
                 // #EXT-X-MAP:URI="X:\transcodes\prefix-1.mp4"

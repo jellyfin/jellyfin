@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Emby.Naming.Common;
 using Emby.Server.Implementations.Library.Resolvers.TV;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
@@ -14,22 +14,21 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 {
     public class EpisodeResolverTest
     {
+        private static readonly NamingOptions _namingOptions = new ();
+
         [Fact]
         public void Resolve_GivenVideoInExtrasFolder_DoesNotResolveToEpisode()
         {
-            var season = new Season { Name = "Season 1" };
             var parent = new Folder { Name = "extras" };
-            var libraryManagerMock = new Mock<ILibraryManager>();
-            libraryManagerMock.Setup(x => x.GetItemById(It.IsAny<Guid>())).Returns(season);
 
-            var episodeResolver = new EpisodeResolver(libraryManagerMock.Object);
+            var episodeResolver = new EpisodeResolver(_namingOptions);
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
                 Mock.Of<IDirectoryService>())
             {
                 Parent = parent,
                 CollectionType = CollectionType.TvShows,
-                FileInfo = new FileSystemMetadata()
+                FileInfo = new FileSystemMetadata
                 {
                     FullName = "All My Children/Season 01/Extras/All My Children S01E01 - Behind The Scenes.mkv"
                 }
@@ -45,14 +44,14 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
             // Have to create a mock because of moq proxies not being castable to a concrete implementation
             // https://github.com/jellyfin/jellyfin/blob/ab0cff8556403e123642dc9717ba778329554634/Emby.Server.Implementations/Library/Resolvers/BaseVideoResolver.cs#L48
-            var episodeResolver = new EpisodeResolverMock(Mock.Of<ILibraryManager>());
+            var episodeResolver = new EpisodeResolverMock(_namingOptions);
             var itemResolveArgs = new ItemResolveArgs(
                 Mock.Of<IServerApplicationPaths>(),
                 Mock.Of<IDirectoryService>())
             {
                 Parent = series,
                 CollectionType = CollectionType.TvShows,
-                FileInfo = new FileSystemMetadata()
+                FileInfo = new FileSystemMetadata
                 {
                     FullName = "Extras/Extras S01E01.mkv"
                 }
@@ -62,7 +61,7 @@ namespace Jellyfin.Server.Implementations.Tests.Library
 
         private class EpisodeResolverMock : EpisodeResolver
         {
-            public EpisodeResolverMock(ILibraryManager libraryManager) : base(libraryManager)
+            public EpisodeResolverMock(NamingOptions namingOptions) : base(namingOptions)
             {
             }
 

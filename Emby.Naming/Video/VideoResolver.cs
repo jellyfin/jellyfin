@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Emby.Naming.Common;
-using MediaBrowser.Common.Extensions;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.Video
 {
@@ -16,10 +16,11 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="parseName">Whether to parse the name or use the filename.</param>
         /// <returns>VideoFileInfo.</returns>
-        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions)
+        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions, bool parseName = true)
         {
-            return Resolve(path, true, namingOptions);
+            return Resolve(path, true, namingOptions, parseName);
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace Emby.Naming.Video
 
             var format3DResult = Format3DParser.Parse(path, namingOptions);
 
-            var extraResult = new ExtraResolver(namingOptions).GetExtraInfo(path);
+            var extraResult = ExtraResolver.GetExtraInfo(path, namingOptions);
 
             var name = Path.GetFileNameWithoutExtension(path);
 
@@ -87,9 +88,9 @@ namespace Emby.Naming.Video
                 year = cleanDateTimeResult.Year;
 
                 if (extraResult.ExtraType == null
-                    && TryCleanString(name, namingOptions, out ReadOnlySpan<char> newName))
+                    && TryCleanString(name, namingOptions, out var newName))
                 {
-                    name = newName.ToString();
+                    name = newName;
                 }
             }
 
@@ -138,7 +139,7 @@ namespace Emby.Naming.Video
         /// <param name="namingOptions">The naming options.</param>
         /// <param name="newName">Clean name.</param>
         /// <returns>True if cleaning of name was successful.</returns>
-        public static bool TryCleanString([NotNullWhen(true)] string? name, NamingOptions namingOptions, out ReadOnlySpan<char> newName)
+        public static bool TryCleanString([NotNullWhen(true)] string? name, NamingOptions namingOptions, out string newName)
         {
             return CleanStringParser.TryClean(name, namingOptions.CleanStringRegexes, out newName);
         }

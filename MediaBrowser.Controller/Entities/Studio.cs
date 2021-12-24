@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using MediaBrowser.Controller.Extensions;
+using Diacritics.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Entities
@@ -15,19 +15,6 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class Studio : BaseItem, IItemByName
     {
-        public override List<string> GetUserDataKeys()
-        {
-            var list = base.GetUserDataKeys();
-
-            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
-            return list;
-        }
-
-        public override string CreatePresentationUniqueKey()
-        {
-            return GetUserDataKeys()[0];
-        }
-
         /// <summary>
         /// Gets the folder containing the item.
         /// If the item is a folder, it returns the folder itself.
@@ -41,6 +28,22 @@ namespace MediaBrowser.Controller.Entities
 
         [JsonIgnore]
         public override bool SupportsAncestors => false;
+
+        [JsonIgnore]
+        public override bool SupportsPeople => false;
+
+        public override List<string> GetUserDataKeys()
+        {
+            var list = base.GetUserDataKeys();
+
+            list.Insert(0, GetType().Name + "-" + (Name ?? string.Empty).RemoveDiacritics());
+            return list;
+        }
+
+        public override string CreatePresentationUniqueKey()
+        {
+            return GetUserDataKeys()[0];
+        }
 
         public override double GetDefaultPrimaryImageAspectRatio()
         {
@@ -66,9 +69,6 @@ namespace MediaBrowser.Controller.Entities
 
             return LibraryManager.GetItemList(query);
         }
-
-        [JsonIgnore]
-        public override bool SupportsPeople => false;
 
         public static string GetPath(string name)
         {
@@ -105,6 +105,8 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// This is called before any metadata refresh and returns true or false indicating if changes were made.
         /// </summary>
+        /// <param name="replaceAllMetadata"><c>true</c> to replace all metadata, <c>false</c> to not.</param>
+        /// <returns><c>true</c> if changes were made, <c>false</c> if not.</returns>
         public override bool BeforeMetadataRefresh(bool replaceAllMetadata)
         {
             var hasChanges = base.BeforeMetadataRefresh(replaceAllMetadata);
