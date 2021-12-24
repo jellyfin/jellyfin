@@ -2,7 +2,6 @@
 
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 

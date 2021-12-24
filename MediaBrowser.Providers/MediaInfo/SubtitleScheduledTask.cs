@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -66,7 +67,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var options = GetOptions();
 
-            var types = new[] { "Episode", "Movie" };
+            var types = new[] { BaseItemKind.Episode, BaseItemKind.Movie };
 
             var dict = new Dictionary<Guid, BaseItem>();
 

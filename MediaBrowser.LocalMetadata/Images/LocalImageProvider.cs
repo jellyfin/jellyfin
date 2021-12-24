@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -117,16 +118,10 @@ namespace MediaBrowser.LocalMetadata.Images
                 return Enumerable.Empty<FileSystemMetadata>();
             }
 
-            if (includeDirectories)
-            {
-                return directoryService.GetFileSystemEntries(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase) || i.IsDirectory)
-
-                .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
-            }
-
-            return directoryService.GetFiles(path)
-                .Where(i => BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparer.OrdinalIgnoreCase))
+            return directoryService.GetFileSystemEntries(path)
+                .Where(i =>
+                    (includeDirectories && i.IsDirectory)
+                    || BaseItem.SupportedImageExtensions.Contains(i.Extension, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i => Array.IndexOf(BaseItem.SupportedImageExtensions, i.Extension ?? string.Empty));
         }
 

@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -76,8 +77,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             var contentType = request.ContentType;
             var providers = _subtitleProviders
-                .Where(i => i.SupportedMediaTypes.Contains(contentType))
-                .Where(i => !request.DisabledSubtitleFetchers.Contains(i.Name, StringComparer.OrdinalIgnoreCase))
+                .Where(i => i.SupportedMediaTypes.Contains(contentType) && !request.DisabledSubtitleFetchers.Contains(i.Name, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i =>
                 {
                     var index = request.SubtitleFetcherOrder.ToList().IndexOf(i.Name);

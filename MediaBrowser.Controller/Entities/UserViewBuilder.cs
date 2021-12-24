@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Entities.Movies;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
@@ -16,8 +16,6 @@ using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
 using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using MetadataProvider = MediaBrowser.Model.Entities.MetadataProvider;
-using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
-using Season = MediaBrowser.Controller.Entities.TV.Season;
 using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace MediaBrowser.Controller.Entities
@@ -140,7 +138,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (query.IncludeItemTypes.Length == 0)
                 {
-                    query.IncludeItemTypes = new[] { nameof(Movie) };
+                    query.IncludeItemTypes = new[] { BaseItemKind.Movie };
                 }
 
                 return parent.QueryRecursive(query);
@@ -165,7 +163,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Movie) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -176,7 +174,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Series) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -187,7 +185,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.IsFavorite = true;
-            query.IncludeItemTypes = new[] { nameof(Episode) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Episode };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -198,7 +196,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { nameof(Movie) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -206,7 +204,7 @@ namespace MediaBrowser.Controller.Entities
         private QueryResult<BaseItem> GetMovieCollections(User user, InternalItemsQuery query)
         {
             query.Parent = null;
-            query.IncludeItemTypes = new[] { nameof(BoxSet) };
+            query.IncludeItemTypes = new[] { BaseItemKind.BoxSet };
             query.SetUser(user);
             query.Recursive = true;
 
@@ -220,7 +218,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { nameof(Movie) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -233,7 +231,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { nameof(Movie) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -252,7 +250,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var genres = parent.QueryRecursive(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(Movie) },
+                IncludeItemTypes = new[] { BaseItemKind.Movie },
                 Recursive = true,
                 EnableTotalRecordCount = false
             }).Items
@@ -283,7 +281,7 @@ namespace MediaBrowser.Controller.Entities
             query.GenreIds = new[] { displayParent.Id };
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { nameof(Movie) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Movie };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -299,9 +297,9 @@ namespace MediaBrowser.Controller.Entities
                 {
                     query.IncludeItemTypes = new[]
                     {
-                        nameof(Series),
-                        nameof(Season),
-                        nameof(Episode)
+                        BaseItemKind.Series,
+                        BaseItemKind.Season,
+                        BaseItemKind.Episode
                     };
                 }
 
@@ -329,7 +327,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { nameof(Episode) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Episode };
             query.IsVirtualItem = false;
 
             return ConvertToResult(_libraryManager.GetItemList(query));
@@ -360,7 +358,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
             query.Limit = GetSpecialItemsLimit();
-            query.IncludeItemTypes = new[] { nameof(Episode) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Episode };
 
             return ConvertToResult(_libraryManager.GetItemList(query));
         }
@@ -371,7 +369,7 @@ namespace MediaBrowser.Controller.Entities
             query.Parent = parent;
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { nameof(Series) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -380,7 +378,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var genres = parent.QueryRecursive(new InternalItemsQuery(user)
             {
-                IncludeItemTypes = new[] { nameof(Series) },
+                IncludeItemTypes = new[] { BaseItemKind.Series },
                 Recursive = true,
                 EnableTotalRecordCount = false
             }).Items
@@ -411,7 +409,7 @@ namespace MediaBrowser.Controller.Entities
             query.GenreIds = new[] { displayParent.Id };
             query.SetUser(user);
 
-            query.IncludeItemTypes = new[] { nameof(Series) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Series };
 
             return _libraryManager.GetItemsResult(query);
         }
@@ -494,17 +492,17 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
-            if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+            if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            if (query.IncludeItemTypes.Length > 0 && !query.IncludeItemTypes.Contains(item.GetClientTypeName(), StringComparer.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length > 0 && !query.IncludeItemTypes.Contains(item.GetBaseItemKind()))
             {
                 return false;
             }
 
-            if (query.ExcludeItemTypes.Length > 0 && query.ExcludeItemTypes.Contains(item.GetClientTypeName(), StringComparer.OrdinalIgnoreCase))
+            if (query.ExcludeItemTypes.Length > 0 && query.ExcludeItemTypes.Contains(item.GetBaseItemKind()))
             {
                 return false;
             }
@@ -745,10 +743,9 @@ namespace MediaBrowser.Controller.Entities
                 var val = query.HasTrailer.Value;
                 var trailerCount = 0;
 
-                var hasTrailers = item as IHasTrailers;
-                if (hasTrailers != null)
+                if (item is IHasTrailers hasTrailers)
                 {
-                    trailerCount = hasTrailers.GetTrailerIds().Count;
+                    trailerCount = hasTrailers.GetTrailerCount();
                 }
 
                 var ok = val ? trailerCount > 0 : trailerCount == 0;
@@ -763,7 +760,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeSong.Value;
 
-                var themeCount = item.ThemeSongIds.Length;
+                var themeCount = item.GetThemeSongs().Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -776,7 +773,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 var filterValue = query.HasThemeVideo.Value;
 
-                var themeCount = item.ThemeVideoIds.Length;
+                var themeCount = item.GetThemeVideos().Count;
                 var ok = filterValue ? themeCount > 0 : themeCount == 0;
 
                 if (!ok)
@@ -786,7 +783,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply genre filter
-            if (query.Genres.Count > 0 && !query.Genres.Any(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
+            if (query.Genres.Count > 0 && !query.Genres.Any(v => item.Genres.Contains(v, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -810,7 +807,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
             {
                 var studioItem = libraryManager.GetItemById(id);
-                return studioItem != null && item.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
+                return studioItem != null && item.Studios.Contains(studioItem.Name, StringComparison.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -820,7 +817,7 @@ namespace MediaBrowser.Controller.Entities
             if (query.GenreIds.Count > 0 && !query.GenreIds.Any(id =>
             {
                 var genreItem = libraryManager.GetItemById(id);
-                return genreItem != null && item.Genres.Contains(genreItem.Name, StringComparer.OrdinalIgnoreCase);
+                return genreItem != null && item.Genres.Contains(genreItem.Name, StringComparison.OrdinalIgnoreCase);
             }))
             {
                 return false;
@@ -853,7 +850,7 @@ namespace MediaBrowser.Controller.Entities
             var tags = query.Tags;
             if (tags.Length > 0)
             {
-                if (!tags.Any(v => item.Tags.Contains(v, StringComparer.OrdinalIgnoreCase)))
+                if (!tags.Any(v => item.Tags.Contains(v, StringComparison.OrdinalIgnoreCase)))
                 {
                     return false;
                 }
@@ -971,7 +968,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var folder = i as ICollectionFolder;
 
-                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                        return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
                     }).ToArray();
             }
 
@@ -980,7 +977,7 @@ namespace MediaBrowser.Controller.Entities
                 {
                     var folder = i as ICollectionFolder;
 
-                    return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                    return folder != null && viewTypes.Contains(folder.CollectionType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
                 }).ToArray();
         }
 

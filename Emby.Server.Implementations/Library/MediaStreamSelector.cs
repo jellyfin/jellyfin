@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Model.Entities;
 
 namespace Emby.Server.Implementations.Library
@@ -64,18 +65,18 @@ namespace Emby.Server.Implementations.Library
                 stream = sortedStreams.FirstOrDefault(s => s.IsExternal || s.IsForced || s.IsDefault);
 
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
-                if (stream == null && !preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
+                if (stream == null && !preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream = sortedStreams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
+                    stream = sortedStreams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Smart)
             {
                 // if the audio language is not understood by the user, load their preferred subs, if there are any
-                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
+                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    stream = streams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase)) ??
-                        streams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase));
+                    stream = streams.FirstOrDefault(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase)) ??
+                        streams.FirstOrDefault(s => preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase));
                 }
             }
             else if (mode == SubtitlePlaybackMode.Always)
@@ -136,9 +137,9 @@ namespace Emby.Server.Implementations.Library
             else if (mode == SubtitlePlaybackMode.Smart)
             {
                 // Prefer smart logic over embedded metadata
-                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparer.OrdinalIgnoreCase))
+                if (!preferredLanguages.Contains(audioTrackLanguage, StringComparison.OrdinalIgnoreCase))
                 {
-                    filteredStreams = streams.Where(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparer.OrdinalIgnoreCase))
+                    filteredStreams = streams.Where(s => !s.IsForced && preferredLanguages.Contains(s.Language, StringComparison.OrdinalIgnoreCase))
                         .ToList();
                 }
             }

@@ -18,11 +18,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -30,12 +27,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
-using Book = MediaBrowser.Controller.Entities.Book;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
-using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
-using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
-using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -539,7 +531,7 @@ namespace Emby.Dlna.ContentDirectory
                 User = user,
                 Recursive = true,
                 IsMissing = false,
-                ExcludeItemTypes = new[] { nameof(Book) },
+                ExcludeItemTypes = new[] { BaseItemKind.Book },
                 IsFolder = isFolder,
                 MediaTypes = mediaTypes,
                 DtoOptions = GetDtoOptions()
@@ -619,7 +611,7 @@ namespace Emby.Dlna.ContentDirectory
                 Limit = limit,
                 StartIndex = startIndex,
                 IsVirtualItem = false,
-                ExcludeItemTypes = new[] { nameof(Book) },
+                ExcludeItemTypes = new[] { BaseItemKind.Book },
                 IsPlaceHolder = false,
                 DtoOptions = GetDtoOptions(),
                 OrderBy = GetOrderBy(sort, folder.IsPreSorted)
@@ -644,7 +636,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 StartIndex = startIndex,
                 Limit = limit,
-                IncludeItemTypes = new[] { nameof(LiveTvChannel) },
+                IncludeItemTypes = new[] { BaseItemKind.LiveTvChannel },
                 OrderBy = GetOrderBy(sort, false)
             };
 
@@ -675,23 +667,23 @@ namespace Emby.Dlna.ContentDirectory
             switch (stubType)
             {
                 case StubType.Latest:
-                    return GetLatest(item, query, nameof(Audio));
+                    return GetLatest(item, query, BaseItemKind.Audio);
                 case StubType.Playlists:
                     return GetMusicPlaylists(query);
                 case StubType.Albums:
-                    return GetChildrenOfItem(item, query, nameof(MusicAlbum));
+                    return GetChildrenOfItem(item, query, BaseItemKind.MusicAlbum);
                 case StubType.Artists:
                     return GetMusicArtists(item, query);
                 case StubType.AlbumArtists:
                     return GetMusicAlbumArtists(item, query);
                 case StubType.FavoriteAlbums:
-                    return GetChildrenOfItem(item, query, nameof(MusicAlbum), true);
+                    return GetChildrenOfItem(item, query, BaseItemKind.MusicAlbum, true);
                 case StubType.FavoriteArtists:
                     return GetFavoriteArtists(item, query);
                 case StubType.FavoriteSongs:
-                    return GetChildrenOfItem(item, query, nameof(Audio), true);
+                    return GetChildrenOfItem(item, query, BaseItemKind.Audio, true);
                 case StubType.Songs:
-                    return GetChildrenOfItem(item, query, nameof(Audio));
+                    return GetChildrenOfItem(item, query, BaseItemKind.Audio);
                 case StubType.Genres:
                     return GetMusicGenres(item, query);
             }
@@ -746,13 +738,13 @@ namespace Emby.Dlna.ContentDirectory
                 case StubType.ContinueWatching:
                     return GetMovieContinueWatching(item, query);
                 case StubType.Latest:
-                    return GetLatest(item, query, nameof(Movie));
+                    return GetLatest(item, query, BaseItemKind.Movie);
                 case StubType.Movies:
-                    return GetChildrenOfItem(item, query, nameof(Movie));
+                    return GetChildrenOfItem(item, query, BaseItemKind.Movie);
                 case StubType.Collections:
                     return GetMovieCollections(query);
                 case StubType.Favorites:
-                    return GetChildrenOfItem(item, query, nameof(Movie), true);
+                    return GetChildrenOfItem(item, query, BaseItemKind.Movie, true);
                 case StubType.Genres:
                     return GetGenres(item, query);
             }
@@ -831,13 +823,13 @@ namespace Emby.Dlna.ContentDirectory
                 case StubType.NextUp:
                     return GetNextUp(item, query);
                 case StubType.Latest:
-                    return GetLatest(item, query, nameof(Episode));
+                    return GetLatest(item, query, BaseItemKind.Episode);
                 case StubType.Series:
-                    return GetChildrenOfItem(item, query, nameof(Series));
+                    return GetChildrenOfItem(item, query, BaseItemKind.Series);
                 case StubType.FavoriteSeries:
-                    return GetChildrenOfItem(item, query, nameof(Series), true);
+                    return GetChildrenOfItem(item, query, BaseItemKind.Series, true);
                 case StubType.FavoriteEpisodes:
-                    return GetChildrenOfItem(item, query, nameof(Episode), true);
+                    return GetChildrenOfItem(item, query, BaseItemKind.Episode, true);
                 case StubType.Genres:
                     return GetGenres(item, query);
             }
@@ -898,7 +890,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMovieCollections(InternalItemsQuery query)
         {
             query.Recursive = true;
-            query.IncludeItemTypes = new[] { nameof(BoxSet) };
+            query.IncludeItemTypes = new[] { BaseItemKind.BoxSet };
 
             var result = _libraryManager.GetItemsResult(query);
 
@@ -913,7 +905,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <param name="itemType">The item type.</param>
         /// <param name="isFavorite">A value indicating whether to only fetch favorite items.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetChildrenOfItem(BaseItem parent, InternalItemsQuery query, string itemType, bool isFavorite = false)
+        private QueryResult<ServerItem> GetChildrenOfItem(BaseItem parent, InternalItemsQuery query, BaseItemKind itemType, bool isFavorite = false)
         {
             query.Recursive = true;
             query.Parent = parent;
@@ -1013,7 +1005,7 @@ namespace Emby.Dlna.ContentDirectory
         private QueryResult<ServerItem> GetMusicPlaylists(InternalItemsQuery query)
         {
             query.Parent = null;
-            query.IncludeItemTypes = new[] { nameof(Playlist) };
+            query.IncludeItemTypes = new[] { BaseItemKind.Playlist };
             query.Recursive = true;
 
             var result = _libraryManager.GetItemsResult(query);
@@ -1052,7 +1044,7 @@ namespace Emby.Dlna.ContentDirectory
         /// <param name="query">The <see cref="InternalItemsQuery"/>.</param>
         /// <param name="itemType">The item type.</param>
         /// <returns>The <see cref="QueryResult{ServerItem}"/>.</returns>
-        private QueryResult<ServerItem> GetLatest(BaseItem parent, InternalItemsQuery query, string itemType)
+        private QueryResult<ServerItem> GetLatest(BaseItem parent, InternalItemsQuery query, BaseItemKind itemType)
         {
             query.OrderBy = Array.Empty<(string, SortOrder)>();
 
@@ -1086,7 +1078,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Recursive = true,
                 ArtistIds = new[] { item.Id },
-                IncludeItemTypes = new[] { nameof(MusicAlbum) },
+                IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions(),
@@ -1115,8 +1107,8 @@ namespace Emby.Dlna.ContentDirectory
                 GenreIds = new[] { item.Id },
                 IncludeItemTypes = new[]
                 {
-                    nameof(Movie),
-                    nameof(Series)
+                    BaseItemKind.Movie,
+                    BaseItemKind.Series
                 },
                 Limit = limit,
                 StartIndex = startIndex,
@@ -1144,7 +1136,7 @@ namespace Emby.Dlna.ContentDirectory
             {
                 Recursive = true,
                 GenreIds = new[] { item.Id },
-                IncludeItemTypes = new[] { nameof(MusicAlbum) },
+                IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
                 Limit = limit,
                 StartIndex = startIndex,
                 DtoOptions = GetDtoOptions(),

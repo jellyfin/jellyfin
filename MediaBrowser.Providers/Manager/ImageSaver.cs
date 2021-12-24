@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -173,7 +174,7 @@ namespace MediaBrowser.Providers.Manager
 
             // Delete the current path
             if (currentImageIsLocalFile
-                && !savedPaths.Contains(currentImagePath, StringComparer.OrdinalIgnoreCase)
+                && !savedPaths.Contains(currentImagePath, StringComparison.OrdinalIgnoreCase)
                 && (saveLocally || currentImagePath.Contains(_config.ApplicationPaths.InternalMetadataPath, StringComparison.OrdinalIgnoreCase)))
             {
                 var currentPath = currentImagePath;
@@ -494,7 +495,7 @@ namespace MediaBrowser.Providers.Manager
             var filenames = images.Select(i => Path.GetFileNameWithoutExtension(i.Path)).ToList();
 
             var current = 1;
-            while (filenames.Contains(numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture), StringComparer.OrdinalIgnoreCase))
+            while (filenames.Contains(numberedIndexPrefix + current.ToString(CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase))
             {
                 current++;
             }

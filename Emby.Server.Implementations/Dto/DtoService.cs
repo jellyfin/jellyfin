@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -294,7 +294,7 @@ namespace Emby.Server.Implementations.Dto
                             path = path.TrimStart('.');
                         }
 
-                        if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparer.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparison.OrdinalIgnoreCase))
                         {
                             fileExtensionContainer = path;
                         }
@@ -470,7 +470,7 @@ namespace Emby.Server.Implementations.Dto
             {
                 var parentAlbumIds = _libraryManager.GetItemIds(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(MusicAlbum) },
+                    IncludeItemTypes = new[] { BaseItemKind.MusicAlbum },
                     Name = item.Album,
                     Limit = 1
                 });

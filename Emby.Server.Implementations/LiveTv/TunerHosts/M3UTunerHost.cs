@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -119,7 +120,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 var extension = Path.GetExtension(mediaSource.Path) ?? string.Empty;
 
-                if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }

@@ -54,20 +54,10 @@ namespace Emby.Server.Implementations.Library
             {
                 if (parent != null)
                 {
-                    // Ignore trailer folders but allow it at the collection level
-                    if (string.Equals(filename, BaseItem.TrailersFolderName, StringComparison.OrdinalIgnoreCase)
-                        && !(parent is AggregateFolder)
-                        && !(parent is UserRootFolder))
-                    {
-                        return true;
-                    }
-
-                    if (string.Equals(filename, BaseItem.ThemeVideosFolderName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return true;
-                    }
-
-                    if (string.Equals(filename, BaseItem.ThemeSongsFolderName, StringComparison.OrdinalIgnoreCase))
+                    // Ignore extras folders but allow it at the collection level
+                    if (_namingOptions.AllExtrasTypesFolderNames.ContainsKey(filename)
+                        && parent is not AggregateFolder
+                        && parent is not UserRootFolder)
                     {
                         return true;
                     }

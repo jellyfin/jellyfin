@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -19,7 +20,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Events;
 using MediaBrowser.Controller.Events.Updates;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Updates;
 using Microsoft.Extensions.Logging;
@@ -47,7 +47,6 @@ namespace Emby.Server.Implementations.Updates
         /// </summary>
         /// <value>The application host.</value>
         private readonly IServerApplicationHost _applicationHost;
-        private readonly IZipClient _zipClient;
         private readonly object _currentInstallationsLock = new object();
 
         /// <summary>
@@ -69,7 +68,6 @@ namespace Emby.Server.Implementations.Updates
         /// <param name="eventManager">The <see cref="IEventManager"/>.</param>
         /// <param name="httpClientFactory">The <see cref="IHttpClientFactory"/>.</param>
         /// <param name="config">The <see cref="IServerConfigurationManager"/>.</param>
-        /// <param name="zipClient">The <see cref="IZipClient"/>.</param>
         /// <param name="pluginManager">The <see cref="IPluginManager"/>.</param>
         public InstallationManager(
             ILogger<InstallationManager> logger,
@@ -78,7 +76,6 @@ namespace Emby.Server.Implementations.Updates
             IEventManager eventManager,
             IHttpClientFactory httpClientFactory,
             IServerConfigurationManager config,
-            IZipClient zipClient,
             IPluginManager pluginManager)
         {
             _currentInstallations = new List<(InstallationInfo, CancellationTokenSource)>();
@@ -90,7 +87,6 @@ namespace Emby.Server.Implementations.Updates
             _eventManager = eventManager;
             _httpClientFactory = httpClientFactory;
             _config = config;
-            _zipClient = zipClient;
             _jsonSerializerOptions = JsonDefaults.Options;
             _pluginManager = pluginManager;
         }
@@ -560,7 +556,8 @@ namespace Emby.Server.Implementations.Updates
             }
 
             stream.Position = 0;
-            _zipClient.ExtractAllFromZip(stream, targetDir, true);
+            using var reader = new ZipArchive(stream);
+            reader.ExtractToDirectory(targetDir, true);
             await _pluginManager.GenerateManifest(package.PackageInfo, package.Version, targetDir, status).ConfigureAwait(false);
             _pluginManager.ImportPluginFrom(targetDir);
         }

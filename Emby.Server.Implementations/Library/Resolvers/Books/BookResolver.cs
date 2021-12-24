@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -32,7 +33,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Books
 
             var extension = Path.GetExtension(args.Path);
 
-            if (extension != null && _validExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            if (extension != null && _validExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 // It's a book
                 return new Book

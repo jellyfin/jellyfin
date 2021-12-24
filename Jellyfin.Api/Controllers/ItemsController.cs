@@ -8,7 +8,6 @@ using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Dto;
@@ -296,8 +295,8 @@ namespace Jellyfin.Api.Controllers
                 {
                     IsPlayed = isPlayed,
                     MediaTypes = mediaTypes,
-                    IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
-                    ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                    IncludeItemTypes = includeItemTypes,
+                    ExcludeItemTypes = excludeItemTypes,
                     Recursive = recursive ?? false,
                     OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder),
                     IsFavorite = isFavorite,
@@ -459,7 +458,7 @@ namespace Jellyfin.Api.Controllers
                 {
                     query.AlbumIds = albums.SelectMany(i =>
                     {
-                        return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { nameof(MusicAlbum) }, Name = i, Limit = 1 });
+                        return _libraryManager.GetItemIds(new InternalItemsQuery { IncludeItemTypes = new[] { BaseItemKind.MusicAlbum }, Name = i, Limit = 1 });
                     }).ToArray();
                 }
 
@@ -483,7 +482,7 @@ namespace Jellyfin.Api.Controllers
                 if (query.OrderBy.Count == 0)
                 {
                     // Albums by artist
-                    if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], "MusicAlbum", StringComparison.OrdinalIgnoreCase))
+                    if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.MusicAlbum)
                     {
                         query.OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending), new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) };
                     }
@@ -831,8 +830,8 @@ namespace Jellyfin.Api.Controllers
                 CollapseBoxSetItems = false,
                 EnableTotalRecordCount = enableTotalRecordCount,
                 AncestorIds = ancestorIds,
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
+                IncludeItemTypes = includeItemTypes,
+                ExcludeItemTypes = excludeItemTypes,
                 SearchTerm = searchTerm,
                 ExcludeItemIds = excludeItemIds
             });

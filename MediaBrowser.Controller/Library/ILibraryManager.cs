@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Naming.Common;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -59,10 +58,12 @@ namespace MediaBrowser.Controller.Library
         /// </summary>
         /// <param name="fileInfo">The file information.</param>
         /// <param name="parent">The parent.</param>
+        /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
         /// <returns>BaseItem.</returns>
         BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
-            Folder parent = null);
+            Folder parent = null,
+            IDirectoryService directoryService = null);
 
         /// <summary>
         /// Resolves a set of files into a list of BaseItem.
@@ -427,28 +428,13 @@ namespace MediaBrowser.Controller.Library
         Guid GetNewItemId(string key, Type type);
 
         /// <summary>
-        /// Finds the trailers.
-        /// </summary>
-        /// <param name="owner">The owner.</param>
-        /// <param name="fileSystemChildren">The file system children.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns>IEnumerable&lt;Trailer&gt;.</returns>
-        IEnumerable<Video> FindTrailers(
-            BaseItem owner,
-            List<FileSystemMetadata> fileSystemChildren,
-            IDirectoryService directoryService);
-
-        /// <summary>
         /// Finds the extras.
         /// </summary>
         /// <param name="owner">The owner.</param>
         /// <param name="fileSystemChildren">The file system children.</param>
-        /// <param name="directoryService">The directory service.</param>
-        /// <returns>IEnumerable&lt;Video&gt;.</returns>
-        IEnumerable<Video> FindExtras(
-            BaseItem owner,
-            List<FileSystemMetadata> fileSystemChildren,
-            IDirectoryService directoryService);
+        /// <param name="directoryService">An instance of <see cref="IDirectoryService"/>.</param>
+        /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService);
 
         /// <summary>
         /// Gets the collection folders.

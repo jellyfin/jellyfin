@@ -65,7 +65,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         private static void SetProviderIdFromPath(BaseItem item)
         {
             // we need to only look at the name of this actual item (not parents)
-            var justName = Path.GetFileName(item.Path);
+            var justName = Path.GetFileName(item.Path.AsSpan());
 
             var id = justName.GetAttributeValue("tmdbid");
 

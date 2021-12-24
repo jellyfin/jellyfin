@@ -5,12 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Naming.Video;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
@@ -185,13 +182,42 @@ namespace Emby.Server.Implementations.Library.Resolvers.TV
         /// <param name="path">The path.</param>
         private static void SetProviderIdFromPath(Series item, string path)
         {
-            var justName = Path.GetFileName(path);
+            var justName = Path.GetFileName(path.AsSpan());
 
-            var id = justName.GetAttributeValue("tvdbid");
-
-            if (!string.IsNullOrEmpty(id))
+            var tvdbId = justName.GetAttributeValue("tvdbid");
+            if (!string.IsNullOrEmpty(tvdbId))
             {
-                item.SetProviderId(MetadataProvider.Tvdb, id);
+                item.SetProviderId(MetadataProvider.Tvdb, tvdbId);
+            }
+
+            var tvmazeId = justName.GetAttributeValue("tvmazeid");
+            if (!string.IsNullOrEmpty(tvmazeId))
+            {
+                item.SetProviderId(MetadataProvider.TvMaze, tvmazeId);
+            }
+
+            var tmdbId = justName.GetAttributeValue("tmdbid");
+            if (!string.IsNullOrEmpty(tmdbId))
+            {
+                item.SetProviderId(MetadataProvider.Tmdb, tmdbId);
+            }
+
+            var anidbId = justName.GetAttributeValue("anidbid");
+            if (!string.IsNullOrEmpty(anidbId))
+            {
+                item.SetProviderId("AniDB", anidbId);
+            }
+
+            var aniListId = justName.GetAttributeValue("anilistid");
+            if (!string.IsNullOrEmpty(aniListId))
+            {
+                item.SetProviderId("AniList", aniListId);
+            }
+
+            var aniSearchId = justName.GetAttributeValue("anisearchid");
+            if (!string.IsNullOrEmpty(aniSearchId))
+            {
+                item.SetProviderId("AniSearch", aniSearchId);
             }
         }
     }

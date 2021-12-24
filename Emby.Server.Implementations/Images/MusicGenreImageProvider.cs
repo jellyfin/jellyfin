@@ -44,9 +44,9 @@ namespace Emby.Server.Implementations.Images
                 Genres = new[] { item.Name },
                 IncludeItemTypes = new[]
                 {
-                    nameof(MusicAlbum),
-                    nameof(MusicVideo),
-                    nameof(Audio)
+                    BaseItemKind.MusicAlbum,
+                    BaseItemKind.MusicVideo,
+                    BaseItemKind.Audio
                 },
                 OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,

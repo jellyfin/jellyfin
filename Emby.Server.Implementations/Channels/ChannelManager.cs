@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using Jellyfin.Extensions.Json;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -179,7 +180,7 @@ namespace Emby.Server.Implementations.Channels
                     try
                     {
                         return (GetChannelProvider(i) is IHasFolderAttributes hasAttributes
-                            && hasAttributes.Attributes.Contains("Recordings", StringComparer.OrdinalIgnoreCase)) == val;
+                            && hasAttributes.Attributes.Contains("Recordings", StringComparison.OrdinalIgnoreCase)) == val;
                     }
                     catch
                     {
@@ -541,7 +542,7 @@ namespace Emby.Server.Implementations.Channels
             return _libraryManager.GetItemIds(
                 new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(Channel) },
+                    IncludeItemTypes = new[] { BaseItemKind.Channel },
                     OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) }
                 }).Select(i => GetChannelFeatures(i)).ToArray();
         }
@@ -1135,7 +1136,7 @@ namespace Emby.Server.Implementations.Channels
 
             if (!info.IsLiveStream)
             {
-                if (item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
+                if (item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Except(new[] { "livestream" }, StringComparer.OrdinalIgnoreCase).ToArray();
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);
@@ -1144,7 +1145,7 @@ namespace Emby.Server.Implementations.Channels
             }
             else
             {
-                if (!item.Tags.Contains("livestream", StringComparer.OrdinalIgnoreCase))
+                if (!item.Tags.Contains("livestream", StringComparison.OrdinalIgnoreCase))
                 {
                     item.Tags = item.Tags.Concat(new[] { "livestream" }).ToArray();
                     _logger.LogDebug("Forcing update due to Tags {0}", item.Name);

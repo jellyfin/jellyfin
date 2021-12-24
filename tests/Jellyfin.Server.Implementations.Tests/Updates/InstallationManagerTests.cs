@@ -6,9 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using Emby.Server.Implementations.Archiving;
 using Emby.Server.Implementations.Updates;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Updates;
 using Moq;
 using Moq.Protected;
@@ -44,7 +42,6 @@ namespace Jellyfin.Server.Implementations.Tests.Updates
                 ConfigureMembers = true
             });
             _fixture.Inject(http);
-            _fixture.Inject<IZipClient>(new ZipClient());
             _installationManager = _fixture.Create<InstallationManager>();
         }
 

@@ -117,5 +117,7 @@
     "TaskCleanActivityLogDescription": "Tanggalin ang mga tala ng aktibidad na mas luma sa nakatakda na edad.",
     "Default": "Default",
     "Undefined": "Hindi tiyak",
-    "Forced": "Sapilitan"
+    "Forced": "Sapilitan",
+    "TaskOptimizeDatabaseDescription": "Iko-compact ang database at ita-truncate ang free space. Ang pagpapatakbo ng gawaing ito pagkatapos ng pag-scan sa library o paggawa ng iba pang mga pagbabago na nagpapahiwatig ng mga pagbabago sa database ay maaaring magpa-improve ng performance.",
+    "TaskOptimizeDatabase": "I-optimize ang database"
 }

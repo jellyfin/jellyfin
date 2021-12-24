@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using System.Net.Http;
+using Jellyfin.Extensions;
 
 namespace Rssdp.Infrastructure
 {
@@ -86,7 +86,7 @@ namespace Rssdp.Infrastructure
         /// <param name="headerName">A string containing the name of the header to return the type of.</param>
         protected override bool IsContentHeader(string headerName)
         {
-            return ContentHeaderNames.Contains(headerName, StringComparer.OrdinalIgnoreCase);
+            return ContentHeaderNames.Contains(headerName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -64,6 +64,7 @@ the Jellyfin server to bind to ports 80 and/or 443 for example.
 %install
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+export PATH=$PATH:/usr/local/bin
 dotnet publish --configuration Release --output='%{buildroot}%{_libdir}/jellyfin' --self-contained --runtime %{dotnet_runtime} \
     "-p:DebugSymbols=false;DebugType=none" Jellyfin.Server
 %{__install} -D -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/jellyfin/LICENSE

@@ -2,7 +2,6 @@
 
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using MediaBrowser.Model.Entities;
 
@@ -17,18 +16,10 @@ namespace MediaBrowser.Controller.Entities
         IReadOnlyList<MediaUrl> RemoteTrailers { get; set; }
 
         /// <summary>
-        /// Gets or sets the local trailer ids.
+        /// Gets the local trailers.
         /// </summary>
-        /// <value>The local trailer ids.</value>
-        IReadOnlyList<Guid> LocalTrailerIds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the remote trailer ids.
-        /// </summary>
-        /// <value>The remote trailer ids.</value>
-        IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
-
-        Guid Id { get; set; }
+        /// <value>The local trailers.</value>
+        IReadOnlyList<BaseItem> LocalTrailers { get; }
     }
 
     /// <summary>
@@ -42,57 +33,6 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="item">Media item.</param>
         /// <returns><see cref="IReadOnlyList{Guid}" />.</returns>
         public static int GetTrailerCount(this IHasTrailers item)
-            => item.LocalTrailerIds.Count + item.RemoteTrailerIds.Count;
-
-        /// <summary>
-        /// Gets the trailer ids.
-        /// </summary>
-        /// <param name="item">Media item.</param>
-        /// <returns><see cref="IReadOnlyList{Guid}" />.</returns>
-        public static IReadOnlyList<Guid> GetTrailerIds(this IHasTrailers item)
-        {
-            var localIds = item.LocalTrailerIds;
-            var remoteIds = item.RemoteTrailerIds;
-
-            var all = new Guid[localIds.Count + remoteIds.Count];
-            var index = 0;
-            foreach (var id in localIds)
-            {
-                all[index++] = id;
-            }
-
-            foreach (var id in remoteIds)
-            {
-                all[index++] = id;
-            }
-
-            return all;
-        }
-
-        /// <summary>
-        /// Gets the trailers.
-        /// </summary>
-        /// <param name="item">Media item.</param>
-        /// <returns><see cref="IReadOnlyList{BaseItem}" />.</returns>
-        public static IReadOnlyList<BaseItem> GetTrailers(this IHasTrailers item)
-        {
-            var localIds = item.LocalTrailerIds;
-            var remoteIds = item.RemoteTrailerIds;
-            var libraryManager = BaseItem.LibraryManager;
-
-            var all = new BaseItem[localIds.Count + remoteIds.Count];
-            var index = 0;
-            foreach (var id in localIds)
-            {
-                all[index++] = libraryManager.GetItemById(id);
-            }
-
-            foreach (var id in remoteIds)
-            {
-                all[index++] = libraryManager.GetItemById(id);
-            }
-
-            return all;
-        }
+            => item.LocalTrailers.Count + item.RemoteTrailers.Count;
     }
 }

@@ -13,7 +13,6 @@ using Jellyfin.Networking.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
-using MediaBrowser.Model.Dlna;
 using Microsoft.Extensions.Logging;
 using Mono.Nat;
 

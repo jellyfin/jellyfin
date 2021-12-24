@@ -792,7 +792,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool RequiresPostFiltering2(InternalItemsQuery query)
         {
-            if (query.IncludeItemTypes.Length == 1 && string.Equals(query.IncludeItemTypes[0], nameof(BoxSet), StringComparison.OrdinalIgnoreCase))
+            if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.BoxSet)
             {
                 Logger.LogDebug("Query requires post-filtering due to BoxSet query");
                 return true;
@@ -882,7 +882,7 @@ namespace MediaBrowser.Controller.Entities
 
             if (query.IsPlayed.HasValue)
             {
-                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(nameof(Series)))
+                if (query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes.Contains(BaseItemKind.Series))
                 {
                     Logger.LogDebug("Query requires post-filtering due to IsPlayed");
                     return true;
@@ -1101,7 +1101,7 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Movie", StringComparer.OrdinalIgnoreCase))
+                if (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains(BaseItemKind.Movie))
                 {
                     param = true;
                 }

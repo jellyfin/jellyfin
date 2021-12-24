@@ -18,7 +18,6 @@ RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
 RestrictNamespaces=false
 RestrictRealtime=true
 RestrictSUIDSGID=true
-ProtectClock=true
 ProtectControlGroups=false
 ProtectHostname=true
 ProtectKernelLogs=false

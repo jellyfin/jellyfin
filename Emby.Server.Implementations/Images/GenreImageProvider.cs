@@ -8,8 +8,6 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -43,7 +41,7 @@ namespace Emby.Server.Implementations.Images
             return _libraryManager.GetItemList(new InternalItemsQuery
             {
                 Genres = new[] { item.Name },
-                IncludeItemTypes = new[] { nameof(Series), nameof(Movie) },
+                IncludeItemTypes = new[] { BaseItemKind.Series, BaseItemKind.Movie },
                 OrderBy = new[] { (ItemSortBy.Random, SortOrder.Ascending) },
                 Limit = 4,
                 Recursive = true,
