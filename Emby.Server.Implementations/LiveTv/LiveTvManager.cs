@@ -33,8 +33,6 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
-using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
 
 namespace Emby.Server.Implementations.LiveTv
 {

@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using Emby.Naming.Common;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;

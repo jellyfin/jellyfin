@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -188,8 +189,8 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.TV
                     // Normalize this
                     var type = TmdbUtils.MapCrewToPersonType(person);
 
-                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparer.OrdinalIgnoreCase)
-                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                    if (!TmdbUtils.WantedCrewTypes.Contains(type, StringComparison.OrdinalIgnoreCase)
+                        && !TmdbUtils.WantedCrewTypes.Contains(person.Job ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
