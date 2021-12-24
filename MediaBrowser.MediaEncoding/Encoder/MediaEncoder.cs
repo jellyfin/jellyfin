@@ -91,6 +91,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         /// <inheritdoc />
         public string EncoderPath => _ffmpegPath;
+        public Version EncoderVersion => _ffmpegVersion;
+        public bool IsVaapiDeviceAmd => _isVaapiDeviceAmd;
+        public bool IsVaapiDeviceInteliHD => _isVaapiDeviceInteliHD;
+        public bool IsVaapiDeviceInteli965 => _isVaapiDeviceInteli965;
 
         /// <summary>
         /// Run at startup or if the user removes a Custom path from transcode page.
@@ -138,7 +142,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 SetAvailableHwaccels(validator.GetHwaccels());
                 SetMediaEncoderVersion(validator);
 
-                options = _configurationManager.GetEncodingOptions();
                 _threads = EncodingHelper.GetNumberOfThreads(null, options, null);
 
                 // Check the Vaapi device vendor
@@ -327,26 +330,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             return false;
-        }
-
-        public bool IsVaapiDeviceAmd()
-        {
-            return _isVaapiDeviceAmd;
-        }
-
-        public bool IsVaapiDeviceInteliHD()
-        {
-            return _isVaapiDeviceInteliHD;
-        }
-
-        public bool IsVaapiDeviceInteli965()
-        {
-            return _isVaapiDeviceInteli965;
-        }
-
-        public Version GetMediaEncoderVersion()
-        {
-            return _ffmpegVersion;
         }
 
         public bool CanEncodeToAudioCodec(string codec)

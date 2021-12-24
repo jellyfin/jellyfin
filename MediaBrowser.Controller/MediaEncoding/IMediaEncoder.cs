@@ -26,6 +26,30 @@ namespace MediaBrowser.Controller.MediaEncoding
         string EncoderPath { get; }
 
         /// <summary>
+        /// Gets the version of encoder.
+        /// </summary>
+        /// <returns>The version of encoder.</returns>
+        Version EncoderVersion { get; }
+
+        /// <summary>
+        /// Whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceAmd { get; }
+
+        /// <summary>
+        /// Whether the configured Vaapi device is from Intel(iHD driver).
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device is an Intel(iHD driver) GPU, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceInteliHD { get; }
+
+        /// <summary>
+        /// Whether the configured Vaapi device is from Intel(legacy i965 driver).
+        /// </summary>
+        /// <value><c>true</c> if the Vaapi device is an Intel(legacy i965 driver) GPU, <c>false</c> otherwise.</value>
+        bool IsVaapiDeviceInteli965 { get; }
+
+        /// <summary>
         /// Whether given encoder codec is supported.
         /// </summary>
         /// <param name="encoder">The encoder.</param>
@@ -59,30 +83,6 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="option">The option.</param>
         /// <returns><c>true</c> if the filter is supported, <c>false</c> otherwise.</returns>
         bool SupportsFilterWithOption(FilterOptionType option);
-
-        /// <summary>
-        /// Whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
-        /// </summary>
-        /// <returns><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</returns>
-        bool IsVaapiDeviceAmd();
-
-        /// <summary>
-        /// Whether the configured Vaapi device is from Intel(iHD driver).
-        /// </summary>
-        /// <returns><c>true</c> if the Vaapi device is an Intel(iHD driver) GPU, <c>false</c> otherwise.</returns>
-        bool IsVaapiDeviceInteliHD();
-
-        /// <summary>
-        /// Whether the configured Vaapi device is from Intel(legacy i965 driver).
-        /// </summary>
-        /// <returns><c>true</c> if the Vaapi device is an Intel(legacy i965 driver) GPU, <c>false</c> otherwise.</returns>
-        bool IsVaapiDeviceInteli965();
-
-        /// <summary>
-        /// Get the version of media encoder.
-        /// </summary>
-        /// <returns>The version of media encoder.</returns>
-        Version GetMediaEncoderVersion();
 
         /// <summary>
         /// Extracts the audio image.

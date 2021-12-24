@@ -351,18 +351,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 return false;
             }
 
-            string output;
             try
             {
-                output = GetProcessOutput(_encoderPath, "-v verbose -hide_banner -init_hw_device vaapi=va:" + renderNodePath, true);
+                var output = GetProcessOutput(_encoderPath, "-v verbose -hide_banner -init_hw_device vaapi=va:" + renderNodePath, true);
+                return output.Contains(driverName, StringComparison.Ordinal);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error detecting the given vaapi render node path");
                 return false;
             }
-
-            return output.Contains(driverName, StringComparison.Ordinal);
         }
 
         private IEnumerable<string> GetHwaccelTypes()

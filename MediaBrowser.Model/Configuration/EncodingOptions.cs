@@ -18,7 +18,7 @@ namespace MediaBrowser.Model.Configuration
             VaapiDevice = "/dev/dri/renderD128";
             EnableTonemapping = false;
             EnableVppTonemapping = false;
-            TonemappingAlgorithm = "hable";
+            TonemappingAlgorithm = "bt2390";
             TonemappingRange = "auto";
             TonemappingDesat = 0;
             TonemappingThreshold = 0.8;
