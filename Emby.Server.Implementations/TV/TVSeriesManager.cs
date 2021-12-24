@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -31,9 +33,9 @@ namespace Emby.Server.Implementations.TV
             _configurationManager = configurationManager;
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery query, DtoOptions options)
         {
-            var user = _userManager.GetUserById(request.UserId);
+            var user = _userManager.GetUserById(query.UserId);
 
             if (user == null)
             {
@@ -41,11 +43,9 @@ namespace Emby.Server.Implementations.TV
             }
 
             string presentationUniqueKey = null;
-            if (!string.IsNullOrEmpty(request.SeriesId))
+            if (!string.IsNullOrEmpty(query.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
-
-                if (series != null)
+                if (_libraryManager.GetItemById(query.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                 }
@@ -53,14 +53,14 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(query, user, new[] { presentationUniqueKey }, options), query);
             }
 
             BaseItem[] parents;
 
-            if (request.ParentId.HasValue)
+            if (query.ParentId.HasValue)
             {
-                var parent = _libraryManager.GetItemById(request.ParentId.Value);
+                var parent = _libraryManager.GetItemById(query.ParentId.Value);
 
                 if (parent != null)
                 {
@@ -79,10 +79,10 @@ namespace Emby.Server.Implementations.TV
                    .ToArray();
             }
 
-            return GetNextUp(request, parents, dtoOptions);
+            return GetNextUp(query, parents, options);
         }
 
-        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions dtoOptions)
+        public QueryResult<BaseItem> GetNextUp(NextUpQuery request, BaseItem[] parentsFolders, DtoOptions options)
         {
             var user = _userManager.GetUserById(request.UserId);
 
@@ -95,9 +95,7 @@ namespace Emby.Server.Implementations.TV
             int? limit = null;
             if (!string.IsNullOrEmpty(request.SeriesId))
             {
-                var series = _libraryManager.GetItemById(request.SeriesId) as Series;
-
-                if (series != null)
+                if (_libraryManager.GetItemById(request.SeriesId) is Series series)
                 {
                     presentationUniqueKey = GetUniqueSeriesKey(series);
                     limit = 1;
@@ -106,7 +104,7 @@ namespace Emby.Server.Implementations.TV
 
             if (!string.IsNullOrEmpty(presentationUniqueKey))
             {
-                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, dtoOptions), request);
+                return GetResult(GetNextUpEpisodes(request, user, new[] { presentationUniqueKey }, options), request);
             }
 
             if (limit.HasValue)
@@ -118,7 +116,7 @@ namespace Emby.Server.Implementations.TV
                 .GetItemList(
                     new InternalItemsQuery(user)
                     {
-                        IncludeItemTypes = new[] { nameof(Episode) },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
                         OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
@@ -130,7 +128,7 @@ namespace Emby.Server.Implementations.TV
                 .Select(GetUniqueSeriesKey);
 
             // Avoid implicitly captured closure
-            var episodes = GetNextUpEpisodes(request, user, items, dtoOptions);
+            var episodes = GetNextUpEpisodes(request, user, items, options);
 
             return GetResult(episodes, request);
         }
@@ -156,7 +154,7 @@ namespace Emby.Server.Implementations.TV
                         return i.Item1 != DateTime.MinValue;
                     }
 
-                    if (alwaysEnableFirstEpisode || i.Item1 != DateTime.MinValue)
+                    if (alwaysEnableFirstEpisode || (i.Item1 != DateTime.MinValue && i.Item1.Date >= request.NextUpDateCutoff))
                     {
                         anyFound = true;
                         return true;
@@ -193,7 +191,7 @@ namespace Emby.Server.Implementations.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { nameof(Episode) },
+                IncludeItemTypes = new[] { BaseItemKind.Episode },
                 OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
@@ -211,7 +209,7 @@ namespace Emby.Server.Implementations.TV
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
-                    IncludeItemTypes = new[] { nameof(Episode) },
+                    IncludeItemTypes = new[] { BaseItemKind.Episode },
                     OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,
@@ -228,7 +226,7 @@ namespace Emby.Server.Implementations.TV
                         AncestorWithPresentationUniqueKey = null,
                         SeriesPresentationUniqueKey = seriesKey,
                         ParentIndexNumber = 0,
-                        IncludeItemTypes = new[] { nameof(Episode) },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
                         IsPlayed = false,
                         IsVirtualItem = false,
                         DtoOptions = dtoOptions

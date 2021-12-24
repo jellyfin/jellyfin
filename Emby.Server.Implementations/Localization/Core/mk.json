@@ -5,7 +5,7 @@
     "PluginUninstalledWithName": "{0} беше успешно деинсталирано",
     "PluginInstalledWithName": "{0} беше успешно инсталирано",
     "Plugin": "Додатоци",
-    "Playlists": "Листи",
+    "Playlists": "Плејлисти",
     "Photos": "Слики",
     "NotificationOptionVideoPlaybackStopped": "Видео стопирано",
     "NotificationOptionVideoPlayback": "Видео пуштено",
@@ -50,7 +50,7 @@
     "HeaderFavoriteEpisodes": "Омилени Епизоди",
     "HeaderFavoriteArtists": "Омилени Изведувачи",
     "HeaderFavoriteAlbums": "Омилени Албуми",
-    "HeaderContinueWatching": "Продолжи со гледање",
+    "HeaderContinueWatching": "Продолжи со Гледање",
     "HeaderAlbumArtists": "Изведувачи од Албуми",
     "Genres": "Жанрови",
     "Folders": "Папки",
@@ -97,5 +97,8 @@
     "TasksChannelsCategory": "Интернет Канали",
     "TasksApplicationCategory": "Апликација",
     "TasksLibraryCategory": "Библиотека",
-    "TasksMaintenanceCategory": "Одржување"
+    "TasksMaintenanceCategory": "Одржување",
+    "Undefined": "Недефинирано",
+    "Forced": "Принудно",
+    "Default": "Зададено"
 }

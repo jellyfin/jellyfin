@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -14,8 +15,6 @@ namespace Rssdp.Infrastructure
     /// </summary>
     public class SsdpDevicePublisher : DisposableManagedObjectBase, ISsdpDevicePublisher
     {
-        private readonly INetworkManager _networkManager;
-
         private ISsdpCommunicationsServer _CommsServer;
         private string _OSName;
         private string _OSVersion;
@@ -37,17 +36,15 @@ namespace Rssdp.Infrastructure
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public SsdpDevicePublisher(ISsdpCommunicationsServer communicationsServer, INetworkManager networkManager,
-            string osName, string osVersion, bool sendOnlyMatchedHost)
+        public SsdpDevicePublisher(
+            ISsdpCommunicationsServer communicationsServer,
+            string osName,
+            string osVersion,
+            bool sendOnlyMatchedHost)
         {
             if (communicationsServer == null)
             {
                 throw new ArgumentNullException(nameof(communicationsServer));
-            }
-
-            if (networkManager == null)
-            {
-                throw new ArgumentNullException(nameof(networkManager));
             }
 
             if (osName == null)
@@ -76,7 +73,6 @@ namespace Rssdp.Infrastructure
             _RecentSearchRequests = new Dictionary<string, SearchRequest>(StringComparer.OrdinalIgnoreCase);
             _Random = new Random();
 
-            _networkManager = networkManager;
             _CommsServer = communicationsServer;
             _CommsServer.RequestReceived += CommsServer_RequestReceived;
             _OSName = osName;
@@ -233,7 +229,7 @@ namespace Rssdp.Infrastructure
         {
             if (String.IsNullOrEmpty(searchTarget))
             {
-                WriteTrace(String.Format("Invalid search request received From {0}, Target is null/empty.", remoteEndPoint.ToString()));
+                WriteTrace(String.Format(CultureInfo.InvariantCulture, "Invalid search request received From {0}, Target is null/empty.", remoteEndPoint.ToString()));
                 return;
             }
 
@@ -340,7 +336,7 @@ namespace Rssdp.Infrastructure
 
         private string GetUsn(string udn, string fullDeviceType)
         {
-            return String.Format("{0}::{1}", udn, fullDeviceType);
+            return String.Format(CultureInfo.InvariantCulture, "{0}::{1}", udn, fullDeviceType);
         }
 
         private async void SendSearchResponse(
@@ -363,7 +359,7 @@ namespace Rssdp.Infrastructure
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
             values["ST"] = searchTarget;
-            values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
+            values["SERVER"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
             values["USN"] = uniqueServiceName;
             values["LOCATION"] = rootDevice.Location.ToString();
 
@@ -497,7 +493,7 @@ namespace Rssdp.Infrastructure
             values["DATE"] = DateTime.UtcNow.ToString("r");
             values["CACHE-CONTROL"] = "max-age = " + rootDevice.CacheLifetime.TotalSeconds;
             values["LOCATION"] = rootDevice.Location.ToString();
-            values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
+            values["SERVER"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
             values["NTS"] = "ssdp:alive";
             values["NT"] = notificationType;
             values["USN"] = uniqueServiceName;
@@ -522,7 +518,7 @@ namespace Rssdp.Infrastructure
             }
 
             tasks.Add(SendByeByeNotification(device, device.Udn, device.Udn, cancellationToken));
-            tasks.Add(SendByeByeNotification(device, String.Format("urn:{0}", device.FullDeviceType), GetUsn(device.Udn, device.FullDeviceType), cancellationToken));
+            tasks.Add(SendByeByeNotification(device, String.Format(CultureInfo.InvariantCulture, "urn:{0}", device.FullDeviceType), GetUsn(device.Udn, device.FullDeviceType), cancellationToken));
 
             foreach (var childDevice in device.Devices)
             {
@@ -542,7 +538,7 @@ namespace Rssdp.Infrastructure
             // If needed later for non-server devices, these headers will need to be dynamic
             values["HOST"] = "239.255.255.250:1900";
             values["DATE"] = DateTime.UtcNow.ToString("r");
-            values["SERVER"] = string.Format("{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
+            values["SERVER"] = string.Format(CultureInfo.InvariantCulture, "{0}/{1} UPnP/1.0 RSSDP/{2}", _OSName, _OSVersion, ServerVersion);
             values["NTS"] = "ssdp:byebye";
             values["NT"] = notificationType;
             values["USN"] = uniqueServiceName;
@@ -550,7 +546,7 @@ namespace Rssdp.Infrastructure
             var message = BuildMessage(header, values);
 
             var sendCount = IsDisposed ? 1 : 3;
-            WriteTrace(String.Format("Sent byebye notification"), device);
+            WriteTrace(String.Format(CultureInfo.InvariantCulture, "Sent byebye notification"), device);
             return _CommsServer.SendMulticastMessage(message, sendCount, _sendOnlyMatchedHost ? device.ToRootDevice().Address : null, cancellationToken);
         }
 

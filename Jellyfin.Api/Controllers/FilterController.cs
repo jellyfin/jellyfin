@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Jellyfin.Api.Constants;
-using Jellyfin.Api.Helpers;
 using Jellyfin.Api.ModelBinders;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Dto;
@@ -71,7 +70,7 @@ namespace Jellyfin.Api.Controllers
             {
                 User = user,
                 MediaTypes = mediaTypes,
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                IncludeItemTypes = includeItemTypes,
                 Recursive = true,
                 EnableTotalRecordCount = false,
                 DtoOptions = new DtoOptions
@@ -166,7 +165,7 @@ namespace Jellyfin.Api.Controllers
             var filters = new QueryFilters();
             var genreQuery = new InternalItemsQuery(user)
             {
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                IncludeItemTypes = includeItemTypes,
                 DtoOptions = new DtoOptions
                 {
                     Fields = Array.Empty<ItemFields>(),

@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -12,7 +14,7 @@ namespace MediaBrowser.Controller.Providers
         public Guid ItemId { get; set; }
 
         /// <summary>
-        /// Will only search within the given provider when set.
+        /// Gets or sets the provider name to search within if set.
         /// </summary>
         public string SearchProviderName { get; set; }
 

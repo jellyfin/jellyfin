@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MediaBrowser.Common
 {
@@ -10,7 +11,7 @@ namespace MediaBrowser.Common
     /// </summary>
     /// <param name="type">Type to create.</param>
     /// <returns>New instance of type <param>type</param>.</returns>
-    public delegate object CreationDelegateFactory(Type type);
+    public delegate object? CreationDelegateFactory(Type type);
 
     /// <summary>
     /// An interface to be implemented by the applications hosting a kernel.
@@ -20,7 +21,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Occurs when [has pending restart changed].
         /// </summary>
-        event EventHandler HasPendingRestartChanged;
+        event EventHandler? HasPendingRestartChanged;
 
         /// <summary>
         /// Gets the name.
@@ -61,7 +62,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Gets or sets the service provider.
         /// </summary>
-        IServiceProvider ServiceProvider { get; set; }
+        IServiceProvider? ServiceProvider { get; set; }
 
         /// <summary>
         /// Gets the application version.
@@ -137,13 +138,7 @@ namespace MediaBrowser.Common
         /// <summary>
         /// Initializes this instance.
         /// </summary>
-        void Init();
-
-        /// <summary>
-        /// Creates the instance.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>System.Object.</returns>
-        object CreateInstance(Type type);
+        /// <param name="serviceCollection">Instance of the <see cref="IServiceCollection"/> interface.</param>
+        void Init(IServiceCollection serviceCollection);
     }
 }

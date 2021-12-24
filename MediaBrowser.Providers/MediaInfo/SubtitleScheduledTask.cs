@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -5,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Data.Enums;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
@@ -64,7 +67,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             var options = GetOptions();
 
-            var types = new[] { "Episode", "Movie" };
+            var types = new[] { BaseItemKind.Episode, BaseItemKind.Movie };
 
             var dict = new Dictionary<Guid, BaseItem>();
 
@@ -75,21 +78,18 @@ namespace MediaBrowser.Providers.MediaInfo
                 string[] subtitleDownloadLanguages;
                 bool skipIfEmbeddedSubtitlesPresent;
                 bool skipIfAudioTrackMatches;
-                bool requirePerfectMatch;
 
                 if (libraryOptions.SubtitleDownloadLanguages == null)
                 {
                     subtitleDownloadLanguages = options.DownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = options.SkipIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = options.SkipIfAudioTrackMatches;
-                    requirePerfectMatch = options.RequirePerfectMatch;
                 }
                 else
                 {
                     subtitleDownloadLanguages = libraryOptions.SubtitleDownloadLanguages;
                     skipIfEmbeddedSubtitlesPresent = libraryOptions.SkipSubtitlesIfEmbeddedSubtitlesPresent;
                     skipIfAudioTrackMatches = libraryOptions.SkipSubtitlesIfAudioTrackMatches;
-                    requirePerfectMatch = libraryOptions.RequirePerfectSubtitleMatch;
                 }
 
                 foreach (var lang in subtitleDownloadLanguages)
@@ -197,6 +197,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     subtitleDownloadLanguages,
                     libraryOptions.DisabledSubtitleFetchers,
                     libraryOptions.SubtitleFetcherOrder,
+                    true,
                     cancellationToken).ConfigureAwait(false);
 
             // Rescan

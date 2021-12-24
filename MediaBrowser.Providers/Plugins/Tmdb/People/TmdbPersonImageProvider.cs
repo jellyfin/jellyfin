@@ -1,6 +1,5 @@
 #pragma warning disable CS1591
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,7 +10,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.Plugins.Tmdb.People
@@ -55,30 +53,19 @@ namespace MediaBrowser.Providers.Plugins.Tmdb.People
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+            var language = item.GetPreferredMetadataLanguage();
+            var personResult = await _tmdbClientManager.GetPersonAsync(int.Parse(personTmdbId, CultureInfo.InvariantCulture), language, cancellationToken).ConfigureAwait(false);
             if (personResult?.Images?.Profiles == null)
             {
                 return Enumerable.Empty<RemoteImageInfo>();
             }
 
-            var remoteImages = new RemoteImageInfo[personResult.Images.Profiles.Count];
-            var language = item.GetPreferredMetadataLanguage();
+            var profiles = personResult.Images.Profiles;
+            var remoteImages = new List<RemoteImageInfo>(profiles.Count);
 
-            for (var i = 0; i < personResult.Images.Profiles.Count; i++)
-            {
-                var image = personResult.Images.Profiles[i];
-                remoteImages[i] = new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    Width = image.Width,
-                    Height = image.Height,
-                    Language = TmdbUtils.AdjustImageLanguage(image.Iso_639_1, language),
-                    Url = _tmdbClientManager.GetProfileUrl(image.FilePath)
-                };
-            }
+            _tmdbClientManager.ConvertProfilesToRemoteImageInfo(profiles, language, remoteImages);
 
-            return remoteImages.OrderByLanguageDescending(language);
+            return remoteImages;
         }
 
         public Task<HttpResponseMessage> GetImageResponse(string url, CancellationToken cancellationToken)

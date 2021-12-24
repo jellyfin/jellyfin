@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -38,8 +40,6 @@ namespace Emby.Dlna.Didl
         private const string NsDc = "http://purl.org/dc/elements/1.1/";
         private const string NsUpnp = "urn:schemas-upnp-org:metadata-1-0/upnp/";
         private const string NsDlna = "urn:schemas-dlna-org:metadata-1-0/";
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         private readonly DeviceProfile _profile;
         private readonly IImageProcessor _imageProcessor;
@@ -315,7 +315,7 @@ namespace Emby.Dlna.Didl
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
-                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
+                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", CultureInfo.InvariantCulture));
             }
 
             if (filter.Contains("res@size"))
@@ -326,7 +326,7 @@ namespace Emby.Dlna.Didl
 
                     if (size.HasValue)
                     {
-                        writer.WriteAttributeString("size", size.Value.ToString(_usCulture));
+                        writer.WriteAttributeString("size", size.Value.ToString(CultureInfo.InvariantCulture));
                     }
                 }
             }
@@ -340,7 +340,7 @@ namespace Emby.Dlna.Didl
 
             if (targetChannels.HasValue)
             {
-                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
+                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (filter.Contains("res@resolution"))
@@ -359,12 +359,12 @@ namespace Emby.Dlna.Didl
 
             if (targetSampleRate.HasValue)
             {
-                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (totalBitrate.HasValue)
             {
-                writer.WriteAttributeString("bitrate", totalBitrate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("bitrate", totalBitrate.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             var mediaProfile = _profile.GetVideoMediaProfile(
@@ -550,7 +550,7 @@ namespace Emby.Dlna.Didl
 
             if (mediaSource.RunTimeTicks.HasValue)
             {
-                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", _usCulture));
+                writer.WriteAttributeString("duration", TimeSpan.FromTicks(mediaSource.RunTimeTicks.Value).ToString("c", CultureInfo.InvariantCulture));
             }
 
             if (filter.Contains("res@size"))
@@ -561,7 +561,7 @@ namespace Emby.Dlna.Didl
 
                     if (size.HasValue)
                     {
-                        writer.WriteAttributeString("size", size.Value.ToString(_usCulture));
+                        writer.WriteAttributeString("size", size.Value.ToString(CultureInfo.InvariantCulture));
                     }
                 }
             }
@@ -573,17 +573,17 @@ namespace Emby.Dlna.Didl
 
             if (targetChannels.HasValue)
             {
-                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(_usCulture));
+                writer.WriteAttributeString("nrAudioChannels", targetChannels.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (targetSampleRate.HasValue)
             {
-                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("sampleFrequency", targetSampleRate.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             if (targetAudioBitrate.HasValue)
             {
-                writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(_usCulture));
+                writer.WriteAttributeString("bitrate", targetAudioBitrate.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             var mediaProfile = _profile.GetAudioMediaProfile(
@@ -637,7 +637,7 @@ namespace Emby.Dlna.Didl
 
             writer.WriteAttributeString("restricted", "1");
             writer.WriteAttributeString("searchable", "1");
-            writer.WriteAttributeString("childCount", childCount.ToString(_usCulture));
+            writer.WriteAttributeString("childCount", childCount.ToString(CultureInfo.InvariantCulture));
 
             var clientId = GetClientId(folder, stubType);
 
@@ -729,7 +729,7 @@ namespace Emby.Dlna.Didl
             {
                 if (item.PremiereDate.HasValue)
                 {
-                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("o", CultureInfo.InvariantCulture), NsDc);
+                    AddValue(writer, "dc", "date", item.PremiereDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NsDc);
                 }
             }
 
@@ -746,7 +746,7 @@ namespace Emby.Dlna.Didl
                 AddValue(writer, "upnp", "publisher", studio, NsUpnp);
             }
 
-            if (!(item is Folder))
+            if (item is not Folder)
             {
                 if (filter.Contains("dc:description"))
                 {
@@ -929,11 +929,11 @@ namespace Emby.Dlna.Didl
 
             if (item.IndexNumber.HasValue)
             {
-                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(_usCulture), NsUpnp);
+                AddValue(writer, "upnp", "originalTrackNumber", item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture), NsUpnp);
 
                 if (item is Episode)
                 {
-                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(_usCulture), NsUpnp);
+                    AddValue(writer, "upnp", "episodeNumber", item.IndexNumber.Value.ToString(CultureInfo.InvariantCulture), NsUpnp);
                 }
             }
         }
@@ -976,15 +976,28 @@ namespace Emby.Dlna.Didl
                 return;
             }
 
-            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, "jpg");
+            // TODO: Remove these default values
+            var albumArtUrlInfo = GetImageUrl(
+                imageInfo,
+                _profile.MaxAlbumArtWidth ?? 10000,
+                _profile.MaxAlbumArtHeight ?? 10000,
+                "jpg");
 
             writer.WriteStartElement("upnp", "albumArtURI", NsUpnp);
-            writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
-            writer.WriteString(albumartUrlInfo.url);
+            if (!string.IsNullOrEmpty(_profile.AlbumArtPn))
+            {
+                writer.WriteAttributeString("dlna", "profileID", NsDlna, _profile.AlbumArtPn);
+            }
+
+            writer.WriteString(albumArtUrlInfo.url);
             writer.WriteFullEndElement();
 
-            // TOOD: Remove these default values
-            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, "jpg");
+            // TODO: Remove these default values
+            var iconUrlInfo = GetImageUrl(
+                imageInfo,
+                _profile.MaxIconWidth ?? 48,
+                _profile.MaxIconHeight ?? 48,
+                "jpg");
             writer.WriteElementString("upnp", "icon", NsUpnp, iconUrlInfo.url);
 
             if (!_profile.EnableAlbumArtInDidl)
@@ -1207,8 +1220,7 @@ namespace Emby.Dlna.Didl
 
             if (width.HasValue && height.HasValue)
             {
-                var newSize = DrawingUtils.Resize(
-                        new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
+                var newSize = DrawingUtils.Resize(new ImageDimensions(width.Value, height.Value), 0, 0, maxWidth, maxHeight);
 
                 width = newSize.Width;
                 height = newSize.Height;

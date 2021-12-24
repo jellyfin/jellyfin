@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Emby.Naming.AudioBook;
 using Emby.Naming.Common;
 using MediaBrowser.Model.IO;
@@ -12,37 +11,28 @@ namespace Emby.Naming.Video
     /// <summary>
     /// Resolve <see cref="FileStack"/> from list of paths.
     /// </summary>
-    public class StackResolver
+    public static class StackResolver
     {
-        private readonly NamingOptions _options;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StackResolver"/> class.
-        /// </summary>
-        /// <param name="options"><see cref="NamingOptions"/> object containing VideoFileStackingRegexes and passes options to <see cref="VideoResolver"/>.</param>
-        public StackResolver(NamingOptions options)
-        {
-            _options = options;
-        }
-
         /// <summary>
         /// Resolves only directories from paths.
         /// </summary>
         /// <param name="files">List of paths.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
-        public IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files)
+        public static IEnumerable<FileStack> ResolveDirectories(IEnumerable<string> files, NamingOptions namingOptions)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = true }), namingOptions);
         }
 
         /// <summary>
         /// Resolves only files from paths.
         /// </summary>
         /// <param name="files">List of paths.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of files.</returns>
-        public IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files)
+        public static IEnumerable<FileStack> ResolveFiles(IEnumerable<string> files, NamingOptions namingOptions)
         {
-            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }));
+            return Resolve(files.Select(i => new FileSystemMetadata { FullName = i, IsDirectory = false }), namingOptions);
         }
 
         /// <summary>
@@ -50,7 +40,7 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="files">List of paths.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of directories.</returns>
-        public IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
+        public static IEnumerable<FileStack> ResolveAudioBooks(IEnumerable<AudioBookFileInfo> files)
         {
             var groupedDirectoryFiles = files.GroupBy(file => Path.GetDirectoryName(file.Path));
 
@@ -60,19 +50,13 @@ namespace Emby.Naming.Video
                 {
                     foreach (var file in directory)
                     {
-                        var stack = new FileStack { Name = Path.GetFileNameWithoutExtension(file.Path), IsDirectoryStack = false };
-                        stack.Files.Add(file.Path);
+                        var stack = new FileStack(Path.GetFileNameWithoutExtension(file.Path), false, new[] { file.Path });
                         yield return stack;
                     }
                 }
                 else
                 {
-                    var stack = new FileStack { Name = Path.GetFileName(directory.Key), IsDirectoryStack = false };
-                    foreach (var file in directory)
-                    {
-                        stack.Files.Add(file.Path);
-                    }
-
+                    var stack = new FileStack(Path.GetFileName(directory.Key), false, directory.Select(f => f.Path).ToArray());
                     yield return stack;
                 }
             }
@@ -82,160 +66,91 @@ namespace Emby.Naming.Video
         /// Resolves videos from paths.
         /// </summary>
         /// <param name="files">List of paths.</param>
+        /// <param name="namingOptions">The naming options.</param>
         /// <returns>Enumerable <see cref="FileStack"/> of videos.</returns>
-        public IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files)
+        public static IEnumerable<FileStack> Resolve(IEnumerable<FileSystemMetadata> files, NamingOptions namingOptions)
         {
-            var resolver = new VideoResolver(_options);
+            var potentialFiles = files
+                .Where(i => i.IsDirectory || VideoResolver.IsVideoFile(i.FullName, namingOptions) || VideoResolver.IsStubFile(i.FullName, namingOptions))
+                .OrderBy(i => i.FullName);
 
-            var list = files
-                .Where(i => i.IsDirectory || resolver.IsVideoFile(i.FullName) || resolver.IsStubFile(i.FullName))
-                .OrderBy(i => i.FullName)
-                .ToList();
-
-            var expressions = _options.VideoFileStackingRegexes;
-
-            for (var i = 0; i < list.Count; i++)
+            var potentialStacks = new Dictionary<string, StackMetadata>();
+            foreach (var file in potentialFiles)
             {
-                var offset = 0;
-
-                var file1 = list[i];
-
-                var expressionIndex = 0;
-                while (expressionIndex < expressions.Length)
+                var name = file.Name;
+                if (string.IsNullOrEmpty(name))
                 {
-                    var exp = expressions[expressionIndex];
-                    var stack = new FileStack();
+                    name = Path.GetFileName(file.FullName);
+                }
 
-                    // (Title)(Volume)(Ignore)(Extension)
-                    var match1 = FindMatch(file1, exp, offset);
-
-                    if (match1.Success)
+                for (var i = 0; i < namingOptions.VideoFileStackingRules.Length; i++)
+                {
+                    var rule = namingOptions.VideoFileStackingRules[i];
+                    if (!rule.Match(name, out var stackParsingResult))
                     {
-                        var title1 = match1.Groups["title"].Value;
-                        var volume1 = match1.Groups["volume"].Value;
-                        var ignore1 = match1.Groups["ignore"].Value;
-                        var extension1 = match1.Groups["extension"].Value;
+                        continue;
+                    }
 
-                        var j = i + 1;
-                        while (j < list.Count)
+                    var stackName = stackParsingResult.Value.StackName;
+                    var partNumber = stackParsingResult.Value.PartNumber;
+                    var partType = stackParsingResult.Value.PartType;
+
+                    if (!potentialStacks.TryGetValue(stackName, out var stackResult))
+                    {
+                        stackResult = new StackMetadata(file.IsDirectory, rule.IsNumerical, partType);
+                        potentialStacks[stackName] = stackResult;
+                    }
+
+                    if (stackResult.Parts.Count > 0)
+                    {
+                        if (stackResult.IsDirectory != file.IsDirectory
+                            || !string.Equals(partType, stackResult.PartType, StringComparison.OrdinalIgnoreCase)
+                            || stackResult.ContainsPart(partNumber))
                         {
-                            var file2 = list[j];
-
-                            if (file1.IsDirectory != file2.IsDirectory)
-                            {
-                                j++;
-                                continue;
-                            }
-
-                            // (Title)(Volume)(Ignore)(Extension)
-                            var match2 = FindMatch(file2, exp, offset);
-
-                            if (match2.Success)
-                            {
-                                var title2 = match2.Groups[1].Value;
-                                var volume2 = match2.Groups[2].Value;
-                                var ignore2 = match2.Groups[3].Value;
-                                var extension2 = match2.Groups[4].Value;
-
-                                if (string.Equals(title1, title2, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    if (!string.Equals(volume1, volume2, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        if (string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase)
-                                            && string.Equals(extension1, extension2, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            if (stack.Files.Count == 0)
-                                            {
-                                                stack.Name = title1 + ignore1;
-                                                stack.IsDirectoryStack = file1.IsDirectory;
-                                                stack.Files.Add(file1.FullName);
-                                            }
-
-                                            stack.Files.Add(file2.FullName);
-                                        }
-                                        else
-                                        {
-                                            // Sequel
-                                            offset = 0;
-                                            expressionIndex++;
-                                            break;
-                                        }
-                                    }
-                                    else if (!string.Equals(ignore1, ignore2, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        // False positive, try again with offset
-                                        offset = match1.Groups[3].Index;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // Extension mismatch
-                                        offset = 0;
-                                        expressionIndex++;
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    // Title mismatch
-                                    offset = 0;
-                                    expressionIndex++;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                // No match 2, next expression
-                                offset = 0;
-                                expressionIndex++;
-                                break;
-                            }
-
-                            j++;
+                            continue;
                         }
 
-                        if (j == list.Count)
+                        if (rule.IsNumerical != stackResult.IsNumerical)
                         {
-                            expressionIndex = expressions.Length;
+                            break;
                         }
                     }
-                    else
-                    {
-                        // No match 1
-                        offset = 0;
-                        expressionIndex++;
-                    }
 
-                    if (stack.Files.Count > 1)
-                    {
-                        yield return stack;
-                        i += stack.Files.Count - 1;
-                        break;
-                    }
+                    stackResult.Parts.Add(partNumber, file);
+                    break;
                 }
             }
-        }
 
-        private static string GetRegexInput(FileSystemMetadata file)
-        {
-            // For directories, dummy up an extension otherwise the expressions will fail
-            var input = !file.IsDirectory
-                ? file.FullName
-                : file.FullName + ".mkv";
-
-            return Path.GetFileName(input);
-        }
-
-        private static Match FindMatch(FileSystemMetadata input, Regex regex, int offset)
-        {
-            var regexInput = GetRegexInput(input);
-
-            if (offset < 0 || offset >= regexInput.Length)
+            foreach (var (fileName, stack) in potentialStacks)
             {
-                return Match.Empty;
+                if (stack.Parts.Count < 2)
+                {
+                    continue;
+                }
+
+                yield return new FileStack(fileName, stack.IsDirectory, stack.Parts.Select(kv => kv.Value.FullName).ToArray());
+            }
+        }
+
+        private class StackMetadata
+        {
+            public StackMetadata(bool isDirectory, bool isNumerical, string partType)
+            {
+                Parts = new Dictionary<string, FileSystemMetadata>(StringComparer.OrdinalIgnoreCase);
+                IsDirectory = isDirectory;
+                IsNumerical = isNumerical;
+                PartType = partType;
             }
 
-            return regex.Match(regexInput, offset);
+            public Dictionary<string, FileSystemMetadata> Parts { get; }
+
+            public bool IsDirectory { get; }
+
+            public bool IsNumerical { get; }
+
+            public string PartType { get; }
+
+            public bool ContainsPart(string partNumber) => Parts.ContainsKey(partNumber);
         }
     }
 }

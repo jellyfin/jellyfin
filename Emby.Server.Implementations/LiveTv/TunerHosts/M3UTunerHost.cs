@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -8,6 +10,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -27,6 +30,14 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 {
     public class M3UTunerHost : BaseTunerHost, ITunerHost, IConfigurableTunerHost
     {
+        private static readonly string[] _disallowedSharedStreamExtensions =
+        {
+            ".mkv",
+            ".mp4",
+            ".m3u8",
+            ".mpd"
+        };
+
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IServerApplicationHost _appHost;
         private readonly INetworkManager _networkManager;
@@ -61,12 +72,12 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return ChannelIdPrefix + info.Url.GetMD5().ToString("N", CultureInfo.InvariantCulture);
         }
 
-        protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
+        protected override async Task<List<ChannelInfo>> GetChannelsInternal(TunerHostInfo tuner, CancellationToken cancellationToken)
         {
-            var channelIdPrefix = GetFullChannelIdPrefix(info);
+            var channelIdPrefix = GetFullChannelIdPrefix(tuner);
 
-            return await new M3uParser(Logger, _httpClientFactory, _appHost)
-                .Parse(info, channelIdPrefix, cancellationToken)
+            return await new M3uParser(Logger, _httpClientFactory)
+                .Parse(tuner, channelIdPrefix, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -86,21 +97,13 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(list);
         }
 
-        private static readonly string[] _disallowedSharedStreamExtensions =
+        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo tunerHost, ChannelInfo channel, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
         {
-            ".mkv",
-            ".mp4",
-            ".m3u8",
-            ".mpd"
-        };
-
-        protected override async Task<ILiveStream> GetChannelStream(TunerHostInfo info, ChannelInfo channelInfo, string streamId, List<ILiveStream> currentLiveStreams, CancellationToken cancellationToken)
-        {
-            var tunerCount = info.TunerCount;
+            var tunerCount = tunerHost.TunerCount;
 
             if (tunerCount > 0)
             {
-                var tunerHostId = info.Id;
+                var tunerHostId = tunerHost.Id;
                 var liveStreams = currentLiveStreams.Where(i => string.Equals(i.TunerHostId, tunerHostId, StringComparison.OrdinalIgnoreCase));
 
                 if (liveStreams.Count() >= tunerCount)
@@ -109,7 +112,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
                 }
             }
 
-            var sources = await GetChannelStreamMediaSources(info, channelInfo, cancellationToken).ConfigureAwait(false);
+            var sources = await GetChannelStreamMediaSources(tunerHost, channel, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = sources[0];
 
@@ -117,25 +120,25 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
             {
                 var extension = Path.GetExtension(mediaSource.Path) ?? string.Empty;
 
-                if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!_disallowedSharedStreamExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
-                    return new SharedHttpStream(mediaSource, info, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
+                    return new SharedHttpStream(mediaSource, tunerHost, streamId, FileSystem, _httpClientFactory, Logger, Config, _appHost, _streamHelper);
                 }
             }
 
-            return new LiveStream(mediaSource, info, FileSystem, Logger, Config, _streamHelper);
+            return new LiveStream(mediaSource, tunerHost, FileSystem, Logger, Config, _streamHelper);
         }
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await new M3uParser(Logger, _httpClientFactory, _appHost).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
+            using (var stream = await new M3uParser(Logger, _httpClientFactory).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
             {
             }
         }
 
-        protected override Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, ChannelInfo channelInfo, CancellationToken cancellationToken)
+        protected override Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo tuner, ChannelInfo channel, CancellationToken cancellationToken)
         {
-            return Task.FromResult(new List<MediaSourceInfo> { CreateMediaSourceInfo(info, channelInfo) });
+            return Task.FromResult(new List<MediaSourceInfo> { CreateMediaSourceInfo(tuner, channel) });
         }
 
         protected virtual MediaSourceInfo CreateMediaSourceInfo(TunerHostInfo info, ChannelInfo channel)

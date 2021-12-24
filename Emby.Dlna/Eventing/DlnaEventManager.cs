@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -9,6 +11,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using Microsoft.Extensions.Logging;
@@ -22,8 +25,6 @@ namespace Emby.Dlna.Eventing
 
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
         public DlnaEventManager(ILogger logger, IHttpClientFactory httpClientFactory)
         {
@@ -49,11 +50,7 @@ namespace Emby.Dlna.Eventing
                 return GetEventSubscriptionResponse(subscriptionId, requestedTimeoutString, timeoutSeconds);
             }
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         public EventSubscriptionResponse CreateEventSubscription(string notificationType, string requestedTimeoutString, string callbackUrl)
@@ -84,9 +81,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                header = header.Split('-')[^1];
-
-                if (int.TryParse(header, NumberStyles.Integer, _usCulture, out var val))
+                if (int.TryParse(header.AsSpan().RightPart('-'), NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                 {
                     return val;
                 }
@@ -101,23 +96,15 @@ namespace Emby.Dlna.Eventing
 
             _subscriptions.TryRemove(subscriptionId, out _);
 
-            return new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            return new EventSubscriptionResponse(string.Empty, "text/plain");
         }
 
         private EventSubscriptionResponse GetEventSubscriptionResponse(string subscriptionId, string requestedTimeoutString, int timeoutSeconds)
         {
-            var response = new EventSubscriptionResponse
-            {
-                Content = string.Empty,
-                ContentType = "text/plain"
-            };
+            var response = new EventSubscriptionResponse(string.Empty, "text/plain");
 
             response.Headers["SID"] = subscriptionId;
-            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
+            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(CultureInfo.InvariantCulture)) : requestedTimeoutString;
 
             return response;
         }
@@ -174,7 +161,7 @@ namespace Emby.Dlna.Eventing
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
             options.Headers.TryAddWithoutValidation("SID", subscription.Id);
-            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(_usCulture));
+            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(CultureInfo.InvariantCulture));
 
             try
             {

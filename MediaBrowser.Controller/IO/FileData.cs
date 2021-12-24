@@ -24,7 +24,7 @@ namespace MediaBrowser.Controller.IO
         /// <param name="flattenFolderDepth">The flatten folder depth.</param>
         /// <param name="resolveShortcuts">if set to <c>true</c> [resolve shortcuts].</param>
         /// <returns>Dictionary{System.StringFileSystemInfo}.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="path" /> is <c>null</c> or empty.</exception>
         public static FileSystemMetadata[] GetFilteredFileSystemEntries(
             IDirectoryService directoryService,
             string path,
@@ -69,7 +69,7 @@ namespace MediaBrowser.Controller.IO
                         if (string.IsNullOrEmpty(newPath))
                         {
                             // invalid shortcut - could be old or target could just be unavailable
-                            logger.LogWarning("Encountered invalid shortcut: " + fullName);
+                            logger.LogWarning("Encountered invalid shortcut: {Path}", fullName);
                             continue;
                         }
 
@@ -83,7 +83,7 @@ namespace MediaBrowser.Controller.IO
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, "Error resolving shortcut from {path}", fullName);
+                        logger.LogError(ex, "Error resolving shortcut from {Path}", fullName);
                     }
                 }
                 else if (flattenFolderDepth > 0 && isDirectory)

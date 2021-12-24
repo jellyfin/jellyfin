@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -9,6 +11,15 @@ namespace MediaBrowser.Controller.Subtitles
 {
     public class SubtitleSearchRequest : IHasProviderIds
     {
+        public SubtitleSearchRequest()
+        {
+            SearchAllProviders = true;
+            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            DisabledSubtitleFetchers = Array.Empty<string>();
+            SubtitleFetcherOrder = Array.Empty<string>();
+        }
+
         public string Language { get; set; }
 
         public string TwoLetterISOLanguageName { get; set; }
@@ -41,13 +52,6 @@ namespace MediaBrowser.Controller.Subtitles
 
         public string[] SubtitleFetcherOrder { get; set; }
 
-        public SubtitleSearchRequest()
-        {
-            SearchAllProviders = true;
-            ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            DisabledSubtitleFetchers = Array.Empty<string>();
-            SubtitleFetcherOrder = Array.Empty<string>();
-        }
+        public bool IsAutomated { get; set; }
     }
 }

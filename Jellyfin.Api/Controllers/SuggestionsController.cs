@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Jellyfin.Api.Constants;
 using Jellyfin.Api.Extensions;
 using Jellyfin.Api.ModelBinders;
@@ -59,7 +58,7 @@ namespace Jellyfin.Api.Controllers
         public ActionResult<QueryResult<BaseItemDto>> GetSuggestions(
             [FromRoute, Required] Guid userId,
             [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] mediaType,
-            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] type,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] BaseItemKind[] type,
             [FromQuery] int? startIndex,
             [FromQuery] int? limit,
             [FromQuery] bool enableTotalRecordCount = false)

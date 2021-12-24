@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Threading;
 using MediaBrowser.Controller.Session;
@@ -16,18 +18,12 @@ namespace MediaBrowser.Controller.SyncPlay.GroupStates
     public class PlayingGroupState : AbstractGroupState
     {
         /// <summary>
-        /// The logger.
-        /// </summary>
-        private readonly ILogger<PlayingGroupState> _logger;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="PlayingGroupState"/> class.
         /// </summary>
         /// <param name="loggerFactory">Instance of the <see cref="ILoggerFactory"/> interface.</param>
         public PlayingGroupState(ILoggerFactory loggerFactory)
             : base(loggerFactory)
         {
-            _logger = LoggerFactory.CreateLogger<PlayingGroupState>();
         }
 
         /// <inheritdoc />

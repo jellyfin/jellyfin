@@ -18,6 +18,12 @@ namespace MediaBrowser.Model.Extensions
         /// <returns>The ordered remote image infos.</returns>
         public static IEnumerable<RemoteImageInfo> OrderByLanguageDescending(this IEnumerable<RemoteImageInfo> remoteImageInfos, string requestedLanguage)
         {
+            if (string.IsNullOrWhiteSpace(requestedLanguage))
+            {
+                // Default to English if no requested language is specified.
+                requestedLanguage = "en";
+            }
+
             var isRequestedLanguageEn = string.Equals(requestedLanguage, "en", StringComparison.OrdinalIgnoreCase);
 
             return remoteImageInfos.OrderByDescending(i =>
@@ -27,14 +33,16 @@ namespace MediaBrowser.Model.Extensions
                         return 3;
                     }
 
-                    if (!isRequestedLanguageEn && string.Equals("en", i.Language, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return 2;
-                    }
-
                     if (string.IsNullOrEmpty(i.Language))
                     {
+                        // Assume empty image language is likely to be English.
                         return isRequestedLanguageEn ? 3 : 2;
+                    }
+
+                    if (!isRequestedLanguageEn && string.Equals(i.Language, "en", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Prioritize English over non-requested languages.
+                        return 2;
                     }
 
                     return 0;

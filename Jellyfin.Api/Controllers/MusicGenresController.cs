@@ -63,6 +63,8 @@ namespace Jellyfin.Api.Controllers
         /// <param name="nameStartsWithOrGreater">Optional filter by items whose name is sorted equally or greater than a given input string.</param>
         /// <param name="nameStartsWith">Optional filter by items whose name is sorted equally than a given input string.</param>
         /// <param name="nameLessThan">Optional filter by items whose name is equally or lesser than a given input string.</param>
+        /// <param name="sortBy">Optional. Specify one or more sort orders, comma delimited.</param>
+        /// <param name="sortOrder">Sort Order - Ascending,Descending.</param>
         /// <param name="enableImages">Optional, include image information in output.</param>
         /// <param name="enableTotalRecordCount">Optional. Include total record count.</param>
         /// <response code="200">Music genres returned.</response>
@@ -84,6 +86,8 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? nameStartsWithOrGreater,
             [FromQuery] string? nameStartsWith,
             [FromQuery] string? nameLessThan,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] string[] sortBy,
+            [FromQuery, ModelBinder(typeof(CommaDelimitedArrayModelBinder))] SortOrder[] sortOrder,
             [FromQuery] bool? enableImages = true,
             [FromQuery] bool enableTotalRecordCount = true)
         {
@@ -97,8 +101,8 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
-                ExcludeItemTypes = RequestHelpers.GetItemTypeStrings(excludeItemTypes),
-                IncludeItemTypes = RequestHelpers.GetItemTypeStrings(includeItemTypes),
+                ExcludeItemTypes = excludeItemTypes,
+                IncludeItemTypes = includeItemTypes,
                 StartIndex = startIndex,
                 Limit = limit,
                 IsFavorite = isFavorite,
@@ -107,7 +111,8 @@ namespace Jellyfin.Api.Controllers
                 NameStartsWithOrGreater = nameStartsWithOrGreater,
                 DtoOptions = dtoOptions,
                 SearchTerm = searchTerm,
-                EnableTotalRecordCount = enableTotalRecordCount
+                EnableTotalRecordCount = enableTotalRecordCount,
+                OrderBy = RequestHelpers.GetOrderBy(sortBy, sortOrder)
             };
 
             if (parentId.HasValue)
@@ -144,7 +149,7 @@ namespace Jellyfin.Api.Controllers
 
             if (genreName.IndexOf(BaseItem.SlugChar, StringComparison.OrdinalIgnoreCase) != -1)
             {
-                item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions);
+                item = GetItemFromSlugName<MusicGenre>(_libraryManager, genreName, dtoOptions, BaseItemKind.MusicGenre);
             }
             else
             {
@@ -161,27 +166,27 @@ namespace Jellyfin.Api.Controllers
             return _dtoService.GetBaseItemDto(item, dtoOptions);
         }
 
-        private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions)
+        private T? GetItemFromSlugName<T>(ILibraryManager libraryManager, string name, DtoOptions dtoOptions, BaseItemKind baseItemKind)
             where T : BaseItem, new()
         {
             var result = libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '&'),
-                IncludeItemTypes = new[] { typeof(T).Name },
+                IncludeItemTypes = new[] { baseItemKind },
                 DtoOptions = dtoOptions
             }).OfType<T>().FirstOrDefault();
 
             result ??= libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '/'),
-                IncludeItemTypes = new[] { typeof(T).Name },
+                IncludeItemTypes = new[] { baseItemKind },
                 DtoOptions = dtoOptions
             }).OfType<T>().FirstOrDefault();
 
             result ??= libraryManager.GetItemList(new InternalItemsQuery
             {
                 Name = name.Replace(BaseItem.SlugChar, '?'),
-                IncludeItemTypes = new[] { typeof(T).Name },
+                IncludeItemTypes = new[] { baseItemKind },
                 DtoOptions = dtoOptions
             }).OfType<T>().FirstOrDefault();
 

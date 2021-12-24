@@ -1,8 +1,7 @@
-FROM debian:10
+FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim
 # Docker build arguments
 ARG SOURCE_DIR=/jellyfin
 ARG ARTIFACT_DIR=/dist
-ARG SDK_VERSION=5.0
 # Docker run environment
 ENV SOURCE_DIR=/jellyfin
 ENV ARTIFACT_DIR=/dist
@@ -11,15 +10,11 @@ ENV ARCH=armhf
 ENV IS_DOCKER=YES
 
 # Prepare Debian build environment
-RUN apt-get update \
- && apt-get install -y apt-transport-https debhelper gnupg wget devscripts mmv libc6-dev libcurl4-openssl-dev libfontconfig1-dev libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
-
-# Install dotnet repository
-# https://dotnet.microsoft.com/download/linux-package-manager/debian9/sdk-current
-RUN wget https://download.visualstudio.microsoft.com/download/pr/5f0f07ab-cd9a-4498-a9f7-67d90d582180/2a3db6698751e6cbb93ec244cb81cc5f/dotnet-sdk-5.0.202-linux-x64.tar.gz -O dotnet-sdk.tar.gz \
- && mkdir -p dotnet-sdk \
- && tar -xzf dotnet-sdk.tar.gz -C dotnet-sdk \
- && ln -s $( pwd )/dotnet-sdk/dotnet /usr/bin/dotnet
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
+    apt-transport-https debhelper gnupg devscripts unzip \
+    mmv libcurl4-openssl-dev libfontconfig1-dev \
+    libfreetype6-dev libssl-dev libssl1.1 liblttng-ust0
 
 # Link to docker-build script
 RUN ln -sf ${SOURCE_DIR}/deployment/build.linux.armhf /build.sh

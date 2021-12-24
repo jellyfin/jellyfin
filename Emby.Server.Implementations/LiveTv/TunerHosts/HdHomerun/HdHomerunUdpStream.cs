@@ -1,7 +1,8 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,7 +11,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
@@ -28,7 +28,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IServerApplicationHost _appHost;
         private readonly IHdHomerunChannelCommands _channelCommands;
         private readonly int _numTuners;
-        private readonly INetworkManager _networkManager;
 
         public HdHomerunUdpStream(
             MediaSourceInfo mediaSource,
@@ -40,12 +39,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             ILogger logger,
             IConfigurationManager configurationManager,
             IServerApplicationHost appHost,
-            INetworkManager networkManager,
             IStreamHelper streamHelper)
             : base(mediaSource, tunerHostInfo, fileSystem, logger, configurationManager, streamHelper)
         {
             _appHost = appHost;
-            _networkManager = networkManager;
             OriginalStreamId = originalStreamId;
             _channelCommands = channelCommands;
             _numTuners = numTuners;
@@ -84,10 +81,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
-            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
-            IPAddress localAddress = null;
+            IPAddress localAddress;
             using (var tcpClient = new TcpClient())
             {
                 try
@@ -103,7 +100,8 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
             }
 
-            if (localAddress.IsIPv4MappedToIPv6) {
+            if (localAddress.IsIPv4MappedToIPv6)
+            {
                 localAddress = localAddress.MapToIPv4();
             }
 
@@ -126,7 +124,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 using (udpClient)
                 using (hdHomerunManager)
                 {
-                    if (!(ex is OperationCanceledException))
+                    if (ex is not OperationCanceledException)
                     {
                         Logger.LogError(ex, "Error opening live stream:");
                     }
@@ -148,7 +146,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
@@ -156,11 +154,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             // await Task.Delay(5000).ConfigureAwait(false);
             await taskCompletionSource.Task.ConfigureAwait(false);
-        }
-
-        public string GetFilePath()
-        {
-            return TempFilePath;
         }
 
         private async Task StartStreaming(UdpClient udpClient, HdHomerunManager hdHomerunManager, IPAddress remoteAddress, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -186,7 +179,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 EnableStreamSharing = false;
             }
 
-            await DeleteTempFiles(new List<string> { TempFilePath }).ConfigureAwait(false);
+            await DeleteTempFiles(TempFilePath).ConfigureAwait(false);
         }
 
         private async Task CopyTo(UdpClient udpClient, string file, TaskCompletionSource<bool> openTaskCompletionSource, CancellationToken cancellationToken)
@@ -203,7 +196,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         cancellationToken,
                         timeOutSource.Token))
                     {
-                        var resTask = udpClient.ReceiveAsync();
+                        var resTask = udpClient.ReceiveAsync(linkedSource.Token).AsTask();
                         if (await Task.WhenAny(resTask, Task.Delay(30000, linkedSource.Token)).ConfigureAwait(false) != resTask)
                         {
                             resTask.Dispose();

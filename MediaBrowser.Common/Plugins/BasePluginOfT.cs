@@ -1,4 +1,6 @@
+#nullable disable
 #pragma warning disable SA1649 // File name should match first type name
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -45,10 +47,10 @@ namespace MediaBrowser.Common.Plugins
             var assemblyFilePath = assembly.Location;
 
             var dataFolderPath = Path.Combine(ApplicationPaths.PluginsPath, Path.GetFileNameWithoutExtension(assemblyFilePath));
-            if (!Directory.Exists(dataFolderPath) && Version != null)
+            if (Version != null && !Directory.Exists(dataFolderPath))
             {
                 // Try again with the version number appended to the folder name.
-                dataFolderPath = dataFolderPath + "_" + Version.ToString();
+                dataFolderPath += "_" + Version.ToString();
             }
 
             SetAttributes(assemblyFilePath, dataFolderPath, assemblyName.Version);
@@ -105,10 +107,7 @@ namespace MediaBrowser.Common.Plugins
                 {
                     lock (_configurationSyncLock)
                     {
-                        if (_configuration == null)
-                        {
-                            _configuration = LoadConfiguration();
-                        }
+                        _configuration ??= LoadConfiguration();
                     }
                 }
 

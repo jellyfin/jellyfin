@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Providers;
@@ -15,22 +14,18 @@ namespace MediaBrowser.LocalMetadata.Images
     /// </summary>
     public class InternalMetadataFolderImageProvider : ILocalImageProvider, IHasOrder
     {
-        private readonly IServerConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<InternalMetadataFolderImageProvider> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InternalMetadataFolderImageProvider"/> class.
         /// </summary>
-        /// <param name="config">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{InternalMetadataFolderImageProvider}"/> interface.</param>
         public InternalMetadataFolderImageProvider(
-            IServerConfigurationManager config,
             IFileSystem fileSystem,
             ILogger<InternalMetadataFolderImageProvider> logger)
         {
-            _config = config;
             _fileSystem = fileSystem;
             _logger = logger;
         }

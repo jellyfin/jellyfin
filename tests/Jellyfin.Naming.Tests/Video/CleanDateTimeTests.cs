@@ -58,7 +58,7 @@ namespace Jellyfin.Naming.Tests.Video
         {
             input = Path.GetFileName(input);
 
-            var result = new VideoResolver(_namingOptions).CleanDateTime(input);
+            var result = VideoResolver.CleanDateTime(input, _namingOptions);
 
             Assert.Equal(expectedName, result.Name, true);
             Assert.Equal(expectedYear, result.Year);
