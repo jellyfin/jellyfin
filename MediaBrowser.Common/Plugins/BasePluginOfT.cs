@@ -153,23 +153,16 @@ namespace MediaBrowser.Common.Plugins
             }
         }
 
-        /// <summary>
-        /// Saves the current configuration to the file system.
-        /// </summary>
-        public virtual void SaveConfiguration()
-        {
-            SaveConfiguration(Configuration);
-        }
-
         /// <inheritdoc />
         public virtual void UpdateConfiguration(BasePluginConfiguration configuration)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
+            ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
             Configuration = (TConfigurationType)configuration;
+
+            if (this is IHasConfigurationValidation<TConfigurationType> configurationValidation)
+            {
+                configurationValidation.Validate(Configuration);
+            }
 
             SaveConfiguration(Configuration);
 

@@ -7,6 +7,7 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Plugins;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -124,7 +125,8 @@ namespace Jellyfin.Server.Middleware
         {
             switch (ex)
             {
-                case ArgumentException _: return StatusCodes.Status400BadRequest;
+                case ArgumentException _:
+                case ConfigurationValidationException _: return StatusCodes.Status400BadRequest;
                 case AuthenticationException _: return StatusCodes.Status401Unauthorized;
                 case SecurityException _: return StatusCodes.Status403Forbidden;
                 case DirectoryNotFoundException _:
