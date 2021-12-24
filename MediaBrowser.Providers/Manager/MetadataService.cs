@@ -867,12 +867,15 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(
+        protected virtual void MergeData(
             MetadataResult<TItemType> source,
             MetadataResult<TItemType> target,
             MetadataField[] lockedFields,
             bool replaceData,
-            bool mergeMetadataSettings);
+            bool mergeMetadataSettings)
+        {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
+        }
 
         private bool HasChanged(BaseItem item, IHasItemChangeMonitor changeMonitor, IDirectoryService directoryService)
         {

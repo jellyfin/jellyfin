@@ -87,12 +87,6 @@ namespace MediaBrowser.Providers.TV
             return updateType;
         }
 
-        /// <inheritdoc />
-        protected override void MergeData(MetadataResult<Season> source, MetadataResult<Season> target, MetadataField[] lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
-        }
-
         private ItemUpdateType SaveIsVirtualItem(Season item, IList<BaseItem> episodes)
         {
             var isVirtualItem = item.LocationType == LocationType.Virtual && (episodes.Count == 0 || episodes.All(i => i.LocationType == LocationType.Virtual));
