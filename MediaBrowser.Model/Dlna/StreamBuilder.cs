@@ -1221,7 +1221,9 @@ namespace MediaBrowser.Model.Dlna
             {
                 var subtitleProfile = GetSubtitleProfile(item, subtitleStream, options.Profile.SubtitleProfiles, playMethod, _transcoderSupport, item.Container, null);
 
-                if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
+                if (subtitleProfile.Method != SubtitleDeliveryMethod.Drop
+                    && subtitleProfile.Method != SubtitleDeliveryMethod.External
+                    && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
                     _logger.LogDebug("Not eligible for {0} due to unsupported subtitles", playMethod);
                     return (false, TranscodeReason.SubtitleCodecNotSupported);
