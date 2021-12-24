@@ -740,6 +740,7 @@ namespace Jellyfin.Api.Controllers
 
             var query = new InternalItemsQuery(user)
             {
+                Genres = item.Genres,
                 Limit = limit,
                 IncludeItemTypes = includeItemTypes.ToArray(),
                 SimilarTo = item,
