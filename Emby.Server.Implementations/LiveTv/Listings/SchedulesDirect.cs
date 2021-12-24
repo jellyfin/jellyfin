@@ -9,7 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
@@ -101,11 +101,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     }
                 };
 
-            var requestString = JsonSerializer.Serialize(requestList, _jsonOptions);
-            _logger.LogDebug("Request string for schedules is: {RequestString}", requestString);
+            _logger.LogDebug("Request string for schedules is: {@RequestString}", requestList);
 
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/schedules");
-            options.Content = new StringContent(requestString, Encoding.UTF8, MediaTypeNames.Application.Json);
+            options.Content = JsonContent.Create(requestList, options: _jsonOptions);
             options.Headers.TryAddWithoutValidation("token", token);
             using var response = await Send(options, true, info, cancellationToken).ConfigureAwait(false);
             await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -121,8 +120,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             programRequestOptions.Headers.TryAddWithoutValidation("token", token);
 
             var programIds = dailySchedules.SelectMany(d => d.Programs.Select(s => s.ProgramId)).Distinct();
-            programRequestOptions.Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(programIds, _jsonOptions));
-            programRequestOptions.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+            programRequestOptions.Content = JsonContent.Create(programIds, options: _jsonOptions);
 
             using var innerResponse = await Send(programRequestOptions, true, info, cancellationToken).ConfigureAwait(false);
             await using var innerResponseStream = await innerResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -243,19 +241,19 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (programInfo.AudioProperties.Count != 0)
             {
-                if (programInfo.AudioProperties.Contains("atmos", StringComparer.OrdinalIgnoreCase))
+                if (programInfo.AudioProperties.Contains("atmos", StringComparison.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Atmos;
                 }
-                else if (programInfo.AudioProperties.Contains("dd 5.1", StringComparer.OrdinalIgnoreCase))
+                else if (programInfo.AudioProperties.Contains("dd 5.1", StringComparison.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Contains("dd", StringComparer.OrdinalIgnoreCase))
+                else if (programInfo.AudioProperties.Contains("dd", StringComparison.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.DolbyDigital;
                 }
-                else if (programInfo.AudioProperties.Contains("stereo", StringComparer.OrdinalIgnoreCase))
+                else if (programInfo.AudioProperties.Contains("stereo", StringComparison.OrdinalIgnoreCase))
                 {
                     audioType = ProgramAudio.Stereo;
                 }
@@ -317,8 +315,8 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             if (programInfo.VideoProperties != null)
             {
-                info.IsHD = programInfo.VideoProperties.Contains("hdtv", StringComparer.OrdinalIgnoreCase);
-                info.Is3D = programInfo.VideoProperties.Contains("3d", StringComparer.OrdinalIgnoreCase);
+                info.IsHD = programInfo.VideoProperties.Contains("hdtv", StringComparison.OrdinalIgnoreCase);
+                info.Is3D = programInfo.VideoProperties.Contains("3d", StringComparison.OrdinalIgnoreCase);
             }
 
             if (details.ContentRating != null && details.ContentRating.Count > 0)
@@ -327,7 +325,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                     .Replace("--", "-", StringComparison.Ordinal);
 
                 var invalid = new[] { "N/A", "Approved", "Not Rated", "Passed" };
-                if (invalid.Contains(info.OfficialRating, StringComparer.OrdinalIgnoreCase))
+                if (invalid.Contains(info.OfficialRating, StringComparison.OrdinalIgnoreCase))
                 {
                     info.OfficialRating = null;
                 }
@@ -389,9 +387,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             if (details.Genres != null)
             {
                 info.Genres = details.Genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList();
-                info.IsNews = details.Genres.Contains("news", StringComparer.OrdinalIgnoreCase);
+                info.IsNews = details.Genres.Contains("news", StringComparison.OrdinalIgnoreCase);
 
-                if (info.Genres.Contains("children", StringComparer.OrdinalIgnoreCase))
+                if (info.Genres.Contains("children", StringComparison.OrdinalIgnoreCase))
                 {
                     info.IsKids = true;
                 }

@@ -883,6 +883,11 @@ namespace MediaBrowser.Controller.MediaEncoding
                 arg.Append(" -i file:\"").Append(subtitlePath).Append('\"');
             }
 
+            if (state.AudioStream != null && state.AudioStream.IsExternal)
+            {
+                arg.Append(" -i \"").Append(state.AudioStream.Path).Append('"');
+            }
+
             return arg.ToString();
         }
 
@@ -2209,10 +2214,24 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null)
             {
-                args += string.Format(
-                    CultureInfo.InvariantCulture,
-                    " -map 0:{0}",
-                    state.AudioStream.Index);
+                if (state.AudioStream.IsExternal)
+                {
+                    int externalAudioMapIndex = state.SubtitleStream != null && state.SubtitleStream.IsExternal ? 2 : 1;
+                    int externalAudioStream = state.MediaSource.MediaStreams.Where(i => i.Path == state.AudioStream.Path).ToList().IndexOf(state.AudioStream);
+
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map {0}:{1}",
+                        externalAudioMapIndex,
+                        externalAudioStream);
+                }
+                else
+                {
+                    args += string.Format(
+                        CultureInfo.InvariantCulture,
+                        " -map 0:{0}",
+                        state.AudioStream.Index);
+                }
             }
             else
             {

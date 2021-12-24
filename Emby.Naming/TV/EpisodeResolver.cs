@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.TV
 {
@@ -48,7 +48,7 @@ namespace Emby.Naming.TV
             {
                 var extension = Path.GetExtension(path);
                 // Check supported extensions
-                if (!_options.VideoFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+                if (!_options.VideoFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
                 {
                     // It's not supported. Check stub extensions
                     if (!StubResolver.TryResolveFile(path, _options, out stubType))

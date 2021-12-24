@@ -64,7 +64,7 @@ namespace Emby.Server.Implementations.Library.Validators
                     var movies = _libraryManager.GetItemList(new InternalItemsQuery
                     {
                         MediaTypes = new string[] { MediaType.Video },
-                        IncludeItemTypes = new[] { nameof(Movie) },
+                        IncludeItemTypes = new[] { BaseItemKind.Movie },
                         IsVirtualItem = false,
                         OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                         Parent = library,
@@ -108,7 +108,7 @@ namespace Emby.Server.Implementations.Library.Validators
 
             var boxSets = _libraryManager.GetItemList(new InternalItemsQuery
             {
-                IncludeItemTypes = new[] { nameof(BoxSet) },
+                IncludeItemTypes = new[] { BaseItemKind.BoxSet },
                 CollapseBoxSetItems = false,
                 Recursive = true
             });

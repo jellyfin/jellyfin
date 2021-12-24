@@ -88,7 +88,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             if (query.IncludeItemTypes.Length == 0)
             {
-                query.IncludeItemTypes = new[] { nameof(Audio), nameof(MusicVideo), nameof(MusicAlbum) };
+                query.IncludeItemTypes = new[] { BaseItemKind.Audio, BaseItemKind.MusicVideo, BaseItemKind.MusicAlbum };
                 query.ArtistIds = new[] { Id };
             }
 

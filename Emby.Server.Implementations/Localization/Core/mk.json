@@ -5,7 +5,7 @@
     "PluginUninstalledWithName": "{0} беше успешно деинсталирано",
     "PluginInstalledWithName": "{0} беше успешно инсталирано",
     "Plugin": "Додатоци",
-    "Playlists": "Листи",
+    "Playlists": "Плејлисти",
     "Photos": "Слики",
     "NotificationOptionVideoPlaybackStopped": "Видео стопирано",
     "NotificationOptionVideoPlayback": "Видео пуштено",
@@ -97,5 +97,8 @@
     "TasksChannelsCategory": "Интернет Канали",
     "TasksApplicationCategory": "Апликација",
     "TasksLibraryCategory": "Библиотека",
-    "TasksMaintenanceCategory": "Одржување"
+    "TasksMaintenanceCategory": "Одржување",
+    "Undefined": "Недефинирано",
+    "Forced": "Принудно",
+    "Default": "Зададено"
 }

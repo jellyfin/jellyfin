@@ -1292,7 +1292,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     ["ItemId"] = command.ItemId,
                     ["ItemName"] = command.ItemName,
-                    ["ItemType"] = command.ItemType
+                    ["ItemType"] = command.ItemType.ToString()
                 }
             };
 

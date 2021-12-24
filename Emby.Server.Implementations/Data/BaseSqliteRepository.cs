@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using Jellyfin.Extensions;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -194,7 +194,7 @@ namespace Emby.Server.Implementations.Data
 
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
-            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }

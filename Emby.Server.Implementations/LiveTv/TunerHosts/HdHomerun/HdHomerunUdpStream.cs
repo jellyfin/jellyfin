@@ -3,7 +3,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -85,7 +84,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
-            IPAddress localAddress = null;
+            IPAddress localAddress;
             using (var tcpClient = new TcpClient())
             {
                 try

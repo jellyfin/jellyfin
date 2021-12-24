@@ -7,6 +7,7 @@ using Jellyfin.Data.Entities.Security;
 using Jellyfin.Data.Enums;
 using Jellyfin.Data.Events;
 using Jellyfin.Data.Queries;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
@@ -219,7 +220,7 @@ namespace Jellyfin.Server.Implementations.Devices
                 return true;
             }
 
-            return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparer.OrdinalIgnoreCase)
+            return user.GetPreference(PreferenceKind.EnabledDevices).Contains(deviceId, StringComparison.OrdinalIgnoreCase)
                    || !GetCapabilities(deviceId).SupportsPersistentIdentifier;
         }
 

@@ -9,7 +9,6 @@ using System.Text.Json.Serialization;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Entities.Movies
@@ -21,10 +20,6 @@ namespace MediaBrowser.Controller.Entities.Movies
     {
         public BoxSet()
         {
-            RemoteTrailers = Array.Empty<MediaUrl>();
-            LocalTrailerIds = Array.Empty<Guid>();
-            RemoteTrailerIds = Array.Empty<Guid>();
-
             DisplayOrder = ItemSortBy.PremiereDate;
         }
 
@@ -38,10 +33,9 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override bool SupportsPeople => true;
 
         /// <inheritdoc />
-        public IReadOnlyList<Guid> LocalTrailerIds { get; set; }
-
-        /// <inheritdoc />
-        public IReadOnlyList<Guid> RemoteTrailerIds { get; set; }
+        public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
+            .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
+            .ToArray();
 
         /// <summary>
         /// Gets or sets the display order.

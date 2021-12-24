@@ -11,11 +11,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Emby.Naming.Audio;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Naming.Video;
-using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks;
@@ -533,8 +531,8 @@ namespace Emby.Server.Implementations.Library
             return key.GetMD5();
         }
 
-        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null)
-            => ResolvePath(fileInfo, new DirectoryService(_fileSystem), null, parent);
+        public BaseItem ResolvePath(FileSystemMetadata fileInfo, Folder parent = null, IDirectoryService directoryService = null)
+            => ResolvePath(fileInfo, directoryService ?? new DirectoryService(_fileSystem), null, parent);
 
         private BaseItem ResolvePath(
             FileSystemMetadata fileInfo,
@@ -654,7 +652,7 @@ namespace Emby.Server.Implementations.Library
             return !args.ContainsFileSystemEntryByName(".ignore");
         }
 
-        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, string collectionType)
+        public IEnumerable<BaseItem> ResolvePaths(IEnumerable<FileSystemMetadata> files, IDirectoryService directoryService, Folder parent, LibraryOptions libraryOptions, string collectionType = null)
         {
             return ResolvePaths(files, directoryService, parent, libraryOptions, collectionType, EntityResolvers);
         }
@@ -677,7 +675,7 @@ namespace Emby.Server.Implementations.Library
                 {
                     var result = resolver.ResolveMultiple(parent, fileList, collectionType, directoryService);
 
-                    if (result != null && result.Items.Count > 0)
+                    if (result?.Items.Count > 0)
                     {
                         var items = new List<BaseItem>();
                         items.AddRange(result.Items);
@@ -965,7 +963,7 @@ namespace Emby.Server.Implementations.Library
             {
                 var existing = GetItemList(new InternalItemsQuery
                 {
-                    IncludeItemTypes = new[] { nameof(MusicArtist) },
+                    IncludeItemTypes = new[] { BaseItemKind.MusicArtist },
                     Name = name,
                     DtoOptions = options
                 }).Cast<MusicArtist>()
@@ -2685,89 +2683,105 @@ namespace Emby.Server.Implementations.Library
             };
         }
 
-        public IEnumerable<Video> FindTrailers(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
+        public IEnumerable<BaseItem> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
         {
-            var namingOptions = _namingOptions;
-
-            var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => string.Equals(i.Name, BaseItem.TrailersFolderName, StringComparison.OrdinalIgnoreCase))
-                .SelectMany(i => _fileSystem.GetFiles(i.FullName, namingOptions.VideoFileExtensions, false, false))
-                .ToList();
-
-            var videos = VideoListResolver.Resolve(fileSystemChildren, namingOptions);
-
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
-
-            if (currentVideo != null)
+            var ownerVideoInfo = VideoResolver.Resolve(owner.Path, owner.IsFolder, _namingOptions);
+            if (ownerVideoInfo == null)
             {
-                files.AddRange(currentVideo.Extras.Where(i => i.ExtraType == ExtraType.Trailer).Select(i => _fileSystem.GetFileInfo(i.Path)));
+                yield break;
             }
 
-            var resolvers = new IItemResolver[]
+            var count = fileSystemChildren.Count;
+            var files = new List<VideoFileInfo>();
+            var nonVideoFiles = new List<FileSystemMetadata>();
+            for (var i = 0; i < count; i++)
             {
-                new GenericVideoResolver<Trailer>(_namingOptions)
-            };
-
-            return ResolvePaths(files, directoryService, null, new LibraryOptions(), null, resolvers)
-                .OfType<Trailer>()
-                .Select(video =>
+                var current = fileSystemChildren[i];
+                if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
-                    // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    if (GetItemById(video.Id) is Trailer dbItem)
+                    var filesInSubFolder = _fileSystem.GetFiles(current.FullName, _namingOptions.VideoFileExtensions, false, false);
+                    foreach (var file in filesInSubFolder)
                     {
-                        video = dbItem;
+                        var videoInfo = VideoResolver.Resolve(file.FullName, file.IsDirectory, _namingOptions);
+                        if (videoInfo == null)
+                        {
+                            nonVideoFiles.Add(file);
+                            continue;
+                        }
+
+                        files.Add(videoInfo);
+                    }
+                }
+                else if (!current.IsDirectory)
+                {
+                    var videoInfo = VideoResolver.Resolve(current.FullName, current.IsDirectory, _namingOptions);
+                    if (videoInfo == null)
+                    {
+                        nonVideoFiles.Add(current);
+                        continue;
                     }
 
-                    video.ParentId = Guid.Empty;
-                    video.OwnerId = owner.Id;
-                    video.ExtraType = ExtraType.Trailer;
-                    video.TrailerTypes = new[] { TrailerType.LocalTrailer };
-
-                    return video;
-
-                    // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path);
-        }
-
-        public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemMetadata> fileSystemChildren, IDirectoryService directoryService)
-        {
-            var namingOptions = _namingOptions;
-
-            var files = owner.IsInMixedFolder ? new List<FileSystemMetadata>() : fileSystemChildren.Where(i => i.IsDirectory)
-                .Where(i => BaseItem.AllExtrasTypesFolderNames.ContainsKey(i.Name ?? string.Empty))
-                .SelectMany(i => _fileSystem.GetFiles(i.FullName, namingOptions.VideoFileExtensions, false, false))
-                .ToList();
-
-            var videos = VideoListResolver.Resolve(fileSystemChildren, namingOptions);
-
-            var currentVideo = videos.FirstOrDefault(i => string.Equals(owner.Path, i.Files[0].Path, StringComparison.OrdinalIgnoreCase));
-
-            if (currentVideo != null)
-            {
-                files.AddRange(currentVideo.Extras.Where(i => i.ExtraType != ExtraType.Trailer).Select(i => _fileSystem.GetFileInfo(i.Path)));
+                    files.Add(videoInfo);
+                }
             }
 
-            return ResolvePaths(files, directoryService, null, new LibraryOptions(), null)
-                .OfType<Video>()
-                .Select(video =>
+            if (files.Count == 0)
+            {
+                yield break;
+            }
+
+            var videos = VideoListResolver.Resolve(files, _namingOptions);
+            // owner video info cannot be null as that implies it has no path
+            var extras = ExtraResolver.GetExtras(videos, ownerVideoInfo, _namingOptions.VideoFlagDelimiters);
+            for (var i = 0; i < extras.Count; i++)
+            {
+                var currentExtra = extras[i];
+                var resolved = ResolvePath(_fileSystem.GetFileInfo(currentExtra.Path), null, directoryService);
+                if (resolved is not Video video)
                 {
-                    // Try to retrieve it from the db. If we don't find it, use the resolved version
-                    var dbItem = GetItemById(video.Id) as Video;
+                    continue;
+                }
 
-                    if (dbItem != null)
-                    {
-                        video = dbItem;
-                    }
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                if (GetItemById(resolved.Id) is Video dbItem)
+                {
+                    video = dbItem;
+                }
 
-                    video.ParentId = Guid.Empty;
-                    video.OwnerId = owner.Id;
+                video.ExtraType = currentExtra.ExtraType;
+                video.ParentId = Guid.Empty;
+                video.OwnerId = owner.Id;
+                yield return video;
+            }
 
-                    SetExtraTypeFromFilename(video);
+            // TODO: theme songs must be handled "manually" (but should we?) since they aren't video files
+            for (var i = 0; i < nonVideoFiles.Count; i++)
+            {
+                var current = nonVideoFiles[i];
+                var extraInfo = ExtraResolver.GetExtraInfo(current.FullName, _namingOptions);
+                if (extraInfo.ExtraType != ExtraType.ThemeSong)
+                {
+                    continue;
+                }
 
-                    return video;
+                var resolved = ResolvePath(current, null, directoryService);
+                if (resolved is not Audio themeSong)
+                {
+                    continue;
+                }
 
-                    // Sort them so that the list can be easily compared for changes
-                }).OrderBy(i => i.Path);
+                // Try to retrieve it from the db. If we don't find it, use the resolved version
+                if (GetItemById(themeSong.Id) is Audio dbItem)
+                {
+                    themeSong = dbItem;
+                }
+
+                themeSong.ExtraType = ExtraType.ThemeSong;
+                themeSong.OwnerId = owner.Id;
+                themeSong.ParentId = Guid.Empty;
+
+                yield return themeSong;
+            }
         }
 
         public string GetPathAfterNetworkSubstitution(string path, BaseItem ownerItem)
@@ -2815,15 +2829,6 @@ namespace Emby.Server.Implementations.Library
             }
 
             return path;
-        }
-
-        private void SetExtraTypeFromFilename(Video item)
-        {
-            var resolver = new ExtraResolver(_namingOptions);
-
-            var result = resolver.GetExtraInfo(item.Path);
-
-            item.ExtraType = result.ExtraType;
         }
 
         public List<PersonInfo> GetPeople(InternalPeopleQuery query)
@@ -2932,11 +2937,12 @@ namespace Emby.Server.Implementations.Library
 
             var rootFolderPath = _configurationManager.ApplicationPaths.DefaultUserViewsPath;
 
+            var existingNameCount = 1; // first numbered name will be 2
             var virtualFolderPath = Path.Combine(rootFolderPath, name);
             while (Directory.Exists(virtualFolderPath))
             {
-                name += "1";
-                virtualFolderPath = Path.Combine(rootFolderPath, name);
+                existingNameCount++;
+                virtualFolderPath = Path.Combine(rootFolderPath, name + " " + existingNameCount);
             }
 
             var mediaPathInfos = options.PathInfos;

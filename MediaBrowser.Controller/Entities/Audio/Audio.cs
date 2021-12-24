@@ -8,10 +8,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Controller.Entities.Audio
 {

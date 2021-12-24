@@ -102,7 +102,7 @@
     "Forced": "Sunnitud",
     "Folders": "Kaustad",
     "Favorites": "Lemmikud",
-    "FailedLoginAttemptWithUserName": "Ebaõnnestunud sisselogimiskatse kasutajalt {0}",
+    "FailedLoginAttemptWithUserName": "{0} - sisselogimine nurjus",
     "DeviceOnlineWithName": "{0} on ühendatud",
     "DeviceOfflineWithName": "{0} katkestas ühenduse",
     "Default": "Vaikimisi",

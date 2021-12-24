@@ -16,10 +16,11 @@ namespace Emby.Naming.Video
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="namingOptions">The naming options.</param>
+        /// <param name="parseName">Whether to parse the name or use the filename.</param>
         /// <returns>VideoFileInfo.</returns>
-        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions)
+        public static VideoFileInfo? ResolveDirectory(string? path, NamingOptions namingOptions, bool parseName = true)
         {
-            return Resolve(path, true, namingOptions);
+            return Resolve(path, true, namingOptions, parseName);
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace Emby.Naming.Video
 
             var format3DResult = Format3DParser.Parse(path, namingOptions);
 
-            var extraResult = new ExtraResolver(namingOptions).GetExtraInfo(path);
+            var extraResult = ExtraResolver.GetExtraInfo(path, namingOptions);
 
             var name = Path.GetFileNameWithoutExtension(path);
 

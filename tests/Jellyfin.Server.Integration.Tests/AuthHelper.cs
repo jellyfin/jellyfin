@@ -1,8 +1,8 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Net.Http.Headers;
-using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;
@@ -26,14 +26,13 @@ namespace Jellyfin.Server.Integration.Tests
             using var completeResponse = await client.PostAsync("/Startup/Complete", new ByteArrayContent(Array.Empty<byte>())).ConfigureAwait(false);
             Assert.Equal(HttpStatusCode.NoContent, completeResponse.StatusCode);
 
-            using var content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(
+            using var content = JsonContent.Create(
                 new AuthenticateUserByName()
                 {
                     Username = user!.Name,
                     Pw = user.Password,
                 },
-                jsonOptions));
-            content.Headers.ContentType = MediaTypeHeaderValue.Parse(MediaTypeNames.Application.Json);
+                options: jsonOptions);
             content.Headers.Add("X-Emby-Authorization", DummyAuthHeader);
 
             using var authResponse = await client.PostAsync("/Users/AuthenticateByName", content).ConfigureAwait(false);

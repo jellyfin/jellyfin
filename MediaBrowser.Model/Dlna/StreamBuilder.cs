@@ -677,8 +677,8 @@ namespace MediaBrowser.Model.Dlna
             var videoStream = item.VideoStream;
 
             // TODO: This doesn't account for situations where the device is able to handle the media's bitrate, but the connection isn't fast enough
-            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, subtitleStream, options, PlayMethod.DirectPlay);
-            var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, subtitleStream, options, PlayMethod.DirectStream);
+            var directPlayEligibilityResult = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options, true) ?? 0, subtitleStream, audioStream, options, PlayMethod.DirectPlay);
+            var directStreamEligibilityResult = IsEligibleForDirectPlay(item, options.GetMaxBitrate(false) ?? 0, subtitleStream, audioStream, options, PlayMethod.DirectStream);
             bool isEligibleForDirectPlay = options.EnableDirectPlay && (options.ForceDirectPlay || directPlayEligibilityResult.Item1);
             bool isEligibleForDirectStream = options.EnableDirectStream && (options.ForceDirectStream || directStreamEligibilityResult.Item1);
 
@@ -1213,6 +1213,7 @@ namespace MediaBrowser.Model.Dlna
             MediaSourceInfo item,
             long maxBitrate,
             MediaStream subtitleStream,
+            MediaStream audioStream,
             VideoOptions options,
             PlayMethod playMethod)
         {
@@ -1220,7 +1221,9 @@ namespace MediaBrowser.Model.Dlna
             {
                 var subtitleProfile = GetSubtitleProfile(item, subtitleStream, options.Profile.SubtitleProfiles, playMethod, _transcoderSupport, item.Container, null);
 
-                if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
+                if (subtitleProfile.Method != SubtitleDeliveryMethod.Drop
+                    && subtitleProfile.Method != SubtitleDeliveryMethod.External
+                    && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
                     _logger.LogDebug("Not eligible for {0} due to unsupported subtitles", playMethod);
                     return (false, TranscodeReason.SubtitleCodecNotSupported);
@@ -1228,8 +1231,17 @@ namespace MediaBrowser.Model.Dlna
             }
 
             bool result = IsAudioEligibleForDirectPlay(item, maxBitrate, playMethod);
+            if (!result)
+            {
+                return (false, TranscodeReason.ContainerBitrateExceedsLimit);
+            }
 
-            return (result, result ? null : TranscodeReason.ContainerBitrateExceedsLimit);
+            if (audioStream.IsExternal)
+            {
+                return (false, TranscodeReason.AudioIsExternal);
+            }
+
+            return (true, null);
         }
 
         public static SubtitleProfile GetSubtitleProfile(

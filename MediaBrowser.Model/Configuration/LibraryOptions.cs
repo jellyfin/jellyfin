@@ -21,7 +21,6 @@ namespace MediaBrowser.Model.Configuration
             SaveSubtitlesWithMedia = true;
             EnableRealtimeMonitor = true;
             PathInfos = Array.Empty<MediaPathInfo>();
-            EnableInternetProviders = true;
             EnableAutomaticSeriesGrouping = true;
             SeasonZeroDisplayName = "Specials";
         }
@@ -38,6 +37,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool SaveLocalMetadata { get; set; }
 
+        [Obsolete("Disable remote providers in TypeOptions instead")]
         public bool EnableInternetProviders { get; set; }
 
         public bool EnableAutomaticSeriesGrouping { get; set; }
@@ -81,6 +81,7 @@ namespace MediaBrowser.Model.Configuration
         public bool RequirePerfectSubtitleMatch { get; set; }
 
         public bool SaveSubtitlesWithMedia { get; set; }
+
         public bool AutomaticallyAddToCollection { get; set; }
 
         public TypeOptions[] TypeOptions { get; set; }
