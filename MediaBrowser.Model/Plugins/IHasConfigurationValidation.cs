@@ -11,5 +11,6 @@ public interface IHasConfigurationValidation<in TPluginConfiguration>
     /// Validate the plugin configuration.
     /// </summary>
     /// <param name="pluginConfiguration">The plugin configuration.</param>
+    /// <exception cref="ConfigurationValidationException">Throws if validation fails.</exception>
     void Validate(TPluginConfiguration pluginConfiguration);
 }
