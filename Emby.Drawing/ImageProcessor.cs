@@ -101,8 +101,7 @@ namespace Emby.Drawing
         public async Task ProcessImage(ImageProcessingOptions options, Stream toStream)
         {
             var file = await ProcessImage(options).ConfigureAwait(false);
-
-            using (var fileStream = AsyncFile.OpenRead(file.Item1))
+            using (var fileStream = AsyncFile.OpenRead(file.path))
             {
                 await fileStream.CopyToAsync(toStream).ConfigureAwait(false);
             }

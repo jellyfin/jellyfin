@@ -97,7 +97,7 @@ public class FindExtrasTests
                 false))
             .Returns(new List<FileSystemMetadata>
             {
-                new ()
+                new()
                 {
                     FullName = "/movies/Up/trailers/some trailer.mkv",
                     Name = "some trailer.mkv",
@@ -112,7 +112,7 @@ public class FindExtrasTests
                 false))
             .Returns(new List<FileSystemMetadata>
             {
-                new ()
+                new()
                 {
                     FullName = "/movies/Up/behind the scenes/the making of Up.mkv",
                     Name = "the making of Up.mkv",
@@ -127,7 +127,7 @@ public class FindExtrasTests
                 false))
             .Returns(new List<FileSystemMetadata>
             {
-                new ()
+                new()
                 {
                     FullName = "/movies/Up/theme-music/theme2.mp3",
                     Name = "theme2.mp3",

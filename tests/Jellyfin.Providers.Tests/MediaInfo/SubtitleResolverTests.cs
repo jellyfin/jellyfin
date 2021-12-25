@@ -113,7 +113,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
         private static MediaStream CreateMediaStream(string path, string codec, string? language, int index, bool isForced = false, bool isDefault = false)
         {
-            return new ()
+            return new()
             {
                 Index = index,
                 Codec = codec,

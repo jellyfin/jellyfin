@@ -13,22 +13,22 @@ namespace Jellyfin.Controller.Tests
 
         private static readonly FileSystemMetadata[] _lowerCaseFileSystemMetadata =
         {
-            new ()
+            new()
             {
                 FullName = LowerCasePath + "/Artwork",
                 IsDirectory = true
             },
-            new ()
+            new()
             {
                 FullName = LowerCasePath + "/Some Other Folder",
                 IsDirectory = true
             },
-            new ()
+            new()
             {
                 FullName = LowerCasePath + "/Song 2.mp3",
                 IsDirectory = false
             },
-            new ()
+            new()
             {
                 FullName = LowerCasePath + "/Song 3.mp3",
                 IsDirectory = false
@@ -37,12 +37,12 @@ namespace Jellyfin.Controller.Tests
 
         private static readonly FileSystemMetadata[] _upperCaseFileSystemMetadata =
         {
-            new ()
+            new()
             {
                 FullName = UpperCasePath + "/Lyrics",
                 IsDirectory = true
             },
-            new ()
+            new()
             {
                 FullName = UpperCasePath + "/Song 1.mp3",
                 IsDirectory = false

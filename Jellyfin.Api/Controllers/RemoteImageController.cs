@@ -80,7 +80,8 @@ namespace Jellyfin.Api.Controllers
                         IncludeAllLanguages = includeAllLanguages,
                         IncludeDisabledProviders = true,
                         ImageType = type
-                    }, CancellationToken.None)
+                    },
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             var imageArray = images.ToArray();

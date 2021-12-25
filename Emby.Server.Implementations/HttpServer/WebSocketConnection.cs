@@ -236,7 +236,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     MessageId = Guid.NewGuid(),
                     MessageType = SessionMessageType.KeepAlive
-                }, CancellationToken.None);
+                },
+                CancellationToken.None);
         }
 
         /// <inheritdoc />

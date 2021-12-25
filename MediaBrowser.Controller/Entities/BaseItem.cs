@@ -2592,9 +2592,9 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(i => (i, LocalizationManager.GetRatingLevel(i)))
+                .Select(rating => (rating, LocalizationManager.GetRatingLevel(rating)))
                 .OrderBy(i => i.Item2 ?? 1000)
-                .Select(i => i.Item1);
+                .Select(i => i.rating);
 
             OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
 

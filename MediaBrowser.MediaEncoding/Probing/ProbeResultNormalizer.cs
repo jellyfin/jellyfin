@@ -28,7 +28,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private readonly char[] _nameDelimiters = { '/', '|', ';', '\\' };
 
-        private static readonly Regex _performerPattern = new (@"(?<name>.*) \((?<instrument>.*)\)");
+        private static readonly Regex _performerPattern = new(@"(?<name>.*) \((?<instrument>.*)\)");
 
         private readonly ILogger _logger;
         private readonly ILocalizationManager _localization;

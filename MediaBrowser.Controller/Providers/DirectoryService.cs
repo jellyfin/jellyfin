@@ -12,11 +12,11 @@ namespace MediaBrowser.Controller.Providers
     {
         private readonly IFileSystem _fileSystem;
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new (StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata[]> _cache = new(StringComparer.Ordinal);
 
-        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new (StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, FileSystemMetadata> _fileCache = new(StringComparer.Ordinal);
 
-        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new (StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, List<string>> _filePathCache = new(StringComparer.Ordinal);
 
         public DirectoryService(IFileSystem fileSystem)
         {

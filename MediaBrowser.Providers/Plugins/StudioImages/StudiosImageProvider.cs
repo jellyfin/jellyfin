@@ -27,7 +27,7 @@ namespace MediaBrowser.Providers.Studios
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IFileSystem _fileSystem;
-        private readonly String repositoryUrl;
+        private readonly string repositoryUrl;
 
         public StudiosImageProvider(IServerConfigurationManager config, IHttpClientFactory httpClientFactory, IFileSystem fileSystem)
         {
