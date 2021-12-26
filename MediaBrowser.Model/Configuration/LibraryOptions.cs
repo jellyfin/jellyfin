@@ -84,6 +84,8 @@ namespace MediaBrowser.Model.Configuration
 
         public bool AutomaticallyAddToCollection { get; set; }
 
+        public bool DisableEmbeddedSubtitles { get; set; }
+
         public TypeOptions[] TypeOptions { get; set; }
 
         public TypeOptions? GetTypeOptions(string type)

@@ -229,6 +229,12 @@ namespace MediaBrowser.Providers.MediaInfo
                 video.Video3DFormat ??= mediaInfo.Video3DFormat;
             }
 
+            if (libraryOptions.DisableEmbeddedSubtitles)
+            {
+                _logger.LogInformation("Disabling embedded subtitles due to DisableEmbeddedSubtitles setting.");
+                mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal);
+            }
+
             var videoStream = mediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
             video.Height = videoStream?.Height ?? 0;
