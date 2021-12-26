@@ -231,7 +231,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (libraryOptions.DisableEmbeddedSubtitles)
             {
-                _logger.LogInformation("Disabling embedded subtitles due to DisableEmbeddedSubtitles setting.");
+                _logger.LogDebug("Disabling embedded subtitles due to DisableEmbeddedSubtitles setting");
                 mediaStreams.RemoveAll(i => i.Type == MediaStreamType.Subtitle && !i.IsExternal);
             }
 
