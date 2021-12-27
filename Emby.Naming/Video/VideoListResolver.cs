@@ -42,10 +42,13 @@ namespace Emby.Naming.Video
                     continue;
                 }
 
-                remainingFiles.Add(current);
                 if (current.ExtraType == null)
                 {
                     standaloneMedia.Add(current);
+                }
+                else
+                {
+                    remainingFiles.Add(current);
                 }
             }
 
@@ -69,8 +72,6 @@ namespace Emby.Naming.Video
                 var info = new VideoInfo(media.Name) { Files = new[] { media } };
 
                 info.Year = info.Files[0].Year;
-
-                remainingFiles.Remove(media);
                 list.Add(info);
             }
 

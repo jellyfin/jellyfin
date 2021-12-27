@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Emby.Naming.Common;
-using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Resolvers.Audio;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
@@ -32,11 +34,13 @@ public class FindExtrasTests
         fixture.Register(() => new NamingOptions());
         var configMock = fixture.Freeze<Mock<IServerConfigurationManager>>();
         configMock.Setup(c => c.ApplicationPaths.ProgramDataPath).Returns("/data");
+        var itemRepository = fixture.Freeze<Mock<IItemRepository>>();
+        itemRepository.Setup(i => i.RetrieveItem(It.IsAny<Guid>())).Returns<BaseItem>(null);
         _fileSystemMock = fixture.Freeze<Mock<IFileSystem>>();
         _fileSystemMock.Setup(f => f.GetFileInfo(It.IsAny<string>())).Returns<string>(path => new FileSystemMetadata { FullName = path });
         _libraryManager = fixture.Build<Emby.Server.Implementations.Library.LibraryManager>().Do(s => s.AddParts(
                 fixture.Create<IEnumerable<IResolverIgnoreRule>>(),
-                new List<IItemResolver> { new VideoExtraResolver(fixture.Create<NamingOptions>()), new AudioResolver(fixture.Create<NamingOptions>()) },
+                new List<IItemResolver> { new AudioResolver(fixture.Create<NamingOptions>()) },
                 fixture.Create<IEnumerable<IIntroProvider>>(),
                 fixture.Create<IEnumerable<IBaseItemComparer>>(),
                 fixture.Create<IEnumerable<ILibraryPostScanTask>>()))
@@ -153,7 +157,9 @@ public class FindExtrasTests
         Assert.Equal(ExtraType.BehindTheScenes, extras[2].ExtraType);
         Assert.Equal(ExtraType.Sample, extras[3].ExtraType);
         Assert.Equal(ExtraType.ThemeSong, extras[4].ExtraType);
+        Assert.Equal(typeof(Audio), extras[4].GetType());
         Assert.Equal(ExtraType.ThemeSong, extras[5].ExtraType);
+        Assert.Equal(typeof(Audio), extras[5].GetType());
     }
 
     [Fact]

@@ -75,7 +75,7 @@ namespace Emby.Naming.Video
 
             var format3DResult = Format3DParser.Parse(path, namingOptions);
 
-            var extraResult = ExtraResolver.GetExtraInfo(path, namingOptions);
+            var extraResult = ExtraRuleResolver.GetExtraInfo(path, namingOptions);
 
             var name = Path.GetFileNameWithoutExtension(path);
 

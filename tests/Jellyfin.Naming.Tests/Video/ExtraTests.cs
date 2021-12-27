@@ -82,7 +82,7 @@ namespace Jellyfin.Naming.Tests.Video
 
         private void Test(string input, ExtraType? expectedType)
         {
-            var extraType = ExtraResolver.GetExtraInfo(input, _videoOptions).ExtraType;
+            var extraType = ExtraRuleResolver.GetExtraInfo(input, _videoOptions).ExtraType;
 
             Assert.Equal(expectedType, extraType);
         }
@@ -92,7 +92,7 @@ namespace Jellyfin.Naming.Tests.Video
         {
             var rule = new ExtraRule(ExtraType.Unknown, ExtraRuleType.Regex, @"([eE]x(tra)?\.\w+)", MediaType.Video);
             var options = new NamingOptions { VideoExtraRules = new[] { rule } };
-            var res = ExtraResolver.GetExtraInfo("extra.mp4", options);
+            var res = ExtraRuleResolver.GetExtraInfo("extra.mp4", options);
 
             Assert.Equal(rule, res.Rule);
         }
