@@ -118,5 +118,6 @@
     "Undefined": "Neapibrėžtas",
     "Forced": "Priverstas",
     "Default": "Numatytas",
-    "TaskCleanActivityLogDescription": "Ištrina veiklos žuranlo įrašus, kurie yra senesni nei nustatytas amžius."
+    "TaskCleanActivityLogDescription": "Ištrina veiklos žuranlo įrašus, kurie yra senesni nei nustatytas amžius.",
+    "TaskOptimizeDatabase": "Optimizuoti duomenų bazės"
 }
