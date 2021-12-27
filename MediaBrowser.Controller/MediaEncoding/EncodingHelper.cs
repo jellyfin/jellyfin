@@ -2670,7 +2670,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">Encoding state.</param>
         /// <param name="options">Encoding options.</param>
         /// <param name="vidEncoder">Video encoder to use.</param>
-        /// <returns>The tuple contains three lists: main, sub and overlay filters</returns>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
         public (List<string>, List<string>, List<string>) GetSwVidFilterChain(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -2750,7 +2750,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">Encoding state.</param>
         /// <param name="options">Encoding options.</param>
         /// <param name="vidEncoder">Video encoder to use.</param>
-        /// <returns>The tuple contains three lists: main, sub and overlay filters</returns>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
         public (List<string>, List<string>, List<string>) GetNvidiaVidFilterChain(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -2937,7 +2937,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">Encoding state.</param>
         /// <param name="options">Encoding options.</param>
         /// <param name="vidEncoder">Video encoder to use.</param>
-        /// <returns>The tuple contains three lists: main, sub and overlay filters</returns>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
         public (List<string>, List<string>, List<string>) GetAmdVidFilterChain(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -3135,7 +3135,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">Encoding state.</param>
         /// <param name="options">Encoding options.</param>
         /// <param name="vidEncoder">Video encoder to use.</param>
-        /// <returns>The tuple contains three lists: main, sub and overlay filters</returns>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
         public (List<string>, List<string>, List<string>) GetIntelVidFilterChain(
             EncodingJobInfo state,
             EncodingOptions options,
@@ -3588,7 +3588,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <param name="state">Encoding state.</param>
         /// <param name="options">Encoding options.</param>
         /// <param name="vidEncoder">Video encoder to use.</param>
-        /// <returns>The tuple contains three lists: main, sub and overlay filters</returns>
+        /// <returns>The tuple contains three lists: main, sub and overlay filters.</returns>
         public (List<string>, List<string>, List<string>) GetVaapiVidFilterChain(
             EncodingJobInfo state,
             EncodingOptions options,
