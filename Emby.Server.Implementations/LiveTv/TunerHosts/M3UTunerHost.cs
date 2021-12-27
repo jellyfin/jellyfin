@@ -131,7 +131,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts
 
         public async Task Validate(TunerHostInfo info)
         {
-            using (var stream = await new M3uParser(Logger, _httpClientFactory).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
+            using (await new M3uParser(Logger, _httpClientFactory).GetListingsStream(info, CancellationToken.None).ConfigureAwait(false))
             {
             }
         }

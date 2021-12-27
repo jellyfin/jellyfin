@@ -4,7 +4,7 @@ using System.Threading;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Triggers
 {
     /// <summary>
     /// Represents a task trigger that runs repeatedly on an interval.
@@ -43,7 +43,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
         /// <param name="logger">The logger.</param>
         /// <param name="taskName">The name of the task.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public void Start(TaskResult lastResult, ILogger logger, string taskName, bool isApplicationStartup)
+        public void Start(TaskResult? lastResult, ILogger logger, string taskName, bool isApplicationStartup)
         {
             DisposeTimer();
 
@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.ScheduledTasks
                 dueTime = maxDueTime;
             }
 
-            _timer = new Timer(state => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
+            _timer = new Timer(_ => OnTriggered(), null, dueTime, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>

@@ -38,7 +38,7 @@ namespace Emby.Dlna.Service
                 builder.Append("<action>");
 
                 builder.Append("<name>")
-                    .Append(SecurityElement.Escape(item.Name ?? string.Empty))
+                    .Append(SecurityElement.Escape(item.Name))
                     .Append("</name>");
 
                 builder.Append("<argumentList>");
@@ -48,13 +48,13 @@ namespace Emby.Dlna.Service
                     builder.Append("<argument>");
 
                     builder.Append("<name>")
-                        .Append(SecurityElement.Escape(argument.Name ?? string.Empty))
+                        .Append(SecurityElement.Escape(argument.Name))
                         .Append("</name>");
                     builder.Append("<direction>")
-                        .Append(SecurityElement.Escape(argument.Direction ?? string.Empty))
+                        .Append(SecurityElement.Escape(argument.Direction))
                         .Append("</direction>");
                     builder.Append("<relatedStateVariable>")
-                        .Append(SecurityElement.Escape(argument.RelatedStateVariable ?? string.Empty))
+                        .Append(SecurityElement.Escape(argument.RelatedStateVariable))
                         .Append("</relatedStateVariable>");
 
                     builder.Append("</argument>");
@@ -81,10 +81,10 @@ namespace Emby.Dlna.Service
                     .Append("\">");
 
                 builder.Append("<name>")
-                    .Append(SecurityElement.Escape(item.Name ?? string.Empty))
+                    .Append(SecurityElement.Escape(item.Name))
                     .Append("</name>");
                 builder.Append("<dataType>")
-                    .Append(SecurityElement.Escape(item.DataType ?? string.Empty))
+                    .Append(SecurityElement.Escape(item.DataType))
                     .Append("</dataType>");
 
                 if (item.AllowedValues.Count > 0)

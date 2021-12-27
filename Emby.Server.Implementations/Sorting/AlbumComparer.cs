@@ -33,7 +33,7 @@ namespace Emby.Server.Implementations.Sorting
         /// </summary>
         /// <param name="x">The x.</param>
         /// <returns>System.String.</returns>
-        private static string? GetValue(BaseItem? x)
+        private static string GetValue(BaseItem? x)
         {
             return x is Audio audio ? audio.Album : string.Empty;
         }

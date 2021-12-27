@@ -360,11 +360,6 @@ namespace Emby.Server.Implementations.Plugins
         /// <inheritdoc/>
         public async Task<bool> GenerateManifest(PackageInfo packageInfo, Version version, string path, PluginStatus status)
         {
-            if (packageInfo == null)
-            {
-                return false;
-            }
-
             var versionInfo = packageInfo.Versions.First(v => v.Version == version.ToString());
             var imagePath = string.Empty;
 
@@ -617,7 +612,7 @@ namespace Emby.Server.Implementations.Plugins
             if (versionIndex != -1)
             {
                 // Get the version number from the filename if possible.
-                metafile = Path.GetFileName(dir[..versionIndex]) ?? dir[..versionIndex];
+                metafile = Path.GetFileName(dir[..versionIndex]);
                 version = Version.TryParse(dir.AsSpan()[(versionIndex + 1)..], out Version? parsedVersion) ? parsedVersion : _appVersion;
             }
             else
@@ -682,7 +677,6 @@ namespace Emby.Server.Implementations.Plugins
                     continue;
                 }
 
-                var manifest = entry.Manifest;
                 var cleaned = false;
                 var path = entry.Path;
                 if (_config.RemoveOldPlugins)
@@ -707,12 +701,6 @@ namespace Emby.Server.Implementations.Plugins
                     }
                     else
                     {
-                        if (manifest == null)
-                        {
-                            _logger.LogWarning("Unable to disable plugin {Path}", entry.Path);
-                            continue;
-                        }
-
                         ChangePluginState(entry, PluginStatus.Deleted);
                     }
                 }

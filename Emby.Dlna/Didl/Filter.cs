@@ -17,8 +17,7 @@ namespace Emby.Dlna.Didl
         public Filter(string filter)
         {
             _all = string.Equals(filter, "*", StringComparison.OrdinalIgnoreCase);
-
-            _fields = (filter ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries);
+            _fields = filter.Split(',', StringSplitOptions.RemoveEmptyEntries);
         }
 
         public bool Contains(string field)

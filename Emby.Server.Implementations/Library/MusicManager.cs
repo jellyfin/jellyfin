@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.Library
 
         public List<BaseItem> GetInstantMixFromItem(BaseItem item, User user, DtoOptions dtoOptions)
         {
-            if (item is MusicGenre genre)
+            if (item is MusicGenre)
             {
                 return GetInstantMixFromGenreIds(new[] { item.Id }, user, dtoOptions);
             }

@@ -282,8 +282,6 @@ namespace Emby.Server.Implementations.Data
             typeof(AggregateFolder)
         };
 
-        private readonly Dictionary<string, string> _types = GetTypeMapDictionary();
-
         private static readonly Dictionary<BaseItemKind, string> _baseItemKindNames = new()
         {
             { BaseItemKind.AggregateFolder, typeof(AggregateFolder).FullName },
@@ -3440,11 +3438,6 @@ namespace Emby.Server.Implementations.Data
             return true;
         }
 
-        private bool IsValidType(string value)
-        {
-            return IsAlphaNumeric(value);
-        }
-
         private bool IsValidMediaType(string value)
         {
             return IsAlphaNumeric(value);
@@ -4711,7 +4704,7 @@ namespace Emby.Server.Implementations.Data
                 if (statement == null)
                 {
                     int index = 0;
-                    string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(t => paramName + index++));
+                    string excludedTags = string.Join(',', query.ExcludeInheritedTags.Select(_ => paramName + index++));
                     whereClauses.Add("((select CleanValue from itemvalues where ItemId=Guid and Type=6 and cleanvalue in (" + excludedTags + ")) is null)");
                 }
                 else
@@ -4966,21 +4959,6 @@ where AncestorIdText not null and ItemValues.Value not null and ItemValues.Type 
                     },
                     TransactionMode);
             }
-        }
-
-        private static Dictionary<string, string> GetTypeMapDictionary()
-        {
-            var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var t in _knownTypes)
-            {
-                dict[t.Name] = t.FullName;
-            }
-
-            dict["Program"] = typeof(LiveTvProgram).FullName;
-            dict["TvChannel"] = typeof(LiveTvChannel).FullName;
-
-            return dict;
         }
 
         public void DeleteItem(Guid id)

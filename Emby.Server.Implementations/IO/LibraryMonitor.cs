@@ -99,7 +99,7 @@ namespace Emby.Server.Implementations.IO
             // But if we make this delay too high, we risk missing legitimate changes, such as user adding a new file, or hand-editing metadata
             await Task.Delay(45000).ConfigureAwait(false);
 
-            _tempIgnoredPaths.TryRemove(path, out var val);
+            _tempIgnoredPaths.TryRemove(path, out _);
 
             if (refreshPath)
             {

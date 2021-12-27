@@ -167,8 +167,7 @@ namespace Emby.Dlna.Profiles
 
         public void AddXmlRootAttribute(string name, string value)
         {
-            var atts = XmlRootAttributes ?? System.Array.Empty<XmlAttribute>();
-            var list = atts.ToList();
+            var list = XmlRootAttributes.ToList();
 
             list.Add(new XmlAttribute
             {

@@ -630,7 +630,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             catch (HttpRequestException ex)
             {
-                if (ex.StatusCode.HasValue && ex.StatusCode.Value == System.Net.HttpStatusCode.NotFound)
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
                 {
                     // HDHR4 doesn't have this api
                     return;

@@ -173,7 +173,7 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string localizationKey,
             string sortName,
-            Jellyfin.Data.Entities.User user,
+            User user,
             string[] presetViews)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
@@ -359,7 +359,7 @@ namespace Emby.Server.Implementations.Library
                     (ItemSortBy.SortName, SortOrder.Descending),
                     (ItemSortBy.ProductionYear, SortOrder.Descending)
                 },
-                IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
+                IsFolder = includeItemTypes.Length == 0 ? false : null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,
                 Limit = limit * 5,
