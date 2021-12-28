@@ -144,41 +144,46 @@ namespace MediaBrowser.Providers.MediaInfo
                     var isDefault = fullName.Contains(".default.", StringComparison.OrdinalIgnoreCase);
 
                     // Support xbmc naming conventions - 300.spanish.srt
+                    string? language = null;
+                    string? title = null;
                     var languageSpan = fileNameWithoutExtension;
                     while (languageSpan.Length > 0)
                     {
                         var lastDot = languageSpan.LastIndexOf('.');
                         if (lastDot < matchLength)
                         {
-                            languageSpan = ReadOnlySpan<char>.Empty;
                             break;
                         }
 
                         var currentSlice = languageSpan[lastDot..];
+                        languageSpan = languageSpan[..lastDot];
+
                         if (currentSlice.Equals(".default", StringComparison.OrdinalIgnoreCase)
                             || currentSlice.Equals(".forced", StringComparison.OrdinalIgnoreCase)
                             || currentSlice.Equals(".foreign", StringComparison.OrdinalIgnoreCase))
                         {
-                            languageSpan = languageSpan[..lastDot];
                             continue;
                         }
 
-                        languageSpan = languageSpan[(lastDot + 1)..];
-                        break;
-                    }
+                        var currentSliceString = currentSlice[1..].ToString();
 
-                    var language = languageSpan.ToString();
-                    if (string.IsNullOrWhiteSpace(language))
-                    {
-                        language = null;
-                    }
-                    else
-                    {
-                        // Try to translate to three character code
-                        // Be flexible and check against both the full and three character versions
-                        var culture = _localization.FindLanguageInfo(language);
-
-                        language = culture == null ? language : culture.ThreeLetterISOLanguageName;
+                        // Try to translate to three character code, use as title if not a valid language
+                        var culture = _localization.FindLanguageInfo(currentSliceString);
+                        if (culture == null)
+                        {
+                            if (title == null)
+                            {
+                                title = currentSliceString;
+                            }
+                            else
+                            {
+                                title = currentSliceString + "." + title;
+                            }
+                        }
+                        else
+                        {
+                            language = culture.ThreeLetterISOLanguageName;
+                        }
                     }
 
                     mediaStream = new MediaStream
@@ -189,7 +194,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = fullName,
                         Language = language,
                         IsForced = isForced,
-                        IsDefault = isDefault
+                        IsDefault = isDefault,
+                        Title = title
                     };
                 }
                 else
