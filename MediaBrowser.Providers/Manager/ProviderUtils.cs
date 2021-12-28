@@ -1,7 +1,5 @@
 #nullable disable
 
-#pragma warning disable CS1591
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +11,21 @@ using MediaBrowser.Model.Entities;
 
 namespace MediaBrowser.Providers.Manager
 {
+    /// <summary>
+    /// Class ProviderUtils.
+    /// </summary>
     public static class ProviderUtils
     {
+        /// <summary>
+        /// Merges metadata from source into target.
+        /// </summary>
+        /// <param name="sourceResult">The source for new metadata.</param>
+        /// <param name="targetResult">The target to insert new metadata into.</param>
+        /// <param name="lockedFields">The fields that are locked and should not be updated.</param>
+        /// <param name="replaceData"><c>true</c> if existing data should be replaced.</param>
+        /// <param name="mergeMetadataSettings"><c>true</c> if the metadata settings in target should be updated to match source.</param>
+        /// <typeparam name="T">The type being acted upon.</typeparam>
+        /// <exception cref="ArgumentException">Thrown if source or target are null.</exception>
         public static void MergeBaseItemData<T>(
             MetadataResult<T> sourceResult,
             MetadataResult<T> targetResult,
@@ -200,7 +211,7 @@ namespace MediaBrowser.Providers.Manager
                 target.LockedFields = source.LockedFields;
                 target.IsLocked = source.IsLocked;
 
-                // Grab the value if it's there, but if not then don't overwrite the default
+                // Grab the value if it's there, but if not then don't overwrite with the default
                 if (source.DateCreated != default)
                 {
                     target.DateCreated = source.DateCreated;
