@@ -82,6 +82,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo
 
         [Theory]
         [InlineData("/video/My Video.mkv", "/video/My Video.srt", "srt", null, false, false)]
+        [InlineData("/video/My Video.mkv", "/video/my video.srt", "srt", null, false, false)]
+        [InlineData("/video/My Video.mkv", "/video/My Vidèo.srt", "srt", null, false, false)]
+        [InlineData("/video/My_Video.mkv", "/video/My. Video.srt", "srt", null, false, false)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.srt", "srt", null, false, false)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.foreign.srt", "srt", null, true, false)]
         [InlineData("/video/My Video.mkv", "/video/My Video.forced.srt", "srt", null, true, false)]
@@ -91,6 +94,9 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData("/video/My.Video.mkv", "/video/My.Video.default.en.srt", "srt", "en", false, true)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.default.forced.en.srt", "srt", "en", true, true)]
         [InlineData("/video/My.Video.mkv", "/video/My.Video.en.default.forced.srt", "srt", "en", true, true)]
+        [InlineData("/video/My.Video.mkv", "/video/My.Video.Track Label.srt", "srt", "Track Label", false, false)]
+        [InlineData("/video/MyVideo.mkv", "/video/My.Video.Track Label.srt", "srt", "Track Label", false, false)]
+        [InlineData("/video/My _ Video.mkv", "/video/MyVideo.Track Label.srt", "srt", "Track Label", false, false)]
         public void AddExternalSubtitleStreams_GivenSingleFile_ReturnsExpectedSubtitle(string videoPath, string file, string codec, string? language, bool isForced, bool isDefault)
         {
             var streams = new List<MediaStream>();

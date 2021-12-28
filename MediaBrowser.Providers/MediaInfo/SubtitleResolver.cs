@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
@@ -13,6 +14,9 @@ namespace MediaBrowser.Providers.MediaInfo
     /// </summary>
     public class SubtitleResolver
     {
+        private const CompareOptions CompareOptions = System.Globalization.CompareOptions.IgnoreCase | System.Globalization.CompareOptions.IgnoreNonSpace | System.Globalization.CompareOptions.IgnoreSymbols;
+        private readonly CompareInfo _compareInfo = CultureInfo.InvariantCulture.CompareInfo;
+
         private readonly ILocalizationManager _localization;
 
         /// <summary>
@@ -105,7 +109,7 @@ namespace MediaBrowser.Providers.MediaInfo
             int startIndex,
             IReadOnlyList<string> files)
         {
-            var videoFileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(videoPath);
+            var videoFileNameWithoutExtension = Path.GetFileNameWithoutExtension(videoPath.AsSpan());
 
             for (var i = 0; i < files.Count; i++)
             {
@@ -116,12 +120,12 @@ namespace MediaBrowser.Providers.MediaInfo
                     continue;
                 }
 
-                var fileNameWithoutExtension = NormalizeFilenameForSubtitleComparison(fullName);
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullName.AsSpan());
 
                 MediaStream mediaStream;
 
                 // The subtitle filename must either be equal to the video filename or start with the video filename followed by a dot
-                if (videoFileNameWithoutExtension.Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                if (_compareInfo.Compare(videoFileNameWithoutExtension, fileNameWithoutExtension, CompareOptions) == 0)
                 {
                     mediaStream = new MediaStream
                     {
@@ -131,9 +135,8 @@ namespace MediaBrowser.Providers.MediaInfo
                         Path = fullName
                     };
                 }
-                else if (fileNameWithoutExtension.Length > videoFileNameWithoutExtension.Length
-                         && fileNameWithoutExtension[videoFileNameWithoutExtension.Length] == '.'
-                         && fileNameWithoutExtension.StartsWith(videoFileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                else if (_compareInfo.IsPrefix(fileNameWithoutExtension, videoFileNameWithoutExtension, CompareOptions, out int matchLength)
+                         && fileNameWithoutExtension[matchLength] == '.')
                 {
                     var isForced = fullName.Contains(".forced.", StringComparison.OrdinalIgnoreCase)
                                    || fullName.Contains(".foreign.", StringComparison.OrdinalIgnoreCase);
@@ -145,7 +148,7 @@ namespace MediaBrowser.Providers.MediaInfo
                     while (languageSpan.Length > 0)
                     {
                         var lastDot = languageSpan.LastIndexOf('.');
-                        if (lastDot < videoFileNameWithoutExtension.Length)
+                        if (lastDot < matchLength)
                         {
                             languageSpan = ReadOnlySpan<char>.Empty;
                             break;
@@ -209,14 +212,6 @@ namespace MediaBrowser.Providers.MediaInfo
                    || extension.Equals(".vtt", StringComparison.OrdinalIgnoreCase)
                    || extension.Equals(".smi", StringComparison.OrdinalIgnoreCase)
                    || extension.Equals(".sami", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static ReadOnlySpan<char> NormalizeFilenameForSubtitleComparison(string filename)
-        {
-            // Try to account for sloppy file naming
-            filename = filename.Replace("_", string.Empty, StringComparison.Ordinal);
-            filename = filename.Replace(" ", string.Empty, StringComparison.Ordinal);
-            return Path.GetFileNameWithoutExtension(filename.AsSpan());
         }
 
         private void AddExternalSubtitleStreams(
