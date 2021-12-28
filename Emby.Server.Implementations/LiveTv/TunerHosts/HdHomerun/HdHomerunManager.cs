@@ -122,7 +122,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                         {
                             await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
-                            continue;
                         }
                     }
 

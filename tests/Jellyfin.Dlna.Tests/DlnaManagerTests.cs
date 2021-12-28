@@ -46,7 +46,7 @@ namespace Jellyfin.Dlna.Tests
                 ModelDescription = "LG WebOSTV DMRplus",
                 ModelName = "LG TV",
                 ModelNumber = "1.0",
-                Identification = new ()
+                Identification = new()
                 {
                     FriendlyName = "My Device",
                     Manufacturer = "LG Electronics",
@@ -92,7 +92,7 @@ namespace Jellyfin.Dlna.Tests
                 ModelDescription = "LG WebOSTV DMRplus",
                 ModelName = "LG TV",
                 ModelNumber = "1.0",
-                Identification = new ()
+                Identification = new()
                 {
                     FriendlyName = "My Device",
                     Manufacturer = "LG Electronics",
@@ -120,7 +120,7 @@ namespace Jellyfin.Dlna.Tests
             {
                 Name = "Test Profile",
                 FriendlyName = "My .*",
-                Identification = new ()
+                Identification = new()
             };
 
             var deviceMatch = GetManager().IsMatch(device.ToDeviceIdentification(), profile.Identification);

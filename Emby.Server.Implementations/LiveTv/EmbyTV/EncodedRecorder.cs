@@ -62,12 +62,12 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             using var durationToken = new CancellationTokenSource(duration);
             using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token);
 
-            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, duration, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
+            await RecordFromFile(mediaSource, mediaSource.Path, targetFile, onStarted, cancellationTokenSource.Token).ConfigureAwait(false);
 
             _logger.LogInformation("Recording completed to file {0}", targetFile);
         }
 
-        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, TimeSpan duration, Action onStarted, CancellationToken cancellationToken)
+        private async Task RecordFromFile(MediaSourceInfo mediaSource, string inputFile, string targetFile, Action onStarted, CancellationToken cancellationToken)
         {
             _targetPath = targetFile;
             Directory.CreateDirectory(Path.GetDirectoryName(targetFile));
@@ -81,7 +81,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 RedirectStandardInput = true,
 
                 FileName = _mediaEncoder.EncoderPath,
-                Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile, duration),
+                Arguments = GetCommandLineArgs(mediaSource, inputFile, targetFile),
 
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false
@@ -103,7 +103,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                 StartInfo = processStartInfo,
                 EnableRaisingEvents = true
             };
-            _process.Exited += (sender, args) => OnFfMpegProcessExited(_process);
+            _process.Exited += (_, _) => OnFfMpegProcessExited(_process);
 
             _process.Start();
 
@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
             _logger.LogInformation("ffmpeg recording process started for {0}", _targetPath);
         }
 
-        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile, TimeSpan duration)
+        private string GetCommandLineArgs(MediaSourceInfo mediaSource, string inputTempFile, string targetFile)
         {
             string videoArgs;
             if (EncodeVideo(mediaSource))

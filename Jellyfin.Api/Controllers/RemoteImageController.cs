@@ -3,18 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Jellyfin.Api.Constants;
-using Jellyfin.Extensions;
-using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -85,7 +80,8 @@ namespace Jellyfin.Api.Controllers
                         IncludeAllLanguages = includeAllLanguages,
                         IncludeDisabledProviders = true,
                         ImageType = type
-                    }, CancellationToken.None)
+                    },
+                    CancellationToken.None)
                 .ConfigureAwait(false);
 
             var imageArray = images.ToArray();

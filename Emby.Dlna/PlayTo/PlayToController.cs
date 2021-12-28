@@ -210,9 +210,9 @@ namespace Emby.Dlna.PlayTo
 
                 var mediaSource = await streamInfo.GetMediaSource(CancellationToken.None).ConfigureAwait(false);
 
-                var duration = mediaSource == null ?
-                    (_device.Duration == null ? (long?)null : _device.Duration.Value.Ticks) :
-                    mediaSource.RunTimeTicks;
+                var duration = mediaSource == null
+                    ? _device.Duration?.Ticks
+                    : mediaSource.RunTimeTicks;
 
                 var playedToCompletion = positionTicks.HasValue && positionTicks.Value == 0;
 

@@ -18,11 +18,8 @@ using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
@@ -30,12 +27,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Querying;
 using Microsoft.Extensions.Logging;
-using Book = MediaBrowser.Controller.Entities.Book;
-using Episode = MediaBrowser.Controller.Entities.TV.Episode;
 using Genre = MediaBrowser.Controller.Entities.Genre;
-using Movie = MediaBrowser.Controller.Entities.Movies.Movie;
-using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
-using Series = MediaBrowser.Controller.Entities.TV.Series;
 
 namespace Emby.Dlna.ContentDirectory
 {
@@ -698,16 +690,16 @@ namespace Emby.Dlna.ContentDirectory
 
             var serverItems = new ServerItem[]
             {
-                new (item, StubType.Latest),
-                new (item, StubType.Playlists),
-                new (item, StubType.Albums),
-                new (item, StubType.AlbumArtists),
-                new (item, StubType.Artists),
-                new (item, StubType.Songs),
-                new (item, StubType.Genres),
-                new (item, StubType.FavoriteArtists),
-                new (item, StubType.FavoriteAlbums),
-                new (item, StubType.FavoriteSongs)
+                new(item, StubType.Latest),
+                new(item, StubType.Playlists),
+                new(item, StubType.Albums),
+                new(item, StubType.AlbumArtists),
+                new(item, StubType.Artists),
+                new(item, StubType.Songs),
+                new(item, StubType.Genres),
+                new(item, StubType.FavoriteArtists),
+                new(item, StubType.FavoriteAlbums),
+                new(item, StubType.FavoriteSongs)
             };
 
             if (limit < serverItems.Length)
@@ -759,12 +751,12 @@ namespace Emby.Dlna.ContentDirectory
 
             var array = new ServerItem[]
             {
-                new (item, StubType.ContinueWatching),
-                new (item, StubType.Latest),
-                new (item, StubType.Movies),
-                new (item, StubType.Collections),
-                new (item, StubType.Favorites),
-                new (item, StubType.Genres)
+                new(item, StubType.ContinueWatching),
+                new(item, StubType.Latest),
+                new(item, StubType.Movies),
+                new(item, StubType.Collections),
+                new(item, StubType.Favorites),
+                new(item, StubType.Genres)
             };
 
             if (limit < array.Length)
@@ -844,13 +836,13 @@ namespace Emby.Dlna.ContentDirectory
 
             var serverItems = new ServerItem[]
             {
-                new (item, StubType.ContinueWatching),
-                new (item, StubType.NextUp),
-                new (item, StubType.Latest),
-                new (item, StubType.Series),
-                new (item, StubType.FavoriteSeries),
-                new (item, StubType.FavoriteEpisodes),
-                new (item, StubType.Genres)
+                new(item, StubType.ContinueWatching),
+                new(item, StubType.NextUp),
+                new(item, StubType.Latest),
+                new(item, StubType.Series),
+                new(item, StubType.FavoriteSeries),
+                new(item, StubType.FavoriteEpisodes),
+                new(item, StubType.Genres)
             };
 
             if (limit < serverItems.Length)

@@ -16,7 +16,7 @@ using Emby.Naming.TV;
 using Emby.Naming.Video;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
-using Emby.Server.Implementations.ScheduledTasks;
+using Emby.Server.Implementations.ScheduledTasks.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
 using Jellyfin.Extensions;
@@ -2678,7 +2678,7 @@ namespace Emby.Server.Implementations.Library
 
             return new ItemLookupInfo
             {
-                Name = VideoResolver.TryCleanString(result.Name, namingOptions, out var newName) ? newName.ToString() : result.Name,
+                Name = VideoResolver.TryCleanString(result.Name, namingOptions, out var newName) ? newName : result.Name,
                 Year = result.Year
             };
         }

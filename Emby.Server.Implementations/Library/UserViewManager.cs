@@ -8,11 +8,11 @@ using System.Linq;
 using System.Threading;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Channels;
@@ -20,8 +20,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
-using Genre = MediaBrowser.Controller.Entities.Genre;
-using Person = MediaBrowser.Controller.Entities.Person;
 
 namespace Emby.Server.Implementations.Library
 {
@@ -80,7 +78,7 @@ namespace Emby.Server.Implementations.Library
                     continue;
                 }
 
-                if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
+                if (query.PresetViews.Contains(folderViewType ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
                     list.Add(GetUserView(folder, folderViewType, string.Empty));
                 }
@@ -175,12 +173,12 @@ namespace Emby.Server.Implementations.Library
             string viewType,
             string localizationKey,
             string sortName,
-            Jellyfin.Data.Entities.User user,
+            User user,
             string[] presetViews)
         {
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
-                if (!presetViews.Contains(viewType, StringComparer.OrdinalIgnoreCase))
+                if (!presetViews.Contains(viewType, StringComparison.OrdinalIgnoreCase))
                 {
                     return (Folder)parents[0];
                 }
@@ -361,7 +359,7 @@ namespace Emby.Server.Implementations.Library
                     (ItemSortBy.SortName, SortOrder.Descending),
                     (ItemSortBy.ProductionYear, SortOrder.Descending)
                 },
-                IsFolder = includeItemTypes.Length == 0 ? false : (bool?)null,
+                IsFolder = includeItemTypes.Length == 0 ? false : null,
                 ExcludeItemTypes = excludeItemTypes,
                 IsVirtualItem = false,
                 Limit = limit * 5,

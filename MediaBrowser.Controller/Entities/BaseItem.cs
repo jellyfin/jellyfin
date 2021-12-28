@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Diacritics.Extensions;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -1283,11 +1284,11 @@ namespace MediaBrowser.Controller.Entities
             {
                 try
                 {
-                    var files = IsFileProtocol ?
-                        GetFileSystemChildren(options.DirectoryService).ToList() :
-                        new List<FileSystemMetadata>();
+                    if (IsFileProtocol)
+                    {
+                        requiresSave = await RefreshedOwnedItems(options, GetFileSystemChildren(options.DirectoryService).ToList(), cancellationToken).ConfigureAwait(false);
+                    }
 
-                    requiresSave = await RefreshedOwnedItems(options, files, cancellationToken).ConfigureAwait(false);
                     await LibraryManager.UpdateImagesAsync(this).ConfigureAwait(false); // ensure all image properties in DB are fresh
                 }
                 catch (Exception ex)
@@ -1642,7 +1643,7 @@ namespace MediaBrowser.Controller.Entities
 
         private bool IsVisibleViaTags(User user)
         {
-            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => Tags.Contains(i, StringComparer.OrdinalIgnoreCase)))
+            if (user.GetPreference(PreferenceKind.BlockedTags).Any(i => Tags.Contains(i, StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -1811,7 +1812,7 @@ namespace MediaBrowser.Controller.Entities
 
             var current = Studios;
 
-            if (!current.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (!current.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
                 int curLen = current.Length;
                 if (curLen == 0)
@@ -1846,7 +1847,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var genres = Genres;
-            if (!genres.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (!genres.Contains(name, StringComparison.OrdinalIgnoreCase))
             {
                 var list = genres.ToList();
                 list.Add(name);
@@ -2052,7 +2053,7 @@ namespace MediaBrowser.Controller.Entities
                 .ToList();
 
             var deletedImages = ImageInfos
-                .Where(image => image.IsLocalFile && !allFiles.Contains(image.Path, StringComparer.OrdinalIgnoreCase))
+                .Where(image => image.IsLocalFile && !allFiles.Contains(image.Path, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
             if (deletedImages.Count > 0)
@@ -2591,9 +2592,9 @@ namespace MediaBrowser.Controller.Entities
                 .Select(i => i.OfficialRating)
                 .Where(i => !string.IsNullOrEmpty(i))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(i => (i, LocalizationManager.GetRatingLevel(i)))
+                .Select(rating => (rating, LocalizationManager.GetRatingLevel(rating)))
                 .OrderBy(i => i.Item2 ?? 1000)
-                .Select(i => i.Item1);
+                .Select(i => i.rating);
 
             OfficialRating = ratings.FirstOrDefault() ?? currentOfficialRating;
 

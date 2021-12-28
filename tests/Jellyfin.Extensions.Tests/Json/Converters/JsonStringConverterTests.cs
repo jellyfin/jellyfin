@@ -6,7 +6,7 @@ namespace Jellyfin.Extensions.Tests.Json.Converters
 {
     public class JsonStringConverterTests
     {
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new ()
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             Converters =
             {

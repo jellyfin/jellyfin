@@ -217,8 +217,13 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public void Dispose()
         {
-            _disposed = true;
+            if (_disposed)
+            {
+                return;
+            }
+
             DisposeTimer();
+            _disposed = true;
             GC.SuppressFinalize(this);
         }
     }

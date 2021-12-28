@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.Video;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -32,7 +33,6 @@ namespace Emby.Server.Implementations.Library.Resolvers
             "logo",
             "default"
         };
-
 
         public PhotoResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
         {
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Library.Resolvers
             }
 
             string extension = Path.GetExtension(path).TrimStart('.');
-            return imageProcessor.SupportedInputFormats.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            return imageProcessor.SupportedInputFormats.Contains(extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

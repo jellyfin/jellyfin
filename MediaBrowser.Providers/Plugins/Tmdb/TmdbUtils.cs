@@ -11,7 +11,7 @@ namespace MediaBrowser.Providers.Plugins.Tmdb
     /// </summary>
     public static class TmdbUtils
     {
-        private static readonly Regex _nonWords = new (@"[\W_]+", RegexOptions.Compiled);
+        private static readonly Regex _nonWords = new(@"[\W_]+", RegexOptions.Compiled);
 
         /// <summary>
         /// URL of the TMDB instance to use.

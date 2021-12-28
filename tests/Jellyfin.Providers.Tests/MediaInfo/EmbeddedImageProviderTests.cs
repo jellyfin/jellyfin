@@ -62,7 +62,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             for (int i = 1; i <= targetIndex; i++)
             {
                 var name = i == targetIndex ? filename : "unmatched";
-                attachments.Add(new ()
+                attachments.Add(new()
                 {
                     FileName = name,
                     MimeType = mimetype,
@@ -107,7 +107,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
             for (int i = 1; i <= targetIndex; i++)
             {
                 var comment = i == targetIndex ? label : "unmatched";
-                streams.Add(new ()
+                streams.Add(new()
                 {
                     Type = MediaStreamType.EmbeddedImage,
                     Index = i,

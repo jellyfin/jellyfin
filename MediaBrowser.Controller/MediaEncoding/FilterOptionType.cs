@@ -18,6 +18,16 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// <summary>
         /// The tonemap_opencl_bt2390.
         /// </summary>
-        TonemapOpenclBt2390 = 2
+        TonemapOpenclBt2390 = 2,
+
+        /// <summary>
+        /// The overlay_opencl_framesync.
+        /// </summary>
+        OverlayOpenclFrameSync = 3,
+
+        /// <summary>
+        /// The overlay_vaapi_framesync.
+        /// </summary>
+        OverlayVaapiFrameSync = 4
     }
 }

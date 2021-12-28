@@ -120,7 +120,7 @@ namespace Emby.Server.Implementations
         /// <summary>
         /// The disposable parts.
         /// </summary>
-        private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new ();
+        private readonly ConcurrentDictionary<IDisposable, byte> _disposableParts = new();
 
         private readonly IFileSystem _fileSystemManager;
         private readonly IConfiguration _startupConfig;

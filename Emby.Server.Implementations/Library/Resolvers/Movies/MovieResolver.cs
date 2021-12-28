@@ -105,10 +105,9 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
 
                 if (string.IsNullOrEmpty(collectionType))
                 {
-                    // Owned items will be caught by the plain video resolver
+                    // Owned items will be caught by the video extra resolver
                     if (args.Parent == null)
                     {
-                        // return FindMovie<Video>(args.Path, args.Parent, files, args.DirectoryService, collectionType);
                         return null;
                     }
 
@@ -129,10 +128,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
                 return movie?.ExtraType == null ? movie : null;
             }
 
-            // Handle owned items
+            // Owned items will be caught by the video extra resolver
             if (args.Parent == null)
             {
-                return base.Resolve(args);
+                return null;
             }
 
             if (IsInvalid(args.Parent, collectionType))

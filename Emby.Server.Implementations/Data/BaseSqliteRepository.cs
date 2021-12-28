@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using Jellyfin.Extensions;
 using Microsoft.Extensions.Logging;
 using SQLitePCL.pretty;
 
@@ -160,21 +160,22 @@ namespace Emby.Server.Implementations.Data
         protected bool TableExists(ManagedConnection connection, string name)
         {
             return connection.RunInTransaction(
-            db =>
-            {
-                using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
+                db =>
                 {
-                    foreach (var row in statement.ExecuteQuery())
+                    using (var statement = PrepareStatement(db, "select DISTINCT tbl_name from sqlite_master"))
                     {
-                        if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                        foreach (var row in statement.ExecuteQuery())
                         {
-                            return true;
+                            if (string.Equals(name, row.GetString(0), StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
                         }
                     }
-                }
 
-                return false;
-            }, ReadTransactionMode);
+                    return false;
+                },
+                ReadTransactionMode);
         }
 
         protected List<string> GetColumnNames(IDatabaseConnection connection, string table)
@@ -194,7 +195,7 @@ namespace Emby.Server.Implementations.Data
 
         protected void AddColumn(IDatabaseConnection connection, string table, string columnName, string type, List<string> existingColumnNames)
         {
-            if (existingColumnNames.Contains(columnName, StringComparer.OrdinalIgnoreCase))
+            if (existingColumnNames.Contains(columnName, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }

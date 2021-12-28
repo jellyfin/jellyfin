@@ -21,7 +21,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
     {
         private static TheoryData<Video> GetImage_UnsupportedInput_ReturnsNoImage_TestData()
         {
-            return new ()
+            return new()
             {
                 new Movie { IsPlaceHolder = true },
 
@@ -82,7 +82,7 @@ namespace Jellyfin.Providers.Tests.MediaInfo
         [InlineData(500, 50)] // calculated time
         public async void GetImage_TimeSpan_SelectsCorrectTime(int? runTimeSeconds, long expectedSeconds)
         {
-            MediaStream targetStream = new () { Type = MediaStreamType.Video, Index = 0 };
+            MediaStream targetStream = new() { Type = MediaStreamType.Video, Index = 0 };
             var input = new Movie
             {
                 DefaultVideoStreamIndex = 0,

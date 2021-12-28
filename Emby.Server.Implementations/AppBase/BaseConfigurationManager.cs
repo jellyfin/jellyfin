@@ -371,7 +371,7 @@ namespace Emby.Server.Implementations.AppBase
                 NewConfiguration = configuration
             });
 
-            _configurations.AddOrUpdate(key, configuration, (k, v) => configuration);
+            _configurations.AddOrUpdate(key, configuration, (_, _) => configuration);
 
             var path = GetConfigurationFile(key);
             Directory.CreateDirectory(Path.GetDirectoryName(path));

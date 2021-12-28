@@ -544,16 +544,6 @@ namespace Emby.Server.Implementations.IO
         /// <inheritdoc />
         public virtual bool AreEqual(string path1, string path2)
         {
-            if (path1 == null && path2 == null)
-            {
-                return true;
-            }
-
-            if (path1 == null || path2 == null)
-            {
-                return false;
-            }
-
             return string.Equals(
                 NormalizePath(path1),
                 NormalizePath(path2),

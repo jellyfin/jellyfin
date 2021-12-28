@@ -471,6 +471,12 @@ namespace Emby.Naming.Common
                     MediaType.Video),
 
                 new ExtraRule(
+                    ExtraType.ThemeVideo,
+                    ExtraRuleType.DirectoryName,
+                    "backdrops",
+                    MediaType.Video),
+
+                new ExtraRule(
                     ExtraType.ThemeSong,
                     ExtraRuleType.Filename,
                     "theme",

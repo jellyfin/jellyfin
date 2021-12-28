@@ -36,7 +36,7 @@ public class FindExtrasTests
         _fileSystemMock.Setup(f => f.GetFileInfo(It.IsAny<string>())).Returns<string>(path => new FileSystemMetadata { FullName = path });
         _libraryManager = fixture.Build<Emby.Server.Implementations.Library.LibraryManager>().Do(s => s.AddParts(
                 fixture.Create<IEnumerable<IResolverIgnoreRule>>(),
-                new List<IItemResolver> { new GenericVideoResolver<Video>(fixture.Create<NamingOptions>()), new AudioResolver(fixture.Create<NamingOptions>()) },
+                new List<IItemResolver> { new VideoExtraResolver(fixture.Create<NamingOptions>()), new AudioResolver(fixture.Create<NamingOptions>()) },
                 fixture.Create<IEnumerable<IIntroProvider>>(),
                 fixture.Create<IEnumerable<IBaseItemComparer>>(),
                 fixture.Create<IEnumerable<ILibraryPostScanTask>>()))
@@ -69,6 +69,7 @@ public class FindExtrasTests
 
         Assert.Equal(2, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[0].GetType());
         Assert.Equal(ExtraType.Sample, extras[1].ExtraType);
     }
 
@@ -97,7 +98,7 @@ public class FindExtrasTests
                 false))
             .Returns(new List<FileSystemMetadata>
             {
-                new ()
+                new()
                 {
                     FullName = "/movies/Up/trailers/some trailer.mkv",
                     Name = "some trailer.mkv",
@@ -112,7 +113,7 @@ public class FindExtrasTests
                 false))
             .Returns(new List<FileSystemMetadata>
             {
-                new ()
+                new()
                 {
                     FullName = "/movies/Up/behind the scenes/the making of Up.mkv",
                     Name = "the making of Up.mkv",
@@ -127,7 +128,7 @@ public class FindExtrasTests
                 false))
             .Returns(new List<FileSystemMetadata>
             {
-                new ()
+                new()
                 {
                     FullName = "/movies/Up/theme-music/theme2.mp3",
                     Name = "theme2.mp3",
@@ -146,7 +147,9 @@ public class FindExtrasTests
 
         Assert.Equal(6, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[0].GetType());
         Assert.Equal(ExtraType.Trailer, extras[1].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[1].GetType());
         Assert.Equal(ExtraType.BehindTheScenes, extras[2].ExtraType);
         Assert.Equal(ExtraType.Sample, extras[3].ExtraType);
         Assert.Equal(ExtraType.ThemeSong, extras[4].ExtraType);
@@ -174,6 +177,7 @@ public class FindExtrasTests
 
         Assert.Single(extras);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[0].GetType());
         Assert.Equal("trailer", extras[0].FileNameWithoutExtension);
         Assert.Equal("/movies/Up/trailer.mkv", extras[0].Path);
     }
@@ -200,6 +204,7 @@ public class FindExtrasTests
 
         Assert.Single(extras);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[0].GetType());
         Assert.Equal("trailer", extras[0].FileNameWithoutExtension);
         Assert.Equal("/movies/Up/trailer.mkv", extras[0].Path);
     }
@@ -225,6 +230,7 @@ public class FindExtrasTests
 
         Assert.Equal(2, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
+        Assert.Equal(typeof(Trailer), extras[0].GetType());
         Assert.Equal("trailer", extras[0].FileNameWithoutExtension);
         Assert.Equal("/series/Dexter/trailer.mkv", extras[0].Path);
         Assert.Equal("/series/Dexter/trailers/trailer2.mkv", extras[1].Path);

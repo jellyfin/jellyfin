@@ -1,9 +1,8 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Net.Http.Headers;
-using System.Net.Mime;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Jellyfin.Api.Models.StartupDtos;

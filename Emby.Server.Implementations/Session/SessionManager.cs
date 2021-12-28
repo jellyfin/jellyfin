@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The active connections.
         /// </summary>
-        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new (StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new(StringComparer.OrdinalIgnoreCase);
 
         private Timer _idleTimer;
 

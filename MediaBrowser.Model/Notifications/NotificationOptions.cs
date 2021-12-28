@@ -2,9 +2,9 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Linq;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -94,7 +94,7 @@ namespace MediaBrowser.Model.Notifications
             NotificationOption opt = GetOptions(notificationType);
 
             return opt == null
-                   || !opt.DisabledServices.Contains(service, StringComparer.OrdinalIgnoreCase);
+                   || !opt.DisabledServices.Contains(service, StringComparison.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToMonitorUser(string type, Guid userId)
@@ -103,7 +103,7 @@ namespace MediaBrowser.Model.Notifications
 
             return opt != null
                    && opt.Enabled
-                   && !opt.DisabledMonitorUsers.Contains(userId.ToString("N"), StringComparer.OrdinalIgnoreCase);
+                   && !opt.DisabledMonitorUsers.Contains(userId.ToString("N"), StringComparison.OrdinalIgnoreCase);
         }
 
         public bool IsEnabledToSendToUser(string type, string userId, User user)
@@ -122,7 +122,7 @@ namespace MediaBrowser.Model.Notifications
                     return true;
                 }
 
-                return opt.SendToUsers.Contains(userId, StringComparer.OrdinalIgnoreCase);
+                return opt.SendToUsers.Contains(userId, StringComparison.OrdinalIgnoreCase);
             }
 
             return false;

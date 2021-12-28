@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Extensions;
 using MediaBrowser.Common;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
@@ -109,7 +109,7 @@ namespace Emby.Server.Implementations.Dto
                             }
                         });
 
-                        SetItemByNameInfo(item, dto, libraryItems, user);
+                        SetItemByNameInfo(item, dto, libraryItems);
                     }
                 }
 
@@ -153,8 +153,7 @@ namespace Emby.Server.Implementations.Dto
                         new DtoOptions(false)
                         {
                             EnableImages = false
-                        }),
-                    user);
+                        }));
             }
 
             return dto;
@@ -294,7 +293,7 @@ namespace Emby.Server.Implementations.Dto
                             path = path.TrimStart('.');
                         }
 
-                        if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparer.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(path) && containers.Contains(path, StringComparison.OrdinalIgnoreCase))
                         {
                             fileExtensionContainer = path;
                         }
@@ -311,13 +310,13 @@ namespace Emby.Server.Implementations.Dto
 
             if (taggedItems != null && options.ContainsField(ItemFields.ItemCounts))
             {
-                SetItemByNameInfo(item, dto, taggedItems, user);
+                SetItemByNameInfo(item, dto, taggedItems);
             }
 
             return dto;
         }
 
-        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems, User user = null)
+        private static void SetItemByNameInfo(BaseItem item, BaseItemDto dto, IList<BaseItem> taggedItems)
         {
             if (item is MusicArtist)
             {
@@ -1404,44 +1403,27 @@ namespace Emby.Server.Implementations.Dto
                 return null;
             }
 
-            ImageDimensions size;
-
-            var defaultAspectRatio = item.GetDefaultPrimaryImageAspectRatio();
-
-            if (defaultAspectRatio > 0)
-            {
-                return defaultAspectRatio;
-            }
-
             if (!imageInfo.IsLocalFile)
             {
-                return null;
+                return item.GetDefaultPrimaryImageAspectRatio();
             }
 
             try
             {
-                size = _imageProcessor.GetImageDimensions(item, imageInfo);
-
-                if (size.Width <= 0 || size.Height <= 0)
+                var size = _imageProcessor.GetImageDimensions(item, imageInfo);
+                var width = size.Width;
+                var height = size.Height;
+                if (width > 0 && height > 0)
                 {
-                    return null;
+                    return (double)width / height;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {0}", imageInfo.Path);
-                return null;
+                _logger.LogError(ex, "Failed to determine primary image aspect ratio for {ImagePath}", imageInfo.Path);
             }
 
-            var width = size.Width;
-            var height = size.Height;
-
-            if (width <= 0 || height <= 0)
-            {
-                return null;
-            }
-
-            return (double)width / height;
+            return item.GetDefaultPrimaryImageAspectRatio();
         }
     }
 }

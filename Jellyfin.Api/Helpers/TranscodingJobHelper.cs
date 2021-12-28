@@ -218,7 +218,8 @@ namespace Jellyfin.Api.Helpers
             return KillTranscodingJobs(
                 j => string.IsNullOrWhiteSpace(playSessionId)
                     ? string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase)
-                    : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase), deleteFiles);
+                    : string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase),
+                deleteFiles);
         }
 
         /// <summary>

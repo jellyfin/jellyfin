@@ -112,7 +112,7 @@ namespace Emby.Server.Implementations.Library.Resolvers.Audio
         /// Determine if the supplied list contains what we should consider music.
         /// </summary>
         private bool ContainsMusic(
-            IEnumerable<FileSystemMetadata> list,
+            ICollection<FileSystemMetadata> list,
             bool allowSubfolders,
             IDirectoryService directoryService)
         {

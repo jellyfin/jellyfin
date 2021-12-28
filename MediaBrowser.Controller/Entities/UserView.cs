@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
+using Jellyfin.Extensions;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Querying;
 
@@ -170,12 +171,12 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool IsEligibleForGrouping(string viewType)
         {
-            return _viewTypesEligibleForGrouping.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            return _viewTypesEligibleForGrouping.Contains(viewType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool EnableOriginalFolder(string viewType)
         {
-            return _originalFolderViewTypes.Contains(viewType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            return _originalFolderViewTypes.Contains(viewType ?? string.Empty, StringComparison.OrdinalIgnoreCase);
         }
 
         protected override Task ValidateChildrenInternal(IProgress<double> progress, bool recursive, bool refreshChildMetadata, Providers.MetadataRefreshOptions refreshOptions, Providers.IDirectoryService directoryService, System.Threading.CancellationToken cancellationToken)

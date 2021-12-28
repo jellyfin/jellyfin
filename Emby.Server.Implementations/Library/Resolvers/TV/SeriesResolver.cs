@@ -5,12 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
 using Emby.Naming.Video;
-using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;

@@ -180,7 +180,7 @@ namespace Emby.Server.Implementations.HttpServer
             }
 
             WebSocketMessage<object>? stub;
-            long bytesConsumed = 0;
+            long bytesConsumed;
             try
             {
                 stub = DeserializeWebSocketMessage(buffer, out bytesConsumed);
@@ -236,7 +236,8 @@ namespace Emby.Server.Implementations.HttpServer
                 {
                     MessageId = Guid.NewGuid(),
                     MessageType = SessionMessageType.KeepAlive
-                }, CancellationToken.None);
+                },
+                CancellationToken.None);
         }
 
         /// <inheritdoc />

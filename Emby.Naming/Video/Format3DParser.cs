@@ -9,7 +9,7 @@ namespace Emby.Naming.Video
     public static class Format3DParser
     {
         // Static default result to save on allocation costs.
-        private static readonly Format3DResult _defaultResult = new (false, null);
+        private static readonly Format3DResult _defaultResult = new(false, null);
 
         /// <summary>
         /// Parse 3D format related flags.

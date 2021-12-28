@@ -264,7 +264,8 @@ namespace Jellyfin.Api.Controllers
                     ReplaceAllMetadata = true,
                     ReplaceAllImages = replaceAllImages,
                     SearchResult = searchResult
-                }, CancellationToken.None).ConfigureAwait(false);
+                },
+                CancellationToken.None).ConfigureAwait(false);
 
             return NoContent();
         }

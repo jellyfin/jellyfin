@@ -26,7 +26,8 @@ namespace Jellyfin.Server.Integration.Tests
                     {
                         Scheme = "ws",
                         Path = "websocket"
-                    }.Uri, CancellationToken.None));
+                    }.Uri,
+                    CancellationToken.None));
         }
     }
 }
