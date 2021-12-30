@@ -517,7 +517,7 @@ namespace MediaBrowser.Controller.Entities
             }).FirstOrDefault();
         }
 
-        protected override IEnumerable<(BaseItem, MediaSourceType)> GetAllItemsForMediaSources()
+        protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
             var list = new List<(BaseItem, MediaSourceType)>
             {

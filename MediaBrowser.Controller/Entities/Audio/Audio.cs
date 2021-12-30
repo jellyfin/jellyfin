@@ -135,7 +135,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return info;
         }
 
-        protected override IEnumerable<(BaseItem, MediaSourceType)> GetAllItemsForMediaSources()
+        protected override IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
             => new[] { ((BaseItem)this, MediaSourceType.Default) };
     }
 }

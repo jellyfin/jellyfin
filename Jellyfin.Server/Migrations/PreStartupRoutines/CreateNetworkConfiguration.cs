@@ -53,7 +53,7 @@ public class CreateNetworkConfiguration : IMigrationRoutine
         networkConfigSerializer.Serialize(xmlWriter, networkSettings);
     }
 
-#pragma warning disable CS1591
+#pragma warning disable
     public sealed class OldNetworkConfiguration
     {
         public const int DefaultHttpPort = 8096;
@@ -134,5 +134,5 @@ public class CreateNetworkConfiguration : IMigrationRoutine
 
         public string[] KnownProxies { get; set; } = Array.Empty<string>();
     }
-#pragma warning restore CS1591
+#pragma warning restore
 }

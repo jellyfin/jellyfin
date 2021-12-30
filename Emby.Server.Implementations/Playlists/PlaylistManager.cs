@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Playlists
             var parentFolder = GetPlaylistsFolder(Guid.Empty);
             if (parentFolder == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentException(nameof(parentFolder));
             }
 
             if (string.IsNullOrEmpty(options.MediaType))

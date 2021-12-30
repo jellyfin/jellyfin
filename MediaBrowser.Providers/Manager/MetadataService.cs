@@ -682,12 +682,12 @@ namespace MediaBrowser.Providers.Manager
                         {
                             try
                             {
-                                await ProviderManager.SaveImage(item, remoteImage.url, remoteImage.type, null, cancellationToken).ConfigureAwait(false);
+                                await ProviderManager.SaveImage(item, remoteImage.Url, remoteImage.Type, null, cancellationToken).ConfigureAwait(false);
                                 refreshResult.UpdateType |= ItemUpdateType.ImageUpdate;
                             }
                             catch (HttpRequestException ex)
                             {
-                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.type), remoteImage.url);
+                                Logger.LogError(ex, "Could not save {ImageType} image: {Url}", Enum.GetName(remoteImage.Type), remoteImage.Url);
                             }
                         }
 

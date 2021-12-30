@@ -394,12 +394,12 @@ namespace Jellyfin.Server.Implementations.Users
             var user = Users.FirstOrDefault(i => string.Equals(username, i.Username, StringComparison.OrdinalIgnoreCase));
             var authResult = await AuthenticateLocalUser(username, password, user, remoteEndPoint)
                 .ConfigureAwait(false);
-            var authenticationProvider = authResult.authenticationProvider;
-            var success = authResult.success;
+            var authenticationProvider = authResult.AuthenticationProvider;
+            var success = authResult.Success;
 
             if (user == null)
             {
-                string updatedUsername = authResult.username;
+                string updatedUsername = authResult.Username;
 
                 if (success
                     && authenticationProvider != null
@@ -785,7 +785,7 @@ namespace Jellyfin.Server.Implementations.Users
             return providers;
         }
 
-        private async Task<(IAuthenticationProvider? authenticationProvider, string username, bool success)> AuthenticateLocalUser(
+        private async Task<(IAuthenticationProvider? AuthenticationProvider, string Username, bool Success)> AuthenticateLocalUser(
                 string username,
                 string password,
                 User? user,
@@ -798,8 +798,8 @@ namespace Jellyfin.Server.Implementations.Users
             {
                 var providerAuthResult =
                     await AuthenticateWithProvider(provider, username, password, user).ConfigureAwait(false);
-                var updatedUsername = providerAuthResult.username;
-                success = providerAuthResult.success;
+                var updatedUsername = providerAuthResult.Username;
+                success = providerAuthResult.Success;
 
                 if (success)
                 {
@@ -822,7 +822,7 @@ namespace Jellyfin.Server.Implementations.Users
             return (authenticationProvider, username, success);
         }
 
-        private async Task<(string username, bool success)> AuthenticateWithProvider(
+        private async Task<(string Username, bool Success)> AuthenticateWithProvider(
             IAuthenticationProvider provider,
             string username,
             string password,

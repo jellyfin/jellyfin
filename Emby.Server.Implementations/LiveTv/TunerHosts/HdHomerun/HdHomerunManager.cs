@@ -114,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                     foreach (var command in commands.GetCommands())
                     {
-                        var channelMsgLen = WriteSetMessage(buffer, i, command.Item1, command.Item2, lockKeyValue);
+                        var channelMsgLen = WriteSetMessage(buffer, i, command.CommandName, command.CommandValue, lockKeyValue);
                         await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken).ConfigureAwait(false);
                         receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
@@ -167,7 +167,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 foreach (var command in commandList)
                 {
-                    var channelMsgLen = WriteSetMessage(buffer, _activeTuner, command.Item1, command.Item2, _lockkey);
+                    var channelMsgLen = WriteSetMessage(buffer, _activeTuner, command.CommandName, command.CommandValue, _lockkey);
                     await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken).ConfigureAwait(false);
                     int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 

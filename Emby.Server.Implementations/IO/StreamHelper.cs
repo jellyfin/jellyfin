@@ -17,11 +17,11 @@ namespace Emby.Server.Implementations.IO
             try
             {
                 int read;
-                while ((read = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+                while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    await destination.WriteAsync(buffer, 0, read, cancellationToken).ConfigureAwait(false);
+                    await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
 
                     if (onStarted != null)
                     {
@@ -44,11 +44,11 @@ namespace Emby.Server.Implementations.IO
                 if (emptyReadLimit <= 0)
                 {
                     int read;
-                    while ((read = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+                    while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        await destination.WriteAsync(buffer, 0, read, cancellationToken).ConfigureAwait(false);
+                        await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
                     }
 
                     return;
@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.IO
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+                    var bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
                     if (bytesRead == 0)
                     {
@@ -71,7 +71,7 @@ namespace Emby.Server.Implementations.IO
                     {
                         eofCount = 0;
 
-                        await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+                        await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
@@ -88,13 +88,13 @@ namespace Emby.Server.Implementations.IO
             {
                 int bytesRead;
 
-                while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+                while ((bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
                 {
                     var bytesToWrite = Math.Min(bytesRead, copyLength);
 
                     if (bytesToWrite > 0)
                     {
-                        await destination.WriteAsync(buffer, 0, Convert.ToInt32(bytesToWrite), cancellationToken).ConfigureAwait(false);
+                        await destination.WriteAsync(buffer.AsMemory(0, Convert.ToInt32(bytesToWrite)), cancellationToken).ConfigureAwait(false);
                     }
 
                     copyLength -= bytesToWrite;
@@ -137,9 +137,9 @@ namespace Emby.Server.Implementations.IO
             int bytesRead;
             int totalBytesRead = 0;
 
-            while ((bytesRead = await source.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
+            while ((bytesRead = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
             {
-                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+                await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 
                 totalBytesRead += bytesRead;
             }

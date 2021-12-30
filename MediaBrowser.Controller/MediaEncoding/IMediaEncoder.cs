@@ -32,19 +32,19 @@ namespace MediaBrowser.Controller.MediaEncoding
         Version EncoderVersion { get; }
 
         /// <summary>
-        /// Whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
+        /// Gets a value indicating whether the configured Vaapi device is from AMD(radeonsi/r600 Mesa driver).
         /// </summary>
         /// <value><c>true</c> if the Vaapi device is an AMD(radeonsi/r600 Mesa driver) GPU, <c>false</c> otherwise.</value>
         bool IsVaapiDeviceAmd { get; }
 
         /// <summary>
-        /// Whether the configured Vaapi device is from Intel(iHD driver).
+        /// Gets a value indicating whether the configured Vaapi device is from Intel(iHD driver).
         /// </summary>
         /// <value><c>true</c> if the Vaapi device is an Intel(iHD driver) GPU, <c>false</c> otherwise.</value>
         bool IsVaapiDeviceInteliHD { get; }
 
         /// <summary>
-        /// Whether the configured Vaapi device is from Intel(legacy i965 driver).
+        /// Gets a value indicating whether the configured Vaapi device is from Intel(legacy i965 driver).
         /// </summary>
         /// <value><c>true</c> if the Vaapi device is an Intel(legacy i965 driver) GPU, <c>false</c> otherwise.</value>
         bool IsVaapiDeviceInteli965 { get; }

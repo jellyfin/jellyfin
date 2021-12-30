@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Helpers
         {
             if (sortBy.Count == 0)
             {
-                return Array.Empty<ValueTuple<string, SortOrder>>();
+                return Array.Empty<(string, SortOrder)>();
             }
 
             var result = new (string, SortOrder)[sortBy.Count];
