@@ -3,9 +3,8 @@ INSTGIT := $(shell if [ "$$(id -u)" = "0" ]; then dnf -y install git; fi)
 NAME    := jellyfin-server
 VERSION := $(shell sed -ne '/^Version:/s/.*  *//p' $(DIR)/jellyfin.spec)
 RELEASE := $(shell sed -ne '/^Release:/s/.*  *\(.*\)%{.*}.*/\1/p' $(DIR)/jellyfin.spec)
-GIT_VER := $(shell git describe --tags | sed -e 's/^v//' -e 's/-[0-9]*-g.*$$//')
-SRPM    := jellyfin-$(subst -,~,$(GIT_VER))-$(RELEASE)$(shell rpm --eval %dist).src.rpm
-TARBALL :=$(NAME)-$(subst -,~,$(GIT_VER)).tar.gz
+SRPM    := jellyfin-$(subst -,~,$(VERSION))-$(RELEASE)$(shell rpm --eval %dist).src.rpm
+TARBALL :=$(NAME)-$(subst -,~,$(VERSION)).tar.gz
 
 epel-7-x86_64_repos := https://packages.microsoft.com/rhel/7/prod/
 epel-8-x86_64_repos := https://download.copr.fedorainfracloud.org/results/@dotnet-sig/dotnet-preview/$(TARGET)/
@@ -24,9 +23,9 @@ $(DIR)/$(TARBALL):
 	cd $(DIR)/;                                          \
 	SOURCE_DIR=..                                        \
 	WORKDIR="$${PWD}";                                   \
-	version=$(GIT_VER);                                  \
+	version=$(VERSION);                                  \
 	tar                                                  \
-	--transform "s,^\.,$(NAME)-$(subst -,~,$(GIT_VER))," \
+	--transform "s,^\.,$(NAME)-$(subst -,~,$(VERSION))," \
 	--exclude='.git*'                                    \
 	--exclude='**/.git'                                  \
 	--exclude='**/.hg'                                   \
@@ -43,7 +42,6 @@ $(DIR)/$(TARBALL):
 	-C $${SOURCE_DIR} ./
 
 $(DIR)/$(SRPM): $(DIR)/$(TARBALL) $(DIR)/jellyfin.spec
-	./bump_version $(GIT_VER)
 	cd $(DIR)/;                              \
 	rpmbuild -bs jellyfin.spec               \
 	         --define "_sourcedir $$PWD/"    \
