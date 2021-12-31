@@ -1,20 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.BaseItemManager;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Providers.Manager;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
+
+// Allow Moq to see internal class
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace Jellyfin.Providers.Tests.Manager
 {
@@ -23,7 +31,7 @@ namespace Jellyfin.Providers.Tests.Manager
         private static readonly ILogger<ProviderManager> _logger = new NullLogger<ProviderManager>();
 
         private static TheoryData<Mock<IMetadataService>[], int> RefreshSingleItemOrderData()
-            => new ()
+            => new()
             {
                 // no order set, uses provided order
                 {
@@ -110,7 +118,7 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         private static TheoryData<int, int[]?, int[]?, int?[]?, int[]> GetImageProvidersOrderData()
-            => new ()
+            => new()
             {
                 { 3, null, null, null, new[] { 0, 1, 2 } }, // no order options set
 
@@ -238,7 +246,7 @@ namespace Jellyfin.Providers.Tests.Manager
         {
             var l = nameof(ILocalMetadataProvider);
             var r = nameof(IRemoteMetadataProvider);
-            return new ()
+            return new()
             {
                 { new[] { l, l, r, r }, null, null, null, null, null, new[] { 0, 1, 2, 3 } }, // no order options set
 
@@ -269,8 +277,6 @@ namespace Jellyfin.Providers.Tests.Manager
                 // IHasOrder ordering (not interleaved, doesn't care about types)
                 { new[] { l, l, r, r }, null, null, null, null, new int?[] { 2, null, 1, null }, new[] { 2, 0, 1, 3 } }, // partially defined
                 { new[] { l, l, r, r }, null, null, null, null, new int?[] { 3, 2, 1, 0 }, new[] { 3, 2, 1, 0 } }, // full reverse order
-                // note odd interaction - orderby determines order of slot when local and remote both have a slot 0
-                { new[] { l, l, r, r }, new[] { 1 }, new[] { 3 }, null, null, new int?[] { null, 2, null, 1 }, new[] { 3, 1, 0, 2 } }, // sorts interleaved results
 
                 // multiple orders set
                 { new[] { l, l, l, r, r, r }, new[] { 1 }, new[] { 4 }, new[] { 2, 1, 0 }, new[] { 5, 4, 3 }, null, new[] { 1, 4, 0, 2, 3, 5 } }, // partial library order first, server order ignored
@@ -562,13 +568,13 @@ namespace Jellyfin.Providers.Tests.Manager
                 .Returns(libraryOptions ?? new LibraryOptions());
 
             var providerManager = new ProviderManager(
-                null,
-                null,
+                Mock.Of<IHttpClientFactory>(),
+                Mock.Of<ISubtitleManager>(),
                 serverConfigurationManager.Object,
-                null,
+                Mock.Of<ILibraryMonitor>(),
                 _logger,
-                null,
-                null,
+                Mock.Of<IFileSystem>(),
+                Mock.Of<IServerApplicationPaths>(),
                 libraryManager.Object,
                 baseItemManager!);
 
@@ -595,7 +601,7 @@ namespace Jellyfin.Providers.Tests.Manager
         /// <summary>
         /// Simple <see cref="BaseItem"/> extension to make SupportsLocalMetadata directly settable.
         /// </summary>
-        public class MetadataTestItem : BaseItem, IHasLookupInfo<MetadataTestItemInfo>
+        internal class MetadataTestItem : BaseItem, IHasLookupInfo<MetadataTestItemInfo>
         {
             public bool EnableLocalMetadata { get; set; } = true;
 
@@ -607,7 +613,7 @@ namespace Jellyfin.Providers.Tests.Manager
             }
         }
 
-        public class MetadataTestItemInfo : ItemLookupInfo
+        internal class MetadataTestItemInfo : ItemLookupInfo
         {
         }
     }
