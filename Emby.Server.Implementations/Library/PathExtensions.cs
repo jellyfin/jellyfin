@@ -37,7 +37,7 @@ namespace Emby.Server.Implementations.Library
                 var attributeEnd = attributeIndex + attribute.Length;
                 if (attributeIndex > 0
                     && str[attributeIndex - 1] == '['
-                    && str[attributeEnd] == '=')
+                    && (str[attributeEnd] == '=' || str[attributeEnd] == '-'))
                 {
                     var closingIndex = str[attributeEnd..].IndexOf(']');
                     // Must be at least 1 character before the closing bracket.
