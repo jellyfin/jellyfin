@@ -27,6 +27,11 @@ namespace MediaBrowser.Controller.Providers
 
         public bool IsAutomated { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the action is an identify.
+        /// </summary>
+        public bool IsIdentify { get; set; }
+
         public bool IsReplacingImage(ImageType type)
         {
             return ImageRefreshMode == MetadataRefreshMode.FullRefresh &&

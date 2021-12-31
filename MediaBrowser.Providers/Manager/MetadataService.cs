@@ -749,8 +749,12 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                        if (!options.IsIdentify)
+                        {
+                            // Keep metadata for fields that the new metadata doesn't have populated
+                            MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
+                        }
+
                         MergeData(temp, metadata, item.LockedFields, true, false);
                     }
                 }
