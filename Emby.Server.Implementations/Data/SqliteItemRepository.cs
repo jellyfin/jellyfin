@@ -3016,8 +3016,8 @@ namespace Emby.Server.Implementations.Data
             return " ORDER BY " + string.Join(',', orderBy.Select(i =>
             {
                 var columnMap = MapOrderByField(i.OrderBy, query);
-
-                return columnMap.SortBy + " " + columnMap.SortOrder;
+                var sortOrder = columnMap.SortOrder == SortOrder.Ascending ? "ASC" : "DESC";
+                return columnMap.SortBy + " " + sortOrder;
             }));
         }
 
