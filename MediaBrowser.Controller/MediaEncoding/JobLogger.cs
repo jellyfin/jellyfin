@@ -41,7 +41,7 @@ namespace MediaBrowser.Controller.MediaEncoding
                             break;
                         }
 
-                        await target.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                        await target.WriteAsync(bytes).ConfigureAwait(false);
 
                         // Check again, the stream could have been closed
                         if (!target.CanWrite)

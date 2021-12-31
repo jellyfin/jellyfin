@@ -6,6 +6,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
     public interface IHdHomerunChannelCommands
     {
-        IEnumerable<(string, string)> GetCommands();
+        IEnumerable<(string CommandName, string CommandValue)> GetCommands();
     }
 }

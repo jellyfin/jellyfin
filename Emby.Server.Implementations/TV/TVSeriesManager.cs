@@ -117,7 +117,7 @@ namespace Emby.Server.Implementations.TV
                     new InternalItemsQuery(user)
                     {
                         IncludeItemTypes = new[] { BaseItemKind.Episode },
-                        OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
+                        OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
                         DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
@@ -193,7 +193,7 @@ namespace Emby.Server.Implementations.TV
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
                 IncludeItemTypes = new[] { BaseItemKind.Episode },
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Descending) },
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
@@ -211,7 +211,7 @@ namespace Emby.Server.Implementations.TV
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
                     IncludeItemTypes = new[] { BaseItemKind.Episode },
-                    OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
+                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,
                     IsVirtualItem = false,

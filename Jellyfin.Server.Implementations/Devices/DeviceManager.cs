@@ -173,8 +173,8 @@ namespace Jellyfin.Server.Implementations.Devices
             var sessions = dbContext.Devices
                 .Include(d => d.User)
                 .AsQueryable()
-                .OrderBy(d => d.DeviceId)
-                .ThenByDescending(d => d.DateLastActivity)
+                .OrderByDescending(d => d.DateLastActivity)
+                .ThenBy(d => d.DeviceId)
                 .AsAsyncEnumerable();
 
             if (supportsSync.HasValue)

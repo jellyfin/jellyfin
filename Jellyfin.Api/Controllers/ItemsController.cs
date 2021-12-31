@@ -484,7 +484,7 @@ namespace Jellyfin.Api.Controllers
                     // Albums by artist
                     if (query.ArtistIds.Length > 0 && query.IncludeItemTypes.Length == 1 && query.IncludeItemTypes[0] == BaseItemKind.MusicAlbum)
                     {
-                        query.OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.ProductionYear, SortOrder.Descending), new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) };
+                        query.OrderBy = new[] { (ItemSortBy.ProductionYear, SortOrder.Descending), (ItemSortBy.SortName, SortOrder.Ascending) };
                     }
                 }
 

@@ -1069,7 +1069,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var list = GetAllItemsForMediaSources();
-            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item1, i.Item2)).ToList();
+            var result = list.Select(i => GetVersionInfo(enablePathSubstitution, i.Item, i.MediaSourceType)).ToList();
 
             if (IsActiveRecording())
             {
@@ -1097,7 +1097,7 @@ namespace MediaBrowser.Controller.Entities
             .ToList();
         }
 
-        protected virtual IEnumerable<(BaseItem, MediaSourceType)> GetAllItemsForMediaSources()
+        protected virtual IEnumerable<(BaseItem Item, MediaSourceType MediaSourceType)> GetAllItemsForMediaSources()
         {
             return Enumerable.Empty<(BaseItem, MediaSourceType)>();
         }

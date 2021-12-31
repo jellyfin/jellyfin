@@ -6,7 +6,7 @@
     "ChapterNameValue": "അധ്യായം {0}",
     "DeviceOfflineWithName": "{0} വിച്ഛേദിച്ചു",
     "DeviceOnlineWithName": "{0} ബന്ധിപ്പിച്ചു",
-    "FailedLoginAttemptWithUserName": "Log 0 from എന്നതിൽ നിന്നുള്ള പ്രവേശന ശ്രമം പരാജയപ്പെട്ടു",
+    "FailedLoginAttemptWithUserName": "{0} - എന്നതിൽ നിന്നുള്ള പ്രവേശന ശ്രമം പരാജയപ്പെട്ടു",
     "Forced": "നിർബന്ധിച്ചു",
     "HeaderFavoriteAlbums": "പ്രിയപ്പെട്ട ആൽബങ്ങൾ",
     "HeaderFavoriteArtists": "പ്രിയപ്പെട്ട കലാകാരന്മാർ",

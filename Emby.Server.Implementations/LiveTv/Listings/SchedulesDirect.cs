@@ -643,7 +643,9 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             CancellationToken cancellationToken)
         {
             using var options = new HttpRequestMessage(HttpMethod.Post, ApiUrl + "/token");
+#pragma warning disable CA5350 // SchedulesDirect is always SHA1.
             var hashedPasswordBytes = SHA1.HashData(Encoding.ASCII.GetBytes(password));
+#pragma warning restore CA5350
             // TODO: remove ToLower when Convert.ToHexString supports lowercase
             // Schedules Direct requires the hex to be lowercase
             string hashedPassword = Convert.ToHexString(hashedPasswordBytes).ToLowerInvariant();

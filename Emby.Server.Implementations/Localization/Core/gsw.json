@@ -118,5 +118,6 @@
     "TaskCleanActivityLog": "Aktivitätsprotokoll aufräumen",
     "Undefined": "Undefiniert",
     "Forced": "Erzwungen",
-    "Default": "Standard"
+    "Default": "Standard",
+    "TaskOptimizeDatabase": "Datenbank optimieren"
 }

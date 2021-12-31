@@ -130,16 +130,14 @@ namespace Emby.Server.Implementations.Channels
             var internalChannel = _libraryManager.GetItemById(item.ChannelId);
             if (internalChannel == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentException(nameof(item.ChannelId));
             }
 
             var channel = Channels.FirstOrDefault(i => GetInternalChannelId(i.Name).Equals(internalChannel.Id));
 
-            var supportsDelete = channel as ISupportsDelete;
-
-            if (supportsDelete == null)
+            if (channel is not ISupportsDelete supportsDelete)
             {
-                throw new ArgumentException();
+                throw new ArgumentException(nameof(channel));
             }
 
             return supportsDelete.DeleteItem(item.ExternalId, CancellationToken.None);

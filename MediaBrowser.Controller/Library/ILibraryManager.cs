@@ -212,7 +212,7 @@ namespace MediaBrowser.Controller.Library
         /// <returns>IEnumerable{BaseItem}.</returns>
         IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<string> sortBy, SortOrder sortOrder);
 
-        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<ValueTuple<string, SortOrder>> orderBy);
+        IEnumerable<BaseItem> Sort(IEnumerable<BaseItem> items, User user, IEnumerable<(string OrderBy, SortOrder SortOrder)> orderBy);
 
         /// <summary>
         /// Gets the user root folder.
@@ -573,17 +573,17 @@ namespace MediaBrowser.Controller.Library
 
         void RemoveMediaPath(string virtualFolderName, string mediaPath);
 
-        QueryResult<(BaseItem, ItemCounts)> GetGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetMusicGenres(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetMusicGenres(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetStudios(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetStudios(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetArtists(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAlbumArtists(InternalItemsQuery query);
 
-        QueryResult<(BaseItem, ItemCounts)> GetAllArtists(InternalItemsQuery query);
+        QueryResult<(BaseItem Item, ItemCounts ItemCounts)> GetAllArtists(InternalItemsQuery query);
 
         int GetCount(InternalItemsQuery query);
 

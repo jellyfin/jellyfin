@@ -22,7 +22,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        public IEnumerable<(string, string)> GetCommands()
+        public IEnumerable<(string CommandName, string CommandValue)> GetCommands()
         {
             if (!string.IsNullOrEmpty(_channel))
             {

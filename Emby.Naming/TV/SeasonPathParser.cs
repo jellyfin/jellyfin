@@ -55,7 +55,7 @@ namespace Emby.Naming.TV
         /// <param name="supportSpecialAliases">if set to <c>true</c> [support special aliases].</param>
         /// <param name="supportNumericSeasonFolders">if set to <c>true</c> [support numeric season folders].</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
-        private static (int? seasonNumber, bool isSeasonFolder) GetSeasonNumberFromPath(
+        private static (int? SeasonNumber, bool IsSeasonFolder) GetSeasonNumberFromPath(
             string path,
             bool supportSpecialAliases,
             bool supportNumericSeasonFolders)
@@ -99,7 +99,7 @@ namespace Emby.Naming.TV
                 if (filename.Contains(name, StringComparison.OrdinalIgnoreCase))
                 {
                     var result = GetSeasonNumberFromPathSubstring(filename.Replace(name, " ", StringComparison.OrdinalIgnoreCase));
-                    if (result.seasonNumber.HasValue)
+                    if (result.SeasonNumber.HasValue)
                     {
                         return result;
                     }
@@ -142,7 +142,7 @@ namespace Emby.Naming.TV
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>System.Nullable{System.Int32}.</returns>
-        private static (int? seasonNumber, bool isSeasonFolder) GetSeasonNumberFromPathSubstring(ReadOnlySpan<char> path)
+        private static (int? SeasonNumber, bool IsSeasonFolder) GetSeasonNumberFromPathSubstring(ReadOnlySpan<char> path)
         {
             var numericStart = -1;
             var length = 0;

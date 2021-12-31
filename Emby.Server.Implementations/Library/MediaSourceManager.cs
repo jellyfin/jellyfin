@@ -464,12 +464,11 @@ namespace Emby.Server.Implementations.Library
 
             try
             {
-                var tuple = GetProvider(request.OpenToken);
-                var provider = tuple.Item1;
+                var (provider, keyId) = GetProvider(request.OpenToken);
 
                 var currentLiveStreams = _openStreams.Values.ToList();
 
-                liveStream = await provider.OpenMediaSource(tuple.Item2, currentLiveStreams, cancellationToken).ConfigureAwait(false);
+                liveStream = await provider.OpenMediaSource(keyId, currentLiveStreams, cancellationToken).ConfigureAwait(false);
 
                 mediaSource = liveStream.MediaSource;
 
@@ -829,7 +828,7 @@ namespace Emby.Server.Implementations.Library
             }
         }
 
-        private (IMediaSourceProvider, string) GetProvider(string key)
+        private (IMediaSourceProvider MediaSourceProvider, string KeyId) GetProvider(string key)
         {
             if (string.IsNullOrEmpty(key))
             {

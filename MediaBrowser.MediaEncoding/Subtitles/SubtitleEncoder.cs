@@ -139,28 +139,28 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitle = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
                         .ConfigureAwait(false);
 
-            var inputFormat = subtitle.format;
+            var inputFormat = subtitle.Format;
 
             // Return the original if we don't have any way of converting it
             if (!TryGetWriter(outputFormat, out var writer))
             {
-                return subtitle.stream;
+                return subtitle.Stream;
             }
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
             if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
             {
-                return subtitle.stream;
+                return subtitle.Stream;
             }
 
-            using (var stream = subtitle.stream)
+            using (var stream = subtitle.Stream)
             {
                 return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
             }
         }
 
-        private async Task<(Stream stream, string format)> GetSubtitleStream(
+        private async Task<(Stream Stream, string Format)> GetSubtitleStream(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
             CancellationToken cancellationToken)

@@ -303,7 +303,7 @@ namespace MediaBrowser.Providers.Music
             return ReleaseResult.Parse(reader).FirstOrDefault();
         }
 
-        private static (string, string) ParseArtistCredit(XmlReader reader)
+        private static (string Name, string ArtistId) ParseArtistCredit(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -345,7 +345,7 @@ namespace MediaBrowser.Providers.Music
             return default;
         }
 
-        private static (string, string) ParseArtistNameCredit(XmlReader reader)
+        private static (string Name, string ArtistId) ParseArtistNameCredit(XmlReader reader)
         {
             reader.MoveToContent();
             reader.Read();
@@ -388,7 +388,7 @@ namespace MediaBrowser.Providers.Music
             return (null, null);
         }
 
-        private static (string name, string id) ParseArtistArtistCredit(XmlReader reader, string artistId)
+        private static (string Name, string ArtistId) ParseArtistArtistCredit(XmlReader reader, string artistId)
         {
             reader.MoveToContent();
             reader.Read();
@@ -628,7 +628,7 @@ namespace MediaBrowser.Providers.Music
             public string Overview;
             public int? Year;
 
-            public List<ValueTuple<string, string>> Artists = new List<ValueTuple<string, string>>();
+            public List<(string, string)> Artists = new();
 
             public static IEnumerable<ReleaseResult> Parse(XmlReader reader)
             {
@@ -776,7 +776,7 @@ namespace MediaBrowser.Providers.Music
                                     using var subReader = reader.ReadSubtree();
                                     var artist = ParseArtistCredit(subReader);
 
-                                    if (!string.IsNullOrEmpty(artist.Item1))
+                                    if (!string.IsNullOrEmpty(artist.Name))
                                     {
                                         result.Artists.Add(artist);
                                     }

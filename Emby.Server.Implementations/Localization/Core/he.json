@@ -118,5 +118,6 @@
     "TaskCleanActivityLog": "נקה רשומת פעילות",
     "Undefined": "לא מוגדר",
     "Forced": "כפוי",
-    "Default": "ברירת מחדל"
+    "Default": "ברירת מחדל",
+    "TaskOptimizeDatabase": "מיטוב מסד נתונים"
 }

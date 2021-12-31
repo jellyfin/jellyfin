@@ -212,7 +212,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                         if (read > 0)
                         {
-                            fileStream.Write(buffer, RtpHeaderBytes, read);
+                            await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), linkedSource.Token).ConfigureAwait(false);
                         }
 
                         if (!resolved)

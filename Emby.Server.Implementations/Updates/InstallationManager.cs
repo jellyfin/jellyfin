@@ -52,7 +52,7 @@ namespace Emby.Server.Implementations.Updates
         /// <summary>
         /// The current installations.
         /// </summary>
-        private readonly List<(InstallationInfo info, CancellationTokenSource token)> _currentInstallations;
+        private readonly List<(InstallationInfo Info, CancellationTokenSource Token)> _currentInstallations;
 
         /// <summary>
         /// The completed installations.
@@ -399,13 +399,13 @@ namespace Emby.Server.Implementations.Updates
         {
             lock (_currentInstallationsLock)
             {
-                var install = _currentInstallations.Find(x => x.info.Id == id);
+                var install = _currentInstallations.Find(x => x.Info.Id == id);
                 if (install == default((InstallationInfo, CancellationTokenSource)))
                 {
                     return false;
                 }
 
-                install.token.Cancel();
+                install.Token.Cancel();
                 _currentInstallations.Remove(install);
                 return true;
             }
