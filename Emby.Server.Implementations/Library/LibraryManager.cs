@@ -2700,7 +2700,7 @@ namespace Emby.Server.Implementations.Library
                 var current = fileSystemChildren[i];
                 if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
-                    var filesInSubFolder = _fileSystem.GetFiles(current.FullName, _namingOptions.VideoFileExtensions, false, false);
+                    var filesInSubFolder = _fileSystem.GetFiles(current.FullName, null, false, false);
                     foreach (var file in filesInSubFolder)
                     {
                         if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType))

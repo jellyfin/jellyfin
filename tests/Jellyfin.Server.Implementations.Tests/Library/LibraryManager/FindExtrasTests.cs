@@ -108,7 +108,7 @@ public class FindExtrasTests
                     Name = "some trailer.mkv",
                     IsDirectory = false
                 }
-            });
+            }).Verifiable();
 
         _fileSystemMock.Setup(f => f.GetFiles(
                 "/movies/Up/behind the scenes",
@@ -123,7 +123,7 @@ public class FindExtrasTests
                     Name = "the making of Up.mkv",
                     IsDirectory = false
                 }
-            });
+            }).Verifiable();
 
         _fileSystemMock.Setup(f => f.GetFiles(
                 "/movies/Up/theme-music",
@@ -138,17 +138,18 @@ public class FindExtrasTests
                     Name = "theme2.mp3",
                     IsDirectory = false
                 }
-            });
+            }).Verifiable();
 
         var files = paths.Select(p => new FileSystemMetadata
         {
             FullName = p,
             Name = Path.GetFileName(p),
-            IsDirectory = string.IsNullOrEmpty(Path.GetExtension(p))
+            IsDirectory = !Path.HasExtension(p)
         }).ToList();
 
         var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
 
+        _fileSystemMock.Verify();
         Assert.Equal(6, extras.Count);
         Assert.Equal(ExtraType.Trailer, extras[0].ExtraType);
         Assert.Equal(typeof(Trailer), extras[0].GetType());
@@ -213,6 +214,46 @@ public class FindExtrasTests
         Assert.Equal(typeof(Trailer), extras[0].GetType());
         Assert.Equal("trailer", extras[0].FileNameWithoutExtension);
         Assert.Equal("/movies/Up/trailer.mkv", extras[0].Path);
+    }
+
+    [Fact]
+    public void FindExtras_WrongExtensions_FindsNoExtras()
+    {
+        var owner = new Movie { Name = "Up", Path = "/movies/Up/Up.mkv" };
+        var paths = new List<string>
+        {
+            "/movies/Up/Up.mkv",
+            "/movies/Up/trailer.noext",
+            "/movies/Up/theme.png",
+            "/movies/Up/trailers"
+        };
+
+        var files = paths.Select(p => new FileSystemMetadata
+        {
+            FullName = p,
+            Name = Path.GetFileName(p),
+            IsDirectory = !Path.HasExtension(p)
+        }).ToList();
+
+        _fileSystemMock.Setup(f => f.GetFiles(
+                "/movies/Up/trailers",
+                It.IsAny<string[]>(),
+                false,
+                false))
+            .Returns(new List<FileSystemMetadata>
+            {
+                new()
+                {
+                    FullName = "/movies/Up/trailers/trailer.jpg",
+                    Name = "trailer.jpg",
+                    IsDirectory = false
+                }
+            }).Verifiable();
+
+        var extras = _libraryManager.FindExtras(owner, files, new DirectoryService(_fileSystemMock.Object)).OrderBy(e => e.ExtraType).ToList();
+
+        _fileSystemMock.Verify();
+        Assert.Empty(extras);
     }
 
     [Fact]

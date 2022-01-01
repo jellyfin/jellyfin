@@ -6,14 +6,14 @@ using MediaBrowser.Controller.Entities;
 namespace Emby.Server.Implementations.Library.Resolvers
 {
     /// <summary>
-    /// Resolves a Path into a Video or Video subclass.
+    /// Resolves a Path into an instance of the <see cref="Video"/> class.
     /// </summary>
     /// <typeparam name="T">The type of item to resolve.</typeparam>
     public class GenericVideoResolver<T> : BaseVideoResolver<T>
         where T : Video, new()
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GenericVideoResolver"/> class.
+        /// Initializes a new instance of the <see cref="GenericVideoResolver{T}"/> class.
         /// </summary>
         /// <param name="namingOptions">The naming options.</param>
         public GenericVideoResolver(NamingOptions namingOptions)
