@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Session;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace MediaBrowser.Controller.Net
@@ -95,7 +96,7 @@ namespace MediaBrowser.Controller.Net
         }
 
         /// <inheritdoc />
-        public Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection) => Task.CompletedTask;
+        public Task ProcessWebSocketConnectedAsync(IWebSocketConnection connection, HttpContext httpContext) => Task.CompletedTask;
 
         /// <summary>
         /// Starts sending messages over a web socket.
