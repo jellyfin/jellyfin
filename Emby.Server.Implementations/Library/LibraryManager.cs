@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Emby.Naming.Common;
 using Emby.Naming.TV;
-using Emby.Naming.Video;
+using Emby.Server.Implementations.Library.Resolvers;
 using Emby.Server.Implementations.Library.Validators;
 using Emby.Server.Implementations.Playlists;
 using Emby.Server.Implementations.ScheduledTasks.Tasks;
@@ -78,6 +78,7 @@ namespace Emby.Server.Implementations.Library
         private readonly IItemRepository _itemRepository;
         private readonly IImageProcessor _imageProcessor;
         private readonly NamingOptions _namingOptions;
+        private readonly ExtraResolver _extraResolver;
 
         /// <summary>
         /// The _root folder sync lock.
@@ -145,6 +146,8 @@ namespace Emby.Server.Implementations.Library
             _imageProcessor = imageProcessor;
             _memoryCache = memoryCache;
             _namingOptions = namingOptions;
+
+            _extraResolver = new ExtraResolver(namingOptions);
 
             _configurationManager.ConfigurationUpdated += ConfigurationUpdated;
 
@@ -2692,95 +2695,55 @@ namespace Emby.Server.Implementations.Library
             }
 
             var count = fileSystemChildren.Count;
-            var files = new List<VideoFileInfo>();
-            var nonVideoFiles = new List<FileSystemMetadata>();
             for (var i = 0; i < count; i++)
             {
                 var current = fileSystemChildren[i];
                 if (current.IsDirectory && _namingOptions.AllExtrasTypesFolderNames.ContainsKey(current.Name))
                 {
-                    var filesInSubFolder = _fileSystem.GetFiles(current.FullName, _namingOptions.VideoFileExtensions, false, false);
+                    var filesInSubFolder = _fileSystem.GetFiles(current.FullName, null, false, false);
                     foreach (var file in filesInSubFolder)
                     {
-                        var videoInfo = VideoResolver.Resolve(file.FullName, file.IsDirectory, _namingOptions);
-                        if (videoInfo == null)
+                        if (!_extraResolver.TryGetExtraTypeForOwner(file.FullName, ownerVideoInfo, out var extraType))
                         {
-                            nonVideoFiles.Add(file);
                             continue;
                         }
 
-                        files.Add(videoInfo);
+                        var extra = GetExtra(file, extraType.Value);
+                        if (extra != null)
+                        {
+                            yield return extra;
+                        }
                     }
                 }
-                else if (!current.IsDirectory)
+                else if (!current.IsDirectory && _extraResolver.TryGetExtraTypeForOwner(current.FullName, ownerVideoInfo, out var extraType))
                 {
-                    var videoInfo = VideoResolver.Resolve(current.FullName, current.IsDirectory, _namingOptions);
-                    if (videoInfo == null)
+                    var extra = GetExtra(current, extraType.Value);
+                    if (extra != null)
                     {
-                        nonVideoFiles.Add(current);
-                        continue;
+                        yield return extra;
                     }
-
-                    files.Add(videoInfo);
                 }
             }
 
-            if (files.Count == 0)
+            BaseItem GetExtra(FileSystemMetadata file, ExtraType extraType)
             {
-                yield break;
-            }
-
-            var videos = VideoListResolver.Resolve(files, _namingOptions);
-            // owner video info cannot be null as that implies it has no path
-            var extras = ExtraResolver.GetExtras(videos, ownerVideoInfo, _namingOptions.VideoFlagDelimiters);
-            for (var i = 0; i < extras.Count; i++)
-            {
-                var currentExtra = extras[i];
-                var resolved = ResolvePath(_fileSystem.GetFileInfo(currentExtra.Path), null, directoryService);
-                if (resolved is not Video video)
+                var extra = ResolvePath(_fileSystem.GetFileInfo(file.FullName), directoryService, _extraResolver.GetResolversForExtraType(extraType));
+                if (extra is not Video && extra is not Audio)
                 {
-                    continue;
+                    return null;
                 }
 
                 // Try to retrieve it from the db. If we don't find it, use the resolved version
-                if (GetItemById(resolved.Id) is Video dbItem)
+                var itemById = GetItemById(extra.Id);
+                if (itemById != null)
                 {
-                    video = dbItem;
+                    extra = itemById;
                 }
 
-                video.ExtraType = currentExtra.ExtraType;
-                video.ParentId = Guid.Empty;
-                video.OwnerId = owner.Id;
-                yield return video;
-            }
-
-            // TODO: theme songs must be handled "manually" (but should we?) since they aren't video files
-            for (var i = 0; i < nonVideoFiles.Count; i++)
-            {
-                var current = nonVideoFiles[i];
-                var extraInfo = ExtraResolver.GetExtraInfo(current.FullName, _namingOptions);
-                if (extraInfo.ExtraType != ExtraType.ThemeSong)
-                {
-                    continue;
-                }
-
-                var resolved = ResolvePath(current, null, directoryService);
-                if (resolved is not Audio themeSong)
-                {
-                    continue;
-                }
-
-                // Try to retrieve it from the db. If we don't find it, use the resolved version
-                if (GetItemById(themeSong.Id) is Audio dbItem)
-                {
-                    themeSong = dbItem;
-                }
-
-                themeSong.ExtraType = ExtraType.ThemeSong;
-                themeSong.OwnerId = owner.Id;
-                themeSong.ParentId = Guid.Empty;
-
-                yield return themeSong;
+                extra.ExtraType = extraType;
+                extra.ParentId = Guid.Empty;
+                extra.OwnerId = owner.Id;
+                return extra;
             }
         }
 
