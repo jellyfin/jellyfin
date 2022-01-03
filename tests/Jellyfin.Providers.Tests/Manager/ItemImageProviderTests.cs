@@ -172,6 +172,35 @@ namespace Jellyfin.Providers.Tests.Manager
         }
 
         [Theory]
+        [InlineData(ImageType.Primary, 0)]
+        [InlineData(ImageType.Primary, 1)]
+        [InlineData(ImageType.Backdrop, 2)]
+        public void RemoveImages_DeletesImages_WhenFound(ImageType imageType, int imageCount)
+        {
+            var item = GetItemWithImages(imageType, imageCount, false);
+
+            var mockFileSystem = new Mock<IFileSystem>(MockBehavior.Strict);
+            if (imageCount > 0)
+            {
+                mockFileSystem.Setup(fs => fs.DeleteFile("invalid path 0"))
+                    .Verifiable();
+            }
+
+            if (imageCount > 1)
+            {
+                mockFileSystem.Setup(fs => fs.DeleteFile("invalid path 1"))
+                    .Verifiable();
+            }
+
+            var itemImageProvider = GetItemImageProvider(Mock.Of<IProviderManager>(), mockFileSystem);
+            var result = itemImageProvider.RemoveImages(item);
+
+            Assert.Equal(imageCount != 0, result);
+            Assert.Empty(item.GetImages(imageType));
+            mockFileSystem.Verify();
+        }
+
+        [Theory]
         [InlineData(ImageType.Primary, 1, false)]
         [InlineData(ImageType.Backdrop, 2, false)]
         [InlineData(ImageType.Primary, 1, true)]

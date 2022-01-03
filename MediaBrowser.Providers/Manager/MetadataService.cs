@@ -98,6 +98,15 @@ namespace MediaBrowser.Providers.Manager
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
 
+            // If replacing images with identify purge existing images.
+            if (refreshOptions.IsIdentify && refreshOptions.ReplaceAllImages)
+            {
+                if (ImageProvider.RemoveImages(item))
+                {
+                    updateType |= ItemUpdateType.ImageUpdate;
+                }
+            }
+
             // Start by validating images
             try
             {

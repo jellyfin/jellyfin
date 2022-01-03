@@ -62,6 +62,30 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <summary>
+        /// Removes all existing images from the provided item.
+        /// </summary>
+        /// <param name="item">The <see cref="BaseItem"/> to remove images from.</param>
+        /// <returns><c>true</c> if changes were made to the item; otherwise <c>false</c>.</returns>
+        public bool RemoveImages(BaseItem item)
+        {
+            var singular = new List<ItemImageInfo>();
+            for (var i = 0; i < _singularImages.Length; i++)
+            {
+                var currentImage = item.GetImageInfo(_singularImages[i], 0);
+                if (currentImage != null)
+                {
+                    singular.Add(currentImage);
+                }
+            }
+
+            var oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
+            var toRemove = singular.Concat(oldBackdropImages).ToArray();
+            PruneImages(item, toRemove);
+
+            return toRemove.Length > 0;
+        }
+
+        /// <summary>
         /// Verifies existing images have valid paths and adds any new local images provided.
         /// </summary>
         /// <param name="item">The <see cref="BaseItem"/> to validate images for.</param>
