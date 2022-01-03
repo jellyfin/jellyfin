@@ -83,8 +83,7 @@ namespace Emby.Dlna
         {
             lock (_profiles)
             {
-                var list = _profiles.Values.ToList();
-                return list
+                return _profiles.Values
                     .OrderBy(i => i.Item1.Info.Type == DeviceProfileType.User ? 0 : 1)
                     .ThenBy(i => i.Item1.Info.Name)
                     .Select(i => i.Item2)
@@ -226,11 +225,8 @@ namespace Emby.Dlna
         {
             try
             {
-                var xmlFies = _fileSystem.GetFilePaths(path)
+                return _fileSystem.GetFilePaths(path)
                     .Where(i => string.Equals(Path.GetExtension(i), ".xml", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                return xmlFies
                     .Select(i => ParseProfileFile(i, type))
                     .Where(i => i != null)
                     .ToList()!; // We just filtered out all the nulls
@@ -252,11 +248,8 @@ namespace Emby.Dlna
 
                 try
                 {
-                    DeviceProfile profile;
-
                     var tempProfile = (DeviceProfile)_xmlSerializer.DeserializeFromFile(typeof(DeviceProfile), path);
-
-                    profile = ReserializeProfile(tempProfile);
+                    var profile = ReserializeProfile(tempProfile);
 
                     profile.Id = path.ToLowerInvariant().GetMD5().ToString("N", CultureInfo.InvariantCulture);
 
@@ -295,8 +288,7 @@ namespace Emby.Dlna
         {
             lock (_profiles)
             {
-                var list = _profiles.Values.ToList();
-                return list
+                return _profiles.Values
                     .Select(i => i.Item1)
                     .OrderBy(i => i.Info.Type == DeviceProfileType.User ? 0 : 1)
                     .ThenBy(i => i.Info.Name);
