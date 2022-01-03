@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Jellyfin.Providers.Tests.Manager
 {
-    public class ProviderUtilsTests
+    public class MetadataServiceTests
     {
         [Theory]
         [InlineData(false, false)]
@@ -55,7 +55,7 @@ namespace Jellyfin.Providers.Tests.Manager
                 }
             };
 
-            ProviderUtils.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, mergeMetadataSettings);
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, Array.Empty<MetadataField>(), true, mergeMetadataSettings);
 
             if (mergeMetadataSettings)
             {
@@ -90,19 +90,19 @@ namespace Jellyfin.Providers.Tests.Manager
             var newValue = "New";
 
             // Use type Series to hit DisplayOrder
-            Assert.False(TestMergeBaseItemData<Series>(propName, oldValue, newValue, null, false, out _));
+            Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, null, false, out _));
             if (lockField != null)
             {
-                Assert.False(TestMergeBaseItemData<Series>(propName, oldValue, newValue, lockField, true, out _));
-                Assert.False(TestMergeBaseItemData<Series>(propName, null, newValue, lockField, false, out _));
-                Assert.False(TestMergeBaseItemData<Series>(propName, string.Empty, newValue, lockField, false, out _));
+                Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, lockField, true, out _));
+                Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, null, newValue, lockField, false, out _));
+                Assert.False(TestMergeBaseItemData<Series, SeriesInfo>(propName, string.Empty, newValue, lockField, false, out _));
             }
 
-            Assert.True(TestMergeBaseItemData<Series>(propName, oldValue, newValue, null, true, out _));
-            Assert.True(TestMergeBaseItemData<Series>(propName, null, newValue, null, false, out _));
-            Assert.True(TestMergeBaseItemData<Series>(propName, string.Empty, newValue, null, false, out _));
+            Assert.True(TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, newValue, null, true, out _));
+            Assert.True(TestMergeBaseItemData<Series, SeriesInfo>(propName, null, newValue, null, false, out _));
+            Assert.True(TestMergeBaseItemData<Series, SeriesInfo>(propName, string.Empty, newValue, null, false, out _));
 
-            var replacedWithEmpty = TestMergeBaseItemData<Series>(propName, oldValue, string.Empty, null, true, out _);
+            var replacedWithEmpty = TestMergeBaseItemData<Series, SeriesInfo>(propName, oldValue, string.Empty, null, true, out _);
             Assert.Equal(replacesWithEmpty, replacedWithEmpty);
         }
 
@@ -119,17 +119,17 @@ namespace Jellyfin.Providers.Tests.Manager
             var newValue = new[] { "New" };
 
             // Use type Audio to hit AlbumArtists
-            Assert.False(TestMergeBaseItemData<Audio>(propName, oldValue, newValue, null, false, out _));
+            Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, null, false, out _));
             if (lockField != null)
             {
-                Assert.False(TestMergeBaseItemData<Audio>(propName, oldValue, newValue, lockField, true, out _));
-                Assert.False(TestMergeBaseItemData<Audio>(propName, Array.Empty<string>(), newValue, lockField, false, out _));
+                Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, lockField, true, out _));
+                Assert.False(TestMergeBaseItemData<Audio, SongInfo>(propName, Array.Empty<string>(), newValue, lockField, false, out _));
             }
 
-            Assert.True(TestMergeBaseItemData<Audio>(propName, oldValue, newValue, null, true, out _));
-            Assert.True(TestMergeBaseItemData<Audio>(propName, Array.Empty<string>(), newValue, null, false, out _));
+            Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, newValue, null, true, out _));
+            Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, Array.Empty<string>(), newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Audio>(propName, oldValue, Array.Empty<string>(), null, true, out _));
+            Assert.True(TestMergeBaseItemData<Audio, SongInfo>(propName, oldValue, Array.Empty<string>(), null, true, out _));
         }
 
         private static TheoryData<string, object, object> MergeBaseItemData_SimpleField_ReplacesAppropriately_TestData()
@@ -150,12 +150,12 @@ namespace Jellyfin.Providers.Tests.Manager
         public void MergeBaseItemData_SimpleField_ReplacesAppropriately(string propName, object oldValue, object newValue)
         {
             // Use type Movie to allow testing of Video3DFormat
-            Assert.False(TestMergeBaseItemData<Movie>(propName, oldValue, newValue, null, false, out _));
+            Assert.False(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie>(propName, oldValue, newValue, null, true, out _));
-            Assert.True(TestMergeBaseItemData<Movie>(propName, null, newValue, null, false, out _));
+            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
+            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, null, newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie>(propName, oldValue, null, null, true, out _));
+            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, null, null, true, out _));
         }
 
         [Fact]
@@ -179,12 +179,12 @@ namespace Jellyfin.Providers.Tests.Manager
                 }
             };
 
-            Assert.False(TestMergeBaseItemData<Movie>(propName, oldValue, newValue, null, false, out _));
+            Assert.False(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie>(propName, oldValue, newValue, null, true, out _));
-            Assert.True(TestMergeBaseItemData<Movie>(propName, Array.Empty<MediaUrl>(), newValue, null, false, out _));
+            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, newValue, null, true, out _));
+            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, Array.Empty<MediaUrl>(), newValue, null, false, out _));
 
-            Assert.True(TestMergeBaseItemData<Movie>(propName, oldValue, Array.Empty<MediaUrl>(), null, true, out _));
+            Assert.True(TestMergeBaseItemData<Movie, MovieInfo>(propName, oldValue, Array.Empty<MediaUrl>(), null, true, out _));
         }
 
         [Fact]
@@ -201,8 +201,8 @@ namespace Jellyfin.Providers.Tests.Manager
             {
                 { "provider 1", "id 2" }
             };
-            Assert.False(TestMergeBaseItemData<Movie>(propName, new Dictionary<string, string>(oldValue), overwriteNewValue, null, false, out _));
-            TestMergeBaseItemData<Movie>(propName, new Dictionary<string, string>(oldValue), overwriteNewValue, null, true, out var overwritten);
+            Assert.False(TestMergeBaseItemData<Movie, MovieInfo>(propName, new Dictionary<string, string>(oldValue), overwriteNewValue, null, false, out _));
+            TestMergeBaseItemData<Movie, MovieInfo>(propName, new Dictionary<string, string>(oldValue), overwriteNewValue, null, true, out var overwritten);
             Assert.Equal(overwriteNewValue, overwritten);
 
             // merge without overwriting
@@ -211,13 +211,13 @@ namespace Jellyfin.Providers.Tests.Manager
                 { "provider 1", "id 2" },
                 { "provider 2", "id 3" }
             };
-            TestMergeBaseItemData<Movie>(propName, new Dictionary<string, string>(oldValue), mergeNewValue, null, false, out var merged);
+            TestMergeBaseItemData<Movie, MovieInfo>(propName, new Dictionary<string, string>(oldValue), mergeNewValue, null, false, out var merged);
             var actual = (Dictionary<string, string>)merged!;
             Assert.Equal("id 1", actual["provider 1"]);
             Assert.Equal("id 3", actual["provider 2"]);
 
             // empty source results in no change
-            TestMergeBaseItemData<Movie>(propName, new Dictionary<string, string>(oldValue), new Dictionary<string, string>(), null, true, out var notOverwritten);
+            TestMergeBaseItemData<Movie, MovieInfo>(propName, new Dictionary<string, string>(oldValue), new Dictionary<string, string>(), null, true, out var notOverwritten);
             Assert.Equal(oldValue, notOverwritten);
         }
 
@@ -329,14 +329,14 @@ namespace Jellyfin.Providers.Tests.Manager
             };
 
             var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, false);
+            MetadataService<Movie, MovieInfo>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = target.People;
             return newValue?.Equals(actualValue) ?? actualValue == null;
         }
 
         /// <summary>
-        /// Makes a call to <see cref="ProviderUtils.MergeBaseItemData{T}"/> with the provided parameters and returns whether the target changed or not.
+        /// Makes a call to <see cref="MetadataService{TItemType,TIdType}.MergeBaseItemData"/> with the provided parameters and returns whether the target changed or not.
         ///
         /// Reflection is used to allow testing of all fields using the same logic, rather than relying on copy/pasting test code for each field.
         /// </summary>
@@ -344,12 +344,14 @@ namespace Jellyfin.Providers.Tests.Manager
         /// <param name="oldValue">The initial value in the target object.</param>
         /// <param name="newValue">The initial value in the source object.</param>
         /// <param name="lockField">The metadata field that locks this property if the field should be locked, or <c>null</c> to leave unlocked.</param>
-        /// <param name="replaceData">Passed through to <see cref="ProviderUtils.MergeBaseItemData{T}"/>.</param>
+        /// <param name="replaceData">Passed through to <see cref="MetadataService{TItemType,TIdType}.MergeBaseItemData"/>.</param>
         /// <param name="actualValue">The resulting value set to the target.</param>
         /// <typeparam name="TItemType">The <see cref="BaseItem"/> type to test on.</typeparam>
-        /// <returns><c>true</c> if the property on the target updates to match the source value when<see cref="ProviderUtils.MergeBaseItemData{T}"/> is called.</returns>
-        private static bool TestMergeBaseItemData<TItemType>(string propName, object? oldValue, object? newValue, MetadataField? lockField, bool replaceData, out object? actualValue)
-            where TItemType : BaseItem, new()
+        /// <typeparam name="TIdType">The <see cref="BaseItem"/> info type.</typeparam>
+        /// <returns><c>true</c> if the property on the target updates to match the source value when<see cref="MetadataService{TItemType,TIdType}.MergeBaseItemData"/> is called.</returns>
+        private static bool TestMergeBaseItemData<TItemType, TIdType>(string propName, object? oldValue, object? newValue, MetadataField? lockField, bool replaceData, out object? actualValue)
+            where TItemType : BaseItem, IHasLookupInfo<TIdType>, new()
+            where TIdType : ItemLookupInfo, new()
         {
             var property = typeof(TItemType).GetProperty(propName)!;
 
@@ -366,7 +368,8 @@ namespace Jellyfin.Providers.Tests.Manager
             property.SetValue(target.Item, oldValue);
 
             var lockedFields = lockField == null ? Array.Empty<MetadataField>() : new[] { (MetadataField)lockField };
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, false);
+            // generic type doesn't actually matter to call the static method, just has to be filled in
+            MetadataService<TItemType, TIdType>.MergeBaseItemData(source, target, lockedFields, replaceData, false);
 
             actualValue = property.GetValue(target.Item);
             return newValue?.Equals(actualValue) ?? actualValue == null;

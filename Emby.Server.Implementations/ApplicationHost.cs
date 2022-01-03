@@ -973,7 +973,7 @@ namespace Emby.Server.Implementations
             yield return typeof(IServerApplicationHost).Assembly;
 
             // Include composable parts in the Providers assembly
-            yield return typeof(ProviderUtils).Assembly;
+            yield return typeof(ProviderManager).Assembly;
 
             // Include composable parts in the Photos assembly
             yield return typeof(PhotoProvider).Assembly;
