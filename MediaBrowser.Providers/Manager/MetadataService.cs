@@ -74,14 +74,10 @@ namespace MediaBrowser.Providers.Manager
             var itemOfType = (TItemType)item;
 
             var updateType = ItemUpdateType.None;
-            var requiresRefresh = false;
 
             var libraryOptions = LibraryManager.GetLibraryOptions(item);
 
-            if (!requiresRefresh && libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays)
-            {
-                requiresRefresh = true;
-            }
+            var requiresRefresh = libraryOptions.AutomaticRefreshIntervalDays > 0 && (DateTime.UtcNow - item.DateLastRefreshed).TotalDays >= libraryOptions.AutomaticRefreshIntervalDays;
 
             if (!requiresRefresh && refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -90,7 +86,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (requiresRefresh)
                 {
-                    Logger.LogDebug("Refreshing {0} {1} because item.RequiresRefresh() returned true", typeof(TItemType).Name, item.Path ?? item.Name);
+                    Logger.LogDebug("Refreshing {Type} {Item} because item.RequiresRefresh() returned true", typeof(TItemType).Name, item.Path ?? item.Name);
                 }
             }
 
@@ -119,7 +115,7 @@ namespace MediaBrowser.Providers.Manager
             catch (Exception ex)
             {
                 localImagesFailed = true;
-                Logger.LogError(ex, "Error validating images for {0}", item.Path ?? item.Name ?? "Unknown name");
+                Logger.LogError(ex, "Error validating images for {Item}", item.Path ?? item.Name ?? "Unknown name");
             }
 
             var metadataResult = new MetadataResult<TItemType>
@@ -389,8 +385,7 @@ namespace MediaBrowser.Providers.Manager
         {
             var updateType = ItemUpdateType.None;
 
-            var folder = item as Folder;
-            if (folder != null && folder.SupportsDateLastMediaAdded)
+            if (item is Folder folder && folder.SupportsDateLastMediaAdded)
             {
                 var dateLastMediaAdded = DateTime.MinValue;
                 var any = false;
@@ -677,7 +672,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
             {
                 var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {0} for {1}", providerName, logName);
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
                 var itemInfo = new ItemInfo(item);
 
@@ -722,7 +717,7 @@ namespace MediaBrowser.Providers.Manager
                         break;
                     }
 
-                    Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                    Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                 }
                 catch (OperationCanceledException)
                 {
@@ -793,7 +788,7 @@ namespace MediaBrowser.Providers.Manager
 
         private async Task RunCustomProvider(ICustomMetadataProvider<TItemType> provider, TItemType item, string logName, MetadataRefreshOptions options, RefreshResult refreshResult, CancellationToken cancellationToken)
         {
-            Logger.LogDebug("Running {0} for {1}", provider.GetType().Name, logName);
+            Logger.LogDebug("Running {Provider} for {Item}", provider.GetType().Name, logName);
 
             try
             {
@@ -824,7 +819,7 @@ namespace MediaBrowser.Providers.Manager
             foreach (var provider in providers)
             {
                 var providerName = provider.GetType().Name;
-                Logger.LogDebug("Running {0} for {1}", providerName, logName);
+                Logger.LogDebug("Running {Provider} for {Item}", providerName, logName);
 
                 if (id != null && !tmpDataMerged)
                 {
@@ -847,7 +842,7 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        Logger.LogDebug("{0} returned no metadata for {1}", providerName, logName);
+                        Logger.LogDebug("{Provider} returned no metadata for {Item}", providerName, logName);
                     }
                 }
                 catch (OperationCanceledException)
@@ -898,14 +893,14 @@ namespace MediaBrowser.Providers.Manager
 
                 if (hasChanged)
                 {
-                    Logger.LogDebug("{0} reports change to {1}", changeMonitor.GetType().Name, item.Path ?? item.Name);
+                    Logger.LogDebug("{Monitor} reports change to {Item}", changeMonitor.GetType().Name, item.Path ?? item.Name);
                 }
 
                 return hasChanged;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error in {0}.HasChanged", changeMonitor.GetType().Name);
+                Logger.LogError(ex, "Error in {Monitor}.HasChanged", changeMonitor.GetType().Name);
                 return false;
             }
         }
