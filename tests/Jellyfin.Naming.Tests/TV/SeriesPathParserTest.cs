@@ -6,6 +6,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class SeriesPathParserTest
     {
+        private readonly NamingOptions _namingOptions = new NamingOptions();
+
         [Theory]
         [InlineData("The.Show.S01", "The.Show")]
         [InlineData("/The.Show.S01", "The.Show")]
@@ -18,8 +20,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("/something/The Show/S01", "The Show")]
         public void SeriesPathParserParseTest(string path, string name)
         {
-            NamingOptions o = new NamingOptions();
-            var res = SeriesPathParser.Parse(o, path);
+            var res = SeriesPathParser.Parse(_namingOptions, path);
 
             Assert.Equal(name, res.SeriesName);
             Assert.True(res.Success);

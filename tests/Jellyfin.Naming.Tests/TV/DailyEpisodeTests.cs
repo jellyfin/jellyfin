@@ -6,6 +6,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class DailyEpisodeTests
     {
+        private readonly EpisodeResolver _resolver = new EpisodeResolver(new NamingOptions());
+
         [Theory]
         [InlineData(@"/server/anything_1996.11.14.mp4", "anything", 1996, 11, 14)]
         [InlineData(@"/server/anything_1996-11-14.mp4", "anything", 1996, 11, 14)]
@@ -16,10 +18,7 @@ namespace Jellyfin.Naming.Tests.TV
         // TODO: [InlineData(@"/server/Last Man Standing_KTLADT_2018_05_25_01_28_00.wtv", "Last Man Standing", 2018, 05, 25)]
         public void Test(string path, string seriesName, int? year, int? month, int? day)
         {
-            var options = new NamingOptions();
-
-            var result = new EpisodeResolver(options)
-                .Resolve(path, false);
+            var result = _resolver.Resolve(path, false);
 
             Assert.Null(result?.SeasonNumber);
             Assert.Null(result?.EpisodeNumber);
