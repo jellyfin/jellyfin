@@ -3026,40 +3026,40 @@ namespace Emby.Server.Implementations.Data
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
                 // TODO
-                return ("SortName", SortOrder.Descending);
+                return ("SortName", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RuntimeTicks", SortOrder.Descending);
+                return ("RuntimeTicks", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RANDOM()", SortOrder.Descending);
+                return ("RANDOM()", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 if (query.GroupBySeriesPresentationUniqueKey)
                 {
-                    return ("MAX(LastPlayedDate)", SortOrder.Descending);
+                    return ("MAX(LastPlayedDate)", SortOrder.Ascending);
                 }
 
-                return ("LastPlayedDate", SortOrder.Descending);
+                return ("LastPlayedDate", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
             {
-                return ("PlayCount", SortOrder.Descending);
+                return ("PlayCount", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", SortOrder.Ascending);
+                return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
             {
-                return ("IsFolder", SortOrder.Ascending);
+                return ("IsFolder", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return ("played", SortOrder.Ascending);
+                return ("played", SortOrder.Descending);
             }
             else if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
             {
@@ -3067,34 +3067,34 @@ namespace Emby.Server.Implementations.Data
             }
             else if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
             {
-                return ("DateLastMediaAdded", SortOrder.Descending);
+                return ("DateLastMediaAdded", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", SortOrder.Descending);
+                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", SortOrder.Descending);
+                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
             {
-                return ("InheritedParentalRatingValue", SortOrder.Descending);
+                return ("InheritedParentalRatingValue", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", SortOrder.Descending);
+                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
             {
-                return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", SortOrder.Descending);
+                return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", SortOrder.Ascending);
             }
             else if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
             {
-                return ("SeriesName", SortOrder.Descending);
+                return ("SeriesName", SortOrder.Ascending);
             }
 
-            return (name, SortOrder.Descending);
+            return (name, SortOrder.Ascending);
         }
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
