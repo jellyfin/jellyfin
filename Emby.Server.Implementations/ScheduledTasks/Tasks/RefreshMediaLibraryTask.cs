@@ -83,7 +83,7 @@ namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 
             progress.Report(0);
 
-            _imageGenerator.GenerateSplashscreen(Path.Combine(_applicationPaths.DataPath, "splashscreen.webp"));
+            _imageGenerator.Generate(GeneratedImageType.Splashscreen, Path.Combine(_applicationPaths.DataPath, "splashscreen.webp"));
 
             return ((LibraryManager)_libraryManager).ValidateMediaLibraryInternal(progress, cancellationToken);
         }

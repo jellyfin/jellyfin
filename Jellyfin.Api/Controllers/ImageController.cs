@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -1705,18 +1706,18 @@ namespace Jellyfin.Api.Controllers
         /// <summary>
         /// Generates or gets the splashscreen.
         /// </summary>
-        /// <param name="tag">Optional. Supply the cache tag from the item object to receive strong caching headers.</param>
+        /// <param name="tag">Supply the cache tag from the item object to receive strong caching headers.</param>
         /// <param name="format">Determines the output format of the image - original,gif,jpg,png.</param>
         /// <param name="maxWidth">The maximum image width to return.</param>
         /// <param name="maxHeight">The maximum image height to return.</param>
         /// <param name="width">The fixed image width to return.</param>
         /// <param name="height">The fixed image height to return.</param>
-        /// <param name="quality">Optional. Quality setting, from 0-100. Defaults to 90 and should suffice in most cases.</param>
         /// <param name="fillWidth">Width of box to fill.</param>
         /// <param name="fillHeight">Height of box to fill.</param>
-        /// <param name="blur">Optional. Blur image.</param>
-        /// <param name="backgroundColor">Optional. Apply a background color for transparent images.</param>
-        /// <param name="foregroundLayer">Optional. Apply a foreground layer on top of the image.</param>
+        /// <param name="blur">Blur image.</param>
+        /// <param name="backgroundColor">Apply a background color for transparent images.</param>
+        /// <param name="foregroundLayer">Apply a foreground layer on top of the image.</param>
+        /// <param name="quality">Quality setting, from 0-100.</param>
         /// <response code="200">Splashscreen returned successfully.</response>
         /// <returns>The splashscreen.</returns>
         [HttpGet("Branding/Splashscreen")]
@@ -1729,12 +1730,12 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] int? maxHeight,
             [FromQuery] int? width,
             [FromQuery] int? height,
-            [FromQuery] int? quality,
             [FromQuery] int? fillWidth,
             [FromQuery] int? fillHeight,
             [FromQuery] int? blur,
             [FromQuery] string? backgroundColor,
-            [FromQuery] string? foregroundLayer)
+            [FromQuery] string? foregroundLayer,
+            [FromQuery, Range(0, 100)] int quality = 90)
         {
             string splashscreenPath;
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
@@ -1746,9 +1747,9 @@ namespace Jellyfin.Api.Controllers
             {
                 splashscreenPath = Path.Combine(_appPaths.DataPath, "splashscreen.webp");
 
-                if (!System.IO.File.Exists(splashscreenPath) && _imageGenerator.GetSupportedImages().Contains(GeneratedImages.Splashscreen))
+                if (!System.IO.File.Exists(splashscreenPath) && _imageGenerator.GetSupportedImages().Contains(GeneratedImageType.Splashscreen))
                 {
-                    _imageGenerator.GenerateSplashscreen(splashscreenPath);
+                    _imageGenerator.Generate(GeneratedImageType.Splashscreen, splashscreenPath);
                 }
             }
 
@@ -1771,18 +1772,20 @@ namespace Jellyfin.Api.Controllers
                 MaxWidth = maxWidth,
                 FillHeight = fillHeight,
                 FillWidth = fillWidth,
-                Quality = quality ?? 100,
+                Quality = quality,
                 Width = width,
                 Blur = blur,
                 BackgroundColor = backgroundColor,
                 ForegroundLayer = foregroundLayer,
                 SupportedOutputFormats = outputFormats
             };
+
             return await GetImageResult(
-                options,
-                cacheDuration,
-                new Dictionary<string, string>(),
-                Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase));
+                    options,
+                    cacheDuration,
+                    ImmutableDictionary<string, string>.Empty,
+                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                .ConfigureAwait(false);
         }
 
         /// <summary>
@@ -1815,7 +1818,6 @@ namespace Jellyfin.Api.Controllers
             brandingOptions.SplashscreenLocation = filePath;
             _serverConfigurationManager.SaveConfiguration("branding", brandingOptions);
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
             await using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
             {
                 await memoryStream.CopyToAsync(fs, CancellationToken.None).ConfigureAwait(false);
