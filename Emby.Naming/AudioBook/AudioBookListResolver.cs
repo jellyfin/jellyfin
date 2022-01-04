@@ -36,8 +36,7 @@ namespace Emby.Naming.AudioBook
             // File with empty fullname will be sorted out here.
             var audiobookFileInfos = files
                 .Select(i => _audioBookResolver.Resolve(i.FullName))
-                .OfType<AudioBookFileInfo>()
-                .ToList();
+                .OfType<AudioBookFileInfo>();
 
             var stackResult = StackResolver.ResolveAudioBooks(audiobookFileInfos);
 
@@ -102,8 +101,7 @@ namespace Emby.Naming.AudioBook
                         {
                             var extra = ex
                                 .OrderBy(x => x.Container)
-                                .ThenBy(x => x.Path)
-                                .ToList();
+                                .ThenBy(x => x.Path);
 
                             stackFiles = stackFiles.Except(extra).ToList();
                             extras.AddRange(extra);

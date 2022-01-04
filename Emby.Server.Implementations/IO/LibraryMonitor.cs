@@ -82,9 +82,7 @@ namespace Emby.Server.Implementations.IO
         public bool IsPathLocked(string path)
         {
             // This method is not used by the core but it used by auto-organize
-
-            var lockedPaths = _tempIgnoredPaths.Keys.ToList();
-            return lockedPaths.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
+            return _tempIgnoredPaths.Keys.Any(i => _fileSystem.AreEqual(i, path) || _fileSystem.ContainsSubPath(i, path));
         }
 
         public async void ReportFileSystemChangeComplete(string path, bool refreshPath)
@@ -145,8 +143,7 @@ namespace Emby.Server.Implementations.IO
                 .OfType<Folder>()
                 .SelectMany(f => f.PhysicalLocations)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .OrderBy(i => i)
-                .ToList();
+                .OrderBy(i => i);
 
             foreach (var path in paths)
             {
@@ -372,11 +369,8 @@ namespace Emby.Server.Implementations.IO
 
             var monitorPath = !IgnorePatterns.ShouldIgnore(path);
 
-            // Ignore certain files
-            var tempIgnorePaths = _tempIgnoredPaths.Keys.ToList();
-
-            // If the parent of an ignored path has a change event, ignore that too
-            if (tempIgnorePaths.Any(i =>
+            // Ignore certain files, If the parent of an ignored path has a change event, ignore that too
+            if (_tempIgnoredPaths.Keys.Any(i =>
             {
                 if (_fileSystem.AreEqual(i, path))
                 {
@@ -491,7 +485,7 @@ namespace Emby.Server.Implementations.IO
         {
             lock (_activeRefreshers)
             {
-                foreach (var refresher in _activeRefreshers.ToList())
+                foreach (var refresher in _activeRefreshers)
                 {
                     refresher.Completed -= OnNewRefresherCompleted;
                     refresher.Dispose();

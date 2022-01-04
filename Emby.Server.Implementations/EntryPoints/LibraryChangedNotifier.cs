@@ -115,7 +115,7 @@ namespace Emby.Server.Implementations.EntryPoints
             {
             }
 
-            var collectionFolders = _libraryManager.GetCollectionFolders(item).ToList();
+            var collectionFolders = _libraryManager.GetCollectionFolders(item);
 
             foreach (var collectionFolder in collectionFolders)
             {
