@@ -12,6 +12,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers
 {
@@ -22,8 +23,11 @@ namespace Emby.Server.Implementations.Library.Resolvers
     public abstract class BaseVideoResolver<T> : MediaBrowser.Controller.Resolvers.ItemResolver<T>
         where T : Video, new()
     {
-        protected BaseVideoResolver(NamingOptions namingOptions)
+        private readonly ILogger _logger;
+
+        protected BaseVideoResolver(ILogger logger, NamingOptions namingOptions)
         {
+            _logger = logger;
             NamingOptions = namingOptions;
         }
 
@@ -156,18 +160,25 @@ namespace Emby.Server.Implementations.Library.Resolvers
                 }
                 else
                 {
-                    // use disc-utils, both DVDs and BDs use UDF filesystem
-                    using (var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read))
-                    using (UdfReader udfReader = new UdfReader(videoFileStream))
+                    try
                     {
-                        if (udfReader.DirectoryExists("VIDEO_TS"))
+                        // use disc-utils, both DVDs and BDs use UDF filesystem
+                        using (var videoFileStream = File.Open(video.Path, FileMode.Open, FileAccess.Read))
+                        using (UdfReader udfReader = new UdfReader(videoFileStream))
                         {
-                            video.IsoType = IsoType.Dvd;
+                            if (udfReader.DirectoryExists("VIDEO_TS"))
+                            {
+                                video.IsoType = IsoType.Dvd;
+                            }
+                            else if (udfReader.DirectoryExists("BDMV"))
+                            {
+                                video.IsoType = IsoType.BluRay;
+                            }
                         }
-                        else if (udfReader.DirectoryExists("BDMV"))
-                        {
-                            video.IsoType = IsoType.BluRay;
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error opening UDF/ISO image: {Value}", video.Path ?? video.Name);
                     }
                 }
             }

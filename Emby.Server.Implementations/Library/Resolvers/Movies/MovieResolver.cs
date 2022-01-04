@@ -17,6 +17,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using Microsoft.Extensions.Logging;
 
 namespace Emby.Server.Implementations.Library.Resolvers.Movies
 {
@@ -40,9 +41,10 @@ namespace Emby.Server.Implementations.Library.Resolvers.Movies
         /// Initializes a new instance of the <see cref="MovieResolver"/> class.
         /// </summary>
         /// <param name="imageProcessor">The image processor.</param>
+        /// <param name="logger">The logger.</param>
         /// <param name="namingOptions">The naming options.</param>
-        public MovieResolver(IImageProcessor imageProcessor, NamingOptions namingOptions)
-            : base(namingOptions)
+        public MovieResolver(IImageProcessor imageProcessor, ILogger<MovieResolver> logger, NamingOptions namingOptions)
+            : base(logger, namingOptions)
         {
             _imageProcessor = imageProcessor;
         }
