@@ -29,7 +29,7 @@ namespace Emby.Naming.Video
                 .Where(i => i.ExtraType == null)
                 .Select(i => new FileSystemMetadata { FullName = i.Path, IsDirectory = i.IsDirectory });
 
-            var stackResult = StackResolver.Resolve(nonExtras, namingOptions);
+            var stackResult = StackResolver.Resolve(nonExtras, namingOptions).ToList();
 
             var remainingFiles = new List<VideoFileInfo>();
             var standaloneMedia = new List<VideoFileInfo>();
