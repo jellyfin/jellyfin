@@ -210,7 +210,7 @@ namespace Emby.Server.Implementations.Collections
             var itemList = new List<BaseItem>();
 
             var linkedChildrenList = collection.GetLinkedChildren();
-            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id);
+            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
 
             foreach (var id in ids)
             {
@@ -300,7 +300,7 @@ namespace Emby.Server.Implementations.Collections
         {
             var results = new Dictionary<Guid, BaseItem>();
 
-            var allBoxSets = GetCollections(user);
+            var allBoxSets = GetCollections(user).ToList();
 
             foreach (var item in items)
             {
