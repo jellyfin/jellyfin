@@ -3015,86 +3015,101 @@ namespace Emby.Server.Implementations.Data
 
             return " ORDER BY " + string.Join(',', orderBy.Select(i =>
             {
-                var columnMap = MapOrderByField(i.OrderBy, query);
-                var sortOrder = columnMap.SortOrder == SortOrder.Ascending ? "ASC" : "DESC";
-                return columnMap.SortBy + " " + sortOrder;
+                var sortBy = MapOrderByField(i.OrderBy, query);
+                var sortOrder = i.SortOrder == SortOrder.Ascending ? "ASC" : "DESC";
+                return sortBy + " " + sortOrder;
             }));
         }
 
-        private (string SortBy, SortOrder SortOrder) MapOrderByField(string name, InternalItemsQuery query)
+        private string MapOrderByField(string name, InternalItemsQuery query)
         {
             if (string.Equals(name, ItemSortBy.AirTime, StringComparison.OrdinalIgnoreCase))
             {
                 // TODO
-                return ("SortName", SortOrder.Ascending);
+                return "SortName";
             }
-            else if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Runtime, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RuntimeTicks", SortOrder.Ascending);
+                return "RuntimeTicks";
             }
-            else if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.Random, StringComparison.OrdinalIgnoreCase))
             {
-                return ("RANDOM()", SortOrder.Ascending);
+                return "RANDOM()";
             }
-            else if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
+
+            if (string.Equals(name, ItemSortBy.DatePlayed, StringComparison.OrdinalIgnoreCase))
             {
                 if (query.GroupBySeriesPresentationUniqueKey)
                 {
-                    return ("MAX(LastPlayedDate)", SortOrder.Ascending);
+                    return "MAX(LastPlayedDate)";
                 }
 
-                return ("LastPlayedDate", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("PlayCount", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(Select Case When IsFavorite is null Then 0 Else IsFavorite End )", SortOrder.Descending);
-            }
-            else if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("IsFolder", SortOrder.Descending);
-            }
-            else if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("played", SortOrder.Descending);
-            }
-            else if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("played", SortOrder.Descending);
-            }
-            else if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("DateLastMediaAdded", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("InheritedParentalRatingValue", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)", SortOrder.Ascending);
-            }
-            else if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
-            {
-                return ("SeriesName", SortOrder.Ascending);
+                return "LastPlayedDate";
             }
 
-            return (name, SortOrder.Ascending);
+            if (string.Equals(name, ItemSortBy.PlayCount, StringComparison.OrdinalIgnoreCase))
+            {
+                return "PlayCount";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsFavoriteOrLiked, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(Select Case When IsFavorite is null Then 0 Else IsFavorite End )";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsFolder, StringComparison.OrdinalIgnoreCase))
+            {
+                return "IsFolder";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsPlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return "played";
+            }
+
+            if (string.Equals(name, ItemSortBy.IsUnplayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return "played";
+            }
+
+            if (string.Equals(name, ItemSortBy.DateLastContentAdded, StringComparison.OrdinalIgnoreCase))
+            {
+                return "DateLastMediaAdded";
+            }
+
+            if (string.Equals(name, ItemSortBy.Artist, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(select CleanValue from itemvalues where ItemId=Guid and Type=0 LIMIT 1)";
+            }
+
+            if (string.Equals(name, ItemSortBy.AlbumArtist, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(select CleanValue from itemvalues where ItemId=Guid and Type=1 LIMIT 1)";
+            }
+
+            if (string.Equals(name, ItemSortBy.OfficialRating, StringComparison.OrdinalIgnoreCase))
+            {
+                return "InheritedParentalRatingValue";
+            }
+
+            if (string.Equals(name, ItemSortBy.Studio, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(select CleanValue from itemvalues where ItemId=Guid and Type=3 LIMIT 1)";
+            }
+
+            if (string.Equals(name, ItemSortBy.SeriesDatePlayed, StringComparison.OrdinalIgnoreCase))
+            {
+                return "(Select MAX(LastPlayedDate) from TypedBaseItems B" + GetJoinUserDataText(query) + " where Played=1 and B.SeriesPresentationUniqueKey=A.PresentationUniqueKey)";
+            }
+
+            if (string.Equals(name, ItemSortBy.SeriesSortName, StringComparison.OrdinalIgnoreCase))
+            {
+                return "SeriesName";
+            }
+
+            return name;
         }
 
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
