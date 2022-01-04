@@ -35,7 +35,7 @@ namespace MediaBrowser.Providers.TV
         {
             var updatedType = base.BeforeSaveInternal(item, isFullRefresh, updateType);
 
-            if (item.IndexNumber.HasValue && item.IndexNumber.Value == 0)
+            if (item.IndexNumber == 0 && !item.IsLocked && !item.LockedFields.Contains(MetadataField.Name))
             {
                 var seasonZeroDisplayName = LibraryManager.GetLibraryOptions(item).SeasonZeroDisplayName;
 
