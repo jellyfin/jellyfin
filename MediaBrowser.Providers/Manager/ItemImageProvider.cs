@@ -78,11 +78,10 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            var oldBackdropImages = item.GetImages(ImageType.Backdrop).ToArray();
-            var toRemove = singular.Concat(oldBackdropImages).ToArray();
-            PruneImages(item, toRemove);
+            singular.AddRange(item.GetImages(ImageType.Backdrop));
+            PruneImages(item, singular);
 
-            return toRemove.Length > 0;
+            return singular.Count > 0;
         }
 
         /// <summary>
@@ -354,9 +353,9 @@ namespace MediaBrowser.Providers.Manager
             return true;
         }
 
-        private void PruneImages(BaseItem item, ItemImageInfo[] images)
+        private void PruneImages(BaseItem item, IReadOnlyList<ItemImageInfo> images)
         {
-            for (var i = 0; i < images.Length; i++)
+            for (var i = 0; i < images.Count; i++)
             {
                 var image = images[i];
 
