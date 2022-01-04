@@ -356,7 +356,7 @@ namespace Emby.Server.Implementations.Library
             }
 
             var children = item.IsFolder
-                ? ((Folder)item).GetRecursiveChildren(false).ToList()
+                ? ((Folder)item).GetRecursiveChildren(false)
                 : new List<BaseItem>();
 
             foreach (var metadataPath in GetMetadataPaths(item, children))
@@ -612,11 +612,9 @@ namespace Emby.Server.Implementations.Library
 
             var list = originalList.Where(i => i.IsDirectory)
                 .Select(i => _fileSystem.NormalizePath(i.FullName))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+                .Distinct(StringComparer.OrdinalIgnoreCase);
 
-            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)))
-                .ToList();
+            var dupes = list.Where(subPath => !subPath.EndsWith(":\\", StringComparison.OrdinalIgnoreCase) && list.Any(i => _fileSystem.ContainsSubPath(i, subPath)));
 
             foreach (var dupe in dupes)
             {

@@ -210,7 +210,7 @@ namespace Emby.Server.Implementations.Collections
             var itemList = new List<BaseItem>();
 
             var linkedChildrenList = collection.GetLinkedChildren();
-            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id).ToList();
+            var currentLinkedChildrenIds = linkedChildrenList.Select(i => i.Id);
 
             foreach (var id in ids)
             {
@@ -232,10 +232,7 @@ namespace Emby.Server.Implementations.Collections
 
             if (list.Count > 0)
             {
-                var newList = collection.LinkedChildren.ToList();
-                newList.AddRange(list);
-                collection.LinkedChildren = newList.ToArray();
-
+                collection.LinkedChildren = collection.LinkedChildren.Concat(list).ToArray();
                 collection.UpdateRatingToItems(linkedChildrenList);
 
                 await collection.UpdateToRepositoryAsync(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
@@ -303,7 +300,7 @@ namespace Emby.Server.Implementations.Collections
         {
             var results = new Dictionary<Guid, BaseItem>();
 
-            var allBoxSets = GetCollections(user).ToList();
+            var allBoxSets = GetCollections(user);
 
             foreach (var item in items)
             {
