@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Jellyfin.Data.Entities;
@@ -129,17 +130,19 @@ namespace Emby.Drawing
                 originalImageSize = new ImageDimensions(originalImage.Width, originalImage.Height);
             }
 
+            var mimeType = MimeTypes.GetMimeType(originalImagePath);
             if (!_imageEncoder.SupportsImageEncoding)
             {
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                return (originalImagePath, mimeType, dateModified);
             }
 
             var supportedImageInfo = await GetSupportedImage(originalImagePath, dateModified).ConfigureAwait(false);
             originalImagePath = supportedImageInfo.Path;
 
-            if (!File.Exists(originalImagePath))
+            // Original file doesn't exist, or original file is gif.
+            if (!File.Exists(originalImagePath) || string.Equals(mimeType, MediaTypeNames.Image.Gif, StringComparison.OrdinalIgnoreCase))
             {
-                return (originalImagePath, MimeTypes.GetMimeType(originalImagePath), dateModified);
+                return (originalImagePath, mimeType, dateModified);
             }
 
             dateModified = supportedImageInfo.DateModified;
