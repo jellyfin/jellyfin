@@ -722,15 +722,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 // Some interlaced H.264 files in mp4 containers using MBAFF coding aren't flagged as being interlaced by FFprobe,
                 // so for H.264 files we also calculate the frame rate from the codec time base and check if it is double the reported
-                // frame rate (both rounded to the nearest integer) to determine if the file is interlaced
-                int roundedTimeBaseFPS = Convert.ToInt32(1 / GetFrameRate(stream.CodecTimeBase) ?? 0);
-                int roundedDoubleFrameRate = Convert.ToInt32(stream.AverageFrameRate * 2 ?? 0);
+                // frame rate to determine if the file is interlaced
+                bool codecTimeBaseIsDoubleFrameRate = MathF.Abs(((stream.AverageFrameRate ?? 0) * (GetFrameRate(stream.CodecTimeBase) ?? 0)) - 0.5f) <= float.Epsilon;
 
                 bool videoInterlaced = !string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
                     && !string.Equals(streamInfo.FieldOrder, "progressive", StringComparison.OrdinalIgnoreCase);
                 bool h264MbaffCoded = string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase)
                     && string.IsNullOrWhiteSpace(streamInfo.FieldOrder)
-                    && roundedTimeBaseFPS == roundedDoubleFrameRate;
+                    && codecTimeBaseIsDoubleFrameRate;
 
                 if (videoInterlaced || h264MbaffCoded)
                 {
