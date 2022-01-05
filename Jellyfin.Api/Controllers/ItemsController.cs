@@ -228,9 +228,7 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] bool enableTotalRecordCount = true,
             [FromQuery] bool? enableImages = true)
         {
-            var user = !userId.Equals(Guid.Empty)
-                ? _userManager.GetUserById(userId)
-                : null;
+            var user = userId == Guid.Empty ? null : _userManager.GetUserById(userId);
             var dtoOptions = new DtoOptions { Fields = fields }
                 .AddClientFields(Request)
                 .AddAdditionalDtoOptions(enableImages, enableUserData, imageTypeLimit, enableImageTypes);

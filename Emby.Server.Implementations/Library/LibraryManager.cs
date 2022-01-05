@@ -1444,7 +1444,7 @@ namespace Emby.Server.Implementations.Library
             for (int i = 0; i < len; i++)
             {
                 parents[i] = GetItemById(ancestorIds[i]);
-                if (!(parents[i] is ICollectionFolder || parents[i] is UserView))
+                if (parents[i] is not (ICollectionFolder or UserView))
                 {
                     return;
                 }

@@ -11,6 +11,8 @@
     <Rule Id="SA1142" Action="Error" />
     <!-- error on SA1210: Using directives should be ordered alphabetically by the namespaces -->
     <Rule Id="SA1210" Action="Error" />
+    <!-- error on SA1316: Tuple element names should use correct casing -->
+    <Rule Id="SA1316" Action="Error" />
     <!-- error on SA1518: File is required to end with a single newline character -->
     <Rule Id="SA1518" Action="Error" />
     <!-- error on SA1629: Documentation text should end with a period -->
