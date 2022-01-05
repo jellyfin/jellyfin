@@ -1236,7 +1236,7 @@ namespace MediaBrowser.Model.Dlna
                 return (false, TranscodeReason.ContainerBitrateExceedsLimit);
             }
 
-            if (audioStream.IsExternal)
+            if (audioStream?.IsExternal == true)
             {
                 return (false, TranscodeReason.AudioIsExternal);
             }
