@@ -2020,12 +2020,6 @@ namespace Jellyfin.Api.Controllers
                 }
             }
 
-            // if the request is a head request, return a NoContent result with the same headers as it would with a GET request
-            if (isHeadRequest)
-            {
-                return NoContent();
-            }
-
             return PhysicalFile(imagePath, imageContentType ?? MediaTypeNames.Text.Plain);
         }
     }

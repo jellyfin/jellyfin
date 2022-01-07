@@ -45,12 +45,6 @@ namespace Jellyfin.Api.Helpers
 
             httpContext.Response.Headers[HeaderNames.AcceptRanges] = "none";
 
-            if (isHeadRequest)
-            {
-                httpContext.Response.Headers[HeaderNames.ContentType] = contentType;
-                return new OkResult();
-            }
-
             return new FileStreamResult(await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false), contentType);
         }
 
@@ -69,12 +63,6 @@ namespace Jellyfin.Api.Helpers
             HttpContext httpContext)
         {
             httpContext.Response.ContentType = contentType;
-
-            // if the request is a head request, return an OkResult (200) with the same headers as it would with a GET request
-            if (isHeadRequest)
-            {
-                return new OkResult();
-            }
 
             return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
