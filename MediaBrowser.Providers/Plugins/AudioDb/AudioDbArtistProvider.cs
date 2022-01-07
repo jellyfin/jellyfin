@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CA1034, CS1591, CA1002, SA1028, SA1300
 
 using System;
@@ -154,8 +156,10 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+            var fileStreamOptions = AsyncFile.WriteOptions;
+            fileStreamOptions.Mode = FileMode.Create;
+            fileStreamOptions.PreallocationSize = stream.Length;
+            await using var xmlFileStream = new FileStream(path, fileStreamOptions);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 

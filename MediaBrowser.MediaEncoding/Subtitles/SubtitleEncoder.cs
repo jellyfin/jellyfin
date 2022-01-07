@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -138,28 +139,28 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             var subtitle = await GetSubtitleStream(mediaSource, subtitleStream, cancellationToken)
                         .ConfigureAwait(false);
 
-            var inputFormat = subtitle.format;
+            var inputFormat = subtitle.Format;
 
             // Return the original if we don't have any way of converting it
             if (!TryGetWriter(outputFormat, out var writer))
             {
-                return subtitle.stream;
+                return subtitle.Stream;
             }
 
             // Return the original if the same format is being requested
             // Character encoding was already handled in GetSubtitleStream
             if (string.Equals(inputFormat, outputFormat, StringComparison.OrdinalIgnoreCase))
             {
-                return subtitle.stream;
+                return subtitle.Stream;
             }
 
-            using (var stream = subtitle.stream)
+            using (var stream = subtitle.Stream)
             {
                 return ConvertSubtitles(stream, inputFormat, outputFormat, startTimeTicks, endTimeTicks, preserveOriginalTimestamps, cancellationToken);
             }
         }
 
-        private async Task<(Stream stream, string format)> GetSubtitleStream(
+        private async Task<(Stream Stream, string Format)> GetSubtitleStream(
             MediaSourceInfo mediaSource,
             MediaStream subtitleStream,
             CancellationToken cancellationToken)
@@ -635,17 +636,14 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (failed)
             {
-                var msg = $"ffmpeg subtitle extraction failed for {inputPath} to {outputPath}";
+                _logger.LogError("ffmpeg subtitle extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
 
-                _logger.LogError(msg);
-
-                throw new FfmpegException(msg);
+                throw new FfmpegException(
+                    string.Format(CultureInfo.InvariantCulture, "ffmpeg subtitle extraction failed for {0} to {1}", inputPath, outputPath));
             }
             else
             {
-                var msg = $"ffmpeg subtitle extraction completed for {inputPath} to {outputPath}";
-
-                _logger.LogInformation(msg);
+                _logger.LogInformation("ffmpeg subtitle extraction completed for {InputPath} to {OutputPath}", inputPath, outputPath);
             }
 
             if (string.Equals(outputCodec, "ass", StringComparison.OrdinalIgnoreCase))
@@ -679,7 +677,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             if (!string.Equals(text, newText, StringComparison.Ordinal))
             {
-                // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
                 using (var fileStream = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous))
                 using (var writer = new StreamWriter(fileStream, encoding))
                 {

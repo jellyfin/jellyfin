@@ -21,8 +21,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class BaseItemXmlParser<T>
         where T : BaseItem
     {
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         private Dictionary<string, string>? _validProviderIds;
 
         /// <summary>
@@ -151,7 +149,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         }
                         else
                         {
-                            Logger.LogWarning("Invalid Added value found: " + val);
+                            Logger.LogWarning("Invalid Added value found: {Value}", val);
                         }
                     }
 
@@ -180,7 +178,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrEmpty(text))
                     {
-                        if (float.TryParse(text, NumberStyles.Any, _usCulture, out var value))
+                        if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                         {
                             item.CriticRating = value;
                         }
@@ -332,7 +330,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                     if (!string.IsNullOrWhiteSpace(text))
                     {
-                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, _usCulture, out var runtime))
+                        if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                         {
                             item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                         }
@@ -414,7 +412,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 {
                     var actors = reader.ReadInnerXml();
 
-                    if (actors.Contains("<", StringComparison.Ordinal))
+                    if (actors.Contains('<', StringComparison.Ordinal))
                     {
                         // This is one of the mis-named "Actors" full nodes created by MB2
                         // Create a reader and pass it to the persons node processor
@@ -1095,7 +1093,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
                             if (!string.IsNullOrWhiteSpace(val))
                             {
-                                if (int.TryParse(val, NumberStyles.Integer, _usCulture, out var intVal))
+                                if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
                                 {
                                     sortOrder = intVal;
                                 }

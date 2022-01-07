@@ -3,7 +3,6 @@
 #pragma warning disable CS1591
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -82,10 +81,10 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             Directory.CreateDirectory(Path.GetDirectoryName(TempFilePath));
 
-            Logger.LogInformation("Opening HDHR UDP Live stream from {host}", uri.Host);
+            Logger.LogInformation("Opening HDHR UDP Live stream from {Host}", uri.Host);
 
             var remoteAddress = IPAddress.Parse(uri.Host);
-            IPAddress localAddress = null;
+            IPAddress localAddress;
             using (var tcpClient = new TcpClient())
             {
                 try
@@ -147,7 +146,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             // OpenedMediaSource.Path = tempFile;
             // OpenedMediaSource.ReadAtNativeFramerate = true;
 
-            MediaSource.Path = _appHost.GetLoopbackHttpApiUrl() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
+            MediaSource.Path = _appHost.GetApiUrlForLocalAccess() + "/LiveTv/LiveStreamFiles/" + UniqueId + "/stream.ts";
             MediaSource.Protocol = MediaProtocol.Http;
             // OpenedMediaSource.SupportsDirectPlay = false;
             // OpenedMediaSource.SupportsDirectStream = true;
@@ -213,7 +212,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                         if (read > 0)
                         {
-                            fileStream.Write(buffer, RtpHeaderBytes, read);
+                            await fileStream.WriteAsync(buffer.AsMemory(RtpHeaderBytes, read), linkedSource.Token).ConfigureAwait(false);
                         }
 
                         if (!resolved)

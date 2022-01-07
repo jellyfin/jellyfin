@@ -5,12 +5,10 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common;
@@ -18,70 +16,6 @@ using MediaBrowser.Controller.LiveTv;
 
 namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public interface IHdHomerunChannelCommands
-    {
-        IEnumerable<(string, string)> GetCommands();
-    }
-
-    public class LegacyHdHomerunChannelCommands : IHdHomerunChannelCommands
-    {
-        private string _channel;
-        private string _program;
-
-        public LegacyHdHomerunChannelCommands(string url)
-        {
-            // parse url for channel and program
-            var regExp = new Regex(@"\/ch([0-9]+)-?([0-9]*)");
-            var match = regExp.Match(url);
-            if (match.Success)
-            {
-                _channel = match.Groups[1].Value;
-                _program = match.Groups[2].Value;
-            }
-        }
-
-        public IEnumerable<(string, string)> GetCommands()
-        {
-            if (!string.IsNullOrEmpty(_channel))
-            {
-                yield return ("channel", _channel);
-            }
-
-            if (!string.IsNullOrEmpty(_program))
-            {
-                yield return ("program", _program);
-            }
-        }
-    }
-
-    public class HdHomerunChannelCommands : IHdHomerunChannelCommands
-    {
-        private string _channel;
-        private string _profile;
-
-        public HdHomerunChannelCommands(string channel, string profile)
-        {
-            _channel = channel;
-            _profile = profile;
-        }
-
-        public IEnumerable<(string, string)> GetCommands()
-        {
-            if (!string.IsNullOrEmpty(_channel))
-            {
-                if (!string.IsNullOrEmpty(_profile)
-                    && !string.Equals(_profile, "native", StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return ("vchannel", $"{_channel} transcode={_profile}");
-                }
-                else
-                {
-                    yield return ("vchannel", _channel);
-                }
-            }
-        }
-    }
-
     public sealed class HdHomerunManager : IDisposable
     {
         public const int HdHomeRunPort = 65001;
@@ -117,7 +51,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         public async Task<bool> CheckTunerAvailability(IPAddress remoteIp, int tuner, CancellationToken cancellationToken)
         {
             using var client = new TcpClient();
-            client.Connect(remoteIp, HdHomeRunPort);
+            await client.ConnectAsync(remoteIp, HdHomeRunPort).ConfigureAwait(false);
 
             using var stream = client.GetStream();
             return await CheckTunerAvailability(stream, tuner, cancellationToken).ConfigureAwait(false);
@@ -150,8 +84,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             if (!_lockkey.HasValue)
             {
-                var rand = new Random();
-                _lockkey = (uint)rand.Next();
+                _lockkey = (uint)Random.Shared.Next();
             }
 
             var lockKeyValue = _lockkey.Value;
@@ -181,7 +114,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                     foreach (var command in commands.GetCommands())
                     {
-                        var channelMsgLen = WriteSetMessage(buffer, i, command.Item1, command.Item2, lockKeyValue);
+                        var channelMsgLen = WriteSetMessage(buffer, i, command.CommandName, command.CommandValue, lockKeyValue);
                         await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken).ConfigureAwait(false);
                         receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
@@ -189,7 +122,6 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         if (!TryGetReturnValueOfGetSet(buffer.AsSpan(0, receivedBytes), out _))
                         {
                             await ReleaseLockkey(_tcpClient, lockKeyValue).ConfigureAwait(false);
-                            continue;
                         }
                     }
 
@@ -235,7 +167,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 foreach (var command in commandList)
                 {
-                    var channelMsgLen = WriteSetMessage(buffer, _activeTuner, command.Item1, command.Item2, _lockkey);
+                    var channelMsgLen = WriteSetMessage(buffer, _activeTuner, command.CommandName, command.CommandValue, _lockkey);
                     await stream.WriteAsync(buffer.AsMemory(0, channelMsgLen), cancellationToken).ConfigureAwait(false);
                     int receivedBytes = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 

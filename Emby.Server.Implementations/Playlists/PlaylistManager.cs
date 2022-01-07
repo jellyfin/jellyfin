@@ -72,7 +72,7 @@ namespace Emby.Server.Implementations.Playlists
             var parentFolder = GetPlaylistsFolder(Guid.Empty);
             if (parentFolder == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentException(nameof(parentFolder));
             }
 
             if (string.IsNullOrEmpty(options.MediaType))
@@ -527,7 +527,7 @@ namespace Emby.Server.Implementations.Playlists
             var relativeUri = folderUri.MakeRelativeUri(fileAbsoluteUri);
             string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
-            if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.CurrentCultureIgnoreCase))
+            if (fileAbsoluteUri.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
             {
                 relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }

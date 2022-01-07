@@ -15,7 +15,6 @@ namespace Emby.Dlna.Server
     {
         private readonly DeviceProfile _profile;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly string _serverUdn;
         private readonly string _serverAddress;
         private readonly string _serverName;
@@ -190,16 +189,16 @@ namespace Emby.Dlna.Server
                 builder.Append("<icon>");
 
                 builder.Append("<mimetype>")
-                    .Append(SecurityElement.Escape(icon.MimeType ?? string.Empty))
+                    .Append(SecurityElement.Escape(icon.MimeType))
                     .Append("</mimetype>");
                 builder.Append("<width>")
-                    .Append(SecurityElement.Escape(icon.Width.ToString(_usCulture)))
+                    .Append(SecurityElement.Escape(icon.Width.ToString(CultureInfo.InvariantCulture)))
                     .Append("</width>");
                 builder.Append("<height>")
-                    .Append(SecurityElement.Escape(icon.Height.ToString(_usCulture)))
+                    .Append(SecurityElement.Escape(icon.Height.ToString(CultureInfo.InvariantCulture)))
                     .Append("</height>");
                 builder.Append("<depth>")
-                    .Append(SecurityElement.Escape(icon.Depth ?? string.Empty))
+                    .Append(SecurityElement.Escape(icon.Depth))
                     .Append("</depth>");
                 builder.Append("<url>")
                     .Append(BuildUrl(icon.Url))
@@ -220,10 +219,10 @@ namespace Emby.Dlna.Server
                 builder.Append("<service>");
 
                 builder.Append("<serviceType>")
-                    .Append(SecurityElement.Escape(service.ServiceType ?? string.Empty))
+                    .Append(SecurityElement.Escape(service.ServiceType))
                     .Append("</serviceType>");
                 builder.Append("<serviceId>")
-                    .Append(SecurityElement.Escape(service.ServiceId ?? string.Empty))
+                    .Append(SecurityElement.Escape(service.ServiceId))
                     .Append("</serviceId>");
                 builder.Append("<SCPDURL>")
                     .Append(BuildUrl(service.ScpdUrl))

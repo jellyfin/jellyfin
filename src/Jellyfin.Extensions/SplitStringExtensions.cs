@@ -43,7 +43,7 @@ namespace Jellyfin.Extensions
         /// <param name="separator">The separator to split on.</param>
         /// <returns>The enumerator struct.</returns>
         [Pure]
-        public static Enumerator SpanSplit(this string str, char separator) => new (str.AsSpan(), separator);
+        public static Enumerator SpanSplit(this string str, char separator) => new(str.AsSpan(), separator);
 
         /// <summary>
         /// Creates a new span split enumerator.
@@ -52,7 +52,7 @@ namespace Jellyfin.Extensions
         /// <param name="separator">The separator to split on.</param>
         /// <returns>The enumerator struct.</returns>
         [Pure]
-        public static Enumerator Split(this ReadOnlySpan<char> str, char separator) => new (str, separator);
+        public static Enumerator Split(this ReadOnlySpan<char> str, char separator) => new(str, separator);
 
         /// <summary>
         /// Provides an enumerator for the substrings seperated by the separator.

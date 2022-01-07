@@ -30,7 +30,7 @@ namespace Jellyfin.Api.Helpers
         {
             if (sortBy.Count == 0)
             {
-                return Array.Empty<ValueTuple<string, SortOrder>>();
+                return Array.Empty<(string, SortOrder)>();
             }
 
             var result = new (string, SortOrder)[sortBy.Count];
@@ -136,22 +136,6 @@ namespace Jellyfin.Api.Helpers
                 Items = dtos.ToArray(),
                 TotalRecordCount = result.TotalRecordCount
             };
-        }
-
-        internal static string[] GetItemTypeStrings(IReadOnlyList<BaseItemKind> itemKinds)
-        {
-            if (itemKinds.Count == 0)
-            {
-                return Array.Empty<string>();
-            }
-
-            var itemTypes = new string[itemKinds.Count];
-            for (var i = 0; i < itemKinds.Count; i++)
-            {
-                itemTypes[i] = itemKinds[i].ToString();
-            }
-
-            return itemTypes;
         }
     }
 }

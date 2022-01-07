@@ -50,7 +50,7 @@ namespace MediaBrowser.MediaEncoding.Attachments
         }
 
         /// <inheritdoc />
-        public async Task<(MediaAttachment attachment, Stream stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
+        public async Task<(MediaAttachment Attachment, Stream Stream)> GetAttachment(BaseItem item, string mediaSourceId, int attachmentStreamIndex, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -223,11 +223,10 @@ namespace MediaBrowser.MediaEncoding.Attachments
 
             if (failed)
             {
-                var msg = $"ffmpeg attachment extraction failed for {inputPath} to {outputPath}";
+                _logger.LogError("ffmpeg attachment extraction failed for {InputPath} to {OutputPath}", inputPath, outputPath);
 
-                _logger.LogError(msg);
-
-                throw new InvalidOperationException(msg);
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.InvariantCulture, "ffmpeg attachment extraction failed for {0} to {1}", inputPath, outputPath));
             }
             else
             {

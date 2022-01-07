@@ -7,6 +7,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class SimpleEpisodeTests
     {
+        private readonly EpisodeResolver _resolver = new EpisodeResolver(new NamingOptions());
+
         [Theory]
         [InlineData("/server/anything_s01e02.mp4", "anything", 1, 2)]
         [InlineData("/server/anything_s1e2.mp4", "anything", 1, 2)]
@@ -23,39 +25,25 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData(@"Love.Death.and.Robots.S01.1080p.NF.WEB-DL.DDP5.1.x264-NTG/Love.Death.and.Robots.S01E01.Sonnies.Edge.1080p.NF.WEB-DL.DDP5.1.x264-NTG.mkv", "Love.Death.and.Robots", 1, 1)]
         [InlineData("[YuiSubs] Tensura Nikki - Tensei Shitara Slime Datta Ken/[YuiSubs] Tensura Nikki - Tensei Shitara Slime Datta Ken - 12 (NVENC H.265 1080p).mkv", "Tensura Nikki - Tensei Shitara Slime Datta Ken", null, 12)]
         [InlineData("[Baz-Bar]Foo - 01 - 12[1080p][Multiple Subtitle]/[Baz-Bar] Foo - 05 [1080p][Multiple Subtitle].mkv", "Foo", null, 5)]
+        [InlineData("Series/4-12 - The Woman.mp4", "", 4, 12, 12)]
         // TODO: [InlineData("E:\\Anime\\Yahari Ore no Seishun Love Comedy wa Machigatteiru\\Yahari Ore no Seishun Love Comedy wa Machigatteiru. Zoku\\Oregairu Zoku 11 - Hayama Hayato Always Renconds to Everyone's Expectations..mkv", "Yahari Ore no Seishun Love Comedy wa Machigatteiru", null, 11)]
         // TODO: [InlineData(@"/Library/Series/The Grand Tour (2016)/Season 1/S01E01 The Holy Trinity.mkv", "The Grand Tour", 1, 1)]
-        public void TestSimple(string path, string seriesName, int? seasonNumber, int? episodeNumber)
+        public void TestSimple(string path, string seriesName, int? seasonNumber, int? episodeNumber, int? episodeEndNumber = null)
         {
-            Test(path, seriesName, seasonNumber, episodeNumber, null);
-        }
-
-        [Theory]
-        [InlineData("Series/4-12 - The Woman.mp4", "", 4, 12, 12)]
-        public void TestWithPossibleEpisodeEnd(string path, string seriesName, int? seasonNumber, int? episodeNumber, int? episodeEndNumber)
-        {
-            Test(path, seriesName, seasonNumber, episodeNumber, episodeEndNumber);
-        }
-
-        private void Test(string path, string seriesName, int? seasonNumber, int? episodeNumber, int? episodeEndNumber)
-        {
-            var options = new NamingOptions();
-
-            var result = new EpisodeResolver(options)
-                .Resolve(path, false);
+            var result = _resolver.Resolve(path, false);
 
             Assert.NotNull(result);
-            Assert.Equal(seasonNumber, result?.SeasonNumber);
-            Assert.Equal(episodeNumber, result?.EpisodeNumber);
-            Assert.Equal(seriesName, result?.SeriesName, true);
-            Assert.Equal(path, result?.Path);
+            Assert.Equal(seasonNumber, result!.SeasonNumber);
+            Assert.Equal(episodeNumber, result!.EpisodeNumber);
+            Assert.Equal(seriesName, result!.SeriesName, true);
+            Assert.Equal(path, result!.Path);
             Assert.Equal(Path.GetExtension(path).Substring(1), result?.Container);
-            Assert.Null(result?.Format3D);
-            Assert.False(result?.Is3D);
-            Assert.False(result?.IsStub);
-            Assert.Null(result?.StubType);
-            Assert.Equal(episodeEndNumber, result?.EndingEpisodeNumber);
-            Assert.False(result?.IsByDate);
+            Assert.Null(result!.Format3D);
+            Assert.False(result!.Is3D);
+            Assert.False(result!.IsStub);
+            Assert.Null(result!.StubType);
+            Assert.Equal(episodeEndNumber, result!.EndingEpisodeNumber);
+            Assert.False(result!.IsByDate);
         }
     }
 }

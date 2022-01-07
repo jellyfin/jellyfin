@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CA1002, CS1591, SA1300
 
 using System;
@@ -172,8 +174,11 @@ namespace MediaBrowser.Providers.Plugins.AudioDb
 
             using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-            await using var xmlFileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, IODefaults.FileStreamBufferSize, FileOptions.Asynchronous);
+
+            var fileStreamOptions = AsyncFile.WriteOptions;
+            fileStreamOptions.Mode = FileMode.Create;
+            fileStreamOptions.PreallocationSize = stream.Length;
+            await using var xmlFileStream = new FileStream(path, fileStreamOptions);
             await stream.CopyToAsync(xmlFileStream, cancellationToken).ConfigureAwait(false);
         }
 

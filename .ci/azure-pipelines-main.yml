@@ -54,7 +54,6 @@ jobs:
         inputs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
-          includePreviewVersions: true
 
       - task: DotNetCoreCLI@2
         displayName: 'Publish Server'

@@ -8,7 +8,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.Tasks;
 
-namespace Emby.Server.Implementations.ScheduledTasks
+namespace Emby.Server.Implementations.ScheduledTasks.Tasks
 {
     /// <summary>
     /// Class PeopleValidationTask.
@@ -32,9 +32,24 @@ namespace Emby.Server.Implementations.ScheduledTasks
             _localization = localization;
         }
 
+        public string Name => _localization.GetLocalizedString("TaskRefreshPeople");
+
+        public string Description => _localization.GetLocalizedString("TaskRefreshPeopleDescription");
+
+        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
+
+        public string Key => "RefreshPeople";
+
+        public bool IsHidden => false;
+
+        public bool IsEnabled => true;
+
+        public bool IsLogged => true;
+
         /// <summary>
         /// Creates the triggers that define when the task will run.
         /// </summary>
+        /// <returns>An <see cref="IEnumerable{TaskTriggerInfo}"/> containing the default trigger infos for this task.</returns>
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
             return new[]
@@ -57,19 +72,5 @@ namespace Emby.Server.Implementations.ScheduledTasks
         {
             return _libraryManager.ValidatePeople(cancellationToken, progress);
         }
-
-        public string Name => _localization.GetLocalizedString("TaskRefreshPeople");
-
-        public string Description => _localization.GetLocalizedString("TaskRefreshPeopleDescription");
-
-        public string Category => _localization.GetLocalizedString("TasksLibraryCategory");
-
-        public string Key => "RefreshPeople";
-
-        public bool IsHidden => false;
-
-        public bool IsEnabled => true;
-
-        public bool IsLogged => true;
     }
 }

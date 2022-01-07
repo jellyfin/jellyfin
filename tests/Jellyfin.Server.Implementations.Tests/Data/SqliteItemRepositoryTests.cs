@@ -32,10 +32,11 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             _sqliteItemRepository = _fixture.Create<SqliteItemRepository>();
         }
 
-        public static IEnumerable<object[]> ItemImageInfoFromValueString_Valid_TestData()
+        public static TheoryData<string, ItemImageInfo> ItemImageInfoFromValueString_Valid_TestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<string, ItemImageInfo>();
+
+            data.Add(
                 "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Primary*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN",
                 new ItemImageInfo
                 {
@@ -45,41 +46,33 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                     Width = 1920,
                     Height = 1080,
                     BlurHash = "WjQbtJtSO8nhNZ%L_Io#R*oaS6o}-;adXAoIn7j[%hW9s:WGw[nN"
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0*Primary*0*0",
                 new ItemImageInfo
                 {
                     Path = "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg",
                     Type = ImageType.Primary,
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0*Primary",
                 new ItemImageInfo
                 {
                     Path = "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg",
                     Type = ImageType.Primary,
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg*0*Primary*600",
                 new ItemImageInfo
                 {
                     Path = "https://image.tmdb.org/t/p/original/zhB5CHEgqqh4wnEqDNJLfWXJlcL.jpg",
                     Type = ImageType.Primary,
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "%MetadataPath%/library/68/68578562b96c80a7ebd530848801f645/poster.jpg*637264380567586027*Primary*600*336",
                 new ItemImageInfo
                 {
@@ -88,8 +81,9 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                     DateModified = new DateTime(637264380567586027, DateTimeKind.Utc),
                     Width = 600,
                     Height = 336
-                }
-            };
+                });
+
+            return data;
         }
 
         [Theory]
@@ -117,10 +111,10 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             Assert.Null(_sqliteItemRepository.ItemImageInfoFromValueString(value));
         }
 
-        public static IEnumerable<object[]> DeserializeImages_Valid_TestData()
+        public static TheoryData<string, ItemImageInfo[]> DeserializeImages_Valid_TestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<string, ItemImageInfo[]>();
+            data.Add(
                 "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Primary*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN",
                 new ItemImageInfo[]
                 {
@@ -133,11 +127,9 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                         Height = 1080,
                         BlurHash = "WjQbtJtSO8nhNZ%L_Io#R*oaS6o}-;adXAoIn7j[%hW9s:WGw[nN"
                     }
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "%MetadataPath%/library/2a/2a27372f1e9bc757b1db99721bbeae1e/poster.jpg*637261226720645297*Primary*0*0|%MetadataPath%/library/2a/2a27372f1e9bc757b1db99721bbeae1e/logo.png*637261226720805297*Logo*0*0|%MetadataPath%/library/2a/2a27372f1e9bc757b1db99721bbeae1e/landscape.jpg*637261226721285297*Thumb*0*0|%MetadataPath%/library/2a/2a27372f1e9bc757b1db99721bbeae1e/backdrop.jpg*637261226721685297*Backdrop*0*0",
                 new ItemImageInfo[]
                 {
@@ -165,24 +157,23 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                         Type = ImageType.Backdrop,
                         DateModified = new DateTime(637261226721685297, DateTimeKind.Utc),
                     }
-                }
-            };
+                });
+
+            return data;
         }
 
-        public static IEnumerable<object[]> DeserializeImages_ValidAndInvalid_TestData()
+        public static TheoryData<string, ItemImageInfo[]> DeserializeImages_ValidAndInvalid_TestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<string, ItemImageInfo[]>();
+            data.Add(
                 string.Empty,
-                Array.Empty<ItemImageInfo>()
-            };
+                Array.Empty<ItemImageInfo>());
 
-            yield return new object[]
-            {
+            data.Add(
                 "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg*637452096478512963*Primary*1920*1080*WjQbtJtSO8nhNZ%L_Io#R/oaS6o}-;adXAoIn7j[%hW9s:WGw[nN|test|1234||ss",
                 new ItemImageInfo[]
                 {
-                    new ()
+                    new()
                     {
                         Path = "/mnt/series/Family Guy/Season 1/Family Guy - S01E01-thumb.jpg",
                         Type = ImageType.Primary,
@@ -191,14 +182,13 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                         Height = 1080,
                         BlurHash = "WjQbtJtSO8nhNZ%L_Io#R*oaS6o}-;adXAoIn7j[%hW9s:WGw[nN"
                     }
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "|",
-                Array.Empty<ItemImageInfo>()
-            };
+                Array.Empty<ItemImageInfo>());
+
+            return data;
         }
 
         [Theory]
@@ -242,30 +232,27 @@ namespace Jellyfin.Server.Implementations.Tests.Data
             Assert.Equal(expected, _sqliteItemRepository.SerializeImages(value));
         }
 
-        public static IEnumerable<object[]> DeserializeProviderIds_Valid_TestData()
+        public static TheoryData<string, Dictionary<string, string>> DeserializeProviderIds_Valid_TestData()
         {
-            yield return new object[]
-            {
+            var data = new TheoryData<string, Dictionary<string, string>>();
+
+            data.Add(
                 "Imdb=tt0119567",
                 new Dictionary<string, string>()
                 {
                     { "Imdb", "tt0119567" },
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "Imdb=tt0119567|Tmdb=330|TmdbCollection=328",
                 new Dictionary<string, string>()
                 {
                     { "Imdb", "tt0119567" },
                     { "Tmdb", "330" },
                     { "TmdbCollection", "328" },
-                }
-            };
+                });
 
-            yield return new object[]
-            {
+            data.Add(
                 "MusicBrainzAlbum=9d363e43-f24f-4b39-bc5a-7ef305c677c7|MusicBrainzReleaseGroup=63eba062-847c-3b73-8b0f-6baf27bba6fa|AudioDbArtist=111352|AudioDbAlbum=2116560|MusicBrainzAlbumArtist=20244d07-534f-4eff-b4d4-930878889970",
                 new Dictionary<string, string>()
                 {
@@ -274,8 +261,9 @@ namespace Jellyfin.Server.Implementations.Tests.Data
                     { "AudioDbArtist", "111352" },
                     { "AudioDbAlbum", "2116560" },
                     { "MusicBrainzAlbumArtist", "20244d07-534f-4eff-b4d4-930878889970" },
-                }
-            };
+                });
+
+            return data;
         }
 
         [Theory]

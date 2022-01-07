@@ -41,7 +41,6 @@ jobs:
         inputs:
           packageType: sdk
           version: ${{ parameters.DotNetSdkVersion }}
-          includePreviewVersions: true
 
       - task: SonarCloudPrepare@1
         displayName: 'Prepare analysis on SonarCloud'

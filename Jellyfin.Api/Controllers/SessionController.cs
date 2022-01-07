@@ -127,7 +127,7 @@ namespace Jellyfin.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult> DisplayContent(
             [FromRoute, Required] string sessionId,
-            [FromQuery, Required] string itemType,
+            [FromQuery, Required] BaseItemKind itemType,
             [FromQuery, Required] string itemId,
             [FromQuery, Required] string itemName)
         {

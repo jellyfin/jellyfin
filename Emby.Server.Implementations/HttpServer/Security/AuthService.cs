@@ -2,7 +2,6 @@
 
 using System.Threading.Tasks;
 using Jellyfin.Data.Enums;
-using MediaBrowser.Controller.Authentication;
 using MediaBrowser.Controller.Net;
 using Microsoft.AspNetCore.Http;
 
@@ -24,7 +23,7 @@ namespace Emby.Server.Implementations.HttpServer.Security
 
             if (!auth.HasToken)
             {
-                throw new AuthenticationException("Request does not contain a token.");
+                return auth;
             }
 
             if (!auth.IsAuthenticated)

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Linq;
 using Emby.Naming.Common;
+using Jellyfin.Extensions;
 
 namespace Emby.Naming.AudioBook
 {
@@ -37,7 +37,7 @@ namespace Emby.Naming.AudioBook
             var extension = Path.GetExtension(path);
 
             // Check supported extensions
-            if (!_options.AudioFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+            if (!_options.AudioFileExtensions.Contains(extension, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }

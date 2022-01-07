@@ -58,8 +58,6 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             _directoryService = directoryService;
         }
 
-        protected CultureInfo UsCulture { get; } = new CultureInfo("en-US");
-
         /// <summary>
         /// Gets the logger.
         /// </summary>
@@ -309,7 +307,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrEmpty(text))
                         {
-                            if (float.TryParse(text, NumberStyles.Any, UsCulture, out var value))
+                            if (float.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                             {
                                 item.CriticRating = value;
                             }
@@ -370,7 +368,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         var val = reader.ReadElementContentAsString();
                         if (!string.IsNullOrWhiteSpace(val) && userData != null)
                         {
-                            if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var count))
+                            if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
                             {
                                 userData.PlayCount = count;
                             }
@@ -475,7 +473,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                         if (!string.IsNullOrWhiteSpace(text))
                         {
-                            if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, UsCulture, out var runtime))
+                            if (int.TryParse(text.AsSpan().LeftPart(' '), NumberStyles.Integer, CultureInfo.InvariantCulture, out var runtime))
                             {
                                 item.RunTimeTicks = TimeSpan.FromMinutes(runtime).Ticks;
                             }
@@ -786,8 +784,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 case "fanart":
                     {
-                        var subtree = reader.ReadSubtree();
-                        subtree.ReadToDescendant("thumb");
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.Read();
+                            break;
+                        }
+
+                        using var subtree = reader.ReadSubtree();
+                        if (!subtree.ReadToDescendant("thumb"))
+                        {
+                            break;
+                        }
+
                         FetchThumbNode(subtree, itemResult);
                         break;
                     }
@@ -864,7 +872,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             else
             {
                 // only allow one item of each type
-                if (itemResult.RemoteImages.Any(x => x.type == imageType))
+                if (itemResult.RemoteImages.Any(x => x.Type == imageType))
                 {
                     return;
                 }
@@ -1265,7 +1273,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                                 if (!string.IsNullOrWhiteSpace(val))
                                 {
-                                    if (int.TryParse(val, NumberStyles.Integer, UsCulture, out var intVal))
+                                    if (int.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intVal))
                                     {
                                         sortOrder = intVal;
                                     }

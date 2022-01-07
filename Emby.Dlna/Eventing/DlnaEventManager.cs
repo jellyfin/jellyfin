@@ -26,8 +26,6 @@ namespace Emby.Dlna.Eventing
         private readonly ILogger _logger;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        private readonly CultureInfo _usCulture = new CultureInfo("en-US");
-
         public DlnaEventManager(ILogger logger, IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
@@ -83,7 +81,7 @@ namespace Emby.Dlna.Eventing
             if (!string.IsNullOrEmpty(header))
             {
                 // Starts with SECOND-
-                if (int.TryParse(header.AsSpan().RightPart('-'), NumberStyles.Integer, _usCulture, out var val))
+                if (int.TryParse(header.AsSpan().RightPart('-'), NumberStyles.Integer, CultureInfo.InvariantCulture, out var val))
                 {
                     return val;
                 }
@@ -106,7 +104,7 @@ namespace Emby.Dlna.Eventing
             var response = new EventSubscriptionResponse(string.Empty, "text/plain");
 
             response.Headers["SID"] = subscriptionId;
-            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(_usCulture)) : requestedTimeoutString;
+            response.Headers["TIMEOUT"] = string.IsNullOrEmpty(requestedTimeoutString) ? ("SECOND-" + timeoutSeconds.ToString(CultureInfo.InvariantCulture)) : requestedTimeoutString;
 
             return response;
         }
@@ -163,7 +161,7 @@ namespace Emby.Dlna.Eventing
             options.Headers.TryAddWithoutValidation("NT", subscription.NotificationType);
             options.Headers.TryAddWithoutValidation("NTS", "upnp:propchange");
             options.Headers.TryAddWithoutValidation("SID", subscription.Id);
-            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(_usCulture));
+            options.Headers.TryAddWithoutValidation("SEQ", subscription.TriggerCount.ToString(CultureInfo.InvariantCulture));
 
             try
             {

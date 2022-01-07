@@ -116,13 +116,14 @@ namespace Emby.Server.Implementations.TV
                 .GetItemList(
                     new InternalItemsQuery(user)
                     {
-                        IncludeItemTypes = new[] { nameof(Episode) },
-                        OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.DatePlayed, SortOrder.Descending) },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
+                        OrderBy = new[] { (ItemSortBy.DatePlayed, SortOrder.Descending) },
                         SeriesPresentationUniqueKey = presentationUniqueKey,
                         Limit = limit,
                         DtoOptions = new DtoOptions { Fields = new[] { ItemFields.SeriesPresentationUniqueKey }, EnableImages = false },
                         GroupBySeriesPresentationUniqueKey = true
-                    }, parentsFolders.ToList())
+                    },
+                    parentsFolders.ToList())
                 .Cast<Episode>()
                 .Where(episode => !string.IsNullOrEmpty(episode.SeriesPresentationUniqueKey))
                 .Select(GetUniqueSeriesKey);
@@ -191,8 +192,8 @@ namespace Emby.Server.Implementations.TV
             {
                 AncestorWithPresentationUniqueKey = null,
                 SeriesPresentationUniqueKey = seriesKey,
-                IncludeItemTypes = new[] { nameof(Episode) },
-                OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Descending) },
+                IncludeItemTypes = new[] { BaseItemKind.Episode },
+                OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Descending) },
                 IsPlayed = true,
                 Limit = 1,
                 ParentIndexNumberNotEquals = 0,
@@ -209,8 +210,8 @@ namespace Emby.Server.Implementations.TV
                 {
                     AncestorWithPresentationUniqueKey = null,
                     SeriesPresentationUniqueKey = seriesKey,
-                    IncludeItemTypes = new[] { nameof(Episode) },
-                    OrderBy = new[] { new ValueTuple<string, SortOrder>(ItemSortBy.SortName, SortOrder.Ascending) },
+                    IncludeItemTypes = new[] { BaseItemKind.Episode },
+                    OrderBy = new[] { (ItemSortBy.SortName, SortOrder.Ascending) },
                     Limit = 1,
                     IsPlayed = false,
                     IsVirtualItem = false,
@@ -226,7 +227,7 @@ namespace Emby.Server.Implementations.TV
                         AncestorWithPresentationUniqueKey = null,
                         SeriesPresentationUniqueKey = seriesKey,
                         ParentIndexNumber = 0,
-                        IncludeItemTypes = new[] { nameof(Episode) },
+                        IncludeItemTypes = new[] { BaseItemKind.Episode },
                         IsPlayed = false,
                         IsVirtualItem = false,
                         DtoOptions = dtoOptions

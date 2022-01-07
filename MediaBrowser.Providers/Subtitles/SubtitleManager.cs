@@ -1,3 +1,5 @@
+#nullable disable
+
 #pragma warning disable CS1591
 
 using System;
@@ -7,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Jellyfin.Extensions;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -21,7 +24,6 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
-using static MediaBrowser.Model.IO.IODefaults;
 
 namespace MediaBrowser.Providers.Subtitles
 {
@@ -75,8 +77,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             var contentType = request.ContentType;
             var providers = _subtitleProviders
-                .Where(i => i.SupportedMediaTypes.Contains(contentType))
-                .Where(i => !request.DisabledSubtitleFetchers.Contains(i.Name, StringComparer.OrdinalIgnoreCase))
+                .Where(i => i.SupportedMediaTypes.Contains(contentType) && !request.DisabledSubtitleFetchers.Contains(i.Name, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(i =>
                 {
                     var index = request.SubtitleFetcherOrder.ToList().IndexOf(i.Name);
@@ -187,8 +188,8 @@ namespace MediaBrowser.Providers.Subtitles
         {
             var saveInMediaFolder = libraryOptions.SaveSubtitlesWithMedia;
 
-            using var stream = response.Stream;
-            using var memoryStream = new MemoryStream();
+            await using var stream = response.Stream;
+            await using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream).ConfigureAwait(false);
             memoryStream.Position = 0;
 
@@ -236,7 +237,7 @@ namespace MediaBrowser.Providers.Subtitles
 
             foreach (var savePath in savePaths)
             {
-                _logger.LogInformation("Saving subtitles to {0}", savePath);
+                _logger.LogInformation("Saving subtitles to {SavePath}", savePath);
 
                 _monitor.ReportFileSystemChangeBeginning(savePath);
 
@@ -244,8 +245,10 @@ namespace MediaBrowser.Providers.Subtitles
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(savePath));
 
-                    // use FileShare.None as this bypasses dotnet bug dotnet/runtime#42790 .
-                    using var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write, FileShare.None, FileStreamBufferSize, FileOptions.Asynchronous);
+                    var fileOptions = AsyncFile.WriteOptions;
+                    fileOptions.Mode = FileMode.CreateNew;
+                    fileOptions.PreallocationSize = stream.Length;
+                    using var fs = new FileStream(savePath, fileOptions);
                     await stream.CopyToAsync(fs).ConfigureAwait(false);
 
                     return;
@@ -254,13 +257,9 @@ namespace MediaBrowser.Providers.Subtitles
                 {
 // Bug in analyzer -- https://github.com/dotnet/roslyn-analyzers/issues/5160
 #pragma warning disable CA1508
-                    exs ??= new List<Exception>()
-                            {
-                                ex
-                            };
+                    (exs ??= new List<Exception>()).Add(ex);
 #pragma warning restore CA1508
-
-            }
+                }
                 finally
                 {
                     _monitor.ReportFileSystemChangeComplete(savePath, false);
@@ -276,7 +275,7 @@ namespace MediaBrowser.Providers.Subtitles
         }
 
         /// <inheritdoc />
-        public Task<RemoteSubtitleInfo[]> SearchSubtitles(Video video, string language, bool? isPerfectMatch, CancellationToken cancellationToken)
+        public Task<RemoteSubtitleInfo[]> SearchSubtitles(Video video, string language, bool? isPerfectMatch, bool isAutomated, CancellationToken cancellationToken)
         {
             if (video.VideoType != VideoType.VideoFile)
             {
@@ -310,7 +309,8 @@ namespace MediaBrowser.Providers.Subtitles
                 ProductionYear = video.ProductionYear,
                 ProviderIds = video.ProviderIds,
                 RuntimeTicks = video.RunTimeTicks,
-                IsPerfectMatch = isPerfectMatch ?? false
+                IsPerfectMatch = isPerfectMatch ?? false,
+                IsAutomated = isAutomated
             };
 
             if (video is Episode episode)

@@ -42,6 +42,25 @@ namespace Emby.Server.Implementations.IO
         private bool _disposed = false;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        /// <param name="libraryManager">The library manager.</param>
+        /// <param name="configurationManager">The configuration manager.</param>
+        /// <param name="fileSystem">The filesystem.</param>
+        public LibraryMonitor(
+            ILogger<LibraryMonitor> logger,
+            ILibraryManager libraryManager,
+            IServerConfigurationManager configurationManager,
+            IFileSystem fileSystem)
+        {
+            _libraryManager = libraryManager;
+            _logger = logger;
+            _configurationManager = configurationManager;
+            _fileSystem = fileSystem;
+        }
+
+        /// <summary>
         /// Add the path to our temporary ignore list.  Use when writing to a path within our listening scope.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -80,7 +99,7 @@ namespace Emby.Server.Implementations.IO
             // But if we make this delay too high, we risk missing legitimate changes, such as user adding a new file, or hand-editing metadata
             await Task.Delay(45000).ConfigureAwait(false);
 
-            _tempIgnoredPaths.TryRemove(path, out var val);
+            _tempIgnoredPaths.TryRemove(path, out _);
 
             if (refreshPath)
             {
@@ -93,21 +112,6 @@ namespace Emby.Server.Implementations.IO
                     _logger.LogError(ex, "Error in ReportFileSystemChanged for {Path}", path);
                 }
             }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LibraryMonitor" /> class.
-        /// </summary>
-        public LibraryMonitor(
-            ILogger<LibraryMonitor> logger,
-            ILibraryManager libraryManager,
-            IServerConfigurationManager configurationManager,
-            IFileSystem fileSystem)
-        {
-            _libraryManager = libraryManager;
-            _logger = logger;
-            _configurationManager = configurationManager;
-            _fileSystem = fileSystem;
         }
 
         private bool IsLibraryMonitorEnabled(BaseItem item)
@@ -199,7 +203,7 @@ namespace Emby.Server.Implementations.IO
         /// <param name="lst">The LST.</param>
         /// <param name="path">The path.</param>
         /// <returns><c>true</c> if [contains parent folder] [the specified LST]; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">path</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="path"/> is <c>null</c>.</exception>
         private static bool ContainsParentFolder(IEnumerable<string> lst, string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -263,7 +267,7 @@ namespace Emby.Server.Implementations.IO
                     if (_fileSystemWatchers.TryAdd(path, newWatcher))
                     {
                         newWatcher.EnableRaisingEvents = true;
-                        _logger.LogInformation("Watching directory " + path);
+                        _logger.LogInformation("Watching directory {Path}", path);
                     }
                     else
                     {
@@ -272,7 +276,7 @@ namespace Emby.Server.Implementations.IO
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error watching path: {path}", path);
+                    _logger.LogError(ex, "Error watching path: {Path}", path);
                 }
             });
         }
@@ -445,12 +449,12 @@ namespace Emby.Server.Implementations.IO
                 }
 
                 var newRefresher = new FileRefresher(path, _configurationManager, _libraryManager, _logger);
-                newRefresher.Completed += NewRefresher_Completed;
+                newRefresher.Completed += OnNewRefresherCompleted;
                 _activeRefreshers.Add(newRefresher);
             }
         }
 
-        private void NewRefresher_Completed(object sender, EventArgs e)
+        private void OnNewRefresherCompleted(object sender, EventArgs e)
         {
             var refresher = (FileRefresher)sender;
             DisposeRefresher(refresher);
@@ -477,6 +481,7 @@ namespace Emby.Server.Implementations.IO
         {
             lock (_activeRefreshers)
             {
+                refresher.Completed -= OnNewRefresherCompleted;
                 refresher.Dispose();
                 _activeRefreshers.Remove(refresher);
             }
@@ -488,6 +493,7 @@ namespace Emby.Server.Implementations.IO
             {
                 foreach (var refresher in _activeRefreshers.ToList())
                 {
+                    refresher.Completed -= OnNewRefresherCompleted;
                     refresher.Dispose();
                 }
 

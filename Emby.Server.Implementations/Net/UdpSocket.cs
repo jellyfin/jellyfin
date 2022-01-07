@@ -16,11 +16,7 @@ namespace Emby.Server.Implementations.Net
 
     public sealed class UdpSocket : ISocket, IDisposable
     {
-        private Socket _socket;
         private readonly int _localPort;
-        private bool _disposed = false;
-
-        public Socket Socket => _socket;
 
         private readonly SocketAsyncEventArgs _receiveSocketAsyncEventArgs = new SocketAsyncEventArgs()
         {
@@ -32,6 +28,8 @@ namespace Emby.Server.Implementations.Net
             SocketFlags = SocketFlags.None
         };
 
+        private Socket _socket;
+        private bool _disposed = false;
         private TaskCompletionSource<SocketReceiveResult> _currentReceiveTaskCompletionSource;
         private TaskCompletionSource<int> _currentSendTaskCompletionSource;
 
@@ -63,6 +61,8 @@ namespace Emby.Server.Implementations.Net
 
             InitReceiveSocketAsyncEventArgs();
         }
+
+        public Socket Socket => _socket;
 
         public IPAddress LocalIPAddress { get; }
 

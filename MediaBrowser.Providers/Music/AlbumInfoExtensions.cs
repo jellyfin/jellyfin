@@ -8,7 +8,7 @@ namespace MediaBrowser.Providers.Music
 {
     public static class AlbumInfoExtensions
     {
-        public static string GetAlbumArtist(this AlbumInfo info)
+        public static string? GetAlbumArtist(this AlbumInfo info)
         {
             var id = info.SongInfos.SelectMany(i => i.AlbumArtists)
                     .FirstOrDefault(i => !string.IsNullOrEmpty(i));
@@ -21,7 +21,7 @@ namespace MediaBrowser.Providers.Music
             return info.AlbumArtists.Count > 0 ? info.AlbumArtists[0] : default;
         }
 
-        public static string GetReleaseGroupId(this AlbumInfo info)
+        public static string? GetReleaseGroupId(this AlbumInfo info)
         {
             var id = info.GetProviderId(MetadataProvider.MusicBrainzReleaseGroup);
 
@@ -34,7 +34,7 @@ namespace MediaBrowser.Providers.Music
             return id;
         }
 
-        public static string GetReleaseId(this AlbumInfo info)
+        public static string? GetReleaseId(this AlbumInfo info)
         {
             var id = info.GetProviderId(MetadataProvider.MusicBrainzAlbum);
 
@@ -47,9 +47,9 @@ namespace MediaBrowser.Providers.Music
             return id;
         }
 
-        public static string GetMusicBrainzArtistId(this AlbumInfo info)
+        public static string? GetMusicBrainzArtistId(this AlbumInfo info)
         {
-            info.ProviderIds.TryGetValue(MetadataProvider.MusicBrainzAlbumArtist.ToString(), out string id);
+            info.ProviderIds.TryGetValue(MetadataProvider.MusicBrainzAlbumArtist.ToString(), out string? id);
 
             if (string.IsNullOrEmpty(id))
             {
@@ -65,7 +65,7 @@ namespace MediaBrowser.Providers.Music
             return id;
         }
 
-        public static string GetMusicBrainzArtistId(this ArtistInfo info)
+        public static string? GetMusicBrainzArtistId(this ArtistInfo info)
         {
             info.ProviderIds.TryGetValue(MetadataProvider.MusicBrainzArtist.ToString(), out var id);
 

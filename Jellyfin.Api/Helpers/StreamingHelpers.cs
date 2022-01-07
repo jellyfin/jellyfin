@@ -90,6 +90,7 @@ namespace Jellyfin.Api.Helpers
             }
 
             var enableDlnaHeaders = !string.IsNullOrWhiteSpace(streamingRequest.Params) ||
+                                    streamingRequest.StreamOptions.ContainsKey("dlnaheaders") ||
                                     string.Equals(httpRequest.Headers["GetContentFeatures.DLNA.ORG"], "1", StringComparison.OrdinalIgnoreCase);
 
             var state = new StreamState(mediaSourceManager, transcodingJobType, transcodingJobHelper)
@@ -148,7 +149,7 @@ namespace Jellyfin.Api.Helpers
 
                     mediaSource = string.IsNullOrEmpty(streamingRequest.MediaSourceId)
                         ? mediaSources[0]
-                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.InvariantCulture));
+                        : mediaSources.Find(i => string.Equals(i.Id, streamingRequest.MediaSourceId, StringComparison.Ordinal));
 
                     if (mediaSource == null && Guid.Parse(streamingRequest.MediaSourceId) == streamingRequest.Id)
                     {

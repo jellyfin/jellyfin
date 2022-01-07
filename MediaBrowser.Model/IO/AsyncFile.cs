@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 
 namespace MediaBrowser.Model.IO
@@ -8,6 +7,25 @@ namespace MediaBrowser.Model.IO
     /// </summary>
     public static class AsyncFile
     {
+        /// <summary>
+        /// Gets the default <see cref="FileStreamOptions"/> for reading files async.
+        /// </summary>
+        public static FileStreamOptions ReadOptions => new FileStreamOptions()
+        {
+            Options = FileOptions.Asynchronous
+        };
+
+        /// <summary>
+        /// Gets the default <see cref="FileStreamOptions"/> for writing files async.
+        /// </summary>
+        public static FileStreamOptions WriteOptions => new FileStreamOptions()
+        {
+            Mode = FileMode.OpenOrCreate,
+            Access = FileAccess.Write,
+            Share = FileShare.None,
+            Options = FileOptions.Asynchronous
+        };
+
         /// <summary>
         /// Opens an existing file for reading.
         /// </summary>

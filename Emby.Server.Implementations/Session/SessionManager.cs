@@ -60,7 +60,7 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// The active connections.
         /// </summary>
-        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new (StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, SessionInfo> _activeConnections = new(StringComparer.OrdinalIgnoreCase);
 
         private Timer _idleTimer;
 
@@ -741,6 +741,8 @@ namespace Emby.Server.Implementations.Session
         /// <summary>
         /// Used to report playback progress for an item.
         /// </summary>
+        /// <param name="info">The playback progress info.</param>
+        /// <param name="isAutomated">Whether this is an automated update.</param>
         /// <returns>Task.</returns>
         public async Task OnPlaybackProgress(PlaybackProgressInfo info, bool isAutomated)
         {
@@ -1290,7 +1292,7 @@ namespace Emby.Server.Implementations.Session
                 {
                     ["ItemId"] = command.ItemId,
                     ["ItemName"] = command.ItemName,
-                    ["ItemType"] = command.ItemType
+                    ["ItemType"] = command.ItemType.ToString()
                 }
             };
 

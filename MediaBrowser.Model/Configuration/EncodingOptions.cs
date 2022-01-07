@@ -18,12 +18,9 @@ namespace MediaBrowser.Model.Configuration
             // This is a DRM device that is almost guaranteed to be there on every intel platform,
             // plus it's the default one in ffmpeg if you don't specify anything
             VaapiDevice = "/dev/dri/renderD128";
-            // This is the OpenCL device that is used for tonemapping.
-            // The left side of the dot is the platform number, and the right side is the device number on the platform.
-            OpenclDevice = "0.0";
             EnableTonemapping = false;
             EnableVppTonemapping = false;
-            TonemappingAlgorithm = "hable";
+            TonemappingAlgorithm = "bt2390";
             TonemappingRange = "auto";
             TonemappingDesat = 0;
             TonemappingThreshold = 0.8;
@@ -36,6 +33,9 @@ namespace MediaBrowser.Model.Configuration
             EnableDecodingColorDepth10Hevc = true;
             EnableDecodingColorDepth10Vp9 = true;
             EnableEnhancedNvdecDecoder = true;
+            PreferSystemNativeHwDecoder = true;
+            EnableIntelLowPowerH264HwEncoder = false;
+            EnableIntelLowPowerHevcHwEncoder = false;
             EnableHardwareEncoding = true;
             AllowHevcEncoding = false;
             EnableSubtitleExtraction = true;
@@ -73,8 +73,6 @@ namespace MediaBrowser.Model.Configuration
 
         public string VaapiDevice { get; set; }
 
-        public string OpenclDevice { get; set; }
-
         public bool EnableTonemapping { get; set; }
 
         public bool EnableVppTonemapping { get; set; }
@@ -106,6 +104,12 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableDecodingColorDepth10Vp9 { get; set; }
 
         public bool EnableEnhancedNvdecDecoder { get; set; }
+
+        public bool PreferSystemNativeHwDecoder { get; set; }
+
+        public bool EnableIntelLowPowerH264HwEncoder { get; set; }
+
+        public bool EnableIntelLowPowerHevcHwEncoder { get; set; }
 
         public bool EnableHardwareEncoding { get; set; }
 

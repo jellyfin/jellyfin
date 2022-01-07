@@ -149,6 +149,8 @@
  - [skyfrk](https://github.com/skyfrk)
  - [ianjazz246](https://github.com/ianjazz246)
  - [peterspenler](https://github.com/peterspenler)
+ - [MBR-0001](https://github.com/MBR-0001)
+ - [jonas-resch](https://github.com/jonas-resch)
 
 # Emby Contributors
 

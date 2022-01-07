@@ -6,6 +6,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class MultiEpisodeTests
     {
+        private readonly EpisodePathParser _episodePathParser = new EpisodePathParser(new NamingOptions());
+
         [Theory]
         [InlineData(@"Season 1/4x01 – 20 Hours in America (1).mkv", null)]
         [InlineData(@"Season 1/01x02 blah.avi", null)]
@@ -69,10 +71,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData(@"Season 1/MOONLIGHTING_s01e01-e04", 4)]
         public void TestGetEndingEpisodeNumberFromFile(string filename, int? endingEpisodeNumber)
         {
-            var options = new NamingOptions();
-
-            var result = new EpisodePathParser(options)
-                .Parse(filename, false);
+            var result = _episodePathParser.Parse(filename, false);
 
             Assert.Equal(result.EndingEpisodeNumber, endingEpisodeNumber);
         }

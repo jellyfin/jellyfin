@@ -60,34 +60,34 @@ namespace Emby.Server.Implementations.LiveTv.Listings
             return _config.Configuration.PreferredMetadataLanguage;
         }
 
-        private async Task<string> GetXml(string path, CancellationToken cancellationToken)
+        private async Task<string> GetXml(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("xmltv path: {Path}", path);
+            _logger.LogInformation("xmltv path: {Path}", info.Path);
 
-            if (!path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            if (!info.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                return UnzipIfNeeded(path, path);
+                return UnzipIfNeeded(info.Path, info.Path);
             }
 
-            string cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + ".xml";
+            string cacheFilename = DateTime.UtcNow.DayOfYear.ToString(CultureInfo.InvariantCulture) + "-" + DateTime.UtcNow.Hour.ToString(CultureInfo.InvariantCulture) + "-" + info.Id + ".xml";
             string cacheFile = Path.Combine(_config.ApplicationPaths.CachePath, "xmltv", cacheFilename);
             if (File.Exists(cacheFile))
             {
-                return UnzipIfNeeded(path, cacheFile);
+                return UnzipIfNeeded(info.Path, cacheFile);
             }
 
-            _logger.LogInformation("Downloading xmltv listings from {Path}", path);
+            _logger.LogInformation("Downloading xmltv listings from {Path}", info.Path);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cacheFile));
 
-            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(path, cancellationToken).ConfigureAwait(false);
+            using var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(info.Path, cancellationToken).ConfigureAwait(false);
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using (var fileStream = new FileStream(cacheFile, FileMode.CreateNew, FileAccess.Write, FileShare.None, IODefaults.CopyToBufferSize, FileOptions.Asynchronous))
             {
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
-            return UnzipIfNeeded(path, cacheFile);
+            return UnzipIfNeeded(info.Path, cacheFile);
         }
 
         private string UnzipIfNeeded(ReadOnlySpan<char> originalUrl, string file)
@@ -163,7 +163,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
 
             _logger.LogDebug("Getting xmltv programs for channel {Id}", channelId);
 
-            string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            string path = await GetXml(info, cancellationToken).ConfigureAwait(false);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
 
@@ -190,10 +190,10 @@ namespace Emby.Server.Implementations.LiveTv.Listings
                 IsSeries = program.Episode != null,
                 IsRepeat = program.IsPreviouslyShown && !program.IsNew,
                 IsPremiere = program.Premiere != null,
-                IsKids = program.Categories.Any(c => info.KidsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
-                IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparer.OrdinalIgnoreCase)),
+                IsKids = program.Categories.Any(c => info.KidsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsMovie = program.Categories.Any(c => info.MovieCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsNews = program.Categories.Any(c => info.NewsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
+                IsSports = program.Categories.Any(c => info.SportsCategories.Contains(c, StringComparison.OrdinalIgnoreCase)),
                 ImageUrl = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source) ? program.Icon.Source : null,
                 HasImage = program.Icon != null && !string.IsNullOrEmpty(program.Icon.Source),
                 OfficialRating = program.Rating != null && !string.IsNullOrEmpty(program.Rating.Value) ? program.Rating.Value : null,
@@ -257,7 +257,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
             // In theory this should never be called because there is always only one lineup
-            string path = await GetXml(info.Path, CancellationToken.None).ConfigureAwait(false);
+            string path = await GetXml(info, CancellationToken.None).ConfigureAwait(false);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             IEnumerable<XmlTvChannel> results = reader.GetChannels();
@@ -269,7 +269,7 @@ namespace Emby.Server.Implementations.LiveTv.Listings
         public async Task<List<ChannelInfo>> GetChannels(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             // In theory this should never be called because there is always only one lineup
-            string path = await GetXml(info.Path, cancellationToken).ConfigureAwait(false);
+            string path = await GetXml(info, cancellationToken).ConfigureAwait(false);
             _logger.LogDebug("Opening XmlTvReader for {Path}", path);
             var reader = new XmlTvReader(path, GetLanguage(info));
             var results = reader.GetChannels();

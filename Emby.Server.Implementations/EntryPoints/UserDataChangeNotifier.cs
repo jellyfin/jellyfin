@@ -95,7 +95,7 @@ namespace Emby.Server.Implementations.EntryPoints
                 var changes = _changedItems.ToList();
                 _changedItems.Clear();
 
-                var task = SendNotifications(changes, CancellationToken.None);
+                SendNotifications(changes, CancellationToken.None).GetAwaiter().GetResult();
 
                 if (_updateTimer != null)
                 {

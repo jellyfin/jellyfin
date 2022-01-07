@@ -13,6 +13,12 @@ namespace Emby.Server.Implementations.Sorting
     public class SortNameComparer : IBaseItemComparer
     {
         /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name => ItemSortBy.SortName;
+
+        /// <summary>
         /// Compares the specified x.
         /// </summary>
         /// <param name="x">The x.</param>
@@ -30,13 +36,7 @@ namespace Emby.Server.Implementations.Sorting
                 throw new ArgumentNullException(nameof(y));
             }
 
-            return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
+            return string.Compare(x.SortName, y.SortName, StringComparison.OrdinalIgnoreCase);
         }
-
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>The name.</value>
-        public string Name => ItemSortBy.SortName;
     }
 }

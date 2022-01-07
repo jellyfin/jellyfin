@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.MediaEncoding
 {
     public interface IAttachmentExtractor
     {
-        Task<(MediaAttachment attachment, Stream stream)> GetAttachment(
+        Task<(MediaAttachment Attachment, Stream Stream)> GetAttachment(
             BaseItem item,
             string mediaSourceId,
             int attachmentStreamIndex,

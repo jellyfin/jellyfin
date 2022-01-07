@@ -29,7 +29,7 @@ namespace MediaBrowser.Model.Plugins
         NotSupported = -2,
 
         /// <summary>
-        /// This plugin caused an error when instantiated. (Either DI loop, or exception)
+        /// This plugin caused an error when instantiated (either DI loop, or exception).
         /// </summary>
         Malfunctioned = -3,
 

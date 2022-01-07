@@ -6,6 +6,8 @@ namespace Jellyfin.Naming.Tests.TV
 {
     public class AbsoluteEpisodeNumberTests
     {
+        private readonly EpisodeResolver _resolver = new EpisodeResolver(new NamingOptions());
+
         [Theory]
         [InlineData("The Simpsons/12.avi", 12)]
         [InlineData("The Simpsons/The Simpsons 12.avi", 12)]
@@ -16,10 +18,7 @@ namespace Jellyfin.Naming.Tests.TV
         [InlineData("The Simpsons/The Simpsons 101.avi", 101)]
         public void GetEpisodeNumberFromFileTest(string path, int episodeNumber)
         {
-            var options = new NamingOptions();
-
-            var result = new EpisodeResolver(options)
-                .Resolve(path, false, null, null, true);
+            var result = _resolver.Resolve(path, false, null, null, true);
 
             Assert.Equal(episodeNumber, result?.EpisodeNumber);
         }

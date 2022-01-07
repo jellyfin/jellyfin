@@ -140,7 +140,7 @@ namespace Emby.Server.Implementations.Collections
 
             if (parentFolder == null)
             {
-                throw new ArgumentException();
+                throw new ArgumentException(nameof(parentFolder));
             }
 
             var path = Path.Combine(parentFolder.Path, folderName);

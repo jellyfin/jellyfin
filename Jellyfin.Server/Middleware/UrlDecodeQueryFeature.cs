@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Jellyfin.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -52,7 +51,7 @@ namespace Jellyfin.Server.Middleware
                     return;
                 }
 
-                if (!key.Contains('='))
+                if (!key.Contains('=', StringComparison.Ordinal))
                 {
                     _store = value;
                     return;
