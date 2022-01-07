@@ -13,6 +13,8 @@
     <Rule Id="SA1210" Action="Error" />
     <!-- error on SA1316: Tuple element names should use correct casing -->
     <Rule Id="SA1316" Action="Error" />
+    <!-- error on SA1414: Tuple types in signatures should have element names -->
+    <Rule Id="SA1414" Action="Error" />
     <!-- error on SA1518: File is required to end with a single newline character -->
     <Rule Id="SA1518" Action="Error" />
     <!-- error on SA1629: Documentation text should end with a period -->
@@ -73,6 +75,8 @@
     <Rule Id="CA1843" Action="Error" />
     <!-- error on CA1845: Use span-based 'string.Concat' -->
     <Rule Id="CA1845" Action="Error" />
+    <!-- error on CA1849: Call async methods when in an async method -->
+    <Rule Id="CA1849" Action="Error" />
     <!-- error on CA2016: Forward the CancellationToken parameter to methods that take one
         or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token -->
     <Rule Id="CA2016" Action="Error" />

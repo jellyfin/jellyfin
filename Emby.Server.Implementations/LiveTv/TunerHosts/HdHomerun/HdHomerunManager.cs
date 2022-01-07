@@ -80,7 +80,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             _remoteEndPoint = new IPEndPoint(remoteIp, HdHomeRunPort);
 
             _tcpClient = new TcpClient();
-            _tcpClient.Connect(_remoteEndPoint);
+            await _tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken).ConfigureAwait(false);
 
             if (!_lockkey.HasValue)
             {
@@ -158,7 +158,7 @@ namespace Emby.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
 
             using var tcpClient = new TcpClient();
-            tcpClient.Connect(_remoteEndPoint);
+            await tcpClient.ConnectAsync(_remoteEndPoint, cancellationToken).ConfigureAwait(false);
 
             using var stream = tcpClient.GetStream();
             var commandList = commands.GetCommands();
