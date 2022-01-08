@@ -3007,7 +3007,10 @@ namespace Emby.Server.Implementations.Library
                 }
             }
 
-            CreateItems(personsToSave, null, CancellationToken.None);
+            if (personsToSave.Count > 0)
+            {
+                CreateItems(personsToSave, null, CancellationToken.None);
+            }
         }
 
         private void StartScanInBackground()

@@ -33,6 +33,7 @@ namespace MediaBrowser.Controller.Entities.Movies
         public override bool SupportsPeople => true;
 
         /// <inheritdoc />
+        [JsonIgnore]
         public IReadOnlyList<BaseItem> LocalTrailers => GetExtras()
             .Where(extra => extra.ExtraType == Model.Entities.ExtraType.Trailer)
             .ToArray();
