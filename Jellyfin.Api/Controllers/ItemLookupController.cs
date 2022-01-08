@@ -264,7 +264,7 @@ namespace Jellyfin.Api.Controllers
                     ReplaceAllMetadata = true,
                     ReplaceAllImages = replaceAllImages,
                     SearchResult = searchResult,
-                    IsIdentify = true
+                    RemoveOldMetadata = true
                 },
                 CancellationToken.None).ConfigureAwait(false);
 

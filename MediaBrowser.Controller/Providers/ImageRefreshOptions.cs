@@ -28,9 +28,9 @@ namespace MediaBrowser.Controller.Providers
         public bool IsAutomated { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the action is an identify.
+        /// Gets or sets a value indicating whether old metadata should be removed if it isn't be replaced.
         /// </summary>
-        public bool IsIdentify { get; set; }
+        public bool RemoveOldMetadata { get; set; }
 
         public bool IsReplacingImage(ImageType type)
         {

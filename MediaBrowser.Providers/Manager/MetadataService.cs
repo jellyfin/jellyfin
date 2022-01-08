@@ -96,8 +96,7 @@ namespace MediaBrowser.Providers.Manager
 
             var allImageProviders = ((ProviderManager)ProviderManager).GetImageProviders(item, refreshOptions).ToList();
 
-            // If replacing images with identify purge existing images.
-            if (refreshOptions.IsIdentify && refreshOptions.ReplaceAllImages)
+            if (refreshOptions.RemoveOldMetadata && refreshOptions.ReplaceAllImages)
             {
                 if (ImageProvider.RemoveImages(item))
                 {
@@ -755,9 +754,8 @@ namespace MediaBrowser.Providers.Manager
                     }
                     else
                     {
-                        if (!options.IsIdentify)
+                        if (!options.RemoveOldMetadata)
                         {
-                            // Keep metadata for fields that the new metadata doesn't have populated
                             MergeData(metadata, temp, Array.Empty<MetadataField>(), false, false);
                         }
 
