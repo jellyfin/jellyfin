@@ -97,21 +97,11 @@ namespace Emby.Server.Implementations.Udp
 
         private async Task BeginReceiveAsync(CancellationToken cancellationToken)
         {
-            var infiniteTask = Task.Delay(-1, cancellationToken);
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    var task = _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint);
-                    await Task.WhenAny(task, infiniteTask).ConfigureAwait(false);
-
-                    if (!task.IsCompleted)
-                    {
-                        return;
-                    }
-
-                    var result = task.Result;
-
+                    var result = await _udpSocket.ReceiveFromAsync(_receiveBuffer, SocketFlags.None, _endpoint, cancellationToken).ConfigureAwait(false);
                     var text = Encoding.UTF8.GetString(_receiveBuffer, 0, result.ReceivedBytes);
                     if (text.Contains("who is JellyfinServer?", StringComparison.OrdinalIgnoreCase))
                     {
