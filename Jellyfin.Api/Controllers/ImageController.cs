@@ -1878,8 +1878,8 @@ namespace Jellyfin.Api.Controllers
             if (!supportsWebP)
             {
                 var userAgent = Request.Headers[HeaderNames.UserAgent].ToString();
-                if (userAgent.IndexOf("crosswalk", StringComparison.OrdinalIgnoreCase) != -1 &&
-                    userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
+                if (userAgent.Contains("crosswalk", StringComparison.OrdinalIgnoreCase)
+                    && userAgent.Contains("android", StringComparison.OrdinalIgnoreCase))
                 {
                     supportsWebP = true;
                 }
@@ -1905,10 +1905,7 @@ namespace Jellyfin.Api.Controllers
 
         private bool SupportsFormat(IReadOnlyCollection<string> requestAcceptTypes, string acceptParam, ImageFormat format, bool acceptAll)
         {
-            var normalized = format.ToString().ToLowerInvariant();
-            var mimeType = "image/" + normalized;
-
-            if (requestAcceptTypes.Contains(mimeType))
+            if (requestAcceptTypes.Contains(format.GetMimeType()))
             {
                 return true;
             }
@@ -1918,6 +1915,8 @@ namespace Jellyfin.Api.Controllers
                 return true;
             }
 
+            // Review if this should be jpeg, jpg or both for ImageFormat.Jpg
+            var normalized = format.ToString().ToLowerInvariant();
             return string.Equals(acceptParam, normalized, StringComparison.OrdinalIgnoreCase);
         }
 

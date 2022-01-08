@@ -124,7 +124,6 @@ namespace Jellyfin.Model.Tests.Net
         [InlineData("font/woff2", ".woff2")]
         [InlineData("image/bmp", ".bmp")]
         [InlineData("image/gif", ".gif")]
-        [InlineData("image/jpg", ".jpg")]
         [InlineData("image/jpeg", ".jpg")]
         [InlineData("image/png", ".png")]
         [InlineData("image/svg+xml", ".svg")]

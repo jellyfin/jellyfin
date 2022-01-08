@@ -116,7 +116,6 @@ namespace MediaBrowser.Model.Net
             { "audio/x-wavpack", ".wv" },
 
             // Type image
-            { "image/jpg", ".jpg" },
             { "image/jpeg", ".jpg" },
             { "image/x-png", ".png" },
 

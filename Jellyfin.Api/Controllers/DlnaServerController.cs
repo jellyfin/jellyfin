@@ -9,6 +9,7 @@ using Emby.Dlna.Main;
 using Jellyfin.Api.Attributes;
 using Jellyfin.Api.Constants;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Model.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -337,11 +338,7 @@ namespace Jellyfin.Api.Controllers
                 return NotFound();
             }
 
-            var contentType = "image/" + Path.GetExtension(fileName)
-                .TrimStart('.')
-                .ToLowerInvariant();
-
-            return File(icon.Stream, contentType);
+            return File(icon.Stream, MimeTypes.GetMimeType(fileName));
         }
 
         private string GetAbsoluteUri()
