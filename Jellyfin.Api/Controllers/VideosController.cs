@@ -470,7 +470,7 @@ namespace Jellyfin.Api.Controllers
                 StreamingHelpers.AddDlnaHeaders(state, Response.Headers, true, state.Request.StartTimeTicks, Request, _dlnaManager);
 
                 var httpClient = _httpClientFactory.CreateClient(NamedClient.Default);
-                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, isHeadRequest, httpClient, HttpContext).ConfigureAwait(false);
+                return await FileStreamResponseHelpers.GetStaticRemoteStreamResult(state, httpClient, HttpContext).ConfigureAwait(false);
             }
 
             if (@static.HasValue && @static.Value && state.InputProtocol != MediaProtocol.File)
@@ -500,7 +500,6 @@ namespace Jellyfin.Api.Controllers
                 return FileStreamResponseHelpers.GetStaticFileResult(
                     state.MediaPath,
                     contentType,
-                    isHeadRequest,
                     HttpContext);
             }
 

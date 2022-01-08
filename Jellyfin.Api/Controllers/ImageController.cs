@@ -559,8 +559,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -643,8 +642,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -727,8 +725,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -811,8 +808,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -895,8 +891,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -979,8 +974,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1063,8 +1057,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1147,8 +1140,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1231,8 +1223,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1315,8 +1306,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1399,8 +1389,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1483,8 +1472,7 @@ namespace Jellyfin.Api.Controllers
                     blur,
                     backgroundColor,
                     foregroundLayer,
-                    item,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase))
+                    item)
                 .ConfigureAwait(false);
         }
 
@@ -1585,7 +1573,6 @@ namespace Jellyfin.Api.Controllers
                     backgroundColor,
                     foregroundLayer,
                     null,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase),
                     info)
                 .ConfigureAwait(false);
         }
@@ -1687,7 +1674,6 @@ namespace Jellyfin.Api.Controllers
                     backgroundColor,
                     foregroundLayer,
                     null,
-                    Request.Method.Equals(HttpMethods.Head, StringComparison.OrdinalIgnoreCase),
                     info)
                 .ConfigureAwait(false);
         }
@@ -1772,7 +1758,6 @@ namespace Jellyfin.Api.Controllers
             string? backgroundColor,
             string? foregroundLayer,
             BaseItem? item,
-            bool isHeadRequest,
             ItemImageInfo? imageInfo = null)
         {
             if (percentPlayed.HasValue)
@@ -1843,8 +1828,7 @@ namespace Jellyfin.Api.Controllers
                 imageInfo,
                 outputFormats,
                 cacheDuration,
-                responseHeaders,
-                isHeadRequest).ConfigureAwait(false);
+                responseHeaders).ConfigureAwait(false);
         }
 
         private ImageFormat[] GetOutputFormats(ImageFormat? format)
@@ -1941,8 +1925,7 @@ namespace Jellyfin.Api.Controllers
             ItemImageInfo imageInfo,
             IReadOnlyCollection<ImageFormat> supportedFormats,
             TimeSpan? cacheDuration,
-            IDictionary<string, string> headers,
-            bool isHeadRequest)
+            IDictionary<string, string> headers)
         {
             if (!imageInfo.IsLocalFile && item != null)
             {
