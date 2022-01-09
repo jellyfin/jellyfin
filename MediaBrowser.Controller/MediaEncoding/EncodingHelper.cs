@@ -886,6 +886,13 @@ namespace MediaBrowser.Controller.MediaEncoding
 
             if (state.AudioStream != null && state.AudioStream.IsExternal)
             {
+                // Also seek the external audio stream.
+                var seekAudioParam = GetFastSeekCommandLineParameter(state, options);
+                if (!string.IsNullOrEmpty(seekAudioParam))
+                {
+                    arg.Append(' ').Append(seekAudioParam);
+                }
+
                 arg.Append(" -i \"").Append(state.AudioStream.Path).Append('"');
             }
 
