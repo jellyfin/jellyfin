@@ -69,7 +69,7 @@ namespace Jellyfin.Api.Controllers
                 return BadRequest("Invalid segment.");
             }
 
-            return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file), HttpContext);
+            return FileStreamResponseHelpers.GetStaticFileResult(file, MimeTypes.GetMimeType(file));
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Jellyfin.Api.Controllers
                 return Task.CompletedTask;
             });
 
-            return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path), HttpContext);
+            return FileStreamResponseHelpers.GetStaticFileResult(path, MimeTypes.GetMimeType(path));
         }
     }
 }

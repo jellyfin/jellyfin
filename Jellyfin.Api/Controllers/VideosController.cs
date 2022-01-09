@@ -499,8 +499,7 @@ namespace Jellyfin.Api.Controllers
 
                 return FileStreamResponseHelpers.GetStaticFileResult(
                     state.MediaPath,
-                    contentType,
-                    HttpContext);
+                    contentType);
             }
 
             // Need to start ffmpeg (because media can't be returned directly)

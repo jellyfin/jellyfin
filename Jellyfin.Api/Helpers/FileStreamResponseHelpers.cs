@@ -51,12 +51,10 @@ namespace Jellyfin.Api.Helpers
         /// </summary>
         /// <param name="path">The path to the file.</param>
         /// <param name="contentType">The content type of the file.</param>
-        /// <param name="httpContext">The current http context.</param>
         /// <returns>An <see cref="ActionResult"/> the file.</returns>
         public static ActionResult GetStaticFileResult(
             string path,
-            string contentType,
-            HttpContext httpContext)
+            string contentType)
         {
             return new PhysicalFileResult(path, contentType) { EnableRangeProcessing = true };
         }
