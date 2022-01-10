@@ -85,9 +85,6 @@ namespace Jellyfin.Server
             serviceCollection.AddSingleton<IDisplayPreferencesManager, DisplayPreferencesManager>();
             serviceCollection.AddSingleton<IDeviceManager, DeviceManager>();
 
-            // TODO search plugins
-            serviceCollection.AddSingleton<IImageGenerator, DefaultImageGenerator>();
-
             // TODO search the assemblies instead of adding them manually?
             serviceCollection.AddSingleton<IWebSocketListener, SessionWebSocketListener>();
             serviceCollection.AddSingleton<IWebSocketListener, ActivityLogWebSocketListener>();

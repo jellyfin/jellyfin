@@ -48,7 +48,7 @@ namespace Jellyfin.Api.Controllers
         private readonly ILogger<ImageController> _logger;
         private readonly IServerConfigurationManager _serverConfigurationManager;
         private readonly IApplicationPaths _appPaths;
-        private readonly IImageGenerator _imageGenerator;
+        private readonly IImageEncoder _imageEncoder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageController"/> class.
@@ -62,7 +62,7 @@ namespace Jellyfin.Api.Controllers
         /// <param name="logger">Instance of the <see cref="ILogger{ImageController}"/> interface.</param>
         /// <param name="serverConfigurationManager">Instance of the <see cref="IServerConfigurationManager"/> interface.</param>
         /// <param name="appPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>
-        /// <param name="imageGenerator">Instance of the <see cref="IImageGenerator"/> interface.</param>
+        /// <param name="imageEncoder">Instance of the <see cref="IImageEncoder"/> interface.</param>
         public ImageController(
             IUserManager userManager,
             ILibraryManager libraryManager,
@@ -73,7 +73,7 @@ namespace Jellyfin.Api.Controllers
             ILogger<ImageController> logger,
             IServerConfigurationManager serverConfigurationManager,
             IApplicationPaths appPaths,
-            IImageGenerator imageGenerator)
+            IImageEncoder imageEncoder)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -84,7 +84,7 @@ namespace Jellyfin.Api.Controllers
             _logger = logger;
             _serverConfigurationManager = serverConfigurationManager;
             _appPaths = appPaths;
-            _imageGenerator = imageGenerator;
+            _imageEncoder = imageEncoder;
         }
 
         /// <summary>
@@ -1737,19 +1737,20 @@ namespace Jellyfin.Api.Controllers
             [FromQuery] string? foregroundLayer,
             [FromQuery, Range(0, 100)] int quality = 90)
         {
-            string splashscreenPath;
             var brandingOptions = _serverConfigurationManager.GetConfiguration<BrandingOptions>("branding");
-            if (!string.IsNullOrWhiteSpace(brandingOptions.SplashscreenLocation))
+            string splashscreenPath;
+
+            if (!string.IsNullOrWhiteSpace(brandingOptions.SplashscreenLocation)
+                && System.IO.File.Exists(brandingOptions.SplashscreenLocation))
             {
-                splashscreenPath = brandingOptions.SplashscreenLocation!;
+                splashscreenPath = brandingOptions.SplashscreenLocation;
             }
             else
             {
                 splashscreenPath = Path.Combine(_appPaths.DataPath, "splashscreen.webp");
-
-                if (!System.IO.File.Exists(splashscreenPath) && _imageGenerator.GetSupportedImages().Contains(GeneratedImageType.Splashscreen))
+                if (!System.IO.File.Exists(splashscreenPath))
                 {
-                    _imageGenerator.Generate(GeneratedImageType.Splashscreen, splashscreenPath);
+                    return NotFound();
                 }
             }
 

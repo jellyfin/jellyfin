@@ -32,12 +32,12 @@ namespace Jellyfin.Drawing.Skia
         /// Generate a splashscreen.
         /// </summary>
         /// <param name="posters">The poster paths.</param>
-        /// <param name="backdrop">The landscape paths.</param>
+        /// <param name="backdrops">The landscape paths.</param>
         /// <param name="outputPath">The output path.</param>
-        public void GenerateSplash(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop, string outputPath)
+        public void GenerateSplash(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops, string outputPath)
         {
-            var wall = GenerateCollage(posters, backdrop);
-            var transformed = Transform3D(wall);
+            using var wall = GenerateCollage(posters, backdrops);
+            using var transformed = Transform3D(wall);
 
             using var outputStream = new SKFileWStream(outputPath);
             using var pixmap = new SKPixmap(new SKImageInfo(FinalWidth, FinalHeight), transformed.GetPixels());
@@ -48,9 +48,9 @@ namespace Jellyfin.Drawing.Skia
         /// Generates a collage of posters and landscape pictures.
         /// </summary>
         /// <param name="posters">The poster paths.</param>
-        /// <param name="backdrop">The landscape paths.</param>
+        /// <param name="backdrops">The landscape paths.</param>
         /// <returns>The created collage as a bitmap.</returns>
-        private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrop)
+        private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
         {
             var random = new Random();
 
@@ -82,7 +82,7 @@ namespace Jellyfin.Drawing.Skia
                             posterIndex = newPosterIndex;
                             break;
                         default:
-                            currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, backdrop, backdropIndex, out int newBackdropIndex);
+                            currentImage = SkiaHelper.GetNextValidImage(_skiaEncoder, backdrops, backdropIndex, out int newBackdropIndex);
                             backdropIndex = newBackdropIndex;
                             break;
                     }
