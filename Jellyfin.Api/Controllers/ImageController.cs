@@ -1793,7 +1793,7 @@ namespace Jellyfin.Api.Controllers
         /// Uploads a custom splashscreen.
         /// </summary>
         /// <returns>A <see cref="NoContentResult"/> indicating success.</returns>
-        /// <response code="204">Sucessfully uploaded new splashscreen.</response>
+        /// <response code="204">Successfully uploaded new splashscreen.</response>
         /// <response code="400">Error reading MimeType from uploaded image.</response>
         /// <response code="403">User does not have permission to upload splashscreen..</response>
         /// <exception cref="ArgumentException">Error reading the image format.</exception>

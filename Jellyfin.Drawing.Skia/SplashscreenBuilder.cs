@@ -52,8 +52,6 @@ namespace Jellyfin.Drawing.Skia
         /// <returns>The created collage as a bitmap.</returns>
         private SKBitmap GenerateCollage(IReadOnlyList<string> posters, IReadOnlyList<string> backdrops)
         {
-            var random = new Random();
-
             var posterIndex = 0;
             var backdropIndex = 0;
 
@@ -65,7 +63,7 @@ namespace Jellyfin.Drawing.Skia
 
             for (int i = 0; i < Rows; i++)
             {
-                int imageCounter = random.Next(0, 5);
+                int imageCounter = Random.Shared.Next(0, 5);
                 int currentWidthPos = i * 75;
                 int currentHeight = i * (posterHeight + Spacing);
 

@@ -69,9 +69,9 @@ public class SplashscreenPostScanTask : ILibraryPostScanTask
             Limit = 30,
             // TODO max parental rating configurable
             MaxParentalRating = 10,
-            OrderBy = new ValueTuple<string, SortOrder>[]
+            OrderBy = new[]
             {
-                new(ItemSortBy.Random, SortOrder.Ascending)
+                (ItemSortBy.Random, SortOrder.Ascending)
             },
             IncludeItemTypes = new[] { BaseItemKind.Movie, BaseItemKind.Series }
         });

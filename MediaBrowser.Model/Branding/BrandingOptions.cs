@@ -29,10 +29,4 @@ public class BrandingOptions
     /// </remarks>
     [JsonIgnore]
     public string? SplashscreenLocation { get; set; }
-
-    /// <summary>
-    /// Gets the splashscreen url.
-    /// </summary>
-    [XmlIgnore]
-    public string SplashscreenUrl => "/Branding/Splashscreen";
 }
